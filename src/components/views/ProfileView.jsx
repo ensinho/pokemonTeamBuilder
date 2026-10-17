@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import '../../styles/profile-view.css';
 import { THEME_META } from '../../constants/theme';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
@@ -7,7 +7,13 @@ import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
 import { resolveAvatar } from '../../store/useAuthStore';
 import { Sprite } from '../Sprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { TrainerTitle } from '../rewards/TrainerTitle';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
+import { useShallow } from 'zustand/react/shallow';
+import { useRewardsStore, isThemeUnlocked } from '../../store/useRewardsStore';
+import { themeReward } from '../../constants/cosmetics';
+import { frameProps } from '../../utils/rewards';
+import { liveStreak } from '../../utils/dailyCheckin';
 import { useTranslation } from '../../hooks/useTranslation';
 import { auth } from '../../services/firebase';
 import { sendEmailVerification } from 'firebase/auth';
@@ -305,8 +311,14 @@ export function ProfileView({
     db,
 }) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     useDocumentMeta({ title: t('nav.profile') });
     const { badges, unlockedCount, totalBadgesCount, selectedBadgeId, toggleEquip } = useTrainerBadges();
+    // Rewards (2026-10-17): the equipped frame and title, the level, and which
+    // reward themes are open — all recorded, so the hero paints at once.
+    const { equipped, trainerLevel, unlocked } = useRewardsStore(useShallow((s) => ({
+        equipped: s.equipped, trainerLevel: s.level, unlocked: s.unlocked,
+    })));
     // Earned first, then the closest to earning: 22 cards in catalogue order put
     // a wall of locked badges between a guest and everything below (2026-10-06).
     const orderedBadges = useMemo(() => [...badges].sort((a, b) => (
@@ -352,7 +364,8 @@ export function ProfileView({
     const trainerLabel = displayName?.trim() || (isAnonymous ? t('profile.guestPill') : (userEmail?.split('@')[0] || 'Trainer'));
     const initials = (trainerLabel.match(/\b\w/g) || ['T']).slice(0, 2).join('').toUpperCase();
 
-    const streakCount = streak?.count || 0;
+    // The streak as it stands today: a lapsed one reads 0 (utils/dailyCheckin.js).
+    const streakCount = liveStreak(streak);
     const streakLongest = Math.max(streak?.longest || 0, streakCount);
     const activeTheme = THEME_META.find((entry) => entry.id === theme) || THEME_META[0];
 
@@ -374,6 +387,7 @@ export function ProfileView({
                         className="profile-avatar-button"
                         aria-label={t('profile.sectionAvatarDesc')}
                         title={t('profile.sectionAvatarDesc')}
+                        {...frameProps(equipped.frame)}
                     >
                         {/* Whichever the trainer picked as their main avatar. */}
                         {mainAvatar.trainerSprite ? (
@@ -434,7 +448,11 @@ export function ProfileView({
                                 <EditIcon className="w-4 h-4" color="currentColor" />
                             </button>
                         )}
+                        <TrainerTitle titleId={equipped.title} className="profile-hero__title" />
                         <div className="profile-hero__meta">
+                            <Link to="/journeys?tab=rewards" className="profile-pill" title={t('rewards.customize')}>
+                                {t('rewards.levelShort', { n: trainerLevel })}
+                            </Link>
                             <span className="profile-pill profile-pill--accent">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
                             {!isAnonymous && userEmail && (
                                 <span className="profile-hero__email" title={userEmail}>{userEmail}</span>
@@ -544,23 +562,32 @@ export function ProfileView({
                                         <div className="profile-theme-grid">
                                             {groupThemes.map((entry) => {
                                                 const selected = theme === entry.id;
+                                                // A reward theme still locked shows how to earn it,
+                                                // and a tap opens the Rewards tab (the next step).
+                                                const locked = !isThemeUnlocked(entry.id, unlocked);
                                                 return (
                                                     <button
                                                         key={entry.id}
                                                         type="button"
-                                                        onClick={(event) => onChangeTheme(entry.id, originFromEvent(event))}
-                                                        aria-pressed={selected}
-                                                        className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
+                                                        onClick={(event) => (locked
+                                                            ? navigate('/journeys?tab=rewards')
+                                                            : onChangeTheme(entry.id, originFromEvent(event)))}
+                                                        aria-pressed={locked ? undefined : selected}
+                                                        className={`profile-theme-card ${selected ? 'is-selected' : ''} ${locked ? 'is-locked' : ''}`}
                                                         style={{ '--profile-theme-swatch': entry.swatch }}
                                                     >
                                                         <div className="profile-theme-card__header">
                                                             <span className="profile-theme-card__swatch" aria-hidden="true"></span>
                                                             <span className="profile-theme-card__label">{entry.label}</span>
                                                             <span className="profile-theme-card__icon">
-                                                                <ThemeSwatchIcon mode={entry.mode} color="currentColor" />
+                                                                {locked
+                                                                    ? <Lock className="w-3.5 h-3.5" aria-hidden="true" />
+                                                                    : <ThemeSwatchIcon mode={entry.mode} color="currentColor" />}
                                                             </span>
                                                         </div>
-                                                        <p className="profile-theme-card__hint">{entry.hint}</p>
+                                                        <p className="profile-theme-card__hint">
+                                                            {locked ? t('rewards.themeLocked', { n: themeReward(entry.id).unlock.level }) : entry.hint}
+                                                        </p>
                                                     </button>
                                                 );
                                             })}

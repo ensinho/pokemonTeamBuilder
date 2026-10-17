@@ -56,6 +56,9 @@ The core domain logic. `src/constants/types.js` holds `typeChart` (per-type `dam
 ### Journeys (`src/utils/journeys.js`, `docs/modules/journeys.md`)
 The onboarding: five levels of missions (`/journeys`, the Home's "Sua jornada" card, the floating `JourneyCoach`), each level rewarded with a journey badge. Missions are pure predicates over facts that `useTrainerBadges` evaluates once (`stats.journeys`); actions no collection records are `markJourney(mark)` in `useAuthStore` (synced to the preferences doc). The Quiz is one page with two modes (`/quiz`, `?tab=categories`; `/guesser` redirects). PokéRoom was removed on 2026-10-17 (`/pokeroom/*` redirects to the Quiz).
 
+### Rewards (`docs/modules/rewards.md`)
+Trainer Level (XP computed from stats in `src/utils/trainerLevel.js`, never spent — no currency), the daily check-in (`src/utils/dailyCheckin.js`, streak shields; the daily PokéPuzzle checks in too) and cosmetics (`src/constants/cosmetics.js`: frames, titles, reward themes). `useRewardsStore` **records** XP/unlocks/equips (localStorage + preferences doc) so views never derive them on render; only `useTrainerBadges` computes, and it never celebrates data that arrives. Draw a trainer's avatar through `<FramedAvatar>` so it wears their current frame. A new frame/title id must also go in the `publicProfiles` rule list in `firestore.rules` (a test checks).
+
 ### Data layer (`src/services/pokemonDataCache.js`)
 Three-tier cache for PokéAPI data, all funneled through `fetchJsonCached`:
 1. In-memory `Map` (per session).

@@ -715,6 +715,26 @@ button.cozy-chip:hover {
     font-size: var(--text-sm);
 }
 
+/* A little larger than its slot: pixel sprites carry their own margin. */
+.cozy-day__mini-sprite {
+    width: 2.75rem;
+    height: 2.75rem;
+    max-width: none;
+    image-rendering: pixelated;
+}
+
+/* The intro band, the pad and the day's facts are the desktop feature's;
+   on a phone the foot dissolves so its action joins the row. */
+.cozy-day__band,
+.cozy-day__pad,
+.cozy-day__facts {
+    display: none;
+}
+
+.cozy-day__foot {
+    display: contents;
+}
+
 .cozy-day__card--compact .cozy-day__eyebrow,
 .cozy-day__card--compact .cozy-day__title,
 .cozy-day__card--compact .cozy-day__sub,
@@ -739,13 +759,18 @@ button.cozy-chip:hover {
         grid-column: 2;
     }
 
+    /* Black & White's trainer intro (2026-10-17, Enzo: "genérico"): a slanted
+       band in the card's tone runs behind the Champion, its leading edge lit,
+       and she stands on a battle pad at 2× her 80px sprite. Text, her six and
+       the day's facts keep the left; the band never sits under them. */
     .cozy-home .cozy-day__card--feature {
         position: relative;
+        isolation: isolate;
         display: grid;
         grid-column: 1;
         grid-row: 1 / span var(--day-rows, 2);
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-rows: auto auto auto auto 1fr;
+        grid-template-columns: minmax(0, 1fr) 11rem;
+        grid-template-rows: auto auto auto 1fr auto auto;
         column-gap: var(--space-4);
         row-gap: var(--space-1);
         overflow: hidden;
@@ -753,35 +778,86 @@ button.cozy-chip:hover {
         background: color-mix(in srgb, var(--day-tone) 8%, var(--color-surface));
     }
 
+    .cozy-day__card--feature .cozy-day__band {
+        position: absolute;
+        z-index: -1;
+        inset-block: 0;
+        right: 0;
+        display: block;
+        width: 50%;
+        background: color-mix(in srgb, var(--day-tone) 18%, var(--color-surface));
+        clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    .cozy-day__card--feature .cozy-day__band::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: color-mix(in srgb, var(--day-tone) 55%, var(--color-fg));
+        opacity: 0.5;
+        clip-path: polygon(28% 0, 30% 0, 2% 100%, 0 100%);
+    }
+
     .cozy-day__card--feature .cozy-day__head {
         display: contents;
     }
 
     .cozy-day__card--feature .cozy-day__tile {
+        position: relative;
         grid-column: 2;
-        grid-row: 1 / -1;
-        align-self: center;
-        width: 8rem;
-        height: 8rem;
+        grid-row: 1 / 6;
+        align-self: end;
+        width: 11rem;
+        height: 11rem;
         overflow: visible;
-        border-radius: var(--radius-full);
-        background: color-mix(in srgb, var(--day-tone) 16%, var(--color-surface-raised));
+        place-items: end center;
+        border-radius: 0;
+        background: none;
     }
 
-    .cozy-day__card--feature .cozy-day__sprite {
-        width: 8.5rem;
-        height: 8.5rem;
-        image-rendering: pixelated;
+    /* The battle pad, as the partner stands on in the banner. */
+    .cozy-day__card--feature .cozy-day__pad {
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        bottom: 2%;
+        display: block;
+        height: 16%;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--day-tone) 55%, var(--color-fg));
+        opacity: 0.28;
+    }
+
+    .cozy-day__card--feature .cozy-day__trainer {
+        position: relative;
+        width: 10rem;
+        height: 10rem;
     }
 
     .cozy-day__card--feature .cozy-day__eyebrow { grid-column: 1; grid-row: 1; }
     .cozy-day__card--feature .cozy-day__title { grid-column: 1; grid-row: 2; }
     .cozy-day__card--feature .cozy-day__sub { grid-column: 1; grid-row: 3; }
-    .cozy-day__card--feature .cozy-day__lineup { grid-column: 1; grid-row: 4; }
 
-    .cozy-day__card--feature .cozy-day__trainer {
-        width: 7rem;
-        height: 7rem;
+    /* Six equal slots that share the column (a narrow monitor shrinks them
+       all alike — flex let the "?" slot, with no sprite in it, collapse). */
+    .cozy-day__card--feature .cozy-day__lineup {
+        display: grid;
+        grid-column: 1;
+        grid-row: 5;
+        grid-template-columns: repeat(6, minmax(0, 2.75rem));
+        margin-top: var(--space-4);
+    }
+
+    .cozy-day__card--feature .cozy-day__mini {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1;
+        background: color-mix(in srgb, var(--day-tone) 10%, var(--color-surface-raised));
+    }
+
+    .cozy-day__card--feature .cozy-day__mini-sprite {
+        width: 120%;
+        height: 120%;
     }
 
     .cozy-day__card--feature .cozy-day__title {
@@ -794,23 +870,46 @@ button.cozy-chip:hover {
         font-size: var(--text-sm);
     }
 
-    .cozy-home .cozy-day__card--feature .cozy-day__go {
-        grid-column: 1;
-        grid-row: 5;
-        align-self: end;
-        justify-self: start;
-        margin-top: var(--space-3);
+    /* The day's facts on one fill (the stat rule), the action at the far end. */
+    .cozy-day__card--feature .cozy-day__foot {
+        grid-column: 1 / -1;
+        grid-row: 6;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3);
+        margin-top: var(--space-4);
     }
 
-    /* The silhouette leans in under the pointer — the card's one answer. */
+    .cozy-day__card--feature .cozy-day__facts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, max-content));
+        gap: var(--space-6);
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--radius-md);
+        background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    }
+
+    .cozy-day__card--feature .cozy-day__facts .stat__value {
+        margin: 0;
+        font-size: var(--text-sm);
+        white-space: nowrap;
+    }
+
+    .cozy-home .cozy-day__card--feature .cozy-day__go {
+        margin-inline-start: auto;
+    }
+
+    /* The Champion steps forward under the pointer — the card's one answer. */
     @media (prefers-reduced-motion: no-preference) {
-        .cozy-day__card--feature .cozy-day__sprite {
-            transition: scale var(--duration-glide) var(--ease-glide), rotate var(--duration-glide) var(--ease-glide);
+        .cozy-day__card--feature .cozy-day__trainer {
+            transition: translate var(--duration-glide) var(--ease-glide), scale var(--duration-glide) var(--ease-glide);
+            transform-origin: 50% 100%;
         }
 
-        .cozy-day__card--feature:hover .cozy-day__sprite {
-            scale: 1.06;
-            rotate: -4deg;
+        .cozy-day__card--feature:hover .cozy-day__trainer {
+            translate: 0 calc(var(--space-1) * -1);
+            scale: 1.04;
         }
     }
 }
@@ -909,6 +1008,31 @@ button.cozy-chip:hover {
 
 .cozy-status {
     grid-area: status;
+}
+
+/* Desktop (2026-10-17, Enzo): three boxes to a row, every card the same
+   shape — the PC box across the top at the card's width, the name and its
+   state under it. A row of three never leaves the panel half empty the way
+   one full-width row per team did. */
+@media (min-width: 1024px) {
+    .cozy-home .cozy-teams {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-3);
+    }
+
+    .cozy-home .cozy-teams > li {
+        display: flex;
+    }
+
+    .cozy-home .cozy-team {
+        grid-template-areas:
+            'roster roster'
+            'text status';
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-3);
+    }
 }
 
 /* The tally: three .stat on one raised fill. */

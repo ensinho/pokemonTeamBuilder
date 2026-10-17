@@ -11,8 +11,11 @@ import { useFriendsStore } from '../store/useFriendsStore';
 import { useBattlesStore } from '../store/useBattlesStore';
 import { BADGES_LIST, BADGES_BY_ID, getBadgeById } from '../constants/badges';
 import { evaluateJourneys } from '../utils/journeys';
+import { computeTrainerXp } from '../utils/trainerLevel';
+import { useRewardsStore } from '../store/useRewardsStore';
 
 const CELEBRATED_BADGES_KEY = 'ptb:celebratedBadges';
+const JOURNEY_BADGE_IDS = BADGES_LIST.filter((badge) => badge.category === 'journey').map((badge) => badge.id);
 
 const getCelebratedBadges = () => {
     if (typeof window === 'undefined') return new Set();
@@ -265,6 +268,22 @@ export function useTrainerBadges(extraStats = {}) {
     const unlockedCount = useMemo(() => {
         return badges.filter((b) => b.isUnlocked).length;
     }, [badges]);
+
+    // Hand the progress to the rewards record (useRewardsStore): it keeps the
+    // highest XP ever seen and records what that unlocks, so the views that
+    // only show the level, a frame or a title never need these listeners.
+    // Recording, not celebrating — data arriving after boot looks exactly
+    // like progress, and must not fire anything (the 2026-09-21 wound).
+    const checkinCount = useAuthStore((s) => s.checkin?.count || 0);
+    useEffect(() => {
+        const badgeIds = badges.filter((b) => b.isUnlocked).map((b) => b.id);
+        useRewardsStore.getState().syncProgress({
+            xp: computeTrainerXp(stats, { badgeIds, journeyBadgeIds: JOURNEY_BADGE_IDS, checkinCount }),
+            badgeIds,
+            journeysDone: journeys.filter((j) => j.isComplete).length,
+            checkins: checkinCount,
+        });
+    }, [badges, stats, journeys, checkinCount]);
 
     const totalBadgesCount = BADGES_LIST.length;
 

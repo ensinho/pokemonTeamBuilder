@@ -26,6 +26,8 @@ import { resolveAvatar } from '../utils/avatar';
 import { promptSignIn, navigateTo } from '../utils/navigation';
 import { deleteUserData } from '../services/accountDeletion';
 import { disablePush } from '../services/pushNotifications';
+import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalizeStreak } from '../utils/dailyCheckin';
+import { useRewardsStore } from './useRewardsStore';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -115,13 +117,54 @@ const clearAuthSnapshot = () => {
     try { localStorage.removeItem(SNAPSHOT_KEY); } catch (_) { /* ignore */ }
 };
 
+// The streak: consecutive days checked in (utils/dailyCheckin.js — the
+// check-in, or the daily PokéPuzzle, which checks in). `shields` cover one
+// missed day each.
 const getInitialStreak = () => {
-    if (typeof window === 'undefined') return { count: 0, longest: 0, lastVisit: null };
+    if (typeof window === 'undefined') return normalizeStreak(null);
     try {
-        const raw = localStorage.getItem('trainerStreak');
-        if (raw) return JSON.parse(raw);
+        return normalizeStreak(JSON.parse(localStorage.getItem('trainerStreak') || 'null'));
+    } catch (_) {
+        return normalizeStreak(null);
+    }
+};
+
+const writeStreak = (streak) => {
+    try {
+        localStorage.setItem('trainerStreak', JSON.stringify(streak));
     } catch (_) { /* ignore */ }
-    return { count: 0, longest: 0, lastVisit: null };
+};
+
+// The daily check-in's own counter (total check-ins, never reset): the
+// seven-day reward cycle follows it.
+const CHECKIN_KEY = 'ptb:checkin';
+
+const getInitialCheckin = () => {
+    if (typeof window === 'undefined') return normalizeCheckin(null);
+    try {
+        return normalizeCheckin(JSON.parse(localStorage.getItem(CHECKIN_KEY) || 'null'));
+    } catch (_) {
+        return normalizeCheckin(null);
+    }
+};
+
+const writeCheckin = (checkin) => {
+    try {
+        localStorage.setItem(CHECKIN_KEY, JSON.stringify(checkin));
+    } catch (_) { /* ignore */ }
+};
+
+/** Two copies of the streak: the one that saw the later day is live (its shields with it). */
+const mergeStreaks = (localRaw, remoteRaw) => {
+    const local = normalizeStreak(localRaw);
+    const remote = normalizeStreak(remoteRaw);
+    const latest = (remote.lastVisit || '') > (local.lastVisit || '') ? remote : local;
+    return {
+        count: latest.count,
+        longest: Math.max(local.longest, remote.longest),
+        lastVisit: latest.lastVisit,
+        shields: latest.shields,
+    };
 };
 
 const getInitialGreeting = () => {
@@ -211,37 +254,6 @@ export const useAuthStore = create((set, get) => {
     // onAuthStateChanged then reconciles the real state in the background.
     const bootSnapshot = readAuthSnapshot();
 
-    // Advance a streak by one "day played". Pure date-diff: same day → no-op,
-    // exactly +1 day → increment, any gap → reset to 1. `lastVisit` holds the
-    // last day a PokePuzzle was played (field name kept for storage compat).
-    const advanceStreak = (currentStreak) => {
-        const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
-
-        if (currentStreak.lastVisit === todayStr) return currentStreak; // already counted today
-
-        let nextCount;
-        if (!currentStreak.lastVisit) {
-            nextCount = 1;
-        } else {
-            const last = new Date(currentStreak.lastVisit + 'T00:00:00');
-            const diffDays = Math.round((today.setHours(0, 0, 0, 0) - last.getTime()) / 86400000);
-            nextCount = diffDays === 1 ? (currentStreak.count || 0) + 1 : 1;
-        }
-
-        const next = {
-            count: nextCount,
-            longest: Math.max(currentStreak.longest || 0, nextCount),
-            lastVisit: todayStr,
-        };
-
-        try {
-            localStorage.setItem('trainerStreak', JSON.stringify(next));
-        } catch (_) { /* ignore */ }
-
-        return next;
-    };
-
     // The sync nudge used to be a modal on a 30 s timer: it interrupted every
     // guest mid-task, whatever they were doing, before they had anything worth
     // syncing. It now rides on the first team save (nudgeSyncAfterSave), as a
@@ -284,6 +296,7 @@ export const useAuthStore = create((set, get) => {
         greetingPokemonIsShiny: getInitialGreeting().isShiny,
         streak: getInitialStreak(),
         activeDays: getInitialActiveDays(),
+        checkin: getInitialCheckin(),
         journeyMarks: getInitialJourneyMarks(),
         selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
         newlyUnlockedBadge: null,
@@ -402,20 +415,23 @@ export const useAuthStore = create((set, get) => {
                                 useThemeStore.getState().setHomeWallpaperPreference(data.homeWallpaperId);
                             }
 
-                            // 5. Streak merging
-                            let mergedStreak = getInitialStreak();
-                            if (data.streak && typeof data.streak === 'object') {
-                                const remote = data.streak;
-                                mergedStreak = {
-                                    count: Math.max(mergedStreak.count || 0, remote.count || 0),
-                                    longest: Math.max(mergedStreak.longest || 0, remote.longest || 0, mergedStreak.count || 0, remote.count || 0),
-                                    lastVisit: remote.lastVisit || mergedStreak.lastVisit || null,
-                                };
-                            }
-                            // The streak now tracks consecutive daily PokePuzzles
-                            // PLAYED, not app visits — it is bumped from the game
-                            // (bumpPokePuzzleStreak), never on app open. Just load it.
+                            // 5. Streak merging. The streak counts consecutive
+                            // check-ins (checkIn — the daily PokéPuzzle checks in
+                            // too), never a bare app open. The copy that saw the
+                            // later day is the live one.
+                            const mergedStreak = mergeStreaks(get().streak, data.streak);
+                            writeStreak(mergedStreak);
                             set({ streak: mergedStreak });
+
+                            // 5.0 Check-ins only grow: the larger count, the later day.
+                            const localCheckin = normalizeCheckin(get().checkin);
+                            const remoteCheckin = normalizeCheckin(data.checkin);
+                            const mergedCheckin = {
+                                count: Math.max(localCheckin.count, remoteCheckin.count),
+                                lastDay: [localCheckin.lastDay, remoteCheckin.lastDay].filter(Boolean).sort().pop() || null,
+                            };
+                            writeCheckin(mergedCheckin);
+                            set({ checkin: mergedCheckin });
 
                             // 5.1 Days active: the larger count wins, and it is
                             // never below the longest streak — every streak day
@@ -435,6 +451,10 @@ export const useAuthStore = create((set, get) => {
                             const mergedMarks = { ...cleanJourneyMarks(data.journeyMarks), ...get().journeyMarks };
                             writeJourneyMarks(mergedMarks);
                             set({ journeyMarks: mergedMarks });
+
+                            // 5.3 Rewards (useRewardsStore): XP never drops,
+                            // unlocks are a union, the account's equip wins.
+                            useRewardsStore.getState().hydrate(data.rewards);
                         } else {
                             set({ streak: getInitialStreak() });
                         }
@@ -530,7 +550,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, journeyMarks, selectedBadgeId, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -555,7 +575,9 @@ export const useAuthStore = create((set, get) => {
                 homeWallpaperId: homeWallpaperId || null,
                 streak,
                 activeDays,
+                checkin,
                 journeyMarks,
+                rewards: useRewardsStore.getState().snapshot(),
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
@@ -587,17 +609,29 @@ export const useAuthStore = create((set, get) => {
             get().savePreferences({ activeDays: next });
         },
 
-        // Advance the trainer streak because a daily PokePuzzle was played
-        // TODAY. Idempotent per day (advanceStreak no-ops if already counted).
-        // Persists to localStorage + the user's Firestore profile so it stays
-        // in sync across devices.
+        /**
+         * The daily check-in (utils/dailyCheckin.js): one per local day. Pays
+         * the cycle's XP into useRewardsStore and advances the streak, spending
+         * a shield on a single missed day. Returns what happened, for the card
+         * to show — null when today was already counted. Optimistic: the state
+         * changes in this frame and the account copy is written behind it.
+         */
+        checkIn: () => {
+            const next = applyCheckin({ checkin: get().checkin, streak: get().streak }, checkinDayKey());
+            if (!next) return null;
+            writeCheckin(next.checkin);
+            writeStreak(next.streak);
+            set({ checkin: next.checkin, streak: next.streak });
+            get().savePreferences({ checkin: next.checkin, streak: next.streak });
+            get().bumpActiveDay();
+            const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });
+            return { ...next.result, ...reward };
+        },
+
+        // A daily PokéPuzzle was played today: that counts as today's
+        // check-in, so a puzzle player's streak carries on exactly as before.
         bumpPokePuzzleStreak: () => {
-            const current = get().streak || getInitialStreak();
-            const next = advanceStreak(current);
-            if (next === current) return;          // already counted today
-            set({ streak: next });
-            get().syncPreferencesToFirestore().catch(e =>
-                console.error('Failed to sync PokePuzzle streak:', e));
+            get().checkIn();
         },
 
 
@@ -630,19 +664,35 @@ export const useAuthStore = create((set, get) => {
 
             const name = get().trainerDisplayName();
             const avatar = get().publicAvatar();
+            const rewards = useRewardsStore.getState();
+            const profileRef = doc(db, `artifacts/${appId}/publicProfiles`, userId);
+            const base = {
+                displayName: name,
+                displayNameLower: name.toLowerCase(),
+                // Resolved avatar: the directory shows what the user chose,
+                // and never needs to know the preference itself.
+                avatarPokemonId: avatar.pokemonId,
+                avatarIsShiny: avatar.isShiny,
+                trainerSprite: avatar.trainerSprite,
+                selectedBadgeId: selectedBadgeId || null,
+                updatedAt: new Date().toISOString(),
+            };
             try {
-                const profileRef = doc(db, `artifacts/${appId}/publicProfiles`, userId);
-                await setDoc(profileRef, {
-                    displayName: name,
-                    displayNameLower: name.toLowerCase(),
-                    // Resolved avatar: the directory shows what the user chose,
-                    // and never needs to know the preference itself.
-                    avatarPokemonId: avatar.pokemonId,
-                    avatarIsShiny: avatar.isShiny,
-                    trainerSprite: avatar.trainerSprite,
-                    selectedBadgeId: selectedBadgeId || null,
-                    updatedAt: new Date().toISOString(),
-                }, { merge: true });
+                try {
+                    // What the profile card shows of the rewards (2026-10-17).
+                    await setDoc(profileRef, {
+                        ...base,
+                        frameId: rewards.equipped.frame || null,
+                        titleId: rewards.equipped.title || null,
+                        trainerLevel: rewards.level || 1,
+                    }, { merge: true });
+                } catch (e) {
+                    // Rules from before the rewards (`hasOnly`) refuse the new
+                    // fields: keep the directory entry current without them
+                    // until firestore.rules is deployed.
+                    if (e?.code !== 'permission-denied') throw e;
+                    await setDoc(profileRef, base, { merge: true });
+                }
             } catch (e) {
                 // Non-critical: the private profile is already saved, and the
                 // directory entry re-syncs on the next profile change.

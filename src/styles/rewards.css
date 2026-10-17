@@ -1,0 +1,386 @@
+/* ============================================================================
+   Rewards (2026-10-17, docs/modules/rewards.md) — the check-in + level card,
+   the collection and the level track. The card owns the border; the seven
+   days, the previews and the track rows separate with fill. One accent: the
+   primary marks what is claimed, current or equipped; the streak flame takes
+   --color-accent (the token for a streak). The avatar frame itself is global
+   (index.css, `[data-frame]`) because the sidebar and the forum draw it too.
+   ============================================================================ */
+
+/* ---- The check-in card ----------------------------------------------------- */
+
+.checkin {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.checkin__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.checkin__level {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+}
+
+.checkin__level-label {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.checkin__level-value {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-heading);
+    line-height: 1;
+    color: var(--color-fg);
+}
+
+.checkin__xp {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.checkin__xp-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.checkin__next { color: var(--color-fg-secondary); }
+
+.checkin__more svg { width: 1rem; height: 1rem; }
+
+/* The seven days: a fill each, today in the ring (a ring, never a border —
+   it would resize the cell when the day moves). */
+.checkin__days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.checkin__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.checkin__day.is-today { box-shadow: var(--ring-primary); }
+
+.checkin__day-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-full);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+}
+
+.checkin__day-mark svg { width: 1rem; height: 1rem; }
+
+.checkin__day.is-claimed .checkin__day-mark {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.checkin__day-xp {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.checkin__day.is-big .checkin__day-xp {
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.checkin__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.checkin__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+}
+
+.checkin__fact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.checkin__fact svg { width: 1rem; height: 1rem; }
+.checkin__fact.is-lit { color: var(--color-fg); }
+.checkin__fact.is-lit svg { color: var(--color-accent); }
+
+/* The shiny burst draws inside the button. */
+.checkin__cta { position: relative; }
+
+.checkin__done {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+}
+
+.checkin__later {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.checkin__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-primary);
+}
+
+.checkin__note {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: var(--leading-snug);
+    color: var(--color-muted);
+}
+
+/* The Home's card sits in a narrow rail on desktop: the level and the link
+   share the first row, the bar takes the whole second one. */
+.checkin--home .checkin__head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'level more' 'xp xp';
+    gap: var(--space-2) var(--space-3);
+}
+
+.checkin--home .checkin__level { grid-area: level; flex-direction: row; align-items: baseline; gap: var(--space-2); }
+.checkin--home .checkin__more { grid-area: more; }
+.checkin--home .checkin__xp { grid-area: xp; }
+.checkin--home .checkin__next { display: none; }
+.checkin--home .checkin__foot { flex-direction: column; align-items: stretch; }
+.checkin--home .checkin__cta { width: 100%; }
+.checkin--home .checkin__done { align-items: flex-start; }
+.checkin--home .checkin__days { gap: var(--space-1); }
+
+@media (max-width: 639px) {
+    .checkin--full .checkin__head { grid-template-columns: auto minmax(0, 1fr); }
+    .checkin__next { display: none; }
+    .checkin__days { gap: var(--space-1); }
+    .checkin__foot { flex-direction: column; align-items: stretch; }
+    .checkin__cta { width: 100%; }
+    .checkin__done { align-items: flex-start; }
+}
+
+/* ---- The Rewards tab ------------------------------------------------------- */
+
+.rewards-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    min-width: 0;
+}
+
+.rewards-panel .section + .section { margin-top: 0; }
+
+.rewards-panel__lead {
+    max-width: 40rem;
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-snug);
+    color: var(--color-fg-secondary);
+}
+
+.rewards-panel__kinds .count-badge { margin-inline-start: var(--space-1_5); }
+
+@media (min-width: 640px) {
+    .rewards-panel__kinds { align-self: flex-start; width: auto; }
+}
+
+.reward-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.reward-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    height: 100%;
+}
+
+.reward-card.is-locked { cursor: default; }
+.reward-card.is-locked .reward-preview { filter: grayscale(1); opacity: 0.55; }
+
+.reward-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.reward-card__name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.reward-card__how {
+    font-size: var(--text-xs);
+    line-height: var(--leading-snug);
+    color: var(--color-muted);
+}
+
+.reward-card__state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    color: var(--color-muted);
+}
+
+.reward-card__state svg { width: 0.875rem; height: 0.875rem; }
+.reward-card__state.is-on { color: var(--color-primary); font-weight: var(--weight-semibold); }
+
+/* The picture of an item. A frame preview is the trainer's own avatar in it. */
+.reward-preview {
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: var(--space-1);
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+}
+
+.reward-preview__sprite {
+    width: 150%;
+    max-width: none;
+    height: 150%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.reward-preview__sprite.avatar-sprite--trainer { width: 110%; height: 110%; }
+
+.reward-preview__fallback { width: 55%; height: 55%; }
+
+.reward-preview--theme { background: var(--reward-swatch); }
+
+.reward-preview--title svg { width: 1rem; height: 1rem; }
+
+/* ---- The level track ------------------------------------------------------- */
+
+.level-track {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.level-track__step {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.level-track__step.is-next { box-shadow: var(--ring-primary); }
+
+.level-track__level {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.level-track__step.is-reached .level-track__level {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.level-track__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    min-width: 0;
+}
+
+.level-track__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-size: var(--text-sm);
+    color: var(--color-fg);
+}
+
+.level-track__item .reward-preview { width: 1.75rem; height: 1.75rem; }
+
+.level-track__state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    color: var(--color-muted);
+}
+
+.level-track__state svg { width: 0.875rem; height: 0.875rem; }
+.level-track__step.is-reached .level-track__state { color: var(--color-success); }
+.level-track__step.is-next .level-track__state { color: var(--color-primary); }

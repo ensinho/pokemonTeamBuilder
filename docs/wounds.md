@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-17 — Reward frames drew a square, got cut in the forum, and only showed on new posts `bug`
+- **Symptom:** Enzo, during the rewards build: the account menu's frame was a square ("a borda tá quadrada"); in the forum thread the rings were shaved off on the left ("cortou um tico"); and frames had to appear on every avatar — forum, profile card, everywhere ("em todos os ícones e referências") — while only posts written after equipping carried one.
+- **Root cause:** the frame is a box-shadow on whatever container wears it, so it took that container's shape: `.app-shell__account-avatar` and the Profile avatar are not round. The rings sit 0.25rem outside the box, and `.thread-messages-scroll` (`overflow-x: hidden`, left padding 0) had the comment avatars flush with its edge — measured gap 0.0px. And the frame came only from `creatorFrameId`, stamped on the post at write time.
+- **Fix:** `[data-frame]` forces `border-radius: var(--radius-full)`; the thread scroller reaches `--space-2` further left and pads it back (nothing inside moves). Every avatar container renders as `<FramedAvatar uid stampedFrameId>`, which reads the trainer's *current* frame — yours live from useRewardsStore, others' from `publicProfiles` through a batched, session-cached lookup (`useTrainerCosmeticsStore`) — with the stamp as the fallback. Verified with a clip probe (nearest clipping ancestor closer than the ring) over feed, thread and profile card at 1440 and 390: 0 hits.
+- **Correct pattern:** anything drawn outside a box (rings, glows, focus halos) needs the container's shape fixed and room at every `overflow` edge it can touch — probe the nearest clipping ancestor instead of eyeballing one screen. A per-user cosmetic is looked up by user, not copied into the documents they wrote.
+- **Files:** `src/index.css`, `src/styles/forum-view.css`, `src/components/rewards/FramedAvatar.jsx`, `src/store/useTrainerCosmeticsStore.js`, `src/hooks/useTrainerCosmetics.js`, the avatar call sites, `docs/modules/rewards.md`
+
 ### 2026-10-17 — The forum felt stuck: a card per topic, a chat in a box, nothing to share or rank `dispattern`
 - **Symptom:** Enzo: the feed "ainda tá meio travado". Measured before: on a 390px phone the feed header (title, button, chips, search, sort stacked) took half the screen; each topic was a bordered card; inside a post every comment was a card inside the thread card, replies were hidden behind "N respostas", the post opened at the *bottom* like a chat, and the composer was ~230px tall. Topics could not be liked or shared from the list, there was no notion of trending, and sort/category/search were `useState` — Back or a refresh lost them, and closing a post always landed at the top of the feed. On a wide desktop the post sat in one huge card with empty bands either side of a 46rem column.
 - **Root cause:** the forum was a chat client (newest at the bottom, a box per message) wearing a feed's clothes; votes lived only on messages, so the list had nothing to rank by; and the open topic was the only piece of state in the URL.
@@ -916,6 +923,10 @@ EOF
 
 These are real smells found in the codebase. They are **not yet fixed** — listed so you
 don't copy them and so we can pay them down deliberately. Promote one to "Resolved" when you fix it.
+
+### `bug` — Firestore "INTERNAL ASSERTION FAILED (ID: ca9 / b815)" on the forum (found 2026-10-17)
+- Opening /feed and then a post in headless Edge throws `FIRESTORE (11.10.0) INTERNAL ASSERTION FAILED: Unexpected state (ID: ca9)` (then `b815`) from the Listen stream's `WatchChangeAggregator`, 3–6 times per walk, desktop and phone. Reproduced on a clean worktree of `a05a33c` (before the rewards work) with no request interception, so it is not the rewards lookup. Likely a listener torn down and re-added on the same query while a target change is in flight, as the feed and the thread swap.
+- **Next step:** reproduce in a real browser; check whether `useForumStore` unsubscribes and resubscribes the same `messages` query within one tick, and whether a Firebase release after 11.10.0 lists a fix for ca9.
 
 ### `security` — PvP battles show each player the opponent's exact HP (found 2026-10-14)
 - `api/_lib/battleResolver.js` and `api/battle-turn.js` play `gen9customgame`. In `@pkmn/sim` Custom Game is a **debug** format (`debug: true` → `battle.reportExactHP`), so the shared half of every `|split|` HP line carries exact HP — each player's stream reads `|-damage|p2a: Garchomp|144/183`, not `79/100`. Exact HP at a known level is enough to work out the opponent's HP/Def EV investment. Verified with `extractChannelMessages` on 2026-10-14.

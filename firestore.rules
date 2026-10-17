@@ -64,13 +64,21 @@ service cloud.firestore {
           let avatarId = d.get('avatarPokemonId', null);
           let sprite = d.get('trainerSprite', null);
           let badgeId = d.get('selectedBadgeId', null);
+          // Rewards (2026-10-17): the equipped frame and title must be real
+          // catalogue ids (constants/cosmetics.js — rewards.test.js fails when
+          // these lists drift). Unlocks are judged on the client; a cosmetic
+          // is low stakes, a made-up id rendering junk is not.
+          let frameId = d.get('frameId', null);
+          let titleId = d.get('titleId', null);
+          let trainerLevel = d.get('trainerLevel', 1);
           let record = d.get('battleRecord', { 'wins': 0, 'losses': 0 });
           let priorRecord = resource == null
             ? { 'wins': 0, 'losses': 0 }
             : resource.data.get('battleRecord', { 'wins': 0, 'losses': 0 });
           return d.keys().hasOnly([
               'displayName', 'displayNameLower', 'avatarPokemonId',
-              'avatarIsShiny', 'trainerSprite', 'selectedBadgeId', 'battleRecord', 'updatedAt'
+              'avatarIsShiny', 'trainerSprite', 'selectedBadgeId', 'battleRecord', 'updatedAt',
+              'frameId', 'titleId', 'trainerLevel'
             ])
             && d.displayName is string
             && d.displayName.size() >= 1 && d.displayName.size() <= 40
@@ -83,6 +91,17 @@ service cloud.firestore {
             && d.get('avatarIsShiny', false) is bool
             && (sprite == null || (sprite is string && sprite.size() <= 40))
             && (badgeId == null || (badgeId is string && badgeId.size() <= 50))
+            && (frameId == null || frameId in [
+                'frame_poke', 'frame_grass', 'frame_fire', 'frame_water', 'frame_electric',
+                'frame_great', 'frame_ice', 'frame_dragon', 'frame_ultra', 'frame_ghost',
+                'frame_master', 'frame_daily', 'frame_shiny', 'frame_champion'
+              ])
+            && (titleId == null || titleId in [
+                'title_rising', 'title_loyal', 'title_explorer', 'title_builder', 'title_strategist',
+                'title_social', 'title_challenger', 'title_ace', 'title_puzzle', 'title_quiz',
+                'title_elite', 'title_veteran', 'title_legend'
+              ])
+            && trainerLevel is int && trainerLevel >= 1 && trainerLevel <= 99
             && d.updatedAt is string
             // Win/loss is written by the battle resolver (admin SDK, which
             // bypasses these rules). A client may only ever leave it untouched,

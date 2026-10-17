@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
+import { useRewardsStore } from './useRewardsStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { navigateTo, promptSignIn } from '../utils/navigation';
@@ -245,6 +246,9 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatarIsShiny: authorAvatar.isShiny,
                 creatorTrainerSprite: authorAvatar.trainerSprite,
                 creatorBadgeId: authState.selectedBadgeId || null,
+                // The author's equipped rewards, stamped like the badge (2026-10-17).
+                creatorFrameId: useRewardsStore.getState().equipped.frame || null,
+                creatorTitleId: useRewardsStore.getState().equipped.title || null,
                 lastActivityAt: new Date().toISOString(),
                 messageCount: 1,
                 lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : ''),
@@ -270,6 +274,9 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatarIsShiny: authorAvatar.isShiny,
                 creatorTrainerSprite: authorAvatar.trainerSprite,
                 creatorBadgeId: authState.selectedBadgeId || null,
+                // The author's equipped rewards, stamped like the badge (2026-10-17).
+                creatorFrameId: useRewardsStore.getState().equipped.frame || null,
+                creatorTitleId: useRewardsStore.getState().equipped.title || null,
                 sharedTeam: serializedAttachedTeam
             };
             await setDoc(firstMsgRef, firstMsgData);
@@ -360,6 +367,9 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatarIsShiny: authorAvatar.isShiny,
                 creatorTrainerSprite: authorAvatar.trainerSprite,
                 creatorBadgeId: authState.selectedBadgeId || null,
+                // The author's equipped rewards, stamped like the badge (2026-10-17).
+                creatorFrameId: useRewardsStore.getState().equipped.frame || null,
+                creatorTitleId: useRewardsStore.getState().equipped.title || null,
                 sharedTeam: serializedAttachedTeam,
                 battleInvite: battleInvite && battleInvite.battleId
                     ? {

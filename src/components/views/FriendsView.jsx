@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { FramedAvatar } from '../rewards/FramedAvatar';
 
 import { useFriends } from '../../hooks/useFriends';
 import { useBattlesStore } from '../../store/useBattlesStore';
@@ -29,14 +30,14 @@ function TrainerRow({ profile, subtitle, actions }) {
 
     return (
         <li className="friends-row">
-            <span className="friends-row__avatar">
+            <FramedAvatar uid={profile?.userId} stampedFrameId={profile?.frameId} className="friends-row__avatar">
                 <AvatarSprite
                     trainerSprite={profile?.trainerSprite}
                     pokemonId={profile?.avatarPokemonId}
                     isShiny={profile?.avatarIsShiny}
                     fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
                 />
-            </span>
+            </FramedAvatar>
             <span className="friends-row__identity">
                 <span className="friends-row__name">{name}</span>
                 {subtitle && <span className="friends-row__meta">{subtitle}</span>}
@@ -200,14 +201,14 @@ export function FriendsView() {
                         {friends.map((friend) => (
                             <li key={friend.userId} className="friend-card">
                                 <div className="friend-card__header">
-                                    <span className="friend-card__avatar">
+                                    <FramedAvatar uid={friend.userId} stampedFrameId={friend.frameId} className="friend-card__avatar">
                                         <AvatarSprite
                                             trainerSprite={friend.trainerSprite}
                                             pokemonId={friend.avatarPokemonId}
                                             isShiny={friend.avatarIsShiny}
                                             fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
                                         />
-                                    </span>
+                                    </FramedAvatar>
                                     <div className="friend-card__identity">
                                         <span className="friend-card__name">
                                             {friend.displayName || t('friends.unknownTrainer')}

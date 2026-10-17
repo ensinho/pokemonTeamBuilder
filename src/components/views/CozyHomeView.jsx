@@ -32,6 +32,7 @@ import {
     trainerIdFromUid,
 } from '../../utils/homeStatus';
 import { PartnerFlare } from '../PartnerFlare';
+import { CheckinCard } from '../rewards/CheckinCard';
 import { PcBox } from '../PcBox';
 import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
@@ -41,6 +42,7 @@ import { currentJourney, journeyEmphasis, nextMission } from '../../utils/journe
 import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
+import { FramedAvatar } from '../rewards/FramedAvatar';
 
 /**
  * The cozy Home (2026-10-06 proposal). One trainer card that says where the
@@ -476,17 +478,18 @@ export function CozyHomeView({
             meta={streakCount > 0 ? t('cozyHome.streakDay', { n: streakCount }) : t('cozyHome.noStreak')}
         >
             <div className="cozy-day" style={{ '--day-rows': dayRows }}>
-                {/* The featured card: the Champion and her six, the day's one battle.
-                    Always drawn (the summary fills it in), so the grid never reflows. */}
+                {/* The featured card: the Champion and her six, the day's one battle,
+                    drawn as Black & White's trainer intro — the band across the card,
+                    Cynthia on her pad. Always drawn (the summary fills it in), so the
+                    grid never reflows. */}
                 <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature cozy-day__card--challenge" style={{ '--day-tone': typeColors.dragon }}
                     onClick={() => navigate('/challenge')}>
+                    <span className="cozy-day__band" aria-hidden="true" />
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--trainer" aria-hidden="true">
+                            <span className="cozy-day__pad" />
                             <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" className="cozy-day__trainer" />
                         </span>
-                        {challengeDay.state === 'won'
-                            ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
-                            : <span className="btn btn-sm cozy-ink cozy-day__go">{t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
                     </span>
                     <span className="cozy-day__eyebrow">
                         {/* A phone's row has room for the short countdown only. */}
@@ -495,13 +498,31 @@ export function CozyHomeView({
                     </span>
                     <span className="cozy-day__title">{t('cozyHome.challengeTitle')}</span>
                     <span className="cozy-day__sub">{challengeLine(challengeDay)}</span>
-                    {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?". */}
+                    {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?".
+                        The filter goes on the sprite, never the slot, or the slot turns black too. */}
                     <span className="cozy-day__lineup" aria-hidden="true">
-                        {herSix.map((dex, index) => (dex ? (
-                            <Sprite key={index} src={dexSprite(dex)} className={`cozy-day__mini ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
-                        ) : (
-                            <span key={index} className="cozy-day__mini cozy-day__mini--unknown">?</span>
-                        )))}
+                        {herSix.map((dex, index) => (
+                            <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
+                                {dex
+                                    ? <Sprite src={dexSprite(dex)} className={`cozy-day__mini-sprite ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
+                                    : '?'}
+                            </span>
+                        ))}
+                    </span>
+                    <span className="cozy-day__foot">
+                        <span className="cozy-day__facts">
+                            <span className="stat">
+                                <span className="stat__label">{t('cozyHome.challengeDifficulty')}</span>
+                                <span className="stat__value">{challengeDay.difficulty ? t(`challenge.difficulty.${challengeDay.difficulty}`) : '—'}</span>
+                            </span>
+                            <span className="stat">
+                                <span className="stat__label">{t('cozyHome.challengeStreak')}</span>
+                                <span className="stat__value">{challengeDay.streak || 0}</span>
+                            </span>
+                        </span>
+                        {challengeDay.state === 'won'
+                            ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
+                            : <span className="btn btn-sm cozy-ink cozy-day__go"><Swords aria-hidden="true" /> {t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
                     </span>
                 </button>
 
@@ -613,7 +634,7 @@ export function CozyHomeView({
                         return (
                             <li key={team.id}>
                                 <button type="button" className="card card--inset card--interactive card--compact cozy-team pc-box-host" onClick={() => handleEditTeam(team)}>
-                                    <PcBox members={s.members} size="sm" className="cozy-team__roster" />
+                                    <PcBox members={s.members} size={isPhone ? 'sm' : 'md'} className={`cozy-team__roster ${isPhone ? '' : 'pc-box--fluid'}`} />
                                     <span className="cozy-team__text">
                                         <span className="cozy-team__name">{team.name}</span>
                                         <span className="cozy-team__sub">
@@ -688,9 +709,9 @@ export function CozyHomeView({
                         {list.map((m) => (
                             <li key={m.id}>
                                 <button type="button" className="card card--inset card--interactive card--compact cozy-post" onClick={() => navigate(teamsTopicId ? `/feed?topic=${encodeURIComponent(teamsTopicId)}` : '/feed')}>
-                                    <span className="cozy-post__avatar" aria-hidden="true">
+                                    <FramedAvatar uid={m.createdBy} stampedFrameId={m.creatorFrameId} className="cozy-post__avatar" aria-hidden="true">
                                         <Sprite src={dexSprite(m.creatorAvatar || 25, Boolean(m.creatorAvatarIsShiny))} className="cozy-post__sprite" />
-                                    </span>
+                                    </FramedAvatar>
                                     <span className="cozy-post__body">
                                         <span className="cozy-post__meta">
                                             <strong>@{m.creatorName || 'Trainer'}</strong> · {formatForumTime(m.createdAt, language)}
@@ -779,13 +800,17 @@ export function CozyHomeView({
     // A guest's invitation to an account, right under the hero on a phone and at
     // the top of the rail on desktop. Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
+    // The daily check-in and the Trainer Level (rewards, 2026-10-17): the
+    // day's first thing to do, so it sits above the day's cards on a phone and
+    // at the top of the rail on desktop. Reads recorded stores only.
+    const checkinCard = <CheckinCard variant="home" onOpenRewards={() => navigate('/journeys?tab=rewards')} />;
     // On a desktop the journey heads the rail, above the story of what just
     // happened (2026-10-17, Enzo). On a phone the full card comes right under
     // the hero — it is a new trainer's way in — and the small one waits under
     // the day's cards, after what an active trainer came for.
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'journey') main = journeyTab;
-    else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 8);
+    else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
     else main = communityPanel(5);
 
     return (
@@ -803,6 +828,7 @@ export function CozyHomeView({
                 {!isPhone && (
                     <aside className="cozy-rail">
                         {guestCard}
+                        {checkinCard}
                         {tab !== 'journey' && (journeyFocus || journeyCompact)}
                         {journeyPanel}
                         {tab !== 'community' && communityPanel(1)}

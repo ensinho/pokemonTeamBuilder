@@ -6,6 +6,9 @@ import { Download } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { TrainerTitle } from '../rewards/TrainerTitle';
+import { FramedAvatar } from '../rewards/FramedAvatar';
+import { useTrainerCosmetics } from '../../hooks/useTrainerCosmetics';
 
 /**
  * `friendAction` is injected rather than built here: this modal is rendered from
@@ -14,6 +17,8 @@ import { TrainerBadge } from '../TrainerBadge';
  */
 export function UserProfileModal({ isOpen, profile, onClose, messages = [], handleImportTeam, language = 'en', friendAction = null }) {
     const dialogRef = useModalA11y(isOpen ? onClose : null);
+    // The title and level they wear now (rewards), not only what a post stamped.
+    const cosmetics = useTrainerCosmetics(isOpen ? profile?.userId : null, { frameId: profile?.frameId, titleId: profile?.titleId });
 
     const userSharedTeams = useMemo(() => {
         if (!isOpen || !profile) return [];
@@ -61,7 +66,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                 {/* Profile Avatar Offset */}
                 <div className="px-6 pb-6 relative">
                     <div className="flex items-end justify-between -mt-10 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-surface-raised border-2 border-primary flex items-center justify-center overflow-hidden shadow-lg relative">
+                        <FramedAvatar as="div" uid={profile.userId} stampedFrameId={profile.frameId} className="w-20 h-20 rounded-full bg-surface-raised border-2 border-primary flex items-center justify-center overflow-hidden shadow-lg relative">
                             <AvatarSprite
                                 trainerSprite={trainerSprite}
                                 pokemonId={avatar}
@@ -70,7 +75,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                                 className="w-20 h-20 object-contain sprite-fade"
                                 fallback={<PokeballIcon className="w-10 h-10 text-muted opacity-30" />}
                             />
-                        </div>
+                        </FramedAvatar>
                         <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-primary-soft text-primary border border-primary-border">
                             {isMsgAdmin ? 'Liga de elite' : 'Treinador'}
                         </span>
@@ -82,6 +87,12 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                             <span>@{name}</span>
                             {profile.selectedBadgeId && <TrainerBadge badgeId={profile.selectedBadgeId} size="sm" />}
                         </h3>
+                        {(cosmetics.titleId || cosmetics.level) && (
+                            <p className="flex items-center gap-2">
+                                <TrainerTitle titleId={cosmetics.titleId} />
+                                {cosmetics.level && <span className="badge badge--primary">{language === 'pt' ? 'Nv' : 'Lv'} {cosmetics.level}</span>}
+                            </p>
+                        )}
                         <p className="text-xs text-muted">
                             {language === 'pt' ? 'Membro ativo da comunidade Gengar Team Builder.' : 'Active member of the Gengar Team Builder community.'}
                         </p>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FramedAvatar } from '../../rewards/FramedAvatar';
 
 import { useBattles } from '../../../hooks/useBattles';
 import { useFriends } from '../../../hooks/useFriends';
@@ -147,14 +148,14 @@ export function BattleListView() {
                                 className="battle-card__main"
                                 onClick={() => navigate(`/battles/${battle.id}`)}
                             >
-                                <span className="battle-card__avatar">
+                                <FramedAvatar uid={view.opponentId} className="battle-card__avatar">
                                     <AvatarSprite
                                         trainerSprite={view.opponentAvatar?.trainerSprite}
                                         pokemonId={view.opponentAvatar?.pokemonId}
                                         isShiny={view.opponentAvatar?.isShiny}
                                         fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
                                     />
-                                </span>
+                                </FramedAvatar>
                                 <span className="battle-card__identity">
                                     <span className="battle-card__name">
                                         {view.isPublicInvite

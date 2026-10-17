@@ -2,6 +2,7 @@ import React, { memo, useState, useMemo, useCallback } from 'react';
 import { CircleMinus, CirclePlus } from 'lucide-react';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
 import { buildCommentTree, displayAncestors } from '../../utils/forumTree';
@@ -78,9 +79,12 @@ const CommentNode = memo(function CommentNode({
 
     return (
         <div id={`forum-msg-${id}`} className={`cmt ${hasChildren ? 'has-children' : ''}`}>
-            <button
+            <FramedAvatar
+                as="button"
                 type="button"
                 className="cmt__avatar"
+                uid={comment.createdBy}
+                stampedFrameId={comment.creatorFrameId}
                 onClick={() => actions.openProfile(comment)}
                 aria-label={`@${comment.creatorName}`}
             >
@@ -90,7 +94,7 @@ const CommentNode = memo(function CommentNode({
                     isShiny={comment.creatorAvatarIsShiny}
                     fallback={<PokeballIcon className="w-4 h-4 text-muted" />}
                 />
-            </button>
+            </FramedAvatar>
             {byline}
 
             {hasChildren && (

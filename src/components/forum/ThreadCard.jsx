@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { FramedAvatar } from '../rewards/FramedAvatar';
 import { Pin } from 'lucide-react';
 import { PokeballIcon, MessageIcon, HeartIcon, ShareIcon, FlameIcon, ReplyIcon, SparklesIcon } from '../icons';
 import { formatForumTime, getCategoryMeta } from '../../utils/forumTime';
@@ -51,6 +52,8 @@ export const ThreadCard = memo(function ThreadCard({
         isShiny: topic.creatorAvatarIsShiny,
         trainerSprite: topic.creatorTrainerSprite,
         selectedBadgeId: topic.creatorBadgeId || null,
+        frameId: topic.creatorFrameId || null,
+        titleId: topic.creatorTitleId || null,
     });
 
     const handleRowClick = (e) => {
@@ -67,9 +70,12 @@ export const ThreadCard = memo(function ThreadCard({
             aria-labelledby={`post-title-${topic.id}`}
         >
             <div className="post-row__meta">
-                <button
+                <FramedAvatar
+                    as="button"
                     type="button"
                     className="post-row__avatar"
+                    uid={topic.createdBy}
+                    stampedFrameId={topic.creatorFrameId}
                     onClick={profile}
                     aria-label={`@${topic.creatorName}`}
                 >
@@ -79,7 +85,7 @@ export const ThreadCard = memo(function ThreadCard({
                         isShiny={topic.creatorAvatarIsShiny}
                         fallback={<PokeballIcon className="w-3.5 h-3.5 text-muted" />}
                     />
-                </button>
+                </FramedAvatar>
                 <button type="button" className="post-row__author" onClick={profile}>
                     @{topic.creatorName}
                 </button>

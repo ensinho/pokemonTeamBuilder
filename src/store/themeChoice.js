@@ -1,6 +1,7 @@
 import { useThemeStore } from './useThemeStore';
 import { useAuthStore } from './useAuthStore';
-import { pairedTheme } from '../constants/theme';
+import { isThemeUnlocked } from './useRewardsStore';
+import { pairedTheme, themeModeOf } from '../constants/theme';
 
 /**
  * The user picked a theme. Every control that offers one — the header's sun ⇄
@@ -12,16 +13,23 @@ import { pairedTheme } from '../constants/theme';
  * localStorage but never saved to the account, so the next sign-in hydrated the
  * *old* theme from Firestore over the user's choice.
  *
+ * A reward theme (constants/cosmetics.js) is refused until it is unlocked —
+ * the pickers already show it locked, this is the one gate behind them.
+ *
  * `origin` is where the new theme spreads from (see utils/themeTransition.js).
  */
 export function chooseTheme(themeId, origin) {
     const { theme, changeTheme } = useThemeStore.getState();
-    if (!themeId || themeId === theme) return;
+    if (!themeId || themeId === theme || !isThemeUnlocked(themeId)) return;
     changeTheme(themeId, origin);
     useAuthStore.getState().savePreferences({ theme: themeId });
 }
 
-/** Flip to the current theme's counterpart in the other mode (THEME_PAIRS). */
+/**
+ * Flip to the current theme's counterpart in the other mode (THEME_PAIRS). A
+ * counterpart still locked falls back to the default theme of that mode.
+ */
 export function toggleThemeMode(origin) {
-    chooseTheme(pairedTheme(useThemeStore.getState().theme), origin);
+    const target = pairedTheme(useThemeStore.getState().theme);
+    chooseTheme(isThemeUnlocked(target) ? target : (themeModeOf(target) === 'dark' ? 'dark' : 'light'), origin);
 }

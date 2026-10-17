@@ -6,6 +6,7 @@ import { ThreadDetailSkeleton } from './ForumSkeletons';
 import { ForumTeamCard } from './ForumTeamCard';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, HeartIcon, MessageIcon, ShareIcon, SparklesIcon } from '../icons';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
@@ -136,6 +137,8 @@ export function ThreadDetail({
         isShiny: topic.creatorAvatarIsShiny,
         trainerSprite: topic.creatorTrainerSprite,
         selectedBadgeId: topic.creatorBadgeId || null,
+        frameId: topic.creatorFrameId || null,
+        titleId: topic.creatorTitleId || null,
     });
 
     const bodyText = opMessage?.text || (!opMessage ? topic.bodyPreview || topic.lastMessageText : '');
@@ -164,14 +167,14 @@ export function ThreadDetail({
             <div ref={scrollContainerRef} className="thread-messages-scroll custom-scrollbar">
                 <article className="thread-post">
                     <div className="thread-post__meta">
-                        <button type="button" className="thread-post__avatar" onClick={openProfile} aria-label={`@${topic.creatorName}`}>
+                        <FramedAvatar as="button" type="button" className="thread-post__avatar" uid={topic.createdBy} stampedFrameId={topic.creatorFrameId} onClick={openProfile} aria-label={`@${topic.creatorName}`}>
                             <AvatarSprite
                                 trainerSprite={topic.creatorTrainerSprite}
                                 pokemonId={topic.creatorAvatar}
                                 isShiny={topic.creatorAvatarIsShiny}
                                 fallback={<PokeballIcon className="w-4 h-4 text-muted" />}
                             />
-                        </button>
+                        </FramedAvatar>
                         <button type="button" className="thread-post__author" onClick={openProfile}>
                             @{topic.creatorName}
                         </button>

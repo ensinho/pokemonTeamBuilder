@@ -47,6 +47,8 @@ const profileFromData = (data) => {
         isShiny: data.isShiny ?? data.creatorAvatarIsShiny,
         trainerSprite: data.trainerSprite || data.creatorTrainerSprite,
         selectedBadgeId: data.selectedBadgeId || data.creatorBadgeId || null,
+        frameId: data.frameId || data.creatorFrameId || null,
+        titleId: data.titleId || data.creatorTitleId || null,
     };
 };
 
