@@ -89,6 +89,8 @@ The Meta list offers that ranking as one more band after the rating cutoffs (`TO
 
 Champions has no EVs: 0–32 Stat Points per stat, 66 in all. Smogon's Champions usage spreads and Champions sets are written in SP. `src/utils/statPoints.js` converts (`n SP ↔ 8n − 4 EVs`, trimmed back into 510 because 66 SP buys one point more than EVs can), and the build scripts import it from there. Sets carry the converted `evs` (what "apply" uses) and the original `sp` (what the pages show, labelled SP). Champions formats have no Tera — don't borrow one from an older game's set.
 
+A **team member** can stay in SP: an imported Champions team sets `customization.evScale: 'sp'`, the editor caps it at 32/66, and the Showdown export writes the points as they are, because Showdown's Champions formats read the `EVs:` line as Stat Points (converted to EVs, 77 of the 120 tournament teams fail its validator). Only the in-app battles convert (`buildShowdownExportText(…, { evScale: 'ev' })`). Teams from someone else (tournament, forum) load through `importTeam` (`useActiveTeamStore`, `utils/teamImport.js`), never through the saved-team loader.
+
 ### Tier legality (`tier-legality.json`)
 
 Baked by the same script from Showdown's `formats-data.js` — one small file for the whole national dex. `{ byId: { "984": { tier, doubles?, natdex? } } }`, where `doubles`/`natdex` appear only when they differ from `tier`.
