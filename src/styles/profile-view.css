@@ -447,6 +447,18 @@
     box-shadow: var(--ring-primary);
 }
 
+/* A reward theme not earned yet (rewards, 2026-10-17): dashed, because
+   dashed means "locked" here, and no fill so it reads as not-yet-yours. */
+.profile-theme-card.is-locked {
+    border-style: dashed;
+    border-color: var(--color-border-strong);
+    background: transparent;
+}
+
+.profile-theme-card.is-locked .profile-theme-card__label { color: var(--color-muted); }
+
+.profile-hero__title { display: block; margin-top: var(--space-0_5); }
+
 .profile-theme-card__header {
     display: flex;
     align-items: center;

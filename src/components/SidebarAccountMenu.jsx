@@ -9,6 +9,10 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { TextSizeControl } from './TextSizeControl';
 import { Switch } from './Switch';
+import { TrainerTitle } from './rewards/TrainerTitle';
+import { useShallow } from 'zustand/react/shallow';
+import { useRewardsStore, isThemeUnlocked } from '../store/useRewardsStore';
+import { frameProps } from '../utils/rewards';
 
 export function SidebarAccountMenu({
     collapsed = false,
@@ -26,6 +30,12 @@ export function SidebarAccountMenu({
 }) {
     const { t, language, setLanguage } = useTranslation();
     const selectedBadgeId = useAuthStore((s) => s.selectedBadgeId);
+    // Rewards (2026-10-17): the frame around the avatar, the title under the
+    // name, the level, and only the themes this trainer has unlocked.
+    const { frameId, titleId, trainerLevel, unlockedRewards } = useRewardsStore(useShallow((s) => ({
+        frameId: s.equipped.frame, titleId: s.equipped.title, trainerLevel: s.level, unlockedRewards: s.unlocked,
+    })));
+    const avatarFrame = frameProps(frameId);
     const showTeraType = useThemeStore((s) => s.showTeraType);
     const setShowTeraType = useThemeStore((s) => s.setShowTeraType);
     const [isOpen, setIsOpen] = useState(false);
@@ -107,13 +117,13 @@ export function SidebarAccountMenu({
             key: 'dark',
             label: language === 'pt' ? 'Escuros' : 'Dark',
             icon: <MoonIcon />,
-            items: themes.filter((theme) => theme.mode === 'dark'),
+            items: themes.filter((theme) => theme.mode === 'dark' && isThemeUnlocked(theme.id, unlockedRewards)),
         },
         {
             key: 'light',
             label: language === 'pt' ? 'Claros' : 'Light',
             icon: <SunIcon />,
-            items: themes.filter((theme) => theme.mode !== 'dark'),
+            items: themes.filter((theme) => theme.mode !== 'dark' && isThemeUnlocked(theme.id, unlockedRewards)),
         },
     ];
 
@@ -160,7 +170,7 @@ export function SidebarAccountMenu({
                     className="app-shell__account-summary-block is-shortcut"
                     title={accountName}
                 >
-                    <span className="app-shell__account-avatar">{avatar}</span>
+                    <span className="app-shell__account-avatar" {...avatarFrame}>{avatar}</span>
                     <div className="app-shell__account-copy">
                         <p className="app-shell__account-name flex items-center gap-1.5" title={accountName}>
                             <span className="truncate">{accountName}</span>
@@ -185,12 +195,13 @@ export function SidebarAccountMenu({
                     className={`app-shell__account-summary-block ${isOpen ? 'is-open' : ''}`}
                     title={accountName}
                 >
-                    <span className="app-shell__account-avatar">{avatar}</span>
+                    <span className="app-shell__account-avatar" {...avatarFrame}>{avatar}</span>
                     <div className="app-shell__account-copy">
                         <p className="app-shell__account-name flex items-center gap-1.5" title={accountName}>
                             <span className="truncate">{accountName}</span>
                             {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
                         </p>
+                        <TrainerTitle titleId={titleId} className="app-shell__account-subline" />
                     </div>
                 </button>
 
@@ -252,13 +263,13 @@ export function SidebarAccountMenu({
                        thumb reaches for here: who am I, which theme, leave. */
                     <div className="account-quick">
                         <button type="button" onClick={handleOpenProfile} className="account-quick__identity">
-                            <span className="account-quick__avatar">{avatar}</span>
+                            <span className="account-quick__avatar" {...avatarFrame}>{avatar}</span>
                             <span className="account-quick__copy">
                                 <span className="account-quick__name">
                                     <span className="truncate">{accountName}</span>
                                     {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
                                 </span>
-                                <span className="account-quick__sub">{t('accountMenu.profileAndSettings')}</span>
+                                <span className="account-quick__sub">{t('rewards.levelShort', { n: trainerLevel })} · {t('accountMenu.profileAndSettings')}</span>
                             </span>
                             <ChevronRight className="account-quick__chevron" aria-hidden="true" />
                         </button>
@@ -297,7 +308,7 @@ export function SidebarAccountMenu({
                 ) : (
                 <div className="app-shell__account-popover-body">
                     <div className="app-shell__account-popover-head">
-                        <span className="app-shell__account-popover-avatar">{avatar}</span>
+                        <span className="app-shell__account-popover-avatar" {...avatarFrame}>{avatar}</span>
                         <div className="app-shell__account-popover-copy">
                             <p className="app-shell__account-popover-name flex items-center gap-1.5">
                                 <span className="truncate">{accountName}</span>

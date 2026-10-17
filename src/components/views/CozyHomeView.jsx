@@ -32,6 +32,7 @@ import {
     trainerIdFromUid,
 } from '../../utils/homeStatus';
 import { PartnerFlare } from '../PartnerFlare';
+import { CheckinCard } from '../rewards/CheckinCard';
 import { PcBox } from '../PcBox';
 import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
@@ -799,10 +800,14 @@ export function CozyHomeView({
     // the top of the rail on desktop. Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
     // On a desktop the journey heads the rail, above the story of what just
+    // The daily check-in and the Trainer Level (rewards, 2026-10-17): the
+    // day's first thing to do, so it sits above the day's cards on a phone and
+    // at the top of the rail on desktop. Reads recorded stores only.
+    const checkinCard = <CheckinCard variant="home" onOpenRewards={() => navigate('/journeys?tab=rewards')} />;
     // happened (2026-10-17, Enzo). On a phone the full card comes right under
     // the hero — it is a new trainer's way in — and the small one waits under
     // the day's cards, after what an active trainer came for.
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
     else main = communityPanel(5);
@@ -823,6 +828,7 @@ export function CozyHomeView({
                     <aside className="cozy-rail">
                         {guestCard}
                         {tab !== 'journey' && (journeyFocus || journeyCompact)}
+                        {checkinCard}
                         {journeyPanel}
                         {tab !== 'community' && communityPanel(1)}
                     </aside>

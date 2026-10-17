@@ -1307,6 +1307,7 @@
 }
 
 .app-shell__account-subline {
+    display: block;
     margin: var(--space-0_5) 0 0;
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
