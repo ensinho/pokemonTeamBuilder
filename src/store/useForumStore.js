@@ -247,7 +247,15 @@ export const useForumStore = create((set, get) => ({
                 creatorBadgeId: authState.selectedBadgeId || null,
                 lastActivityAt: new Date().toISOString(),
                 messageCount: 1,
-                lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : '')
+                lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : ''),
+                // The feed row shows the *post*, Reddit style, not the latest
+                // reply: the opening text and the team ride on the topic doc so
+                // the list needs no per-topic message read. (Topics made before
+                // 2026-10-17 have neither; the row falls back to lastMessageText.)
+                bodyPreview: (firstMessageText || '').trim().substring(0, 280),
+                sharedTeam: serializedAttachedTeam,
+                likedBy: [],
+                likeCount: 0,
             };
 
             await setDoc(newTopicRef, topicData);
@@ -417,6 +425,48 @@ export const useForumStore = create((set, get) => ({
             });
         } catch (err) {
             console.error("Error toggling message like:", err);
+            toast.error(t('toast.likeError'));
+        }
+    },
+
+    // The post's own vote (Reddit's arrow, our heart), on the topic doc so the
+    // feed can rank and show it without opening the thread. Firestore applies
+    // the write to the local snapshot at once, so the heart answers on the tap;
+    // a rejected write rolls the snapshot back by itself and the toast says so.
+    // `opMessage`: posts from before 2026-10-17 kept their likes on the opening
+    // message — un-liking clears the user's like there too, so the merged count
+    // the thread shows can always go down.
+    toggleTopicLike: async (topicId, { opMessage = null } = {}) => {
+        if (!db || !topicId) return;
+        const uid = useAuthStore.getState().userId;
+        if (!uid) {
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForLikes'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
+            return;
+        }
+        const topic = get().topics.find((tp) => tp.id === topicId);
+        const inTopic = Array.isArray(topic?.likedBy) && topic.likedBy.includes(uid);
+        const inOp = Array.isArray(opMessage?.likedBy) && opMessage.likedBy.includes(uid);
+        const liked = inTopic || inOp;
+        try {
+            const writes = [];
+            if (!liked || inTopic) {
+                writes.push(updateDoc(doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId), {
+                    likedBy: liked ? arrayRemove(uid) : arrayUnion(uid),
+                    likeCount: increment(liked ? -1 : 1),
+                }));
+            }
+            if (liked && inOp) {
+                writes.push(updateDoc(doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, opMessage.id), {
+                    likedBy: arrayRemove(uid),
+                    likeCount: increment(-1),
+                }));
+            }
+            await Promise.all(writes);
+        } catch (err) {
+            console.error('Error toggling topic like:', err);
             toast.error(t('toast.likeError'));
         }
     },
