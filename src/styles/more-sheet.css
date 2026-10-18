@@ -18,6 +18,7 @@
 }
 
 .more-sheet__nav {
+    container: more-sheet / inline-size;
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
@@ -38,16 +39,33 @@
     color: var(--color-muted);
 }
 
-/* Min width in rem, not a fixed column count: four tiles across at the default
-   interface scale, three once the user steps the text up — the label keeps its
-   room instead of being clipped. */
+/* Four columns on every phone, so every section's tiles stand in the same
+   columns as the one above it — the sections are built to fill their rows
+   (AppLayout `moreSheetSections`). An auto-fill minimum gave five columns on a
+   430px phone and broke that. The fallback is measured in rem against the
+   sheet's own width: once the user steps the interface scale up, four tiles no
+   longer fit their labels and the grid drops to three instead of clipping. */
 .more-sheet__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-3) var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+@container more-sheet (width < 19rem) {
+    .more-sheet__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* The pinned shortcuts: one row of equal cards, however many there are. */
+.more-sheet__grid.more-sheet__grid--featured {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--space-2);
 }
 
 /* A tile is a nav item: it never sinks and never takes a fill of its own. The
@@ -102,6 +120,48 @@
 /* Where you are. The page's one accent in the sheet. */
 .more-tile.is-active .more-tile__icon {
     background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+/* A shortcut card: the whole card is the object, filled like the account row
+   above it, so the icon drops its own box. A card presses with a fill and
+   never sinks (design system: cards, rows and nav items). */
+.more-tile.more-tile--featured {
+    min-height: 4.5rem;
+    justify-content: center;
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-press) var(--ease-out),
+                color var(--duration-press) var(--ease-out);
+}
+
+.more-tile--featured .more-tile__icon,
+.more-tile--featured:hover .more-tile__icon,
+.more-tile--featured:active .more-tile__icon,
+.more-tile--featured.is-active .more-tile__icon {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    scale: none;
+}
+
+.more-tile.more-tile--featured:hover {
+    background: var(--color-surface-hover);
+}
+
+.more-tile.more-tile--featured:active {
+    background: var(--color-surface-active);
+}
+
+.more-tile.more-tile--featured.is-active {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.more-tile--featured.is-active .more-tile__label {
     color: var(--color-primary);
 }
 

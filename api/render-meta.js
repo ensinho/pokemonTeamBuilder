@@ -98,6 +98,7 @@ export default async function handler(req, res) {
     else if (urlPath === '/challenge') {
         title = "Champion Challenge | Pokémon Team Builder";
         description = "Walk up to Cynthia and battle her every day: a new Champion team at midnight, a Team of the day to borrow, and a win streak to keep. A DS-style battle in your browser.";
+        imageUrl = "https://pokemonbuilder.app/challenge-og.png";
     }
     else if (urlPath.startsWith('/pokemon/')) {
         const param = urlPath.split('/')[2];

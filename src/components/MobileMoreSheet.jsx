@@ -19,9 +19,13 @@ import '../styles/more-sheet.css';
  *   BottomSheet — so it drags to dismiss, leaves on the exit animation and
  *   handles Escape and focus exactly like every other sheet in the app.
  * - Destinations are tiles in a grid, not rows: fifteen of them fit in about
- *   half the screen instead of running past the fold. The minimum tile width is
- *   in rem, so a larger interface scale drops to fewer columns instead of
- *   clipping labels.
+ *   half the screen instead of running past the fold. Four columns on every
+ *   phone, so the sections line up under each other; a larger interface scale
+ *   drops to three instead of clipping labels (a container query in rem).
+ * - A `featured` section (the untitled pinned one) is a single row of equal
+ *   shortcut cards instead of tiles — however many it holds, it fills the row.
+ * - A tile shows `shortLabel` when the item has one: one line in a quarter of
+ *   the sheet. The full name stays its accessible name.
  * - The caller leaves out what the tab bar already shows. The same destination
  *   twice on one screen reads as a bug.
  *
@@ -45,15 +49,17 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                             {section.title && (
                                 <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
                             )}
-                            <ul className="more-sheet__grid">
+                            <ul className={`more-sheet__grid ${section.featured ? 'more-sheet__grid--featured' : ''}`}>
                                 {section.items.map((item) => {
                                     const active = currentPage === item.key;
+                                    const shortened = item.shortLabel && item.shortLabel !== item.label;
                                     return (
                                         <li key={item.key}>
                                             <button
                                                 type="button"
-                                                className={`more-tile ${active ? 'is-active' : ''}`}
+                                                className={`more-tile ${section.featured ? 'more-tile--featured' : ''} ${active ? 'is-active' : ''}`}
                                                 aria-current={active ? 'page' : undefined}
+                                                aria-label={shortened ? item.label : undefined}
                                                 onPointerDown={() => onIntent?.(item.key)}
                                                 onClick={() => onNavigate(item.path)}
                                             >
@@ -63,7 +69,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                                         <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
                                                     )}
                                                 </span>
-                                                <span className="more-tile__label">{item.label}</span>
+                                                <span className="more-tile__label">{shortened ? item.shortLabel : item.label}</span>
                                             </button>
                                         </li>
                                     );

@@ -112,7 +112,7 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 - **Home card** (`useChallengeSummary`, `CozyHomeView`): reads the public day, the run and the stats (≤ 3 `getDoc`) plus a `ptb:challenge:summary` cache; states guest / new / ready / active / won / lost (`challengeSummaryState`, tested), always with the countdown. ~1.3 KB gzip on the entry bundle; imports nothing from the route.
 - **`src/utils/challengeDay.js`** mirrors `api/_lib/challenge/day.js` (tested over 800 instants). A run that doesn't exist is a *denied* read, not an empty one (its rule checks `resource.data.uid`) — the card treats both as "not played".
 - **Account deletion** erases runs, their rounds and secret state, then the runs and the stats (two waves: a round's rule reads its run). `aiTraining` rows have no uid and stay.
-- **Search** ("cynthia" finds it via `nav.challengeSearch`), the Mais sheet, `render-meta` OG tags, the page guide, patch notes 1.16.0.
+- **Search** ("cynthia" finds it via `nav.challengeSearch`), the Mais sheet, `render-meta` OG tags with its own card (`public/challenge-og.png`, 2026-10-18: Cynthia, Garchomp and her Platinum six, in the PokéPuzzle card's layout), the page guide, patch notes 1.16.0.
 - **Calls on mount wait for Firebase's session** (`callAuthedApi` → `auth.authStateReady()`): the app paints from a saved identity before the session is restored (wound 2026-10-15).
 
 ## Invariants (each has a test — don't break them)

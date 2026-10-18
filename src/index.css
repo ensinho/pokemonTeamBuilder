@@ -1671,17 +1671,46 @@ h1, h2 {
    a framed container becomes a circle even where the plain one is a rounded
    square (the account menu, the Profile avatar), or the rings drew a square
    (Enzo, 2026-10-17). Doubled attribute: it has to beat a container's own
-   single-class shadow and radius. */
-[data-frame][data-frame] {
-    border-radius: var(--radius-full);
-    box-shadow: 0 0 0 0.125rem var(--frame-a), 0 0 0 0.25rem var(--frame-b);
+   single-class shadow and radius.
+
+   2026-10-18 (Enzo: "genéricas, básicas") — the rings are metal now, still
+   pure box-shadow, still 1px steps. Inside out: a dark seam that seats the
+   avatar in the frame, the inner ring, a seam, the outer ring, and a soft
+   pool of the frame's colour under it. Each ring has a lit top: a copy of it
+   one px up and mixed toward white, painted over the ring, so the light is
+   full at 12 o'clock and gone by 6 — a bevel with no gradient. Same-colour
+   frames (grass, fire, water, dragon) read as two rings instead of one thick
+   band. A frame is theme-independent material, like the canon colours it is
+   made of — hence the two literal ends of the light below, and nothing else. */
+[data-frame] {
+    --frame-white: #fff;
+    --frame-black: #000;
+    --frame-a-lit: color-mix(in srgb, var(--frame-a) 64%, var(--frame-white));
+    --frame-b-lit: color-mix(in srgb, var(--frame-b) 64%, var(--frame-white));
+    --frame-a-seam: color-mix(in srgb, var(--frame-a) 50%, var(--frame-black));
+    --frame-b-seam: color-mix(in srgb, var(--frame-b) 62%, var(--frame-black));
+    --frame-rings:
+        0 0 0 0.0625rem var(--frame-a-seam),
+        0 -0.0625rem 0 0.125rem var(--frame-a-lit),
+        0 0 0 0.1875rem var(--frame-a),
+        0 0 0 0.25rem var(--frame-b-seam),
+        0 -0.0625rem 0 0.25rem var(--frame-b-lit),
+        0 0 0 0.3125rem var(--frame-b);
 }
 
+[data-frame][data-frame] {
+    border-radius: var(--radius-full);
+    box-shadow:
+        var(--frame-rings),
+        0 0.125rem 0.5rem 0.0625rem color-mix(in srgb, var(--frame-a) 28%, transparent);
+}
+
+/* Premium: a hairline of light just outside the rings and a wider glow. */
 [data-frame][data-frame-premium] {
     box-shadow:
-        0 0 0 0.125rem var(--frame-a),
-        0 0 0 0.25rem var(--frame-b),
-        0 0 0 0.4375rem color-mix(in srgb, var(--frame-a) 30%, transparent);
+        var(--frame-rings),
+        0 0 0 0.375rem color-mix(in srgb, var(--frame-a) 50%, transparent),
+        0 0 0.875rem 0.25rem color-mix(in srgb, var(--frame-a) 45%, transparent);
 }
 
 .trainer-title {
