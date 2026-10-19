@@ -49,11 +49,12 @@ no item ever gates a feature.
   the shiny burst and the result line.
 - **The equip chosen last wins** (`equippedAt`). "The account copy wins" lost an
   equip made a moment before leaving the page (found in the browser pass).
-- **A frame is a round box-shadow** — two rings, 0.125rem each, outside the
-  container, which `[data-frame]` makes a circle (a rounded-square container
+- **A frame is a round box-shadow** — two rings outside the container, each
+  with a dark seam inside it and a lit top (a copy one px up, mixed toward
+  white: a bevel with no gradient), 0.3125rem in all (2026-10-18), which `[data-frame]` makes a circle (a rounded-square container
   drew a square ring). Rings sit outside the box, so a container flush with an
   `overflow: hidden` edge cuts them: give that scroller room (the forum thread
-  reaches `--space-2` left and pads it back). Premium frames add a faint third halo.
+  reaches `--space-2` left and pads it back). Premium frames add a hairline halo and a wider glow of their inner colour.
 - **New catalogue frame/title → `firestore.rules`.** `publicProfiles` accepts
   only catalogue ids (`rewards.test.js` fails when they drift). Until the rules
   are deployed, `syncPublicProfile` retries without the reward fields on

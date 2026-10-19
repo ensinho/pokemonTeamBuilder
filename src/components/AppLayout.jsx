@@ -918,7 +918,7 @@ export default function AppLayout() {
                 title: t('nav.guessing'),
                 items: [
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
-                    { key: 'challenge', label: t('nav.challenge'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
+                    { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
                 ]
             },
@@ -959,19 +959,36 @@ export default function AppLayout() {
         { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
     ]), [t]);
 
-    // What the Mais sheet lists: the pinned destinations the bar has no room for
-    // (My teams), untitled at the top, then the rail's sections minus the tab
-    // bar's four — so every destination is in exactly one place on a phone.
+    // What the Mais sheet lists — every destination the tab bar has no room for,
+    // in exactly one place, laid out so each block fills its rows (2026-10-18,
+    // Enzo: "mais fácil, intuitivo e simétrico"; the sheet used to run 3 · 4 ·
+    // 4 · 2 · 2 · 1 tiles, three half-empty rows under three headings):
+    // - the pinned destinations the bar leaves out (Journeys, Forum, My teams),
+    //   untitled, as one row of equal shortcut cards;
+    // - Play: the rail's Games and Community joined — the daily Champion, the
+    //   Quiz, your battles and the friends you battle — four tiles, first,
+    //   because it is what changes from one day to the next;
+    // - Competitive and PokéData as the rail has them, four tiles each.
+    // Admin is a tool, not a destination people browse to: it leaves the grid
+    // for a row under it (`moreSheetToolItems`). Sections are derived from the
+    // rail's groups, never re-listed, so a link added there shows up here too.
     const moreSheetSections = useMemo(() => {
         const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
-        const pinnedExtras = primaryNavItems.filter((item) => !inTabBar.has(item.key));
-        const sections = navigationGroups
-            .map((group) => ({ ...group, items: group.items.filter((item) => !inTabBar.has(item.key)) }))
-            .filter((group) => group.items.length > 0);
-        return pinnedExtras.length > 0
-            ? [{ key: 'pinned', title: null, items: pinnedExtras }, ...sections]
-            : sections;
-    }, [mobileTabs, primaryNavItems, navigationGroups]);
+        const visible = (items) => items.filter((item) => !inTabBar.has(item.key));
+        const itemsOf = (...keys) => visible(navigationGroups.filter((group) => keys.includes(group.key)).flatMap((group) => group.items));
+        const titleOf = (key) => navigationGroups.find((group) => group.key === key)?.title;
+        return [
+            { key: 'pinned', title: null, featured: true, items: visible(primaryNavItems) },
+            { key: 'play', title: t('nav.play'), items: itemsOf('guessing', 'dashboard') },
+            { key: 'teamBuilding', title: titleOf('teamBuilding'), items: itemsOf('teamBuilding') },
+            { key: 'database', title: titleOf('database'), items: itemsOf('database') },
+        ].filter((section) => section.items.length > 0);
+    }, [mobileTabs, primaryNavItems, navigationGroups, t]);
+
+    const moreSheetToolItems = useMemo(
+        () => navigationGroups.find((group) => group.key === 'management')?.items ?? [],
+        [navigationGroups],
+    );
 
     // Every destination the rail knows, once each — what the global search
     // offers as "Pages" and, with an empty query, as its jump-to list.
@@ -1962,7 +1979,7 @@ export default function AppLayout() {
                             // no tab lit on /gyms, the bar said nothing about location.
                             // Only for pages the sheet actually lists — it used to light up
                             // on /404 and on a signed-in /profile, which it does not contain.
-                            const moreKeys = new Set(moreSheetSections.flatMap((section) => section.items.map((item) => item.key)));
+                            const moreKeys = new Set([...moreSheetSections.flatMap((section) => section.items), ...moreSheetToolItems].map((item) => item.key));
                             if (isAnonymous) moreKeys.add('profile');
                             const moreActive = !mobileTabs.some((tab) => tabActive(tab.key)) && moreKeys.has(currentPage);
                             return [
@@ -2038,6 +2055,23 @@ export default function AppLayout() {
                             </ul>
                         }
                     >
+                        {moreSheetToolItems.length > 0 && (
+                            <ul className="more-sheet__list">
+                                {moreSheetToolItems.map((item) => (
+                                    <li key={item.key}>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsSidebarOpen(false); navigate(item.path); }}
+                                            className={`app-shell__nav-link ${currentPage === item.key ? 'is-active' : ''}`}
+                                            aria-current={currentPage === item.key ? 'page' : undefined}
+                                        >
+                                            <span className="app-shell__nav-icon" aria-hidden="true">{item.icon}</span>
+                                            <span className="app-shell__nav-text">{item.label}</span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                         {(isInstallable || isIOS) && (
                             <button
                                 type="button"

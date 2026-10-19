@@ -38,6 +38,7 @@ export default defineConfig({
           '**/LogoCuteGengarRounded.png',
           '**/og-image.png',
           '**/pokepuzzle-og.png',
+          '**/challenge-og.png',
           '**/android-chrome-512x512.png',
           '**/logoLogin*.png',
         ],

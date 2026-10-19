@@ -223,6 +223,9 @@ export const TRANSLATIONS = {
             battles: 'Battles',
             challenge: 'Champion Challenge',
             challengeSearch: 'Champion Challenge — battle Cynthia',
+            // The Mais sheet's tile: one line in a four-column grid.
+            challengeShort: 'Challenge',
+            play: 'Play',
             pokepuzzle: 'PokéPuzzle',
             database: 'PokéData',
             pokemonList: 'Pokédex',
@@ -2613,6 +2616,9 @@ export const TRANSLATIONS = {
             battles: 'Batalhas',
             challenge: 'Desafio da Campeã',
             challengeSearch: 'Desafio da Campeã — batalhe com a Cynthia',
+            // O tile da folha Mais: uma linha numa grade de quatro colunas.
+            challengeShort: 'Desafio',
+            play: 'Jogar',
             pokepuzzle: 'PokéPuzzle',
             database: 'PokéData',
             pokemonList: 'Pokédex',
