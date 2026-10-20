@@ -169,6 +169,21 @@ export const readBattleField = (lines = []) => {
                 applyCondition(ident.side, rest[2]);
                 break;
             }
+            case 'detailschange': {
+                // A Mega Evolution (or another permanent forme change): the
+                // sprite follows the new species; HP and status stay.
+                const ident = parseIdent(rest[0]);
+                const active = ident && state.sides[ident.side].active;
+                if (active) Object.assign(active, parseDetails(rest[1]));
+                break;
+            }
+            case '-formechange': {
+                // A forme for the rest of the switch-in (Mimikyu-Busted, Aegislash-Blade).
+                const ident = parseIdent(rest[0]);
+                const active = ident && state.sides[ident.side].active;
+                if (active && rest[1]) active.species = rest[1];
+                break;
+            }
             case '-item':
             case '-enditem': {
                 const ident = parseIdent(rest[0]);

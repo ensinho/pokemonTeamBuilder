@@ -260,6 +260,9 @@
     --ds-room-floor-1: #3c3c4a;
     --ds-room-floor-2: #33333f;
     --ds-ring: #44d6bc;
+    --ds-flare-mega: #b86cff;
+    /* The anime flare's white core (DsFlare). */
+    --flare-core: var(--ds-paper);
     --ds-ring-band: #2db6a0;
     --ds-ring-disc: #2a2a34;
     --ds-ring-button: #d6d488;
@@ -840,6 +843,7 @@
 .ds-hpbox__status.is-psn,
 .ds-hpbox__status.is-tox { background: var(--ds-status-psn); }
 .ds-hpbox__status.is-frz { background: var(--ds-status-frz); }
+.ds-hpbox__status.is-mega { background: var(--ds-flare-mega); }
 
 /* Poké Ball rows — on their own only before the send-outs, mirrored like the boxes. */
 .ds-balls {
@@ -906,6 +910,18 @@
     animation: ds-orb 300ms ease-in forwards;
 }
 
+/* The anime flare (DsFlare): centred on its spot (--x, --y), --s DS px across. */
+.ds-flare {
+    position: absolute;
+    z-index: 35;
+    left: calc((var(--x) - var(--s) / 2) * var(--px));
+    top: calc((var(--y) - var(--s) / 2) * var(--px));
+    width: calc(var(--s) * var(--px));
+    height: calc(var(--s) * var(--px));
+    overflow: visible;
+    pointer-events: none;
+}
+
 .ds-flash {
     position: absolute;
     inset: 0;
@@ -954,6 +970,7 @@
 .bw-ficha__tab,
 .ds-picker__mon,
 .bw-cancel,
+.bw-mega,
 .bw-hud__back {
     border: none;
     font: inherit;
@@ -970,6 +987,7 @@
 .bw-ficha__tab:active,
 .ds-picker__mon:active,
 .bw-cancel:active,
+.bw-mega:active,
 .bw-hud__back:active {
     transform: translateY(calc(1 * var(--px)));
 }
@@ -1123,8 +1141,9 @@
     min-height: 0;
 }
 
-/* BW's Cancel: a wide dark capsule. */
+/* BW's Cancel: a wide dark capsule. MEGA beside it, lit while on. */
 .bw-cancel,
+.bw-mega,
 .bw-hud__back {
     flex: none;
     height: calc(22 * var(--px));
@@ -1136,6 +1155,19 @@
     letter-spacing: calc(0.5 * var(--px));
     text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
+
+.bw-mega { padding: 0 calc(10 * var(--px)); }
+.bw-mega[aria-pressed='true'] {
+    background: var(--ds-flare-mega);
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-white);
+}
+
+.bw-moves__foot {
+    display: flex;
+    gap: calc(6 * var(--px));
+}
+
+.bw-moves__foot .bw-cancel { flex: 1; }
 
 /* Party and her team: a card each, BW's blue battle-menu cards. */
 .bw-sheet {
@@ -1628,14 +1660,17 @@
     font-size: calc(7 * var(--px));
 }
 
-/* What the focused move does: the HUD's left box while choosing. */
+/* What the focused move does: the HUD's left box while choosing. The name
+   shares its row with MEGA and the back arrow; the figures get the full width
+   below (a back capsule in the corner used to cover the PP). */
 .bw-hud__info {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: calc(2 * var(--px));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-content: center;
+    align-items: center;
+    gap: calc(2 * var(--px)) calc(3 * var(--px));
     padding: calc(3 * var(--px)) calc(8 * var(--px));
     border-radius: calc(5 * var(--px));
     background: var(--bw-white);
@@ -1644,10 +1679,14 @@
 }
 
 .bw-hud__info-name {
+    overflow: hidden;
     font-size: calc(10 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .bw-hud__info-line {
+    grid-area: 2 / 1 / 3 / -1;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1655,14 +1694,31 @@
     font-size: calc(7 * var(--px));
 }
 
-.bw-hud__back {
-    position: absolute;
-    right: calc(5 * var(--px));
-    bottom: calc(4 * var(--px));
+.bw-hud__back,
+.bw-hud__info .bw-mega {
+    grid-row: 1;
     height: calc(14 * var(--px));
-    padding: 0 calc(8 * var(--px));
+    padding: 0 calc(6 * var(--px));
     border-radius: calc(7 * var(--px));
     font-size: calc(7 * var(--px));
+}
+
+.bw-hud__info-name { grid-area: 1 / 1; }
+/* Beside MEGA the name steps down a size before it has to be cut. */
+.bw-hud__info:has(.bw-mega) .bw-hud__info-name { font-size: calc(9 * var(--px)); }
+.bw-hud__info .bw-mega { grid-column: 2; }
+
+.bw-hud__back {
+    grid-column: 3;
+    display: grid;
+    place-items: center;
+    width: calc(14 * var(--px));
+    padding: 0;
+}
+
+.bw-hud__back svg {
+    width: calc(10 * var(--px));
+    height: calc(10 * var(--px));
 }
 
 /* Party and her team, opened over the field on a desktop. */

@@ -2,8 +2,10 @@
  * The legal choices, read only from the sim's own request (invariant I6). The
  * AI never invents a choice, so it can never send one the sim refuses.
  *
- * Never offers Terastallization, Mega Evolution or Dynamax: the format's
- * Terastal Clause refuses the first, and Gen 9 has neither of the others.
+ * Never offers Terastallization or Dynamax: the format's Terastal Clause
+ * refuses the first, and Gen 9 has no Dynamax. A Pokémon the sim says can Mega
+ * Evolve (`canMegaEvo`, its Mega Stone held) always does, with whatever move it
+ * makes — the same rule the player's MEGA switch defaults to.
  */
 
 export const speciesFromDetails = (details) => String(details || '').split(',')[0].trim();
@@ -38,11 +40,12 @@ export const legalOptions = (request) => {
     }
 
     const active = request.active?.[0];
+    const mega = active?.canMegaEvo ? ' mega' : '';
     const moves = (active?.moves || [])
         .map((move, index) => ({ move, index }))
         // Struggle and Recharge come without PP; anything with PP needs some left.
         .filter(({ move }) => !move.disabled && (move.pp === undefined || move.pp > 0))
-        .map(({ move, index }) => ({ choice: `move ${index + 1}`, kind: 'move', moveId: move.id, slot: index }));
+        .map(({ move, index }) => ({ choice: `move ${index + 1}${mega}`, kind: 'move', moveId: move.id, slot: index }));
 
     // `maybeTrapped` means the sim can't say yet; a refused switch would be an
     // illegal choice, so it counts as trapped.

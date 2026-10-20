@@ -400,6 +400,32 @@ describe('POST /api/battle-turn — begin', () => {
         expect(again.statusCode).toBe(200);
         expect(state.store.get(BATTLE).logSeq).toBe(1);
     });
+
+    it('lets a Pokémon holding its Mega Stone Mega Evolve, in the battle format', async () => {
+        state.store.set(`${BATTLE}/teams/${P1}`, {
+            showdownText: team([['Charizard', 'Charizardite X', 'Blaze', ['Flare Blitz', 'Dragon Claw']]]),
+        });
+        await postAction(P2, 'begin');
+        expect(requestFor(P1).active[0].canMegaEvo).toBe(true);
+
+        await post(P1, 'move 1 mega');
+        await post(P2, chooseFor(P2));
+
+        const log = logFor(P1);
+        expect(log.some((l) => l.startsWith('|detailschange|p1a: Charizard|Charizard-Mega-X'))).toBe(true);
+        expect(log.some((l) => l.startsWith('|-mega|p1a: Charizard|Charizard|Charizardite X'))).toBe(true);
+        // Once per battle: the next request no longer offers it.
+        expect(requestFor(P1).active?.[0]?.canMegaEvo).toBeFalsy();
+    });
+
+    it('starts a Mega saved as its Mega forme as its base, so it still Mega Evolves', async () => {
+        state.store.set(`${BATTLE}/teams/${P1}`, {
+            showdownText: team([['Charizard-Mega-X', 'Charizardite X', 'Blaze', ['Flare Blitz', 'Dragon Claw']]]),
+        });
+        await postAction(P2, 'begin');
+        expect(logFor(P1).find((l) => l.startsWith('|switch|p1a:'))).toMatch(/\|Charizard, L50/);
+        expect(requestFor(P1).active[0].canMegaEvo).toBe(true);
+    });
 });
 
 describe('POST /api/battle-turn — forfeit', () => {

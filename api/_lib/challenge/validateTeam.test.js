@@ -35,6 +35,13 @@ describe('validateTeam', () => {
         expect(result.errors.filter((e) => e.code === 'bannedMove').map((e) => e.detail)).toEqual(['Fissure', 'Double Team']);
     });
 
+    it('starts a Mega saved as its Mega forme as its base, so it Mega Evolves in battle', () => {
+        const result = validateTeam('Charizard-Mega-X @ Charizardite X\nAbility: Blaze\n- Flare Blitz\n\nDarmanitan-Zen\nAbility: Zen Mode\n- Flamethrower');
+        expect(result.ok).toBe(true);
+        expect(result.members.map((m) => m.species)).toEqual(['Charizard', 'Darmanitan']);
+        expect(Teams.import(result.text)[0]).toMatchObject({ species: 'Charizard', item: 'Charizardite X' });
+    });
+
     it('allows legendaries (tier is only a label)', () => {
         expect(validateTeam('Mewtwo\n- Psystrike\n\nKoraidon\n- Collision Course').ok).toBe(true);
     });

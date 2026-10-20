@@ -47,6 +47,13 @@ const tagValue = (parts, tag) => {
 export const toTimeline = (lines = [], { from = 0 } = {}) => {
     const events = [];
     const names = { p1: new Map(), p2: new Map() };
+    // The forme a side's active just changed into (`detailschange` comes right
+    // before `-mega`): what the Mega Evolution line names.
+    const formes = { p1: null, p2: null };
+    // The move the next direct `-damage` (no `[from]`) belongs to, and whether
+    // it landed hard (a critical hit, super effective): the scene's flare
+    // takes its colour and size from it.
+    let striking = null;
     const actor = (subject) => (subject ? { side: subject.side, species: names[subject.side].get(subject.nickname) || subject.nickname } : null);
 
     lines.forEach((line, index) => {
@@ -70,6 +77,7 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
                 const who = actor(parseSubject(parts[2]));
                 if (!who) break;
                 const target = parseSubject(parts[4]);
+                striking = { move: parts[3], hard: false };
                 emit({
                     type: 'move',
                     ...who,
@@ -87,7 +95,21 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
             case '-sethp': {
                 const who = actor(parseSubject(parts[2]));
                 if (!who) break;
-                emit({ type: 'hp', ...who, hpPct: hpPctOf(parts[3]), heal: tag === '-heal', from: tagValue(parts, 'from') });
+                const from = tagValue(parts, 'from');
+                const strike = tag === '-damage' && !from && striking ? { ...striking } : null;
+                emit({ type: 'hp', ...who, hpPct: hpPctOf(parts[3]), heal: tag === '-heal', from, strike });
+                break;
+            }
+            case 'detailschange':
+            case '-formechange': {
+                const subject = parseSubject(parts[2]);
+                if (subject) formes[subject.side] = speciesOf(parts[3]);
+                break;
+            }
+            case '-mega': {
+                // `|-mega|p1a: Charizard|Charizard|Charizardite X`
+                const who = actor(parseSubject(parts[2]));
+                if (who) emit({ type: 'mega', ...who, mega: formes[who.side] || who.species, item: parts[4] || null });
                 break;
             }
             case '-supereffective':
@@ -97,6 +119,7 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
             case '-miss':
             case '-fail': {
                 const who = actor(parseSubject(parts[2]));
+                if ((tag === '-crit' || tag === '-supereffective') && striking) striking.hard = true;
                 emit({ type: 'effect', kind: tag.slice(1), ...(who || { side: null, species: null }) });
                 break;
             }
@@ -143,7 +166,11 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
                 if (who && !parts.includes('[silent]')) emit({ type: 'item', ...who, item: parts[3], consumed: parts.includes('[eat]') });
                 break;
             }
+            case 'upkeep':
+                striking = null;
+                break;
             case 'turn':
+                striking = null;
                 emit({ type: 'turn', turn: Number(parts[2]) || 0 });
                 break;
             case 'win':
@@ -192,6 +219,7 @@ const BASE_MS = {
     ability: 750,
     item: 700,
     dialogue: 1900,
+    mega: 2200,
     end: 1400,
     turn: 0,
 };

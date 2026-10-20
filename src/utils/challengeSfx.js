@@ -138,6 +138,11 @@ const RECIPES = {
         tone(t, { type: 'square', freq: 110, to: 48, dur: 0.38, gain: 0.3 });
         notes(t + 0.04, [523, 784, 1047], { dur: 0.05, gain: 0.14, last: 0.2 });
     },
+    // A Mega Evolution: a fast rising arpeggio, then a long bright shimmer.
+    mega: (t) => {
+        notes(t, [392, 523, 659, 784, 1047, 1319], { dur: 0.07, type: 'triangle', gain: 0.18, last: 0.45 });
+        noise(t + 0.32, { dur: 0.7, gain: 0.12, from: 9000, to: 2500 });
+    },
     // The band sweeping in.
     whoosh: (t) => noise(t, { dur: 0.28, gain: 0.14, from: 400, to: 5000 }),
     // An original eight-note figure, rising and resolving; never a game's jingle.
@@ -175,6 +180,7 @@ export const soundFor = (event, { championName = 'Cynthia' } = {}) => {
             if (event.kind === 'resisted') return 'hitWeak';
             return null;
         case 'faint': return 'faint';
+        case 'mega': return 'mega';
         case 'stat': return event.amount > 0 ? 'statUp' : 'statDown';
         case 'end': return event.winner && event.winner !== championName ? 'victory' : 'defeat';
         default: return null;

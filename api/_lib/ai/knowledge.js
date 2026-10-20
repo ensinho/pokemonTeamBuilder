@@ -174,6 +174,12 @@ export const knowledgeFrom = (lines = []) => {
                 if (mon) { mon.item = toID(parts[2]); mon.itemKnown = true; }
                 break;
             }
+            case '-mega': {
+                // `|-mega|p1a: Charizard|Charizard|Charizardite X` — the stone is out.
+                const mon = monOf(parseSubject(parts[1]));
+                if (mon && parts[3]) { mon.item = toID(parts[3]); mon.itemKnown = true; }
+                break;
+            }
             case '-enditem': {
                 const subject = parseSubject(parts[1]);
                 const mon = monOf(subject);

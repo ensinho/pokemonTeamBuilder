@@ -36,6 +36,8 @@
     --vs-shadow: #4a1604;
     --vs-white: #fdfcf3;
     --vs-scrim: rgb(10 6 4 / 0.74);
+    /* The anime flare's white core (DsFlare). */
+    --flare-core: var(--vs-white);
     /* Shorter than a third of the window, and never tall for its width (a phone). */
     --vs-band-h: clamp(9rem, min(34vh, 50vw), 21rem);
     --vs-edge: calc(var(--vs-band-h) * 0.035);
@@ -176,6 +178,20 @@
     translate: -50% -20%;
     rotate: -4deg;
     animation: ds-vs-slam 440ms var(--ease-out-expo) 420ms both;
+}
+
+/* The anime flare behind the VS (DsFlare, timed to the slam). */
+.ds-vs__flare {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    width: clamp(14rem, 44vw, 30rem);
+    height: auto;
+    aspect-ratio: 1;
+    overflow: visible;
+    translate: -50% -46%;
+    pointer-events: none;
 }
 
 .ds-vs__glyph-art {

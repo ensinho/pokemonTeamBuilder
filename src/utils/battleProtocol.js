@@ -12,7 +12,7 @@
 /**
  * The sim's latest ask, from my own filtered log.
  *
- * @returns {{kind: 'teamPreview'|'move'|'switch'|'wait'|'none', moves: Array, switches: Array, teamSize: number}}
+ * @returns {{kind: 'teamPreview'|'move'|'switch'|'wait'|'none', moves: Array, switches: Array, teamSize: number, canMega?: boolean}}
  */
 export const readMyRequest = (myLogLines = []) => {
     const requests = myLogLines.filter((line) => line.startsWith('|request|'));
@@ -60,7 +60,8 @@ export const readMyRequest = (myLogLines = []) => {
         disabled: Boolean(move.disabled),
     }));
 
-    return { kind: 'move', moves, switches, teamSize: roster.length };
+    // Its Mega Stone held and no Mega Evolution yet this battle.
+    return { kind: 'move', moves, switches, teamSize: roster.length, canMega: Boolean(active?.canMegaEvo) };
 };
 
 /**

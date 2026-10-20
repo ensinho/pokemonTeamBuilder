@@ -68,8 +68,9 @@ export function ForumHeader({
                     {stats && (
                         <p className="forum-feed-head__stats">
                             <span>{t('forum.statTopics', { count: stats.topics })}</span>
-                            <span aria-hidden="true">·</span>
-                            <span>{t('forum.statTrainers', { count: stats.trainers })}</span>
+                            {/* On a phone the line keeps to one row beside Create: the trainer count goes. */}
+                            <span className="forum-feed-head__stat-wide" aria-hidden="true">·</span>
+                            <span className="forum-feed-head__stat-wide">{t('forum.statTrainers', { count: stats.trainers })}</span>
                             {stats.activeToday > 0 && (
                                 <>
                                     <span aria-hidden="true">·</span>

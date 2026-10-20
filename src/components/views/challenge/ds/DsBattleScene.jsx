@@ -1,11 +1,13 @@
-import { memo } from 'react';
+import { memo, useLayoutEffect, useRef } from 'react';
 
 import { typeColors } from '../../../../constants/types';
 import { useSpriteFeet } from '../../../../hooks/useSpriteFeet';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getDsSprite, spriteFeet } from '../../../../utils/battleSprites';
+import { FLARE_VARIANTS, flareOf } from '../../../../utils/battleFlare';
 import { hpTone } from '../../../../utils/battleState';
 import { trainerSpriteUrl } from '../../../../utils/challengeView';
+import { DsFlare } from './DsFlare';
 import { DsTextBox } from './DsTextBox';
 
 const CHAMPION_SPRITE = trainerSpriteUrl('cynthia-gen4');
@@ -20,7 +22,11 @@ const CHAMPION_SPRITE = trainerSpriteUrl('cynthia-gen4');
 const STAGE = {
     foe: { x: 190, ground: 89, body: 64 },
     mine: { x: 66, ground: 151, body: 112 },
+    // The field's middle, between the two: where a won battle's flare blooms.
+    centre: { x: 128, body: 84 },
 };
+
+const MEGA_RE = /-Mega(?:-[XYZ])?$/;
 
 function BallRow({ slots, mine }) {
     const six = Array.from({ length: 6 }, (_, i) => slots[i] || null);
@@ -47,10 +53,13 @@ function HpBox({ mon, mine }) {
     const { t } = useTranslation();
     if (!mon) return null;
     const pct = mon.fainted ? 0 : Math.max(0, Math.min(100, mon.hp?.pct ?? 100));
+    // Mega Evolved, the box keeps the Pokémon's name and adds the mark, as the games do.
+    const mega = MEGA_RE.test(mon.species);
     return (
         <div className={`ds-hpbox ${mine ? 'is-mine' : 'is-foe'}`}>
             <div className="ds-hpbox__row">
-                <span className="ds-hpbox__name">{mon.species}</span>
+                <span className="ds-hpbox__name">{mega ? mon.species.replace(MEGA_RE, '') : mon.species}</span>
+                {mega && <span className="ds-hpbox__status is-mega">{t('challenge.command.mega')}</span>}
                 {mon.gender && <span className={`ds-hpbox__gender is-${mon.gender === 'F' ? 'f' : 'm'}`}>{mon.gender === 'F' ? '♀' : '♂'}</span>}
                 {mon.status && <span className={`ds-hpbox__status is-${mon.status}`}>{String(mon.status).toUpperCase()}</span>}
                 <span className="ds-hpbox__level"><small>{t('challenge.battle.lv')}</small>{mon.level}</span>
@@ -127,10 +136,29 @@ function MoveFx({ event, meta }) {
     );
 }
 
-function Combatant({ mon, side, current, feetTable }) {
-    if (!mon) return null;
+// Mega Evolution: the Pokémon is a white silhouette that swells and pulses,
+// then comes back as its new forme (the sprite swaps under the white).
+const MEGA_FRAMES = [
+    { filter: 'brightness(0) invert(1)', transform: 'scale(0.94)' },
+    { filter: 'brightness(0) invert(1)', transform: 'scale(1.12)', offset: 0.35 },
+    { filter: 'brightness(0) invert(1)', transform: 'scale(1)', offset: 0.55 },
+    { filter: 'brightness(0) invert(1)', transform: 'scale(1.06)', offset: 0.7 },
+    { filter: 'none', transform: 'scale(1)' },
+];
+
+function Combatant({ mon, side, current, feetTable, reducedMotion }) {
+    const bodyRef = useRef(null);
     const mine = side === 'mine';
     const sideId = mine ? 'p1' : 'p2';
+    const megaAt = current?.type === 'mega' && current.side === sideId ? current.lineIndex : null;
+    useLayoutEffect(() => {
+        const body = bodyRef.current;
+        if (megaAt === null || reducedMotion || typeof body?.animate !== 'function') return undefined;
+        const animation = body.animate(MEGA_FRAMES, { duration: 1500, easing: 'ease-in-out' });
+        return () => animation.cancel();
+    }, [megaAt, reducedMotion]);
+
+    if (!mon) return null;
     const sprite = getDsSprite(mon.species, { back: mine, shiny: mon.shiny });
     const attacking = current?.type === 'move' && current.side === sideId && !current.still;
     const hit = current?.type === 'hp' && current.side === sideId && !current.heal;
@@ -144,10 +172,26 @@ function Combatant({ mon, side, current, feetTable }) {
     // the box enters/faints, the body lunges, the image bobs/blinks.
     return (
         <div className={classes} style={{ '--feet': spriteFeet(feetTable, sprite.url, { back: mine }) }}>
-            <div className="ds-mon__body">
+            <div className="ds-mon__body" ref={bodyRef}>
                 {sprite.url && <img src={sprite.url} alt={mon.species} width={96} height={96} decoding="async" draggable="false" />}
             </div>
         </div>
+    );
+}
+
+/** The moment's anime flare (`flareOf`), drawn on its spot of the stage. */
+function SceneFlare({ current, moveMeta, foeName }) {
+    const flare = flareOf(current, { moveMeta, foeName, typeColors });
+    if (!flare) return null;
+    const spot = STAGE[flare.at];
+    return (
+        <DsFlare
+            variant={flare.variant}
+            colorA={flare.colorA}
+            colorB={flare.colorB}
+            className="ds-flare"
+            style={{ '--x': spot.x, '--y': spot.body, '--s': FLARE_VARIANTS[flare.variant].size }}
+        />
     );
 }
 
@@ -163,7 +207,7 @@ function Combatant({ mon, side, current, feetTable }) {
  */
 export const DsBattleScene = memo(function DsBattleScene({
     field, current, text, speaker, foeBalls, myBalls, switchKeys, moveMeta, championName, onAdvance, showArrow, reducedMotion,
-    messageMode = 'band', foeSprite = null,
+    messageMode = 'band', foeSprite = null, foeName = championName,
 }) {
     const feetTable = useSpriteFeet();
     const foe = field?.theirs?.active || null;
@@ -191,10 +235,12 @@ export const DsBattleScene = memo(function DsBattleScene({
             />
 
             {/* A new key per switch-in remounts the sprite, which replays its entrance. */}
-            <Combatant key={`foe-${switchKeys.p2}`} mon={foe} side="foe" current={current} feetTable={feetTable} />
-            <Combatant key={`mine-${switchKeys.p1}`} mon={mine} side="mine" current={current} feetTable={feetTable} />
+            <Combatant key={`foe-${switchKeys.p2}`} mon={foe} side="foe" current={current} feetTable={feetTable} reducedMotion={reducedMotion} />
+            <Combatant key={`mine-${switchKeys.p1}`} mon={mine} side="mine" current={current} feetTable={feetTable} reducedMotion={reducedMotion} />
 
             <MoveFx key={`fx-${current?.lineIndex ?? 'none'}`} event={current} meta={current?.type === 'move' ? moveMeta(current.move) : null} />
+            {/* Keyed by the moment, so each one draws its own (and none under reduced motion). */}
+            {!reducedMotion && <SceneFlare key={`flare-${current?.lineIndex ?? 'none'}`} current={current} moveMeta={moveMeta} foeName={foeName} />}
 
             <HpBox mon={foe} mine={false} />
             <HpBox mon={mine} mine />

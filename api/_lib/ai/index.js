@@ -39,7 +39,7 @@ import { rngFor } from './rng.js';
  * Bump AI_VERSION: patch for weights, minor for a new evaluator, major for a
  * new model. It is recorded on every run, day document and trace.
  */
-export const AI_VERSION = '1.0.0';
+export const AI_VERSION = '1.0.1'; // 1.0.1: Mega Evolves whenever the sim allows it (options.js)
 
 const EVALUATORS = {
     attack: evaluateAttack,

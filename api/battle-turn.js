@@ -66,6 +66,7 @@ const loadDeps = () => {
                 replayBattle: resolver.replayBattle,
                 resolveTurn: resolver.resolveTurn,
                 makeSeed: resolver.makeSeed,
+                startingFormes: resolver.startingFormes,
                 BattleResolveError: resolver.BattleResolveError,
                 notifyAwaitingPlayer: notify.notifyAwaitingPlayer,
             };
@@ -157,7 +158,12 @@ const setUpState = async (db, battleId, battle, sides) => {
     if (existing.exists) return existing.data();
 
     const seed = isSeed(battle.seed) ? battle.seed : deps.makeSeed(randomInt);
-    const teams = await readTeams(db, battleId, sides);
+    const read = await readTeams(db, battleId, sides);
+    // A battle-only forme starts as its base (a Mega Evolves in battle) — only
+    // for a battle nobody has seen a line of yet: one already published must
+    // replay exactly as it was shown.
+    const fresh = !Number.isInteger(battle.logSeq);
+    const teams = fresh ? { p1: deps.startingFormes(read.p1), p2: deps.startingFormes(read.p2) } : read;
     const round = Number.isInteger(battle.turn) ? battle.turn : 0;
     const choicesSnap = await battleRef(db, battleId).collection('choices').get();
     const byId = new Map(choicesSnap.docs.map((doc) => [doc.id, doc.data()]));

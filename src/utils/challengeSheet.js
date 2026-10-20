@@ -179,6 +179,17 @@ export const shownConditions = (lines = [], side = 'p1') => {
         const tag = parts[1];
         const nickname = parts[2].split(': ')[1];
         if (tag === 'switch' || tag === 'drag' || tag === 'replace') names.set(nickname, speciesOf(parts[3]));
+        if (tag === 'detailschange') {
+            // A Mega Evolution: carry what was shown over to the new species' name.
+            const before = names.get(nickname);
+            const after = speciesOf(parts[3]);
+            names.set(nickname, after);
+            if (before && out.has(before)) {
+                out.set(after, out.get(before));
+                out.delete(before);
+            }
+            continue;
+        }
         const species = names.get(nickname);
         if (!species) continue;
         const now = out.get(species) || { hp: null, status: null, fainted: false };

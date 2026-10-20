@@ -15,6 +15,10 @@ import { play } from '../utils/challengeSfx';
  * moves, the arrows walk the 2 × 2 grid and A picks; in the party ← → walk
  * the six and A sends the one shown in; A opens the moves from the menu; B
  * goes back. `activeIndex` is who the party opens on otherwise.
+ *
+ * MEGA: when the active Pokémon holds its Mega Stone (`request.canMega`) the
+ * switch is on, so the chosen move Mega Evolves it first — the player can turn
+ * it off for this turn. It resets with every new request.
  */
 export function useBattleCommands({ request, enabled, onChoose, onForfeit, switchLabel, inputRef, activeIndex = 0 }) {
     const forced = request.kind === 'switch';
@@ -22,10 +26,13 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
     const [view, setView] = useState(forced ? 'party' : 'main');
     const [focus, setFocus] = useState(0);
     const [member, setMember] = useState(firstIn);
+    const canMega = request.kind === 'move' && Boolean(request.canMega);
+    const [mega, setMega] = useState(true);
 
     useEffect(() => {
         setView(forced ? 'party' : 'main');
         setFocus(0);
+        setMega(true);
         if (forced) setMember(firstIn);
     }, [forced, request, firstIn]);
 
@@ -43,7 +50,13 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
     const chooseMove = (move) => {
         if (!enabled || !move || move.disabled || move.pp === 0) return;
         play('confirm');
-        onChoose(`move ${move.slot}`, move.name);
+        const megaNow = canMega && mega;
+        onChoose(`move ${move.slot}${megaNow ? ' mega' : ''}`, megaNow ? `${move.name} · Mega` : move.name);
+    };
+    const toggleMega = () => {
+        if (!canMega) return;
+        play('cursor');
+        setMega((on) => !on);
     };
     const chooseSwitch = (mon) => {
         if (!enabled) return;
@@ -61,7 +74,9 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
         inputRef.current = {
             onAction: (action) => {
                 if (!enabled) return;
-                if (/^[1-4]$/.test(action) && request.kind === 'move') {
+                if (action === 'mega') {
+                    toggleMega();
+                } else if (/^[1-4]$/.test(action) && request.kind === 'move') {
                     chooseMove(moves[Number(action) - 1]);
                 } else if (view === 'party' && (action === 'left' || action === 'right') && size) {
                     play('cursor');
@@ -82,5 +97,8 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
         };
     });
 
-    return { view, open, forced, focus, setFocus, member, setMember, switchable, chooseMove, chooseSwitch, forfeit };
+    return {
+        view, open, forced, focus, setFocus, member, setMember, switchable, chooseMove, chooseSwitch, forfeit,
+        canMega, mega, toggleMega,
+    };
 }

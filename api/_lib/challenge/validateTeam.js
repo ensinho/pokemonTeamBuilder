@@ -1,5 +1,6 @@
 import { Dex, Teams } from '@pkmn/sim';
 
+import { toStartingForme } from '../battleResolver.js';
 import { BANNED_MOVES, LEVEL, MAX_TEAM_TEXT } from './constants.js';
 
 /**
@@ -32,6 +33,8 @@ export const validateTeam = (showdownText) => {
     const errors = [];
     const seen = new Set();
     sets.forEach((set, slot) => {
+        // A Mega saved as its Mega forme starts as its base, and Mega Evolves in battle with its stone.
+        toStartingForme(set);
         const species = Dex.species.get(set.species);
         if (!species.exists) {
             errors.push({ slot, code: 'unknownSpecies', detail: set.species });
