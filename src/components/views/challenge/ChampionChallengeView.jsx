@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Crown, FastForward, Flame, Footprints, Trophy, Volume2, VolumeX } from 'lucide-react';
+import { Clock, Crown, FastForward, Flame, Footprints, Music, Trophy, Volume2, VolumeX } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useChampionChallenge } from '../../../hooks/useChampionChallenge';
 import { useConsoleInput } from '../../../hooks/useConsoleInput';
@@ -8,13 +9,14 @@ import { SITE_URL, useDocumentMeta } from '../../../hooks/useDocumentMeta';
 import { useFirestoreTeams } from '../../../hooks/useFirestoreTeams';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { useVersusSide } from '../../../hooks/useVersusSide';
+import { useBattleSound } from '../../../hooks/useBattleSound';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useChampionChallengeStore } from '../../../store/useChampionChallengeStore';
 import { toast } from '../../../store/useToastStore';
 import { buildChallengeShare, buildShareText } from '../../../utils/challengeShare';
 import { useForumStore } from '../../../store/useForumStore';
-import { isMuted, setMuted as storeMuted, unlock as unlockSound } from '../../../utils/challengeSfx';
-import { championRoster, railTeams, timeUntil } from '../../../utils/challengeView';
+import { championRoster, railTeams, timeUntil, trainerSpriteUrl } from '../../../utils/challengeView';
 import { EmptyState } from '../../EmptyState';
 import { Loader } from '../../Loader';
 import { DsArena } from './ds/DsArena';
@@ -26,11 +28,11 @@ import { DsPoketch } from './ds/DsPoketch';
 import { DsTeamsRail } from './ds/DsRails';
 import { DsRanking } from './ds/DsRanking';
 import { DsTeamPicker } from './ds/DsTeamPicker';
+import { DsVersusLazy } from './ds/DsVersusLazy';
+import { preloadVersus } from './ds/versusChunk';
 import '../../../styles/champion-challenge-ds.css';
 
-const FAST_KEY = 'ptb:challenge:fast';
 const WALKED_KEY = 'ptb:challenge:walked';
-const TRANSITION_MS = 1100;
 
 const readFlag = (key) => {
     try {
@@ -50,7 +52,7 @@ const writeFlag = (key, on) => {
  * (plan: docs/plans/daily-champion-challenge.md; system: docs/modules/daily_challenge.md).
  *
  *   arena ──walk to her──▶ dialogue ──▶ pick (or gate, for a guest)
- *     ──start──▶ transition ──▶ battle ──every moment played──▶ result
+ *     ──start──▶ transition (the VS card) ──▶ battle ──every moment played──▶ result
  *                                                 └── practice ──▶ pick
  *
  * Reloading mid-battle lands straight back in the battle. The screen reads
@@ -74,28 +76,9 @@ export function ChampionChallengeView() {
     const railsOn = railMode !== 'none';
 
     const [stage, setStage] = useState('arena');
-    const [fast, setFast] = useState(() => readFlag(FAST_KEY));
-    const [muted, setMutedState] = useState(isMuted);
     const [showRanks, setShowRanks] = useState(false);
-
-    // Sound needs a gesture first (autoplay policy): the first press anywhere on the route.
-    useEffect(() => {
-        const once = () => {
-            unlockSound();
-            window.removeEventListener('pointerdown', once);
-            window.removeEventListener('keydown', once);
-        };
-        window.addEventListener('pointerdown', once);
-        window.addEventListener('keydown', once);
-        return () => {
-            window.removeEventListener('pointerdown', once);
-            window.removeEventListener('keydown', once);
-        };
-    }, []);
-    const toggleMuted = () => {
-        storeMuted(!muted);
-        setMutedState(!muted);
-    };
+    // Sound, music and speed — the bar's switches, unlocked by the first press.
+    const { muted, toggleMuted, musicOn, toggleMusic, fast, toggleFast } = useBattleSound();
     const [hasWalked] = useState(() => readFlag(WALKED_KEY));
     const [startedRunId, setStartedRunId] = useState(null);
     const arenaInput = useRef(null);
@@ -160,15 +143,43 @@ export function ChampionChallengeView() {
         useAuthStore.getState().markJourney('challengePlayed');
         // Only a battle started here plays its opening; a resumed one picks up where it was.
         setStartedRunId(useChampionChallengeStore.getState().run?.runId || null);
+        // The VS card plays over the room; it hands over to the battle when it leaves.
         setStage('transition');
-        setTimeout(() => setStage('battle'), reducedMotion ? 150 : TRANSITION_MS);
     };
+    const handleVersusDone = useCallback(() => setStage('battle'), []);
+    // The VS card's chunk, a step before it is needed.
+    useEffect(() => {
+        if (stage === 'pick') preloadVersus();
+    }, [stage]);
+
+    // The two sides of the VS card: you (your avatar, title and level, the
+    // streak) and her (the day's difficulty).
+    const myAvatar = useAuthStore(useShallow((s) => s.publicAvatar()));
+    const streak = challenge.stats?.streak || 0;
+    const difficultyLabel = challenge.day?.difficulty ? t(`challenge.difficulty.${challenge.day.difficulty}`) : null;
+    const myBadges = useMemo(
+        () => (streak > 0 ? [{ icon: 'flame', label: t('challenge.streak', { count: streak }) }] : []),
+        [streak, t],
+    );
+    const championBadges = useMemo(() => [
+        { icon: 'crown', label: t('battle.stage.champion') },
+        ...(difficultyLabel ? [{ icon: 'chevrons', label: difficultyLabel }] : []),
+    ], [difficultyLabel, t]);
+    const versusMe = useVersusSide(userId, {
+        name: trainerDisplayName(),
+        tag: t('battle.stage.you'),
+        avatar: myAvatar,
+        badges: myBadges,
+    });
+    const versusChampion = useMemo(() => ({
+        name: championName,
+        tag: t('battle.stage.champion'),
+        subtitle: difficultyLabel,
+        portrait: { src: trainerSpriteUrl('cynthia'), kind: 'trainer' },
+        badges: championBadges,
+    }), [championName, difficultyLabel, championBadges, t]);
 
     const handleFinished = useCallback(() => setStage('result'), []);
-    const toggleFast = () => setFast((value) => {
-        writeFlag(FAST_KEY, !value);
-        return !value;
-    });
 
     // One keyboard for the console; each stage takes it in turn.
     useConsoleInput({
@@ -232,6 +243,16 @@ export function ChampionChallengeView() {
                     <span className="ds-chip__long">{t('challenge.arena.skip', { name: championName })}</span>
                 </button>
             )}
+            <button
+                type="button"
+                className="ds-chip is-button"
+                aria-pressed={musicOn}
+                onClick={toggleMusic}
+                aria-label={t(musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
+                title={t(musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
+            >
+                <Music className={`w-3.5 h-3.5 shrink-0 ${musicOn ? '' : 'opacity-40'}`} aria-hidden="true" />
+            </button>
             <button
                 type="button"
                 className="ds-chip is-button"
@@ -456,7 +477,9 @@ export function ChampionChallengeView() {
             />
         </>
     );
-    const transition = stage === 'transition' && <div className={`ds-transition ${reducedMotion ? 'is-reduced' : ''}`} aria-hidden="true" />;
+    const transition = stage === 'transition' && (
+        <DsVersusLazy left={versusMe} right={versusChampion} variant="champion" reducedMotion={reducedMotion} onDone={handleVersusDone} />
+    );
 
     if (layout === 'single') {
         // One screen: the room, and the choice of team (or the gate) opening over it as a menu.

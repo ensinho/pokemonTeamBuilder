@@ -1,173 +1,146 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, MessageSquare, RefreshCw, Share2, Trash2 } from 'lucide-react';
-import { FramedAvatar } from '../../rewards/FramedAvatar';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, FastForward, MessageSquare, Music, Swords, Volume2, VolumeX } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useBattles } from '../../../hooks/useBattles';
-import { useBattlesStore } from '../../../store/useBattlesStore';
-import { useForumStore } from '../../../store/useForumStore';
-import { useToastStore } from '../../../store/useToastStore';
-import { useFirestoreTeams } from '../../../hooks/useFirestoreTeams';
-import { useAuthStore } from '../../../store/useAuthStore';
-import { useTranslation } from '../../../hooks/useTranslation';
+import { useBattleSound } from '../../../hooks/useBattleSound';
+import { useConsoleInput } from '../../../hooks/useConsoleInput';
+import { useConsoleLayout, useRailMode } from '../../../hooks/useConsoleLayout';
 import { useDocumentMeta } from '../../../hooks/useDocumentMeta';
-import { useMoveTypes } from '../../../hooks/useMoveTypes';
-import { useBattleDex } from '../../../hooks/useBattleDex';
-import { AvatarSprite } from '../../AvatarSprite';
-import { EmptyState } from '../../EmptyState';
-import { PokeballIcon } from '../../icons';
-import { getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../../utils/pokemonSprites';
-import { readMyRequest, describeLogLines } from '../../../utils/battleProtocol';
+import { useFirestoreTeams } from '../../../hooks/useFirestoreTeams';
+import { useFriends } from '../../../hooks/useFriends';
+import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { useTranslation } from '../../../hooks/useTranslation';
+import { useVersusSide } from '../../../hooks/useVersusSide';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { readLastBattleTeam, useBattlesStore } from '../../../store/useBattlesStore';
+import { useForumStore } from '../../../store/useForumStore';
+import { toast } from '../../../store/useToastStore';
+import { readMyRequest } from '../../../utils/battleProtocol';
 import { readBattleField } from '../../../utils/battleState';
-import { Battlefield } from './Battlefield';
-import { MoveOption, SwitchOption } from './BattleChoiceButtons';
-import { BattleLogPanel } from './BattleLogPanel';
-import { TooltipTrigger, MoveTooltipCard, MonTooltipCard } from './BattlePopover';
-import { POKEBALL_PLACEHOLDER_URL } from '../../../constants/theme';
-import '../../../styles/battle-view.css';
-import { confirmAction } from '../../../store/useConfirmStore';
+import { faintedSpecies, trainerSpriteUrl } from '../../../utils/challengeView';
+import { asViewer, opponentRoster, simNameOf } from '../../../utils/pvpView';
+import { EmptyState } from '../../EmptyState';
+import { Loader } from '../../Loader';
+import { ChallengeModal } from '../../modals/ChallengeModal';
+import { DsBattleScene } from '../challenge/ds/DsBattleScene';
+import { DsBattleStage } from '../challenge/ds/DsBattleStage';
+import { DsConsole } from '../challenge/ds/DsConsole';
+import { DsVersusLazy } from '../challenge/ds/DsVersusLazy';
+import { preloadVersus } from '../challenge/ds/versusChunk';
+import { PvpChat } from './PvpChat';
+import { PvpLobby } from './PvpLobby';
+import { PvpResult } from './PvpResult';
+import '../../../styles/champion-challenge-ds.css';
+import '../../../styles/battle-pvp.css';
 
-const ANIMATED_SPRITES_KEY = 'ptb:battleAnimatedSprites';
-const CHOICE_STORAGE_KEY = (battleId, round) => `ptb:battleChoice:${battleId}:${round}`;
+const PRE_BATTLE = new Set(['pending', 'open', 'teamSelect', 'declined', 'cancelled']);
+const SEEN_VS_KEY = (battleId) => `ptb:battle:vs:${battleId}`;
+// The trainer on the far platform when the opponent's avatar is a Pokémon.
+const FALLBACK_FOE_TRAINER = 'acetrainer';
+const EMPTY_FIELD = readBattleField([]);
 
-// Backoff ladder for the "is the opponent done yet?" nudge, in ms. Firestore is
-// the real channel — these only cover a round that is resolvable but unresolved,
-// so they start responsive and then get out of the way. The last value repeats.
-const NUDGE_DELAYS = [4000, 8000, 15000, 30000, 60000];
+const hasSeenVersus = (battleId) => {
+    try {
+        return localStorage.getItem(SEEN_VS_KEY(battleId)) === '1';
+    } catch (_) {
+        return false;
+    }
+};
+const markSeenVersus = (battleId) => {
+    try {
+        localStorage.setItem(SEEN_VS_KEY(battleId), '1');
+    } catch (_) { /* a convenience, best-effort */ }
+};
 
-/**
- * Six slots of sprite icons — the team preview bar.
- */
-function TeamSpriteBar({ sprites = [], showLevels = false }) {
-    return (
-        <div className="battle-team-bar">
-            {Array.from({ length: 6 }).map((_, index) => {
-                const mon = sprites[index];
-                return (
-                    <span key={index} className="battle-team-bar__slot" title={mon?.name || ''}>
-                        {mon ? (
-                            <>
-                                <img
-                                    src={getPokemonFrontSpriteUrl(mon.id)}
-                                    alt={mon.name || ''}
-                                    loading="lazy"
-                                    onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                />
-                                {showLevels && mon.level && (
-                                    <span className="battle-team-bar__level">L{mon.level}</span>
-                                )}
-                            </>
-                        ) : (
-                            <PokeballIcon className="w-4 h-4 text-muted opacity-20" />
-                        )}
-                    </span>
-                );
-            })}
-        </div>
-    );
-}
+/** How many of a side's Pokémon are still standing, from `|teamsize|` and the faints. */
+const standing = (lines, side) => {
+    const size = lines.find((line) => line.startsWith(`|teamsize|${side}|`));
+    const total = size ? Number(size.split('|')[3]) || 0 : 0;
+    return Math.max(0, total - faintedSpecies(lines, side).size);
+};
 
 /**
- * Turn indicator banner with manual sync refresh button.
+ * `/battles/:battleId` — a battle against a friend, on the Champion
+ * Challenge's console: the same field, sprites, move effects, text and
+ * sound, with a VS card in the friends' own avatars and music of its own.
+ *
+ *   lobby ──accept (team + start, one request)──▶ versus ──▶ battle ──▶ result
+ *                                                              └── replay
+ *
+ * ## Cheap on the database
+ *
+ *  - The log this device has already received is kept on it
+ *    (`battleLogCache`): reopening paints at once and the listener asks only
+ *    for rounds it doesn't have. Leaving loses nothing.
+ *  - A turn's own lines come back in its response and play immediately.
+ *  - No polling: the server resolves a round in the request that completes it
+ *    (`api/_lib/pvpState.js`), so the listener is the only channel. One silent
+ *    probe on opening (and on coming back to the tab) covers a function that
+ *    died mid-turn.
+ *
+ * The viewer is always p1 on screen (`asViewer`), so everything under
+ * `challenge/ds/` works unchanged for the trainer who accepted (p2).
  */
-function TurnBanner({ waiting, opponentName, choiceLabel, t, language, onSync, isSyncing }) {
-    return (
-        <div className={`battle-turn-banner ${waiting ? 'is-waiting' : 'is-yours'}`}>
-            {waiting ? (
-                <span className="battle-turn-banner__dots" aria-hidden="true">
-                    <span /><span /><span />
-                </span>
-            ) : (
-                <span className="battle-turn-banner__icon" aria-hidden="true" />
-            )}
-            <span className="battle-turn-banner__text">
-                {waiting ? t('battle.waitingOpponentTurn', { name: opponentName }) : t('battle.turnYours')}
-            </span>
-            {waiting && choiceLabel && (
-                <span className="battle-turn-banner__choice">{t('battle.youChose', { choice: choiceLabel })}</span>
-            )}
-            {waiting && onSync && (
-                <button
-                    type="button"
-                    className="battle-turn-banner__sync-btn"
-                    disabled={isSyncing}
-                    onClick={onSync}
-                    title={language === 'pt' ? 'Sincronizar turno com servidor' : 'Sync turn with server'}
-                >
-                    <RefreshCw className={`w-3.5 h-3.5 inline-block ${isSyncing ? 'animate-spin' : ''}`} />
-                    <span className="sync-text">{language === 'pt' ? 'Sincronizar' : 'Sync'}</span>
-                </button>
-            )}
-        </div>
-    );
-}
-
 export function BattleDetailView() {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
     const { battleId } = useParams();
     const navigate = useNavigate();
-    useBattleDex(); // warm the tooltip data before the first hover
+    const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+    const layout = useConsoleLayout();
+    const [viewRef, railMode] = useRailMode(layout === 'single');
+    const railsOn = railMode !== 'none';
+    const sound = useBattleSound();
 
-    const userId = useAuthStore((state) => state.userId);
-    const { battles } = useBattles();
+    const userId = useAuthStore((s) => s.userId);
+    const myName = useAuthStore((s) => s.trainerDisplayName)();
+    const myAvatar = useAuthStore(useShallow((s) => s.publicAvatar()));
+    const { battles, hasLoadedBattles } = useBattles();
     const { savedTeams } = useFirestoreTeams();
-    const { typeForMove } = useMoveTypes();
+    const { friends } = useFriends();
 
     const {
-        acceptChallenge, declineChallenge, cancelChallenge,
-        submitTeam, startBattle, deleteBattle,
-        loadMyTeam, myTeam, initChatListener, clearOpenBattle,
-        chatMessages, sendChatMessage,
-        initLogListener, myLog, submitChoice, isResolvingTurn,
-        rollRandomTeams, isRollingTeams,
-    } = useBattlesStore();
+        initChatListener, initLogListener, loadMyTeam, clearOpenBattle,
+        myLog, hasLog, myTeam, chatMessages, sendChatMessage,
+        submitChoice, isResolvingTurn, isBeginning, isRollingTeams,
+        acceptChallenge, declineChallenge, cancelChallenge, submitTeam, rollRandomTeams,
+        forfeitBattle, challengeFriend,
+    } = useBattlesStore(useShallow((s) => ({
+        initChatListener: s.initChatListener,
+        initLogListener: s.initLogListener,
+        loadMyTeam: s.loadMyTeam,
+        clearOpenBattle: s.clearOpenBattle,
+        myLog: s.myLog,
+        hasLog: s.hasLog,
+        myTeam: s.myTeam,
+        chatMessages: s.chatMessages,
+        sendChatMessage: s.sendChatMessage,
+        submitChoice: s.submitChoice,
+        isResolvingTurn: s.isResolvingTurn,
+        isBeginning: s.isBeginning,
+        isRollingTeams: s.isRollingTeams,
+        acceptChallenge: s.acceptChallenge,
+        declineChallenge: s.declineChallenge,
+        cancelChallenge: s.cancelChallenge,
+        submitTeam: s.submitTeam,
+        rollRandomTeams: s.rollRandomTeams,
+        forfeitBattle: s.forfeitBattle,
+        challengeFriend: s.challengeFriend,
+    })));
 
-    const entry = useMemo(
-        () => battles.find(({ battle }) => battle.id === battleId) || null,
-        [battles, battleId],
-    );
+    const entry = useMemo(() => battles.find(({ battle }) => battle.id === battleId) || null, [battles, battleId]);
     const battle = entry?.battle || null;
     const view = entry?.view || null;
+    const status = battle?.status || null;
+    const opponentName = view?.opponentName || (view?.isPublicInvite ? t('battle.openInviteOpponent') : t('friends.unknownTrainer'));
+    const opponentAvatar = view?.opponentAvatar || null;
 
     useDocumentMeta({
         title: view?.opponentName ? `Battle vs ${view.opponentName}` : 'Battle',
         description: 'A turn-by-turn battle against a friend.',
         path: `/battles/${battleId}`,
     });
-
-    const [selectedTeamId, setSelectedTeamId] = useState('');
-    const [chatDraft, setChatDraft] = useState('');
-    const [activeSideTab, setActiveSideTab] = useState('log'); // 'log' | 'chat'
-    const chatEndRef = useRef(null);
-
-    const [animatedSprites, setAnimatedSprites] = useState(() => {
-        try {
-            return localStorage.getItem(ANIMATED_SPRITES_KEY) !== '0';
-        } catch (_) {
-            return true;
-        }
-    });
-
-    const toggleAnimatedSprites = () => {
-        setAnimatedSprites((previous) => {
-            const next = !previous;
-            try {
-                localStorage.setItem(ANIMATED_SPRITES_KEY, next ? '1' : '0');
-            } catch (_) { /* preference best-effort */ }
-            return next;
-        });
-    };
-
-    const currentRound = battle?.turn ?? 0;
-    const [awaitingRound, setAwaitingRound] = useState(null);
-    const [awaitingLogLength, setAwaitingLogLength] = useState(null);
-    const [lastChoiceLabel, setLastChoiceLabel] = useState(null);
-
-    useEffect(() => {
-        setAwaitingRound(null);
-        setAwaitingLogLength(null);
-        setLastChoiceLabel(null);
-    }, [battleId]);
 
     useEffect(() => {
         if (!battleId) return undefined;
@@ -177,665 +150,413 @@ export function BattleDetailView() {
         return () => clearOpenBattle();
     }, [battleId, initChatListener, initLogListener, loadMyTeam, clearOpenBattle]);
 
+    // A random battle accepted elsewhere but never dealt: deal it (the endpoint
+    // refuses a second roll, so racing the other player is harmless).
     const rollAttemptedFor = useRef(null);
     useEffect(() => {
-        if (!battleId || !view?.canRollRandomTeams) return;
-        if (rollAttemptedFor.current === battleId) return;
+        if (!battleId || !view?.canRollRandomTeams || rollAttemptedFor.current === battleId) return;
         rollAttemptedFor.current = battleId;
         rollRandomTeams(battleId);
     }, [battleId, view?.canRollRandomTeams, rollRandomTeams]);
-
     useEffect(() => {
         if (battle?.randomTeamsRolledAt) loadMyTeam(battleId);
     }, [battleId, battle?.randomTeamsRolledAt, loadMyTeam]);
 
+    // ── The log, from my side, as p1 ──────────────────────────────────────
+    const mySide = battle?.challenger === userId ? 'p1' : 'p2';
+    const lines = useMemo(() => asViewer(myLog, mySide), [myLog, mySide]);
+    const request = useMemo(() => readMyRequest(lines), [lines]);
+    // The log's length when it is known — null while it hasn't loaded, so a
+    // "you already chose" from the probe isn't pinned to an empty log.
+    const linesRef = useRef(null);
+    linesRef.current = hasLog ? lines.length : null;
+    const currentRound = battle?.turn ?? 0;
+
+    // ── The stage ─────────────────────────────────────────────────────────
+    const [stage, setStage] = useState(null); // 'lobby' | 'versus' | 'battle' | 'result'
+    const [playIntro, setPlayIntro] = useState(false);
+    const [replayKey, setReplayKey] = useState(0);
     useEffect(() => {
-        if (activeSideTab === 'chat') {
-            chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setStage(null);
+        setPlayIntro(false);
+    }, [battleId]);
+    useEffect(() => {
+        if (!status) return;
+        setStage((previous) => {
+            if (PRE_BATTLE.has(status)) return 'lobby';
+            if (status === 'active') {
+                if (previous === 'battle' || previous === 'versus') return previous;
+                // Started on this screen, or opened for the first time since it started.
+                return previous === 'lobby' || !hasSeenVersus(battleId) ? 'versus' : 'battle';
+            }
+            // Ended: a battle playing here plays to its end first (onFinished).
+            if (previous === 'battle' || previous === 'versus') return previous;
+            return 'result';
+        });
+    }, [status, battleId]);
+
+    // The VS card's chunk, a step before it is needed: from the lobby, or for a
+    // battle that will open on it.
+    useEffect(() => {
+        if (stage === 'lobby' || stage === 'versus') preloadVersus();
+    }, [stage]);
+
+    const handleVersusDone = useCallback(() => {
+        markSeenVersus(battleId);
+        // From the first line only while it is young: the opening, a turn at most.
+        setPlayIntro(!lines.some((line) => line.startsWith('|turn|2')));
+        setStage('battle');
+    }, [battleId, lines]);
+
+    // ── Choosing, and waiting for the other trainer ──────────────────────
+    const [awaiting, setAwaiting] = useState(null); // {round, logLength, label}
+    useEffect(() => setAwaiting(null), [battleId]);
+    const waitingKnown = Boolean(awaiting && awaiting.round === currentRound
+        && (awaiting.logLength === null || awaiting.logLength === lines.length));
+    const isWaiting = status === 'active' && (request.kind === 'wait' || waitingKnown || isResolvingTurn);
+    const pending = useMemo(() => (isWaiting ? { label: awaiting?.label || null } : null), [isWaiting, awaiting?.label]);
+
+    const handleChoice = useCallback(async (choice, label) => {
+        setAwaiting({ round: currentRound, logLength: linesRef.current, label });
+        const result = await submitChoice(battleId, choice);
+        if (!result) setAwaiting(null);
+        else if (result.waitingOnOpponent && !result.waitingOnYou) {
+            setAwaiting({ round: result.round ?? currentRound, logLength: linesRef.current, label });
         }
-    }, [chatMessages.length, activeSideTab]);
+    }, [battleId, currentRound, submitChoice]);
 
-    // Read by the once-per-round probe. A ref, not a dependency: the probe wants
-    // the log length *at the moment it answers*, and depending on it would make
-    // every new log line re-fire the request.
-    const logLengthRef = useRef(myLog.length);
-    logLengthRef.current = myLog.length;
-
-    const myRequest = useMemo(() => readMyRequest(myLog), [myLog]);
-    const transcript = useMemo(() => describeLogLines(myLog), [myLog]);
-    const field = useMemo(() => readBattleField(myLog), [myLog]);
-
-    const selectedTeam = useMemo(
-        () => savedTeams.find((team) => team.id === selectedTeamId) || null,
-        [savedTeams, selectedTeamId],
-    );
-
-    const isWaitingForOpponent = myRequest.kind === 'wait'
-        || (awaitingRound === currentRound && (awaitingLogLength === null || awaitingLogLength === myLog.length));
-
-    // Restore this round's choice label across page switches and reloads, and
-    // ask the resolver once per round whether we already answered it.
-    //
-    // `myLog.length` is deliberately NOT a dependency. It used to be, which meant
-    // a POST to the serverless resolver every time a line landed in the log —
-    // dozens per battle, each one flipping `isResolvingTurn` and deadening the
-    // button grid. The question this asks ("did I already answer round N?") only
-    // has a new answer when the round changes.
+    // One silent probe when the battle is (or goes) live, and on coming back to
+    // the tab: it publishes the opening of a battle dealt elsewhere, says
+    // whether this round is already answered, and finishes a round whose
+    // resolver died. Never a poll.
+    const isActive = status === 'active';
     useEffect(() => {
-        if (battle?.status !== 'active' || !battleId) return undefined;
-        let isMounted = true;
-
-        try {
-            const savedLabel = localStorage.getItem(CHOICE_STORAGE_KEY(battleId, currentRound));
-            if (savedLabel) setLastChoiceLabel(savedLabel);
-        } catch (_) { /* the label is a nicety, never a blocker */ }
-
-        submitChoice(battleId, null, { silent: true }).then((res) => {
-            if (!isMounted || !res) return;
-            if (res.waitingOnOpponent && !res.waitingOnYou) {
-                setAwaitingRound(res.round ?? currentRound);
-                setAwaitingLogLength(logLengthRef.current);
-            }
-        });
-
-        return () => { isMounted = false; };
-    }, [battleId, battle?.status, currentRound, submitChoice]);
-
-    // Nudge polling while waiting on the opponent.
-    //
-    // This is the *backup* channel, not the primary one: `initLogListener` and
-    // the battles snapshot already push the opponent's move the instant the
-    // server writes it. The poll exists only for the case where a round is
-    // resolvable but nobody has asked the resolver to resolve it. So it backs
-    // off — quick while the opponent is plausibly still at the keyboard, then
-    // progressively cheaper — and it stops entirely while the tab is hidden,
-    // with one immediate probe when the trainer comes back. A phone left on the
-    // battle screen for ten minutes used to fire 120 serverless calls; it now
-    // fires seven, and coming back to the tab refreshes instantly instead of
-    // waiting out the remainder of an interval.
-    useEffect(() => {
-        if (!isWaitingForOpponent || !battleId || battle?.status !== 'active') return undefined;
-
-        let cancelled = false;
-        let timer = null;
-        let attempt = 0;
-
+        if (!isActive || !battleId) return undefined;
+        let alive = true;
         const probe = () => submitChoice(battleId, null, { silent: true }).then((res) => {
-            if (cancelled) return;
-            if (res && res.waitingOnOpponent && !res.waitingOnYou) {
-                setAwaitingRound(res.round ?? currentRound);
+            if (!alive || !res) return;
+            if (res.waitingOnOpponent && !res.waitingOnYou) {
+                setAwaiting((previous) => ({ round: res.round, logLength: linesRef.current, label: previous?.label || null }));
             }
         });
-
-        const schedule = () => {
-            if (cancelled) return;
-            const delay = NUDGE_DELAYS[Math.min(attempt, NUDGE_DELAYS.length - 1)];
-            attempt += 1;
-            timer = setTimeout(() => { probe().finally(schedule); }, delay);
-        };
-
-        const onVisibility = () => {
-            if (document.hidden) {
-                if (timer) clearTimeout(timer);
-                timer = null;
-                return;
-            }
-            // Back on screen: probe now, then restart the ladder from the top so
-            // an opponent who moved while we were away shows up immediately.
-            attempt = 0;
-            probe().finally(schedule);
-        };
-
-        if (!document.hidden) schedule();
+        probe();
+        const onVisibility = () => { if (!document.hidden) probe(); };
         document.addEventListener('visibilitychange', onVisibility);
-
         return () => {
-            cancelled = true;
-            if (timer) clearTimeout(timer);
+            alive = false;
             document.removeEventListener('visibilitychange', onVisibility);
         };
-    }, [isWaitingForOpponent, battleId, battle?.status, currentRound, submitChoice]);
+    }, [isActive, battleId, submitChoice]);
 
+    // A battle that started under Team Preview (an older one) answers it at once.
+    const previewAnswered = useRef(null);
     useEffect(() => {
-        if (!isWaitingForOpponent) {
-            setAwaitingRound(null);
-            setAwaitingLogLength(null);
-            setLastChoiceLabel(null);
-        }
-    }, [isWaitingForOpponent]);
+        if (request.kind !== 'teamPreview' || pending || previewAnswered.current === `${battleId}:${currentRound}`) return;
+        previewAnswered.current = `${battleId}:${currentRound}`;
+        handleChoice('default', t('battle.teamOrderConfirmed'));
+    }, [request.kind, pending, battleId, currentRound, handleChoice, t]);
 
-    const handleChoice = async (choice, label) => {
-        try {
-            localStorage.setItem(CHOICE_STORAGE_KEY(battleId, currentRound), label);
-        } catch (_) {}
+    // ── The lobby's actions ───────────────────────────────────────────────
+    const preferredTeamId = useMemo(readLastBattleTeam, [battleId]);
+    const lobbyBusy = isBeginning || isRollingTeams;
+    const onAccept = async (team) => {
+        await acceptChallenge(battleId, { mode: battle?.mode, team });
+    };
+    const onSubmitTeam = (team) => submitTeam(battleId, team.members, team.name, team.id);
 
-        setAwaitingRound(currentRound);
-        setAwaitingLogLength(myLog.length);
-        setLastChoiceLabel(label);
+    // ── Rematch, share, replay ───────────────────────────────────────────
+    const friend = useMemo(() => friends.find((f) => f.userId === view?.opponentId) || null, [friends, view?.opponentId]);
+    const [rematchOpen, setRematchOpen] = useState(false);
+    const onRematch = friend ? () => setRematchOpen(true) : null;
 
-        const result = await submitChoice(battleId, choice);
-        if (!result) {
-            setAwaitingRound(null);
-            setAwaitingLogLength(null);
-            setLastChoiceLabel(null);
-        } else if (result.waitingOnOpponent && !result.waitingOnYou) {
-            setAwaitingRound(result.round ?? currentRound);
-            setAwaitingLogLength(myLog.length);
-        }
+    const shareToForum = async () => {
+        if (!view) return;
+        const outcomeText = battle.winner === userId
+            ? t('battle.result.shareWon', { name: opponentName })
+            : battle.winner ? t('battle.result.shareLost', { name: opponentName }) : t('battle.result.shareTie', { name: opponentName });
+        const url = `${window.location.origin}${import.meta.env.BASE_URL}battles/${battleId}`.replace(/([^:]\/)\/+/g, '$1');
+        const ok = await useForumStore.getState().sendMessage('general', `${outcomeText}\n${url}`);
+        if (ok) toast.success(t('battle.shareForumSuccess'));
+        else toast.error(t('battle.shareForumError'));
     };
 
-    // The manual nudge spins its own button rather than raising the global
-    // `isResolvingTurn`: asking "any news?" is not the same as resolving a turn,
-    // and it should never disable the moves the trainer might still want to pick.
-    const [isManualSyncing, setIsManualSyncing] = useState(false);
-    const handleManualSync = () => {
-        if (isManualSyncing) return;
-        setIsManualSyncing(true);
-        submitChoice(battleId, null, { silent: true })
-            .then((res) => {
-                if (res && res.waitingOnOpponent && !res.waitingOnYou) {
-                    setAwaitingRound(res.round ?? currentRound);
-                }
-            })
-            .finally(() => setIsManualSyncing(false));
-    };
+    const outcome = useMemo(() => {
+        if (status !== 'ended') return null;
+        if (battle.forfeitedBy) return battle.forfeitedBy === userId ? 'forfeitLost' : 'forfeitWon';
+        if (!battle.winner) return 'tie';
+        return battle.winner === userId ? 'won' : 'lost';
+    }, [status, battle?.forfeitedBy, battle?.winner, userId]);
 
-    // Auto-confirm lead order during teamPreview without requiring manual click
-    const autoConfirmedPreviewFor = useRef(null);
+    // ── Chat ──────────────────────────────────────────────────────────────
+    const [chatOpen, setChatOpen] = useState(false);
+    const [chatSeen, setChatSeen] = useState(0);
+    const chatVisible = chatOpen || (railsOn && layout === 'single');
     useEffect(() => {
-        if (
-            myRequest.kind === 'teamPreview'
-            && !isWaitingForOpponent
-            && !isResolvingTurn
-            && autoConfirmedPreviewFor.current !== `${battleId}:${currentRound}`
-        ) {
-            autoConfirmedPreviewFor.current = `${battleId}:${currentRound}`;
-            handleChoice('default', t('battle.teamOrderConfirmed'));
-        }
-    }, [myRequest.kind, isWaitingForOpponent, isResolvingTurn, battleId, currentRound, handleChoice, t]);
+        if (chatVisible) setChatSeen(chatMessages.length);
+    }, [chatVisible, chatMessages.length]);
+    const unread = chatVisible ? 0 : chatMessages.slice(chatSeen).filter((m) => m.createdBy !== userId).length;
+    const send = (text) => sendChatMessage(battleId, text);
+    const chatPanel = (inRail) => (
+        <PvpChat
+            messages={chatMessages}
+            userId={userId}
+            onSend={send}
+            onClose={inRail ? null : () => setChatOpen(false)}
+            inRail={inRail}
+        />
+    );
 
-    const [isSharingForum, setIsSharingForum] = useState(false);
-    const showToast = useToastStore((state) => state.showToast);
-    const sendMessage = useForumStore((state) => state.sendMessage);
+    // ── The VS card's two sides ───────────────────────────────────────────
+    const versusMe = useVersusSide(userId, { name: myName, tag: t('battle.stage.you'), avatar: myAvatar });
+    const versusThem = useVersusSide(view?.opponentId || null, {
+        name: opponentName,
+        tag: t('battle.stage.rival'),
+        avatar: opponentAvatar,
+        fallback: FALLBACK_FOE_TRAINER,
+    });
 
-    const handleShareResultToForum = async () => {
-        if (isSharingForum || !view) return;
-        setIsSharingForum(true);
-        try {
-            const opponent = view.opponentName || t('friends.unknownTrainer');
-            let summaryText = '';
-            if (view.winner === userId) {
-                summaryText = language === 'pt'
-                    ? `Venci a batalha contra @${opponent}!`
-                    : `I won the battle against @${opponent}!`;
-            } else if (view.winner) {
-                summaryText = language === 'pt'
-                    ? `@${opponent} venceu a batalha contra mim.`
-                    : `@${opponent} won the battle against me.`;
-            } else {
-                summaryText = language === 'pt'
-                    ? `Batalha empatada contra @${opponent}!`
-                    : `Battle tied against @${opponent}!`;
-            }
+    const rival = useMemo(() => ({
+        foeSimName: simNameOf(lines, 'p2') || opponentName,
+        foeSprite: trainerSpriteUrl(opponentAvatar?.trainerSprite || FALLBACK_FOE_TRAINER),
+        foeRoster: opponentRoster,
+        pendingText: t('battle.stage.waiting', { name: opponentName }),
+        labels: {
+            foeButton: t('battle.stage.foeTeamButton'),
+            foeTitle: t('battle.stage.foeTeam', { name: opponentName }),
+        },
+        forfeitCopy: {
+            title: t('battle.stage.forfeitTitle'),
+            message: t('battle.stage.forfeitMessage', { name: opponentName }),
+            confirmText: t('challenge.battle.forfeitConfirm'),
+        },
+        // `lines` changes per round; the sim name is in the opening, so the
+        // object stays put after the first.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [lines.length > 0, opponentName, opponentAvatar?.trainerSprite, t]);
 
-            const replayUrl = `${window.location.origin}${window.location.pathname}#/battles/${battleId}`;
-            const fullMsg = `${summaryText}\n${language === 'pt' ? 'Assista o replay' : 'Watch the replay'}: ${replayUrl}`;
+    // ── The console ───────────────────────────────────────────────────────
+    const screenInput = useRef(null);
+    useConsoleInput({
+        enabled: stage === 'lobby' || stage === 'result',
+        onAction: (action) => screenInput.current?.onAction?.(action),
+    });
 
-            const ok = await sendMessage('general', fullMsg);
-            if (ok) {
-                showToast(t('battle.shareForumSuccess'), 'success');
-            } else {
-                showToast(t('battle.shareForumError'), 'error');
-            }
-        } catch (err) {
-            console.error('Error sharing battle to forum:', err);
-            showToast(t('battle.shareForumError'), 'error');
-        } finally {
-            setIsSharingForum(false);
-        }
-    };
+    const showChatChip = !(railsOn && layout === 'single');
+    const bar = (
+        <>
+            <button type="button" className="ds-chip is-button" onClick={() => navigate('/battles')} aria-label={t('battle.backToList')} title={t('battle.backToList')}>
+                <ArrowLeft className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span className="ds-chip__long">{t('battle.stage.battles')}</span>
+            </button>
+            <span className="ds-chip is-accent pvp-chip__name">
+                <Swords className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span className="pvp-chip__text">{opponentName}</span>
+            </span>
+            <span className="ds-console__spacer" />
+            {showChatChip && (
+                <button
+                    type="button"
+                    className="ds-chip is-button"
+                    aria-pressed={chatOpen}
+                    onClick={() => setChatOpen((value) => !value)}
+                    aria-label={t('battle.chatTitle')}
+                    title={t('battle.chatTitle')}
+                >
+                    <MessageSquare className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                    {unread > 0 && <span className="pvp-chip__count">{unread}</span>}
+                </button>
+            )}
+            <button
+                type="button"
+                className="ds-chip is-button"
+                aria-pressed={sound.musicOn}
+                onClick={sound.toggleMusic}
+                aria-label={t(sound.musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
+                title={t(sound.musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
+            >
+                <Music className={`w-3.5 h-3.5 shrink-0 ${sound.musicOn ? '' : 'opacity-40'}`} aria-hidden="true" />
+            </button>
+            <button
+                type="button"
+                className="ds-chip is-button"
+                aria-pressed={!sound.muted}
+                onClick={sound.toggleMuted}
+                aria-label={t(sound.muted ? 'challenge.console.unmute' : 'challenge.console.mute')}
+                title={t(sound.muted ? 'challenge.console.unmute' : 'challenge.console.mute')}
+            >
+                {sound.muted ? <VolumeX className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> : <Volume2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
+            </button>
+            <button type="button" className="ds-chip is-button" aria-pressed={sound.fast} onClick={sound.toggleFast} title={t('challenge.console.speed')}>
+                <FastForward className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                {sound.fast ? '2×' : '1×'}
+            </button>
+        </>
+    );
+    const chatRail = railsOn && layout === 'single' ? chatPanel(true) : null;
+    const rails = railsOn ? { mode: railMode, start: null, end: chatRail, endLabel: t('battle.chatTitle') } : null;
+
+    const rematchModal = rematchOpen && friend && (
+        <ChallengeModal
+            isOpen
+            onClose={() => setRematchOpen(false)}
+            friend={friend}
+            userId={userId}
+            onStartChallenge={async (target, options) => {
+                const id = await challengeFriend(target, options);
+                if (id) navigate(`/battles/${id}`);
+            }}
+        />
+    );
 
     if (!battle || !view) {
         return (
-            <div className="battle-view">
-                <EmptyState
-                    compact
-                    title={t('battle.notFoundTitle')}
-                    message={t('battle.notFoundMessage')}
-                    action={{ label: t('battle.backToList'), onClick: () => navigate('/battles') }}
+            <div className="challenge-view pvp-view">
+                {hasLoadedBattles ? (
+                    <EmptyState
+                        compact
+                        title={t('battle.notFoundTitle')}
+                        message={t('battle.notFoundMessage')}
+                        action={{ label: t('battle.backToList'), onClick: () => navigate('/battles') }}
+                    />
+                ) : (
+                    <div className="challenge-loading"><Loader size="lg" block label={t('battle.stage.loading')} /></div>
+                )}
+            </div>
+        );
+    }
+
+    // The far platform with the opponent standing on it — the backdrop of the
+    // lobby, the result and the wait for a log.
+    const backdrop = (text) => (
+        <DsBattleScene
+            field={EMPTY_FIELD}
+            current={null}
+            text={text}
+            speaker={null}
+            foeBalls={[]}
+            myBalls={[]}
+            switchKeys={{ p1: 0, p2: 0 }}
+            moveMeta={() => null}
+            championName={opponentName}
+            foeSprite={rival.foeSprite}
+            reducedMotion={reducedMotion}
+            messageMode={layout === 'single' ? 'none' : 'band'}
+        />
+    );
+
+    // ── Battle ───────────────────────────────────────────────────────────
+    // Mounted only after the VS card: the playback decides at mount whether
+    // it plays from the first line (`playIntro`) or picks up where it is.
+    if (stage === 'battle' && hasLog && lines.length > 0) {
+        const overlay = chatOpen
+            ? (layout === 'single' ? <div className="bw-overlay is-menu">{chatPanel(false)}</div> : chatPanel(false))
+            : null;
+        return (
+            <div className="challenge-view pvp-view" ref={viewRef}>
+                <DsBattleStage
+                    key={`${battleId}:${replayKey}`}
+                    run={{ runId: battleId, lines, status: status === 'active' ? 'active' : 'ended', practice: false }}
+                    lineup={[]}
+                    events={[]}
+                    eventsBase={0}
+                    pending={pending}
+                    championName={opponentName}
+                    playIntro={playIntro}
+                    fast={sound.fast}
+                    reducedMotion={reducedMotion}
+                    bar={bar}
+                    rails={rails}
+                    rival={rival}
+                    music="rival"
+                    overlay={overlay}
+                    onChoose={handleChoice}
+                    onForfeit={() => forfeitBattle(battleId)}
+                    onFinished={() => setStage('result')}
                 />
             </div>
         );
     }
 
-    const handleSubmitTeam = async () => {
-        if (!selectedTeam) return;
-        const ok = await submitTeam(battleId, selectedTeam.pokemons, selectedTeam.name);
-        if (ok) loadMyTeam(battleId);
-    };
-
-    const handleSend = async (event) => {
-        event.preventDefault();
-        const text = chatDraft;
-        setChatDraft('');
-        const ok = await sendChatMessage(battleId, text);
-        if (!ok) setChatDraft(text);
-    };
+    // ── Lobby, result, or a battle waiting for its log ────────────────────
+    let panel;
+    let headline = '';
+    if (stage === 'result') {
+        headline = t(`battle.result.${outcome || 'tie'}`, { name: opponentName });
+        panel = (
+            <PvpResult
+                outcome={outcome || 'tie'}
+                opponentName={opponentName}
+                turns={readBattleField(lines).turn}
+                remaining={standing(lines, 'p1')}
+                onRematch={onRematch}
+                onReplay={lines.length ? () => {
+                    setReplayKey((key) => key + 1);
+                    setPlayIntro(true);
+                    setStage('battle');
+                } : null}
+                onShare={shareToForum}
+                onBack={() => navigate('/battles')}
+                inputRef={screenInput}
+            />
+        );
+    } else if (stage === 'lobby') {
+        headline = view.canAccept
+            ? t('challenge.text.intro', { name: opponentName })
+            : t('battle.stage.vsLine', { name: opponentName });
+        panel = (
+            <PvpLobby
+                view={view}
+                opponentName={opponentName}
+                savedTeams={savedTeams}
+                preferredTeamId={preferredTeamId}
+                myTeam={myTeam}
+                isBusy={lobbyBusy}
+                inputRef={screenInput}
+                onAccept={onAccept}
+                onDecline={() => declineChallenge(battleId)}
+                onCancel={() => cancelChallenge(battleId)}
+                onSubmitTeam={onSubmitTeam}
+                onRoll={() => rollRandomTeams(battleId)}
+                onRematch={onRematch}
+                onBack={() => navigate('/battles')}
+            />
+        );
+    } else {
+        headline = t('battle.stage.loading');
+        panel = <div className="ds-panel pvp-lobby is-loading"><Loader size="md" block label={t('battle.stage.loading')} /></div>;
+    }
+    const lowerScreen = chatOpen ? chatPanel(false) : panel;
 
     return (
-        <div className="battle-view">
-            {/* ── Top bar: back · opponent identity · discard ─────────
-                A three-column grid rather than a flex row, because only the
-                middle column may take the leftover width and only it may shrink.
-                As a flex row the opponent's format line ("gen9randombattle · six
-                random Pokémon…") was unshrinkable and pushed Discard off the
-                right edge of every phone. */}
-            <div className="battle-nav-bar">
-                <button
-                    type="button"
-                    className="btn btn-outline btn-sm battle-nav-bar__back"
-                    onClick={() => navigate('/battles')}
-                    aria-label={t('battle.backToList')}
-                >
-                    <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="battle-nav-bar__back-label">{t('battle.backToList')}</span>
-                </button>
-
-                <div className="battle-nav-opponent">
-                    <FramedAvatar uid={view.opponentId} className="battle-header__avatar battle-header__avatar--sm">
-                        <AvatarSprite
-                            trainerSprite={view.opponentAvatar?.trainerSprite}
-                            pokemonId={view.opponentAvatar?.pokemonId}
-                            isShiny={view.opponentAvatar?.isShiny}
-                            fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
-                        />
-                    </FramedAvatar>
-                    <div className="battle-nav-opponent__text">
-                        <h2 className="battle-nav-opponent__name">
-                            {view.opponentName || t('friends.unknownTrainer')}
-                        </h2>
-                        <span className="battle-nav-opponent__meta">
-                            {view.isRandom
-                                ? t('battle.randomFormatLine', { format: battle.format })
-                                : t('battle.formatLine', { format: battle.format, level: battle.level })}
-                        </span>
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    className="btn btn-ghost btn-sm battle-nav-bar__discard"
-                    onClick={async () => {
-                        const confirmed = await confirmAction({
-                            title: t('dialogs.discardBattleTitle'),
-                            message: t('dialogs.discardBattleMsg'),
-                            confirmText: t('battle.discardBattle'),
-                        });
-                        if (!confirmed) return;
-                        const ok = await deleteBattle(battleId);
-                        if (ok) navigate('/battles');
-                    }}
-                    aria-label={t('battle.discardBattle')}
-                    title={t('battle.discardBattle')}
-                >
-                    <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="battle-nav-bar__discard-label">{t('battle.discardBattle')}</span>
-                </button>
-            </div>
-
-            <div className="battle-layout">
-                <div className="battle-layout__main">
-                    <section className="battle-panel">
-                        <h3 className="battle-panel__title">{t('battle.statusTitle')}</h3>
-
-                        {view.status === 'pending' && (
-                            <>
-                                <p className="battle-panel__copy">
-                                    {view.isChallenger ? t('battle.pendingSent') : t('battle.pendingReceived')}
-                                </p>
-                                {view.isRandom && (
-                                    <p className="battle-panel__copy">{t('battle.randomPendingHint')}</p>
-                                )}
-                                <div className="battle-actions">
-                                    {view.canAccept && (
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary"
-                                            onClick={() => acceptChallenge(battleId, { mode: battle.mode })}
-                                        >
-                                            {t('battle.accept')}
-                                        </button>
-                                    )}
-                                    {view.canDecline && (
-                                        <button type="button" className="btn btn-outline" onClick={() => declineChallenge(battleId)}>
-                                            {t('battle.decline')}
-                                        </button>
-                                    )}
-                                    {view.canCancel && (
-                                        <button type="button" className="btn btn-outline" onClick={() => cancelChallenge(battleId)}>
-                                            {t('battle.cancelChallenge')}
-                                        </button>
-                                    )}
-                                </div>
-                            </>
-                        )}
-
-                        {view.status === 'teamSelect' && view.isRandom && (
-                            <>
-                                <p className="battle-panel__copy">{t('battle.randomDealing')}</p>
-                                <div className="battle-actions">
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        disabled={isRollingTeams}
-                                        onClick={() => rollRandomTeams(battleId)}
-                                    >
-                                        {isRollingTeams ? t('battle.randomDealingBtnBusy') : t('battle.randomDealBtn')}
-                                    </button>
-                                </div>
-                            </>
-                        )}
-
-                        {view.status === 'teamSelect' && !view.isRandom && (
-                            <>
-                                <div className="battle-ready">
-                                    <span className={`battle-ready__side ${view.myReady ? 'is-ready' : ''}`}>
-                                        {view.myReady ? t('battle.yourTeamIn') : t('battle.yourTeamPending')}
-                                    </span>
-                                    <span className={`battle-ready__side ${view.theirReady ? 'is-ready' : ''}`}>
-                                        {view.theirReady ? t('battle.theirTeamIn') : t('battle.theirTeamPending')}
-                                    </span>
-                                </div>
-
-                                {view.canSubmitTeam ? (
-                                    savedTeams.length === 0 ? (
-                                        <EmptyState
-                                            compact
-                                            title={t('battle.noTeamsTitle')}
-                                            message={t('battle.noTeamsMessage')}
-                                            action={{ label: t('battle.goToBuilder'), onClick: () => navigate('/builder') }}
-                                        />
-                                    ) : (
-                                        <div className="battle-team-picker">
-                                            <label htmlFor="battle-team-select" className="battle-panel__label">
-                                                {t('battle.chooseTeam')}
-                                            </label>
-                                            <select
-                                                id="battle-team-select"
-                                                className="input-clean"
-                                                value={selectedTeamId}
-                                                onChange={(event) => setSelectedTeamId(event.target.value)}
-                                            >
-                                                <option value="">{t('battle.chooseTeamPlaceholder')}</option>
-                                                {savedTeams.map((team) => (
-                                                    <option key={team.id} value={team.id}>
-                                                        {team.name} ({team.pokemons?.length || 0})
-                                                    </option>
-                                                ))}
-                                            </select>
-
-                                            {selectedTeam && (
-                                                <div className="battle-team-preview">
-                                                    {(selectedTeam.pokemons || []).slice(0, 6).map((mon, index) => (
-                                                        <img
-                                                            key={mon.instanceId || index}
-                                                            src={getTeamPokemonDisplaySprite(mon)}
-                                                            alt={mon.name}
-                                                            loading="lazy"
-                                                            onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            <button
-                                                type="button"
-                                                className="btn btn-primary"
-                                                disabled={!selectedTeam}
-                                                onClick={handleSubmitTeam}
-                                            >
-                                                {t('battle.lockTeam')}
-                                            </button>
-                                        </div>
-                                    )
-                                ) : (
-                                    myTeam && (
-                                        <div className="battle-locked-team">
-                                            <p className="battle-panel__label">
-                                                {t('battle.yourLockedTeam', { name: myTeam.teamName })}
-                                            </p>
-                                            <TeamSpriteBar sprites={myTeam.sprites} />
-                                        </div>
-                                    )
-                                )}
-
-                                {view.canStart && (
-                                    <div className="battle-actions">
-                                        <button type="button" className="btn btn-primary" onClick={() => startBattle(battleId)}>
-                                            {t('battle.startBattle')}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {view.status === 'active' && (
-                            <>
-                                {view.isRandom && myTeam?.sprites?.length > 0 && (
-                                    <div className="battle-locked-team">
-                                        <p className="battle-panel__label">{t('battle.randomYourTeam')}</p>
-                                        <TeamSpriteBar sprites={myTeam.sprites} showLevels />
-                                    </div>
-                                )}
-
-                                <Battlefield
-                                    field={field}
-                                    animated={animatedSprites}
-                                    onToggleAnimated={toggleAnimatedSprites}
-                                />
-
-                                {myRequest.kind === 'none' && (
-                                    <p className="battle-panel__copy">
-                                        {isResolvingTurn ? t('battle.syncing') : t('battle.noPromptYet')}
-                                    </p>
-                                )}
-
-                                {myRequest.kind !== 'none' && (
-                                    <div className="battle-choices">
-                                        <TurnBanner
-                                            waiting={isWaitingForOpponent}
-                                            opponentName={view.opponentName || t('friends.unknownTrainer')}
-                                            choiceLabel={lastChoiceLabel}
-                                            t={t}
-                                            language={language}
-                                            onSync={handleManualSync}
-                                            isSyncing={isManualSyncing}
-                                        />
-
-                                        {!isWaitingForOpponent && myRequest.kind === 'teamPreview' && (
-                                            <p className="battle-panel__copy flex items-center justify-center gap-2 py-2 text-primary font-semibold animate-pulse">
-                                                <RefreshCw className="w-4 h-4 animate-spin text-primary shrink-0" />
-                                                <span>{t('battle.syncing')}</span>
-                                            </p>
-                                        )}
-
-                                        {!isWaitingForOpponent && (myRequest.kind === 'move' || myRequest.kind === 'switch') && (
-                                            <>
-                                                {myRequest.kind === 'move' && (
-                                                    <>
-                                                        <p className="battle-panel__label">{t('battle.chooseMove')}</p>
-                                                        <div className="battle-choices__grid">
-                                                            {myRequest.moves.map((move) => (
-                                                                <TooltipTrigger
-                                                                    key={move.slot}
-                                                                    tooltipContent={
-                                                                        <MoveTooltipCard
-                                                                            moveName={move.name}
-                                                                            currentPP={move.pp}
-                                                                            maxPP={move.maxpp}
-                                                                        />
-                                                                    }
-                                                                >
-                                                                    <MoveOption
-                                                                        move={move}
-                                                                        disabled={move.disabled || isResolvingTurn}
-                                                                        onClick={() => handleChoice(`move ${move.slot}`, move.name)}
-                                                                        typeForMove={typeForMove}
-                                                                    />
-                                                                </TooltipTrigger>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                )}
-
-                                                {myRequest.switches.length > 0 && (
-                                                    <>
-                                                        <p className="battle-panel__label">
-                                                            {myRequest.kind === 'switch' ? t('battle.mustSwitch') : t('battle.orSwitch')}
-                                                        </p>
-                                                        <div className="battle-choices__grid">
-                                                            {myRequest.switches.map((mon) => (
-                                                                <TooltipTrigger
-                                                                    key={mon.slot}
-                                                                    tooltipContent={
-                                                                        <MonTooltipCard
-                                                                            speciesName={mon.name}
-                                                                            hpCondition={mon.condition}
-                                                                        />
-                                                                    }
-                                                                >
-                                                                    <SwitchOption
-                                                                        mon={mon}
-                                                                        disabled={isResolvingTurn}
-                                                                        onClick={() => handleChoice(
-                                                                            `switch ${mon.slot}`,
-                                                                            t('battle.switchChoiceLabel', { name: mon.name }),
-                                                                        )}
-                                                                    />
-                                                                </TooltipTrigger>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {view.isOver && (
-                            <>
-                                <p className="battle-panel__copy">{t(`battle.status_${view.status}`)}</p>
-                                <div className="battle-actions flex flex-wrap gap-2">
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary flex items-center gap-1.5"
-                                        disabled={isSharingForum}
-                                        onClick={handleShareResultToForum}
-                                    >
-                                        <Share2 className="w-4 h-4" />
-                                        <span>{t('battle.shareForum')}</span>
-                                    </button>
-
-                                    {view.canDelete && (
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline"
-                                            onClick={async () => {
-                                                const ok = await deleteBattle(battleId);
-                                                if (ok) navigate('/battles');
-                                            }}
-                                        >
-                                            {t('battle.dismiss')}
-                                        </button>
-                                    )}
-                                </div>
-                            </>
-                        )}
-                    </section>
-                </div>
-
-                {/* ── Right-Side Tabbed Panel (Registro de batalha & Conversa) ── */}
-                <aside className="battle-layout__side">
-                    <div className="battle-side-tabs">
-                        <button
-                            type="button"
-                            className={`battle-side-tab ${activeSideTab === 'log' ? 'is-active' : ''}`}
-                            onClick={() => setActiveSideTab('log')}
-                        >
-                            <FileText className="w-4 h-4 inline-block mr-1" />
-                            <span>{language === 'pt' ? 'Registro' : 'Log'}</span>
-                            {transcript.length > 0 && <span className="battle-side-tab__count">{transcript.length}</span>}
-                        </button>
-                        <button
-                            type="button"
-                            className={`battle-side-tab ${activeSideTab === 'chat' ? 'is-active' : ''}`}
-                            onClick={() => setActiveSideTab('chat')}
-                        >
-                            <MessageSquare className="w-4 h-4 inline-block mr-1" />
-                            <span>{language === 'pt' ? 'Chat' : 'Chat'}</span>
-                            {chatMessages.length > 0 && <span className="battle-side-tab__count">{chatMessages.length}</span>}
-                        </button>
-                    </div>
-
-                    <div className="battle-side-content">
-                        {activeSideTab === 'log' ? (
-                            <section className="battle-panel battle-panel--side-log">
-                                <h3 className="battle-panel__title">
-                                    {language === 'pt' ? 'Registro de Batalha' : 'Battle Log'}
-                                </h3>
-                                <BattleLogPanel logEntries={transcript} />
-                            </section>
-                        ) : (
-                            <section className="battle-panel battle-panel--side-chat">
-                                <h3 className="battle-panel__title">{t('battle.chatTitle')}</h3>
-
-                                <ul className="battle-chat">
-                                    {chatMessages.length === 0 ? (
-                                        <li className="battle-chat__empty">{t('battle.chatEmpty')}</li>
-                                    ) : (
-                                        chatMessages.map((message) => (
-                                            <li
-                                                key={message.id}
-                                                className={`battle-chat__row ${message.createdBy === userId ? 'is-mine' : ''}`}
-                                            >
-                                                <FramedAvatar uid={message.createdBy} stampedFrameId={message.creatorFrameId} className="battle-chat__avatar">
-                                                    <AvatarSprite
-                                                        trainerSprite={message.creatorTrainerSprite}
-                                                        pokemonId={message.creatorAvatar}
-                                                        isShiny={message.creatorAvatarIsShiny}
-                                                        fallback={<PokeballIcon className="w-4 h-4 text-muted opacity-40" />}
-                                                    />
-                                                </FramedAvatar>
-                                                <span className="battle-chat__bubble">
-                                                    <span className="battle-chat__author">{message.creatorName}</span>
-                                                    <span className="battle-chat__text">{message.text}</span>
-                                                </span>
-                                            </li>
-                                        ))
-                                    )}
-                                    <li ref={chatEndRef} aria-hidden="true" />
-                                </ul>
-
-                                <form className="battle-chat__composer" onSubmit={handleSend}>
-                                    <input
-                                        type="text"
-                                        className="input-clean"
-                                        maxLength={500}
-                                        placeholder={t('battle.chatPlaceholder')}
-                                        value={chatDraft}
-                                        onChange={(event) => setChatDraft(event.target.value)}
-                                    />
-                                    <button type="submit" className="btn btn-primary" disabled={!chatDraft.trim()}>
-                                        {language === 'pt' ? 'Enviar' : 'Send'}
-                                    </button>
-                                </form>
-                            </section>
-                        )}
-                    </div>
-                </aside>
-            </div>
+        <div className="challenge-view pvp-view" ref={viewRef}>
+            {layout === 'single' ? (
+                <DsConsole
+                    layout="single"
+                    label={t('battle.stage.consoleLabel', { name: opponentName })}
+                    bar={bar}
+                    rails={rails}
+                    screen={(
+                        <>
+                            {backdrop(headline)}
+                            <div className="bw-overlay is-menu">{lowerScreen}</div>
+                        </>
+                    )}
+                />
+            ) : (
+                <DsConsole
+                    label={t('battle.stage.consoleLabel', { name: opponentName })}
+                    bar={bar}
+                    top={backdrop(headline)}
+                    bottom={lowerScreen}
+                    controls={false}
+                    onAction={() => {}}
+                    onRelease={() => {}}
+                />
+            )}
+            {stage === 'versus' && (
+                <DsVersusLazy left={versusMe} right={versusThem} variant="rival" reducedMotion={reducedMotion} onDone={handleVersusDone} />
+            )}
+            {rematchModal}
         </div>
     );
 }

@@ -250,6 +250,13 @@ the HUD as a strip inside it — and **dual** — two stacked screens on a phone
 the bottom one for touch. Every sub-menu ends in the same VOLTAR capsule
 (`.bw-cancel`).
 
+The same exception covers two more pieces of the game (2026-10-20): **the VS
+card** (`.ds-vs`, `src/styles/battle-versus.css`) — a full-screen cinematic with
+its own canon arcade palette (`--vs-*`, declared once on `.ds-vs`) and sizes
+derived from its band's height — and **the friend battle's chat and lobby**
+inside a screen or rail (`src/styles/battle-pvp.css`, DS pixels and `--ds-*` /
+`--bw-*`). Their chips on the console's bar are app UI and follow every rule.
+
 Motion inside a screen may use game timings (a 160 ms walk step, a 450 ms
 send-out) but stays transform/opacity and stops under reduced motion. The
 console frame around the screens (`.ds-console`, its bar, the D-pad) is ordinary

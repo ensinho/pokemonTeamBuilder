@@ -379,8 +379,8 @@ export function FriendsView() {
                 isOpen={!!challengingFriend}
                 friend={challengingFriend}
                 onClose={() => setChallengingFriend(null)}
-                onStartChallenge={async (targetFriend, { mode }) => {
-                    const battleId = await challengeFriend(targetFriend, { mode });
+                onStartChallenge={async (targetFriend, options) => {
+                    const battleId = await challengeFriend(targetFriend, options);
                     if (battleId) navigate(`/battles/${battleId}`);
                 }}
                 userId={userId}

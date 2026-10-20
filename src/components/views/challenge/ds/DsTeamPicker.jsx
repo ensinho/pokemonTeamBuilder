@@ -18,12 +18,19 @@ import { DsTeamSheet } from './DsTeamSheet';
  * no moves can borrow the competitive set for this battle only. Either team's
  * sheet (DsTeamSheet: ability, item, moves, stats) opens one level further
  * down — a tap on a member of the Time do dia, "Ficha" on a saved team.
+ *
+ * Without `dailyMembers` (a friend battle) it opens on "My teams", on
+ * `preferredTeamId` (the team used last) when that one is ready; `title`,
+ * `startLabel` and `showPrivacy` replace the challenge's copy; `headAction`
+ * (a node) joins the head — the friend battle's "decline".
  */
 export function DsTeamPicker({
-    savedTeams, dailyMembers, practice, championName, isStarting, teamErrors, onStart, onCancel, inputRef,
+    savedTeams, dailyMembers = [], practice, championName, isStarting, teamErrors, onStart, onCancel, inputRef,
+    title = null, startLabel: startLabelProp = null, preferredTeamId = null, showPrivacy = true, headAction = null,
 }) {
     const { t } = useTranslation();
-    const [view, setView] = useState('daily');
+    const hasDaily = dailyMembers.length > 0;
+    const [view, setView] = useState(hasDaily ? 'daily' : 'mine');
     const [completed, setCompleted] = useState({});
     const [isCompleting, setIsCompleting] = useState(false);
     const [localErrors, setLocalErrors] = useState(null);
@@ -36,7 +43,10 @@ export function DsTeamPicker({
         const members = completed[team.id] || (team.pokemons || []).filter(Boolean);
         return { team, members, check: teamCheck(members) };
     }), [savedTeams, completed]);
-    const [selectedId, setSelectedId] = useState(() => (rows.find((r) => !r.check.errors.length) || rows[0])?.team.id || null);
+    const [selectedId, setSelectedId] = useState(() => {
+        const preferred = rows.find((r) => r.team.id === preferredTeamId && !r.check.errors.length);
+        return (preferred || rows.find((r) => !r.check.errors.length) || rows[0])?.team.id || null;
+    });
     const selected = rows.find((row) => row.team.id === selectedId) || null;
     const sheet = useMemo(() => {
         if (view !== 'sheet') return [];
@@ -63,7 +73,9 @@ export function DsTeamPicker({
             return;
         }
         setLocalErrors(null);
-        onStart({ source: 'saved', teamId: selected.team.id, name: selected.team.name || '', showdownText: selected.check.text });
+        onStart({
+            source: 'saved', teamId: selected.team.id, name: selected.team.name || '', showdownText: selected.check.text, members: selected.members,
+        });
     };
 
     const fillIn = async () => {
@@ -94,23 +106,24 @@ export function DsTeamPicker({
     // VOLTAR, as in every BW menu: one level up — the sheet → its team; Meus times → Time do dia → the room.
     const cancel = () => {
         if (view === 'sheet') setView(sheetOf);
-        else if (view === 'mine') setView('daily');
+        else if (view === 'mine' && hasDaily) setView('daily');
         else onCancel?.();
     };
     const problems = teamErrors?.length ? teamErrors : localErrors;
-    const startLabel = practice ? t('challenge.picker.startPractice') : t('challenge.picker.start', { name: championName });
+    const startLabel = startLabelProp || (practice ? t('challenge.picker.startPractice') : t('challenge.picker.start', { name: championName }));
 
     return (
         <div className="ds-picker">
             {/* The sheet needs the room; its tabs say whose team it is. */}
             {view !== 'sheet' && <div className="ds-picker__head">
-                <span className="ds-picker__title">{practice ? t('challenge.picker.practiceTitle') : t('challenge.picker.title')}</span>
+                <span className="ds-picker__title">{title || (practice ? t('challenge.picker.practiceTitle') : t('challenge.picker.title'))}</span>
                 {view === 'daily' && (
                     <button type="button" className="ds-link" onClick={() => setView('mine')}>{t('challenge.picker.moreTeams')}</button>
                 )}
                 {view === 'mine' && selected?.members.length > 0 && (
                     <button type="button" className="ds-link" onClick={() => openSheet('mine')}>{t('challenge.sheet.open')}</button>
                 )}
+                {headAction}
             </div>}
 
             {view === 'sheet' ? (
@@ -188,10 +201,10 @@ export function DsTeamPicker({
                 </ul>
             )}
 
-            {view !== 'sheet' && <p className="ds-picker__privacy">{t('challenge.privacy.notice')}</p>}
+            {view !== 'sheet' && showPrivacy && <p className="ds-picker__privacy">{t('challenge.privacy.notice')}</p>}
             <div className="ds-picker__foot">
                 <button type="button" className="bw-cancel" onClick={cancel}>{t('challenge.command.back')}</button>
-                <button type="button" className="ds-go" onClick={start} disabled={isStarting}>
+                <button type="button" className="ds-go" onClick={start} disabled={isStarting || (!hasDaily && !selected)}>
                     {isStarting ? '…' : startLabel}
                 </button>
             </div>

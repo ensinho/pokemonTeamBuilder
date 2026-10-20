@@ -1,5 +1,10 @@
 # Handoff — Friends & async battles
 
+> **2026-10-20:** superseded for the battle flow, server state and screen by
+> [docs/modules/friend_battles.md](../modules/friend_battles.md). The traps below (§6) are
+> still true, except: the battle detail view, `Battlefield` and the polling ladder are gone,
+> and choices no longer go to `choices/`.
+
 **Date:** 2026-07-24 · **Branch:** `main` · **Commit:** `b3d9653` (pushed)
 **Scope delivered:** Phases 0 + 1 + 2 + 3 + 4 of [friends-and-async-battles.md](./friends-and-async-battles.md) — public
 profiles, trainer sprites, avatar choice, the full friend list, the battle skeleton, the

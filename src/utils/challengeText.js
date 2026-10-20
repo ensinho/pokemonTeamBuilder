@@ -15,10 +15,12 @@ const fromItem = (from) => (from && from.startsWith('item:') ? from.slice(5).tri
 
 /**
  * @param {object} event a `battleTimeline` event
- * @param {{t: Function, mySide?: string, championName: string}} ctx
+ * @param {{t: Function, mySide?: string, championName: string, foeSimName?: string, rival?: boolean}} ctx
+ *   `rival`: a friend battle — the outcome lines are not Cynthia's (`battle.stage.*`),
+ *   and `foeSimName` is the name `|win|` uses for the opponent.
  * @returns {{text: string|null, speaker: string|null}}
  */
-export const eventText = (event, { t, mySide = 'p1', championName }) => {
+export const eventText = (event, { t, mySide = 'p1', championName, foeSimName = null, rival = false }) => {
     const who = event.side === mySide ? event.species : t('challenge.text.foe', { species: event.species });
     const say = (key, params = {}) => ({ text: t(key, { who, name: championName, ...params }), speaker: null });
 
@@ -71,10 +73,11 @@ export const eventText = (event, { t, mySide = 'p1', championName }) => {
         }
         case 'dialogue':
             return { text: t(event.key, event.params || {}), speaker: championName };
-        case 'end':
-            return event.winner === championName
-                ? say('challenge.text.lost')
-                : say('challenge.text.won');
+        case 'end': {
+            const lost = event.winner === (foeSimName || championName);
+            if (rival) return say(lost ? 'battle.stage.lostTo' : 'battle.stage.beat');
+            return lost ? say('challenge.text.lost') : say('challenge.text.won');
+        }
         default:
             return { text: null, speaker: null };
     }

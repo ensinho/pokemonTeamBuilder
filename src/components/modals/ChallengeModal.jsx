@@ -1,11 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToastStore } from '../../store/useToastStore';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { useFirestoreTeams } from '../../hooks/useFirestoreTeams';
+import { readLastBattleTeam } from '../../store/useBattlesStore';
+import { teamCheck } from '../../utils/challengeTeams';
+import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { AvatarSprite } from '../AvatarSprite';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, SwordsIcon, DiceIcon, CloseIcon, ClipIcon } from '../icons';
+import '../../styles/challenge-modal.css';
 
+/**
+ * Challenge a friend — one sheet, one decision per row: who, which mode, and
+ * (for your own team) which team, with the one used last already chosen. The
+ * team goes with the challenge, so the friend's accept starts the battle on
+ * the spot: no "pick your team", no "start", no waiting on each other.
+ */
 export function ChallengeModal({
     isOpen,
     onClose,
@@ -14,31 +26,51 @@ export function ChallengeModal({
     onStartChallenge,
     userId,
 }) {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
+    const navigate = useNavigate();
     const showToast = useToastStore((state) => state.showToast);
     const dialogRef = useModalA11y(isOpen ? onClose : null);
+    const { savedTeams } = useFirestoreTeams();
 
     const [selectedFriendId, setSelectedFriendId] = useState('');
     const [selectedMode, setSelectedMode] = useState('normal'); // 'normal' | 'random'
+    const [selectedTeamId, setSelectedTeamId] = useState(null);
+    const [isSending, setIsSending] = useState(false);
+
+    const teams = useMemo(() => savedTeams.map((team) => {
+        const members = (team.pokemons || []).filter(Boolean);
+        return { team, members, ready: members.length > 0 && teamCheck(members).errors.length === 0 };
+    }), [savedTeams]);
 
     useEffect(() => {
-        if (friend) {
-            setSelectedFriendId(friend.userId);
-        } else if (friends.length > 0) {
-            setSelectedFriendId(friends[0].userId);
-        } else {
-            setSelectedFriendId('');
-        }
+        if (!isOpen) return;
+        if (friend) setSelectedFriendId(friend.userId);
+        else if (friends.length > 0) setSelectedFriendId(friends[0].userId);
+        else setSelectedFriendId('');
     }, [friend, friends, isOpen]);
+
+    // The team used last, else the first that can battle. Without one, the
+    // random mode is the way to battle right now.
+    useEffect(() => {
+        if (!isOpen) return;
+        const last = readLastBattleTeam();
+        const pick = teams.find((row) => row.team.id === last && row.ready) || teams.find((row) => row.ready) || null;
+        setSelectedTeamId(pick?.team.id || null);
+        if (!pick) setSelectedMode('random');
+    }, [isOpen, teams]);
 
     const activeFriend = useMemo(() => {
         if (friend) return friend;
         return friends.find((f) => f.userId === selectedFriendId) || null;
     }, [friend, friends, selectedFriendId]);
 
+    const selectedTeam = teams.find((row) => row.team.id === selectedTeamId) || null;
+    const needsTeam = selectedMode === 'normal';
+    const canSend = Boolean(activeFriend) && (!needsTeam || selectedTeam?.ready) && !isSending;
+
     const inviteLink = useMemo(() => {
         if (!userId || typeof window === 'undefined') return '';
-        return `${window.location.origin}${window.location.pathname}#/friends?tab=find&add=${userId}`;
+        return `${window.location.origin}${import.meta.env.BASE_URL}friends?tab=find&add=${userId}`.replace(/([^:]\/)\/+/g, '$1');
     }, [userId]);
 
     const copyInviteLink = async () => {
@@ -55,9 +87,19 @@ export function ChallengeModal({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!activeFriend) return;
-        await onStartChallenge(activeFriend, { mode: selectedMode });
-        onClose();
+        if (!canSend) return;
+        setIsSending(true);
+        try {
+            await onStartChallenge(activeFriend, {
+                mode: selectedMode === 'random' ? 'random' : 'standard',
+                team: needsTeam && selectedTeam
+                    ? { id: selectedTeam.team.id, name: selectedTeam.team.name, members: selectedTeam.members }
+                    : null,
+            });
+            onClose();
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -70,29 +112,20 @@ export function ChallengeModal({
                 tabIndex={-1}
                 className="modal-panel modal-panel--sm"
             >
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
-                    <div className="flex items-center gap-2">
+                <div className="modal-header">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                         <SwordsIcon className="w-5 h-5 text-primary" />
-                        <h3 id="challenge-modal-title" className="text-base font-bold text-fg">
-                            {t('battle.challengeTrainer')}
-                        </h3>
+                        <h3 id="challenge-modal-title" className="modal-title">{t('battle.challengeTrainer')}</h3>
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="Close"
-                        className="text-muted hover:text-fg p-1 rounded-lg hover:bg-surface-raised transition-colors"
-                    >
+                    <button type="button" onClick={onClose} aria-label={t('common.close')} className="modal-close">
                         <CloseIcon className="w-4 h-4" />
                     </button>
                 </div>
 
-                {/* Body */}
-                <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                    {/* Opponent Display / Picker */}
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                    <div className="modal-body space-y-4">
                     {friend ? (
-                        <div className="flex items-center gap-3 p-3 bg-surface-raised border border-border rounded-xl">
+                        <div className="flex items-center gap-3 p-3 bg-surface-raised rounded-xl">
                             <FramedAvatar uid={friend.userId} stampedFrameId={friend.frameId} className="inline-flex w-10 h-10 shrink-0 items-center justify-center rounded-full">
                                 <AvatarSprite
                                     trainerSprite={friend.trainerSprite}
@@ -103,117 +136,94 @@ export function ChallengeModal({
                                 />
                             </FramedAvatar>
                             <div className="min-w-0 flex-1">
-                                <span className="text-2xs text-muted font-bold block">
-                                    {language === 'pt' ? 'Oponente' : 'Opponent'}
-                                </span>
-                                <h4 className="text-sm font-bold text-fg truncate">
-                                    {friend.displayName || t('friends.unknownTrainer')}
-                                </h4>
+                                <span className="text-2xs text-muted font-bold block">{t('battle.stage.opponent')}</span>
+                                <h4 className="text-sm font-bold text-fg truncate">{friend.displayName || t('friends.unknownTrainer')}</h4>
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-1.5">
-                            <label className="text-2xs font-bold text-muted block">
-                                {t('battle.selectFriendPrompt')}
-                            </label>
+                        <div className="field">
+                            <label className="field-label" htmlFor="challenge-friend">{t('battle.selectFriendPrompt')}</label>
                             {friends.length === 0 ? (
-                                <p className="text-xs text-muted italic bg-surface-raised p-3 rounded-xl border border-border">
-                                    {language === 'pt'
-                                        ? 'Você ainda não tem amigos. Use o link de convite abaixo!'
-                                        : 'No friends added yet. Use the invite link below!'}
-                                </p>
+                                <p className="text-xs text-muted bg-surface-raised p-3 rounded-xl">{t('battle.stage.noFriends')}</p>
                             ) : (
                                 <select
-                                    className="input-clean font-semibold w-full text-xs"
+                                    id="challenge-friend"
+                                    className="select-clean"
                                     value={selectedFriendId}
                                     onChange={(e) => setSelectedFriendId(e.target.value)}
                                 >
                                     {friends.map((f) => (
-                                        <option key={f.userId} value={f.userId}>
-                                            {f.displayName || t('friends.unknownTrainer')}
-                                        </option>
+                                        <option key={f.userId} value={f.userId}>{f.displayName || t('friends.unknownTrainer')}</option>
                                     ))}
                                 </select>
                             )}
                         </div>
                     )}
 
-                    {/* Battle Mode Cards (Minimalist) */}
-                    <div className="space-y-1.5">
-                        <label className="text-2xs font-bold text-muted block">
-                            {t('battle.chooseFormatTitle')}
-                        </label>
-
-                        <div className="grid grid-cols-2 gap-2.5">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedMode('normal')}
-                                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
-                                    selectedMode === 'normal'
-                                        ? 'border-primary bg-primary/10 ring-1 ring-primary/40 shadow-sm'
-                                        : 'border-border bg-surface-raised hover:border-primary'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <SwordsIcon className={`w-4 h-4 ${selectedMode === 'normal' ? 'text-primary' : 'text-muted'}`} />
-                                    {selectedMode === 'normal' && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    )}
-                                </div>
-                                <span className="text-xs font-bold text-fg block">
-                                    {t('battle.normalMode')}
-                                </span>
+                    <div className="field">
+                        <span className="field-label">{t('battle.chooseFormatTitle')}</span>
+                        <div className="segmented segmented--block" role="group" aria-label={t('battle.chooseFormatTitle')}>
+                            <button type="button" className="segmented__item" aria-pressed={selectedMode === 'normal'} onClick={() => setSelectedMode('normal')}>
+                                <SwordsIcon className="w-4 h-4" aria-hidden="true" />
+                                {t('battle.normalMode')}
                             </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setSelectedMode('random')}
-                                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
-                                    selectedMode === 'random'
-                                        ? 'border-primary bg-primary/10 ring-1 ring-primary/40 shadow-sm'
-                                        : 'border-border bg-surface-raised hover:border-primary'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <DiceIcon className={`w-4 h-4 ${selectedMode === 'random' ? 'text-primary' : 'text-muted'}`} />
-                                    {selectedMode === 'random' && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    )}
-                                </div>
-                                <span className="text-xs font-bold text-fg block">
-                                    {t('battle.randomMode')}
-                                </span>
+                            <button type="button" className="segmented__item" aria-pressed={selectedMode === 'random'} onClick={() => setSelectedMode('random')}>
+                                <DiceIcon className="w-4 h-4" aria-hidden="true" />
+                                {t('battle.randomMode')}
                             </button>
                         </div>
+                        <p className="text-xs text-muted">
+                            {selectedMode === 'random' ? t('battle.randomModeDesc') : t('battle.stage.teamGoesWith')}
+                        </p>
                     </div>
 
-                    {/* Full-width Invite Link Button */}
-                    <div className="pt-1">
-                        <button
-                            type="button"
-                            onClick={copyInviteLink}
-                            className="w-full btn btn-secondary py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-2 border border-border hover:border-primary/50 transition-colors rounded-xl"
-                        >
-                            <ClipIcon className="w-4 h-4 text-primary shrink-0" />
-                            <span>{t('battle.copyBattleInvite')}</span>
-                        </button>
+                    {needsTeam && (
+                        <div className="field">
+                            <span className="field-label">{t('battle.stage.yourTeam')}</span>
+                            {teams.length === 0 ? (
+                                <div className="flex items-center justify-between gap-3 p-3 bg-surface-raised rounded-xl">
+                                    <p className="text-xs text-muted m-0">{t('battle.lobby.noTeams')}</p>
+                                    <button type="button" className="btn btn-outline btn-sm" onClick={() => { onClose(); navigate('/builder'); }}>
+                                        {t('battle.lobby.buildTeam')}
+                                    </button>
+                                </div>
+                            ) : (
+                                <ul className="challenge-teams custom-scrollbar">
+                                    {teams.map(({ team, members, ready }) => (
+                                        <li key={team.id}>
+                                            <button
+                                                type="button"
+                                                className="challenge-teams__row"
+                                                aria-pressed={team.id === selectedTeamId}
+                                                disabled={!ready}
+                                                onClick={() => setSelectedTeamId(team.id)}
+                                            >
+                                                <span className="challenge-teams__name">{team.name || t('challenge.picker.untitled')}</span>
+                                                {!ready && <span className="challenge-teams__warn">{t('battle.stage.teamNotReady')}</span>}
+                                                <span className="challenge-teams__sprites" aria-hidden="true">
+                                                    {members.slice(0, 6).map((mon, index) => (
+                                                        // A saved team keeps its order.
+                                                        <img key={`${mon.id}-${index}`} src={getTeamPokemonDisplaySprite(mon)} alt="" width={28} height={28} loading="lazy" decoding="async" />
+                                                    ))}
+                                                </span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    )}
+
+                    <button type="button" onClick={copyInviteLink} className="btn btn-ghost btn-sm btn-block">
+                        <ClipIcon className="w-4 h-4 shrink-0" />
+                        <span>{t('battle.copyBattleInvite')}</span>
+                    </button>
                     </div>
 
-                    {/* Footer Actions (50/50 split) */}
-                    <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-border">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-full btn btn-ghost font-semibold text-xs py-2.5 rounded-xl border border-border flex items-center justify-center"
-                        >
-                            {t('common.cancel')}
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={!activeFriend}
-                            className="w-full btn btn-primary font-semibold text-xs py-2.5 rounded-xl shadow-md flex items-center justify-center"
-                        >
-                            {t('friends.battle')}
+                    <div className="modal-footer">
+                        <button type="button" onClick={onClose} className="btn btn-ghost">{t('common.cancel')}</button>
+                        <button type="submit" disabled={!canSend} className="btn btn-primary">
+                            {isSending ? t('battle.stage.sending') : t('battle.stage.sendChallenge')}
                         </button>
                     </div>
                 </form>

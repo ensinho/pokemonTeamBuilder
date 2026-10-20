@@ -502,31 +502,6 @@
 }
 
 /* Battle transition: two flashes, then the spiral closes in. */
-.ds-transition {
-    position: absolute;
-    inset: 0;
-    z-index: 60;
-    background: repeating-conic-gradient(var(--ds-room-wall) 0 18deg, transparent 18deg 36deg);
-    animation: ds-spiral 1.1s ease-in both;
-}
-
-.ds-transition::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--ds-paper);
-    animation: ds-double-flash 0.45s steps(4, jump-none) both;
-}
-
-.ds-transition.is-reduced {
-    background: var(--ds-room-wall);
-    animation: ds-fade-in 150ms linear both;
-}
-
-.ds-transition.is-reduced::before {
-    display: none;
-}
-
 /* ── The text box ────────────────────────────────────────────────────── */
 
 .ds-textbox {
@@ -2367,12 +2342,6 @@
 @keyframes ds-bang { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes ds-blink { from { opacity: 1; } to { opacity: 0; } }
 @keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes ds-double-flash { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes ds-spiral {
-    0% { opacity: 0; transform: rotate(0deg) scale(0.2); }
-    40% { opacity: 0; transform: rotate(0deg) scale(0.2); }
-    100% { opacity: 1; transform: rotate(270deg) scale(3); }
-}
 @keyframes ds-enter { from { opacity: 0; transform: scale(0.1); } to { opacity: 1; transform: scale(1); } }
 @keyframes ds-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(1 * var(--px))); } }
 @keyframes ds-lunge-mine { 50% { transform: translate(calc(14 * var(--px)), calc(-6 * var(--px))); } }

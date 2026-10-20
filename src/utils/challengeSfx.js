@@ -1,6 +1,7 @@
 /**
- * The Champion Challenge's sound: short effects synthesized with WebAudio — no
- * files, no music (tech spec §3.12). Nothing plays before `unlock()`, which the
+ * The battles' sound: short effects synthesized with WebAudio — no files (tech
+ * spec §3.12). The music (`battleMusic.js`) plays through the same context and
+ * the same master gain, so one mute silences both. Nothing plays before `unlock()`, which the
  * route calls on the first gesture inside it (autoplay policy). Muting is
  * remembered in localStorage and the button lives on the console's bar.
  *
@@ -27,6 +28,9 @@ let muted = readMuted();
 let lastBlip = -Infinity;
 
 export const isMuted = () => muted;
+
+/** The context and master gain once unlocked — the music plays through them. */
+export const audioGraph = () => (ctx && master ? { ctx, master } : null);
 
 export const setMuted = (value) => {
     muted = Boolean(value);
@@ -128,6 +132,14 @@ const RECIPES = {
     heal: (t) => notes(t, [523, 659, 784, 1047], { dur: 0.06, type: 'triangle', gain: 0.2 }),
     statUp: (t) => tone(t, { freq: 300, to: 900, dur: 0.2, gain: 0.16 }),
     statDown: (t) => tone(t, { freq: 900, to: 300, dur: 0.2, gain: 0.16 }),
+    // The VS card's slam: a crash, a falling boom and a bright three-note stab.
+    versus: (t) => {
+        noise(t, { dur: 0.5, gain: 0.32, from: 6000, to: 700 });
+        tone(t, { type: 'square', freq: 110, to: 48, dur: 0.38, gain: 0.3 });
+        notes(t + 0.04, [523, 784, 1047], { dur: 0.05, gain: 0.14, last: 0.2 });
+    },
+    // The band sweeping in.
+    whoosh: (t) => noise(t, { dur: 0.28, gain: 0.14, from: 400, to: 5000 }),
     // An original eight-note figure, rising and resolving; never a game's jingle.
     victory: (t) => notes(t, [523, 659, 784, 659, 784, 1047, 988, 1047], { dur: 0.1, gain: 0.18, last: 0.45 }),
     defeat: (t) => notes(t, [392, 330, 262, 196], { dur: 0.16, type: 'triangle', gain: 0.22, last: 0.5 }),

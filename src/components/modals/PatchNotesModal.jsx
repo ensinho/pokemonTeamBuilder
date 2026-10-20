@@ -558,6 +558,36 @@ const ChallengeVisual = ({ language }) => {
     );
 };
 
+// 1.17.0: you and a friend on the VS card, and the one tap that starts it.
+const VersusVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex items-center gap-3">
+                {[6, 9].map((id, i) => (
+                    <React.Fragment key={id}>
+                        {i === 1 && <span className="font-mono text-base font-bold italic text-primary">VS</span>}
+                        <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface-raised">
+                            <img
+                                src={`${SPRITE_BASE}/${id}.png`}
+                                alt=""
+                                className="h-12 w-12 object-contain"
+                                style={{ imageRendering: 'pixelated' }}
+                            />
+                        </span>
+                    </React.Fragment>
+                ))}
+            </div>
+            <span className="rounded-full bg-primary px-3 py-0.5 text-2xs font-bold uppercase text-on-primary tracking-[0.06em]">
+                {pt ? 'Lutar!' : 'Fight!'}
+            </span>
+            <span className="font-mono text-2xs font-semibold text-muted">
+                {pt ? 'aceitou, já está batalhando' : 'accept, and you are battling'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -593,6 +623,7 @@ const NOTE_VISUALS = {
     preFairy: PreFairyVisual,
     account: AccountVisual,
     challenge: ChallengeVisual,
+    versus: VersusVisual,
     regMc: RegMcVisual,
 };
 

@@ -153,8 +153,9 @@ function Combatant({ mon, side, current, feetTable }) {
 
 /**
  * The battle, DPPt style (top screen): sky, the teal ground, two platforms,
- * Gen 4 sprites (front for Cynthia's side, back for yours), HP boxes and the
- * text box. Everything is laid out in DS pixels (`--px`).
+ * Gen 4 sprites (front for the opponent's side, back for yours), HP boxes and
+ * the text box. The trainer standing on the far platform before the send-out
+ * is Cynthia, or `foeSprite` (a friend's trainer). Everything is laid out in DS pixels (`--px`).
  *
  * The scene is the battle *as of the moment playing*: `field` is read from the
  * log up to the current event (`useBattlePlayback`), so an HP bar drains when
@@ -162,7 +163,7 @@ function Combatant({ mon, side, current, feetTable }) {
  */
 export const DsBattleScene = memo(function DsBattleScene({
     field, current, text, speaker, foeBalls, myBalls, switchKeys, moveMeta, championName, onAdvance, showArrow, reducedMotion,
-    messageMode = 'band',
+    messageMode = 'band', foeSprite = null,
 }) {
     const feetTable = useSpriteFeet();
     const foe = field?.theirs?.active || null;
@@ -181,7 +182,7 @@ export const DsBattleScene = memo(function DsBattleScene({
 
             <img
                 className={`ds-trainer ${foe ? 'is-gone' : ''}`}
-                src={CHAMPION_SPRITE}
+                src={foeSprite || CHAMPION_SPRITE}
                 alt={championName}
                 width={80}
                 height={80}

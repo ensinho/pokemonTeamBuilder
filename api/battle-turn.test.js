@@ -123,34 +123,79 @@ beforeEach(() => {
     });
 });
 
+const postAction = async (uid, action) => {
+    const res = {
+        statusCode: 200,
+        body: null,
+        setHeader() {},
+        status(code) { this.statusCode = code; return this; },
+        json(body) { this.body = body; return this; },
+        end() { return this; },
+    };
+    await handler(
+        { method: 'POST', headers: { origin: 'https://pokemonbuilder.app', 'x-test-uid': uid }, body: { battleId: 'b1', action } },
+        res,
+    );
+    return res;
+};
+
+/** Answer whatever the sim asks, round after round, until the battle ends. */
+const playOut = async (rounds = 60) => {
+    for (let round = 0; round < rounds; round += 1) {
+        const battle = state.store.get(BATTLE);
+        if (battle.status === 'ended') break;
+        const awaiting = battle.awaitingChoiceFrom || [];
+        if (!awaiting.length) break;
+        for (const uid of awaiting) {
+            const choice = chooseFor(uid);
+            if (choice) await post(uid, choice);
+        }
+    }
+};
+
 describe('POST /api/battle-turn', () => {
-    it('bootstraps the opening position and asks both players for a team order', async () => {
+    it('bootstraps the opening position and answers team preview itself', async () => {
         const res = await post(P1, null);
 
         expect(res.statusCode).toBe(200);
         expect(res.body.resolved).toBe(false);
+        // Team preview decides nothing here (the client always sent "default"),
+        // so the opening publish answers it: both players start on a move.
+        expect(state.store.get(BATTLE).turn).toBe(1);
         expect(state.store.get(BATTLE).awaitingChoiceFrom).toEqual([P1, P2]);
-        expect(requestFor(P1).teamPreview).toBe(true);
-        expect(requestFor(P2).teamPreview).toBe(true);
+        expect(requestFor(P1).active).toBeTruthy();
+        expect(requestFor(P2).active).toBeTruthy();
+        // The caller's own lines come back in the response.
+        expect(res.body.deltas[0].seq).toBe(0);
+        expect(res.body.deltas[0].lines).toEqual(logFor(P1));
     });
 
     it('holds the round open until everyone the sim asked has answered', async () => {
         await post(P1, null);
 
-        const first = await post(P1, 'default');
+        const first = await post(P1, 'move 1');
         expect(first.body.resolved).toBe(false);
         expect(first.body.waitingOnOpponent).toBe(true);
-        expect(state.store.get(BATTLE).turn).toBe(0);
-
-        const second = await post(P2, 'default');
-        expect(second.body.resolved).toBe(true);
         expect(state.store.get(BATTLE).turn).toBe(1);
+
+        const second = await post(P2, 'move 1');
+        expect(second.body.resolved).toBe(true);
+        expect(state.store.get(BATTLE).turn).toBe(2);
+        expect(second.body.deltas.at(-1).lines.length).toBeGreaterThan(0);
+    });
+
+    it('keeps a pending choice where the opponent cannot read it', async () => {
+        await post(P1, null);
+        await post(P1, 'move 2');
+
+        // Nothing under choices/ (readable by both players) — the round waits
+        // in secret/state, which no client rule reaches.
+        expect(childIds(`${BATTLE}/choices`)).toEqual([]);
+        expect(state.store.get(`${BATTLE}/secret/state`).pending).toMatchObject({ round: 1, p1: 'move 2', p2: null });
     });
 
     it('resolves a one-sided forced switch without waiting on the other player', async () => {
         await post(P1, null);
-        await post(P1, 'default');
-        await post(P2, 'default');
 
         // Play until someone faints and the sim prompts exactly one side.
         let sawOneSidedPrompt = false;
@@ -183,19 +228,7 @@ describe('POST /api/battle-turn', () => {
 
     it('plays a battle through to a winner', async () => {
         await post(P1, null);
-        await post(P1, 'default');
-        await post(P2, 'default');
-
-        for (let round = 0; round < 60; round += 1) {
-            const battle = state.store.get(BATTLE);
-            if (battle.status === 'ended') break;
-            const awaiting = battle.awaitingChoiceFrom || [];
-            if (!awaiting.length) break;
-            for (const uid of awaiting) {
-                const choice = chooseFor(uid);
-                if (choice) await post(uid, choice);
-            }
-        }
+        await playOut();
 
         const battle = state.store.get(BATTLE);
         expect(battle.status).toBe('ended');
@@ -203,10 +236,28 @@ describe('POST /api/battle-turn', () => {
         expect(battle.awaitingChoiceFrom).toEqual([]);
     });
 
+    it('replays the same battle from the stored history', async () => {
+        await post(P1, null);
+        await playOut(4);
+
+        // The history in secret/state is everything the replay needs: replaying
+        // it reproduces the log the players were sent, line for line.
+        const { replayBattle } = await import('./_lib/battleResolver.js');
+        const secret = state.store.get(`${BATTLE}/secret/state`);
+        const replay = await replayBattle({
+            format: secret.format,
+            seed: secret.seed,
+            teams: secret.teams,
+            names: { p1: 'Ash', p2: 'Gary' },
+            choices: secret.history,
+        });
+        // `|t:|` lines carry the wall clock, the one thing a replay can't repeat.
+        const timeless = (lines) => lines.filter((line) => !line.startsWith('|t:|'));
+        expect(timeless(replay.log.p1)).toEqual(timeless(logFor(P1)));
+    });
+
     it('drops a choice from the side the sim is not asking', async () => {
         await post(P1, null);
-        await post(P1, 'default');
-        await post(P2, 'default');
 
         // Play to a one-sided prompt, then have the *other* player submit.
         let idle = null;
@@ -229,12 +280,142 @@ describe('POST /api/battle-turn', () => {
         expect(res.body.ignored).toBeTruthy();
         expect(state.store.get(BATTLE).turn).toBe(before);
         // Nothing persisted, so it cannot leak into the next replay.
-        expect(childIds(`${BATTLE}/choices`)).not.toContain(`${before}_${idle}`);
+        const pending = state.store.get(`${BATTLE}/secret/state`).pending;
+        expect(pending[idle === P1 ? 'p1' : 'p2']).toBeNull();
+    });
+
+    it('takes over a round whose resolver died after claiming it', async () => {
+        await post(P1, null);
+        await post(P1, 'move 1');
+        // P2's request claimed the round and then never published.
+        const secretPath = `${BATTLE}/secret/state`;
+        const secret = state.store.get(secretPath);
+        state.store.set(secretPath, {
+            ...secret,
+            pending: { ...secret.pending, p2: 'move 1', claimedAt: new Date(Date.now() - 60_000).toISOString() },
+        });
+
+        const res = await post(P1, null);
+        expect(res.body.resolved).toBe(true);
+        expect(state.store.get(BATTLE).turn).toBe(2);
+    });
+
+    it('leaves a fresh claim alone', async () => {
+        await post(P1, null);
+        await post(P1, 'move 1');
+        const secretPath = `${BATTLE}/secret/state`;
+        const secret = state.store.get(secretPath);
+        state.store.set(secretPath, {
+            ...secret,
+            pending: { ...secret.pending, p2: 'move 1', claimedAt: new Date().toISOString() },
+        });
+
+        const res = await post(P1, null);
+        expect(res.body.resolved).toBe(false);
+        expect(res.body.resolving).toBe(true);
+        expect(state.store.get(BATTLE).turn).toBe(1);
+    });
+
+    it('migrates a battle that started before secret/state', async () => {
+        // A legacy battle: bootstrapped, team preview answered through choices/.
+        const opening = await (await import('./_lib/battleResolver.js')).replayBattle({
+            format: 'gen9customgame',
+            seed: [5, 6, 7, 8],
+            teams: {
+                p1: state.store.get(`${BATTLE}/teams/${P1}`).showdownText,
+                p2: state.store.get(`${BATTLE}/teams/${P2}`).showdownText,
+            },
+            names: { p1: 'Ash', p2: 'Gary' },
+            choices: [],
+        });
+        state.store.set(BATTLE, {
+            ...state.store.get(BATTLE),
+            seed: [5, 6, 7, 8],
+            logSeq: 1,
+            logLines: { p1: opening.log.p1.length, p2: opening.log.p2.length },
+            awaitingChoiceFrom: [P1, P2],
+        });
+        state.store.set(`${BATTLE}/playerLogs/${P1}/rounds/0000`, { round: 0, seq: 0, lines: opening.log.p1 });
+        state.store.set(`${BATTLE}/playerLogs/${P2}/rounds/0000`, { round: 0, seq: 0, lines: opening.log.p2 });
+        state.store.set(`${BATTLE}/choices/0_${P1}`, { uid: P1, side: 'p1', round: 0, choice: 'default' });
+
+        const res = await post(P2, 'default');
+        expect(res.body.resolved).toBe(true);
+        expect(state.store.get(`${BATTLE}/secret/state`).history).toEqual(['>p1 default', '>p2 default']);
+        expect(requestFor(P1).active).toBeTruthy();
     });
 
     it('rejects a caller who is not in the battle', async () => {
         const res = await post('uid-stranger', 'move 1');
         expect(res.statusCode).toBe(403);
+    });
+});
+
+describe('POST /api/battle-turn — begin', () => {
+    beforeEach(() => {
+        state.store.set(BATTLE, {
+            ...state.store.get(BATTLE),
+            status: 'pending',
+            format: 'gen9customgame',
+            ready: {},
+        });
+    });
+
+    it('accepts and starts in one request once both teams are in', async () => {
+        const res = await postAction(P2, 'begin');
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.begun).toBe(true);
+        const battle = state.store.get(BATTLE);
+        expect(battle.status).toBe('active');
+        expect(battle.format).toMatch(/^gen9anythinggoes@@@!Team Preview/);
+        expect(battle.ready).toEqual({ [P1]: true, [P2]: true });
+        // The opening is published and the caller's own lines come back.
+        expect(battle.logSeq).toBe(1);
+        expect(res.body.deltas[0].lines).toEqual(logFor(P2));
+        // No team preview in the new format: straight to a move, and the
+        // opponent's HP is a percentage, never exact.
+        expect(requestFor(P2).active).toBeTruthy();
+        expect(logFor(P2).filter((l) => l.startsWith('|switch|p1a')).every((l) => l.endsWith('/100'))).toBe(true);
+    });
+
+    it('is not the challenger\'s to accept', async () => {
+        const res = await postAction(P1, 'begin');
+        expect(res.statusCode).toBe(409);
+        expect(state.store.get(BATTLE).status).toBe('pending');
+    });
+
+    it('waits in team select for a challenger who sent no team', async () => {
+        state.store.delete(`${BATTLE}/teams/${P1}`);
+        const res = await postAction(P2, 'begin');
+
+        expect(res.body.begun).toBe(false);
+        expect(res.body.waitingForTeam).toBe('opponent');
+        expect(state.store.get(BATTLE)).toMatchObject({ status: 'teamSelect', ready: { [P2]: true } });
+    });
+
+    it('is idempotent once the battle is live', async () => {
+        await postAction(P2, 'begin');
+        const again = await postAction(P1, 'begin');
+        expect(again.statusCode).toBe(200);
+        expect(state.store.get(BATTLE).logSeq).toBe(1);
+    });
+});
+
+describe('POST /api/battle-turn — forfeit', () => {
+    it('ends the battle and hands the other trainer the win', async () => {
+        await post(P1, null);
+        const res = await postAction(P1, 'forfeit');
+
+        expect(res.statusCode).toBe(200);
+        expect(state.store.get(BATTLE)).toMatchObject({ status: 'ended', winner: P2, forfeitedBy: P1 });
+        expect(state.store.get(`artifacts/testApp/publicProfiles/${P2}`).battleRecord.wins).toEqual({ __increment: 1 });
+    });
+
+    it('only ends a battle in progress', async () => {
+        state.store.set(BATTLE, { ...state.store.get(BATTLE), status: 'pending' });
+        const res = await postAction(P1, 'forfeit');
+        expect(res.statusCode).toBe(409);
     });
 });
 
