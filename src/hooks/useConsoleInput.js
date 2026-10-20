@@ -8,6 +8,7 @@ const KEY_TO_ACTION = {
     KeyZ: 'a', Enter: 'a', Space: 'a',
     KeyX: 'b', Escape: 'b', Backspace: 'b',
     Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4',
+    KeyM: 'mega',
 };
 
 const DIRECTIONS = new Set(['up', 'down', 'left', 'right']);
@@ -23,8 +24,9 @@ const isForeign = (event) => {
 
 /**
  * The console's keyboard: arrows/WASD → directions, Z/Enter/Space → A,
- * X/Esc/Backspace → B, 1–4 → moves. Directions report press and release so a
- * held key keeps walking. Screens only ever see actions, never keys.
+ * X/Esc/Backspace → B, 1–4 → moves, M → the battle's MEGA switch. Directions
+ * report press and release so a held key keeps walking. Screens only ever see
+ * actions, never keys.
  *
  * @param {{enabled?: boolean, onAction: (action: string) => void, onRelease?: (action: string) => void}} handlers
  */

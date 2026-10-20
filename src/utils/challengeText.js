@@ -13,6 +13,13 @@ const STATS = new Set(['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']
 
 const fromItem = (from) => (from && from.startsWith('item:') ? from.slice(5).trim() : null);
 
+/** `Charizard-Mega-X` → `Mega Charizard X`, the way the games say it. */
+export const megaName = (species) => {
+    const match = /^(.+)-Mega(?:-([XYZ]))?$/.exec(String(species || ''));
+    if (!match) return String(species || '');
+    return `Mega ${match[1]}${match[2] ? ` ${match[2]}` : ''}`;
+};
+
 /**
  * @param {object} event a `battleTimeline` event
  * @param {{t: Function, mySide?: string, championName: string, foeSimName?: string, rival?: boolean}} ctx
@@ -73,6 +80,8 @@ export const eventText = (event, { t, mySide = 'p1', championName, foeSimName = 
         }
         case 'dialogue':
             return { text: t(event.key, event.params || {}), speaker: championName };
+        case 'mega':
+            return say('challenge.text.mega', { mega: megaName(event.mega) });
         case 'end': {
             const lost = event.winner === (foeSimName || championName);
             if (rival) return say(lost ? 'battle.stage.lostTo' : 'battle.stage.beat');

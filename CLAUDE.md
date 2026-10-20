@@ -110,6 +110,16 @@ through `engine.snapshot()` / `ai/fog.js`, never a raw `fromJSON(toJSON())`), an
 `docs/modules/daily_challenge.md` before touching it; `npm run ai:arena` after any
 AI change.
 
+**Mega Evolution and effects (both battle types):** the choice is `move N mega`
+(the menu's MEGA switch, from the request's `canMegaEvo`). No Showdown validator
+runs here, so a battle-only forme saved as the species starts as its base
+(`toStartingForme` in `api/_lib/battleResolver.js`). PvP does this only before the
+first published line, because a published battle must replay exactly as shown.
+Any reader keyed by species must follow `detailschange`, including the sim's
+`[silent]` revert on a faint (`src/utils/megaEvolution.test.js`). Impact moments
+get the anime flare (`ds/DsFlare.jsx`, chosen in `src/utils/battleFlare.js`),
+drawn with the Web Animations API, not new route CSS.
+
 Two unauthenticated probes, in order, when battles misbehave in production:
 - `GET /api/battle-turn?ping=1` — answers before loading anything. JSON means the function starts at all; another `FUNCTION_INVOCATION_FAILED` means the fault is the deployment or platform config, not this code.
 - `GET /api/battle-turn` — full self-check: dependency load, credentials (shape only, never contents), a Firestore round-trip, and a real two-Pokémon sim run.

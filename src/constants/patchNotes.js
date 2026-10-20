@@ -34,7 +34,7 @@ export const RELEASES = [
                 path: '/battles',
             },
             { key: 'battle-music', icon: 'sparkles', title: 'patchNotes.musicTitle', description: 'patchNotes.musicDesc', cta: 'patchNotes.musicCta', path: '/challenge' },
-            { key: 'champion-versus', icon: 'crown', title: 'patchNotes.championVsTitle', description: 'patchNotes.championVsDesc', cta: 'patchNotes.challengeCta', path: '/challenge' },
+            { key: 'mega-evolution', icon: 'crown', title: 'patchNotes.megaTitle', description: 'patchNotes.megaDesc', cta: 'patchNotes.challengeCta', path: '/challenge' },
             { key: 'battle-cache', icon: 'key', title: 'patchNotes.battleCacheTitle', description: 'patchNotes.battleCacheDesc', cta: 'patchNotes.battleCacheCta', path: '/battles' },
         ],
     },

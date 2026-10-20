@@ -3345,10 +3345,20 @@
         display: contents;
     }
 
-    .forum-feed-head__title {
-        flex: 1 1 auto;
-        min-width: 0;
-        font-size: var(--text-md);
+    /* The app bar already names the page: a second title (and the two
+       magnifiers stacked under each other) read as two screens (2026-10-20).
+       The forum's name stays for screen readers; its figures lead the line,
+       beside the search and Create. Hidden labels on a phone use the same
+       five lines (`.forum-flair__label`, `.forum-pill__label`). */
+    .forum-feed-head__title,
+    .post-row .forum-flair--status .forum-flair__label,
+    .post-row__actions .forum-pill__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 
     .forum-feed-head__create-long {
@@ -3356,8 +3366,12 @@
     }
 
     .forum-feed-head__stats {
-        order: 5;
-        flex-basis: 100%;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .forum-feed-head__stat-wide {
+        display: none;
     }
 
     .forum-feed-head__top.is-searching .forum-feed-head__title,
@@ -3379,6 +3393,40 @@
     .post-row__thumb {
         grid-template-columns: repeat(3, 1.75rem);
         grid-auto-rows: 1.75rem;
+    }
+
+    /* One chip per row: the category. Pinned, trending and official are
+       their icon on a tinted dot — the title is what a row is read by. */
+    .post-row .forum-flair--status {
+        justify-content: center;
+        width: 1.25rem;
+        padding: 0;
+    }
+
+    /* The actions are quiet: icon and count, no fill (a liked heart keeps its
+       colour), Share an icon at the row's end. The row steps out by the pills'
+       padding so the first icon sits on the text column. */
+    .post-row__actions {
+        gap: var(--space-1);
+        margin-inline: calc(-1 * var(--space-2));
+    }
+
+    .post-row__actions .forum-pill,
+    .post-row__actions .forum-pill.is-liked {
+        padding: 0 var(--space-2);
+        background: transparent;
+    }
+
+    .post-row__actions .forum-pill {
+        color: var(--color-muted);
+    }
+
+    .post-row__actions .forum-pill.is-liked {
+        color: var(--color-primary);
+    }
+
+    .post-row__actions .forum-pill--share {
+        margin-left: auto;
     }
 
     .thread-bar {

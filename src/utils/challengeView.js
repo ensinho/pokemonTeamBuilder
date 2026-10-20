@@ -108,6 +108,15 @@ export const faintedSpecies = (lines = [], side = 'p1') => {
         const parts = line.split('|');
         if ((parts[1] === 'switch' || parts[1] === 'drag') && parts[2]?.startsWith(side)) {
             names.set(parts[2].split(': ')[1], speciesOf(parts[3]));
+        } else if (parts[1] === 'detailschange' && parts[2]?.startsWith(side)) {
+            // A Mega Evolution renames the species from here on, as the request
+            // does — and a fainted Mega is renamed back to its base (`[silent]`),
+            // so the faint follows the name.
+            const nickname = parts[2].split(': ')[1];
+            const before = names.get(nickname);
+            const after = speciesOf(parts[3]);
+            names.set(nickname, after);
+            if (fainted.delete(before)) fainted.add(after);
         } else if (parts[1] === 'faint' && parts[2]?.startsWith(side)) {
             const species = names.get(parts[2].split(': ')[1]);
             if (species) fainted.add(species);
@@ -152,6 +161,17 @@ export const sideHp = (lines = [], side = 'p1') => {
         const nickname = parts[2].split(': ')[1];
         const tag = parts[1];
         if (tag === 'switch' || tag === 'drag' || tag === 'replace') names.set(nickname, speciesOf(parts[3]));
+        if (tag === 'detailschange') {
+            // A Mega Evolution: the same Pokémon under its new species, as the request names it.
+            const before = names.get(nickname);
+            const after = speciesOf(parts[3]);
+            names.set(nickname, after);
+            if (before && hp.has(before)) {
+                hp.set(after, hp.get(before));
+                hp.delete(before);
+            }
+            continue;
+        }
         const species = names.get(nickname);
         if (!species) continue;
         if (tag === 'faint') {

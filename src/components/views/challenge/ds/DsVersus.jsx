@@ -3,6 +3,7 @@ import { ChevronsUp, Crown, Flame, Star, Swords, Trophy } from 'lucide-react';
 
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { play } from '../../../../utils/challengeSfx';
+import { DsFlare } from './DsFlare';
 import '../../../../styles/battle-versus.css';
 
 /*
@@ -233,6 +234,15 @@ export function DsVersus({ left, right, variant = 'rival', reducedMotion = false
                     <Portrait trainer={right} side="right" />
                 </div>
             </div>
+            {/* The anime flare blooms behind the VS as it lands. */}
+            <DsFlare
+                variant="win"
+                className="ds-vs__flare"
+                colorA="var(--vs-gold-2)"
+                colorB="var(--vs-right-3)"
+                delay={SLAM_AT_MS}
+                reducedMotion={reducedMotion}
+            />
             <div className="ds-vs__glyph" aria-hidden="true"><VsGlyph /></div>
             <div className="ds-vs__plates" aria-hidden="true">
                 <NamePlate trainer={left} side="left" />

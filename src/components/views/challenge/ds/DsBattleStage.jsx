@@ -191,6 +191,7 @@ export function DsBattleStage({
             moveMeta={moveMeta}
             championName={championName}
             foeSprite={rival?.foeSprite}
+            foeName={foeName}
             reducedMotion={reducedMotion}
             messageMode={layout === 'single' ? 'none' : 'band'}
         />

@@ -1,4 +1,4 @@
-import { Teams, BattleStreams } from '@pkmn/sim';
+import { Dex, Teams, BattleStreams } from '@pkmn/sim';
 
 /**
  * The turn resolver — the authority on what happens in a battle.
@@ -53,6 +53,35 @@ export class BattleResolveError extends Error {
         this.code = code;
     }
 }
+
+/**
+ * A set as a battle starts it. A battle-only forme saved as the species
+ * (`Charizard-Mega-X`, `Darmanitan-Zen`) goes out as the Pokémon it comes from,
+ * as Showdown's validator does — no validator runs here. Without this a Mega
+ * would start the battle Mega Evolved and never Mega Evolve; with it, it does
+ * so in battle when it holds its stone, and fights as itself when it doesn't.
+ *
+ * @returns {boolean} whether the set changed
+ */
+export const toStartingForme = (set) => {
+    const species = Dex.species.get(set?.species);
+    if (!species.exists || typeof species.battleOnly !== 'string') return false;
+    set.species = species.battleOnly;
+    return true;
+};
+
+/** A team's text with every set in its starting forme (unchanged if none needed it, or it doesn't parse). */
+export const startingFormes = (showdownText) => {
+    let sets;
+    try {
+        sets = Teams.import(showdownText || '');
+    } catch {
+        return showdownText;
+    }
+    if (!sets?.length) return showdownText;
+    const changed = sets.map(toStartingForme).some(Boolean);
+    return changed ? Teams.export(sets) : showdownText;
+};
 
 /** Showdown import text → packed team. Throws with a usable message if invalid. */
 export const packTeam = (showdownText, label) => {

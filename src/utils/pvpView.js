@@ -88,6 +88,16 @@ export const opponentRoster = (lines = []) => {
             const species = speciesOf(parts[3]);
             names.set(parts[2].split(': ')[1], species);
             if (species && !order.includes(species)) order.push(species);
+        } else if (tag === 'detailschange' && parts[2]?.startsWith('p2')) {
+            // A Mega Evolution: the same slot, under its new name (and back to
+            // its base when it faints — the faint follows the name).
+            const nickname = parts[2].split(': ')[1];
+            const before = names.get(nickname);
+            const after = speciesOf(parts[3]);
+            names.set(nickname, after);
+            const at = order.indexOf(before);
+            if (at !== -1) order[at] = after;
+            if (fainted.delete(before)) fainted.add(after);
         } else if (tag === 'faint' && parts[2]?.startsWith('p2')) {
             const species = names.get(parts[2].split(': ')[1]);
             if (species) fainted.add(species);

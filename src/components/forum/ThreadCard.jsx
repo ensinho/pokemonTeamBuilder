@@ -94,22 +94,23 @@ export const ThreadCard = memo(function ThreadCard({
                 <time className="post-row__time" dateTime={when}>{formatForumTime(when, language)}</time>
 
                 <span className="post-row__flairs">
+                    {/* Status flairs: on a phone only their icon shows (the label stays for screen readers). */}
                     {isPinned && (
-                        <span className="forum-flair forum-flair--pinned">
+                        <span className="forum-flair forum-flair--status forum-flair--pinned" title={t('forum.pinned')}>
                             <Pin className="w-3 h-3" aria-hidden="true" />
-                            {t('forum.pinned')}
+                            <span className="forum-flair__label">{t('forum.pinned')}</span>
                         </span>
                     )}
                     {isTrending && (
-                        <span className="forum-flair forum-flair--trending">
+                        <span className="forum-flair forum-flair--status forum-flair--trending" title={t('forum.trending')}>
                             <FlameIcon className="w-3 h-3" />
-                            {t('forum.trending')}
+                            <span className="forum-flair__label">{t('forum.trending')}</span>
                         </span>
                     )}
                     {isOfficial && !isPinned && (
-                        <span className="forum-flair forum-flair--official">
+                        <span className="forum-flair forum-flair--status forum-flair--official" title={t('forum.official')}>
                             <SparklesIcon className="w-3 h-3" />
-                            {t('forum.official')}
+                            <span className="forum-flair__label">{t('forum.official')}</span>
                         </span>
                     )}
                     <span className={`forum-flair forum-flair--${categoryMeta.id}`}>{categoryMeta.label}</span>
@@ -156,7 +157,7 @@ export const ThreadCard = memo(function ThreadCard({
             <div className="post-row__actions">
                 <button
                     type="button"
-                    className={`forum-pill ${liked ? 'is-liked' : ''}`}
+                    className={`forum-pill touch-target ${liked ? 'is-liked' : ''}`}
                     aria-pressed={liked}
                     aria-label={`${liked ? t('forum.unlike') : t('forum.like')} · ${t('forum.likesCount', { count: likes })}`}
                     onClick={() => onLike(topic.id)}
@@ -167,7 +168,7 @@ export const ThreadCard = memo(function ThreadCard({
                 <Link
                     to={href}
                     onClick={() => onBeforeOpen(topic.id)}
-                    className="forum-pill"
+                    className="forum-pill touch-target"
                     aria-label={t('forum.commentsCount', { count: replies })}
                 >
                     <MessageIcon className="w-4 h-4" />
@@ -175,7 +176,7 @@ export const ThreadCard = memo(function ThreadCard({
                 </Link>
                 <button
                     type="button"
-                    className="forum-pill"
+                    className="forum-pill forum-pill--share touch-target"
                     onClick={() => onShare(topic)}
                     aria-label={t('forum.share')}
                 >

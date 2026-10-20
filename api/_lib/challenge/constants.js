@@ -38,7 +38,8 @@ export const MAX_TEAM_TEXT = 8 * 1024;
 export const MAX_NAME_LENGTH = 20;
 
 /** The one choice grammar the endpoint accepts before it reaches the sim. */
-export const CHOICE_PATTERN = /^(move [1-4]|switch [1-6]|default)$/;
+// `move N mega` — a Pokémon holding its Mega Stone Mega Evolves as it moves.
+export const CHOICE_PATTERN = /^(move [1-4]( mega)?|switch [1-6]|default)$/;
 
 /**
  * Champions the engine knows. Only Cynthia ships (premise A5): the engine is

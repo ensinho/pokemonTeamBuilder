@@ -1,3 +1,5 @@
+import { ChevronLeft } from 'lucide-react';
+
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getBattleIcon } from '../../../../utils/battleSprites';
@@ -51,6 +53,24 @@ function MoveButton({ move, meta, focused, onChoose, onFocus }) {
                     <span className={`bw-move__pp is-${ppTone(move.pp, move.maxpp)}`}>PP {move.pp}/{move.maxpp}</span>
                 )}
             </span>
+        </button>
+    );
+}
+
+/** MEGA: on while the active Pokémon can Mega Evolve; the move chosen next does it. */
+function MegaToggle({ cmd }) {
+    const { t } = useTranslation();
+    if (!cmd.canMega) return null;
+    return (
+        <button
+            type="button"
+            className="bw-mega"
+            aria-pressed={cmd.mega}
+            onClick={cmd.toggleMega}
+            aria-label={t('challenge.command.megaLabel')}
+            title={t('challenge.command.megaLabel')}
+        >
+            {t('challenge.command.mega')}
         </button>
     );
 }
@@ -150,7 +170,10 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
             <div className="bw-touch is-moves">
                 {status}
                 <MoveGrid cmd={cmd} request={request} moveMeta={moveMeta} />
-                <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>
+                <div className="bw-moves__foot">
+                    <MegaToggle cmd={cmd} />
+                    <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>
+                </div>
             </div>
         );
     }
@@ -210,7 +233,17 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, shee
                                     <span className={`bw-hud__pp is-${ppTone(focused.pp, focused.maxpp)}`}>PP {focused.pp}/{focused.maxpp}</span>
                                 )}
                             </span>
-                            <button type="button" className="bw-hud__back" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>
+                            <MegaToggle cmd={cmd} />
+                            {/* An icon beside the name: as a labelled capsule in the corner it covered the PP. */}
+                            <button
+                                type="button"
+                                className="bw-hud__back"
+                                onClick={() => cmd.open('main')}
+                                aria-label={t('challenge.command.back')}
+                                title={t('challenge.command.back')}
+                            >
+                                <ChevronLeft aria-hidden="true" />
+                            </button>
                         </div>
                     ) : (
                         <DsTextBox {...message} variant="hud" reducedMotion={reducedMotion} msPerChar={14} />

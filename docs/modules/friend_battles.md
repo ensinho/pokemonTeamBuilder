@@ -66,6 +66,10 @@ src/styles/battle-pvp.css   chat, lobby team row, bar chips (game-screen excepti
 
 `utils/battleMusic.js`: two original chiptune loops (WebAudio, no files) — `champion` for Cynthia, `rival` for friends — through the effects' context and master gain (one mute for both) plus its own switch (`ptb:battle:music`). Lookahead scheduler (25 ms tick, 120 ms ahead), nothing scheduled while the tab is hidden, faster while your active Pokémon is at ≤ 25% HP (`setPinch`). Stops at the battle's `end` moment, before the result's jingle. The bar's switches live in `useBattleSound`.
 
+## Mega Evolution
+
+No validator runs, so the sim takes a Mega Stone as it is (an `api/battle-turn.test.js` case pins it under `PVP_FORMAT`). The menu's MEGA switch sends `move N mega`; the endpoint passes choices to the sim as they are. A battle-only forme saved as the species (`Charizard-Mega-X`) starts as its base: `setUpState` runs the teams through `startingFormes` **only while `logSeq` is unset**. A battle that has published lines keeps the teams it was shown with, or its replay would change under it. The screen side is the challenge's (the MEGA switch, the silhouette, the flare, the MEGA mark), and `opponentRoster` follows the forme change. See [Champion Challenge](./daily_challenge.md), "Mega Evolution and the anime flare".
+
 ## Invariants
 
 1. **Nothing hidden until a round resolves is readable by a client** — pending choices, teams, the seed's future: `secret/state`, owner-only `teams/` and `playerLogs/`.
@@ -77,7 +81,7 @@ src/styles/battle-pvp.css   chat, lobby team row, bar chips (game-screen excepti
 ## Verify
 
 ```
-npx vitest run api/battle-turn.test.js api/_lib/pvpState.test.js src/utils/pvpView.test.js src/store/useBattlesStore.test.js src/utils/battleMusic.test.js
+npx vitest run api/battle-turn.test.js api/_lib/pvpState.test.js src/utils/pvpView.test.js src/store/useBattlesStore.test.js src/utils/battleMusic.test.js src/utils/megaEvolution.test.js src/utils/battleFlare.test.js
 ```
 
 The browser pass for this work used a throwaway harness (fixture from a real resolver run, stores primed, `submitChoice` delivering the next round) because the container had no Firebase config and its proxy blocked Showdown's sprite host — the shapes were checked with stand-in sprites. A real two-account battle on a deploy is still the test that matters: accept → VS on both screens → a faint (one-sided prompt) → a winner, and Firestore's usage tab before/after.

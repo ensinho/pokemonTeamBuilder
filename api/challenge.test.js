@@ -270,6 +270,22 @@ describe('POST /api/challenge', () => {
         expect(runDoc(ok.body.runId)).toMatchObject({ teamSource: 'saved', teamName: 'Rain', teamTier: 'OU' });
     });
 
+    it('lets a Pokémon holding its Mega Stone Mega Evolve', async () => {
+        const { body } = await call({
+            action: 'start',
+            team: { source: 'saved', name: 'Mega', showdownText: 'Charizard @ Charizardite X\nAbility: Blaze\n- Flare Blitz\n- Dragon Claw\n- Dragon Dance\n- Earthquake' },
+        });
+        expect(body.status).toBe('active');
+        const request = JSON.parse(roundLines(body.runId).filter((l) => l.startsWith('|request|')).at(-1).slice('|request|'.length));
+        expect(request.active[0].canMegaEvo).toBe(true);
+
+        const res = await call({ action: 'choose', runId: body.runId, turn: 0, choice: 'move 1 mega' });
+        expect(res.statusCode).toBe(200);
+        const lines = res.body.lines.join('\n');
+        expect(lines).toMatch(/\|detailschange\|p1a: Charizard\|Charizard-Mega-X/);
+        expect(lines).toMatch(/\|-mega\|p1a: Charizard\|Charizard\|Charizardite X/);
+    });
+
     it('refuses bad choices before and after the sim, and stale or foreign turns', async () => {
         const { body } = await call({ action: 'start', team: { source: 'daily' } });
         const { runId } = body;

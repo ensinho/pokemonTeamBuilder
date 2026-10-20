@@ -32,6 +32,7 @@ The page is the panel; rows run edge to edge under the shell gutter.
 - `ThreadCard` is a **row**, not a card: who · when · flairs, the title (a real
   `<Link>`), a preview of the post, the attached team as the thumbnail, then the
   ♥ / 💬 / Share pills. The rest of the row opens the post too.
+- **On a phone (≤ 1023px), one coloured thing per row** (2026-10-20, [audit](../audits/2026-10-20-battles-forum.md)). The forum's title is for screen readers only, because the app bar names the page; its figures (topics · active today) lead the line beside search and Create. Pinned, trending and official are a tinted icon dot (`.forum-flair--status`, label hidden but read). The pills are an icon and a count with no fill; the liked heart is primary, Share is an icon at the row's end, and all have `touch-target`.
 - Pinned rows are the megathreads Professor Oak seeded (`createdBy: 'system'`):
   they head the Hot feed only.
 - Ranking lives in **`src/utils/forumRanking.js`** (tested): Hot is
