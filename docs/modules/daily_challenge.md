@@ -43,7 +43,7 @@ scripts/build-sprite-feet.mjs    public/data/sprite-feet.json (npm run data:spri
 
 ```
 src/components/views/challenge/ChampionChallengeView.jsx   the stage machine:
-    arena ─walk to her─▶ dialogue ─▶ pick | gate ─start─▶ transition ─▶ battle ─▶ result ─▶ practice
+    arena ─walk to her─▶ dialogue ─▶ pick | gate ─start─▶ transition (the VS card) ─▶ battle ─▶ result ─▶ practice
 src/components/views/challenge/ds/
   DsConsole      two 256×192 screens (--px = width/256), the bar, D-pad/A/B (desktop only)
   DsArena        the room: grid walking (keys, D-pad, tap → BFS path), the "!" and her lines
@@ -53,6 +53,8 @@ src/components/views/challenge/ds/
   DsBattleScene  DPPt field: STAGE geometry, sprites 1:1 standing on their feet row
   DsCommandPanel LUTAR / POKéMON / DESISTIR; moves HGSS style (type, category, PP tone)
   DsPoketch      party silhouettes (#ds-lcd-ink), countdown, counter
+  DsVersus       the VS card (you vs Cynthia; friends' battles too) — its own chunk
+                 through DsVersusLazy / versusChunk.js, styles in battle-versus.css
 src/store/useChampionChallengeStore.js  optimistic `pending`; the `state` action reads and warms
 src/utils/  battleTimeline (pure playback reducer) · arenaMap · challengeArt (pixel grids)
             challengeText · challengeView · challengeTeams
@@ -92,13 +94,14 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 
 - **The report** (`DsBattleReport`, top screen of the result): the M1 curve, decision by decision, diverging fill around 50% (`--ds-chart-you` / `--ds-chart-her`, validated with the dataviz script), the biggest swing ringed and named from the log (`utils/winChart.js`: `biggestSwing`, `swingCause`). The server stores `winChanceMarks` beside the curve — per point, the battle turn and the player's log length — so a swing's lines are a slice of the log. A forfeit keeps the curve so far; fewer than two points shows the room instead.
 - **Dossier** (Pokétch app 2): her six from `championRoster`, dim silhouettes and "???" until sent out.
-- **Sound** (`utils/challengeSfx.js`): WebAudio recipes from the spec §3.12, no files; nothing before the first gesture on the route; mute on the bar, remembered (`ptb:challenge:muted`). Battle moments map through `soundFor(event)` — the hit sounds on the damage, "super effective" adds a second impact, because the log puts it after the damage.
+- **Sound** (`utils/challengeSfx.js`): WebAudio recipes from the spec §3.12, no files; nothing before the first gesture on the route; mute on the bar, remembered (`ptb:challenge:muted`). Battle moments map through `soundFor(event)` — the hit sounds on the damage, "super effective" adds a second impact, because the log puts it after the damage. `versus` and `whoosh` belong to the VS card.
+- **Music** (`utils/battleMusic.js`, 2026-10-20): an original chiptune loop per opponent (`champion` here, `rival` for friend battles), synthesized on the effects' context and master gain — one mute silences both — with its own switch on the bar (`ptb:battle:music`). Faster while your active Pokémon is at ≤ 25% HP; stops at the `end` moment so the result's jingle plays alone; nothing scheduled while the tab is hidden. The bar's three switches are `useBattleSound`.
 
 ### Move effects by type (2026-10-15)
 
 `MoveFx` in `DsBattleScene.jsx`: eight particles at the target, a **pattern** (how they move: rise, fall, ring, slash, quake, swarm, burst; status moves sparkle) and a **shape** (flame, bubble, wisp, leaf, rock, shard, bolt, ring, sparkle, line, dot, star) per type (`FX_BY_TYPE`); a special move's particles wait for its orb. Heavy physical hits (ground, rock, fighting) shake the field (`is-shake`, the world layers only). Transform/opacity; none under reduced motion.
 
-**CSS budget:** the route's stylesheet is 11.7 KB gzip of its 12 KB (2026-10-17, with the team sheet; 11.1 KB on 2026-10-16). The BW pass had layered rules over the DPPt ones; those are merged now, one rule per selector, with the DPPt panel colours gone. A refactor of this stylesheet is checked by diffing computed styles across 16 states (desktop with and without rails, phone; room, picker, ranking, battle and its menus, result with its chart) before and after. The same diff found this merge left nothing different but the dead declarations it meant to drop.
+**CSS budget:** the route's stylesheet is 11.7 KB gzip of its 12 KB (2026-10-17, with the team sheet; 11.1 KB on 2026-10-16); **11.54 KB on 2026-10-20** — the spiral transition went, and the VS card's 2.5 KB is its own lazy chunk (`DsVersus`), loaded from the team picker on, so it never counts here. The friend battles load this stylesheet too (a shared `champion-challenge-ds` chunk) plus `battle-pvp.css`. The BW pass had layered rules over the DPPt ones; those are merged now, one rule per selector, with the DPPt panel colours gone. A refactor of this stylesheet is checked by diffing computed styles across 16 states (desktop with and without rails, phone; room, picker, ranking, battle and its menus, result with its chart) before and after. The same diff found this merge left nothing different but the dead declarations it meant to drop.
 
 ### F6: ranking, share, push (2026-10-15)
 
@@ -134,6 +137,11 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 - **Team Preview is off** so the wildcard stays a "?" until it is sent out.
 - **Revival Blessing** turns the next "switch" prompt into "pick a *fainted* Pokémon" (`reviving` on the active entry) — `options.js` handles it.
 - **`getDamage` eats berries.** Estimation clones stub `eatItem`/`useItem`, or every estimate after the first sees a Pokémon without its Yache Berry.
+
+### The VS card and friend battles (2026-10-20)
+
+- **The VS card** (`ds/DsVersus.jsx`) replaces the spiral transition: a split band (blue for you; violet for the Champion, red for a friend), speed lines, the two portraits sliding in (your avatar: trainer sprite, else partner Pokémon, else Hilbert; Cynthia's Showdown sprite), the pixel VS slamming down (a 26 × 14 bitmap drawn as one SVG path, outline + shadow + gradient), then names, title and hexagon badges (level, streak; crown and difficulty for her). ~2.7 s, any tap or key skips it, a still card under reduced motion. `onDone` hands over to the battle; `DsVersusLazy` skips the card rather than wait more than 1.8 s for its chunk.
+- **`DsBattleStage` is shared** with the friend battles through `rival` (opponent's sim name, trainer sprite, roster from the log, waiting line, labels, forfeit copy) and `music`; `DsTeamPicker` without `dailyMembers` is the friend lobby's team picker. See [Friend battles](./friend_battles.md).
 
 ## Data
 

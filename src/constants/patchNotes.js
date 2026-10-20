@@ -24,6 +24,25 @@ export const RELEASES = [
         month: '2026-10',
         notes: [
             {
+                key: 'friend-battles-console',
+                featured: true,
+                icon: 'swords',
+                visual: 'versus',
+                title: 'patchNotes.versusTitle',
+                description: 'patchNotes.versusDesc',
+                cta: 'patchNotes.versusCta',
+                path: '/battles',
+            },
+            { key: 'battle-music', icon: 'sparkles', title: 'patchNotes.musicTitle', description: 'patchNotes.musicDesc', cta: 'patchNotes.musicCta', path: '/challenge' },
+            { key: 'champion-versus', icon: 'crown', title: 'patchNotes.championVsTitle', description: 'patchNotes.championVsDesc', cta: 'patchNotes.challengeCta', path: '/challenge' },
+            { key: 'battle-cache', icon: 'key', title: 'patchNotes.battleCacheTitle', description: 'patchNotes.battleCacheDesc', cta: 'patchNotes.battleCacheCta', path: '/battles' },
+        ],
+    },
+    {
+        version: '1.16.0',
+        month: '2026-10',
+        notes: [
+            {
                 key: 'champion-challenge',
                 featured: true,
                 icon: 'crown',

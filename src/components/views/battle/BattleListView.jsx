@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
+import { Trash2 } from 'lucide-react';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
 
 import { useBattles } from '../../../hooks/useBattles';
@@ -42,6 +44,14 @@ function NotificationToggle() {
     );
 }
 
+/** How a finished battle went, from the viewer's side — null while it isn't over. */
+const outcomeOf = (battle, userId) => {
+    if (battle.status !== 'ended') return null;
+    if (battle.forfeitedBy) return battle.forfeitedBy === userId ? 'forfeitLost' : 'forfeitWon';
+    if (!battle.winner) return 'tie';
+    return battle.winner === userId ? 'won' : 'lost';
+};
+
 /** Status pill copy + tone, from the viewer's point of view. */
 const statusTone = (view) => {
     if (view.waitingOn === 'me') return 'is-urgent';
@@ -61,6 +71,7 @@ export function BattleListView() {
     const navigate = useNavigate();
     const userId = useAuthStore((state) => state.userId);
     const isAnonymous = useAuthStore((state) => state.isAnonymous);
+    const myAvatar = useAuthStore(useShallow((state) => state.publicAvatar()));
     const { battles, isLoadingBattles } = useBattles();
     const { friends } = useFriends();
     const challengeFriend = useBattlesStore((state) => state.challengeFriend);
@@ -141,21 +152,36 @@ export function BattleListView() {
                 />
             ) : (
                 <ul className="battle-list">
-                    {battles.map(({ battle, view }) => (
+                    {battles.map(({ battle, view }) => {
+                        const outcome = outcomeOf(battle, userId);
+                        const won = outcome === 'won' || outcome === 'forfeitWon';
+                        return (
                         <li key={battle.id} className={`battle-card ${statusTone(view)}`}>
                             <button
                                 type="button"
                                 className="battle-card__main"
                                 onClick={() => navigate(`/battles/${battle.id}`)}
                             >
-                                <FramedAvatar uid={view.opponentId} className="battle-card__avatar">
-                                    <AvatarSprite
-                                        trainerSprite={view.opponentAvatar?.trainerSprite}
-                                        pokemonId={view.opponentAvatar?.pokemonId}
-                                        isShiny={view.opponentAvatar?.isShiny}
-                                        fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
-                                    />
-                                </FramedAvatar>
+                                {/* The VS card in miniature: you, then them. */}
+                                <span className="battle-card__vs" aria-hidden="true">
+                                    <FramedAvatar uid={userId} className="battle-card__avatar">
+                                        <AvatarSprite
+                                            trainerSprite={myAvatar.trainerSprite}
+                                            pokemonId={myAvatar.pokemonId}
+                                            isShiny={myAvatar.isShiny}
+                                            fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                                        />
+                                    </FramedAvatar>
+                                    <span className="battle-card__vs-mark">VS</span>
+                                    <FramedAvatar uid={view.opponentId} className="battle-card__avatar">
+                                        <AvatarSprite
+                                            trainerSprite={view.opponentAvatar?.trainerSprite}
+                                            pokemonId={view.opponentAvatar?.pokemonId}
+                                            isShiny={view.opponentAvatar?.isShiny}
+                                            fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                                        />
+                                    </FramedAvatar>
+                                </span>
                                 <span className="battle-card__identity">
                                     <span className="battle-card__name">
                                         {view.isPublicInvite
@@ -167,6 +193,11 @@ export function BattleListView() {
                                 {view.waitingOn === 'me' && (
                                     <span className="battle-card__flag">{t('battle.yourMove')}</span>
                                 )}
+                                {outcome && (
+                                    <span className={`battle-card__result ${won ? 'is-won' : ''}`}>
+                                        {t(won ? 'battle.result.won' : outcome === 'tie' ? 'battle.result.tie' : 'battle.result.lost')}
+                                    </span>
+                                )}
                             </button>
 
                             {view.canDelete && (
@@ -174,12 +205,16 @@ export function BattleListView() {
                                     type="button"
                                     className="btn btn-ghost battle-card__dismiss"
                                     onClick={(e) => handleDelete(battle.id, e)}
+                                    aria-label={t('battle.dismiss')}
+                                    title={t('battle.dismiss')}
                                 >
-                                    {t('battle.dismiss')}
+                                    <Trash2 className="w-4 h-4 shrink-0 battle-card__dismiss-icon" aria-hidden="true" />
+                                    <span className="battle-card__dismiss-label">{t('battle.dismiss')}</span>
                                 </button>
                             )}
                         </li>
-                    ))}
+                        );
+                    })}
                 </ul>
             )}
 
@@ -187,8 +222,8 @@ export function BattleListView() {
                 isOpen={isChallengeModalOpen}
                 onClose={() => setIsChallengeModalOpen(false)}
                 friends={friends}
-                onStartChallenge={async (targetFriend, { mode }) => {
-                    const battleId = await challengeFriend(targetFriend, { mode });
+                onStartChallenge={async (targetFriend, options) => {
+                    const battleId = await challengeFriend(targetFriend, options);
                     if (battleId) navigate(`/battles/${battleId}`);
                 }}
                 userId={userId}

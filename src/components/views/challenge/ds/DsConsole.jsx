@@ -76,10 +76,10 @@ export function DsConsole({ layout = 'dual', screen, top, bottom, bar, onAction,
         // (the room would lose where the player stood) when the rails come and go.
         const on = Boolean(rails && rails.mode !== 'none');
         return (
-            <div className={`ds-deck is-${on ? rails.mode : 'none'}`}>
-                {on && <aside className="ds-rail is-start" aria-label={t('challenge.rail.teams')}>{rails.start}</aside>}
+            <div className={`ds-deck is-${on ? rails.mode : 'none'} ${on && !rails.start ? 'is-end-only' : ''}`}>
+                {on && rails.start && <aside className="ds-rail is-start" aria-label={rails.startLabel || t('challenge.rail.teams')}>{rails.start}</aside>}
                 {frame}
-                {on && <aside className="ds-rail is-end" aria-label={t('challenge.ranking.title')}>{rails.end}</aside>}
+                {on && rails.end && <aside className="ds-rail is-end" aria-label={rails.endLabel || t('challenge.ranking.title')}>{rails.end}</aside>}
             </div>
         );
     }

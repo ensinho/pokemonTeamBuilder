@@ -22,7 +22,7 @@ function HpBar({ pct }) {
  * fainted}`), hers as the dossier (`championRoster` + `hpPct`) — a silhouette
  * and "???" until each one is sent out. `active` marks who is on the field.
  */
-export function DsTeamsRail({ title, mine = [], foe = [], championName, active = {} }) {
+export function DsTeamsRail({ title, mine = [], foe = [], championName, active = {}, foeTitle = null }) {
     const { t } = useTranslation();
     return (
         <div className="ds-panel ds-teams">
@@ -43,7 +43,7 @@ export function DsTeamsRail({ title, mine = [], foe = [], championName, active =
                     );
                 })}
             </ul>
-            <p className="ds-panel__title ds-teams__title">{t('challenge.poketch.dossier', { name: championName })}</p>
+            <p className="ds-panel__title ds-teams__title">{foeTitle || t('challenge.poketch.dossier', { name: championName })}</p>
             <ul className="ds-teams__grid">
                 {foe.map((mon, index) => {
                     const icon = mon.species ? getBattleIcon(mon.species) : null;

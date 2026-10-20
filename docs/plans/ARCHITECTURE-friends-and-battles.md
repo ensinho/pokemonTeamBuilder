@@ -4,6 +4,15 @@ Companion to [the handoff](./HANDOFF-friends-and-battles.md) (status, blockers, 
 [the plan](./friends-and-async-battles.md) (decisions and the research behind them).
 **This document explains the running system.**
 
+> **Updated 2026-10-20 — read [Friend battles](../modules/friend_battles.md) first.** The
+> lifecycle (§5) and the turn loop (§6) changed: the challenge carries the challenger's
+> team and `begin` accepts + starts in one request; the seed, teams, history and the
+> pending round live in a server-only `secret/state` (choices are no longer written to
+> `choices/`, which the opponent could read); rounds are claimed in a transaction, so
+> the client no longer polls; new battles play `gen9anythinggoes@@@!Team Preview,…`;
+> the battle screen is the Champion Challenge's console. The identity, friendship and
+> security reasoning below still holds.
+
 ---
 
 ## 1. The shape of it in one paragraph

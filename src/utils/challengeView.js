@@ -170,16 +170,17 @@ export const sideHp = (lines = [], side = 'p1') => {
  * Both teams for the desktop rails, as of `shown` (the lines the playback has
  * drawn): your six in team order from the latest request in `lines` — order
  * and species give nothing away — with HP and faints from `shown`; her six as
- * the dossier (`championRoster`), with HP once each is out.
+ * the dossier (`championRoster`, or `rosterOf(shown)` for a friend's team),
+ * with HP once each is out.
  */
-export const railTeams = (lines = [], lineup = [], shown = lines) => {
+export const railTeams = (lines = [], lineup = [], shown = lines, rosterOf = null) => {
     const myHp = sideHp(shown, 'p1');
     const foeHp = sideHp(shown, 'p2');
     const mine = myRoster(lines).map(({ species }) => {
         const hpPct = myHp.has(species) ? myHp.get(species) : 100;
         return { species, hpPct, fainted: hpPct === 0 };
     });
-    const foe = championRoster(shown, lineup).map((mon) => ({
+    const foe = (rosterOf ? rosterOf(shown) : championRoster(shown, lineup)).map((mon) => ({
         ...mon,
         hpPct: mon.species && foeHp.has(mon.species) ? foeHp.get(mon.species) : 100,
     }));

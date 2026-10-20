@@ -26,13 +26,50 @@ import {
     BATTLE_FORMAT, BATTLE_LEVEL, RANDOM_BATTLE_FORMAT,
     battleOpponentId, buildBattleTeamText,
 } from '../utils/battle';
+import { readCachedLog, writeCachedLog } from '../utils/battleLogCache';
 import { ensureSpeciesIndex } from '../services/speciesIndex';
+
+/** The team picked last, so the next challenge or accept opens on it. */
+const LAST_TEAM_KEY = 'ptb:battle:lastTeam';
+
+export const readLastBattleTeam = () => {
+    try {
+        return localStorage.getItem(LAST_TEAM_KEY) || null;
+    } catch (_) {
+        return null;
+    }
+};
+
+const rememberBattleTeam = (teamId) => {
+    if (!teamId) return;
+    try {
+        localStorage.setItem(LAST_TEAM_KEY, teamId);
+    } catch (_) { /* a convenience, best-effort */ }
+};
 
 const battlesPath = () => `artifacts/${appId}/battles`;
 
 let battlesUnsub = null;
 let chatUnsub = null;
 let logUnsub = null;
+
+/*
+ * The open battle's log, by round. `prefix` is what this device already had
+ * (battleLogCache) — rounds `0 … upTo-1`, joined; `rounds` holds every round
+ * from `upTo` on as it arrives, from the listener or from a turn's own
+ * response, in any order and any number of times. `myLog` is the gap-free run.
+ */
+let openLog = { battleId: null, uid: null, prefix: { lines: [], upTo: 0 }, rounds: new Map() };
+
+const flattenOpenLog = () => {
+    const lines = [...openLog.prefix.lines];
+    let seq = openLog.prefix.upTo;
+    while (openLog.rounds.has(seq)) {
+        lines.push(...openLog.rounds.get(seq));
+        seq += 1;
+    }
+    return { lines, upTo: seq };
+};
 let subscriberCount = 0;
 let boundUserId = null;
 
@@ -78,10 +115,13 @@ export const useBattlesStore = create((set, get) => ({
     isLoadingTeam: false,
     isRollingTeams: false,
     // My own filtered protocol lines for the open battle, oldest round first.
-    // The opponent's view is a separate field on each log doc that the rules let
-    // us read but which we deliberately ignore — see the note in submitChoice.
     myLog: [],
+    // True once there is a log to draw: from this device's cache at once, or
+    // after the listener's first answer. Before it, `myLog: []` means "not
+    // asked yet", not "nothing happened" (the 2026-09-21 lesson).
+    hasLog: false,
     isResolvingTurn: false,
+    isBeginning: false,
 
     /**
      * Listen to every battle this trainer is part of.
@@ -133,7 +173,7 @@ export const useBattlesStore = create((set, get) => ({
      * it decides the format the battle is played under, and the resolver reads
      * that from the document on every replay.
      */
-    challengeFriend: async (friend, { mode = 'standard' } = {}) => {
+    challengeFriend: async (friend, { mode = 'standard', team = null } = {}) => {
         const authState = useAuthStore.getState();
         const { userId, isAnonymous } = authState;
 
@@ -188,6 +228,16 @@ export const useBattlesStore = create((set, get) => ({
                 createdAt: now,
                 lastActivityAt: now,
             });
+            // The team travels with the challenge, so accepting can start the
+            // battle at once (api/battle-turn.js `begin`). Written after the
+            // battle exists — its rule reads the battle — and best-effort: if it
+            // fails, accepting falls back to asking the challenger for a team.
+            if (!isRandom && team?.members?.length) {
+                await get().writeTeamDoc(battleRef.id, team.members, team.name).catch((err) => {
+                    console.error('Failed to send the team with the challenge:', err);
+                });
+                rememberBattleTeam(team.id);
+            }
             pingBattleNotify(battleRef.id);
             toast.success(t('toast.challengeSent'), {
                 description: t('toast.challengeSentDesc'),
@@ -326,21 +376,82 @@ export const useBattlesStore = create((set, get) => ({
     },
 
     /**
-     * Accept a challenge. A random battle then rolls immediately: there is no
-     * team to pick, so stopping at `teamSelect` would only show both players a
-     * screen with nothing on it.
+     * Accept a challenge and start it — one tap. A random battle rolls at once
+     * (`/api/battle-random`); otherwise my team is written and `begin` starts
+     * the battle with the challenger's, which came with the challenge, and
+     * publishes the opening. A challenge sent without a team (an older
+     * client) stops at `teamSelect`, waiting for the challenger's.
+     *
+     * @returns {Promise<{ok: boolean, started: boolean}>}
      */
-    acceptChallenge: async (battleId, { mode = 'standard' } = {}) => {
-        const isRandom = mode === 'random';
-        const ok = await get().setStatus(
-            battleId,
-            'teamSelect',
-            isRandom ? null : 'Challenge accepted — pick your team!',
-        );
-        if (ok && isRandom) await get().rollRandomTeams(battleId);
-        // The challenger now owes a team, and is the one who isn't here.
-        if (ok && !isRandom) pingBattleNotify(battleId);
-        return ok;
+    acceptChallenge: async (battleId, { mode = 'standard', team = null } = {}) => {
+        if (mode === 'random') {
+            const ok = await get().setStatus(battleId, 'teamSelect', null);
+            if (!ok) return { ok: false, started: false };
+            const rolled = await get().rollRandomTeams(battleId);
+            return { ok: Boolean(rolled), started: Boolean(rolled) };
+        }
+        if (!team?.members?.length) return { ok: false, started: false };
+        set({ isBeginning: true });
+        try {
+            const wrote = await get().writeTeamDoc(battleId, team.members, team.name).catch((err) => {
+                console.error('Failed to submit the team:', err);
+                return false;
+            });
+            if (!wrote) {
+                toast.error(t('toast.teamSubmitError'));
+                return { ok: false, started: false };
+            }
+            rememberBattleTeam(team.id);
+            const begun = await get().beginBattle(battleId);
+            return { ok: Boolean(begun), started: Boolean(begun?.begun) };
+        } finally {
+            set({ isBeginning: false });
+        }
+    },
+
+    /**
+     * Ask the server to start a battle whose teams are in (`action: 'begin'`).
+     * The opening comes back in the response, so the field paints without
+     * waiting for the listener. Not started yet means the other trainer still
+     * owes a team — they are told.
+     */
+    beginBattle: async (battleId) => {
+        try {
+            const { ok, payload, error } = await callBattleApi(
+                BATTLE_TURN_ENDPOINT,
+                { battleId, action: 'begin' },
+                { serverErrorMessage: 'Server error (500) starting the battle.' },
+            );
+            if (!ok) {
+                toast.error(error === 'signedOut' ? t('toast.sessionExpired') : error);
+                return null;
+            }
+            if (payload.deltas?.length) get().mergeLogDeltas(battleId, payload.deltas);
+            if (!payload.begun) pingBattleNotify(battleId);
+            return payload;
+        } catch (err) {
+            console.error('Failed to start the battle:', err);
+            toast.error(t('toast.battleServerError'));
+            return null;
+        }
+    },
+
+    /** Give up a battle in progress: the opponent wins (`action: 'forfeit'`). */
+    forfeitBattle: async (battleId) => {
+        try {
+            const { ok, error } = await callBattleApi(
+                BATTLE_TURN_ENDPOINT,
+                { battleId, action: 'forfeit' },
+                { serverErrorMessage: 'Server error (500) ending the battle.' },
+            );
+            if (!ok) toast.error(error === 'signedOut' ? t('toast.sessionExpired') : error);
+            return ok;
+        } catch (err) {
+            console.error('Failed to forfeit the battle:', err);
+            toast.error(t('toast.battleServerError'));
+            return false;
+        }
     },
     declineChallenge: async (battleId) => get().setStatus(battleId, 'declined', null),
     cancelChallenge: async (battleId) => get().setStatus(battleId, 'cancelled', null),
@@ -374,14 +485,44 @@ export const useBattlesStore = create((set, get) => ({
      * Batched with my `ready` flag: a team without the flag would stall the
      * battle, and a flag without a team would let it start with nothing.
      */
-    submitTeam: async (battleId, team, teamName) => {
+    submitTeam: async (battleId, team, teamName, teamId = null) => {
         const { userId } = useAuthStore.getState();
         if (!db || !userId || !battleId) return false;
 
         const members = Array.isArray(team) ? team.filter(Boolean) : [];
+        const built = await get().battleTeamDoc(members, teamName);
+        if (!built) return false;
+
+        set({ isBeginning: true });
+        try {
+            const batch = writeBatch(db);
+            batch.set(doc(db, `${battlesPath()}/${battleId}/teams`, userId), built);
+            batch.update(doc(db, battlesPath(), battleId), {
+                [`ready.${userId}`]: true,
+                lastActivityAt: new Date().toISOString(),
+            });
+            await batch.commit();
+            rememberBattleTeam(teamId);
+            // Both in → the server starts it; otherwise it tells the opponent.
+            await get().beginBattle(battleId);
+            return true;
+        } catch (err) {
+            console.error('Failed to submit the team:', err);
+            toast.error(t('toast.teamSubmitError'));
+            return false;
+        } finally {
+            set({ isBeginning: false });
+        }
+    },
+
+    /**
+     * A saved team → the `teams/{uid}` document: battle-safe Showdown text
+     * (`buildBattleTeamText`) plus the sprite ids for the preview. Null, with
+     * a toast that says what to fix, when the team cannot battle.
+     */
+    battleTeamDoc: async (members, teamName) => {
         const { entryById } = await ensureSpeciesIndex();
         const { text: showdownText, errors } = buildBattleTeamText(members, { entryById });
-
         if (errors.length > 0) {
             const first = errors[0];
             toast.warning(
@@ -393,41 +534,38 @@ export const useBattlesStore = create((set, get) => ({
                     actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
                 },
             );
-            return false;
+            return null;
         }
-
-        try {
-            const batch = writeBatch(db);
-            batch.set(doc(db, `${battlesPath()}/${battleId}/teams`, userId), {
-                showdownText,
-                teamName: teamName || 'Team',
-                // Sprite ids only — enough for the preview bar, and it reveals
-                // nothing the opponent won't see at team preview anyway.
-                sprites: members.slice(0, 6).map((member) => ({
-                    id: member.id,
-                    name: member.name || '',
-                })),
-                submittedAt: new Date().toISOString(),
-            });
-            batch.update(doc(db, battlesPath(), battleId), {
-                [`ready.${userId}`]: true,
-                lastActivityAt: new Date().toISOString(),
-            });
-            await batch.commit();
-
-            // No-op unless the opponent is the one still owing a team.
-            pingBattleNotify(battleId);
-            toast.success(t('toast.teamLockedIn'), { description: t('toast.teamLockedInDesc') });
-            return true;
-        } catch (err) {
-            console.error('Failed to submit the team:', err);
-            toast.error(t('toast.teamSubmitError'));
-            return false;
-        }
+        return {
+            showdownText,
+            teamName: teamName || 'Team',
+            // Sprite ids only — enough for the preview bar; it reveals nothing
+            // the battle won't show anyway.
+            sprites: members.slice(0, 6).map((member) => ({ id: member.id, name: member.name || '' })),
+            submittedAt: new Date().toISOString(),
+        };
     },
 
-    /** Both teams are in — flip it to active. */
-    startBattle: async (battleId) => get().setStatus(battleId, 'active', null),
+    /** Write my team for a battle (no ready flag — `begin` reads the document itself). */
+    writeTeamDoc: async (battleId, members, teamName) => {
+        const { userId } = useAuthStore.getState();
+        if (!db || !userId || !battleId) return false;
+        const built = await get().battleTeamDoc((members || []).filter(Boolean), teamName);
+        if (!built) return false;
+        const ref = doc(db, `${battlesPath()}/${battleId}/teams`, userId);
+        try {
+            await setDoc(ref, built);
+        } catch (err) {
+            // The rules allow a rewrite only in team select: a second try at
+            // accepting (the first `begin` failed) finds its team already in.
+            const existing = await getDoc(ref).catch(() => null);
+            if (!existing?.exists()) throw err;
+            set({ myTeam: existing.data() });
+            return true;
+        }
+        set({ myTeam: built });
+        return true;
+    },
 
     /**
      * Ask the server to deal both trainers a random team.
@@ -510,33 +648,68 @@ export const useBattlesStore = create((set, get) => ({
         if (logUnsub) logUnsub();
         chatUnsub = null;
         logUnsub = null;
-        set({ chatMessages: [], myTeam: null, myLog: [], isResolvingTurn: false });
+        // The log is already on this device (saved as each round arrived), so
+        // leaving loses nothing: the next visit paints from it.
+        openLog = { battleId: null, uid: null, prefix: { lines: [], upTo: 0 }, rounds: new Map() };
+        set({ chatMessages: [], myTeam: null, myLog: [], hasLog: false, isResolvingTurn: false });
     },
 
     /**
-     * Live listener on MY side of the battle transcript.
+     * Live listener on MY side of the battle transcript, from where this
+     * device's copy ends.
      *
      * `playerLogs/{uid}/rounds/*` is owner-read-only, so this can only ever see
      * this trainer's filtered view — the opponent's stream is unreachable by
-     * construction, not by convention.
+     * construction, not by convention. Rounds never change once written, so
+     * the ones cached here (`battleLogCache`) are not asked for again: the
+     * query starts at `seq >= upTo`.
      */
     initLogListener: (battleId) => {
         const { userId } = useAuthStore.getState();
         if (!db || !battleId || !userId) return;
         if (logUnsub) logUnsub();
 
+        const cached = readCachedLog(userId, battleId);
+        openLog = { battleId, uid: userId, prefix: cached || { lines: [], upTo: 0 }, rounds: new Map() };
+        set({ myLog: openLog.prefix.lines, hasLog: Boolean(cached) });
+
         logUnsub = onSnapshot(
             query(
                 collection(db, `${battlesPath()}/${battleId}/playerLogs/${userId}/rounds`),
-                orderBy('round', 'asc'),
+                where('seq', '>=', openLog.prefix.upTo),
+                orderBy('seq', 'asc'),
             ),
             (snapshot) => {
-                // Flatten the per-round documents into one ordered line list.
-                const lines = snapshot.docs.flatMap((docSnap) => docSnap.data().lines || []);
-                set({ myLog: lines });
+                if (openLog.battleId !== battleId) return;
+                snapshot.docs.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    if (Number.isInteger(data.seq)) openLog.rounds.set(data.seq, data.lines || []);
+                });
+                get().publishOpenLog(true);
             },
             (error) => console.error('Error loading the battle log:', error),
         );
+    },
+
+    /** Rounds that came back with a turn's own response (`deltas: [{seq, lines}]`). */
+    mergeLogDeltas: (battleId, deltas = []) => {
+        if (openLog.battleId !== battleId) return;
+        deltas.forEach((delta) => {
+            if (Number.isInteger(delta?.seq) && Array.isArray(delta.lines) && delta.seq >= openLog.prefix.upTo) {
+                openLog.rounds.set(delta.seq, delta.lines);
+            }
+        });
+        get().publishOpenLog(false);
+    },
+
+    /** Recompute `myLog` from the rounds held, and save it on this device. */
+    publishOpenLog: (fromListener) => {
+        const { lines, upTo } = flattenOpenLog();
+        const changed = lines.length !== get().myLog.length;
+        if (changed || (fromListener && !get().hasLog)) {
+            set({ myLog: lines, hasLog: get().hasLog || fromListener || lines.length > 0 });
+        }
+        if (changed && upTo > openLog.prefix.upTo) writeCachedLog(openLog.uid, openLog.battleId, { lines, upTo });
     },
 
     /**
@@ -578,6 +751,8 @@ export const useBattlesStore = create((set, get) => ({
                 }
                 return null;
             }
+            // The turn's own lines: they play now, not when the listener catches up.
+            if (payload.deltas?.length) get().mergeLogDeltas(battleId, payload.deltas);
             return payload;
         } catch (err) {
             console.error('Failed to reach the battle resolver:', err);
