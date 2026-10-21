@@ -1981,6 +1981,12 @@
     .app-shell__content.is-mobile-detail {
         padding-bottom: 0;
     }
+
+    /* The first-visit landing has no dock either (its CTAs lead); keep only
+       the home indicator's clearance. */
+    .app-shell__content.is-landing {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
 }
 
 .app-shell__tab {

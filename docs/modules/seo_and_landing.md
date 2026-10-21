@@ -109,6 +109,11 @@ pages are crawlable from each other.
   `ptbActiveTeamId` in storage (`src/utils/landing.js`), no saved teams, not
   signed in with an account. A crawler is always a first visit.
 - Every exit marks it seen; "Go to my home" also swaps to the dashboard at once.
+- While it is up, `useLandingStore.isOpen` is true (set by `HomeEntry`): the
+  shell drops the phone dock (and its bottom reservation, `.is-landing`), so the
+  CTAs are the only way forward, and `useFirestoreTeamsStore` keeps the
+  "couldn't load your saved teams" toast off it — a first visit has no teams to
+  lose (the error still goes to the console).
 - The demo runs the builder's real `analyzeTeam` / `rateTeam`; "Open this team in
   the builder" adds the members through `handleAddPokemon` (optimistic slots), so
   the hand-over is instant.

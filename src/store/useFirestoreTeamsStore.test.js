@@ -26,8 +26,8 @@ vi.mock('firebase/firestore', () => ({
     orderBy: () => ({}),
     setDoc: vi.fn(),
     deleteDoc: vi.fn(),
-    onSnapshot: (_ref, onNext) => {
-        const subscription = { onNext, live: true };
+    onSnapshot: (_ref, onNext, onError) => {
+        const subscription = { onNext, onError, live: true };
         subscriptions.push(subscription);
         return () => { subscription.live = false; };
     },
@@ -108,5 +108,29 @@ describe('useFirestoreTeamsStore listeners', () => {
         store.getState().cleanupListeners();
 
         expect(liveCount()).toBe(2);
+    });
+});
+
+describe('the saved-teams error toast', () => {
+    const failTeams = () => subscriptions[0].onError(new Error('permission-denied'));
+    const silenceConsole = () => vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    it('tells a returning trainer their teams did not load', async () => {
+        const { toast } = await import('./useToastStore');
+        silenceConsole();
+        store.getState().initFirestoreListeners();
+        failTeams();
+        expect(toast.error).toHaveBeenCalledTimes(1);
+    });
+
+    it('stays off the first-visit landing, where there are no teams to lose', async () => {
+        const { toast } = await import('./useToastStore');
+        const { useLandingStore } = await import('./useLandingStore');
+        silenceConsole();
+        toast.error.mockClear();
+        useLandingStore.getState().setOpen(true);
+        store.getState().initFirestoreListeners();
+        failTeams();
+        expect(toast.error).not.toHaveBeenCalled();
     });
 });
