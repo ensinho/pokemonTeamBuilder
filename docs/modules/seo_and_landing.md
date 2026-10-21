@@ -94,6 +94,14 @@ cards. The matchups come from `src/utils/typeMatchups.js` (pure, tested), which
 the prerender uses too. Types and Pokémon are `<Link>`s, not buttons, so the
 pages are crawlable from each other.
 
+- `/types`: the hero is split (copy | the 18 types), the chart fills its card
+  (fixed table layout) with a row/column crosshair, and from 1280px it sits
+  beside **Combine two types** in the rail column — pick one or two types for
+  the 4× / 2× / ½ / ¼ / 0 tiers (`comboDefense`) and the Pokémon with exactly
+  that typing. On a phone the chart's row heads are icon-only and sticky.
+- `/types/:type`: the hero's right half shows the type's three strongest
+  Pokémon by base stat total, animated.
+
 ## 6. The landing (first visit to `/`)
 
 - `HomeEntry.jsx` decides on mount: landing for a first visit, `CozyHomeView`
@@ -105,6 +113,31 @@ pages are crawlable from each other.
   the builder" adds the members through `handleAddPokemon` (optimistic slots), so
   the hand-over is instant.
 - Its copy (`landing.*`) is also what the prerender writes for `/`.
+- Visuals: the demo's six stand over the headline, animated, each on a battle
+  platform; the demo cards animate only the Pokémon on the team (the bench is
+  the still frame). A figure strip under the CTAs (1025 Pokémon · 18 types ·
+  `THEME_META.length` themes · `LANGUAGES.length` languages) — computed, never
+  typed in.
+- Features (`src/components/landing/LandingFeatures.jsx`) are laid out like the
+  patch notes: the **Champion Challenge** is the featured card — Cynthia walking
+  in place (the room's local overworld sheet, `CYNTHIA_SHEET`), her Garchomp,
+  today's six as "?" (the real team is drawn at midnight) — and the other five
+  each carry an illustration of their own, all from real data: the builder's
+  shared weakness (`analyzeTeam`), Gardevoir's base stats, base Speeds, battles
+  per format from `usage-index.json` (15 KB, not the usage files), and the
+  starter triangle from `typeMatchups`. Each card's identity is
+  `--feature-tone`, a canon type colour mixed into tokens. The mini chart
+  restates the chart's tones in `landing.css` because `types-view.css` only
+  loads with the type pages.
+
+## Animated sprites (`AnimatedSprite`)
+
+`src/components/AnimatedSprite.jsx` draws Showdown's animated sprite from the
+PokeAPI sprites mirror, keyed by id (`getPokemonAnimatedSpriteUrl`, jsDelivr,
+service-worker cached) — no Showdown name slug to get wrong. **Showcase spots
+only, never a list:** each GIF is 50–110 KB and loops. It falls back to the
+static pixel sprite for `still`, `prefers-reduced-motion`, Data Saver, and a
+GIF that fails to load; the still frame carries `data-still` for styling.
 
 ## What only the owner can do
 

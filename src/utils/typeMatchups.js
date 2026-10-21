@@ -63,3 +63,30 @@ export function typeMatchups(type) {
         noEffect: attack((m) => m === 0),
     };
 }
+
+/**
+ * A one- or two-type defence grouped by multiplier, strongest weakness first —
+ * the type chart's "combine two types" panel. Empty tiers are kept (as []).
+ */
+export const COMBO_TIERS = [4, 2, 0.5, 0.25, 0];
+
+export function comboDefense(types = []) {
+    const tiers = Object.fromEntries(COMBO_TIERS.map((m) => [m, []]));
+    if (!types.length) return tiers;
+    for (const attacker of TYPE_IDS) {
+        const m = defensiveMultiplier(attacker, types);
+        if (tiers[m]) tiers[m].push(attacker);
+    }
+    return tiers;
+}
+
+/** Whether a Pokémon's typing is exactly `types`, in either order. */
+export const hasExactTyping = (pokemonTypes = [], types = []) => (
+    pokemonTypes.length === types.length && types.every((t) => pokemonTypes.includes(t))
+);
+
+/** Pick a type for the two-type combiner: toggle it, keeping at most two (oldest drops). */
+export function toggleComboType(selected, type) {
+    if (selected.includes(type)) return selected.filter((t) => t !== type);
+    return [...selected, type].slice(-2);
+}

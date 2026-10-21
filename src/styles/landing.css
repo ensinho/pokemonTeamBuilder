@@ -103,8 +103,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-0_5);
-    padding: var(--space-2) var(--space-1);
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1) var(--space-2_5);
     border: 0;
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
@@ -112,13 +112,6 @@
     font-size: var(--text-xs);
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
-}
-.landing-pick img {
-    width: 3rem;
-    height: 3rem;
-    image-rendering: pixelated;
-    opacity: 0.55;
-    transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 .landing-pick:hover { background: var(--color-surface-hover); color: var(--color-fg); }
 .landing-pick:active { scale: var(--press-scale); }
@@ -128,7 +121,72 @@
     background: var(--color-surface-active);
     box-shadow: inset 0 0 0 1px var(--color-primary);
 }
-.landing-pick[aria-pressed='true'] img { opacity: 1; }
+.landing-pick__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    height: 4.5rem;
+}
+.landing-pick__name { font-weight: var(--weight-medium); }
+.landing-pick__types { display: flex; gap: var(--space-0_5); }
+.landing-pick__type { width: 1rem; height: 1rem; }
+
+/* Every showcase sprite stands on a battle platform: a flat ellipse of the
+   foreground colour, so it follows the theme. */
+.landing-party__slot::after,
+.landing-pick__stage::after,
+.landing-arena__stage::after {
+    content: '';
+    position: absolute;
+    inset-inline: 18%;
+    bottom: 0;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-fg) 9%, transparent);
+}
+.landing-party__sprite,
+.landing-pick__sprite,
+.landing-arena__ace {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    max-height: 100%;
+    margin-bottom: var(--space-1);
+    image-rendering: pixelated;
+}
+/* <AnimatedSprite> wraps the GIF in a <picture> for reduced motion; let the
+   image itself be the stage's flex child so its max-height resolves. */
+.landing-party__slot picture,
+.landing-pick__stage picture,
+.landing-arena__stage picture,
+.landing-visual__caption picture { display: contents; }
+/* The bench: the still frame, sized like the GIF next to it, and quieter. */
+.landing-pick__sprite[data-still] {
+    height: 100%;
+    opacity: 0.5;
+    filter: grayscale(0.6);
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+.landing-pick:hover .landing-pick__sprite[data-still] { opacity: 0.8; }
+
+/* The six of the demo, lined up over the headline. */
+.landing-party {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-2);
+    width: 100%;
+    max-width: 34rem;
+    margin-bottom: var(--space-2);
+}
+.landing-party__slot {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 6rem;
+}
 
 .landing-demo__result {
     display: flex;
@@ -170,59 +228,316 @@
     color: var(--color-success);
 }
 
-/* Features */
+/* Features — laid out like the patch notes: the featured card with its
+   scene, the others each with an illustration of their own. A card's
+   identity is `--feature-tone` (a canon type colour, or the primary), mixed
+   into theme tokens like a type chip, so it holds on every theme. */
 .landing-section-title {
     margin: 0 0 var(--space-4);
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
-.landing-feature-grid {
+.landing-bento {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
-    margin: 0;
-    padding: 0;
-    list-style: none;
 }
-@media (min-width: 640px) {
-    .landing-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 768px) {
+    .landing-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .landing-feature--featured { grid-column: 1 / -1; }
 }
 @media (min-width: 1100px) {
-    .landing-feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .landing-bento { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .landing-feature { grid-column: span 4; }
+    .landing-feature--featured { grid-column: 1 / span 7; grid-row: span 2; }
+    .landing-bento > .landing-feature:nth-child(2),
+    .landing-bento > .landing-feature:nth-child(3) { grid-column: span 5; }
 }
+
 .landing-feature {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    height: 100%;
-    padding: var(--space-5);
+    gap: var(--space-3);
+    padding: var(--space-3);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     background: var(--color-surface);
     color: inherit;
     text-decoration: none;
     transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
-.landing-feature:hover { background: var(--color-surface-hover); border-color: var(--color-border-strong); }
+.landing-feature:hover {
+    background: var(--color-surface-hover);
+    border-color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-border));
+}
 .landing-feature:focus-visible { outline: none; box-shadow: var(--ring-primary); }
-.landing-feature__icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--color-primary);
+
+.landing-feature__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    flex: 1;
+    padding: 0 var(--space-2) var(--space-2);
+}
+.landing-feature__kicker {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-fg));
 }
 .landing-feature__title {
     margin: 0;
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
-    color: var(--color-fg);
+    color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-fg));
 }
+.landing-feature--featured .landing-feature__title { font-size: var(--text-xl); }
+/* The scene takes the featured card's spare height, not the copy. */
+.landing-feature--featured .landing-feature__copy { flex: none; }
 .landing-feature__body {
     margin: 0;
     font-size: var(--text-sm);
     line-height: 1.55;
     color: var(--color-muted);
 }
+.landing-feature__cta {
+    margin-top: auto;
+    padding-top: var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-fg));
+}
+
+/* The illustration well: the card's tone, faint, under real data. */
+.landing-visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2_5);
+    min-height: 9.5rem;
+    padding: var(--space-3);
+    flex-shrink: 0;   /* never squeezed below its content: it would clip */
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--feature-tone) 9%, var(--color-surface-raised));
+    overflow: hidden;
+}
+.landing-visual__caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1_5);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+    text-align: center;
+}
+
+/* Builder: six slots, three filled; the empty ones are dashed because they
+   are empty (the one meaning a dash has here). */
+.landing-slots { display: grid; grid-template-columns: repeat(6, 2.75rem); gap: var(--space-1_5); }
+.landing-slot {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+.landing-slot img { width: 100%; height: 100%; image-rendering: pixelated; }
+.landing-slot--empty { background: transparent; border: 1px dashed var(--color-border-strong); }
+
+/* Pokédex: one entry card with its base stats. */
+.landing-dex {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    max-width: 20rem;
+    padding: var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+.landing-dex__sprite img { width: 4rem; height: 4rem; image-rendering: pixelated; }
+.landing-dex__body { display: flex; flex-direction: column; gap: var(--space-1_5); flex: 1; min-width: 0; }
+.landing-dex__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.landing-dex__name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-fg); }
+.landing-dex__no { font-family: var(--font-display); font-size: var(--text-2xs); color: var(--color-muted); }
+.landing-dex__stats { display: flex; flex-direction: column; gap: var(--space-0_5); }
+.landing-dex__stat {
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr) 1.75rem;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-size: var(--text-2xs);
+}
+.landing-dex__label { color: var(--color-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.landing-dex__value { font-family: var(--font-display); text-align: right; color: var(--color-fg); }
+.landing-dex__bar,
+.landing-speed__bar,
+.landing-meta__bar {
+    height: 0.375rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    overflow: hidden;
+}
+.landing-dex__bar span,
+.landing-speed__bar span,
+.landing-meta__bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--feature-tone) 70%, var(--color-fg));
+}
+
+/* Speed: the four fastest of the demo, by base Speed. */
+.landing-speed { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; max-width: 18rem; }
+.landing-speed__row {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) 2rem;
+    align-items: center;
+    gap: var(--space-2);
+}
+.landing-speed__sprite { width: 2rem; height: 2rem; image-rendering: pixelated; }
+.landing-speed__value,
+.landing-meta__value {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    text-align: right;
+    color: var(--color-fg);
+}
+
+/* Meta: battles per format, from the usage index. */
+.landing-meta { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; max-width: 18rem; }
+.landing-meta__row {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr) 2.75rem;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-2xs);
+}
+.landing-meta__row--ghost { height: 0.375rem; border-radius: var(--radius-full); background: var(--color-surface); }
+.landing-meta__label { font-weight: var(--weight-semibold); color: var(--color-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.landing-meta__mascot { width: 2rem; height: 2rem; object-fit: contain; image-rendering: pixelated; }
+
+/* Types: the starter triangle, in the chart's own cells. */
+.landing-mini-chart { border-collapse: separate; border-spacing: var(--space-0_5); }
+.landing-mini-chart td { width: 2rem; height: 2rem; text-align: center; font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.landing-mini-chart img { width: 1.375rem; height: 1.375rem; display: block; margin: 0 auto; }
+/* The chart's tones, restated: types-view.css loads with the type pages only. */
+.landing-mini-chart .is-neutral { border-radius: var(--radius-sm); background: var(--color-surface); }
+.landing-mini-chart .is-super {
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-success) 22%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-success) 45%, var(--color-fg));
+}
+.landing-mini-chart .is-weak {
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-danger) 18%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-danger) 45%, var(--color-fg));
+}
+
+/* The featured card: the Champion's room. Cynthia walks in place (her
+   overworld sheet, row "down", four frames), her ace waits opposite, and
+   today's six are a mystery until you face them. */
+.landing-feature--featured .landing-visual { flex: 1; min-height: 18rem; gap: var(--space-4); }
+.landing-visual--challenge {
+    background:
+        color-mix(in srgb, var(--feature-tone) 14%, var(--color-surface-raised));
+}
+.landing-arena { display: flex; align-items: flex-end; justify-content: center; gap: var(--space-6); }
+.landing-arena__side { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.landing-arena__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 8rem;
+    height: 8rem;
+}
+.landing-arena__label { font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-fg); }
+.landing-arena__vs {
+    margin-bottom: var(--space-10);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-style: italic;
+    font-weight: var(--weight-semibold);
+    color: color-mix(in srgb, var(--feature-tone) 55%, var(--color-fg));
+}
+.landing-cynthia {
+    position: relative;
+    z-index: 1;
+    width: 6.375rem;   /* one 34 × 36 cell at 3 screen px per DS px */
+    height: 6.75rem;
+    background-repeat: no-repeat;
+    background-size: 400% 400%;
+    background-position: 0 0;
+    image-rendering: pixelated;
+    animation: landing-walk 0.9s steps(4) infinite;
+}
+@keyframes landing-walk { to { background-position-x: 133.333%; } }
+.landing-arena__six { display: flex; gap: var(--space-2); }
+.landing-arena__ball {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: color-mix(in srgb, var(--feature-tone) 50%, var(--color-fg));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--feature-tone) 35%, transparent);
+}
+.landing-arena__facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.landing-arena__facts li {
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+/* On a wide screen the featured card is two rows tall: the scene grows into
+   it at 4 screen px per DS px (her cell is 34 × 36), her ace beside her. */
+@media (min-width: 1100px) {
+    .landing-feature--featured .landing-arena__stage { width: 10rem; height: 10rem; }
+    .landing-feature--featured .landing-cynthia { width: 8.5rem; height: 9rem; }
+    .landing-feature--featured .landing-arena__ace { height: 8.5rem; width: auto; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .landing-cynthia { animation: none; }
+}
+
+/* Hero figures: what the app covers, in four numbers. */
+.landing-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin: var(--space-2) 0 0;
+}
+.landing-stats__item { display: flex; flex-direction: column-reverse; gap: var(--space-0_5); }
+.landing-stats__item dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+.landing-stats__item dt { font-size: var(--text-xs); color: var(--color-muted); }
 
 /* Closing call */
 .landing-closing {
@@ -246,10 +561,17 @@
     .landing-demo,
     .landing-feature { border-color: transparent; }
     .landing-demo { padding: var(--space-4); }
-    .landing-feature { padding: var(--space-4); }
 }
 @media (max-width: 640px) {
+    .landing-party { gap: var(--space-1); }
+    .landing-party__slot { height: 4rem; }
     .landing-actions { width: 100%; }
     .landing-actions .btn { flex: 1 1 100%; }
     .landing-demo__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-1_5); }
+    .landing-feature--featured .landing-visual { min-height: 0; }
+    .landing-arena { gap: var(--space-3); }
+    .landing-arena__stage { width: 6rem; height: 6.5rem; }
+    .landing-arena__vs { margin-bottom: var(--space-8); }
+    .landing-slots { grid-template-columns: repeat(6, minmax(0, 2.5rem)); }
+    .landing-stats { gap: var(--space-2) var(--space-5); }
 }

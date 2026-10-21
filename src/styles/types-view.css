@@ -1,9 +1,10 @@
 /* ============================================================
    TYPE CHART (/types) and TYPE PAGES (/types/:type)
    Built on the entity-detail cards (entity-detail-view.css); this file
-   adds only the chart and the matchup rows. Multipliers are read by tone:
-   the attacker's view, so 2× is good news (success) and ½ is bad (danger),
-   each mixed toward the theme like a type chip so all six themes hold.
+   adds the hero split, the chart, the two-type combiner and the matchup
+   rows. Multipliers are read by tone from the attacker's side: 2× is good
+   news (success), ½ is bad (danger), each mixed toward the theme like a
+   type chip so all six themes hold.
    ============================================================ */
 
 .types-link {
@@ -15,20 +16,77 @@
 .types-link:hover { opacity: 0.8; }
 .types-link:focus-visible { outline: none; box-shadow: var(--ring-primary); }
 
+/* The entity pages capitalise a slug-derived title; these titles are copy. */
+.types-view .edv-title { text-transform: none; }
+
+/* Hero: the copy on the left, the 18 types (or a type's strongest) on the
+   right, so the card is as tall as its text instead of twice that. */
+.types-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: center;
+}
+@media (min-width: 1100px) {
+    .types-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8); }
+}
 .types-grid {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
-    margin-top: var(--space-4);
 }
 
-/* The 18 × 18 chart. It is wider than a phone, so it scrolls inside its card
+/* Chart beside the combiner on a wide screen; stacked below that. */
+.types-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--page-gap, var(--space-4));
+    align-items: start;
+}
+@media (min-width: 1280px) {
+    .types-layout { grid-template-columns: minmax(0, 1fr) var(--page-rail-width, 20rem); }
+}
+
+.types-chart__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-3);
+}
+.types-chart__head .edv-section__title { margin: 0; }
+.types-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+.types-legend li { display: flex; align-items: center; gap: var(--space-1_5); }
+.types-legend__swatch {
+    display: inline-grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+}
+
+/* The 18 × 18 chart fills its card; below ~40rem it scrolls inside the card
    (sideways only — the page itself never does). */
 .types-matrix-wrap {
     overflow-x: auto;
     overscroll-behavior-x: contain;
 }
 .types-matrix {
+    width: 100%;
+    min-width: 40rem;
+    table-layout: fixed;
     border-collapse: separate;
     border-spacing: var(--space-0_5);
     font-family: var(--font-display);
@@ -40,39 +98,50 @@
     color: var(--color-muted);
     text-align: center;
 }
+.types-matrix thead th:first-child,
+.types-matrix tbody th { width: 7.5rem; }
 .types-matrix__corner {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-0_5);
-    padding-inline-end: var(--space-2);
+    text-align: left;
     white-space: nowrap;
+    line-height: 1.4;
 }
+.types-matrix__corner span { display: block; }
 .types-matrix__icon {
     width: 1.375rem;
     height: 1.375rem;
     display: block;
     margin: 0 auto;
 }
+.types-matrix__col-head {
+    display: block;
+    padding-block: var(--space-1);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+.types-matrix thead th.is-lit .types-matrix__col-head { background: var(--color-surface-active); }
 .types-matrix tbody th { text-align: left; }
 .types-matrix__row-head {
     display: flex;
     align-items: center;
     gap: var(--space-1_5);
-    padding-inline-end: var(--space-2);
+    padding: var(--space-0_5) var(--space-1);
+    border-radius: var(--radius-sm);
     color: var(--color-fg);
     text-decoration: none;
     white-space: nowrap;
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
 .types-matrix__row-head .types-matrix__icon { margin: 0; }
 .types-matrix__row-head:hover { color: var(--color-primary); }
+.types-matrix tbody tr:hover .types-matrix__row-head { background: var(--color-surface-active); }
 
 .types-matrix__cell {
-    width: 1.75rem;
-    height: 1.75rem;
+    height: 2.25rem;
     border-radius: var(--radius-sm);
     text-align: center;
+    font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
+    transition: box-shadow var(--duration-fast) var(--ease-smooth);
 }
 .types-matrix__cell--neutral { background: var(--color-surface-raised); }
 .types-matrix__cell--super {
@@ -87,6 +156,67 @@
     background: var(--color-inverse);
     color: var(--color-on-inverse);
 }
+/* The crosshair: the hovered row and column take a ring, the cell under the
+   pointer a stronger one, so one matchup can be read across 18 × 18. */
+.types-matrix tbody tr:hover .types-matrix__cell,
+.types-matrix__cell.is-lit { box-shadow: inset 0 0 0 1px var(--color-border-strong); }
+.types-matrix tbody tr:hover .types-matrix__cell.is-lit { box-shadow: var(--ring-primary); }
+
+/* The two-type combiner (the right column on a wide screen). */
+.types-combo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.types-combo__title,
+.types-combo__subtitle {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+.types-combo__subtitle { font-size: var(--text-sm); }
+.types-combo__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+.types-combo__picker {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-1_5);
+}
+.types-combo__type {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    padding: var(--space-1);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
+}
+.types-combo__type img {
+    width: 1.5rem;
+    height: 1.5rem;
+    opacity: 0.55;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+.types-combo__type:hover { background: var(--color-surface-hover); }
+.types-combo__type:hover img { opacity: 0.85; }
+.types-combo__type:active { scale: var(--press-scale); }
+.types-combo__type:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.types-combo__type[aria-pressed='true'] {
+    background: var(--color-surface-active);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+.types-combo__type[aria-pressed='true'] img { opacity: 1; }
+.types-combo__selected { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.types-combo .types-matchup { grid-template-columns: 5.5rem minmax(0, 1fr); }
+.types-combo__examples { display: flex; flex-direction: column; gap: var(--space-2); }
+.types-combo__examples .ref-mons { margin-top: 0; }
 
 /* One type's matchups: a label column and the types it names. */
 .types-matchups {
@@ -112,16 +242,98 @@
     margin: 0;
 }
 .types-matchup__none {
+    margin: 0;
     font-size: var(--text-sm);
     color: var(--color-muted);
 }
 
-/* The entity pages capitalise a slug-derived title; these titles are copy. */
-.types-view .edv-title { text-transform: none; }
+/* A type page's hero: its three strongest, animated, on battle platforms. */
+.types-strongest {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+}
+.types-strongest__row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+.types-strongest__mon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-2) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+.types-strongest__mon:hover { background: var(--color-surface-hover); }
+.types-strongest__mon:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.types-strongest__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    height: 6rem;
+}
+.types-strongest__stage::after {
+    content: '';
+    position: absolute;
+    inset-inline: 18%;
+    bottom: 0;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-fg) 9%, transparent);
+}
+.types-strongest__stage picture { display: contents; }
+.types-strongest__sprite {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    max-height: 100%;
+    margin-bottom: var(--space-1);
+    image-rendering: pixelated;
+}
+.types-strongest__sprite[data-still] { height: 100%; }
+.types-strongest__name { font-weight: var(--weight-medium); text-align: center; }
+.types-strongest__bst {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+.types-strongest__caption {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    text-align: center;
+}
 
 /* The Pokémon chips are links here, not buttons. */
 .types-mon { text-decoration: none; }
 
 @media (max-width: 640px) {
+    /* The chart on a phone: icon-only row heads that stay put while the
+       columns scroll under them, so every cell keeps its row in sight. */
+    .types-matrix { min-width: 34rem; }
+    .types-matrix thead th:first-child,
+    .types-matrix tbody th { width: 2.25rem; }
+    .types-matrix__corner span { display: none; }
+    .types-matrix__row-head span { display: none; }
+    .types-matrix__row-head { justify-content: center; padding-inline: 0; }
+    .types-matrix tbody th,
+    .types-matrix thead th:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: var(--color-surface);
+    }
+    .types-matrix__cell { height: 2rem; font-size: var(--text-xs); }
     .types-matchup { grid-template-columns: minmax(0, 1fr); gap: var(--space-1_5); }
+    .types-combo .types-matchup { grid-template-columns: minmax(0, 1fr); }
+    .types-strongest__stage { height: 4.5rem; }
 }

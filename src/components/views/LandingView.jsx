@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Calculator, Crown, LayoutGrid, Shapes, TrendingUp } from 'lucide-react';
 import '../../styles/landing.css';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -10,8 +9,13 @@ import { analyzeTeam, rateTeam } from '../../utils/teamAnalysis';
 import { DEMO_POOL, DEMO_START, toggleDemoMember } from '../../utils/landing';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
+import { typeIcons } from '../../constants/types';
 import { TypeChip } from '../TypeChip';
 import { RollingNumber } from '../RollingNumber';
+import { AnimatedSprite } from '../AnimatedSprite';
+import { LandingFeatures } from '../landing/LandingFeatures';
+import { THEME_META } from '../../constants/theme';
+import { LANGUAGES } from '../../utils/localePath';
 
 /**
  * Home for a first visit (2026-10-21): what the app does, shown working, and
@@ -24,14 +28,18 @@ import { RollingNumber } from '../RollingNumber';
  * what api/_lib/seoSnapshot.js prerenders for `/`.
  */
 
-const FEATURES = [
-    { key: 'builder', to: '/builder', icon: <LayoutGrid className="landing-feature__icon" aria-hidden="true" /> },
-    { key: 'pokedex', to: '/pokedex', icon: <BookOpen className="landing-feature__icon" aria-hidden="true" /> },
-    { key: 'calc', to: '/damage-calculator', icon: <Calculator className="landing-feature__icon" aria-hidden="true" /> },
-    { key: 'meta', to: '/meta', icon: <TrendingUp className="landing-feature__icon" aria-hidden="true" /> },
-    { key: 'types', to: '/types', icon: <Shapes className="landing-feature__icon" aria-hidden="true" /> },
-    { key: 'challenge', to: '/challenge', icon: <Crown className="landing-feature__icon" aria-hidden="true" /> },
-];
+/** The demo's six standing in a row, each on its own battle platform. */
+function LandingParty() {
+    return (
+        <div className="landing-party" aria-hidden="true">
+            {DEMO_POOL.map((p) => (
+                <span key={p.id} className="landing-party__slot">
+                    <AnimatedSprite id={p.id} className="landing-party__sprite" />
+                </span>
+            ))}
+        </div>
+    );
+}
 
 function LandingDemo({ onLeave }) {
     const { t } = useTranslation();
@@ -81,8 +89,16 @@ function LandingDemo({ onLeave }) {
                             aria-pressed={on}
                             onClick={() => setSelected((prev) => toggleDemoMember(prev, p.id))}
                         >
-                            <img src={getPokemonFrontSpriteUrl(p.id)} alt="" aria-hidden="true" width="48" height="48" />
-                            <span>{titleCaseSlug(p.name)}</span>
+                            {/* On the team it moves; on the bench it waits, still. */}
+                            <span className="landing-pick__stage">
+                                <AnimatedSprite id={p.id} still={!on} className="landing-pick__sprite" />
+                            </span>
+                            <span className="landing-pick__name">{titleCaseSlug(p.name)}</span>
+                            <span className="landing-pick__types">
+                                {p.types.map((type) => (
+                                    <img key={type} src={typeIcons[type]} alt={t(`types.${type}`)} title={t(`types.${type}`)} className="landing-pick__type" />
+                                ))}
+                            </span>
                         </button>
                     );
                 })}
@@ -124,6 +140,7 @@ export function LandingView({ onLeave, onSkip }) {
         <div className="landing">
             <section className="landing-hero">
                 <div className="landing-hero__copy">
+                    <LandingParty />
                     <p className="landing-eyebrow">{t('landing.eyebrow')}</p>
                     <h1 className="landing-title">{t('landing.title')}</h1>
                     <p className="landing-lede">{t('landing.lede')}</p>
@@ -132,24 +149,24 @@ export function LandingView({ onLeave, onSkip }) {
                         <Link to="/pokedex" className="btn btn-outline btn-lg" onClick={onLeave}>{t('landing.secondaryCta')}</Link>
                     </div>
                     <button type="button" className="landing-skip" onClick={onSkip}>{t('landing.skip')}</button>
+                    <dl className="landing-stats">
+                        {[
+                            ['1025', t('landing.stats.pokemon')],
+                            ['18', t('landing.stats.types')],
+                            [String(THEME_META.length), t('landing.stats.themes')],
+                            [String(LANGUAGES.length), t('landing.stats.languages')],
+                        ].map(([value, label]) => (
+                            <div key={label} className="landing-stats__item">
+                                <dt>{label}</dt>
+                                <dd>{value}</dd>
+                            </div>
+                        ))}
+                    </dl>
                 </div>
                 <LandingDemo onLeave={onLeave} />
             </section>
 
-            <section className="landing-features" aria-labelledby="landing-features-title">
-                <h2 id="landing-features-title" className="landing-section-title">{t('landing.featuresTitle')}</h2>
-                <ul className="landing-feature-grid">
-                    {FEATURES.map(({ key, to, icon }) => (
-                        <li key={key}>
-                            <Link to={to} className="landing-feature" onClick={onLeave}>
-                                {icon}
-                                <h3 className="landing-feature__title">{t(`landing.features.${key}.title`)}</h3>
-                                <p className="landing-feature__body">{t(`landing.features.${key}.body`)}</p>
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+            <LandingFeatures onLeave={onLeave} />
 
             <section className="landing-closing">
                 <h2 className="landing-section-title">{t('landing.closingTitle')}</h2>
