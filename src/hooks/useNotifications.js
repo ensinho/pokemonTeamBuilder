@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { splitLocalePath } from '../utils/localePath';
+import { deployBase } from '../services/localeHistory';
 
 /**
  * Route a tap on a system notification.
@@ -22,13 +24,10 @@ function useNotificationClickRouting() {
             try {
                 const target = new URL(event.data.url, window.location.origin);
                 if (target.origin !== window.location.origin) return;
-                // The router's basename is already part of BASE_URL, so the
-                // path is trimmed back to what `navigate` expects.
-                const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-                const path = target.pathname.startsWith(base)
-                    ? target.pathname.slice(base.length) || '/'
-                    : target.pathname;
-                navigate(`${path}${target.search}`);
+                // The router's basename (deploy base + language prefix) is
+                // trimmed back off, leaving the app path `navigate` expects.
+                const { appPath } = splitLocalePath(target.pathname, deployBase());
+                navigate(`${appPath}${target.search}`);
             } catch (_) {
                 // A malformed url is not worth a crash — the tap simply focuses.
             }

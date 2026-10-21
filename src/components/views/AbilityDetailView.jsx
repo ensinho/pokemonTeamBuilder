@@ -29,6 +29,7 @@ export function AbilityDetailView() {
 
     const displayName = titleCaseSlug(slug);
     useDocumentMeta({
+        name: displayName,
         title: `${displayName} (${t('db.abilityTag')})`,
         description: data?.effect
             ? `${displayName} — ${data.effect} See every Pokémon that can have ${displayName}.`

@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { escapeHtml, fetchTopicMeta, topicIdFromUrl } from './_lib/forumMeta.js';
+import { renderSnapshot } from './_lib/seoSnapshot.js';
+import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLocalePath } from '../src/utils/localePath.js';
+import { SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
 
 // Cache the pokemon index + tournament teams in memory across lambda invocations
 let pokemons = [];
@@ -28,28 +31,16 @@ try {
     console.error("Failed to load tournaments.json in render-meta:", e);
 }
 
-function formatName(name) {
-    if (!name) return '';
-    // Special formatting for known competitive suffixes or forms
-    return name
-        .split('-')
-        .map(word => {
-            if (!word) return '';
-            // keep small words lowercase unless they are at the start
-            if (['of', 'the', 'in'].includes(word.toLowerCase())) return word.toLowerCase();
-            return word.charAt(0).toUpperCase() + word.slice(1);
-        })
-        .join(' ');
-}
-
 function findPokemon(param) {
     if (!param) return null;
-    const cleanParam = decodeURIComponent(param).toLowerCase().trim().replace(/\s+/g, '-');
-    if (/^\d+$/.test(cleanParam)) {
-        const id = parseInt(cleanParam, 10);
+    let clean = param;
+    try { clean = decodeURIComponent(param); } catch { /* keep the raw slug */ }
+    clean = clean.toLowerCase().trim().replace(/\s+/g, '-');
+    if (/^\d+$/.test(clean)) {
+        const id = parseInt(clean, 10);
         return pokemons.find(p => p.id === id) || null;
     }
-    return pokemons.find(p => p.name.toLowerCase() === cleanParam) || null;
+    return pokemons.find(p => p.name.toLowerCase() === clean) || null;
 }
 
 function findTeam(id) {
@@ -57,16 +48,91 @@ function findTeam(id) {
     return tournamentTeams.find(t => t.id === id) || null;
 }
 
+/**
+ * The page for one request: the shell with this route's title, description,
+ * canonical, hreflang alternates, Open Graph, JSON-LD and prerendered text,
+ * all in the language its URL names (`/pt/...` is Portuguese, everything else
+ * English — never the Accept-Language header, so a crawler indexes each
+ * version at its own URL). Pure apart from the data passed in, so the test
+ * can drive it without a filesystem.
+ */
+export function buildPage(shell, { urlPath, topicMeta = null, data = {} } = {}) {
+    const findP = data.findPokemon || findPokemon;
+    const findT = data.findTeam || findTeam;
+    const allPokemons = data.pokemons || pokemons;
+    let html = shell;
+
+    const { language, appPath: rawAppPath } = splitLocalePath(urlPath);
+    // `/pokedex/` and `/pokedex` are one page.
+    const appPath = rawAppPath.length > 1 ? rawAppPath.replace(/\/+$/, '') : rawAppPath;
+    const segments = appPath.split('/').filter(Boolean);
+
+    const context = {};
+    if ((segments[0] === 'pokemon' || segments[0] === 'meta') && segments[1]) context.pokemon = findP(segments[1]);
+    if (segments[0] === 'tournaments' && segments[1] === 'team' && segments[2]) context.team = findT(segments[2]);
+
+    const meta = pageMeta(appPath, language, context);
+    let title = meta.title;
+    let description = meta.description;
+    let canonicalSearch = '';
+
+    // A shared post unfurls as that post (forumMeta.js); any miss keeps the generic feed card.
+    if (appPath === '/feed' && topicMeta) {
+        title = topicMeta.title;
+        description = topicMeta.description;
+        canonicalSearch = `?topic=${encodeURIComponent(topicMeta.id)}`;
+    }
+
+    // Pages reachable by both numeric id and slug (/pokemon, /meta) declare the
+    // slug form canonical, so both consolidate to one indexable URL per language.
+    const canonicalUrl = `${SITE_URL}${localizePath(meta.canonicalPath, language)}${canonicalSearch}`;
+    const url = canonicalSearch ? canonicalUrl : `${SITE_URL}${urlPath}`;
+    const alternates = alternateUrls(SITE_URL, meta.canonicalPath, canonicalSearch);
+
+    // Escaped, because a forum title is user text; replaced through a function,
+    // because a replacement *string* expands `$&`/`$1` — a title containing
+    // them would rewrite the page.
+    const set = (pattern, tag) => { html = html.replace(pattern, () => tag); };
+    const esc = { title: escapeHtml(title), description: escapeHtml(description), image: escapeHtml(meta.image), url: escapeHtml(url), canonical: escapeHtml(canonicalUrl) };
+    set(/<html lang="[^"]*"/i, `<html lang="${LOCALE_TAG[language]}"`);
+    set(/<title>[^<]*<\/title>/i, `<title>${esc.title}</title>`);
+    set(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${esc.description}" />`);
+    set(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${esc.canonical}" />`);
+
+    set(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${esc.title}" />`);
+    set(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${esc.description}" />`);
+    set(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${esc.image}" />`);
+    set(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${esc.url}" />`);
+
+    set(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${esc.title}" />`);
+    set(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${esc.description}" />`);
+    set(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${esc.image}" />`);
+
+    const headExtras = [
+        ...alternates.map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${escapeHtml(a.href)}" />`),
+        `<link rel="alternate" hreflang="x-default" href="${escapeHtml(alternates.find((a) => a.language === 'en').href)}" />`,
+        `<meta property="og:locale" content="${OG_LOCALE[language]}" />`,
+        ...LANGUAGES.filter((l) => l !== language).map((l) => `<meta property="og:locale:alternate" content="${OG_LOCALE[l]}" />`),
+        ...structuredData(meta, language).map((block) => `<script type="application/ld+json">${jsonLdScript(block)}</script>`),
+    ].join('\n    ');
+    set(/<\/head>/i, `    ${headExtras}\n  </head>`);
+
+    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, pokemons: allPokemons });
+    set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
+
+    return { html, language, meta };
+}
+
 export default async function handler(req, res) {
-    const urlPath = req.url.split('?')[0]; // Strip search query params
-    
+    const [urlPath, query = ''] = req.url.split('?');
+
     // Read the compiled index.html file
-    let html = '';
+    let shell = '';
     const htmlPath = path.join(process.cwd(), 'dist', 'index.html');
-    
+
     try {
         if (fs.existsSync(htmlPath)) {
-            html = fs.readFileSync(htmlPath, 'utf8');
+            shell = fs.readFileSync(htmlPath, 'utf8');
         } else {
             console.error("Compiled index.html not found at:", htmlPath);
             return res.status(404).send("Application shell not found. Please trigger a deployment build.");
@@ -75,164 +141,27 @@ export default async function handler(req, res) {
         console.error("Error reading index.html in serverless function:", err);
         return res.status(500).send("Internal Server Error: " + err.message);
     }
-    
-    // Default site values
-    let title = "Pokémon Team Builder";
-    let description = "Build and share competitive Pokémon teams with a full Pokédex, damage calculator, speed tiers, Smogon sets, and real tournament usage stats.";
-    let imageUrl = "https://pokemonbuilder.app/og-image.png";
-    let url = `https://pokemonbuilder.app${urlPath}`;
-    // Defaults to the visited URL; overridden below to the canonical *name*-slug
-    // form for pages reachable by both numeric id and slug (/pokemon, /meta), so
-    // both forms consolidate to one indexable URL instead of splitting signal.
-    let canonicalUrl = url;
+
     // A page whose preview depends on a live lookup that missed (a timeout, a
     // cold start) must not pin the generic card in the edge cache for a day.
     let previewMissed = false;
+    let topicMeta = null;
+    const { appPath } = splitLocalePath(urlPath);
+    if (appPath === '/feed') {
+        const topicId = topicIdFromUrl(`/feed${query ? `?${query}` : ''}`);
+        const fetched = topicId ? await fetchTopicMeta(topicId) : null;
+        if (fetched) topicMeta = { ...fetched, id: topicId };
+        else if (topicId) previewMissed = true;
+    }
 
-    // Dynamic metadata routing
-    if (urlPath === '/pokepuzzle') {
-        title = "Daily PokePuzzle | Pokémon Team Builder";
-        description = "Solve the daily PokePuzzle! Guess the Pokémon of the day from its types, stats, height, and weight. Play here!";
-        imageUrl = "https://pokemonbuilder.app/pokepuzzle-og.png";
-    }
-    else if (urlPath === '/challenge') {
-        title = "Champion Challenge | Pokémon Team Builder";
-        description = "Walk up to Cynthia and battle her every day: a new Champion team at midnight, a Team of the day to borrow, and a win streak to keep. A DS-style battle in your browser.";
-        imageUrl = "https://pokemonbuilder.app/challenge-og.png";
-    }
-    else if (urlPath.startsWith('/pokemon/')) {
-        const param = urlPath.split('/')[2];
-        const pokemon = findPokemon(param);
-        if (pokemon) {
-            const name = formatName(pokemon.name);
-            const typesStr = pokemon.types.map(t => formatName(t)).join('/');
-            title = `${name} | Pokédex | Pokémon Team Builder`;
-            description = `${name}: ${typesStr}-type Pokémon. View base stats, competitive Smogon movesets, speed tiers, type matchups, and real-time tournament usage stats in Pokémon Team Builder.`;
-            imageUrl = `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-            canonicalUrl = `https://pokemonbuilder.app/pokemon/${pokemon.name}`;
-        } else if (param) {
-            const friendlyName = formatName(param);
-            title = `${friendlyName} | Pokédex | Pokémon Team Builder`;
-            description = `View stats, competitive movesets, speed tiers, type matchups, and tournament usage statistics for ${friendlyName} in Pokémon Team Builder.`;
-        }
-    }
-    else if (urlPath.startsWith('/meta/')) {
-        const param = urlPath.split('/')[2];
-        const pokemon = findPokemon(param);
-        if (pokemon) {
-            const name = formatName(pokemon.name);
-            title = `${name} Meta & Usage | Pokémon Team Builder`;
-            description = `View competitive usage stats, common teammates, movesets, items, abilities, and popular tournament builds for ${name}.`;
-            imageUrl = `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-            canonicalUrl = `https://pokemonbuilder.app/meta/${pokemon.name}`;
-        } else if (param) {
-            const friendlyName = formatName(param);
-            title = `${friendlyName} Meta & Usage | Pokémon Team Builder`;
-            description = `View competitive usage stats, common teammates, movesets, items, abilities, and popular tournament builds for ${friendlyName}.`;
-        }
-    }
-    else if (urlPath === '/pokedex') {
-        title = "Pokédex & Database | Pokémon Team Builder";
-        description = "Search the full Pokédex, filter by type or generation, and view stats, movesets, and competitive usage details.";
-    }
-    else if (urlPath === '/tournaments') {
-        title = "Tournament Teams | Pokémon Team Builder";
-        description = "Browse real competitive Pokémon VGC teams from major tournaments. Import them directly into the builder with one click.";
-    }
-    else if (urlPath === '/damage-calculator') {
-        title = "Damage Calculator | Pokémon Team Builder";
-        description = "Calculate damage rolls between Pokémon using competitive VGC/Smogon formats. Fully integrated with active team editing.";
-    }
-    else if (urlPath === '/speed-tiers') {
-        title = "Speed Tiers | Pokémon Team Builder";
-        description = "Compare speeds of all Pokémon under different boosts, tailwind, trick room, and EV spreads to plan your match ups.";
-    }
-    else if (urlPath === '/builder') {
-        title = "Team Builder | Pokémon Team Builder";
-        description = "Build your competitive Pokémon team with live type coverage, speed checks, damage previews, and Smogon set suggestions.";
-    }
-    else if (urlPath === '/moves') {
-        title = "Move List | Pokémon Team Builder";
-        description = "Every Pokémon move with type, category, power, accuracy, and PP.";
-    }
-    else if (urlPath === '/abilities') {
-        title = "Abilities List | Pokémon Team Builder";
-        description = "Every Pokémon ability explained, with its effect and which Pokémon can have it.";
-    }
-    else if (urlPath === '/items') {
-        title = "Items List | Pokémon Team Builder";
-        description = "Held items, berries, and battle items for competitive Pokémon teams, with full effect descriptions.";
-    }
-    else if (urlPath === '/gyms') {
-        title = "Gym Leaders | Pokémon Team Builder";
-        description = "Gym leaders and their teams across every Pokémon game, region by region.";
-    }
-    else if (urlPath === '/journeys') {
-        title = "Journeys | Pokémon Team Builder";
-        description = "Learn the team builder step by step: five levels of missions, each rewarded with a trainer badge.";
-    }
-    else if (urlPath === '/quiz') {
-        title = "Pokémon Quiz | Pokémon Team Builder";
-        description = "Two ways to play: name every Pokémon of a generation, or every Pokémon that shares an official trait.";
-    }
-    else if (urlPath === '/feed') {
-        title = "Community Feed | Pokémon Team Builder";
-        description = "See what the community is building and sharing on Pokémon Team Builder.";
-        // A shared post unfurls as that post (forumMeta.js); any miss keeps the above.
-        const topicId = topicIdFromUrl(req.url);
-        const topicMeta = topicId ? await fetchTopicMeta(topicId) : null;
-        if (topicMeta) {
-            title = topicMeta.title;
-            description = topicMeta.description;
-            url = `https://pokemonbuilder.app/feed?topic=${encodeURIComponent(topicId)}`;
-            canonicalUrl = url;
-        } else if (topicId) {
-            previewMissed = true;
-        }
-    }
-    else if (urlPath.startsWith('/tournaments/team/')) {
-        const teamId = urlPath.split('/')[3];
-        const team = findTeam(teamId);
-        if (team) {
-            title = `${team.title} | Pokémon Team Builder`;
-            description = `${team.placement ? `${team.placement} at ` : ''}${team.tournament}${team.format ? ` (${team.format})` : ''} — full sets and one-click import into the builder.`;
-        } else {
-            title = "Tournament Team Detail | Pokémon Team Builder";
-            description = "Inspect type coverage, offensive strengths, movesets, and player placements for this VGC tournament team.";
-        }
-    }
-    else if (urlPath.startsWith('/teams/')) {
-        title = "Shared Team | Pokémon Team Builder";
-        description = "View details of this shared Pokémon team. Import it directly into your builder with one click.";
-    }
-    
-    // Inject dynamic metadata tags in index.html. Escaped, because a forum
-    // title is user text; replaced through a function, because a replacement
-    // *string* expands `$&`/`$1` — a title containing them would rewrite the page.
-    const set = (pattern, tag) => { html = html.replace(pattern, () => tag); };
-    const esc = { title: escapeHtml(title), description: escapeHtml(description), image: escapeHtml(imageUrl), url: escapeHtml(url), canonical: escapeHtml(canonicalUrl) };
-    set(/<title>[^<]*<\/title>/i, `<title>${esc.title}</title>`);
-    set(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${esc.description}" />`);
-    set(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${esc.canonical}" />`);
+    const { html } = buildPage(shell, { urlPath, topicMeta });
 
-    // OG Meta tags
-    set(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${esc.title}" />`);
-    set(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${esc.description}" />`);
-    set(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${esc.image}" />`);
-    set(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${esc.url}" />`);
-
-    // Twitter Meta tags
-    set(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${esc.title}" />`);
-    set(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${esc.description}" />`);
-    set(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${esc.image}" />`);
-    
-    // Set caching and return HTML
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     // Cache at the Edge for 1 day, stale-while-revalidate for 1 hour to allow rapid updates;
     // a missed preview is retried after a minute instead.
     res.setHeader('Cache-Control', previewMissed
         ? 'public, max-age=60, s-maxage=60'
         : 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600');
-    
+
     return res.status(200).send(html);
 }

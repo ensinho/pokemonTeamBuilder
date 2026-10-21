@@ -52,6 +52,21 @@ Key state in AppLayout:
 
 `src/components/views/` — barrel-exported via `index.js`.
 
+### HomeEntry → LandingView / CozyHomeView
+**Path:** `/` (and `/pt`)  
+**Files:** `src/components/views/HomeEntry.jsx`, `LandingView.jsx`, `CozyHomeView.jsx`  
+**Style:** `src/styles/landing.css`
+
+A first visit (nothing an earlier visit leaves in storage, no teams, no account — `src/utils/landing.js`) gets the landing: pitch, a working demo on the builder's own analysis, the feature cards. Everyone else gets the trainer's Home. See [SEO & landing](./seo_and_landing.md).
+
+### TypesView / TypeDetailView
+**Path:** `/types`, `/types/:type`  
+**File:** `src/components/views/TypesView.jsx` · **Style:** `src/styles/types-view.css`
+
+The 18 × 18 type chart and one page per type (defence, offence, its Pokémon). Lazy-loaded; listed under PokéData in the rail.
+
+---
+
 ### HomeView
 **Path:** `/`  
 **File:** `src/components/views/HomeView.jsx`  

@@ -15,6 +15,7 @@
 | [Firebase Security](./modules/firebase_security.md) | Adding a new Firestore path, admin logic, auth rules |
 | [State & Stores](./modules/state_and_stores.md) | Adding/modifying Zustand stores or hooks |
 | [Data Layer](./modules/data_layer.md) | Pokémon data, cache strategy, PokéAPI integration |
+| [SEO & landing](./modules/seo_and_landing.md) | Titles/descriptions, the `/pt` language prefix and `LocaleRouter`, hreflang, JSON-LD, the prerendered body, the sitemap, the type chart and the first-visit landing |
 | [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
 | [Forum](./modules/forum.md) | The /feed forum: three-pane workspace, Hot/New/Top ranking, comment tree, topic likes, sharing and link previews |
 | [Journeys](./modules/journeys.md) | Onboarding missions, journey badges, the mission guide, the Home's journey card |
@@ -51,7 +52,7 @@ Prefer existing SVG components from `src/components/icons.jsx`. `lucide-react` i
 - **Dynamic values only:** Inline `style={{}}` is reserved for injecting runtime theme colors — not for layout or spacing.
 
 ### 5. Routing
-All routes are defined in `AppLayout.jsx`. The router is `BrowserRouter` (real paths, `basename` from `BASE_URL`; legacy `#/` links are rewritten in `main.jsx`). Do not create new `<Route>` entries anywhere else.
+All routes are defined in `AppLayout.jsx`. The router is `LocaleRouter` (real paths; the basename is `BASE_URL` plus the language prefix — English at the root, Portuguese under `/pt` — so routes never mention the language; legacy `#/` links are rewritten in `main.jsx`). See [SEO & landing](./modules/seo_and_landing.md). Do not create new `<Route>` entries anywhere else.
 
 ### 6. Data Access
 Never call the PokéAPI directly from a component. Always go through `src/services/pokemonDataCache.js`. Never query Firestore for the Pokémon list — it comes from `public/data/pokemon-index.json`.

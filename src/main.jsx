@@ -1,11 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css' // <-- ADICIONE ESTA LINHA
 import './styles/motion.css' // shared entrance/hover motion utilities
 import './styles/interactions.css' // design system v2: switch, check, loader, rolling figures, theme reveal
 import { applyTheme } from './constants/theme'
+import { LocaleRouter } from './components/LocaleRouter'
+import { useLanguageStore } from './store/useLanguageStore'
+import { mirrorLanguageInUrl } from './services/localeHistory'
 
 // Initialize theme from localStorage before first render so CSS vars are set.
 const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -20,10 +22,15 @@ if (window.location.hash.startsWith('#/')) {
   window.history.replaceState(null, '', basename + legacyPath + window.location.search);
 }
 
+// The language lives in the URL (`/pt/...`, see utils/localePath.js). Settle
+// the address on the language the visitor arrives in before anything routes:
+// a Brazilian browser opening `/builder` continues at `/pt/builder`.
+mirrorLanguageInUrl(useLanguageStore.getState().language);
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename={basename}>
+    <LocaleRouter>
       <App />
-    </BrowserRouter>
+    </LocaleRouter>
   </React.StrictMode>,
 )

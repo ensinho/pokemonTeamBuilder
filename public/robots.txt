@@ -4,5 +4,9 @@ Disallow: /favorites
 Disallow: /teams
 Disallow: /profile
 Disallow: /admin
+Disallow: /pt/favorites
+Disallow: /pt/teams
+Disallow: /pt/profile
+Disallow: /pt/admin
 
 Sitemap: https://pokemonbuilder.app/sitemap.xml

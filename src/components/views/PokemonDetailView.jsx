@@ -57,6 +57,7 @@ export function PokemonDetailView({
     const displayName = indexEntry ? titleCaseSlug(indexEntry.name) : '';
     const typeLabel = indexEntry?.types?.map(titleCaseSlug).join('/') || '';
     useDocumentMeta(indexEntry ? {
+        pokemon: indexEntry,
         title: displayName,
         description: `${displayName}${typeLabel ? ` (${typeLabel})` : ''} — base stats, abilities, moves, evolutions, and competitive movesets in Pokémon Team Builder.`,
         image: getPokemonArtworkSpriteUrl(indexEntry.id),
