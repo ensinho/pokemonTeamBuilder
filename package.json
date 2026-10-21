@@ -42,9 +42,11 @@
     }
   },
   "dependencies": {
+    "@fontsource/space-grotesk": "5.2.10",
     "@pkmn/img": "^0.3.4",
     "@pkmn/randoms": "0.10.11",
     "@pkmn/sim": "0.10.11",
+    "@resvg/resvg-wasm": "2.6.2",
     "firebase": "^11.10.0",
     "firebase-admin": "^14.2.0",
     "gh-pages": "^6.3.0",
@@ -55,6 +57,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.10.1",
+    "satori": "0.18.3",
     "web-push": "^3.6.7",
     "zustand": "^5.0.13"
   },

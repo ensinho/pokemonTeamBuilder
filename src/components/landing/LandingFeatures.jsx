@@ -218,7 +218,7 @@ function FeatureCard({ feature, onLeave, featured = false }) {
             to={to}
             className={`landing-feature${featured ? ' landing-feature--featured' : ''}`}
             style={{ '--feature-tone': tone }}
-            onClick={onLeave}
+            onClick={() => onLeave(`feature_${key}`)}
         >
             <Visual />
             <span className="landing-feature__copy">

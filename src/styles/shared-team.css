@@ -1,0 +1,146 @@
+/* ============================================================
+   SHARED TEAM (/t/:id, SharedTeamView.jsx, 2026-10-21)
+   On the entity-detail cards: a hero (name + the two ways forward,
+   beside the builder's verdict) over one card per member. The cards
+   are the only boxes; inside them, fills, never another border.
+   ============================================================ */
+
+.st-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: center;
+}
+@media (min-width: 1100px) {
+    .st-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8); }
+}
+.st-hero__copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+/* A team name is copy, not a slug: keep the case it was typed in. */
+.shared-team .st-hero__title { text-transform: none; }
+.st-hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-1); }
+
+.st-verdict {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+.st-verdict__row {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: baseline;
+}
+.st-verdict__row dt { font-size: var(--text-sm); color: var(--color-muted); }
+.st-verdict__row dd { margin: 0; }
+.st-verdict__chips { display: flex; flex-wrap: wrap; gap: var(--space-1_5); }
+.st-verdict__figure {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+.st-verdict__ok { font-size: var(--text-sm); color: var(--color-success); }
+
+/* The six */
+.st-members {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+@media (min-width: 640px) { .st-members { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .st-members { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.st-member {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+.st-member__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 6rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+.st-member__stage:hover { background: var(--color-surface-hover); }
+.st-member__stage:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+/* A battle platform under every sprite, like the landing's. */
+.st-member__stage::after {
+    content: '';
+    position: absolute;
+    inset-inline: 18%;
+    bottom: var(--space-2);
+    height: 0.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-fg) 9%, transparent);
+}
+.st-member__stage picture { display: contents; }
+.st-member__sprite {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    max-height: 100%;
+    margin-bottom: var(--space-2_5);
+    image-rendering: pixelated;
+}
+.st-member__sprite[data-still] { height: 100%; margin-bottom: var(--space-1); }
+
+.st-member__body { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.st-member__name { font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--color-fg); }
+.st-member__types { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.st-member__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1_5) var(--space-3);
+    margin: 0;
+}
+.st-member__facts dt { font-size: var(--text-2xs); color: var(--color-muted); }
+.st-member__facts dd {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-member__moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.st-member__moves li {
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-size: var(--text-xs);
+    color: var(--color-fg);
+}
+
+@media (max-width: 1023px) {
+    .st-member { border-color: transparent; }
+}
+@media (max-width: 640px) {
+    .st-hero__actions { width: 100%; }
+    .st-hero__actions .btn { flex: 1 1 100%; }
+    .st-verdict__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-1_5); }
+    .st-member { grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3); }
+    .st-member__stage { height: 5rem; }
+}

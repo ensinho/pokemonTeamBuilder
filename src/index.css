@@ -671,7 +671,7 @@
     .forum-sidebar-card,
     .friend-card, .battle-card, .pokepuzzle-tip-card, .pokepuzzle-history__item,
     .profile-streak-card, .profile-overview-stat, .profile-avatar-card,
-    .landing-demo, .landing-feature
+    .landing-demo, .landing-feature, .st-member
 ) {
     box-shadow: var(--card-sheen);
 }

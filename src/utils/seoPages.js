@@ -177,6 +177,33 @@ export function pageMeta(appPath, language, context = {}) {
         };
     }
 
+    // A shared team's public page (/t/:id). The server looks the team up
+    // (api/_lib/sharedTeam.js); with it, the card names the team and its six
+    // and carries the generated image of them.
+    if (section === 't' && param && !extra) {
+        const { sharedTeam } = context;
+        const crumbs = (name) => crumbsFor(language, [{ name, path }]);
+        if (sharedTeam?.pokemons?.length) {
+            const name = sharedTeam.name || t('seo.sharedTeamPage.untitled');
+            const members = joinList(sharedTeam.pokemons.map((p) => formatSlug(p.name)), language);
+            return {
+                ...base,
+                key: 'sharedTeamPage',
+                title: withBrand(t('seo.sharedTeamPage.title', { name })),
+                description: t('seo.sharedTeamPage.description', { members }),
+                image: `${SITE_URL}/api/og?team=${encodeURIComponent(param)}&lang=${language}`,
+                breadcrumbs: crumbs(name),
+            };
+        }
+        return {
+            ...base,
+            key: 'sharedTeamPage',
+            title: withBrand(t('seo.sharedTeam.title')),
+            description: t('seo.sharedTeam.description'),
+            breadcrumbs: crumbs(t('seo.sharedTeam.title')),
+        };
+    }
+
     if (section === 'teams' && param && !extra) {
         return { ...base, key: 'sharedTeam', title: withBrand(t('seo.sharedTeam.title')), description: t('seo.sharedTeam.description') };
     }

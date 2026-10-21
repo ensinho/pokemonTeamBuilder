@@ -8,6 +8,7 @@ import { applyTheme } from './constants/theme'
 import { LocaleRouter } from './components/LocaleRouter'
 import { useLanguageStore } from './store/useLanguageStore'
 import { mirrorLanguageInUrl } from './services/localeHistory'
+import { initAnalytics } from './services/analytics'
 
 // Initialize theme from localStorage before first render so CSS vars are set.
 const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -34,3 +35,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </LocaleRouter>
   </React.StrictMode>,
 )
+
+// After the first render, never before it: see services/analytics.js.
+initAnalytics()

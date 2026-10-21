@@ -27,7 +27,9 @@ const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
  */
 export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, variant = 'footer' }) => {
     const { t } = useTranslation();
-    const [likeCount, setLikeCount] = useState(0);
+    // Null until the count has answered: a "0" shown while it loads reads as
+    // "nobody likes this" on the very first paint.
+    const [likeCount, setLikeCount] = useState(null);
     const [hasLiked, setHasLiked] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
     const [showSuggestionModal, setShowSuggestionModal] = useState(false);
@@ -64,7 +66,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
         const willLike = !hasLiked;
         // Optimistic UI
         setHasLiked(willLike);
-        setLikeCount((c) => Math.max(0, c + (willLike ? 1 : -1)));
+        setLikeCount((c) => Math.max(0, (c ?? 0) + (willLike ? 1 : -1)));
         try {
             if (willLike) {
                 await setDoc(
@@ -144,7 +146,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                     >
                         <span className="app-shell__nav-icon" aria-hidden="true"><HeartIcon color="currentColor" /></span>
                         <span className="app-shell__nav-text">{t('nav.likeApp')}</span>
-                        <span className="app-shell__nav-trailing">{likeCount}</span>
+                        <span className="app-shell__nav-trailing">{likeCount ?? ''}</span>
                     </button>
                 </li>
                 <li>
@@ -177,7 +179,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                     className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-white hover:opacity-90' : 'border-surface-raised bg-surface-raised text-muted hover:text-fg hover:border-border-hover'}`}
                 >
                     <HeartIcon color="currentColor" className="w-3.5 h-3.5 shrink-0" />
-                    <span>{likeCount}</span>
+                    {likeCount !== null && <span>{likeCount}</span>}
                 </button>
 
                 <span className="app-shell__footer-separator" aria-hidden="true">•</span>

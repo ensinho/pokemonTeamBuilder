@@ -15,6 +15,7 @@
 | [Firebase Security](./modules/firebase_security.md) | Adding a new Firestore path, admin logic, auth rules |
 | [State & Stores](./modules/state_and_stores.md) | Adding/modifying Zustand stores or hooks |
 | [Data Layer](./modules/data_layer.md) | Pokémon data, cache strategy, PokéAPI integration |
+| [Analytics & share loop](./modules/analytics.md) | `track()` and the funnel's event names, why analytics is off the boot path, the shared-team page `/t/:id` and its generated preview image (`api/og.js`) |
 | [SEO & landing](./modules/seo_and_landing.md) | Titles/descriptions, the `/pt` language prefix and `LocaleRouter`, hreflang, JSON-LD, the prerendered body, the sitemap, the type chart and the first-visit landing |
 | [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
 | [Forum](./modules/forum.md) | The /feed forum: three-pane workspace, Hot/New/Top ranking, comment tree, topic likes, sharing and link previews |
