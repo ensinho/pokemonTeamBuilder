@@ -182,6 +182,15 @@ export function PokedexView({
         }
     }, [pokemonQueryParam, navigate]);
 
+    // `?q=` pre-fills the search — the site search box Google may show under
+    // the result for this site (Home's WebSite/SearchAction JSON-LD, seoPages.js).
+    const searchQueryParam = searchParams.get('q');
+    useEffect(() => {
+        if (searchQueryParam) setSearchInput(searchQueryParam);
+        // Only on arrival with a query; typing afterwards owns the field.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQueryParam]);
+
     // Clicking a Pokémon opens its dedicated detail page (researchable, shareable
     // URL). The *filtered* order goes with it: on a phone the detail screen is a
     // carousel, and "next" has to mean the next card in the list the user is

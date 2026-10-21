@@ -183,7 +183,9 @@ export function FeedView({ showToast, navigate }) {
     useDocumentMeta({
         title: activeTopic ? activeTopic.title : 'Community Feed & Forum',
         description: activeTopic?.bodyPreview || 'Join discussions, share Pokémon teams, and discuss competitive strategies.',
-        path: '/feed',
+        // Same canonical the server gives a shared topic (api/render-meta.js).
+        path: isThreadOpen ? `/feed?topic=${encodeURIComponent(currentTopicId)}` : '/feed',
+        override: isThreadOpen,
     });
 
     // Ranking, trending and the community figures, all from the one topics

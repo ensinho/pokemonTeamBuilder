@@ -670,14 +670,15 @@
     .card, .pokemon-card, .meta-mon-card, .team-builder-recent-card,
     .forum-sidebar-card,
     .friend-card, .battle-card, .pokepuzzle-tip-card, .pokepuzzle-history__item,
-    .profile-streak-card, .profile-overview-stat, .profile-avatar-card
+    .profile-streak-card, .profile-overview-stat, .profile-avatar-card,
+    .landing-demo, .landing-feature
 ) {
     box-shadow: var(--card-sheen);
 }
 
 /* The light answers the pointer: hovering a clickable card brightens its
    edge, the way a fill already brightens. No lift — still never a translate. */
-:where(.card--interactive, .pokemon-card, .meta-mon-card, .team-builder-recent-card):hover {
+:where(.card--interactive, .pokemon-card, .meta-mon-card, .team-builder-recent-card, .landing-feature):hover {
     box-shadow: var(--card-sheen-hover);
 }
 

@@ -31,6 +31,7 @@ export function ItemDetailView() {
 
     const displayName = titleCaseSlug(slug);
     useDocumentMeta({
+        name: displayName,
         title: `${displayName} (${t('db.itemTag')})`,
         description: data?.effect
             ? `${displayName} — ${data.effect}`

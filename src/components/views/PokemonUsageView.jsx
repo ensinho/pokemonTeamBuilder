@@ -124,6 +124,7 @@ export function PokemonUsageView() {
 
     const displayName = entry ? titleCaseSlug(entry.name) : '';
     useDocumentMeta(entry ? {
+        pokemon: entry,
         title: `${displayName} Usage & Sets`,
         description: `${displayName} competitive usage, items, EV spreads, and top teammates${format?.name ? ` in ${format.name}` : ''}${usage?.usage ? ` — ${usage.usage.toFixed(1)}% usage` : ''} on Pokémon Team Builder.`,
         image: getPokemonArtworkSpriteUrl(entry.id),

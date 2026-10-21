@@ -64,7 +64,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, ShieldHalf, Crown, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, ShieldHalf, Crown, Shapes, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -74,6 +74,7 @@ import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, S
 // entry bundle.
 import '../styles/eagerViewStyles';
 import { CozyHomeView } from './views/CozyHomeView';
+import { HomeEntry } from './views/HomeEntry';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
 // idle prefetch below and React.lazy share one import: the module loader caches
@@ -125,6 +126,7 @@ const ROUTE_CHUNKS = {
     tournaments: () => import('./views/TournamentsView'), damageCalc: () => import('./views/DamageCalculatorView'),
     speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
     abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
+    types: () => import('./views/TypesView'),
     gyms: () => import('./views/GymsView'), generationQuiz: () => import('./views/QuizView'),
     journeys: () => import('./views/JourneysView'),
     friends: () => import('./views/FriendsView'), battles: () => import('./views/battle/BattleListView'),
@@ -157,6 +159,8 @@ const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ 
 const MoveDetailView = lazy(() => import('./views/MoveDetailView').then((m) => ({ default: m.MoveDetailView })));
 const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
 const AbilityDetailView = lazy(() => import('./views/AbilityDetailView').then((m) => ({ default: m.AbilityDetailView })));
+const TypesView = lazy(() => import('./views/TypesView').then((m) => ({ default: m.TypesView })));
+const TypeDetailView = lazy(() => import('./views/TypesView').then((m) => ({ default: m.TypeDetailView })));
 const ItemsListView = lazy(() => import('./views/ItemsListView').then((m) => ({ default: m.ItemsListView })));
 const ItemDetailView = lazy(() => import('./views/ItemDetailView').then((m) => ({ default: m.ItemDetailView })));
 const PokemonDetailView = lazy(() => loadPokemonDetailView().then((m) => ({ default: m.PokemonDetailView })));
@@ -319,6 +323,7 @@ export default function AppLayout() {
         if (path.includes('/challenge')) return 'challenge';
         if (path.includes('/moves')) return 'moves';
         if (path.includes('/abilities')) return 'abilities';
+        if (path === '/types' || path.startsWith('/types/')) return 'types';
         if (path.includes('/items')) return 'items';
         if (path.includes('/gyms')) return 'gyms';
         if (path.includes('/tournaments')) return 'tournaments';
@@ -826,6 +831,7 @@ export default function AppLayout() {
             'pokemonDetail': { title: t('nav.pokemonList'), subtitle: t('home.shortcutPokedexDesc') },
             'moves': { title: t('nav.moves'), subtitle: t('db.movesSubtitle') },
             'abilities': { title: t('nav.abilities'), subtitle: t('db.abilitiesSubtitle') },
+            'types': { title: t('nav.types'), subtitle: t('db.typesSubtitle') },
             'items': { title: t('nav.items'), subtitle: t('db.itemsSubtitle') },
             'tournaments': { title: t('nav.tournaments'), subtitle: t('tools.tournamentsSubtitle') },
             'meta': { title: language === 'pt' ? 'Meta & uso' : 'Meta & usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
@@ -908,6 +914,7 @@ export default function AppLayout() {
                 items: [
                     { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
                     { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'types', label: t('nav.types'), path: '/types', icon: <Shapes className="w-5 h-5 shrink-0" /> },
                     { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
                     { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                 ]
@@ -1677,18 +1684,20 @@ export default function AppLayout() {
                             <Suspense fallback={<RouteFallback />}>
                                 <Routes>
                                     <Route path="/" element={
-                                        <CozyHomeView
-                                            navigate={navigate}
-                                            savedTeams={savedTeams}
-                                            favoritePokemons={favoritePokemons}
-                                            greetingPokemonId={greetingPokemonId}
-                                            greetingPokemonIsShiny={greetingPokemonIsShiny}
-                                            onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
-                                            handleEditTeam={handleEditTeam}
-                                            activeTeamId={activeTeamId}
-                                            heroBackgroundId={homeWallpaperId}
-                                            onChangeHeroBackground={setHomeWallpaperPreference}
-                                        />
+                                        <HomeEntry hasTeams={(savedTeams?.length || 0) > 0} isAnonymous={isAnonymous}>
+                                            <CozyHomeView
+                                                navigate={navigate}
+                                                savedTeams={savedTeams}
+                                                favoritePokemons={favoritePokemons}
+                                                greetingPokemonId={greetingPokemonId}
+                                                greetingPokemonIsShiny={greetingPokemonIsShiny}
+                                                onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                                                handleEditTeam={handleEditTeam}
+                                                activeTeamId={activeTeamId}
+                                                heroBackgroundId={homeWallpaperId}
+                                                onChangeHeroBackground={setHomeWallpaperPreference}
+                                            />
+                                        </HomeEntry>
                                     } />
                                     <Route path="/feed" element={
                                         <FeedView
@@ -1799,6 +1808,8 @@ export default function AppLayout() {
                                     <Route path="/moves/:name" element={<MoveDetailView />} />
                                     <Route path="/abilities" element={<AbilitiesListView />} />
                                     <Route path="/abilities/:name" element={<AbilityDetailView />} />
+                                    <Route path="/types" element={<TypesView />} />
+                                    <Route path="/types/:type" element={<TypeDetailView />} />
                                     <Route path="/items" element={<ItemsListView />} />
                                     <Route path="/items/:name" element={<ItemDetailView />} />
                                     <Route path="/tournaments" element={

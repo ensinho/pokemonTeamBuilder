@@ -35,6 +35,7 @@ export function MoveDetailView() {
 
     const displayName = titleCaseSlug(slug);
     useDocumentMeta({
+        name: displayName,
         title: `${displayName} (${t('db.moveTag')})`,
         description: data
             ? [

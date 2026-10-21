@@ -29,6 +29,19 @@ export const getPokemonArtworkSpriteUrl = (pokemonId, { shiny = false } = {}) =>
         : POKEBALL_PLACEHOLDER_URL;
 };
 
+/**
+ * Showdown's animated battle sprite, as the PokeAPI sprites repo mirrors it by
+ * national id (`other/showdown/{id}.gif`) — id-keyed, so no Showdown name slug
+ * to get wrong, and served by the same CDN and service-worker cache as every
+ * other sprite. 50–110 KB each: for a handful of showcase spots, never a list.
+ */
+export const getPokemonAnimatedSpriteUrl = (pokemonId, { shiny = false } = {}) => {
+    const resolvedId = toPokemonId(pokemonId);
+    return resolvedId
+        ? `${RAW_SPRITE_BASE_URL}/other/showdown/${shiny ? 'shiny/' : ''}${resolvedId}.gif`
+        : POKEBALL_PLACEHOLDER_URL;
+};
+
 export const getPokemonSavedShinyState = (pokemon) => Boolean(pokemon?.customization?.isShiny || pokemon?.isShiny);
 
 /**
@@ -147,4 +160,4 @@ export function matchesPokemonSearch(pokemon, searchInput) {
 
     return rawId.includes(cleanSearch) || pad3Id.includes(cleanSearch) || pad4Id.includes(cleanSearch);
 }
-
+

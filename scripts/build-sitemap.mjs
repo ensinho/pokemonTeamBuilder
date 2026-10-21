@@ -1,11 +1,17 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { LANGUAGES, LOCALE_TAG, localizePath } from '../src/utils/localePath.js';
+import { TYPE_IDS } from '../src/utils/seoPages.js';
 
 // Builds public/sitemap.xml so search engines can discover every Pokémon,
 // competitive-usage, and tournament-team page without relying on crawling
 // alone. Reads the data files other prebuild scripts already produce, so this
 // must run last in the `prebuild` chain (package.json).
 // Run: node scripts/build-sitemap.mjs
+//
+// Every page is listed once per language (`/x` and `/pt/x`, utils/localePath.js),
+// each entry naming all its versions through xhtml:link hreflang alternates —
+// Google's sitemap form of the same set api/render-meta.js puts in each page.
 
 const SITE_URL = 'https://pokemonbuilder.app';
 const DATA_DIR = path.join(process.cwd(), 'public', 'data');
@@ -30,7 +36,9 @@ const STATIC_ROUTES = [
     { loc: '/quiz', changefreq: 'monthly', priority: '0.5' },
     { loc: '/journeys', changefreq: 'monthly', priority: '0.5' },
     { loc: '/pokepuzzle', changefreq: 'monthly', priority: '0.5' },
+    { loc: '/challenge', changefreq: 'daily', priority: '0.5' },
     { loc: '/feed', changefreq: 'daily', priority: '0.5' },
+    { loc: '/types', changefreq: 'monthly', priority: '0.7' },
 ];
 
 const readJson = async (...parts) => {
@@ -43,11 +51,19 @@ const readJson = async (...parts) => {
 
 const xmlEscape = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const urlEntry = ({ loc, changefreq, priority }) => `  <url>
-    <loc>${xmlEscape(SITE_URL + loc)}</loc>
+const absolute = (loc, language) => xmlEscape(SITE_URL + localizePath(loc, language));
+
+const alternates = (loc) => [
+    ...LANGUAGES.map((language) => `    <xhtml:link rel="alternate" hreflang="${LOCALE_TAG[language]}" href="${absolute(loc, language)}"/>`),
+    `    <xhtml:link rel="alternate" hreflang="x-default" href="${absolute(loc, LANGUAGES[0])}"/>`,
+].join('\n');
+
+const urlEntries = ({ loc, changefreq, priority }) => LANGUAGES.map((language) => `  <url>
+    <loc>${absolute(loc, language)}</loc>
+${alternates(loc)}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-  </url>`;
+  </url>`).join('\n');
 
 const main = async () => {
     const entries = [...STATIC_ROUTES];
@@ -72,6 +88,17 @@ const main = async () => {
             const name = nameById.get(id);
             if (name) entries.push({ loc: `/meta/${name}`, changefreq: 'weekly', priority: '0.6' });
         }
+    }
+
+    for (const type of TYPE_IDS) {
+        entries.push({ loc: `/types/${type}`, changefreq: 'monthly', priority: '0.7' });
+    }
+
+    // /items/:name for the battle items the Items page lists — not every one
+    // of PokéAPI's 2000 (key items, TMs), which would be thin pages.
+    const battleItems = await readJson(DATA_DIR, 'battle-items.json');
+    for (const item of battleItems?.items || []) {
+        if (item?.slug) entries.push({ loc: `/items/${item.slug}`, changefreq: 'monthly', priority: '0.4' });
     }
 
     const tournaments = await readJson(DATA_DIR, 'tournaments.json');
@@ -101,14 +128,14 @@ const main = async () => {
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${entries.map(urlEntry).join('\n')}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${entries.map(urlEntries).join('\n')}
 </urlset>
 `;
 
     await fs.mkdir(PUBLIC_DIR, { recursive: true });
     await fs.writeFile(path.join(PUBLIC_DIR, 'sitemap.xml'), xml, 'utf8');
-    console.log(`Wrote ${entries.length} URLs to public/sitemap.xml`);
+    console.log(`Wrote ${entries.length} pages × ${LANGUAGES.length} languages to public/sitemap.xml`);
 };
 
 // Build-safe: never fail the build/deploy over an optional enrichment.

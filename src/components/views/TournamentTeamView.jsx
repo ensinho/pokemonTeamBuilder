@@ -87,6 +87,7 @@ export function TournamentTeamView({ onImport, colors }) {
 
     const memberNames = useMemo(() => members.map((m) => titleCaseSlug(m.resolvedName || m.name)), [members]);
     useDocumentMeta(team ? {
+        team,
         title: team.title,
         description: `${team.placement ? `${team.placement} at ` : ''}${team.tournament}${team.format ? ` (${team.format})` : ''} — team featuring ${memberNames.slice(0, 6).join(', ')}. Import it into Pokémon Team Builder.`,
         image: members[0] ? getPokemonArtworkSpriteUrl(members[0].resolvedId) : undefined,

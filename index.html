@@ -40,6 +40,12 @@
     <meta name="twitter:title" content="Pokémon Team Builder" />
     <meta name="twitter:description" content="Build and share competitive Pokémon teams with a full Pokédex, damage calculator, speed tiers, Smogon sets, and real tournament usage stats." />
     <meta name="twitter:image" content="https://pokemonbuilder.app/og-image.png" />
+
+    <!-- api/render-meta.js puts the page's text inside #root as plain HTML for
+         readers that never run the app (link previews, AI crawlers, Google when
+         its render budget runs out); React replaces it on mount. Hidden until
+         then so a slow connection never flashes unstyled text. -->
+    <style>.seo-prerender{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}</style>
   </head>
   <body>
     <div id="root"></div>
