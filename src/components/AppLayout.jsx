@@ -75,6 +75,7 @@ import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, S
 import '../styles/eagerViewStyles';
 import { CozyHomeView } from './views/CozyHomeView';
 import { HomeEntry } from './views/HomeEntry';
+import { useLandingStore } from '../store/useLandingStore';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
 // idle prefetch below and React.lazy share one import: the module loader caches
@@ -556,6 +557,8 @@ export default function AppLayout() {
     // The floating tab dock shrinks while the page is scrolled down and comes
     // back on the way up — `.app-shell__content` is the app's one scroller.
     const [contentScrollEl, setContentScrollEl] = useState(null);
+    // The first-visit landing leads with its CTAs alone: no dock under it.
+    const isLandingOpen = useLandingStore((s) => s.isOpen);
     const isDockCompact = useDockCompact(contentScrollEl, {
         enabled: isMobile && !isMobileDetailsOpen,
         resetKey: location.pathname,
@@ -1541,7 +1544,7 @@ export default function AppLayout() {
                     </aside>
                 )}
 
-                <div ref={setContentScrollEl} className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''}`}>
+                <div ref={setContentScrollEl} className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''} ${isLandingOpen ? 'is-landing' : ''}`}>
                     {!isMobileDetailsOpen && (
                         <header className="app-shell__header">
                             <div className="app-shell__header-main">
@@ -1982,7 +1985,7 @@ export default function AppLayout() {
                     )}
                 </div>
 
-                {isMobile && !isMobileDetailsOpen && (
+                {isMobile && !isMobileDetailsOpen && !isLandingOpen && (
                     <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
                         {(() => {
                             const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail');

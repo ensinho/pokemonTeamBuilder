@@ -7,6 +7,7 @@ import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/teamDuplication';
+import { useLandingStore } from './useLandingStore';
 
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
@@ -81,7 +82,9 @@ export const useFirestoreTeamsStore = create((set, get) => {
                 set({ savedTeams: teamsData });
             }, (error) => {
                 console.error("Error listening to saved teams:", error);
-                toast.error(t('toast.teamsFetchError'));
+                // A first visit has no saved teams to lose, and the landing is
+                // its first impression: the failure stays in the console.
+                if (!useLandingStore.getState().isOpen) toast.error(t('toast.teamsFetchError'));
             });
 
             // 2. Listen to favorite pokemons

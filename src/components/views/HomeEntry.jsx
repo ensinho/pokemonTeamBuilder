@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { LandingView } from './LandingView';
 import { isReturningVisitor, markLandingSeen, shouldShowLanding } from '../../utils/landing';
+import { useLandingStore } from '../../store/useLandingStore';
 
 const storage = () => {
     try {
@@ -25,7 +26,14 @@ export function HomeEntry({ hasTeams, isAnonymous, children }) {
         setIsFirstVisit(false);
     }, []);
 
-    if (isFirstVisit && shouldShowLanding({ hasTeams, isAnonymous })) {
+    const showLanding = isFirstVisit && shouldShowLanding({ hasTeams, isAnonymous });
+    // The shell hides the phone dock while the landing is up (useLandingStore).
+    useEffect(() => {
+        useLandingStore.getState().setOpen(showLanding);
+        return () => useLandingStore.getState().setOpen(false);
+    }, [showLanding]);
+
+    if (showLanding) {
         return <LandingView onLeave={leave} onSkip={skip} />;
     }
     return children;
