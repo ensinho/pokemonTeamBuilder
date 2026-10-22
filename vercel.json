@@ -41,6 +41,11 @@
     "api/daily-puzzle.js": {
       "maxDuration": 30,
       "excludeFiles": "api/**/*.test.js"
+    },
+    "api/og.js": {
+      "maxDuration": 15,
+      "includeFiles": "{node_modules/@resvg/resvg-wasm/index_bg.wasm,node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-*-normal.woff}",
+      "excludeFiles": "api/**/*.test.js"
     }
   },
   "headers": [

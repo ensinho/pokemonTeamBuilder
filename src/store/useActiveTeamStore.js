@@ -22,6 +22,10 @@ import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { useThemeStore } from './useThemeStore';
 import { megaDisplayName } from '../hooks/useMegaStones';
 import { teamSignature, buildSignature, prettyPokemonName, uniqueTeamName } from '../utils/teamDraft';
+import { track } from '../services/analytics';
+import { localizePath } from '../utils/localePath';
+import { deployBase } from '../services/localeHistory';
+import { useLanguageStore } from './useLanguageStore';
 
 export const SHOWDOWN_TEAMBUILDER_URL = 'https://play.pokemonshowdown.com/teambuilder';
 
@@ -231,6 +235,8 @@ export const useActiveTeamStore = create((set, get) => ({
         // captured `currentTeam` before the await, so a second tap during that
         // wait overwrote the first Pokémon instead of adding beside it.
         const scale = teamScale(get().currentTeam);
+        // The funnel's first step after the landing (services/analytics.js).
+        if (get().currentTeam.length === 0) track('team_first_pokemon', { pokemon_id: Number(pokemon.id) || 0 });
         const placeholder = createTeamMember(pokemon, null, scale);
         const { instanceId } = placeholder;
         set((state) => ({ currentTeam: [...state.currentTeam, placeholder] }));
@@ -491,6 +497,7 @@ export const useActiveTeamStore = create((set, get) => ({
 
         try {
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
+            track('team_saved', { size: currentTeam.length });
             toast.success(t('toast.teamSaved', { name: teamName }), {
                 description: t('toast.teamSavedDesc', { count: currentTeam.length }),
                 actions: [{ label: t('toast.viewTeams'), onClick: () => navigateTo('/teams') }],
@@ -672,10 +679,14 @@ export const useActiveTeamStore = create((set, get) => ({
         try {
             await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
             markJourney('shareLink');
-            const basePath = `${import.meta.env.BASE_URL || '/'}`.replace(/\/$/, '');
-            const builderPath = `${basePath}/builder`.replace(/\/{2,}/g, '/');
-            const shareUrl = new URL(builderPath, window.location.origin);
-            shareUrl.searchParams.set('team', teamId);
+            track('team_shared', { size: teamMembers.length });
+            // The team's own public page (/t/:id, SharedTeamView), in the
+            // sharer's language: it previews before anything is imported, and
+            // unfurls as this team (api/render-meta.js, api/og.js).
+            const shareUrl = new URL(
+                localizePath(`/t/${teamId}`, useLanguageStore.getState().language, deployBase()),
+                window.location.origin,
+            );
             set((state) => {
                 if (state.shareModal.isOpen) {
                     return { shareModal: { ...state.shareModal, shareUrl: shareUrl.toString() } };

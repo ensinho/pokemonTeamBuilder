@@ -35,15 +35,15 @@ const currentAppPath = () => {
 /**
  * Every route utils/seoPages.js knows takes its copy from there — the table
  * the server renders from — so the title a crawler reads in the HTML is the
- * one still there after hydration, in the page's language. `pokemon`, `team`
- * and `name` are the lookups that table can use. A caller's own text is used
+ * one still there after hydration, in the page's language. `pokemon`, `team`,
+ * `sharedTeam` and `name` are the lookups that table can use. A caller's own text is used
  * only for routes the table does not know (battles, profile, a 404), or with
  * `override` (an open forum topic, which the server also titles by itself).
  */
-function applyMeta({ title, description, image, path, language, pokemon, team, name, override }) {
+function applyMeta({ title, description, image, path, language, pokemon, team, sharedTeam, name, override }) {
     const [appPath, query] = (path ?? currentAppPath()).split('?');
     const search = query ? `?${query}` : '';
-    const table = pageMeta(appPath, language, { pokemon, team, name });
+    const table = pageMeta(appPath, language, { pokemon, team, sharedTeam, name });
     const known = table.key !== 'home' || appPath === '/';
     const fromTable = !title || (known && !override);
     const fullTitle = fromTable ? table.title : `${title} | ${SITE_NAME}`;
@@ -81,10 +81,10 @@ function applyMeta({ title, description, image, path, language, pokemon, team, n
  * react-helmet: Google renders this app's JS anyway, and api/render-meta.js
  * already wrote the same values into the HTML.
  */
-export function useDocumentMeta({ title, description, image, path, pokemon, team, name, override = false } = {}) {
+export function useDocumentMeta({ title, description, image, path, pokemon, team, sharedTeam, name, override = false } = {}) {
     const language = useLanguageStore((s) => s.language);
     useEffect(() => {
-        applyMeta({ title, description, image, path, language, pokemon, team, name, override });
+        applyMeta({ title, description, image, path, language, pokemon, team, sharedTeam, name, override });
         return () => applyMeta({ language: useLanguageStore.getState().language });
-    }, [title, description, image, path, language, pokemon, team, name, override]);
+    }, [title, description, image, path, language, pokemon, team, sharedTeam, name, override]);
 }

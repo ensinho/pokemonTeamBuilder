@@ -1,5 +1,27 @@
 export const TRANSLATIONS = {
     en: {
+        sharedTeamView: {
+            kicker: 'Shared team',
+            untitled: 'Untitled team',
+            members: '{{count}} Pokémon',
+            importCta: 'Import into my builder',
+            buildOwn: 'Build my own',
+            analysisTitle: 'What the builder sees',
+            weak: 'Shared weaknesses',
+            noWeakness: 'No shared weakness.',
+            resists: 'Resists',
+            resistsValue: '{{n}} of 18 types',
+            hits: 'Hits super effectively',
+            hitsValue: '{{n}} of 18 types',
+            item: 'Item',
+            ability: 'Ability',
+            nature: 'Nature',
+            tera: 'Tera',
+            moves: 'Moves',
+            loading: 'Loading the team…',
+            notFoundTitle: 'This team is not here anymore',
+            notFoundBody: 'The link may be wrong, or the team was removed.',
+        },
         /* ---- Landing (first visit to Home) ---------------------------------
            Also the crawlable text of `/` — api/_lib/seoSnapshot.js renders the
            same keys into the HTML. */
@@ -124,6 +146,12 @@ export const TRANSLATIONS = {
                 fallbackDescription: 'Inspect type coverage, offensive strengths, movesets, and player placements for this VGC tournament team.',
             },
             sharedTeam: { title: 'Shared Team', description: 'View details of this shared Pokémon team. Import it directly into your builder with one click.' },
+            ogImage: { cta: 'Import this team in one tap' },
+            sharedTeamPage: {
+                title: '{{name}} — Pokémon team',
+                untitled: 'A Pokémon team',
+                description: '{{members}}. See every set and the team\'s weaknesses, then import it into your builder in one tap.',
+            },
             move: { title: '{{name}} (move)', description: '{{name}}: type, category, power, accuracy, PP, and which Pokémon learn it.' },
             ability: { title: '{{name}} (ability)', description: '{{name}}: what the ability does and which Pokémon can have it.' },
             item: { title: '{{name}} (item)', description: '{{name}}: what the item does in battle and how competitive teams use it.' },
@@ -2638,6 +2666,28 @@ export const TRANSLATIONS = {
         }
     },
     pt: {
+        sharedTeamView: {
+            kicker: 'Time compartilhado',
+            untitled: 'Time sem nome',
+            members: '{{count}} Pokémon',
+            importCta: 'Importar para o meu montador',
+            buildOwn: 'Montar o meu',
+            analysisTitle: 'O que o montador vê',
+            weak: 'Fraquezas em comum',
+            noWeakness: 'Nenhuma fraqueza em comum.',
+            resists: 'Resiste a',
+            resistsValue: '{{n}} de 18 tipos',
+            hits: 'Super efetivo contra',
+            hitsValue: '{{n}} de 18 tipos',
+            item: 'Item',
+            ability: 'Habilidade',
+            nature: 'Natureza',
+            tera: 'Tera',
+            moves: 'Golpes',
+            loading: 'Carregando o time…',
+            notFoundTitle: 'Este time não está mais aqui',
+            notFoundBody: 'O link pode estar errado, ou o time foi removido.',
+        },
         landing: {
             eyebrow: 'Grátis · sem cadastro',
             title: 'Monte um time Pokémon sem pontos cegos',
@@ -2753,6 +2803,12 @@ export const TRANSLATIONS = {
                 fallbackDescription: 'Veja a cobertura de tipos, os pontos fortes ofensivos, os golpes e a colocação deste time de torneio de VGC.',
             },
             sharedTeam: { title: 'Time compartilhado', description: 'Veja os detalhes deste time Pokémon compartilhado e importe para o seu montador com um clique.' },
+            ogImage: { cta: 'Importe este time com um toque' },
+            sharedTeamPage: {
+                title: '{{name}} — time Pokémon',
+                untitled: 'Um time Pokémon',
+                description: '{{members}}. Veja os sets e as fraquezas do time e importe para o seu montador com um toque.',
+            },
             move: { title: '{{name}} (golpe)', description: '{{name}}: tipo, categoria, poder, precisão, PP e quais Pokémon aprendem o golpe.' },
             ability: { title: '{{name}} (habilidade)', description: '{{name}}: o que a habilidade faz e quais Pokémon podem tê-la.' },
             item: { title: '{{name}} (item)', description: '{{name}}: o que o item faz em batalha e como os times competitivos o usam.' },

@@ -91,4 +91,25 @@ describe('render-meta buildPage', () => {
         expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Worlds winner | Pokémon Team Builder');
         expect(html).toContain('<li>Incineroar</li>');
     });
+
+    it('unfurls a shared team as itself, with its generated image', () => {
+        const sharedTeam = { id: 'abc', name: 'Chuva', pokemons: [{ id: 6, name: 'charizard', types: ['fire', 'flying'] }, { id: 130, name: 'gyarados', types: ['water', 'flying'] }] };
+        const html = page('/pt/t/abc', { sharedTeam });
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Chuva — time Pokémon | Pokémon Team Builder');
+        expect(attr(html, /<meta name="description" content="([^"]*)"/)).toContain('Charizard e Gyarados');
+        expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?team=abc&amp;lang=pt');
+        expect(html).toContain('href="/pt/types/fire">Fogo</a>');
+    });
+
+    it('treats a legacy /builder?team= link as the team page', () => {
+        const sharedTeam = { id: 'abc', name: 'Chuva', pokemons: [{ id: 6, name: 'charizard', types: ['fire'] }] };
+        const html = page('/builder', { sharedTeam });
+        expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe('https://pokemonbuilder.app/t/abc');
+    });
+
+    it('keeps the generic card when the team could not be read', () => {
+        const html = page('/t/abc');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Shared Team | Pokémon Team Builder');
+        expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/og-image.png');
+    });
 });

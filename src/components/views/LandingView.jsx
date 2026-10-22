@@ -86,7 +86,7 @@ function LandingDemo({ onLeave }) {
     // entries and completes (abilities, the most-used set) in the background,
     // so the hand-over is instant and survives a slow or failed detail fetch.
     const openInBuilder = () => {
-        onLeave();
+        onLeave('demo_open_builder');
         const store = useActiveTeamStore.getState();
         if (store.currentTeam.length === 0) store.setTeamName(t('landing.demo.teamName'));
         team.forEach((p) => {
@@ -178,8 +178,8 @@ export function LandingView({ onLeave, onSkip }) {
                     <h1 className="landing-title">{t('landing.title')}</h1>
                     <p className="landing-lede">{t('landing.lede')}</p>
                     <div className="landing-actions">
-                        <Link to="/builder" className="btn btn-primary btn-lg" onClick={onLeave}>{t('landing.primaryCta')}</Link>
-                        <Link to="/pokedex" className="btn btn-outline btn-lg" onClick={onLeave}>{t('landing.secondaryCta')}</Link>
+                        <Link to="/builder" className="btn btn-primary btn-lg" onClick={() => onLeave('hero_build')}>{t('landing.primaryCta')}</Link>
+                        <Link to="/pokedex" className="btn btn-outline btn-lg" onClick={() => onLeave('hero_pokedex')}>{t('landing.secondaryCta')}</Link>
                         <button type="button" className="landing-skip" onClick={onSkip}>{t('landing.skip')}</button>
                     </div>
                     <dl className="landing-stats">
@@ -206,7 +206,7 @@ export function LandingView({ onLeave, onSkip }) {
             <section className="landing-closing">
                 <h2 className="landing-section-title">{t('landing.closingTitle')}</h2>
                 <p className="landing-closing__body">{t('landing.closingBody')}</p>
-                <Link to="/builder" className="btn btn-primary btn-lg" onClick={onLeave}>{t('landing.primaryCta')}</Link>
+                <Link to="/builder" className="btn btn-primary btn-lg" onClick={() => onLeave('closing_build')}>{t('landing.primaryCta')}</Link>
             </section>
         </div>
     );

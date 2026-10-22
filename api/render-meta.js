@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { escapeHtml, fetchTopicMeta, topicIdFromUrl } from './_lib/forumMeta.js';
 import { renderSnapshot } from './_lib/seoSnapshot.js';
+import { fetchSharedTeam, sharedTeamIdFrom } from './_lib/sharedTeam.js';
 import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLocalePath } from '../src/utils/localePath.js';
 import { SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
 
@@ -56,7 +57,7 @@ function findTeam(id) {
  * version at its own URL). Pure apart from the data passed in, so the test
  * can drive it without a filesystem.
  */
-export function buildPage(shell, { urlPath, topicMeta = null, data = {} } = {}) {
+export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null, data = {} } = {}) {
     const findP = data.findPokemon || findPokemon;
     const findT = data.findTeam || findTeam;
     const allPokemons = data.pokemons || pokemons;
@@ -64,12 +65,16 @@ export function buildPage(shell, { urlPath, topicMeta = null, data = {} } = {}) 
 
     const { language, appPath: rawAppPath } = splitLocalePath(urlPath);
     // `/pokedex/` and `/pokedex` are one page.
-    const appPath = rawAppPath.length > 1 ? rawAppPath.replace(/\/+$/, '') : rawAppPath;
+    let appPath = rawAppPath.length > 1 ? rawAppPath.replace(/\/+$/, '') : rawAppPath;
+    // A legacy share link (/builder?team=id) is that team's page now: same
+    // card, and the page's URL as its canonical.
+    if (sharedTeam && appPath === '/builder') appPath = `/t/${sharedTeam.id}`;
     const segments = appPath.split('/').filter(Boolean);
 
     const context = {};
     if ((segments[0] === 'pokemon' || segments[0] === 'meta') && segments[1]) context.pokemon = findP(segments[1]);
     if (segments[0] === 'tournaments' && segments[1] === 'team' && segments[2]) context.team = findT(segments[2]);
+    if (segments[0] === 't' && sharedTeam) context.sharedTeam = sharedTeam;
 
     const meta = pageMeta(appPath, language, context);
     let title = meta.title;
@@ -117,7 +122,7 @@ export function buildPage(shell, { urlPath, topicMeta = null, data = {} } = {}) 
     ].join('\n    ');
     set(/<\/head>/i, `    ${headExtras}\n  </head>`);
 
-    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, pokemons: allPokemons });
+    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, pokemons: allPokemons });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
 
     return { html, language, meta };
@@ -153,8 +158,14 @@ export default async function handler(req, res) {
         if (fetched) topicMeta = { ...fetched, id: topicId };
         else if (topicId) previewMissed = true;
     }
+    let sharedTeam = null;
+    const sharedTeamId = sharedTeamIdFrom(appPath.replace(/\/+$/, '') || '/', query);
+    if (sharedTeamId) {
+        sharedTeam = await fetchSharedTeam(sharedTeamId);
+        if (!sharedTeam) previewMissed = true;
+    }
 
-    const { html } = buildPage(shell, { urlPath, topicMeta });
+    const { html } = buildPage(shell, { urlPath, topicMeta, sharedTeam });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     // Cache at the Edge for 1 day, stale-while-revalidate for 1 hour to allow rapid updates;

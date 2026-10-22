@@ -34,7 +34,7 @@ const LANDING_LINKS = {
     builder: '/builder', pokedex: '/pokedex', calc: '/damage-calculator', meta: '/meta', types: '/types', challenge: '/challenge',
 };
 
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, pokemons = [] }) {
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, pokemons = [] }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
@@ -108,6 +108,14 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
     if (meta.key === 'pokedex' && pokemons.length) {
         body.push(`<h2>${escapeHtml(t('seo.snapshot.allPokemon'))}</h2>`);
         body.push(list(pokemons.filter((p) => p.id <= 1025).map((p) => link(`/pokemon/${p.name}`, `#${p.id} ${formatSlug(p.name)}`))));
+    }
+
+    if (meta.key === 'sharedTeamPage' && sharedTeam?.pokemons?.length) {
+        body.push(`<h2>${escapeHtml(t('seo.snapshot.roster'))}</h2>`);
+        body.push(list(sharedTeam.pokemons.map((p) => {
+            const types = p.types.filter((x) => typeChart[x]).map(typeLink).join(' / ');
+            return `${link(`/pokemon/${p.id}`, formatSlug(p.name))}${types ? ` — ${types}` : ''}`;
+        })));
     }
 
     if (meta.key === 'tournamentTeam' && team?.pokemons?.length) {

@@ -4,5 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '../constants/firebase';
 
 const app = initializeApp(firebaseConfig);
+/** The app instance, for modules loaded later (services/analytics.js). */
+export const firebaseApp = app;
 export const auth = getAuth(app);
 export const db = getFirestore(app);

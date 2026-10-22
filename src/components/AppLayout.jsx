@@ -30,7 +30,6 @@ import { GengarPresence } from './GengarPresence';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
-import { appId } from '../constants/firebase';
 import { BREAKPOINTS } from '../constants/breakpoints';
 import { setNavigator, setPartnerPicker, setSignInPrompt } from '../utils/navigation';
 import { PAGE_MARKS } from '../utils/journeys';
@@ -161,6 +160,7 @@ const MoveDetailView = lazy(() => import('./views/MoveDetailView').then((m) => (
 const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
 const AbilityDetailView = lazy(() => import('./views/AbilityDetailView').then((m) => ({ default: m.AbilityDetailView })));
 const TypesView = lazy(() => import('./views/TypesView').then((m) => ({ default: m.TypesView })));
+const SharedTeamView = lazy(() => import('./views/SharedTeamView').then((m) => ({ default: m.SharedTeamView })));
 const TypeDetailView = lazy(() => import('./views/TypesView').then((m) => ({ default: m.TypeDetailView })));
 const ItemsListView = lazy(() => import('./views/ItemsListView').then((m) => ({ default: m.ItemsListView })));
 const ItemDetailView = lazy(() => import('./views/ItemDetailView').then((m) => ({ default: m.ItemDetailView })));
@@ -325,6 +325,7 @@ export default function AppLayout() {
         if (path.includes('/moves')) return 'moves';
         if (path.includes('/abilities')) return 'abilities';
         if (path === '/types' || path.startsWith('/types/')) return 'types';
+        if (path.startsWith('/t/')) return 'sharedTeam';
         if (path.includes('/items')) return 'items';
         if (path.includes('/gyms')) return 'gyms';
         if (path.includes('/tournaments')) return 'tournaments';
@@ -344,7 +345,6 @@ export default function AppLayout() {
 
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
-    const dismissToast = useToastStore((state) => state.dismissToast);
     // Selected with useShallow, never the whole store: a bare useAuthStore()
     // re-rendered this entire shell on every change to any field of the store.
     const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore(useShallow((s) => ({
@@ -655,7 +655,6 @@ export default function AppLayout() {
     // Caches for dynamic fetches
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
-    const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
 
     // Initial Splash timer. On desktop this is the original 900 ms beat; on
     // mobile it stretches until boot settles (capped), so the app doesn't paint
@@ -835,6 +834,7 @@ export default function AppLayout() {
             'moves': { title: t('nav.moves'), subtitle: t('db.movesSubtitle') },
             'abilities': { title: t('nav.abilities'), subtitle: t('db.abilitiesSubtitle') },
             'types': { title: t('nav.types'), subtitle: t('db.typesSubtitle') },
+            'sharedTeam': { title: t('sharedTeamView.kicker'), subtitle: '' },
             'items': { title: t('nav.items'), subtitle: t('db.itemsSubtitle') },
             'tournaments': { title: t('nav.tournaments'), subtitle: t('tools.tournamentsSubtitle') },
             'meta': { title: language === 'pt' ? 'Meta & uso' : 'Meta & usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
@@ -1077,71 +1077,13 @@ export default function AppLayout() {
         }
     }, [pokemonDetailsCache, showToast]);
 
-    // Load shared team via URL search params (?team=ID)
-    const fetchAndSetSharedTeam = useCallback(async (teamId) => {
-        if (!db || sharedTeamLoaded) return;
-        setSharedTeamLoaded(true);
-        // Held open until the fetch settles, then replaced by its outcome — a
-        // stale "Loading…" sitting under "Loaded!" is two toasts saying one thing.
-        const loadingId = showToast(t('layout.loadingSharedTeam'), 'info', { sticky: true, closable: false });
-        const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
-        try {
-            const teamDoc = await getDoc(teamDocRef);
-            if (teamDoc.exists()) {
-                const teamData = teamDoc.data();
-                const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
-                const teamPokemonDetails = await Promise.all(detailsPromises);
-
-                const customizedTeam = teamPokemonDetails.map((detail, i) => {
-                    if (!detail) return null;
-                    const savedPokemonData = teamData.pokemons[i] || {};
-                    const defaultCustomization = {
-                        item: '',
-                        nature: 'serious',
-                        teraType: detail.types?.[0] || 'normal',
-                        isShiny: false,
-                        ability: detail.abilities?.[0]?.name || 'unknown',
-                        moves: [],
-                        evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
-                        ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
-                    };
-                    return {
-                        ...detail,
-                        ...storedFormFields(savedPokemonData),
-                        instanceId: savedPokemonData.instanceId || `${detail.id}-${Date.now()}-${i}`,
-                        customization: { ...defaultCustomization, ...(savedPokemonData.customization || {}) },
-                    };
-                });
-
-                setCurrentTeam(withUniqueInstanceIds(customizedTeam.filter(Boolean)));
-                setTeamName(teamData.name);
-                dismissToast(loadingId);
-                showToast(t('layout.loadedSharedTeam', { name: teamData.name }), 'success');
-
-                navigate('/builder');
-                try {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('team');
-                    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
-                } catch { /* ignore history failures */ }
-            } else {
-                dismissToast(loadingId);
-                showToast(t('layout.sharedTeamNotFound'), 'error');
-            }
-        } catch (error) {
-            dismissToast(loadingId);
-            showToast(t('layout.failedLoadSharedTeam'), 'error');
-        }
-    }, [showToast, dismissToast, sharedTeamLoaded, navigate, fetchPokemonDetails, setCurrentTeam, setTeamName]);
-
+    // A legacy share link (/builder?team=ID, every share before 2026-10-21)
+    // opens that team's page now: a preview with an Import button, instead of
+    // silently replacing whatever the visitor was building.
     useEffect(() => {
-        if (!db || !isAuthReady) return;
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamId = urlParams.get('team');
-        if (teamId) {
-            fetchAndSetSharedTeam(teamId);
-        }
-    }, [isAuthReady, fetchAndSetSharedTeam]);
+        const teamId = new URLSearchParams(location.search).get('team');
+        if (teamId && /^[A-Za-z0-9_-]{1,128}$/.test(teamId)) navigate(`/t/${teamId}`, { replace: true });
+    }, [location.search, navigate]);
 
     // Saved team handlers
     const handleEditTeam = useCallback(async (team) => {
@@ -1812,6 +1754,7 @@ export default function AppLayout() {
                                     <Route path="/abilities" element={<AbilitiesListView />} />
                                     <Route path="/abilities/:name" element={<AbilityDetailView />} />
                                     <Route path="/types" element={<TypesView />} />
+                                    <Route path="/t/:id" element={<SharedTeamView />} />
                                     <Route path="/types/:type" element={<TypeDetailView />} />
                                     <Route path="/items" element={<ItemsListView />} />
                                     <Route path="/items/:name" element={<ItemDetailView />} />

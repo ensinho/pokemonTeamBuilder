@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { LandingView } from './LandingView';
 import { isReturningVisitor, markLandingSeen, shouldShowLanding } from '../../utils/landing';
 import { useLandingStore } from '../../store/useLandingStore';
+import { track } from '../../services/analytics';
 
 const storage = () => {
     try {
@@ -20,8 +21,13 @@ const storage = () => {
  */
 export function HomeEntry({ hasTeams, isAnonymous, children }) {
     const [isFirstVisit, setIsFirstVisit] = useState(() => !isReturningVisitor(storage()));
-    const leave = useCallback(() => markLandingSeen(storage()), []);
+    // `cta` names the way out, for the landing's funnel (services/analytics.js).
+    const leave = useCallback((cta) => {
+        track('landing_cta', { cta: String(cta || 'unknown') });
+        markLandingSeen(storage());
+    }, []);
     const skip = useCallback(() => {
+        track('landing_cta', { cta: 'skip' });
         markLandingSeen(storage());
         setIsFirstVisit(false);
     }, []);
@@ -30,6 +36,7 @@ export function HomeEntry({ hasTeams, isAnonymous, children }) {
     // The shell hides the phone dock while the landing is up (useLandingStore).
     useEffect(() => {
         useLandingStore.getState().setOpen(showLanding);
+        if (showLanding) track('landing_view');
         return () => useLandingStore.getState().setOpen(false);
     }, [showLanding]);
 

@@ -98,6 +98,9 @@ export default defineConfig({
         manualChunks(id) {
           const normalizedId = id.replaceAll('\\', '/')
           if (!normalizedId.includes('/node_modules/')) return undefined
+          // Analytics loads after the page has (src/services/analytics.js); in the
+          // shared firebase chunk it would ride the boot path for every visitor.
+          if (/\/node_modules\/(@firebase\/(analytics|installations)|firebase\/analytics)/.test(normalizedId)) return 'firebase-analytics'
           if (normalizedId.includes('/firebase/') || normalizedId.includes('/@firebase/')) return 'firebase'
           // Anchored to node_modules: a bare '/react/' also matched subpaths like
           // zustand/esm/react/shallow.mjs, which pulled it into react-vendor while
