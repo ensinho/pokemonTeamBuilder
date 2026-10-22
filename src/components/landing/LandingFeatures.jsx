@@ -21,7 +21,9 @@ import { TypeChip } from '../TypeChip';
  * the chart, battle counts from the usage index — never a made-up figure.
  *
  * Each card carries its identity as `--feature-tone`, a canon type colour
- * mixed into theme tokens (styles/landing.css), so all ten themes hold.
+ * mixed into theme tokens (styles/landing.css), so all ten themes hold. The
+ * tone lives in the illustration only; the words stay in the page's ink, so
+ * six cards read as one family rather than six accents (2026-10-22).
  */
 
 const byId = Object.fromEntries(DEMO_POOL.map((p) => [p.id, p]));
@@ -234,8 +236,11 @@ function FeatureCard({ feature, onLeave, featured = false }) {
 export function LandingFeatures({ onLeave }) {
     const { t } = useTranslation();
     return (
-        <section className="landing-features" aria-labelledby="landing-features-title">
-            <h2 id="landing-features-title" className="landing-section-title">{t('landing.featuresTitle')}</h2>
+        <section className="landing-section" aria-labelledby="landing-features-title">
+            <header className="landing-section-head">
+                <h2 id="landing-features-title" className="landing-section-title">{t('landing.featuresTitle')}</h2>
+                <p className="landing-section-sub">{t('landing.featuresSub')}</p>
+            </header>
             <div className="landing-bento">
                 <FeatureCard
                     featured

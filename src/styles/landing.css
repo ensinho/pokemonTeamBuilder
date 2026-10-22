@@ -3,18 +3,26 @@
    The copy stands on the page; the demo and the feature cards are
    the only boxes, and nothing inside them has a border of its own.
    One accent: the primary CTA.
+
+   2026-10-22 ("mais clean, com espaço pra respirar"): one centred
+   column, the hero out of its box, every section opened by the same
+   head (title + one line), and a section gap of --space-16. The
+   feature cards keep their tone in the illustration only.
    ============================================================ */
 
 .landing {
     display: flex;
     flex-direction: column;
-    gap: var(--space-12);
-    padding-block: var(--space-6) var(--space-12);
+    gap: var(--space-16);
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-block: var(--space-8) var(--space-16);
 }
 
 /* The banner — the page's one hero surface, so it is the one place a
-   gradient is allowed: a wash of the theme's primary from the stage's side.
-   Copy on the left, the party on its stage on the right. */
+   gradient is allowed: a soft pool of the theme's primary behind the
+   stage. No box: the copy stands on the page like every heading. */
 .landing-banner {
     position: relative;
     isolation: isolate;
@@ -22,27 +30,27 @@
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
     align-items: center;
-    padding: var(--space-10);
-    border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
-    border-radius: var(--radius-xl);
-    background:
-        radial-gradient(110% 90% at 82% 45%, color-mix(in srgb, var(--color-primary) 24%, transparent), transparent 62%),
-        linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)), var(--color-surface) 72%);
-    overflow: hidden;
+}
+.landing-banner::before {
+    content: '';
+    position: absolute;
+    inset: -10% 0 -10% 30%;   /* never past the page's sides: that is a sideways scroll on a phone */
+    z-index: -1;
+    background: radial-gradient(50% 50% at 62% 50%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 72%);
+    pointer-events: none;
 }
 @media (min-width: 1100px) {
     .landing-banner {
         grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-        gap: var(--space-6);
-        min-height: 32rem;
-        padding: var(--space-12);
+        gap: var(--space-10);
+        min-height: 30rem;
     }
 }
 .landing-banner__copy {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-5);
+    gap: var(--space-6);
 }
 
 .landing-eyebrow {
@@ -50,13 +58,10 @@
     align-items: center;
     gap: var(--space-2);
     margin: 0;
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
     font-family: var(--font-display);
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: color-mix(in srgb, var(--color-primary) 55%, var(--color-fg));
+    font-weight: var(--weight-medium);
+    color: var(--color-muted);
 }
 .landing-eyebrow__dot {
     width: 0.375rem;
@@ -77,9 +82,9 @@
 .landing-lede {
     margin: 0;
     font-size: var(--text-md);
-    line-height: 1.6;
+    line-height: 1.65;
     color: var(--color-muted);
-    max-width: 40rem;
+    max-width: 34rem;
 }
 .landing-actions {
     display: flex;
@@ -100,39 +105,36 @@
 }
 .landing-skip:hover { color: var(--color-fg); }
 
-/* The demo card */
+/* Every section opens the same way: a title and one line under it, on the
+   page, above whatever box the section draws. */
+.landing-section { display: flex; flex-direction: column; gap: var(--space-6); }
+.landing-section-head { display: flex; flex-direction: column; gap: var(--space-2); max-width: 40rem; }
+.landing-section-sub {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--color-muted);
+}
+
+/* The demo card: the picker beside the verdict. */
 .landing-demo {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-6);
     padding: var(--space-5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-surface);
 }
-.landing-demo__picker,
-.landing-demo__panel { display: flex; flex-direction: column; gap: var(--space-4); }
-/* Its own section under the banner: the picker beside the verdict. */
+.landing-demo__panel { display: flex; flex-direction: column; gap: var(--space-5); }
 @media (min-width: 1100px) {
     .landing-demo {
         display: grid;
         grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-        gap: var(--space-8);
+        gap: var(--space-10);
         align-items: center;
-        padding: var(--space-6);
+        padding: var(--space-8);
     }
-}
-.landing-demo__head { display: flex; flex-direction: column; gap: var(--space-1); }
-.landing-demo__title {
-    margin: 0;
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-}
-.landing-demo__hint {
-    margin: 0;
-    font-size: var(--text-sm);
-    color: var(--color-muted);
 }
 
 .landing-demo__pool {
@@ -280,31 +282,6 @@
 .landing-stage__row--back .landing-stage__sprite { scale: 1.05; }
 .landing-stage__row--front .landing-stage__sprite { scale: 1.3; }
 
-/* Two floating fragments of the product: its verdict on exactly this six. */
-.landing-stage__callouts { display: contents; }
-.landing-callout {
-    position: absolute;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    padding: var(--space-2_5) var(--space-3);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-elevated);
-    box-shadow: var(--shadow-lg);
-}
-.landing-callout--score { top: var(--space-2); right: 0; }
-.landing-callout--weak { top: 20%; left: 0; }
-.landing-callout__label { font-size: var(--text-2xs); color: var(--color-muted); }
-.landing-callout__value {
-    font-family: var(--font-display);
-    font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-}
-.landing-callout__value small { font-size: var(--text-xs); color: var(--color-muted); }
-.landing-callout__chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-
 .landing-demo__result {
     display: flex;
     flex-direction: column;
@@ -350,15 +327,16 @@
    identity is `--feature-tone` (a canon type colour, or the primary), mixed
    into theme tokens like a type chip, so it holds on every theme. */
 .landing-section-title {
-    margin: 0 0 var(--space-4);
+    margin: 0;
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);
+    text-wrap: balance;
 }
 .landing-bento {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-4);
+    gap: var(--space-5);
 }
 @media (min-width: 768px) {
     .landing-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -375,7 +353,7 @@
 .landing-feature {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     padding: var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
@@ -386,28 +364,30 @@
 }
 .landing-feature:hover {
     background: var(--color-surface-hover);
-    border-color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-border));
+    border-color: var(--color-border-strong);
 }
 .landing-feature:focus-visible { outline: none; box-shadow: var(--ring-primary); }
 
 .landing-feature__copy {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1_5);
+    gap: var(--space-2);
     flex: 1;
-    padding: 0 var(--space-2) var(--space-2);
+    padding: 0 var(--space-3) var(--space-3);
 }
+/* The words are the page's ink: a tone per card on titles, kickers and links
+   made six accents on one screen. The illustration carries the identity. */
 .landing-feature__kicker {
     font-family: var(--font-display);
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-fg));
+    font-weight: var(--weight-medium);
+    color: var(--color-muted);
 }
 .landing-feature__title {
     margin: 0;
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
-    color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-fg));
+    color: var(--color-fg);
 }
 .landing-feature--featured .landing-feature__title { font-size: var(--text-xl); }
 /* The scene takes the featured card's spare height, not the copy. */
@@ -420,11 +400,13 @@
 }
 .landing-feature__cta {
     margin-top: auto;
-    padding-top: var(--space-1);
+    padding-top: var(--space-2);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
-    color: color-mix(in srgb, var(--feature-tone) 45%, var(--color-fg));
+    color: var(--color-fg);
 }
+.landing-feature__cta span { display: inline-block; transition: translate var(--duration-fast) var(--ease-smooth); }
+.landing-feature:hover .landing-feature__cta span { translate: var(--space-1) 0; }
 
 /* The illustration well: the card's tone, faint, under real data. */
 .landing-visual {
@@ -643,7 +625,7 @@
 .landing-stats {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2) var(--space-6);
+    gap: var(--space-2) var(--space-8);
     margin: var(--space-2) 0 0;
 }
 .landing-stats__item { display: flex; flex-direction: column-reverse; gap: var(--space-0_5); }
@@ -661,7 +643,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-4);
+    padding-block: var(--space-8);
     text-align: center;
 }
 .landing-closing .landing-section-title { margin: 0; }
@@ -674,20 +657,18 @@
 
 /* Phones: the page is the panel; cards keep their fill and lose the edge. */
 @media (max-width: 1023px) {
-    .landing { gap: var(--space-10); padding-block: var(--space-2) var(--space-8); }
-    .landing-banner,
+    .landing { gap: var(--space-12); padding-block: var(--space-4) var(--space-10); }
     .landing-demo,
     .landing-feature { border-color: transparent; }
-    .landing-banner { padding: var(--space-6) var(--space-5); }
     .landing-demo { padding: var(--space-4); }
-    /* The callouts come off the stage and sit under it as one row. */
     .landing-stage { min-height: 0; }
-    .landing-callout { position: static; box-shadow: none; }
-    .landing-stage__callouts { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); margin-top: var(--space-4); }
+    .landing-banner::before { inset: 30% 0 -10% 0; }
 }
 @media (max-width: 640px) {
     .landing-title { font-size: var(--text-3xl); max-width: none; }
     .landing-stage__row { gap: var(--space-2); }
+    /* The ball stays inside the stage: at 92% of a phone it rose over the figures above. */
+    .landing-stage__ball { width: min(15rem, 76%); top: 60%; }
     .landing-stage__row--back { max-width: 17rem; }
     .landing-stage__row--back .landing-stage__slot { height: 5rem; }
     .landing-stage__row--front .landing-stage__slot { height: 6.5rem; }
@@ -695,11 +676,19 @@
     .landing-stage__row--back .landing-stage__sprite { scale: 0.8; }
     .landing-actions { width: 100%; }
     .landing-actions .btn { flex: 1 1 100%; }
+    .landing-skip { width: 100%; padding-block: var(--space-2); text-align: center; }
     .landing-demo__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-1_5); }
     .landing-feature--featured .landing-visual { min-height: 0; }
     .landing-arena { gap: var(--space-3); }
     .landing-arena__stage { width: 6rem; height: 6.5rem; }
     .landing-arena__vs { margin-bottom: var(--space-8); }
-    .landing-slots { grid-template-columns: repeat(6, minmax(0, 2.5rem)); }
     .landing-stats { gap: var(--space-2) var(--space-5); }
+    /* The other five read as a list: what it is, one line, where it goes.
+       Five illustrations stacked made the phone page ten screens long; the
+       featured card keeps its scene. */
+    .landing-bento { gap: var(--space-2); }
+    .landing-feature:not(.landing-feature--featured) { padding: var(--space-4); gap: 0; }
+    .landing-feature:not(.landing-feature--featured) .landing-visual { display: none; }
+    .landing-feature:not(.landing-feature--featured) .landing-feature__copy { padding: 0; gap: var(--space-1); }
+    .landing-feature--featured { margin-bottom: var(--space-2); }
 }

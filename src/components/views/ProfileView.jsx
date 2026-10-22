@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import '../../styles/profile-view.css';
+import '../../styles/journeys.css';
 import { THEME_META } from '../../constants/theme';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
@@ -19,17 +20,14 @@ import { auth } from '../../services/firebase';
 import { sendEmailVerification } from 'firebase/auth';
 import { useToastStore } from '../../store/useToastStore';
 import {
-    AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
-    SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon, SparklesIcon,
+    EditIcon, StarsIcon, SavedTeamsIcon, SunIcon, MoonIcon, RefreshIcon,
 } from '../icons';
-import { Flame, Medal, Lock, Check, Sparkles, Bell, Type, Keyboard } from 'lucide-react';
+import { Flame, Lock, Check, ChevronRight, Type } from 'lucide-react';
 import { TextSizeControl } from '../TextSizeControl';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
-import { ShowMoreButton } from '../ShowMoreButton';
 import { AccountSecurityModal } from '../modals/AccountSecurityModal';
 import {
     DEFAULT_SEARCH_SHORTCUT, formatShortcut, normalizeShortcut, shortcutFromEvent, validateShortcut,
@@ -37,9 +35,13 @@ import {
 
 const PROFILE_TABS = ['trainer', 'appearance', 'preferences', 'account'];
 
+// Autofocus only where there is no software keyboard to throw up (ux skill, smell 16).
+const IS_FINE_POINTER = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches;
+
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
 
 const EmailVerifyRow = () => {
+    const { t } = useTranslation();
     const showToast = useToastStore((state) => state.showToast);
     const user = auth?.currentUser;
     const [sending, setSending] = useState(false);
@@ -54,31 +56,23 @@ const EmailVerifyRow = () => {
         try {
             await sendEmailVerification(user);
             setSent(true);
-            showToast?.('Verification email sent — check your inbox, then sign out and back in.', 'success');
-        } catch (err) {
-            showToast?.('Could not send verification email. Try again in a minute.', 'error');
+            showToast?.(t('profile.emailVerifyToast'), 'success');
+        } catch {
+            showToast?.(t('profile.emailVerifyError'), 'error');
         } finally {
             setSending(false);
         }
     };
 
     return (
-        <div className="profile-account-row" style={{ gap: '0.75rem' }}>
-            <div className="min-w-0">
-                <p className="profile-account-row__label">Email verification</p>
-                <p className="profile-account-row__value">
-                    {sent ? 'Sent — open the link, then re-login' : 'Your email is not verified'}
-                </p>
-            </div>
-            <button
-                type="button"
-                onClick={handleSend}
-                disabled={sending || sent}
-                className="profile-button"
-            >
-                {sending ? 'Sending…' : sent ? 'Sent ✓' : 'Verify email'}
+        <SettingRow
+            label={t('profile.emailVerifyLabel')}
+            description={sent ? t('profile.emailVerifySentHint') : t('profile.emailVerifyPending')}
+        >
+            <button type="button" onClick={handleSend} disabled={sending || sent} className="btn btn-secondary btn-sm">
+                {sending ? t('profile.emailVerifySending') : sent ? t('profile.emailVerifySentBtn') : t('profile.emailVerifyBtn')}
             </button>
-        </div>
+        </SettingRow>
     );
 };
 
@@ -88,31 +82,38 @@ const EmailVerifyRow = () => {
  * preferences doc (artifacts/{appId}/users/{uid}/profile/preferences),
  * so configuration follows the user across devices.
  *
- * Hooked / engagement element: the "Trainer Streak" — counts consecutive
- * days the user opened the app. The streak is displayed prominently with
- * the longest-ever streak as a personal best to chase. Updated on app
- * mount in App.jsx (see useTrainerStreak).
+ * Layout (2026-10-22, "perfil mais fácil de mexer"): one centred column at
+ * every width, like a native settings screen. Each tab is a stack of
+ * sections; a section is a heading on the page and one card of rows, each
+ * row the words on the left and its control on the right. The three uneven
+ * columns of cards this replaced put the same kind of control in a different
+ * place on every tab, and the hero boxed its figures inside its own box.
  */
 
-const ThemeSwatchIcon = ({ mode, color }) => {
-    if (mode === 'dark') return <MoonIcon className="w-4 h-4" color={color} />;
-    return <SunIcon className="w-4 h-4" color={color} />;
-};
-
-const SectionCard = ({ title, subtitle, icon, meta, className = '', children }) => (
-    <section className={['profile-card', className].filter(Boolean).join(' ')}>
-        <header className="profile-card__header">
-            <div className="profile-card__header-main">
-                {icon ? <div className="profile-card__icon">{icon}</div> : null}
-                <div className="profile-card__heading">
-                    <h3 className="profile-card__title">{title}</h3>
-                    {subtitle ? <p className="profile-card__subtitle">{subtitle}</p> : null}
-                </div>
+/** A part of a tab: its heading on the page, then one card holding its rows. */
+const Section = ({ title, description, meta, children, className = '' }) => (
+    <section className={`section profile-section ${className}`.trim()}>
+        <div className="profile-section__head">
+            <div className="section-head">
+                <h2 className="section-title">{title}</h2>
+                {meta ? <span className="section-action">{meta}</span> : null}
             </div>
-            {meta ? <div className="profile-card__meta">{meta}</div> : null}
-        </header>
-        {children}
+            {description ? <p className="profile-section__desc">{description}</p> : null}
+        </div>
+        <div className="card profile-section__body">{children}</div>
     </section>
+);
+
+/** One settings line: the words own the row, the control sits at its far edge (as `.switch--row`). */
+const SettingRow = ({ label, description, children, tone, leading }) => (
+    <div className={`profile-row ${tone ? `profile-row--${tone}` : ''}`}>
+        {leading}
+        <div className="profile-row__text">
+            <span className="profile-row__label">{label}</span>
+            {description ? <span className="profile-row__desc">{description}</span> : null}
+        </div>
+        {children ? <div className="profile-row__control">{children}</div> : null}
+    </div>
 );
 
 /**
@@ -121,55 +122,47 @@ const SectionCard = ({ title, subtitle, icon, meta, className = '', children }) 
  * on the same screen — and because the browser only prompts for permission from
  * a real click, which needs a button somewhere the user goes deliberately.
  */
-const NotificationsCard = () => {
+const NotificationsSection = () => {
     const { t } = useTranslation();
     const {
         enabled, busy, dailyEnabled, iosInstallNeeded, supported, toggle, toggleDailyPuzzle, challengeEnabled, toggleDailyChallenge,
     } = useNotificationSettings();
 
-    // Two switches, one per question the user is actually answering. This was a
+    // Switches, one per question the user is actually answering. This was a
     // status pill, an enable button, a list restating the pill, and a pair of
     // "remind me" / "don't remind me" buttons — four controls for two booleans.
     return (
-        <SectionCard
-            className="profile-card--gameplay"
-            title={t('profile.sectionNotifications')}
-            subtitle={t('profile.sectionNotificationsDesc')}
-            icon={<Bell className="w-5 h-5" />}
-        >
-            <div>
-                <Switch
-                    variant="row"
-                    checked={enabled}
-                    disabled={busy}
-                    onChange={toggle}
-                    label={t('profile.notifyDeviceLabel')}
-                    description={t('profile.notifyTopicBattles')}
-                />
-                <Switch
-                    variant="row"
-                    checked={enabled && dailyEnabled}
-                    disabled={!enabled}
-                    onChange={(next) => toggleDailyPuzzle(next)}
-                    label={t('profile.notifyTopicPuzzle')}
-                    description={t('profile.notifyPuzzleDesc')}
-                />
-                <Switch
-                    variant="row"
-                    checked={enabled && challengeEnabled}
-                    disabled={!enabled}
-                    onChange={(next) => toggleDailyChallenge(next)}
-                    label={t('profile.notifyTopicChallenge')}
-                    description={t('profile.notifyChallengeDesc')}
-                />
-            </div>
-
+        <Section title={t('profile.sectionNotifications')} description={t('profile.sectionNotificationsDesc')}>
+            <Switch
+                variant="row"
+                checked={enabled}
+                disabled={busy}
+                onChange={toggle}
+                label={t('profile.notifyDeviceLabel')}
+                description={t('profile.notifyTopicBattles')}
+            />
+            <Switch
+                variant="row"
+                checked={enabled && dailyEnabled}
+                disabled={!enabled}
+                onChange={(next) => toggleDailyPuzzle(next)}
+                label={t('profile.notifyTopicPuzzle')}
+                description={t('profile.notifyPuzzleDesc')}
+            />
+            <Switch
+                variant="row"
+                checked={enabled && challengeEnabled}
+                disabled={!enabled}
+                onChange={(next) => toggleDailyChallenge(next)}
+                label={t('profile.notifyTopicChallenge')}
+                description={t('profile.notifyChallengeDesc')}
+            />
             {iosInstallNeeded || !supported ? (
-                <p className="profile-card__subtitle">
+                <p className="profile-note">
                     {iosInstallNeeded ? t('battle.notifyIosInstall') : t('battle.notifyUnsupported')}
                 </p>
             ) : null}
-        </SectionCard>
+        </Section>
     );
 };
 
@@ -179,7 +172,7 @@ const NotificationsCard = () => {
  * app-wide handler — otherwise pressing the current chord to "re-record" it
  * would open the palette over the profile.
  */
-const SearchShortcutCard = ({ shortcut, onChange }) => {
+const SearchShortcutSection = ({ shortcut, onChange }) => {
     const { t } = useTranslation();
     const showToast = useToastStore((state) => state.showToast);
     const [recording, setRecording] = useState(false);
@@ -222,19 +215,26 @@ const SearchShortcutCard = ({ shortcut, onChange }) => {
     const isDefault = shortcut === DEFAULT_SEARCH_SHORTCUT;
 
     return (
-        <SectionCard
-            className="profile-card--shortcut"
-            title={t('profile.sectionShortcut')}
-            subtitle={t('profile.sectionShortcutDesc')}
-            icon={<Keyboard className="w-5 h-5" />}
-        >
-            <div className="profile-account-row">
-                <div className="min-w-0">
-                    <p className="profile-account-row__label">{t('profile.shortcutOpenSearch')}</p>
-                    <p className="profile-shortcut__hint" role={error ? 'alert' : undefined}>
+        <Section className="profile-section--shortcut" title={t('profile.sectionShortcut')} description={t('profile.sectionShortcutDesc')}>
+            <SettingRow
+                label={t('profile.shortcutOpenSearch')}
+                description={(
+                    <span className="profile-shortcut__hint" role={error ? 'alert' : undefined}>
                         {error || (recording ? t('profile.shortcutRecordingHint') : t('profile.shortcutSlashHint'))}
-                    </p>
-                </div>
+                    </span>
+                )}
+            >
+                {!isDefault && (
+                    <button
+                        type="button"
+                        onClick={() => { setError(null); onChange(DEFAULT_SEARCH_SHORTCUT); }}
+                        className="btn btn-ghost btn-sm btn-icon"
+                        aria-label={t('profile.shortcutReset', { keys: formatShortcut(DEFAULT_SEARCH_SHORTCUT, IS_APPLE) })}
+                        title={t('profile.shortcutReset', { keys: formatShortcut(DEFAULT_SEARCH_SHORTCUT, IS_APPLE) })}
+                    >
+                        <RefreshIcon className="w-3.5 h-3.5" />
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={() => { setError(null); setRecording((on) => !on); }}
@@ -246,32 +246,18 @@ const SearchShortcutCard = ({ shortcut, onChange }) => {
                 >
                     {recording ? t('profile.shortcutRecording') : <kbd>{keys}</kbd>}
                 </button>
-            </div>
-            {!isDefault && (
-                <div className="profile-button-row profile-button-row--tight">
-                    <button
-                        type="button"
-                        onClick={() => { setError(null); onChange(DEFAULT_SEARCH_SHORTCUT); }}
-                        className="profile-button"
-                    >
-                        <RefreshIcon className="w-3.5 h-3.5" />
-                        {t('profile.shortcutReset', { keys: formatShortcut(DEFAULT_SEARCH_SHORTCUT, IS_APPLE) })}
-                    </button>
-                </div>
-            )}
-        </SectionCard>
+            </SettingRow>
+        </Section>
     );
 };
 
-const OverviewStat = ({ icon, label, value, hint }) => (
-    <div className="profile-overview-stat">
-        <div className="profile-overview-stat__top">
-            <span className="profile-overview-stat__icon">{icon}</span>
-            <span className="profile-overview-stat__label">{label}</span>
-        </div>
-        <p className="profile-overview-stat__value">{value}</p>
-        {hint ? <p className="profile-overview-stat__hint">{hint}</p> : null}
-    </div>
+/** A small round picture in a settings row: the partner or the trainer, or a "?" until there is one. */
+const AvatarThumb = ({ src, pixel = false, onClick, label }) => (
+    <button type="button" className="profile-thumb" onClick={onClick} aria-label={label}>
+        {src
+            ? <Sprite src={src} alt="" className={`profile-thumb__sprite ${pixel ? 'is-pixel' : ''}`} />
+            : <span className="profile-thumb__empty" aria-hidden="true">?</span>}
+    </button>
 );
 
 export function ProfileView({
@@ -319,17 +305,13 @@ export function ProfileView({
     const { equipped, trainerLevel, unlocked } = useRewardsStore(useShallow((s) => ({
         equipped: s.equipped, trainerLevel: s.level, unlocked: s.unlocked,
     })));
-    // Earned first, then the closest to earning: 22 cards in catalogue order put
-    // a wall of locked badges between a guest and everything below (2026-10-06).
-    const orderedBadges = useMemo(() => [...badges].sort((a, b) => (
-        Number(b.isEquipped) - Number(a.isEquipped)
-        || Number(b.isUnlocked) - Number(a.isUnlocked)
-        || (b.progress?.percent || 0) - (a.progress?.percent || 0)
-    )), [badges]);
-    const badgeReveal = useProgressiveReveal(orderedBadges.length, {
-        initial: Math.max(4, Math.min(orderedBadges.length, unlockedCount + 4)),
-        step: orderedBadges.length,
-    });
+    // Only what can be shown: the earned badges, the equipped one first. The
+    // whole catalogue — locked ones, progress, how to earn them — lives in
+    // Journeys → Badges, one tap away (it was here too, as a second wall of
+    // 27 cards that equipped the same badge a different way).
+    const earnedBadges = useMemo(() => badges
+        .filter((badge) => badge.isUnlocked)
+        .sort((a, b) => Number(b.isEquipped) - Number(a.isEquipped)), [badges]);
     const [nameDraft, setNameDraft] = useState(displayName || '');
     const [editingName, setEditingName] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -367,152 +349,125 @@ export function ProfileView({
     // The streak as it stands today: a lapsed one reads 0 (utils/dailyCheckin.js).
     const streakCount = liveStreak(streak);
     const streakLongest = Math.max(streak?.longest || 0, streakCount);
-    const activeTheme = THEME_META.find((entry) => entry.id === theme) || THEME_META[0];
-
-    const streakHint = useMemo(() => {
-        if (streakCount === 0) return t('profile.streakHint0');
-        if (streakCount === 1) return t('profile.streakHint1');
-        if (streakCount < 7) return t('profile.streakHint2');
-        if (streakCount < 30) return t('profile.streakHint3');
-        return t('profile.streakHint4');
-    }, [streakCount, t]);
+    const partnerSrc = greetingPokemonId ? getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny }) : null;
+    const trainerSrc = trainerSprite ? trainerSpriteUrl(trainerSprite) : null;
+    const cosmeticName = (id) => (id ? t(`rewards.items.${id}.name`) : t('profile.noneEquipped'));
 
     return (
         <div className="profile-view">
-            <section className="profile-hero">
-                <div className="profile-hero__main">
-                    <button
-                        type="button"
-                        onClick={onOpenPokemonSelector}
-                        className="profile-avatar-button"
-                        aria-label={t('profile.sectionAvatarDesc')}
-                        title={t('profile.sectionAvatarDesc')}
-                        {...frameProps(equipped.frame)}
-                    >
-                        {/* Whichever the trainer picked as their main avatar. */}
-                        {mainAvatar.trainerSprite ? (
-                            <Sprite
-                                src={trainerSpriteUrl(mainAvatar.trainerSprite)}
-                                alt="Trainer avatar"
-                                className="profile-avatar-button__sprite profile-avatar-button__sprite--pixel"
-                            />
-                        ) : mainAvatar.pokemonId ? (
-                            <Sprite
-                                src={getPokemonArtworkSpriteUrl(mainAvatar.pokemonId, { shiny: mainAvatar.isShiny })}
-                                alt="Trainer avatar"
-                                className="profile-avatar-button__sprite"
-                            />
-                        ) : (
-                            <span className="profile-avatar-button__initials">{initials}</span>
-                        )}
-                        <span className="profile-avatar-button__edit">
-                            <EditIcon className="w-3.5 h-3.5" color="currentColor" />
-                        </span>
-                    </button>
+            {/* The trainer card: who, what level, three figures. One box, and
+                nothing inside it draws another. */}
+            <header className="profile-hero">
+                <button
+                    type="button"
+                    onClick={onOpenPokemonSelector}
+                    className="profile-avatar-button"
+                    aria-label={t('profile.sectionAvatarDesc')}
+                    title={t('profile.sectionAvatarDesc')}
+                    {...frameProps(equipped.frame)}
+                >
+                    {/* Whichever the trainer picked as their main avatar. */}
+                    {mainAvatar.trainerSprite ? (
+                        <Sprite
+                            src={trainerSpriteUrl(mainAvatar.trainerSprite)}
+                            alt={t('profile.avatarAlt')}
+                            className="profile-avatar-button__sprite profile-avatar-button__sprite--pixel"
+                        />
+                    ) : mainAvatar.pokemonId ? (
+                        <Sprite
+                            src={getPokemonArtworkSpriteUrl(mainAvatar.pokemonId, { shiny: mainAvatar.isShiny })}
+                            alt={t('profile.avatarAlt')}
+                            className="profile-avatar-button__sprite"
+                        />
+                    ) : (
+                        <span className="profile-avatar-button__initials">{initials}</span>
+                    )}
+                    {/* Always visible: a hover-only pencil never appears on a phone. */}
+                    <span className="profile-avatar-button__edit" aria-hidden="true">
+                        <EditIcon className="w-3 h-3" color="currentColor" />
+                    </span>
+                </button>
 
-                    <div className="profile-hero__identity">
-                        <p className="profile-hero__eyebrow">{t('profile.trainerProfile')}</p>
-                        {editingName ? (
-                            <div className="profile-name-editor">
-                                <input
-                                    autoFocus
-                                    value={nameDraft}
-                                    onChange={(e) => setNameDraft(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleSaveName();
-                                        if (e.key === 'Escape') { setEditingName(false); setNameDraft(displayName || ''); }
-                                    }}
-                                    maxLength={24}
-                                    placeholder={t('profile.nameDraftPlaceholder')}
-                                    className="profile-name-input"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleSaveName}
-                                    className="profile-button profile-button--primary"
-                                >
-                                    {t('profile.saveNameBtn')}
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => setEditingName(true)}
-                                className="profile-hero__name-button"
-                                title="Edit trainer name"
-                            >
-                                <h2 className="profile-hero__name flex items-center gap-2">
-                                    <span className="truncate">{trainerLabel}</span>
-                                    {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="md" showTooltip />}
-                                </h2>
-                                <EditIcon className="w-4 h-4" color="currentColor" />
+                <div className="profile-hero__identity">
+                    {editingName ? (
+                        <form
+                            className="profile-name-editor"
+                            onSubmit={(e) => { e.preventDefault(); handleSaveName(); }}
+                        >
+                            <input
+                                autoFocus={IS_FINE_POINTER}
+                                value={nameDraft}
+                                onChange={(e) => setNameDraft(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') { setEditingName(false); setNameDraft(displayName || ''); }
+                                }}
+                                maxLength={24}
+                                placeholder={t('profile.nameDraftPlaceholder')}
+                                aria-label={t('profile.editName')}
+                                className="input-clean profile-name-input"
+                            />
+                            <button type="submit" className="btn btn-primary btn-sm">
+                                {t('profile.saveNameBtn')}
                             </button>
+                        </form>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => setEditingName(true)}
+                            className="profile-hero__name-button"
+                            title={t('profile.editName')}
+                            aria-label={`${t('profile.editName')}: ${trainerLabel}`}
+                        >
+                            <h1 className="profile-hero__name">
+                                <span className="truncate">{trainerLabel}</span>
+                                {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="md" showTooltip />}
+                            </h1>
+                            <EditIcon className="profile-hero__name-icon" color="currentColor" />
+                        </button>
+                    )}
+                    <p className="profile-hero__meta">
+                        <Link to="/journeys?tab=rewards" className="badge badge--primary badge--figure" title={t('rewards.customize')}>
+                            {t('rewards.levelShort', { n: trainerLevel })}
+                        </Link>
+                        <TrainerTitle titleId={equipped.title} />
+                        {!equipped.title && (
+                            <span className="profile-hero__status">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
                         )}
-                        <TrainerTitle titleId={equipped.title} className="profile-hero__title" />
-                        <div className="profile-hero__meta">
-                            <Link to="/journeys?tab=rewards" className="profile-pill" title={t('rewards.customize')}>
-                                {t('rewards.levelShort', { n: trainerLevel })}
-                            </Link>
-                            <span className="profile-pill profile-pill--accent">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                            {!isAnonymous && userEmail && (
-                                <span className="profile-hero__email" title={userEmail}>{userEmail}</span>
-                            )}
-                            {userId && (
-                                <span className="profile-hero__id" title={userId}>
-                                    #{userId.slice(0, 8)}
-                                </span>
-                            )}
-                        </div>
-                        <p className="profile-hero__hint">{streakHint}</p>
-                        {/* A guest's one real next step, where they land — it used
-                            to sit in the last card of the third column. */}
-                        {isAnonymous && (
-                            <div className="flex flex-wrap gap-2 mt-3">
-                                <button type="button" onClick={onOpenSignUp} className="btn btn-primary btn-sm">
-                                    {t('profile.createAccountBtn')}
-                                </button>
-                                <button type="button" onClick={onOpenSignIn} className="btn btn-ghost btn-sm">
-                                    {t('profile.signInBtn')}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    </p>
                 </div>
 
-                <div className="profile-hero__side">
-                    <div className="profile-streak-card" aria-label={`Current streak: ${streakCount} days`}>
-                        <div className="profile-overview-stat__top">
-                            <span className="profile-overview-stat__icon"><Flame className="w-4 h-4" /></span>
-                            <span className="profile-overview-stat__label">{t('profile.currentStreak')}</span>
-                        </div>
-                        <p className="profile-streak-card__value">
-                            {streakCount}
-                            <span>d</span>
-                        </p>
-                        <p className="profile-overview-stat__hint">{t('profile.bestStreak', { count: streakLongest })}</p>
+                <dl className="profile-stats">
+                    <div className="profile-stat">
+                        <dt title={t('profile.currentStreak')}><Flame className="profile-stat__icon" aria-hidden="true" />{t('profile.streakShort')}</dt>
+                        <dd>{streakCount}<span className="profile-stat__unit">d</span></dd>
+                        <dd className="profile-stat__note">{t('profile.bestStreak', { count: streakLongest })}</dd>
                     </div>
-
-                    <div className="profile-overview-grid">
-                        <OverviewStat
-                            icon={<SavedTeamsIcon className="w-4 h-4" />}
-                            label={t('profile.statsTeams')}
-                            value={savedTeamsCount}
-                            hint={t('profile.statsTeamsSaved')}
-                        />
-                        <OverviewStat
-                            icon={<StarsIcon className="w-4 h-4" />}
-                            label={t('profile.statsFavorites')}
-                            value={favoritePokemonsCount}
-                            hint={t('profile.statsFavoritesPokemon')}
-                        />
+                    <div className="profile-stat">
+                        <dt><SavedTeamsIcon className="profile-stat__icon" aria-hidden="true" />{t('profile.statsTeams')}</dt>
+                        <dd>{savedTeamsCount}</dd>
+                        <dd className="profile-stat__note">{t('profile.statsTeamsSaved')}</dd>
                     </div>
-                </div>
-            </section>
+                    <div className="profile-stat">
+                        <dt><StarsIcon className="profile-stat__icon" aria-hidden="true" />{t('profile.statsFavorites')}</dt>
+                        <dd>{favoritePokemonsCount}</dd>
+                        <dd className="profile-stat__note">{t('profile.statsFavoritesPokemon')}</dd>
+                    </div>
+                </dl>
 
-            {/* Four tabs instead of one long scroll: eleven cards and the badge
-                wall used to stack a dozen screens deep on a phone. Each card keeps
-                its column and renders only on its tab; a column with nothing in
-                it collapses (:empty). The tab lives in the URL (?tab=). */}
+                {/* A guest's one real next step, where they land. */}
+                {isAnonymous && (
+                    <div className="profile-hero__actions">
+                        <button type="button" onClick={onOpenSignUp} className="btn btn-primary btn-sm">
+                            {t('profile.createAccountBtn')}
+                        </button>
+                        <button type="button" onClick={onOpenSignIn} className="btn btn-ghost btn-sm">
+                            {t('profile.signInBtn')}
+                        </button>
+                    </div>
+                )}
+            </header>
+
+            {/* Four tabs instead of one long scroll. The tab lives in the URL (?tab=). */}
             <div role="tablist" aria-label={t('profile.tabsAria')} className="tabs profile-tabs">
                 {PROFILE_TABS.map((tab) => (
                     <button
@@ -534,31 +489,141 @@ export function ProfileView({
                 role="tabpanel"
                 id="profile-tab-panel"
                 aria-labelledby={`profile-tab-${activeTab}`}
-                className={`profile-layout profile-layout--tabbed profile-layout--tab-${activeTab}`}
+                className="profile-panel"
             >
-                <div className="profile-layout__column">
-                    {activeTab === 'appearance' && (
-                        <SectionCard
-                            className="profile-card--appearance"
-                            meta={<span className="profile-pill profile-pill--accent">{activeTheme.label}</span>}
-                            title={t('profile.sectionAppearance')}
-                            subtitle={t('profile.sectionAppearanceDesc')}
-                            icon={<SunIcon className="w-5 h-5" />}
+                {activeTab === 'trainer' && (
+                    <>
+                        {/* Both faces, and — once both exist — which one is public. */}
+                        <Section title={t('profile.sectionAvatar')} description={t('profile.sectionAvatarDesc')}>
+                            <SettingRow
+                                label={t('profile.avatarChoicePokemon')}
+                                leading={(
+                                    <AvatarThumb
+                                        src={partnerSrc}
+                                        onClick={onOpenPokemonSelector}
+                                        label={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
+                                    />
+                                )}
+                            >
+                                {greetingPokemonId && (
+                                    <button type="button" onClick={onClearLocalGreeting} className="btn btn-ghost btn-sm">
+                                        {t('profile.removeAvatarBtn')}
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={onOpenPokemonSelector}
+                                    className="btn btn-secondary btn-sm"
+                                    aria-label={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
+                                >
+                                    {greetingPokemonId ? t('profile.changeShort') : t('profile.pickShort')}
+                                </button>
+                            </SettingRow>
+                            <SettingRow
+                                label={t('profile.avatarChoiceTrainer')}
+                                description={t('profile.sectionTrainerDesc')}
+                                leading={(
+                                    <AvatarThumb
+                                        src={trainerSrc}
+                                        pixel
+                                        onClick={onOpenTrainerSelector}
+                                        label={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
+                                    />
+                                )}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={onOpenTrainerSelector}
+                                    className="btn btn-secondary btn-sm"
+                                    aria-label={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
+                                >
+                                    {trainerSprite ? t('profile.changeShort') : t('profile.pickShort')}
+                                </button>
+                            </SettingRow>
+                            {trainerSprite && greetingPokemonId && (
+                                <div className="profile-row profile-row--stacked">
+                                    <span className="profile-row__label">{t('profile.avatarChoiceLabel')}</span>
+                                    <div className="segmented segmented--block profile-avatar-choice" role="group" aria-label={t('profile.avatarChoiceLabel')}>
+                                        <button
+                                            type="button"
+                                            onClick={() => onChangeAvatarPreference('pokemon')}
+                                            aria-pressed={avatarPreference !== 'trainer'}
+                                            className="segmented__item"
+                                        >
+                                            <img src={partnerSrc} alt="" aria-hidden="true" />
+                                            <span>{t('profile.avatarChoicePokemon')}</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => onChangeAvatarPreference('trainer')}
+                                            aria-pressed={avatarPreference === 'trainer'}
+                                            className="segmented__item"
+                                        >
+                                            <img src={trainerSrc} alt="" aria-hidden="true" className="is-pixel" />
+                                            <span>{t('profile.avatarChoiceTrainer')}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </Section>
+
+                        <Section
+                            title={t('profile.sectionBadgeShowcase')}
+                            description={t('profile.sectionBadgeShowcaseDesc')}
+                            meta={(
+                                <Link to="/journeys?tab=badges" className="profile-link">
+                                    {t('profile.badgesSeeAll', { current: unlockedCount, total: totalBadgesCount })}
+                                    <ChevronRight aria-hidden="true" />
+                                </Link>
+                            )}
                         >
-                            <div className="profile-theme-groups">
+                            {earnedBadges.length ? (
+                                <ul className="badge-group__grid profile-badges">
+                                    {earnedBadges.map((badge) => (
+                                        <li key={badge.id}>
+                                            <button
+                                                type="button"
+                                                className={`badge-tile is-unlocked ${badge.isEquipped ? 'is-equipped' : ''}`}
+                                                onClick={() => toggleEquip(badge.id)}
+                                                aria-pressed={badge.isEquipped}
+                                            >
+                                                <span className="badge-tile__emblem" aria-hidden="true"><badge.Icon /></span>
+                                                <span className="badge-tile__name">{language === 'pt' ? badge.namePt : badge.nameEn}</span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <SettingRow label={t('profile.badgesEmpty')}>
+                                    <Link to="/journeys" className="btn btn-secondary btn-sm">{t('journeys.tabs.journeys')}</Link>
+                                </SettingRow>
+                            )}
+                        </Section>
+
+                        <Section title={t('profile.sectionStyle')} description={t('profile.sectionStyleDesc')}>
+                            <SettingRow label={t('profile.frameLabel')} description={cosmeticName(equipped.frame)}>
+                                <Link to="/journeys?tab=rewards" className="btn btn-secondary btn-sm">{t('rewards.customize')}</Link>
+                            </SettingRow>
+                            <SettingRow label={t('profile.titleLabel')} description={cosmeticName(equipped.title)}>
+                                <Link to="/journeys?tab=rewards" className="btn btn-secondary btn-sm">{t('rewards.customize')}</Link>
+                            </SettingRow>
+                        </Section>
+                    </>
+                )}
+
+                {activeTab === 'appearance' && (
+                    <>
+                        <Section title={t('profile.sectionAppearance')} description={t('profile.sectionAppearanceDesc')}>
                             {[
-                                { key: 'dark', label: language === 'pt' ? 'Escuros' : 'Dark', icon: <MoonIcon className="w-3.5 h-3.5" /> },
-                                { key: 'light', label: language === 'pt' ? 'Claros' : 'Light', icon: <SunIcon className="w-3.5 h-3.5" /> },
+                                { key: 'dark', label: t('profile.themesDark'), icon: <MoonIcon className="w-3.5 h-3.5" /> },
+                                { key: 'light', label: t('profile.themesLight'), icon: <SunIcon className="w-3.5 h-3.5" /> },
                             ].map((group) => {
                                 const groupThemes = THEME_META.filter((entry) =>
                                     group.key === 'dark' ? entry.mode === 'dark' : entry.mode !== 'dark'
                                 );
                                 return (
-                                    <div key={group.key} className="profile-theme-group">
-                                        <p className={`profile-theme-group__label profile-theme-group__label--${group.key}`}>
-                                            <span className="profile-theme-group__icon">{group.icon}</span>
-                                            {group.label}
-                                        </p>
+                                    <div key={group.key} className="profile-row profile-row--stacked">
+                                        <span className="profile-row__label profile-row__label--icon">{group.icon}{group.label}</span>
                                         <div className="profile-theme-grid">
                                             {groupThemes.map((entry) => {
                                                 const selected = theme === entry.id;
@@ -576,18 +641,18 @@ export function ProfileView({
                                                         className={`profile-theme-card ${selected ? 'is-selected' : ''} ${locked ? 'is-locked' : ''}`}
                                                         style={{ '--profile-theme-swatch': entry.swatch }}
                                                     >
-                                                        <div className="profile-theme-card__header">
-                                                            <span className="profile-theme-card__swatch" aria-hidden="true"></span>
+                                                        <span className="profile-theme-card__swatch" aria-hidden="true" />
+                                                        <span className="profile-theme-card__text">
                                                             <span className="profile-theme-card__label">{entry.label}</span>
-                                                            <span className="profile-theme-card__icon">
-                                                                {locked
-                                                                    ? <Lock className="w-3.5 h-3.5" aria-hidden="true" />
-                                                                    : <ThemeSwatchIcon mode={entry.mode} color="currentColor" />}
+                                                            <span className="profile-theme-card__hint">
+                                                                {locked ? t('rewards.themeLocked', { n: themeReward(entry.id).unlock.level }) : entry.hint}
                                                             </span>
-                                                        </div>
-                                                        <p className="profile-theme-card__hint">
-                                                            {locked ? t('rewards.themeLocked', { n: themeReward(entry.id).unlock.level }) : entry.hint}
-                                                        </p>
+                                                        </span>
+                                                        <span className="profile-theme-card__icon" aria-hidden="true">
+                                                            {/* The group heading already says dark or light; a mark
+                                                                here only for what differs — chosen, or still locked. */}
+                                                            {locked ? <Lock className="w-3.5 h-3.5" /> : selected ? <Check className="w-3.5 h-3.5" /> : null}
+                                                        </span>
                                                     </button>
                                                 );
                                             })}
@@ -595,410 +660,120 @@ export function ProfileView({
                                     </div>
                                 );
                             })}
-                                {/* Text size moved here from the phone's gear menu
-                                    (2026-09-24): a setting chosen once belongs with
-                                    the other appearance choices, not in a popover. */}
-                                <div className="profile-theme-group profile-text-size">
-                                    <p className="profile-theme-group__label">
-                                        <span className="profile-theme-group__icon"><Type className="w-3.5 h-3.5" aria-hidden="true" /></span>
-                                        {t('accountMenu.textSizeLabel')}
-                                    </p>
-                                    <TextSizeControl variant="menu" />
-                                </div>
+                            {/* Text size moved here from the phone's gear menu
+                                (2026-09-24): a setting chosen once belongs with
+                                the other appearance choices, not in a popover. */}
+                            <div className="profile-row profile-row--stacked profile-text-size">
+                                <span className="profile-row__label profile-row__label--icon">
+                                    <Type className="w-3.5 h-3.5" aria-hidden="true" />
+                                    {t('accountMenu.textSizeLabel')}
+                                </span>
+                                <TextSizeControl variant="menu" />
                             </div>
-                        </SectionCard>
-                    )}
+                        </Section>
 
-                    {activeTab === 'appearance' && (
-                        <SectionCard
-                            className="profile-card--language"
-                            meta={<span className="profile-pill profile-pill--accent">{language === 'pt' ? 'Português' : 'English'}</span>}
-                            title={t('profile.sectionLanguage')}
-                            subtitle={t('profile.sectionLanguageDesc')}
-                            icon={<GlobeIcon className="w-5 h-5" />}
-                        >
-                            <div className="segmented segmented--block" role="group" aria-label={t('profile.sectionLanguage')}>
-                                <button
-                                    type="button"
-                                    onClick={() => onChangeLanguage('en')}
-                                    aria-pressed={language === 'en'}
-                                    className="segmented__item"
-                                >
-                                    English
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => onChangeLanguage('pt')}
-                                    aria-pressed={language === 'pt'}
-                                    className="segmented__item"
-                                >
-                                    Português (pt-BR)
-                                </button>
-                            </div>
-                        </SectionCard>
-                    )}
-
-                </div>
-
-                <div className="profile-layout__column">
-                    {/* One card for both faces: the partner and the trainer side by
-                        side, and — once both exist — which one is public. Two cards
-                        and a block of tiles used to stack ~600px for this. */}
-                    {activeTab === 'trainer' && (
-                        <SectionCard
-                            className="profile-card--avatar"
-                            title={t('profile.sectionAvatar')}
-                            subtitle={t('profile.sectionAvatarDesc')}
-                            icon={<StarsIcon className="w-5 h-5" />}
-                        >
-                            <div className="profile-avatar-pair">
-                                <div className="profile-avatar-card">
+                        <Section title={t('profile.sectionLanguage')} description={t('profile.sectionLanguageDesc')}>
+                            <div className="profile-row">
+                                <div className="segmented segmented--block" role="group" aria-label={t('profile.sectionLanguage')}>
                                     <button
                                         type="button"
-                                        className="profile-avatar-preview"
-                                        onClick={onOpenPokemonSelector}
-                                        aria-label={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
+                                        onClick={() => onChangeLanguage('en')}
+                                        aria-pressed={language === 'en'}
+                                        className="segmented__item"
                                     >
-                                        {greetingPokemonId ? (
-                                            <Sprite
-                                                src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
-                                                alt=""
-                                                className="profile-avatar-preview__sprite"
-                                            />
-                                        ) : (
-                                            <span className="profile-avatar-preview__fallback">?</span>
-                                        )}
+                                        English
                                     </button>
-                                    <div className="profile-avatar-actions">
-                                        <p className="profile-avatar-actions__label">{t('profile.avatarChoicePokemon')}</p>
-                                        <div className="profile-avatar-actions__buttons">
-                                            <button type="button" onClick={onOpenPokemonSelector} className="profile-button profile-button--primary">
-                                                {greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
-                                            </button>
-                                            {greetingPokemonId && (
-                                                <button type="button" onClick={onClearLocalGreeting} className="profile-button">
-                                                    {t('profile.removeAvatarBtn')}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="profile-avatar-card">
                                     <button
                                         type="button"
-                                        className="profile-avatar-preview"
-                                        onClick={onOpenTrainerSelector}
-                                        aria-label={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
-                                        title={t('profile.sectionTrainerDesc')}
+                                        onClick={() => onChangeLanguage('pt')}
+                                        aria-pressed={language === 'pt'}
+                                        className="segmented__item"
                                     >
-                                        {trainerSprite ? (
-                                            <Sprite
-                                                src={trainerSpriteUrl(trainerSprite)}
-                                                alt=""
-                                                className="profile-avatar-preview__sprite profile-avatar-preview__sprite--pixel"
-                                            />
-                                        ) : (
-                                            <span className="profile-avatar-preview__fallback">?</span>
-                                        )}
+                                        Português (pt-BR)
                                     </button>
-                                    <div className="profile-avatar-actions">
-                                        <p className="profile-avatar-actions__label">{t('profile.avatarChoiceTrainer')}</p>
-                                        <div className="profile-avatar-actions__buttons">
-                                            <button type="button" onClick={onOpenTrainerSelector} className="profile-button profile-button--primary">
-                                                {trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
+                        </Section>
+                    </>
+                )}
 
-                            {/* Which of the two avatars is the public one. Only worth
-                                asking once both exist. */}
-                            {trainerSprite && greetingPokemonId && (
-                                <div className="profile-avatar-choice">
-                                    <p className="profile-avatar-choice__label">{t('profile.avatarChoiceLabel')}</p>
-                                    <div className="segmented segmented--block profile-avatar-choice__options" role="group" aria-label={t('profile.avatarChoiceLabel')}>
-                                        <button
-                                            type="button"
-                                            onClick={() => onChangeAvatarPreference('pokemon')}
-                                            aria-pressed={avatarPreference !== 'trainer'}
-                                            className="segmented__item profile-avatar-choice__option"
-                                        >
-                                            <img
-                                                src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
-                                                alt=""
-                                                aria-hidden="true"
-                                            />
-                                            <span>{t('profile.avatarChoicePokemon')}</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => onChangeAvatarPreference('trainer')}
-                                            aria-pressed={avatarPreference === 'trainer'}
-                                            className="segmented__item profile-avatar-choice__option"
-                                        >
-                                            <img
-                                                src={trainerSpriteUrl(trainerSprite)}
-                                                alt=""
-                                                aria-hidden="true"
-                                                className="profile-avatar-choice__pixel"
-                                            />
-                                            <span>{t('profile.avatarChoiceTrainer')}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </SectionCard>
-                    )}
-
-                    {activeTab === 'appearance' && (
-                        <SectionCard
-                            className="profile-card--gameplay"
-                            title={t('profile.sectionTeraTitle')}
-                            subtitle={t('profile.sectionTeraDesc')}
-                            icon={<SparklesIcon className="w-5 h-5" />}
-                        >
-                            {/* A yes/no preference is a switch, not two buttons that
-                                each mean half of it — and the switch is the status,
-                                so the header pill that restated it is gone. */}
+                {activeTab === 'preferences' && (
+                    <>
+                        {/* The Tera switch is how the builder behaves, not how the
+                            app looks — it sat under Appearance until 2026-10-22. */}
+                        <Section title={t('profile.sectionGameplay')}>
                             <Switch
                                 variant="row"
                                 checked={showTeraType}
                                 onChange={onChangeShowTeraType}
                                 label={t('accountMenu.teraTypeSwitch')}
+                                description={t('profile.sectionTeraDesc')}
                             />
-                        </SectionCard>
-                    )}
+                        </Section>
+                        {onChangeSearchShortcut ? (
+                            <SearchShortcutSection shortcut={searchShortcut} onChange={onChangeSearchShortcut} />
+                        ) : null}
+                        <NotificationsSection />
+                    </>
+                )}
 
-                    {activeTab === 'preferences' && onChangeSearchShortcut ? (
-                        <SearchShortcutCard shortcut={searchShortcut} onChange={onChangeSearchShortcut} />
-                    ) : null}
-
-                </div>
-
-                <div className="profile-layout__column">
-                    {activeTab === 'preferences' && <NotificationsCard />}
-
-                    {activeTab === 'account' && (
-                        <SectionCard
-                            className="profile-card--sync"
-                            meta={<span className="profile-pill">{isAnonymous ? t('profile.guestPill') : (db ? 'Cloud' : 'Offline')}</span>}
-                            title={t('profile.sectionSync')}
-                            subtitle={isAnonymous ? undefined : (db ? t('profile.sectionSyncConnected') : t('profile.sectionSyncOffline'))}
-                            icon={<SaveIcon className="w-5 h-5" />}
-                        >
-                            {isAnonymous ? (
-                                // Four tiles that all said "Convidado", under a subtitle
-                                // claiming a cloud connection, told a guest nothing true.
-                                <p className="profile-support-copy">{t('profile.guestLocalOnly')}</p>
-                            ) : (
-                            <div className="profile-sync-list">
-                                    <div className="profile-sync-row">
-                                        <span className="profile-sync-row__label">{t('profile.syncItemTheme')}</span>
-                                        <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                                    </div>
-                                    <div className="profile-sync-row">
-                                        <span className="profile-sync-row__label">{t('profile.syncItemWallpaper')}</span>
-                                        <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                                    </div>
-                                    <div className="profile-sync-row">
-                                        <span className="profile-sync-row__label">{t('profile.syncItemTrainer')}</span>
-                                        <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                                    </div>
-                                    <div className="profile-sync-row">
-                                        <span className="profile-sync-row__label">{t('profile.syncItemStreak')}</span>
-                                        <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="profile-button-row profile-button-row--tight">
-                                <button
-                                    type="button"
-                                    onClick={onResetSyncPrompt}
-                                    className="profile-button"
-                                    title="Allow the 'Save your progress' nudge to appear again"
-                                >
-                                    <RefreshIcon className="w-3.5 h-3.5" />
-                                    {t('profile.resetRemindersBtn')}
-                                </button>
-                            </div>
-                        </SectionCard>
-                    )}
-                    {/* Guests get these two actions in the hero; the card is
-                        account management, so it is for accounts. */}
-                    {activeTab === 'account' && !isAnonymous && (
-                    <SectionCard
-                        className="profile-card--account"
-                        meta={<span className="profile-pill">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>}
-                        title={t('profile.sectionAccount')}
-                        subtitle={isAnonymous ? t('profile.sectionAccountGuestDesc') : t('profile.sectionAccountSyncedDesc')}
-                        icon={<AccountIcon className="w-5 h-5" />}
-                    >
+                {activeTab === 'account' && (
+                    <>
                         {isAnonymous ? (
-                            <div className="profile-account-block">
-                                <p className="profile-support-copy">
-                                    {t('profile.accountSupportCopy')}
-                                </p>
-                                <div className="profile-button-row">
-                                    <button
-                                        type="button"
-                                        onClick={onOpenSignUp}
-                                        className="profile-button profile-button--primary"
-                                    >
-                                        {t('profile.createAccountBtn')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={onOpenSignIn}
-                                        className="profile-button"
-                                    >
+                            // Guests: what is true about their data, and the way to keep it.
+                            <Section title={t('profile.sectionAccount')} description={t('profile.guestLocalOnly')}>
+                                <SettingRow label={t('profile.sectionAccountGuestDesc')}>
+                                    <button type="button" onClick={onOpenSignIn} className="btn btn-ghost btn-sm">
                                         {t('profile.signInBtn')}
                                     </button>
-                                </div>
-                            </div>
+                                    <button type="button" onClick={onOpenSignUp} className="btn btn-primary btn-sm">
+                                        {t('profile.createAccountBtn')}
+                                    </button>
+                                </SettingRow>
+                            </Section>
                         ) : (
-                            <div className="profile-account-block">
-                                <div className="profile-account-row">
-                                    <div className="min-w-0">
-                                        <p className="profile-account-row__label">Email</p>
-                                        <p className="profile-account-row__value" title={userEmail || ''}>
-                                            {userEmail || '—'}
-                                        </p>
-                                    </div>
-                                    <span className="profile-pill profile-pill--accent">{t('profile.syncedPill')}</span>
-                                </div>
+                            <Section
+                                title={t('profile.sectionAccount')}
+                                description={db ? t('profile.syncAllDesc') : t('profile.sectionSyncOffline')}
+                                meta={<span className="badge">{db ? t('profile.syncCloud') : t('profile.syncOffline')}</span>}
+                            >
+                                <SettingRow label={t('profile.emailLabel')} description={<span className="profile-row__value" title={userEmail || ''}>{userEmail || '—'}</span>} />
                                 <EmailVerifyRow />
-                                <button
-                                    type="button"
-                                    onClick={onSignOut}
-                                    className="profile-button profile-button--danger profile-button--block"
-                                >
-                                    {t('profile.signOutBtn')}
-                                </button>
-                                <div className="profile-button-row profile-account-actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => setSecurityModal('password')}
-                                        className="profile-button"
-                                    >
+                                <SettingRow label={t('profile.passwordLabel')} description={t('profile.passwordDesc')}>
+                                    <button type="button" onClick={() => setSecurityModal('password')} className="btn btn-secondary btn-sm">
                                         {t('profile.changePasswordBtn')}
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setSecurityModal('delete')}
-                                        className="profile-button profile-button--danger"
-                                    >
-                                        {t('profile.deleteAccountBtn')}
+                                </SettingRow>
+                                <SettingRow label={t('profile.sessionLabel')} description={t('profile.signOutDesc')}>
+                                    <button type="button" onClick={onSignOut} className="btn btn-secondary btn-sm">
+                                        {t('profile.signOutBtn')}
                                     </button>
-                                </div>
-                                {securityModal && (
-                                    <AccountSecurityModal mode={securityModal} onClose={() => setSecurityModal(null)} />
-                                )}
-                            </div>
+                                </SettingRow>
+                                {/* Last, and in the danger tone: the one thing here that cannot be undone. */}
+                                <SettingRow label={t('profile.deleteAccountBtn')} description={t('profile.deleteDesc')} tone="danger">
+                                    <button type="button" onClick={() => setSecurityModal('delete')} className="btn btn-danger btn-sm">
+                                        {t('profile.deleteShort')}
+                                    </button>
+                                </SettingRow>
+                            </Section>
                         )}
-                    </SectionCard>
-                    )}
-                </div>
 
-                {/* Trainer Badges & Achievements Section */}
-                {activeTab === 'trainer' && (
-                    <SectionCard
-                        className="profile-card--badges profile-card--fullwidth"
-                        meta={
-                            <span className="profile-pill profile-pill--accent flex items-center gap-1">
-                                <Sparkles className="w-3 h-3" />
-                                {t('profile.badgesProgress', { current: unlockedCount, total: totalBadgesCount })}
-                            </span>
-                        }
-                        title={t('profile.sectionBadges')}
-                        subtitle={language === 'pt' ? 'Escolha 1 insígnia para exibir no perfil' : 'Choose 1 badge to display on profile'}
-                        icon={<Medal className="w-5 h-5" />}
-                    >
-                        <div className="profile-badges-grid">
-                            {orderedBadges.slice(0, badgeReveal.limit).map((badge) => {
-                                const BadgeIcon = badge.Icon;
-                                const badgeName = language === 'pt' ? badge.namePt : badge.nameEn;
-                                const badgeReq = language === 'pt' ? badge.reqPt : badge.reqEn;
-                                const isEquipped = badge.isEquipped;
-                                const isUnlocked = badge.isUnlocked;
-                                const progress = badge.progress;
+                        <Section title={t('profile.sectionSync')}>
+                            {userId && (
+                                <SettingRow label={t('profile.trainerIdLabel')} description={<span className="profile-row__value profile-row__value--mono" title={userId}>#{userId.slice(0, 8)}</span>} />
+                            )}
+                            <SettingRow label={t('profile.resetRemindersLabel')} description={t('profile.resetRemindersHint')}>
+                                <button type="button" onClick={onResetSyncPrompt} className="btn btn-ghost btn-sm">
+                                    <RefreshIcon className="w-3.5 h-3.5" />
+                                    {t('profile.resetShort')}
+                                </button>
+                            </SettingRow>
+                        </Section>
 
-                                return (
-                                    <div
-                                        key={badge.id}
-                                        className={`profile-badge-card ${isEquipped ? 'is-equipped' : ''}  ${!isUnlocked ? 'is-locked' : ''}`}
-                                    >
-                                        <div className="profile-badge-card__top">
-                                            <div
-                                                className="profile-badge-card__icon-wrap"
-                                                style={{
-                                                    borderColor: isEquipped ? 'var(--color-primary)' : isUnlocked ? `${badge.accentColor}60` : 'var(--color-border)',
-                                                    boxShadow: isUnlocked ? `0 6px 20px -4px ${badge.accentColor}40` : 'none',
-                                                }}
-                                            >
-                                                <BadgeIcon className="w-full h-full object-contain" />
-                                            </div>
-                                            <div className="profile-badge-card__info">
-                                                <div className="profile-badge-card__title-row">
-                                                    <h4 className="profile-badge-card__name">
-                                                        {badgeName}
-                                                    </h4>
-                                                    {isEquipped && (
-                                                        <span className="profile-badge-tag-equipped">
-                                                            <Check className="w-2.5 h-2.5" />
-                                                            <span>{t('profile.badgeEquippedTag')}</span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className="profile-badge-card__req">
-                                                    {badgeReq}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="profile-badge-progress-wrap">
-                                            <div className="profile-badge-progress-info">
-                                                <span>{progress.current} / {progress.target}</span>
-                                                <span>{progress.percent}%</span>
-                                            </div>
-                                            <div className="profile-badge-progress-track">
-                                                <div
-                                                    className={`profile-badge-progress-fill ${progress.percent >= 100 ? 'is-complete' : ''}`}
-                                                    style={{ width: `${progress.percent}%`, backgroundColor: isUnlocked ? badge.accentColor : undefined }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="profile-badge-card__action">
-                                            {isUnlocked ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleEquip(badge.id)}
-                                                    aria-pressed={isEquipped}
-                                                    aria-label={`${isEquipped ? t('profile.badgeEquippedBtn') : t('profile.badgeEquipBtn')}: ${badgeName}`}
-                                                    className={`profile-badge-btn ${isEquipped ? 'profile-badge-btn--equipped' : 'profile-badge-btn--equip'}`}
-                                                >
-                                                    {isEquipped ? (
-                                                        <>
-                                                            <Check className="w-3.5 h-3.5" />
-                                                            <span>{t('profile.badgeEquippedBtn')}</span>
-                                                        </>
-                                                    ) : (
-                                                        <span>{t('profile.badgeEquipBtn')}</span>
-                                                    )}
-                                                </button>
-                                            ) : null /* locked: the grey icon and 0% already say so */}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        {badgeReveal.hasMore && (
-                            <ShowMoreButton remaining={badgeReveal.remaining} onClick={badgeReveal.showMore} className="mt-3" />
+                        {securityModal && (
+                            <AccountSecurityModal mode={securityModal} onClose={() => setSecurityModal(null)} />
                         )}
-                    </SectionCard>
+                    </>
                 )}
             </div>
         </div>

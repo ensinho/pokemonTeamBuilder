@@ -18,7 +18,7 @@ action). **No points** — the reward is the badge (Enzo's call). Since
 | `src/store/useJourneyCoachStore.js` | The mission being guided (id only, sessionStorage). |
 | `src/hooks/useJourneys.js` | `useJourneys()` and `useMissionLauncher()` — "Go": start the guide, then navigate or run the action (`partner` → `openPartnerPicker()`, `signUp` → `promptSignIn`). |
 | `src/components/journeys/` | `JourneyList` (+ `MissionRow`, `JourneyTile`, `JourneyBar`), `BadgeGallery` (+ detail dialog), `JourneyCoach` (the floating guide, mounted once in AppLayout). |
-| `src/components/views/JourneysView.jsx` | `/journeys` — stats, Journeys / Badges tabs (`?tab=badges`). |
+| `src/components/views/JourneysView.jsx` | `/journeys` — Journeys / Badges / Rewards tabs (`?tab=`), each carrying its own figure as a `count-badge` (no separate stat boxes since 2026-10-22). Badges are equipped here (the badge dialog); the Profile shows only the earned ones and links back. |
 | `src/components/views/CozyHomeView.jsx` | The Home's journey card, sized by `journeyEmphasis()`: **focus** (new trainer — level ≤ 2, < 6 missions done, < 7 days active) is the full card (welcome, level, open missions); **compact** (active trainer) is a small "Próximo passo" card with the one mission up next; **none** once all five are done. Desktop: top of the right rail. Phone: focus under the hero, compact under "Seu dia". Plus the Home's **Jornada** tab (replaced Meta). |
 
 ## The mascot (`src/components/Mascot.jsx`)

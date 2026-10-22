@@ -25,6 +25,7 @@
 | [Champion Challenge](./modules/daily_challenge.md) | The daily battle vs the Cynthia AI as built: endpoint, engine, AI, the DS-console client, Home card, invariants, traps, calibration |
 | [Wounds Log](./wounds.md) | Before any non-trivial work — anti-pattern registry |
 | [UX audit 2026-10-20](./audits/2026-10-20-battles-forum.md) | Battles (Mega Evolution, the HUD, the anime flare) and the forum on a phone: findings by category, what changed, what is still open |
+| [UI audit 2026-10-22](./audits/2026-10-22-profile-journeys-landing.md) | Profile, Journeys/Rewards and the landing at 1440 and 390: findings by category, before → after figures, and a site-wide sweep (nested boxes, small touch targets, overflow) with what is still open |
 | [Agent Directives](./agent_directives.md) | Failure recovery protocol and learned constraints |
 | [Handoff: Friends & battles](./plans/HANDOFF-friends-and-battles.md) | History of the feature's build (2026-07) — status, traps. **The current flow and server state are in [Friend battles](./modules/friend_battles.md)** |
 | [How friends & battles work](./plans/ARCHITECTURE-friends-and-battles.md) | The running system — data flow, turn loop, security model, invariants |

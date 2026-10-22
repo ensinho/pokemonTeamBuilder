@@ -656,7 +656,7 @@
         .team-builder-panel, .all-teams-view__card,
         .battle-panel, .battle-header, .edv-header, .edv-section,
         .forum-right-card, .forum-new-topic-card, .friends-invite,
-        .pdv__identity, .pdv__panel, .profile-hero, .profile-card,
+        .pdv__identity, .pdv__panel, .profile-hero,
         .dmg-card, .dmg-result, .trn-card
     ) {
         box-shadow: var(--surface-sheen);
@@ -670,7 +670,6 @@
     .card, .pokemon-card, .meta-mon-card, .team-builder-recent-card,
     .forum-sidebar-card,
     .friend-card, .battle-card, .pokepuzzle-tip-card, .pokepuzzle-history__item,
-    .profile-streak-card, .profile-overview-stat, .profile-avatar-card,
     .landing-demo, .landing-feature, .st-member
 ) {
     box-shadow: var(--card-sheen);
@@ -1266,7 +1265,6 @@ h1, h2 {
     .team-builder-button,
     .team-builder-icon-button,
     .team-builder-type-button,
-    .profile-button,
     .home-button,
     .app-shell__icon-button,
     .pdm__iconbtn,
@@ -1287,7 +1285,6 @@ h1, h2 {
     .team-builder-button,
     .team-builder-icon-button,
     .team-builder-type-button,
-    .profile-button,
     .home-button,
     .app-shell__icon-button,
     .pdm__iconbtn,
