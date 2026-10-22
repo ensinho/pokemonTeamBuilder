@@ -229,8 +229,8 @@
 
 .reward-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -283,6 +283,21 @@
 .reward-card__state svg { width: 0.875rem; height: 0.875rem; }
 .reward-card__state.is-on { color: var(--color-primary); font-weight: var(--weight-semibold); }
 
+/* Phones: two to a row, the picture and its state on top, the words under —
+   fourteen full-width rows each saying "Locked" made the tab seven screens. */
+@media (max-width: 639px) {
+    .reward-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .reward-card {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas: 'preview state' 'text text';
+        align-items: start;
+        gap: var(--space-2);
+    }
+    .reward-card .reward-preview { grid-area: preview; margin: 0; }
+    .reward-card__text { grid-area: text; }
+    .reward-card__state { grid-area: state; }
+}
+
 /* The picture of an item. A frame preview is the trainer's own avatar in it. */
 .reward-preview {
     display: inline-grid;
@@ -313,14 +328,17 @@
 
 .reward-preview--title svg { width: 1rem; height: 1rem; }
 
-/* ---- The level track ------------------------------------------------------- */
+/* ---- The level track -------------------------------------------------------
+   One card, one row per level, hairlines between them (2026-10-22: eighteen
+   separately filled pills read as eighteen things). It opens on where the
+   trainer is — the last level reached and the next few — with the rest one
+   tap away. */
 
-.level-track {
+.card.level-track {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
     margin: 0;
-    padding: 0;
+    padding: var(--space-1) var(--space-3);
     list-style: none;
 }
 
@@ -329,13 +347,20 @@
     grid-template-columns: 2.25rem minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2_5) var(--space-1);
     border-radius: var(--radius-md);
-    background: var(--color-surface);
 }
 
-.level-track__step.is-next { box-shadow: var(--ring-primary); }
+.level-track__step + .level-track__step { box-shadow: inset 0 1px 0 var(--color-border); }
 
+.level-track__step.is-next,
+.level-track__step.is-next + .level-track__step {
+    box-shadow: none;
+}
+
+.level-track__step.is-next {
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
 .level-track__level {
     display: inline-grid;
     place-items: center;

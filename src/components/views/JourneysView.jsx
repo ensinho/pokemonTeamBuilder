@@ -1,5 +1,4 @@
 import React from 'react';
-import { Award, Flag, Route } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useUrlTab } from '../../hooks/useUrlTab';
 import { useJourneys } from '../../hooks/useJourneys';
@@ -36,34 +35,23 @@ export function JourneysView() {
         path: '/journeys',
     });
 
-    const stats = [
-        { key: 'journeys', icon: Route, value: `${totals.journeysDone}/${totals.journeysTotal}`, label: t('journeys.statJourneys') },
-        { key: 'missions', icon: Flag, value: `${totals.missionsDone}/${totals.missionsTotal}`, label: t('journeys.statMissions') },
-        { key: 'badges', icon: Award, value: `${unlockedCount}/${totalBadgesCount}`, label: t('journeys.statBadges') },
-    ];
+    // Each tab carries its own figure (2026-10-22): three boxed stats above the
+    // tabs said the same thing a second time, a screen before the content.
+    const tabCounts = {
+        journeys: `${totals.journeysDone}/${totals.journeysTotal}`,
+        badges: `${unlockedCount}/${totalBadgesCount}`,
+    };
 
     return (
         <main className="journeys-view">
             <MascotTip size="lg" className="journeys-view__lead">{t('journeys.subtitle')}</MascotTip>
 
-            <dl className="journeys-view__stats">
-                {stats.map((stat) => {
-                    const StatIcon = stat.icon;
-                    return (
-                        <div key={stat.key} className="card card--compact journeys-view__stat">
-                            <StatIcon className="journeys-view__stat-icon" aria-hidden="true" />
-                            <dt className="journeys-view__stat-label">{stat.label}</dt>
-                            <dd className="journeys-view__stat-value">{stat.value}</dd>
-                        </div>
-                    );
-                })}
-            </dl>
-
             <div className="segmented segmented--block journeys-view__tabs" role="tablist" aria-label={t('journeys.tabsLabel')}>
                 {TABS.map((key) => (
                     <button key={key} type="button" role="tab" className="segmented__item" aria-selected={tab === key} onClick={() => setTab(key)}>
                         {t(`journeys.tabs.${key}`)}
-                        {key === 'rewards' && unseenRewards > 0 && tab !== 'rewards' && <span className="count-badge">{unseenRewards}</span>}
+                        {tabCounts[key] && <span className="count-badge">{tabCounts[key]}</span>}
+                        {key === 'rewards' && unseenRewards > 0 && tab !== 'rewards' && <span className="count-badge count-badge--new">{unseenRewards}</span>}
                     </button>
                 ))}
             </div>
@@ -76,6 +64,9 @@ export function JourneysView() {
                             {t('journeys.allDoneSub')}
                         </MascotTip>
                     )}
+                    <p className="journeys-view__progress">
+                        {t('journeys.missionsProgress', { done: totals.missionsDone, total: totals.missionsTotal })}
+                    </p>
                     <JourneyList journeys={journeys} />
                 </>
             ) : tab === 'badges' ? (

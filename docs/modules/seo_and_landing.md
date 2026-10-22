@@ -119,13 +119,16 @@ pages are crawlable from each other.
   the hand-over is instant.
 - Its copy (`landing.*`) is also what the prerender writes for `/`.
 - **The banner** (`.landing-banner`) is the page's one hero surface and the one
-  place it uses a gradient (a wash of the theme's primary from the stage's
-  side). Copy on the left — the eyebrow pill, the headline, the CTAs, the figure
-  strip — and on the right the **stage**: the demo's six as a party on two tiers
-  (feet above the front row's heads, so no one hides anyone), animated, each on
-  a battle platform, in front of a Poké Ball drawn in hairlines. Two floating
-  callouts show the builder's real verdict on exactly that six (types resisted,
-  shared weaknesses); on phones they drop under the stage as one row.
+  place it uses a gradient — since 2026-10-22 a single soft pool of the theme's
+  primary behind the stage, with no box around the banner (it stands on the
+  page like every heading). Copy on the left — the eyebrow line, the headline,
+  the CTAs, the figure strip — and on the right the **stage**: the demo's six as
+  a party on two tiers (feet above the front row's heads, so no one hides
+  anyone), animated, each on a battle platform, in front of a Poké Ball drawn
+  in hairlines. Nothing floats over it: the two callouts that used to repeat the
+  demo's verdict were removed. The page is one centred 72rem column; every
+  section opens with `.landing-section-head` (title + one line), and sections
+  are `--space-16` apart.
 - The demo is its own section under the banner (picker beside the verdict on
   wide screens); its cards animate only the Pokémon on the team (the bench is
   the still frame). A figure strip under the CTAs (1025 Pokémon · 18 types ·
@@ -139,7 +142,9 @@ pages are crawlable from each other.
   shared weakness (`analyzeTeam`), Gardevoir's base stats, base Speeds, battles
   per format from `usage-index.json` (15 KB, not the usage files), and the
   starter triangle from `typeMatchups`. Each card's identity is
-  `--feature-tone`, a canon type colour mixed into tokens. The mini chart
+  `--feature-tone`, a canon type colour mixed into tokens — in the illustration
+  only; titles, kickers and links stay in the page's ink (one accent per view).
+  Below 640px the five smaller cards drop their illustration and read as a list. The mini chart
   restates the chart's tones in `landing.css` because `types-view.css` only
   loads with the type pages.
 

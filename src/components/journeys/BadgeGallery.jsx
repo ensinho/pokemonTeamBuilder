@@ -118,6 +118,8 @@ function BadgeDetailDialog({ badge, journeys, isEquipped, onToggleEquip, onClose
  * Every badge, grouped the way it is earned (the reference's Medalhas tab):
  * a heading with how many of the group are earned, then the emblems. A badge
  * still to earn is drawn in grey — the shape is there, the colour is not yet.
+ * The groups stand on the page, apart by whitespace: ten bordered boxes, most
+ * of them two emblems wide, made the tab a stack of empty frames (2026-10-22).
  */
 export function BadgeGallery({ badges, journeys, selectedBadgeId, onToggleEquip }) {
     const { t, language } = useTranslation();
@@ -132,7 +134,7 @@ export function BadgeGallery({ badges, journeys, selectedBadgeId, onToggleEquip 
     return (
         <div className="badge-gallery">
             {groups.map(({ category, items }) => (
-                <section key={category} className="card badge-group">
+                <section key={category} className="badge-group">
                     <header className="section-head">
                         <h3 className="section-title">{t(`journeys.categories.${category}`)}</h3>
                         <span className="section-action badge-group__count">

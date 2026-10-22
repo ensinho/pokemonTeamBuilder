@@ -29,16 +29,14 @@ import { LANGUAGES } from '../../utils/localePath';
  */
 
 // The banner's stage: the demo's six as a party, three in front and three a
-// step behind, each on a battle platform. The two callouts are the builder's
-// real verdict on exactly this six — the product, shown on its own subject.
+// step behind, each on a battle platform. Nothing floats over it: the demo
+// right below says what the builder thinks of this six (2026-10-22 — the two
+// callouts that used to repeat it here made the hero the busiest thing on
+// the page).
 const STAGE_BACK = [727, 130, 598];
 const STAGE_FRONT = [6, 445, 282];
 
 function LandingStage() {
-    const { t } = useTranslation();
-    const { teamAnalysis } = useMemo(() => analyzeTeam(DEMO_POOL), []);
-    const resisted = Object.keys(teamAnalysis.defensiveCoverage).length;
-    const shared = Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type]) => type);
     const row = (ids, depth) => (
         <div className={`landing-stage__row landing-stage__row--${depth}`}>
             {ids.map((id) => (
@@ -53,20 +51,6 @@ function LandingStage() {
             <span className="landing-stage__ball" />
             {row(STAGE_BACK, 'back')}
             {row(STAGE_FRONT, 'front')}
-            <div className="landing-stage__callouts">
-                <span className="landing-callout landing-callout--score">
-                    <span className="landing-callout__label">{t('landing.demo.resists')}</span>
-                    <span className="landing-callout__value">{resisted}<small>/18 {t('landing.stats.types')}</small></span>
-                </span>
-                <span className="landing-callout landing-callout--weak">
-                    <span className="landing-callout__label">{t('landing.demo.sharedWeakness')}</span>
-                    <span className="landing-callout__chips">
-                        {shared.length
-                            ? shared.map((type) => <TypeChip key={type} type={type} size="sm" />)
-                            : t('landing.demo.noWeakness')}
-                    </span>
-                </span>
-            </div>
         </div>
     );
 }
@@ -102,13 +86,12 @@ function LandingDemo({ onLeave }) {
     };
 
     return (
-        <section className="landing-demo" aria-labelledby="landing-demo-title">
-            <div className="landing-demo__picker">
-                <div className="landing-demo__head">
-                    <h2 id="landing-demo-title" className="landing-demo__title">{t('landing.demo.title')}</h2>
-                    <p className="landing-demo__hint">{t('landing.demo.hint')}</p>
-                </div>
-
+        <section className="landing-section" aria-labelledby="landing-demo-title">
+            <header className="landing-section-head">
+                <h2 id="landing-demo-title" className="landing-section-title">{t('landing.demo.title')}</h2>
+                <p className="landing-section-sub">{t('landing.demo.hint')}</p>
+            </header>
+            <div className="landing-demo">
                 <div className="landing-demo__pool">
                     {DEMO_POOL.map((p) => {
                         const on = selected.includes(p.id);
@@ -134,33 +117,32 @@ function LandingDemo({ onLeave }) {
                         );
                     })}
                 </div>
-            </div>
+                <div className="landing-demo__panel">
+                    <dl className="landing-demo__result">
+                        <div className="landing-demo__row">
+                            <dt>{t('landing.demo.score')}</dt>
+                            <dd className="landing-demo__score"><RollingNumber value={score} /><span>/100</span></dd>
+                        </div>
+                        <div className="landing-demo__row">
+                            <dt>{t('landing.demo.sharedWeakness')}</dt>
+                            <dd className="landing-demo__types">
+                                {weaknesses.length
+                                    ? weaknesses.map((type) => <TypeChip key={type} type={type} size="sm" />)
+                                    : <span className="landing-demo__ok">{t('landing.demo.noWeakness')}</span>}
+                            </dd>
+                        </div>
+                        <div className="landing-demo__row">
+                            <dt>{t('landing.demo.resists')}</dt>
+                            <dd className="landing-demo__types">
+                                {resists.map((type) => <TypeChip key={type} type={type} size="sm" />)}
+                            </dd>
+                        </div>
+                    </dl>
 
-            <div className="landing-demo__panel">
-                <dl className="landing-demo__result">
-                    <div className="landing-demo__row">
-                        <dt>{t('landing.demo.score')}</dt>
-                        <dd className="landing-demo__score"><RollingNumber value={score} /><span>/100</span></dd>
-                    </div>
-                    <div className="landing-demo__row">
-                        <dt>{t('landing.demo.sharedWeakness')}</dt>
-                        <dd className="landing-demo__types">
-                            {weaknesses.length
-                                ? weaknesses.map((type) => <TypeChip key={type} type={type} size="sm" />)
-                                : <span className="landing-demo__ok">{t('landing.demo.noWeakness')}</span>}
-                        </dd>
-                    </div>
-                    <div className="landing-demo__row">
-                        <dt>{t('landing.demo.resists')}</dt>
-                        <dd className="landing-demo__types">
-                            {resists.map((type) => <TypeChip key={type} type={type} size="sm" />)}
-                        </dd>
-                    </div>
-                </dl>
-
-                <button type="button" className="btn btn-secondary btn-block" onClick={openInBuilder}>
-                    {t('landing.demo.openInBuilder')}
-                </button>
+                    <button type="button" className="btn btn-secondary btn-block" onClick={openInBuilder}>
+                        {t('landing.demo.openInBuilder')}
+                    </button>
+                </div>
             </div>
         </section>
     );

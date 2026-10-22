@@ -14,6 +14,7 @@ import { frameProps, levelTrack, unlockLabel } from '../../utils/rewards';
 import { AvatarSprite } from '../AvatarSprite';
 import { PokeballIcon } from '../icons';
 import { CheckinCard } from './CheckinCard';
+import { ShowMoreButton } from '../ShowMoreButton';
 import '../../styles/rewards.css';
 
 const THEME_SWATCH = Object.fromEntries(THEME_META.map((meta) => [meta.id, meta.swatch]));
@@ -81,6 +82,14 @@ export function RewardsPanel() {
         return [k, { have: ofKind.filter((item) => unlocked[item.id]).length, total: ofKind.length }];
     })), [unlocked]);
     const currentStep = track.find((step) => step.level > level)?.level ?? null;
+    // The track opens on where the trainer is: the last level reached and the
+    // next four. The whole of it is one tap away.
+    const [wholeTrack, setWholeTrack] = useState(false);
+    const nextIndex = currentStep === null ? track.length : track.findIndex((step) => step.level === currentStep);
+    const windowStart = Math.max(0, nextIndex - 1);
+    const windowEnd = Math.min(track.length, nextIndex + 4);
+    const visibleTrack = wholeTrack ? track : track.slice(windowStart, Math.max(windowEnd, windowStart + 5));
+    const hiddenSteps = track.length - visibleTrack.length;
 
     const handleItem = (item, event) => {
         if (!unlocked[item.id]) return;
@@ -130,9 +139,12 @@ export function RewardsPanel() {
                                         </span>
                                         <span className="reward-card__how">{unlockText(item)}</span>
                                     </span>
+                                    {/* Locked says so with the padlock alone: the line above
+                                        already tells how to earn it, and the word on every
+                                        card was the loudest thing in the grid. */}
                                     <span className={`reward-card__state ${isOn ? 'is-on' : ''}`}>
                                         {!isUnlocked ? <Lock aria-hidden="true" /> : isOn ? <Check aria-hidden="true" /> : null}
-                                        {actionLabel}
+                                        <span className={isUnlocked ? undefined : 'sr-only'}>{actionLabel}</span>
                                     </span>
                                 </button>
                             </li>
@@ -146,8 +158,8 @@ export function RewardsPanel() {
                     <h2 className="section-title">{t('rewards.track.title')}</h2>
                     <span className="section-meta">{t('rewards.levelLong', { n: level })}</span>
                 </div>
-                <ol className="level-track">
-                    {track.map((step) => {
+                <ol className="card card--flush level-track">
+                    {visibleTrack.map((step) => {
                         const reached = level >= step.level;
                         const isNext = step.level === currentStep;
                         return (
@@ -168,6 +180,7 @@ export function RewardsPanel() {
                         );
                     })}
                 </ol>
+                {hiddenSteps > 0 && <ShowMoreButton remaining={hiddenSteps} onClick={() => setWholeTrack(true)} />}
                 {currentStep === null && <p className="rewards-panel__lead">{t('rewards.trackEnd')}</p>}
             </section>
         </div>

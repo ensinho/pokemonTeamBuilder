@@ -1,149 +1,109 @@
+/* ============================================================================
+   Profile (ProfileView.jsx) — rebuilt 2026-10-22 ("perfil mais fácil de mexer").
+
+   One centred column at every width, like a native settings screen:
+   the trainer card, the tabs, then sections. A section is the shared
+   `.section` (a heading on the page) over one `.card` of rows; a row is the
+   words on the left and the control at its far edge — the same arrangement
+   as `.switch--row`, so switches, buttons and values line up down the page.
+
+   Rules this file keeps:
+   - one box per thing: the hero and each section body own a border, and
+     nothing inside them draws another (rows separate with a hairline, the
+     stats with a hairline, the theme swatches with fill);
+   - one accent per tab: the filled primary is the guest's "create account"
+     or the selection ring, never a decoration;
+   - phones (< 1024px): the boxes keep their fill and lose the edge.
+   ============================================================================ */
+
 .profile-view {
     width: 100%;
-    max-width: 112rem;
+    max-width: 46rem;
     margin: 0 auto;
-    padding: var(--space-1) 0 var(--space-8);
+    padding-block: var(--space-2) var(--space-16);
 }
 
-.profile-hero,
-.profile-card,
-.profile-avatar-button,
-.profile-button,
-.profile-theme-card,
-.profile-overview-stat,
-.profile-sync-row,
-.profile-account-row {
-    transition: border-color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
-}
+/* ---- The trainer card -------------------------------------------------------- */
 
 .profile-hero {
-    position: relative;
-    overflow: hidden;
     display: grid;
-    gap: var(--space-3_5);
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-5);
+    padding: var(--space-6);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-surface);
-    padding: var(--space-5);
-    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
-.profile-hero__main {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-3_5);
-    min-width: 0;
-}
-
+/* Round at every size: an equipped frame makes it round anyway, and a square
+   that turns into a circle when a frame goes on read as two different things. */
 .profile-avatar-button {
     position: relative;
     display: inline-flex;
-    width: 5.5rem;
-    height: 5.5rem;
-    flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    width: 4.5rem;
+    height: 4.5rem;
+    border: none;
+    border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.profile-avatar-button:hover,
-.profile-theme-card:hover,
-.profile-card:hover {
-    border-color: var(--color-border-hover);
-}
+.profile-avatar-button:hover { background: var(--color-surface-hover); }
 
-.profile-button:hover,
-.profile-overview-stat:hover,
-.profile-account-row:hover,
-.profile-sync-row:hover {
-    border-color: var(--color-border-hover);
+.profile-avatar-button:focus-visible,
+.profile-hero__name-button:focus-visible,
+.profile-thumb:focus-visible,
+.profile-theme-card:focus-visible,
+.profile-shortcut__keys:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
 }
 
 .profile-avatar-button__sprite {
-    width: 4.5rem;
-    height: 4.5rem;
+    width: 3.75rem;
+    height: 3.75rem;
     object-fit: contain;
 }
 
-/* Trainer sprites are 80×80 pixel art — upscaling them must not be smoothed. */
+/* Trainer sprites are pixel art — upscaling them must not be smoothed. */
 .profile-avatar-button__sprite--pixel,
-.profile-avatar-preview__sprite--pixel,
-.profile-avatar-choice__pixel {
+.profile-thumb__sprite.is-pixel,
+.profile-avatar-choice img.is-pixel {
     image-rendering: pixelated;
 }
 
-/* Pick which avatar is the public-facing one: a .segmented control whose
-   items carry the two faces. Whitespace separates it from the pair above. */
-.profile-avatar-choice {
-    margin-top: var(--space-3);
-}
-
-.profile-avatar-choice__label {
-    margin: 0 0 var(--space-2);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-}
-
-.profile-avatar-choice__option {
-    gap: var(--space-1_5);
-}
-
-.profile-avatar-choice__option img {
-    width: 1.5rem;
-    height: 1.5rem;
-    object-fit: contain;
-}
-
 .profile-avatar-button__initials {
-    font-size: var(--text-2xl);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
-    letter-spacing: -0.04em;
 }
 
+/* The pencil is always there: on a phone a hover-only one never appears. */
 .profile-avatar-button__edit {
     position: absolute;
-    right: 0.35rem;
-    bottom: 0.35rem;
+    right: calc(var(--space-0_5) * -1);
+    bottom: calc(var(--space-0_5) * -1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 1.5rem;
     height: 1.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-surface);
-    color: var(--color-primary);
-    opacity: 0;
-    transition: opacity var(--duration-fast) var(--ease-smooth);
-}
-
-.profile-avatar-button:hover .profile-avatar-button__edit,
-.profile-avatar-button:focus-visible .profile-avatar-button__edit {
-    opacity: 1;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-elevated);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-fg);
 }
 
 .profile-hero__identity {
     display: flex;
-    min-width: 0;
-    flex: 1;
     flex-direction: column;
-    gap: var(--space-1_5);
-}
-
-.profile-hero__eyebrow,
-.profile-account-row__label,
-.profile-streak-card__label,
-.profile-overview-stat__label,
-.profile-sync-row__label {
-    margin: 0;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    letter-spacing: 0;
-    color: var(--color-muted);
+    gap: var(--space-2);
+    min-width: 0;
 }
 
 .profile-hero__name-button {
@@ -152,249 +112,387 @@
     gap: var(--space-2);
     width: fit-content;
     max-width: 100%;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
     color: var(--color-fg);
+    cursor: pointer;
 }
 
 .profile-hero__name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
     margin: 0;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    font-size: var(--text-2xl);
     font-weight: var(--weight-semibold);
-    letter-spacing: -0.04em;
-    line-height: 1.1;
+    line-height: 1.15;
 }
 
-.profile-hero__name-button svg {
+.profile-hero__name-icon {
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
-    opacity: 0.6;
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth);
 }
+
+.profile-hero__name-button:hover .profile-hero__name-icon { color: var(--color-fg); }
 
 .profile-hero__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-1_5);
+    gap: var(--space-2);
+    margin: 0;
 }
 
-.profile-hero__email,
-.profile-hero__id {
-    color: var(--color-muted);
+.profile-hero__meta a.badge { text-decoration: none; }
+
+.profile-hero__status {
     font-size: var(--text-xs);
-}
-
-.profile-hero__email {
-    max-width: min(100%, 18rem);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.profile-hero__id {
-    font-family: var(--font-display);
-}
-
-.profile-hero__hint {
-    margin: var(--space-0_5) 0 0;
-    max-width: 32rem;
-    font-size: var(--text-xs);
-    line-height: 1.5;
     color: var(--color-muted);
 }
 
-.profile-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-raised);
-    padding: var(--space-1) var(--space-2);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
-    color: var(--color-muted);
-    white-space: nowrap;
-}
-
-/* The section's current value ("Light", "Português"). It repeats what the
-   control below already shows, so it stays quiet: foreground ink on the same
-   fill, never the view's accent. */
-.profile-pill--accent {
-    color: var(--color-fg);
-}
-
-.profile-hero__side {
-    display: grid;
-    gap: var(--space-2_5);
-}
-
-.profile-streak-card,
-.profile-overview-stat {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-}
-
-.profile-streak-card {
-    padding: var(--space-3) var(--space-3_5);
-}
-
-.profile-streak-card__value-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2_5);
-    margin-top: var(--space-1_5);
-}
-
-.profile-streak-card__value {
-    margin: var(--space-2) 0 0;
-    font-size: var(--text-2xl);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.05em;
-    line-height: 0.95;
-    color: var(--color-fg);
-}
-
-.profile-streak-card__value span {
-    margin-left: var(--space-0_5);
-    font-size: var(--text-base);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-}
-
-.profile-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-2_5);
-}
-
-.profile-overview-stat {
-    padding: var(--space-3);
-    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
-}
-
-.profile-overview-stat:nth-child(1) { animation-delay: 30ms; }
-.profile-overview-stat:nth-child(2) { animation-delay: 75ms; }
-
-.profile-overview-stat__top {
+.profile-name-editor {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    max-width: 24rem;
 }
 
-.profile-overview-stat__icon {
+.profile-name-input { flex: 1; min-width: 0; }
+
+/* Three figures in a row, under a hairline — figures, not three more boxes. */
+.profile-stats {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding-top: var(--space-5);
+    box-shadow: inset 0 1px 0 var(--color-border);
+}
+
+.profile-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.profile-stat + .profile-stat {
+    padding-left: var(--space-4);
+    box-shadow: inset 1px 0 0 var(--color-border);
+}
+
+.profile-stat dt {
     display: inline-flex;
-    width: 1.85rem;
-    height: 1.85rem;
     align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 50%;
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+    gap: var(--space-1_5);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.profile-overview-stat__value {
-    margin: var(--space-2) 0 0;
+.profile-stat__icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+}
+
+.profile-stat dd {
+    margin: 0;
+    font-family: var(--font-display);
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
-    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
     color: var(--color-fg);
 }
 
-.profile-overview-stat__hint {
-    margin: var(--space-0_5) 0 0;
+.profile-stat dd.profile-stat__note {
+    font-family: var(--font-body);
     font-size: var(--text-2xs);
+    font-weight: var(--weight-regular);
     color: var(--color-muted);
 }
 
-.profile-layout {
-    display: grid;
-    gap: var(--space-3);
-    margin-top: var(--space-3_5);
+.profile-stat__unit {
+    margin-left: var(--space-0_5);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
 }
 
-.profile-layout__column {
+.profile-hero__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* ---- Tabs and sections -------------------------------------------------------- */
+
+.profile-tabs { margin-top: var(--space-8); }
+
+.profile-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-10);
+    margin-top: var(--space-6);
 }
 
-.profile-card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    padding: var(--space-3_5);
-    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
-}
+.profile-panel > .section + .section { margin-top: 0; }
 
-.profile-card__header {
+.profile-section__head {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-3);
-    margin-bottom: var(--space-3);
+    flex-direction: column;
+    gap: var(--space-1);
 }
 
-.profile-card__header-main {
-    display: flex;
-    min-width: 0;
-    gap: var(--space-2_5);
-}
-
-.profile-card__icon {
-    display: inline-flex;
-    width: 2rem;
-    height: 2rem;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-md);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-}
-
-.profile-card__heading {
-    min-width: 0;
-}
-
-.profile-card__title {
+.profile-section__desc {
     margin: 0;
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
+    max-width: 40rem;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--color-muted);
 }
 
-.profile-card__subtitle,
-.profile-support-copy {
-    margin: var(--space-1) 0 0;
+.card.profile-section__body {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-1) var(--space-5);
+}
+
+/* Rows in a section separate with a hairline between them — never after the
+   last one. Covers `.profile-row` and `.switch--row` alike. */
+.profile-section__body > * + * {
+    box-shadow: inset 0 1px 0 var(--color-border);
+}
+
+.profile-section__body > .profile-badges { padding-block: var(--space-3); }
+
+.profile-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-link:hover { color: var(--color-fg); }
+.profile-link svg { width: 1rem; height: 1rem; }
+
+.profile-note {
+    margin: 0;
+    padding-block: var(--space-3);
     font-size: var(--text-xs);
     line-height: 1.5;
     color: var(--color-muted);
 }
 
-.profile-theme-groups {
+/* ---- A settings row ------------------------------------------------------------ */
+
+.profile-row {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-3_5);
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 3.5rem;
+    padding-block: var(--space-3);
 }
 
-/* Sentence case — a group heading, not a klaxon. See the design-system skill. */
-.profile-theme-group__label {
+.profile-row__text {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.profile-row__label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-fg);
+}
+
+.profile-row__label--icon {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1_5);
-    margin: 0 0 var(--space-2);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    letter-spacing: 0;
+}
+
+.profile-row__label--icon svg { color: var(--color-muted); }
+
+.profile-row__desc {
+    font-size: var(--text-xs);
+    line-height: 1.45;
     color: var(--color-muted);
 }
+
+.profile-row__value {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+    color: var(--color-fg-secondary);
+}
+
+.profile-row__value--mono { font-family: var(--font-mono); }
+
+.profile-row__control {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+}
+
+/* A row's buttons are filled, never outlined: an outline inside the section's
+   card is a box in a box. On a touch screen each one reaches a full 44px tap
+   area without growing (the `.touch-target` arithmetic, applied here once). */
+@media (pointer: coarse) {
+    .profile-row__control > .btn { position: relative; }
+    .profile-row__control > .btn::after {
+        content: '';
+        position: absolute;
+        inset: calc(-1 * var(--space-2)) calc(-1 * var(--space-1));
+    }
+}
+
+/* A row whose control needs the width: label above, control under it. */
+.profile-row--stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+}
+
+.profile-row--danger .profile-row__label { color: var(--color-danger); }
+
+/* The partner / trainer picture in its row; it opens the same picker. */
+.profile-thumb {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-thumb:hover { background: var(--color-surface-hover); }
+
+.profile-thumb__sprite {
+    width: 2.25rem;
+    height: 2.25rem;
+    object-fit: contain;
+}
+
+.profile-thumb__empty {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    color: var(--color-muted);
+}
+
+.profile-avatar-choice .segmented__item { gap: var(--space-1_5); }
+
+.profile-avatar-choice img {
+    width: 1.25rem;
+    height: 1.25rem;
+    object-fit: contain;
+}
+
+/* ---- Themes ------------------------------------------------------------------- */
+
+.profile-theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+    gap: var(--space-2);
+}
+
+/* A swatch, the name, one line about it. The transparent border keeps every
+   card the size of a locked (dashed) one. */
+.profile-theme-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2_5);
+    min-width: 0;
+    padding: var(--space-2_5) var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-theme-card:hover { background: var(--color-surface-hover); }
+
+/* A ring, not a border: a border would resize the card when the choice moves. */
+.profile-theme-card.is-selected,
+.profile-theme-card.is-selected:hover {
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-raised));
+    box-shadow: var(--ring-primary);
+}
+
+/* A reward theme not earned yet: dashed, because dashed means "not there yet". */
+.profile-theme-card.is-locked {
+    border-color: var(--color-border-strong);
+    border-style: dashed;
+    background: transparent;
+}
+
+.profile-theme-card.is-locked .profile-theme-card__label { color: var(--color-muted); }
+
+.profile-theme-card__swatch {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--profile-theme-swatch);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-fg) 12%, transparent);
+}
+
+.profile-theme-card__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.profile-theme-card__label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+}
+
+.profile-theme-card__hint {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.profile-theme-card__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--color-muted);
+}
+
+.profile-theme-card.is-selected .profile-theme-card__icon { color: var(--color-primary); }
 
 /* The page-sized stepper: a full control height rather than the popover's
    1.5rem, since here it is a setting of its own and a thumb's target. */
@@ -403,1127 +501,28 @@
     height: var(--control-h-md);
 }
 
-.profile-theme-group__label--dark {
-    color: color-mix(in srgb, var(--color-fg) 75%, var(--color-primary));
-}
-
-.profile-theme-group__label--light {
-    color: var(--color-accent);
-}
-
-.profile-theme-group__icon {
-    display: inline-flex;
-}
-
-.profile-theme-grid {
-    display: grid;
-    gap: var(--space-2);
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.profile-theme-card {
-    text-align: left;
-    /* Fill only: the section card around the grid owns the one line. The
-       transparent border keeps the box model steady for the selected ring. */
-    border: 1px solid transparent;
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    padding: var(--space-3);
-    color: var(--color-fg);
-    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
-}
-
-.profile-theme-card:nth-child(1) { animation-delay: 0ms; }
-.profile-theme-card:nth-child(2) { animation-delay: 30ms; }
-.profile-theme-card:nth-child(3) { animation-delay: 60ms; }
-.profile-theme-card:nth-child(4) { animation-delay: 90ms; }
-.profile-theme-card:nth-child(5) { animation-delay: 120ms; }
-.profile-theme-card:nth-child(6) { animation-delay: 150ms; }
-
-/* A ring, not a dashed border — dashed means "empty / locked" in this app,
-   and the chosen theme is the opposite of empty. */
-.profile-theme-card.is-selected {
-    background: var(--color-primary-soft);
-    box-shadow: var(--ring-primary);
-}
-
-/* A reward theme not earned yet (rewards, 2026-10-17): dashed, because
-   dashed means "locked" here, and no fill so it reads as not-yet-yours. */
-.profile-theme-card.is-locked {
-    border-style: dashed;
-    border-color: var(--color-border-strong);
-    background: transparent;
-}
-
-.profile-theme-card.is-locked .profile-theme-card__label { color: var(--color-muted); }
-
-.profile-hero__title { display: block; margin-top: var(--space-0_5); }
-
-.profile-theme-card__header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.profile-theme-card__swatch {
-    width: 0.875rem;
-    height: 0.875rem;
-    flex-shrink: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-    background: var(--profile-theme-swatch);
-}
-
-.profile-theme-card__label {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-}
-
-.profile-theme-card__icon {
-    display: inline-flex;
-    margin-left: auto;
-    color: var(--color-muted);
-}
-
-.profile-theme-card.is-selected .profile-theme-card__icon {
-    color: var(--color-primary);
-}
-
-.profile-theme-card__hint {
-    margin: var(--space-1_5) 0 0;
-    font-size: var(--text-2xs);
-    line-height: 1.45;
-    color: var(--color-muted);
-}
-
-.profile-account-block,
-.profile-sync-list,
-.profile-avatar-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2);
-}
-
-.profile-account-row,
-.profile-sync-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2_5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    padding: var(--space-2_5) var(--space-3);
-}
-
-.profile-account-row__value,
-.profile-sync-row__value {
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-}
-
-.profile-account-row__value {
-    margin: var(--space-0_5) 0 0;
-    max-width: 16rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.profile-button-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-}
-
-/* Password and deletion: a full-width row under the account details, so the
-   two-column grid above keeps its pairs. */
-.profile-account-actions {
-    grid-column: 1 / -1;
-}
-
-.profile-account-actions .profile-button {
-    flex: 1 1 0;
-}
-
-.profile-button-row--tight {
-    margin-top: var(--space-2_5);
-}
-
-.profile-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1_5);
-    min-height: 2.35rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-}
-
-.profile-button--primary {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-}
-
-.profile-button--danger {
-    color: var(--color-danger);
-}
-
-.profile-button--block {
-    width: 100%;
-}
-
-.profile-avatar-pair {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-2);
-}
-
-.profile-avatar-card {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    min-width: 0;
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-}
-
-/* The preview is the control too: it opens the same picker as the button. */
-.profile-avatar-preview {
-    display: inline-flex;
-    width: 4rem;
-    height: 4rem;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth);
-}
-
-.profile-avatar-preview:hover {
-    background: var(--color-surface-hover);
-}
-
-.profile-avatar-preview:focus-visible {
-    outline: none;
-    box-shadow: var(--ring-primary);
-}
-
-.profile-avatar-preview__sprite {
-    width: 3.5rem;
-    height: 3.5rem;
-    object-fit: contain;
-}
-
-.profile-avatar-card .profile-avatar-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1_5);
-    min-width: 0;
-}
-
-.profile-avatar-actions__label {
-    margin: 0;
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-}
-
-.profile-avatar-actions__buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1_5);
-}
-
-.profile-avatar-actions__buttons .profile-button {
-    min-height: var(--control-h-sm);
-    padding: var(--space-1) var(--space-2_5);
-}
-
-.profile-avatar-preview__fallback {
-    font-size: var(--text-2xl);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-}
-
-.profile-name-editor {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    max-width: 32rem;
-}
-
-.profile-name-input {
-    width: 100%;
-    min-width: 0;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-}
-
-.profile-avatar-button:focus-visible,
-.profile-hero__name-button:focus-visible,
-.profile-button:focus-visible,
-.profile-theme-card:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-}
-
-.profile-name-input:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
-    border-color: var(--color-primary);
-}
-
-/* Badges & Achievements Section - Clean Aesthetic Design */
-.profile-card--fullwidth {
-    grid-column: 1 / -1;
-    margin-top: var(--space-4);
-}
-
-.profile-badges-filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-1_5);
-    margin-bottom: var(--space-4);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-}
-
-.profile-badges-filter-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    padding: var(--space-1_5) var(--space-3);
-    border-radius: var(--radius-full, 9999px);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-muted);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-    cursor: pointer;
-}
-
-.profile-badges-filter-chip:hover {
-    color: var(--color-fg);
-    border-color: var(--color-border-hover);
-    background: var(--color-surface-raised);
-}
-
-.profile-badges-filter-chip.is-active {
-    color: var(--color-primary);
-    border-color: var(--color-primary-border, var(--color-primary));
-    background: var(--color-primary-soft);
-}
-
-.profile-badges-filter-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-0_5) var(--space-1_5);
-    border-radius: var(--radius-full);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    background: var(--color-surface-raised);
-    color: inherit;
-}
-
-.profile-badges-grid {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: var(--space-3_5);
-}
-
-@media (min-width: 640px) {
-    .profile-badges-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1024px) {
-    .profile-badges-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1440px) {
-    .profile-badges-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1680px) {
-    .profile-badges-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-}
-
-.profile-badge-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: var(--space-2);
-    /* Borderless fill — these sit inside an already-bordered panel, and each
-       badge used to draw three boxes (card, icon wrap, locked pill). The only
-       line left in a badge is the dashed one that actually means "locked".
-       `backdrop-filter` was pointless behind an opaque background and costly to
-       composite; `transition: all` animated layout properties too. */
-    border: none;
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    padding: var(--space-3) var(--space-3_5);
-    position: relative;
-    overflow: hidden;
-    transition: background-color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
-}
-
-.profile-badge-card:hover {
-    background: var(--color-surface-hover);
-}
-
-/* Equipped: tinted fill + inset ring. The old glow used `--color-primary-rgb`,
-   which is defined nowhere — so it always fell back to a hardcoded indigo and
-   was the wrong colour in every theme. */
-.profile-badge-card.is-equipped {
-    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-raised));
-    box-shadow: inset 0 0 0 1px var(--color-primary);
-}
-
-.profile-badge-card.is-locked {
-    background: color-mix(in srgb, var(--color-surface) 85%, transparent);
-    opacity: 0.7;
-}
-
-.profile-badge-card.is-locked:hover {
-    opacity: 0.95;
-}
-
-.profile-badge-card__top {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-}
-
-.profile-badge-card__icon-wrap {
-    width: 2.85rem;
-    height: 2.85rem;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    border: none;
-    padding: var(--space-1);
-    position: relative;
-    transition: transform var(--duration-fast) var(--ease-smooth);
-}
-
-.profile-badge-card:hover .profile-badge-card__icon-wrap {
-    transform: scale(1.06);
-}
-
-.profile-badge-card.is-locked .profile-badge-card__icon-wrap {
-    filter: grayscale(0.85) opacity(0.45);
-}
-
-.profile-badge-card__info {
-    min-width: 0;
-    flex: 1;
-}
-
-.profile-badge-card__title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-1_5);
-    margin-bottom: var(--space-0_5);
-}
-
-.profile-badge-card__name {
-    margin: 0;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
-    color: var(--color-fg);
-    line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.profile-badge-tag-equipped {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-0_5) var(--space-1_5);
-    border-radius: var(--radius-full);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-    border: 1px solid var(--color-primary-border, var(--color-primary));
-    flex-shrink: 0;
-}
-
-.profile-badge-card__req {
-    margin: 0;
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-primary);
-    line-height: 1.25;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.profile-badge-progress-wrap {
-    margin: var(--space-0_5) 0;
-}
-
-.profile-badge-progress-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-    margin-bottom: var(--space-1);
-    letter-spacing: 0.03em;
-}
-
-.profile-badge-progress-track {
-    width: 100%;
-    height: 3px;
-    border-radius: var(--radius-full);
-    background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-    overflow: hidden;
-}
-
-.profile-badge-progress-fill {
-    height: 100%;
-    border-radius: var(--radius-full);
-    background: var(--color-primary);
-    transition: width var(--duration-slow) var(--ease-smooth);
-}
-
-.profile-badge-progress-fill.is-complete {
-    background: #22c55e;
-}
-
-.profile-badge-card__action {
-    margin-top: auto;
-}
-
-.profile-badge-btn {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1_5);
-    padding: var(--space-1_5) var(--space-2_5);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-    cursor: pointer;
-}
-
-.profile-badge-btn--equip {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    color: var(--color-fg);
-}
-
-.profile-badge-btn--equip:hover {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-on-primary);
-}
-
-.profile-badge-btn--equipped {
-    background: var(--color-primary-soft);
-    border: 1px solid var(--color-primary-border, var(--color-primary));
-    color: var(--color-primary);
-}
-
-.profile-badge-btn--equipped:hover {
-    background: color-mix(in srgb, var(--color-primary-soft) 80%, var(--color-surface));
-    border-color: var(--color-primary);
-}
-
-.profile-badge-locked-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1);
-    padding: var(--space-1_5);
-    border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--color-surface) 60%, transparent);
-    /* The one line kept in a badge — dashed here genuinely means "locked". */
-    border: 1px dashed var(--color-border);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-}
-
-
-@media (min-width: 640px) {
-    .profile-theme-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-/* Desktop (2026-10-06): the page used to scroll three screens. The hero is
-   one band — who you are at the left, the three figures in a row at the
-   right — and the settings run in three columns, each card where its
-   neighbours make sense: how it looks, who you are, how it reaches you. */
-@media (min-width: 1024px) {
-    .profile-hero {
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: var(--space-6);
-        padding: var(--space-4) var(--space-5);
-    }
-
-    .profile-avatar-button {
-        width: 4.5rem;
-        height: 4.5rem;
-    }
-
-    .profile-avatar-button__sprite {
-        width: 3.75rem;
-        height: 3.75rem;
-    }
-
-    .profile-hero__side {
-        grid-template-columns: repeat(3, minmax(9rem, 1fr));
-        gap: var(--space-2);
-    }
-
-    .profile-overview-grid {
-        display: contents;
-    }
-
-    .profile-streak-card,
-    .profile-overview-stat {
-        padding: var(--space-3);
-    }
-
-    .profile-streak-card__value,
-    .profile-overview-stat__value {
-        margin-top: var(--space-2);
-        font-size: var(--text-xl);
-    }
-
-    .profile-layout {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        align-items: start;
-    }
-
-    /* Two columns: the third column's cards share a row under them. */
-    .profile-layout__column:nth-child(3) {
-        grid-column: 1 / -1;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        align-items: start;
-    }
-}
-
-/* Three columns from 1440, not 1280 (2026-10-09). A 1280–1366 monitor less
-   the rail left each column ~300px, and the theme names ran out
-   ("Eclip…", "Mid…") — two columns are what a medium screen actually fits. */
-@media (min-width: 1440px) {
-    .profile-theme-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .profile-layout {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .profile-layout__column:nth-child(3) {
-        grid-column: auto;
-        display: flex;
-    }
-
-    /* A third of the page is narrow for a 3-line theme card: the hint and the
-       mode glyph go — the group label above already says dark or light. */
-    .profile-theme-card {
-        padding: var(--space-2_5);
-    }
-
-    .profile-theme-card__hint,
-    .profile-theme-card__icon {
-        display: none;
-    }
-
-    .profile-theme-card__label {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* One face per row: preview, then its name over its buttons. Side by side
-       left each button a third of a column and wrapped its label. */
-    .profile-avatar-pair {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    /* Sync rows: the label over its state, so a two-word label is not split
-       across three lines beside it. */
-    .profile-sync-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-0_5);
-        padding: var(--space-2) var(--space-2_5);
-    }
-}
-
-@media (max-width: 767px) {
-    .profile-view {
-        padding-bottom: var(--space-6);
-    }
-
-    .profile-hero {
-        padding: var(--space-3_5);
-        gap: var(--space-3);
-    }
-
-    /* Trim the technical uid on phones — it's noise on a compact profile card. */
-    .profile-hero__id {
-        display: none;
-    }
-
-    .profile-avatar-button {
-        width: 4.5rem;
-        height: 4.5rem;
-    }
-
-    .profile-avatar-button__sprite {
-        width: 3.75rem;
-        height: 3.75rem;
-    }
-
-    /* Streak + Teams + Favorites share a single compact row.
-       `display: contents` lifts the two overview stats out of their own
-       grid so all three tiles become direct columns of __side. */
-    .profile-hero__side {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--space-2);
-        align-items: stretch;
-    }
-
-    .profile-overview-grid {
-        display: contents;
-    }
-
-    .profile-streak-card,
-    .profile-overview-stat {
-        padding: var(--space-2_5) var(--space-2);
-    }
-
-    .profile-streak-card__value-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-1);
-        margin-top: var(--space-1);
-    }
-
-    .profile-streak-card__value {
-        font-size: var(--text-xl);
-    }
-
-    .profile-streak-card .profile-pill {
-        padding: var(--space-0_5) var(--space-1_5);
-        font-size: var(--text-2xs);
-        letter-spacing: 0.03em;
-    }
-
-    .profile-overview-stat__icon {
-        width: 1.6rem;
-        height: 1.6rem;
-    }
-
-    .profile-overview-stat__value {
-        margin-top: var(--space-1_5);
-        font-size: var(--text-xl);
-    }
-
-    .profile-overview-stat__hint {
-        display: none;
-    }
-
-    .profile-avatar-card,
-    .profile-name-editor,
-    .profile-account-row,
-    .profile-sync-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .profile-avatar-actions,
-    .profile-button,
-    .profile-button--block {
-        width: 100%;
-    }
-}
-/* ============================================================
-   PHONES — who you are, three figures, then settings as sections (< lg)
-   The page was 4,900px of boxes: a bordered hero holding three bordered
-   stat tiles with icon bubbles, then eight bordered cards each opening
-   with an icon bubble and a pill restating the choice made inside it.
-   ============================================================ */
-@media (max-width: 1023px) {
-    /* The page fades in as a whole (app-shell.css); no entrance per card. */
-    .profile-hero,
-    .profile-card,
-    .profile-overview-stat,
-    .profile-theme-card {
-        animation: none;
-    }
-
-    /* The hero is the page's header, not a box on it. */
-    .profile-hero {
-        gap: var(--space-4);
-        overflow: visible;
-        padding: 0;
-        border: none;
-        border-radius: 0;
-        background: transparent;
-    }
-
-    /* "Perfil de Treinador" over the name, under a header that says "Perfil". */
-    .profile-hero__eyebrow {
-        display: none;
-    }
-
-    /* Three figures: fill-only tiles, the label on top, the value at the
-       bottom — so a label that wraps ("Sequência atual") cannot knock its
-       number out of line with its neighbours'. No icon bubbles: three
-       coloured discs over three numbers were the loudest thing on the page. */
-    .profile-streak-card,
-    .profile-overview-stat {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1_5);
-        padding: var(--space-3);
-        border: none;
-        background: var(--color-surface);
-    }
-
-    .profile-overview-stat__icon {
-        display: none;
-    }
-
-    .profile-overview-stat__label {
-        font-size: var(--text-xs);
-        line-height: 1.3;
-        color: var(--color-muted);
-    }
-
-    .profile-streak-card__value,
-    .profile-overview-stat__value {
-        margin: auto 0 0;
-        font-family: var(--font-display);
-        font-size: var(--text-xl);
-        font-weight: var(--weight-semibold);
-        letter-spacing: -0.04em;
-        line-height: 1;
-    }
-
-    /* Settings: a heading and its controls, one section after another. */
-    .profile-layout {
-        gap: var(--space-8);
-        margin-top: var(--space-8);
-    }
-
-    .profile-layout__column {
-        gap: var(--space-8);
-    }
-
-    .profile-card {
-        padding: 0;
-        border: none;
-        border-radius: 0;
-        background: transparent;
-    }
-
-    .profile-card__icon,
-    .profile-card__meta {
-        display: none;
-    }
-
-    /* Except where the pill is information, not an echo: badge progress. */
-    .profile-card--badges .profile-card__meta {
-        display: flex;
-    }
-
-    .profile-card__title {
-        font-family: var(--font-display);
-        font-size: var(--text-md);
-        font-weight: var(--weight-semibold);
-        letter-spacing: -0.03em;
-    }
-
-    /* On the page now, so the controls inside take the surface fill — raised
-       on the page is #f6f6f7 on #f2f2f3 on the light themes, i.e. nothing. */
-    .profile-avatar-button,
-    .profile-avatar-card,
-    .profile-sync-row,
-    .profile-button:not(.profile-button--primary):not(.profile-button--danger),
-    .profile-badge-card:not(.is-equipped) {
-        background: var(--color-surface);
-    }
-
-    .profile-badge-card.is-equipped {
-        background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-    }
-
-    /* Six themes as swatches, three across: a 3-line card each (six rows of
-       page) to choose one of six colours. The hint and mode glyph go; the
-       group label above already says dark or light. */
-    .profile-theme-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--space-2);
-    }
-
-    .profile-theme-card {
-        padding: var(--space-3) var(--space-2_5);
-        background: var(--color-surface);
-    }
-
-    .profile-theme-card.is-selected {
-        background: var(--color-primary-soft);
-    }
-
-    .profile-theme-card__icon,
-    .profile-theme-card__hint {
-        display: none;
-    }
-
-    .profile-theme-card__header {
-        gap: var(--space-2);
-    }
-
-    .profile-theme-card__label {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* Avatar choices: the preview and its action on one row, not an 80px "?"
-       stacked over a half-width button. Choosing an avatar is a secondary
-       action — two filled primaries here plus "Criar conta" below spent the
-       page's one accent three times. */
-    .profile-avatar-card {
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .profile-avatar-pair {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .profile-avatar-preview {
-        width: 3.5rem;
-        height: 3.5rem;
-        background: var(--color-surface-raised);
-    }
-
-    .profile-avatar-actions {
-        flex: 1 1 auto;
-        width: auto;
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .profile-card--avatar .profile-button--primary {
-        border-color: var(--color-border-strong);
-        background: var(--color-surface);
-        color: var(--color-fg);
-    }
-
-    /* Badges: a wall of small tiles — icon, name, progress — not a column of
-       full cards. With 20+ badges the card list ran ~12 screens; the
-       requirement copy and the "Equip" pill were what made each card tall.
-       The requirement stays on the desktop card; here the progress bar says
-       how close a badge is. The whole tile is the control: the equip button
-       is stretched over it, invisible, so a tap anywhere equips/unequips, and
-       the equipped tile is the one with the ring and the check. */
-    .profile-badges-grid {
-        grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
-        gap: var(--space-2);
-    }
-
-    .profile-badge-card {
-        align-items: center;
-        justify-content: flex-start;
-        gap: var(--space-2);
-        padding: var(--space-3) var(--space-2) var(--space-2_5);
-        text-align: center;
-    }
-
-    .profile-badge-card__top {
-        flex-direction: column;
-        gap: var(--space-2);
-        width: 100%;
-    }
-
-    .profile-badge-card__icon-wrap {
-        width: 2.75rem;
-        height: 2.75rem;
-        background: var(--color-surface-raised);
-    }
-
-    .profile-badge-card:hover .profile-badge-card__icon-wrap {
-        transform: none;
-    }
-
-    .profile-badge-card__info {
-        width: 100%;
-    }
-
-    .profile-badge-card__title-row {
-        justify-content: center;
-        margin-bottom: 0;
-    }
-
-    .profile-badge-card__name {
-        font-size: var(--text-2xs);
-        line-height: 1.25;
-        white-space: normal;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        min-height: 2.5em;
-    }
-
-    .profile-badge-card__req,
-    .profile-badge-progress-info {
-        display: none;
-    }
-
-    /* The "Equipado" pill becomes a check in the tile's corner. */
-    .profile-badge-tag-equipped {
-        position: absolute;
-        top: var(--space-1_5);
-        right: var(--space-1_5);
-        padding: var(--space-0_5);
-        border: none;
-        background: var(--color-primary);
-        color: var(--color-on-primary);
-    }
-
-    .profile-badge-tag-equipped > span {
-        display: none;
-    }
-
-    .profile-badge-progress-wrap {
-        width: 100%;
-        margin: 0;
-        margin-top: auto;
-    }
-
-    .profile-badge-card__action {
-        margin: 0;
-    }
-
-    .profile-badge-card.is-locked .profile-badge-card__action {
-        display: none;
-    }
-
-    .profile-badge-btn,
-    .profile-badge-btn--equip,
-    .profile-badge-btn--equipped,
-    .profile-badge-btn--equip:hover,
-    .profile-badge-btn--equipped:hover {
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        width: auto;
-        padding: 0;
-        border: none;
-        border-radius: inherit;
-        background: transparent;
-        color: transparent;
-        font-size: 0;
-    }
-
-    .profile-badge-btn > * {
-        display: none;
-    }
-
-    .profile-badge-btn:focus-visible {
-        outline: none;
-        box-shadow: var(--ring-primary);
-    }
-
-    .profile-badge-card:has(.profile-badge-btn:active) {
-        background: var(--color-surface-active);
-    }
-
-    /* The account pitch ran six lines deep in half the width beside its two
-       buttons. Copy first, full width; the buttons under it. */
-    .profile-account-block {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-/* ---- Search shortcut ------------------------------------------------------
+/* ---- Search shortcut -----------------------------------------------------------
    The keys are the control: click them, press the new chord. Recording swaps
    the chip for a primary-ringed prompt so the state is unmistakable. Phones
-   with no keyboard have nothing to configure, so the card stays out of the way. */
-.profile-shortcut__hint {
-    margin: var(--space-0_5) 0 0;
-    font-size: var(--text-xs);
-    line-height: 1.4;
-    color: var(--color-muted);
-}
+   with no keyboard have nothing to configure, so the section stays away. */
+.profile-shortcut__hint { display: block; }
 
-.profile-shortcut__hint[role='alert'] {
-    color: var(--color-danger);
-}
+.profile-shortcut__hint[role='alert'] { color: var(--color-danger); }
 
 .profile-shortcut__keys {
-    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 2.35rem;
     min-width: 5.5rem;
-    border: 1px solid var(--color-border);
+    height: var(--control-h-md);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
     background: var(--color-surface);
-    padding: var(--space-1_5) var(--space-3);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);
+    cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
 }
 
@@ -1534,15 +533,7 @@
     color: var(--color-fg);
 }
 
-.profile-shortcut__keys:hover {
-    border-color: var(--color-border-hover);
-    background: var(--color-surface-hover);
-}
-
-.profile-shortcut__keys:focus-visible {
-    outline: none;
-    box-shadow: var(--ring-primary);
-}
+.profile-shortcut__keys:hover { background: var(--color-surface-hover); }
 
 .profile-shortcut__keys.is-recording {
     border-color: var(--color-primary);
@@ -1551,48 +542,39 @@
 }
 
 @media (hover: none) and (pointer: coarse) {
-    .profile-card--shortcut {
-        display: none;
+    .profile-section--shortcut { display: none; }
+}
+
+/* ---- Phones (< 1024px): the page is the panel ------------------------------------ */
+
+@media (max-width: 1023px) {
+    .profile-hero,
+    .card.profile-section__body {
+        border-color: transparent;
     }
+
+    .profile-hero {
+        gap: var(--space-4);
+        padding: var(--space-5) var(--space-4);
+    }
+
+    .card.profile-section__body { padding-inline: var(--space-4); }
+
+    .profile-tabs { margin-top: var(--space-6); }
+
+    .profile-panel { gap: var(--space-8); }
 }
 
-/* ---- Tabs (2026-10-14) -------------------------------------------------------
-   One tab's cards at a time. Every card kept its column; the columns a tab
-   leaves empty collapse, and the rest share the row evenly (auto-fit), so a
-   tab with two columns reads as two halves and one with a single card runs
-   full width. Compound selectors: the column-count rules above are
-   breakpoint-scoped `.profile-layout` rules this must beat. */
-.profile-tabs {
-    margin-top: var(--space-4);
-}
-
-.profile-layout.profile-layout--tabbed {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-    align-items: start;
-}
-
-.profile-layout--tabbed .profile-layout__column:empty {
-    display: none;
-}
-
-.profile-layout.profile-layout--tabbed .profile-layout__column:nth-child(3):not(:empty) {
-    grid-column: auto;
-    display: flex;
-}
-
-/* Account: sync and the account card both live in the third column — side by
-   side, as the two halves of the tab. */
-.profile-layout.profile-layout--tab-account .profile-layout__column:nth-child(3):not(:empty) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-    align-items: start;
-}
-
-.profile-layout--tabbed .profile-card--fullwidth {
-    margin-top: 0;
-}
-
-/* Trainer: the avatar pair runs the full row above the badge wall. */
-.profile-layout.profile-layout--tab-trainer .profile-layout__column:not(:empty) {
-    grid-column: 1 / -1;
+@media (max-width: 640px) {
+    .profile-avatar-button { width: 4rem; height: 4rem; }
+    .profile-avatar-button__sprite { width: 3.25rem; height: 3.25rem; }
+    .profile-hero__name { font-size: var(--text-xl); }
+    .profile-stats { padding-top: var(--space-4); }
+    .profile-stat + .profile-stat { padding-left: var(--space-3); }
+    .profile-stat dd { font-size: var(--text-lg); }
+    .profile-hero__actions .btn { flex: 1 1 0; }
+    .profile-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* Half a phone cuts every hint to three words and an ellipsis; the name,
+       the swatch and the lock say enough. */
+    .profile-theme-card__hint { display: none; }
 }
