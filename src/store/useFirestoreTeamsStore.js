@@ -29,6 +29,79 @@ export const useFirestoreTeamsStore = create((set, get) => {
         teamsUnsubscribe = null;
         favoritesUnsubscribe = null;
         boundUserId = null;
+        if (stopWaitingForAuth) stopWaitingForAuth();
+        stopWaitingForAuth = null;
+    };
+
+    // A Firestore listener that errors is dead for good. `permission-denied`
+    // while auth has not answered yet means it ran ahead of Firebase — on the
+    // uid cached from the last visit (useAuthStore's boot snapshot) before the
+    // session was restored, or a token still in flight. That is not "your
+    // teams failed to load": wait for auth to settle and try once more. A uid
+    // that changed is the hook's job (it re-binds on userId), so only the same
+    // uid is retried here.
+    let retriedAfterAuth = false;
+    let stopWaitingForAuth = null;
+
+    const retryWhenAuthSettles = (uid) => {
+        if (stopWaitingForAuth) return;
+        const attempt = (auth) => {
+            if (!auth.isAuthReconciled) return false;
+            if (stopWaitingForAuth) stopWaitingForAuth();
+            stopWaitingForAuth = null;
+            if (boundUserId === uid && auth.userId === uid) {
+                unbind();
+                bind(uid);
+            }
+            return true;
+        };
+        if (attempt(useAuthStore.getState())) return;
+        stopWaitingForAuth = useAuthStore.subscribe((auth) => { attempt(auth); });
+    };
+
+    const reportTeamsError = (error, uid) => {
+        console.error("Error listening to saved teams:", error);
+        const authSettled = useAuthStore.getState().isAuthReconciled;
+        if (error?.code === 'permission-denied' && !retriedAfterAuth) {
+            retriedAfterAuth = true;
+            if (!authSettled) {
+                retryWhenAuthSettles(uid);
+                return;
+            }
+        }
+        // A first visit has no saved teams to lose, and the landing is its
+        // first impression: the failure stays in the console.
+        if (!useLandingStore.getState().isOpen) toast.error(t('toast.teamsFetchError'));
+    };
+
+    const bind = (userId) => {
+        boundUserId = userId;
+
+        // 1. Listen to saved teams
+        const teamsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/teams`);
+        const q = query(teamsCollectionRef, orderBy('updatedAt', 'desc'));
+
+        teamsUnsubscribe = onSnapshot(q, (querySnapshot) => {
+            retriedAfterAuth = false;   // answered: a later account gets its own retry
+            const teamsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            set({ savedTeams: teamsData });
+        }, (error) => reportTeamsError(error, userId));
+
+        // 2. Listen to favorite pokemons
+        const favoritesDocRef = doc(db, `artifacts/${appId}/users/${userId}/favorites`, 'pokemons');
+        favoritesUnsubscribe = onSnapshot(favoritesDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Normalize to numbers: ids may have been persisted as strings
+                // (e.g. added from the /pokemon/:idOrName route param), which
+                // would break Set.has() comparisons against numeric pokemon.id.
+                set({ favoritePokemons: new Set((data.ids || []).map(Number)) });
+            } else {
+                set({ favoritePokemons: new Set() });
+            }
+        }, (error) => {
+            console.error("Error listening to favorite pokemons:", error);
+        });
     };
 
     // Names claimed by a duplication that is still in flight. `savedTeams` only
@@ -71,40 +144,7 @@ export const useFirestoreTeamsStore = create((set, get) => {
             // Already listening for this account — another consumer just joined.
             if (boundUserId === userId && teamsUnsubscribe) return;
             unbind();
-            boundUserId = userId;
-
-            // 1. Listen to saved teams
-            const teamsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/teams`);
-            const q = query(teamsCollectionRef, orderBy('updatedAt', 'desc'));
-
-            const unsubTeams = onSnapshot(q, (querySnapshot) => {
-                const teamsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                set({ savedTeams: teamsData });
-            }, (error) => {
-                console.error("Error listening to saved teams:", error);
-                // A first visit has no saved teams to lose, and the landing is
-                // its first impression: the failure stays in the console.
-                if (!useLandingStore.getState().isOpen) toast.error(t('toast.teamsFetchError'));
-            });
-
-            // 2. Listen to favorite pokemons
-            const favoritesDocRef = doc(db, `artifacts/${appId}/users/${userId}/favorites`, 'pokemons');
-            const unsubFavorites = onSnapshot(favoritesDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Normalize to numbers: ids may have been persisted as strings
-                    // (e.g. added from the /pokemon/:idOrName route param), which
-                    // would break Set.has() comparisons against numeric pokemon.id.
-                    set({ favoritePokemons: new Set((data.ids || []).map(Number)) });
-                } else {
-                    set({ favoritePokemons: new Set() });
-                }
-            }, (error) => {
-                console.error("Error listening to favorite pokemons:", error);
-            });
-
-            teamsUnsubscribe = unsubTeams;
-            favoritesUnsubscribe = unsubFavorites;
+            bind(userId);
         },
 
         // Releases *this* consumer's hold. The listeners only come down once the

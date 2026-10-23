@@ -14,7 +14,7 @@ measures first.
   render) waits for `load` and idle time, then imports `firebase/analytics`,
   which `vite.config.js` keeps in its own `firebase-analytics` chunk (≈7 KB gz)
   — in the shared `firebase` chunk it would have cost every visitor.
-- **Crawlers and headless browsers are never counted** (user-agent check). A
+- **Crawlers and headless browsers are never counted** (`utils/crawler.js`, shared with auth, which never signs them up anonymously either). A
   test run in headless Chrome will therefore show no analytics requests; use a
   desktop user agent to see them.
 - `track(name, params)` is safe anywhere: events raised before the module
@@ -31,6 +31,7 @@ measures first.
 | `team_shared` | `shareTeamByData` success | `size` |
 | `shared_team_view` | `SharedTeamView` loaded a team | `team_id`, `size` |
 | `shared_team_import` / `shared_team_build_own` | its two buttons | `team_id` |
+| `reminder_offer_view` / `_accept` / `_dismiss` | the "remind me tomorrow" offer after a daily win (`useReminderOffer`) | `topic`: `puzzle` or `challenge` |
 
 Return visits, sessions and countries are GA4's own (no event needed).
 

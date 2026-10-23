@@ -31,6 +31,7 @@ import { DsTeamPicker } from './ds/DsTeamPicker';
 import { DsVersusLazy } from './ds/DsVersusLazy';
 import { preloadVersus } from './ds/versusChunk';
 import '../../../styles/champion-challenge-ds.css';
+import { ReminderOffer } from '../../ReminderOffer';
 
 const WALKED_KEY = 'ptb:challenge:walked';
 
@@ -218,6 +219,8 @@ export function ChampionChallengeView() {
                 </span>
             )}
             <span className="ds-console__spacer" />
+            {/* After today's win: the moment tomorrow's team is worth a nudge. */}
+            <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />
             {stage !== 'battle' && stage !== 'transition' && !railsOn && (
                 <button
                     type="button"

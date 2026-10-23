@@ -104,3 +104,14 @@ re-enable notifications. Generate once, keep it.
 Without the keys nothing breaks: the app still shows toasts and OS banners while
 it is open, the toggle says so (`battle.notifyForegroundOnly`), and the cron
 answers `skipped`.
+
+## The offer after a win (2026-10-21)
+
+`<ReminderOffer>` (`src/components/ReminderOffer.jsx`, `hooks/useReminderOffer.js`,
+rule in `utils/reminderOffer.js`) asks "want a nudge tomorrow?" once, right after
+a daily win: a row in the PokéPuzzle result card, a chip on the Champion
+Challenge's console bar. It shows only when asking can change something — push
+supported, not an iOS tab that needs installing, permission still `default`,
+notifications off, and the offer never answered (`ptb:reminderOfferSeen`).
+Accepting calls the same `toggle()` as Profile, synchronously from the click.
+

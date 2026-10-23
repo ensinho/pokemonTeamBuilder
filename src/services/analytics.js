@@ -1,4 +1,5 @@
 import { firebaseConfig } from '../constants/firebase';
+import { isCrawler } from '../utils/crawler';
 
 /**
  * Product analytics (2026-10-21): Google Analytics through the Firebase app
@@ -14,7 +15,6 @@ import { firebaseConfig } from '../constants/firebase';
  * names snake_case and stable, GA4 reports are keyed by them.
  */
 
-const BOT = /bot|crawl|spider|slurp|lighthouse|headless|preview|facebookexternalhit|whatsapp|discord/i;
 const QUEUE_LIMIT = 50;
 
 let queue = [];
@@ -23,11 +23,7 @@ let started = false;
 
 const enabled = () => {
     if (typeof window === 'undefined' || !firebaseConfig.measurementId) return false;
-    try {
-        return !BOT.test(navigator.userAgent || '');
-    } catch {
-        return false;
-    }
+    return !isCrawler();
 };
 
 function start() {
