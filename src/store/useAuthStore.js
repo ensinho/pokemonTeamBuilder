@@ -28,6 +28,7 @@ import { deleteUserData } from '../services/accountDeletion';
 import { disablePush } from '../services/pushNotifications';
 import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalizeStreak } from '../utils/dailyCheckin';
 import { useRewardsStore } from './useRewardsStore';
+import { isCrawler } from '../utils/crawler';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -498,6 +499,13 @@ export const useAuthStore = create((set, get) => {
                     // of this browser there is nothing to hydrate, so let the
                     // shell paint now (see isNewVisitor).
                     if (!get().userId) set({ isNewVisitor: true });
+                    // A crawler renders the page but is nobody: no account for
+                    // it (each Googlebot render used to leave one behind). The
+                    // app reads public data without one.
+                    if (isCrawler()) {
+                        set({ isAuthReady: true, isAuthReconciled: true });
+                        return;
+                    }
                     try {
                         const token = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
                         if (token) {

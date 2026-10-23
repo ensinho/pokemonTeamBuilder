@@ -23,6 +23,7 @@ import { Loader } from '../Loader';
 import { DecryptText } from '../DecryptText';
 import { TypeChip } from '../TypeChip';
 import { GameHistoryDialog } from '../GameHistoryDialog';
+import { ReminderOffer } from '../ReminderOffer';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -1483,6 +1484,9 @@ export default function PokePuzzleView() {
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* After a daily win: the one moment "come back tomorrow" is worth asking. */}
+                                    <ReminderOffer topic="puzzle" active={mode === 'daily' && isWon} />
 
                                     <div className="pokepuzzle-result-actions">
                                         {mode === 'daily' ? (

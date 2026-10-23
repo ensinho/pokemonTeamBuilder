@@ -1,5 +1,12 @@
 export const TRANSLATIONS = {
     en: {
+        reminderOffer: {
+            puzzle: 'Want a nudge when tomorrow\'s puzzle is out?',
+            challenge: 'Want a nudge when Cynthia picks tomorrow\'s team?',
+            accept: 'Remind me',
+            dismiss: 'Not now',
+            chip: 'Remind me tomorrow',
+        },
         sharedTeamView: {
             kicker: 'Shared team',
             untitled: 'Untitled team',
@@ -2708,6 +2715,13 @@ export const TRANSLATIONS = {
         }
     },
     pt: {
+        reminderOffer: {
+            puzzle: 'Quer um aviso quando sair o puzzle de amanhã?',
+            challenge: 'Quer um aviso quando a Cynthia montar o time de amanhã?',
+            accept: 'Me avise',
+            dismiss: 'Agora não',
+            chip: 'Avise-me amanhã',
+        },
         sharedTeamView: {
             kicker: 'Time compartilhado',
             untitled: 'Time sem nome',

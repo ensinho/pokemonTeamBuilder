@@ -13,8 +13,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const subscriptions = [];
 
 vi.mock('../services/firebase', () => ({ db: {} }));
+// Mutable so a test can play auth answering late (useAuthStore's boot snapshot
+// hands out a uid before Firebase has confirmed it).
+const authState = { userId: 'trainer-1', isAuthReconciled: true };
+const authListeners = new Set();
+const settleAuth = (patch) => {
+    Object.assign(authState, patch);
+    authListeners.forEach((fn) => fn(authState));
+};
 vi.mock('./useAuthStore', () => ({
-    useAuthStore: { getState: () => ({ userId: 'trainer-1' }) },
+    useAuthStore: {
+        getState: () => authState,
+        subscribe: (fn) => { authListeners.add(fn); return () => authListeners.delete(fn); },
+    },
 }));
 vi.mock('./useToastStore', () => ({
     toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() },
@@ -37,6 +48,8 @@ let store;
 
 beforeEach(async () => {
     subscriptions.length = 0;
+    authListeners.clear();
+    Object.assign(authState, { userId: 'trainer-1', isAuthReconciled: true });
     // The reference count lives in the store's closure, so each test needs a
     // fresh module instance.
     vi.resetModules();
@@ -132,5 +145,46 @@ describe('the saved-teams error toast', () => {
         store.getState().initFirestoreListeners();
         failTeams();
         expect(toast.error).not.toHaveBeenCalled();
+    });
+});
+
+describe('a teams listener that ran ahead of auth', () => {
+    const denied = () => Object.assign(new Error('Missing or insufficient permissions.'), { code: 'permission-denied' });
+
+    it('waits for auth instead of reporting, then listens again', async () => {
+        const { toast } = await import('./useToastStore');
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        toast.error.mockClear();
+        authState.isAuthReconciled = false;
+        store.getState().initFirestoreListeners();
+        subscriptions[0].onError(denied());
+
+        expect(toast.error).not.toHaveBeenCalled();
+        expect(attachedCount()).toBe(2);
+
+        settleAuth({ isAuthReconciled: true });
+        expect(attachedCount()).toBe(4);   // teams + favorites, attached again
+        expect(liveCount()).toBe(2);       // and the dead pair let go
+    });
+
+    it('reports a second refusal, once auth has answered', async () => {
+        const { toast } = await import('./useToastStore');
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        toast.error.mockClear();
+        authState.isAuthReconciled = false;
+        store.getState().initFirestoreListeners();
+        subscriptions[0].onError(denied());
+        settleAuth({ isAuthReconciled: true });
+        subscriptions[2].onError(denied());
+        expect(toast.error).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves a changed uid to the hook, which re-binds on userId', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        authState.isAuthReconciled = false;
+        store.getState().initFirestoreListeners();
+        subscriptions[0].onError(denied());
+        settleAuth({ isAuthReconciled: true, userId: 'trainer-2' });
+        expect(attachedCount()).toBe(2);
     });
 });
