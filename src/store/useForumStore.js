@@ -24,6 +24,7 @@ import { t } from '../utils/translate';
 import { navigateTo, promptSignIn } from '../utils/navigation';
 import { ensureSpeciesIndex } from '../services/speciesIndex';
 import { serializeTeam } from '../utils/teamSerialization';
+import { loadStaticData } from '../services/staticData';
 
 let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
@@ -45,18 +46,10 @@ const BASE_TOPICS = {
     },
 };
 
-let cachedMegaStones = null;
+// The request every sprite's useMegaStones shares (services/staticData.js).
 const getMegaStones = async () => {
-    if (cachedMegaStones) return cachedMegaStones;
     try {
-        const basePath = import.meta.env.BASE_URL || '/';
-        const url = `${basePath}data/mega-stones.json`.replace(/([^:])\/{2,}/g, '$1/');
-        const res = await fetch(url);
-        if (res.ok) {
-            const data = await res.json();
-            cachedMegaStones = data?.byStone || {};
-            return cachedMegaStones;
-        }
+        return (await loadStaticData('mega-stones.json'))?.byStone || {};
     } catch (e) {
         console.error("Failed to load mega stones in store", e);
     }

@@ -16,20 +16,13 @@ import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useMegaStones, megaDisplayName } from '../../hooks/useMegaStones';
 import { typeColors, typeIcons } from '../../constants/types';
+import { loadStaticData } from '../../services/staticData';
 
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
 const BRAND_LABEL = 'github.com/ensinho/pokemonTeamBuilder';
 const BRAND_LOGO_URL = typeof window !== 'undefined'
     ? `${window.location.origin}${window.location.pathname.includes('/pokemonTeamBuilder') ? '/pokemonTeamBuilder/' : '/'}LogoCuteGengarRounded.png`.replace(/([^:]\/)\/+/g, "$1")
     : '/LogoCuteGengarRounded.png';
-
-const dayStamp = () => {
-    const d = new Date();
-    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-};
-
-const getMoveTypesUrl = () =>
-    `${import.meta.env.BASE_URL || '/'}data/move-types.json`.replace(/([^:])\/{2,}/g, '$1/') + `?d=${dayStamp()}`;
 
 const moveId = (name = '') => String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -772,8 +765,7 @@ export const ShareSnippetModal = ({
     useEffect(() => {
         if (!isOpen) return;
         let cancelled = false;
-        fetch(getMoveTypesUrl())
-            .then((res) => (res.ok ? res.json() : null))
+        loadStaticData('move-types.json')
             .then((data) => {
                 if (!cancelled && data?.byId) {
                     setMoveTypesMap(data.byId);
