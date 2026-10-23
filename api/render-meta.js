@@ -5,6 +5,7 @@ import { renderSnapshot } from './_lib/seoSnapshot.js';
 import { fetchSharedTeam, sharedTeamIdFrom } from './_lib/sharedTeam.js';
 import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLocalePath } from '../src/utils/localePath.js';
 import { SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
+import { tournamentPresence } from '../src/utils/tournamentPresence.js';
 
 // Cache the pokemon index + tournament teams in memory across lambda invocations
 let pokemons = [];
@@ -61,6 +62,7 @@ export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null,
     const findP = data.findPokemon || findPokemon;
     const findT = data.findTeam || findTeam;
     const allPokemons = data.pokemons || pokemons;
+    const allTeams = data.tournamentTeams || tournamentTeams;
     let html = shell;
 
     const { language, appPath: rawAppPath } = splitLocalePath(urlPath);
@@ -122,7 +124,8 @@ export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null,
     ].join('\n    ');
     set(/<\/head>/i, `    ${headExtras}\n  </head>`);
 
-    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, pokemons: allPokemons });
+    const presence = context.pokemon ? tournamentPresence(allTeams, context.pokemon.id) : null;
+    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, presence, pokemons: allPokemons });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
 
     return { html, language, meta };

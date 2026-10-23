@@ -147,7 +147,7 @@ function RecentTournamentTeams({ pokemonId }) {
     );
     if (!featured.length) return null;
 
-    const shown = featured.slice(0, 4);
+    const shown = featured.slice(0, 6);
     const tournamentPct = pctOf(featured.length, teams.length);
 
     return (

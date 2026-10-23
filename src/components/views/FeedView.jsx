@@ -36,6 +36,9 @@ import {
     ThreadCardSkeleton,
 } from '../forum';
 import { PokeballIcon } from '../icons';
+import { TeamOfTheWeek } from '../forum/TeamOfTheWeek';
+import { useTournamentData } from '../../hooks/useTournamentData';
+import { teamOfTheWeek } from '../../utils/teamOfTheWeek';
 import '../../styles/forum-view.css';
 
 const profileFromData = (data) => {
@@ -207,6 +210,12 @@ export function FeedView({ showToast, navigate }) {
             pinnedRooms: topics.filter(isPinnedTopic).sort((a, b) => topicLastActivity(b) - topicLastActivity(a)),
         };
     }, [topics, selectedCategory, deferredQuery, sortBy]);
+
+    // The top of an unfiltered feed: the week's most liked team, else a
+    // tournament pick (utils/teamOfTheWeek.js) — a quiet week never reads as
+    // an empty forum.
+    const { teams: tournamentTeams } = useTournamentData();
+    const weeklyTeam = useMemo(() => teamOfTheWeek(topics, tournamentTeams), [topics, tournamentTeams]);
 
     // The explorer's discussion list: the feed's own order, minus the rooms it lists above.
     const explorerTopics = useMemo(() => rows.filter((tp) => !isPinnedTopic(tp)), [rows]);
@@ -443,6 +452,10 @@ export function FeedView({ showToast, navigate }) {
     );
 
     const hasFilters = !!searchQuery || selectedCategory !== 'all';
+    // Above the list (or its empty state) once topics answered, on the views
+    // a team belongs to: everything, or the teams category, unsearched.
+    const showWeeklyTeam = !(isInitialLoadingTopics && topics.length === 0)
+        && !searchQuery && (selectedCategory === 'all' || selectedCategory === 'teams');
     const isEmpty = pinned.length === 0 && rows.length === 0;
 
     return (
@@ -507,6 +520,16 @@ export function FeedView({ showToast, navigate }) {
                                 aria-label={t('forum.title')}
                                 aria-busy={isInitialLoadingTopics && topics.length === 0}
                             >
+                                {showWeeklyTeam && (
+                                    <TeamOfTheWeek
+                                        pick={weeklyTeam}
+                                        hrefFor={hrefFor}
+                                        onBeforeOpen={rowActions.beforeOpen}
+                                        onImport={handleImportTeam}
+                                        onPostOwn={() => openCreate({ team: featuredTeam, category: 'teams' })}
+                                        t={t}
+                                    />
+                                )}
                                 {isInitialLoadingTopics && topics.length === 0 ? (
                                     <>
                                         <ThreadCardSkeleton />

@@ -3640,3 +3640,70 @@
 .challenge-share-extra {
     color: var(--color-muted);
 }
+
+/* ============================================================
+   TEAM OF THE WEEK (forum/TeamOfTheWeek.jsx, 2026-10-23)
+   The top of an unfiltered feed. One filled block, bleeding past
+   the text like a post row does, so its edges line up with them.
+   ============================================================ */
+.totw {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0 calc(-1 * var(--space-3)) var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+.totw__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
+.totw__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-primary);
+}
+.totw__source { font-size: var(--text-xs); color: var(--color-muted); }
+
+.totw__body { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.totw__copy { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; flex: 1 1 14rem; }
+.totw__title { margin: 0; font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--color-fg); }
+.totw__title a { color: inherit; text-decoration: none; }
+.totw__title a:hover { color: var(--color-primary); }
+.totw__title a:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-primary); }
+.totw__meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0; font-size: var(--text-xs); color: var(--color-muted); }
+.totw__likes { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+.totw__roster { display: flex; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.totw__slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+.totw__sprite { width: 100%; height: 100%; object-fit: contain; }
+
+.totw__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+.totw__hint { display: flex; align-items: baseline; gap: var(--space-1_5); flex-wrap: wrap; margin: 0; font-size: var(--text-xs); color: var(--color-muted); }
+.totw__post {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    color: var(--color-primary);
+    cursor: pointer;
+}
+.totw__post:hover { text-decoration: underline; }
+.totw__post:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-primary); }
+
+@media (max-width: 640px) {
+    .totw { margin-inline: 0; padding: var(--space-3); }
+    .totw__roster { width: 100%; justify-content: space-between; }
+    .totw__slot { width: auto; flex: 1 1 0; aspect-ratio: 1; height: auto; }
+}

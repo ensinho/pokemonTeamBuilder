@@ -1,0 +1,83 @@
+/* ============================================================
+   IN TOURNAMENTS (TournamentPresence.jsx, 2026-10-23)
+   The inside of the Pokémon page's "In tournaments" card: the
+   host draws the frame (a bordered card on desktop, a band on
+   the phone), so everything here separates with fills, never a
+   border of its own.
+   ============================================================ */
+
+.tp { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.tp__share {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+.tp__figure {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.tp__group { display: flex; flex-direction: column; gap: var(--space-2); }
+.tp__label {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+}
+
+.tp__partners,
+.tp__teams { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.tp__partners { grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+.tp__teams { grid-template-columns: minmax(0, 1fr); }
+
+.tp__partner,
+.tp__team {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: var(--space-1_5) var(--space-2_5) var(--space-1_5) var(--space-1_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+.tp__partner:hover,
+.tp__team:hover { background: var(--color-surface-hover); }
+.tp__partner:focus-visible,
+.tp__team:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+
+.tp__sprite { width: 2.5rem; height: 2.5rem; flex-shrink: 0; }
+.tp__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+.tp__count { flex-shrink: 0; font-size: var(--text-xs); color: var(--color-muted); }
+.tp__partner .tp__count { margin-left: auto; }
+
+.tp__roster { display: flex; flex-shrink: 0; }
+.tp__mini { width: 2rem; height: 2rem; }
+.tp__mini + .tp__mini { margin-left: calc(var(--space-2) * -1); }
+.tp__event { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.tp__event .tp__count { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp__go { width: 1rem; height: 1rem; flex-shrink: 0; color: var(--color-muted); }
+.tp__team:hover .tp__go { color: var(--color-primary); }
+
+.tp__all { align-self: flex-start; }
+
+@media (max-width: 640px) {
+    .tp__mini { width: 1.75rem; height: 1.75rem; }
+    .tp__roster .tp__mini:nth-child(n + 5) { display: none; }
+}
