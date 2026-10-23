@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useStaticData } from './useStaticData';
 import { buildCoOccurrence, suggestPartners } from '../utils/tournamentSynergy';
 import { annotateEvScales } from '../utils/teamImport';
 import { hasDuplicateSpecies } from '../utils/teamUniqueness';
@@ -13,15 +14,15 @@ export const prepareTournamentTeams = (teams = []) =>
     annotateEvScales((Array.isArray(teams) ? teams : []).filter((team) =>
         Array.isArray(team?.pokemons) && team.pokemons.length > 0 && !hasDuplicateSpecies(team.pokemons)));
 
-// Daily cache-buster: a new URL each day so users pick up the cron-refreshed
-// dataset within ~24h, while same-day visits still hit the browser cache.
-const dayStamp = () => {
-    const d = new Date();
-    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+// Prepared once per loaded file, however many components hold the hook (the
+// Pokémon page alone has three).
+const preparedByFile = new WeakMap();
+const NO_TEAMS = [];
+const preparedTeams = (data) => {
+    if (!Array.isArray(data?.teams)) return NO_TEAMS;
+    if (!preparedByFile.has(data)) preparedByFile.set(data, prepareTournamentTeams(data.teams));
+    return preparedByFile.get(data);
 };
-
-const staticUrl = () =>
-    `${import.meta.env.BASE_URL || '/'}data/tournaments.json`.replace(/([^:])\/{2,}/g, '$1/') + `?d=${dayStamp()}`;
 
 /**
  * Loads the baked tournaments dataset and derives "popular" Pokémon from real
@@ -29,29 +30,10 @@ const staticUrl = () =>
  * the Tournaments view and the Home dashboard so the fetch is requested once.
  */
 export function useTournamentData({ enabled = true } = {}) {
-    const [teams, setTeams] = useState([]);
-    const [status, setStatus] = useState('loading');
-
-    useEffect(() => {
-        // `enabled: false` (Team Builder playthrough mode) skips the download
-        // entirely — nothing on screen consumes it there.
-        if (!enabled) { setStatus('ready'); return undefined; }
-        let cancelled = false;
-        (async () => {
-            try {
-                const res = await fetch(staticUrl());
-                if (res.ok) {
-                    const data = await res.json();
-                    if (!cancelled && Array.isArray(data?.teams)) setTeams(prepareTournamentTeams(data.teams));
-                }
-            } catch (_) {
-                /* dataset optional */
-            } finally {
-                if (!cancelled) setStatus('ready');
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [enabled]);
+    // `enabled: false` (Team Builder playthrough mode) skips the download
+    // entirely — nothing on screen consumes it there.
+    const { data, status } = useStaticData('tournaments.json', { enabled });
+    const teams = preparedTeams(data);
 
     const popular = useMemo(() => {
         const counts = new Map();

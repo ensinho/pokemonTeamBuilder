@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useStaticData } from './useStaticData';
 
 import { TOUR_BAND, hasTournamentBand, regulationsOf, resolveCutoff } from '../utils/metaFormats';
 
@@ -8,39 +9,16 @@ import { TOUR_BAND, hasTournamentBand, regulationsOf, resolveCutoff } from '../u
 // (usage %, items, moves, abilities, real EV spreads, Tera, teammates) plus the
 // per-rating-cutoff rankings. Daily cache-buster mirrors the other data hooks.
 
-const dayStamp = () => {
-    const d = new Date();
-    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-};
-
-const dataUrl = (file) =>
-    `${import.meta.env.BASE_URL || '/'}data/${file}`.replace(/([^:])\/{2,}/g, '$1/') + `?d=${dayStamp()}`;
-
-// Module-level cache so switching formats (or revisiting) never refetches.
-const formatCache = new Map();
+// One shared request per file and session (services/staticData.js), so
+// switching formats back, or another screen holding the same format, never
+// refetches.
 
 const EMPTY = [];
 
 /** The format catalog + default id the picker should show first. */
 export function useUsageIndex() {
-    const [index, setIndex] = useState(null);
-    const [status, setStatus] = useState('loading');
-
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                const res = await fetch(dataUrl('usage-index.json'));
-                if (res.ok) {
-                    const data = await res.json();
-                    if (!cancelled && Array.isArray(data?.formats)) setIndex(data);
-                }
-            } catch (_) { /* optional dataset */ } finally {
-                if (!cancelled) setStatus('ready');
-            }
-        })();
-        return () => { cancelled = true; };
-    }, []);
+    const { data, status } = useStaticData('usage-index.json');
+    const index = Array.isArray(data?.formats) ? data : null;
 
     const formats = index?.formats || EMPTY;
     // The Smogon tiers belong to the Meta pages only. The Team Builder's
@@ -67,40 +45,9 @@ export function useUsageIndex() {
  * baked, so `detailCutoff` is reported for the UI to say so.
  */
 export function useUsageFormat(formatId, cutoff = null) {
-    // Held with the id it was fetched for. Switching format used to keep serving
-    // the previous file until the new one landed, which was harmless while the
-    // catalog was three VGC regulations and is not now: it would render OU's
-    // rankings under "Doubles UU" for as long as the fetch took.
-    const [loaded, setLoaded] = useState(() => (formatCache.has(formatId) ? { id: formatId, json: formatCache.get(formatId) } : null));
-    // Status is held with its id too. A bare 'ready' left over from the
-    // previous id (often `null`, before the index named the default format)
-    // read as "this format is loaded" for the render before the effect below
-    // ran — and the builder ranked its grid, then re-ranked it a beat later.
-    const [settledFor, setSettledFor] = useState(() => (formatCache.has(formatId) ? formatId : undefined));
-    const status = (!formatId || settledFor === formatId || formatCache.has(formatId)) ? 'ready' : 'loading';
-    // Another screen (the Home's meta card) may already have this format in the
-    // module cache: serve it in this very render rather than one effect later,
-    // or a "ready" status arrives with no data behind it.
-    const data = loaded?.id === formatId ? loaded.json : (formatCache.get(formatId) ?? null);
-
-    useEffect(() => {
-        if (!formatId) { setLoaded(null); return undefined; }
-        if (formatCache.has(formatId)) { setLoaded({ id: formatId, json: formatCache.get(formatId) }); setSettledFor(formatId); return undefined; }
-        let cancelled = false;
-        (async () => {
-            try {
-                const res = await fetch(dataUrl(`usage/${formatId}.json`));
-                if (res.ok) {
-                    const json = await res.json();
-                    formatCache.set(formatId, json);
-                    if (!cancelled) setLoaded({ id: formatId, json });
-                }
-            } catch (_) { /* optional */ } finally {
-                if (!cancelled) setSettledFor(formatId);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [formatId]);
+    // Keyed by file, so switching format never serves the previous file's
+    // rankings under the new name while the new one loads (useStaticData).
+    const { data, status } = useStaticData(formatId ? `usage/${formatId}.json` : null);
 
     const usageFor = useMemo(() => (id) => data?.byId?.[id] || null, [data]);
 

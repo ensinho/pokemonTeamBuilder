@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-23 — Opening a Pokémon's Competitive tab dropped the app's connection on a phone `perf`
+- **Symptom:** in the installed PWA, opening the Competitive tab of a Pokémon from the Pokédex made the app "lose its connections" for a while (Enzo, 2026-10-23).
+- **Root cause:** every static-data hook fetched its file in its own effect, per mounted instance. The tab asked for `mega-stones.json` once per sprite (`useMegaStones` inside every `MonSprite`, 36×), `tournaments.json` 3×, `usage-index.json` 2× and `smogon.json` (1.8 MB) twice (`useSmogonData` + `loadSmogon`). Measured in dev (StrictMode doubles it): 89 requests, 7.5 MB at once. That much downloading and parsing on a phone starved Firestore's long-poll channel until it dropped.
+- **Fix:** `src/services/staticData.js` loads each `public/data` file with one request per session (in-flight promise shared, parsed value kept in memory, retried after a failure); `useStaticData(file)` wraps it for components. `useMegaStones`, `useSmogonData`, `loadSmogon`, `useTournamentData` (teams prepared once per file), `useUsageIndex`, `useUsageFormat` and `useMoveTypes` go through it. Same tab after: 8 requests, one per file.
+- **Correct pattern:** a hook that loads a baked dataset uses `useStaticData` (or `loadStaticData` outside React), never its own `fetch` in an effect: a hook is called once per component, and a sprite or a card is many components. `useGymLeaders`, `useCompetitiveUsage`, `useBattleItems`, `useTrainerSprites` and `useTierLegality` still fetch on their own (one caller each today); move them when they gain more.
+- **Files:** `src/services/staticData.js`, `src/hooks/useStaticData.js`, `src/hooks/useMegaStones.js`, `src/hooks/useSmogonData.js`, `src/utils/loadSmogon.js`, `src/hooks/useTournamentData.js`, `src/hooks/useUsageStats.js`, `src/hooks/useMoveTypes.js`
+
 ### 2026-10-21 — A saved-teams listener that ran ahead of auth died for the whole session `bug`
 - **Symptom:** "Não foi possível carregar seus times salvos" on opening the app, and — where it happened — no saved teams for the rest of that session.
 - **Root cause:** `useAuthStore` seeds `userId` from the boot snapshot (last visit's uid) so the shell paints before Firebase answers, and `useFirestoreTeams` starts the listener as soon as `userId` exists. When that runs ahead of the restored session (a stale snapshot, a token still in flight) Firestore answers `permission-denied` — and a listener that errors is dead for good. The error handler toasted and stopped.
