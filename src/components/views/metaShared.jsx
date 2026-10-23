@@ -6,13 +6,7 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
-
-// Pretty-print a Showdown/slug name for display.
-export const pretty = (s = '') => String(s).replace(/-/g, ' ');
-
-// The canonical breadcrumb-trail back handler lives with the rest of the
-// cross-page navigation logic; re-exported here for the meta views.
-export { useSmartBack } from '../../hooks/useEntityNavigate';
+import { pretty } from '../../utils/metaFormat';
 
 /**
  * A move name rendered as a compact chip, tinted by its type (with the type
@@ -38,15 +32,6 @@ export function MoveChip({ name, type, className = '' }) {
         </button>
     );
 }
-
-// Percentage of a count over a total, clamped to a whole number 0–100.
-export const pctOf = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
-
-// Format a compact usage EV spread ({hp,atk,def,spa,spd,spe}) → "4 HP / 252 Atk / 252 Spe".
-const EV_SHORT = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
-const EV_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
-export const formatUsageSpread = (evs = {}) =>
-    EV_KEYS.filter((k) => (evs[k] || 0) > 0).map((k) => `${evs[k]} ${EV_SHORT[k]}`).join(' / ');
 
 /**
  * The regulation / format selector shown on the Meta pages. Groups options by
@@ -107,7 +92,7 @@ export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary
 }
 
 // Canonical credit links for the competitive datasets + design inspirations.
-export const SOURCE_LINKS = {
+const SOURCE_LINKS = {
     vgcpastes: { label: 'VGCPastes', url: 'https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw' },
     limitless: { label: 'Limitless TCG', url: 'https://play.limitlesstcg.com/tournaments' },
     smogon: { label: 'Smogon', url: 'https://www.smogon.com/' },

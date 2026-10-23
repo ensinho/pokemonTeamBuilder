@@ -11,7 +11,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { formatIvNotes, setSpreadParts } from '../../utils/smogonSets';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
-import { UsageBar, MonSprite, pctOf } from './metaShared';
+import { UsageBar, MonSprite } from './metaShared';
+import { pctOf } from '../../utils/metaFormat';
 
 const pretty = (slug = '') => String(slug).replace(/-/g, ' ');
 

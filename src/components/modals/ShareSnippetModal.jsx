@@ -302,7 +302,7 @@ const preloadSnippetAssets = async (pokemons = [], cardTab = 'moves', moveTypesM
 // Poster Banner Canvas Renderer
 // ---------------------------------------------------------------------------
 
-const renderPosterSnippetSync = ({ canvas, background, title, subtitle, pokemons, shareUrl, assets }) => {
+const renderPosterSnippetSync = ({ canvas, title, subtitle, pokemons, shareUrl, assets }) => {
     const { width: W, height: H } = SNIPPET_DIMENSIONS;
     canvas.width = W;
     canvas.height = H;
@@ -541,7 +541,6 @@ const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamI
         const item = customization.item || '';
 
         // --- Left Half: Artwork, Name, Types, Ability, Item ---
-        const leftBoxW = 265;
         const spriteSize = 92;
         const spriteX = cardX + 12;
         const spriteY = cardY + (rowH - spriteSize) / 2;

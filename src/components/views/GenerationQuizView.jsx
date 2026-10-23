@@ -104,6 +104,9 @@ const buildSelectionSignature = (generationKeys) => {
         : generationKeys.join('|');
 };
 
+// One empty list for "no run yet", so memos keyed on it stay put between renders.
+const NO_ITEMS = Object.freeze([]);
+
 export function GenerationQuizView({ showDetails, showToast }) {
     const inputRef = useRef(null);
     const consoleCellRef = useRef(null);
@@ -144,9 +147,11 @@ export function GenerationQuizView({ showDetails, showToast }) {
     useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
 
     useEffect(() => {
-        if (feedback.message === 'Choose generations.' || feedback.message === 'Escolha as gerações.') {
-            setFeedback({ tone: 'muted', message: language === 'pt' ? 'Escolha as gerações.' : 'Choose generations.' });
-        }
+        setFeedback((current) => (
+            current.message === 'Choose generations.' || current.message === 'Escolha as gerações.'
+                ? { tone: 'muted', message: language === 'pt' ? 'Escolha as gerações.' : 'Choose generations.' }
+                : current
+        ));
     }, [language]);
 
     const {
@@ -229,7 +234,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         }
     }, [isHistoryOpen]);
 
-    const foundOrder = activeRun ? activeRun.foundOrder : [];
+    const foundOrder = activeRun ? activeRun.foundOrder : NO_ITEMS;
     const invalidGuesses = activeRun ? activeRun.invalidGuesses : 0;
     const consecutiveMisses = activeRun ? activeRun.consecutiveMisses : 0;
 
@@ -277,11 +282,10 @@ export function GenerationQuizView({ showDetails, showToast }) {
         return () => window.clearTimeout(timer);
     }, [newlyFoundId]);
 
-    const foundIds = useMemo(() => {
-        return new Set(activeRun ? activeRun.foundIds : []);
-    }, [activeRun?.foundIds]);
+    const activeFoundIds = activeRun?.foundIds;
+    const foundIds = useMemo(() => new Set(activeFoundIds || []), [activeFoundIds]);
 
-    const activeGenerationKeys = activeRun ? activeRun.generationKeys : [];
+    const activeGenerationKeys = activeRun ? activeRun.generationKeys : NO_ITEMS;
 
     const catalog = useMemo(() => pokemonIndex.map((pokemon) => {
         const generationKey = getGenerationKeyForPokemon(pokemon.id);

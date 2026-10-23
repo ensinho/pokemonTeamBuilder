@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { Sparkles, Database, ChevronRight } from 'lucide-react';
 
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
-import { typeColors, typeIcons } from '../../constants/types';
+import { typeIcons } from '../../constants/types';
 import { sanitizeSpriteUrl } from '../../utils/pokemonSprites';
 import { getEvolutionChainData, getStaticPokemonDetail, getPokemonSpeciesData, getPokemonApiData } from '../../services/pokemonDataCache';
 import { buildPokemonForms } from '../../utils/pokemonForms';
@@ -13,7 +13,6 @@ import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
 import { TypeChip } from '../TypeChip';
 import { CloseIcon, PlusIcon, SparklesIcon, StarIcon } from '../icons';
-import { getPokemonWeaknessEntries } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
 
 // Full type chart for computing all defensive matchups (same as PokedexView)

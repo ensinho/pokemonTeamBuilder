@@ -20,9 +20,10 @@ import { useSmogonData } from '../../hooks/useSmogonData';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { useEntityNavigate } from '../../hooks/useEntityNavigate';
+import { useEntityNavigate, useSmartBack } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
-import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread, SourceCredit, useSmartBack } from './metaShared';
+import { UsageBar, MonSprite, MoveChip, Panel, SourceCredit } from './metaShared';
+import { pretty, pctOf, formatUsageSpread } from '../../utils/metaFormat';
 import { FormatPicker } from './metaControls';
 
 const slugify = toApiSlug;

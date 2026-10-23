@@ -127,11 +127,6 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                 role="dialog"
                 ariaLabel={ariaLabelText}
                 viewportPadding={12}
-                arrowStyle={{
-                    backgroundColor: 'var(--color-surface)',
-                    borderTop: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
-                    borderLeft: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
-                }}
             >
                 <div className="p-4">
                     <div className="flex items-center gap-2 mb-3">

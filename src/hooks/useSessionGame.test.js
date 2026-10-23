@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { reducer, emptySession, __test } from './useSessionGame';
+
+// The reducer and key helpers are pure; the hook's module only imports the
+// Firebase handle, which would otherwise demand a real API key to load.
+vi.mock('../services/firebase', () => ({ db: null, auth: null }));
 
 const { parseKey, firestoreDocId, localSuffix } = __test;
 

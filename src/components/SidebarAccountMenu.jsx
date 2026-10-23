@@ -235,16 +235,6 @@ export function SidebarAccountMenu({
                     border: '1px solid var(--color-border)',
                     boxShadow: 'var(--elevation-3)',
                 }}
-                arrowTopStyle={{
-                    backgroundColor: 'var(--color-surface)',
-                    borderTop: '1px solid var(--color-border)',
-                    borderLeft: '1px solid var(--color-border)',
-                }}
-                arrowBottomStyle={{
-                    backgroundColor: 'var(--color-surface)',
-                    borderRight: '1px solid var(--color-border)',
-                    borderBottom: '1px solid var(--color-border)',
-                }}
                 ariaLabel="Account menu"
                 viewportPadding={12}
                 offset={10}

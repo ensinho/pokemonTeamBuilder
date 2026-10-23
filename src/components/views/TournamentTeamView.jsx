@@ -18,8 +18,9 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
-import { MoveChip, pretty, useSmartBack } from './metaShared';
-import { useEntityNavigate } from '../../hooks/useEntityNavigate';
+import { MoveChip } from './metaShared';
+import { pretty } from '../../utils/metaFormat';
+import { useEntityNavigate, useSmartBack } from '../../hooks/useEntityNavigate';
 
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 const EV_LABEL = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
@@ -49,7 +50,7 @@ function TypeChip({ type, count, danger }) {
  * sets each Pokémon ran (item / ability / nature / moves, EVs when reliable),
  * team-wide type coverage, and one-click import into the builder.
  */
-export function TournamentTeamView({ onImport, colors }) {
+export function TournamentTeamView({ onImport }) {
     const { id } = useParams();
     const { language } = useTranslation();
     const { goToAbility, linkState } = useEntityNavigate();

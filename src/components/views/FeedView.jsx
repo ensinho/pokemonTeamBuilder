@@ -601,11 +601,6 @@ export function FeedView({ showToast, navigate }) {
                 anchorRef={popoverAnchor}
                 popoverRef={popoverRef}
                 className="bg-surface border border-border rounded-lg shadow-xl p-3 text-xs w-48 space-y-1.5 elevation-3"
-                arrowStyle={{
-                    backgroundColor: 'var(--color-surface)',
-                    borderLeft: '1px solid var(--color-border)',
-                    borderTop: '1px solid var(--color-border)',
-                }}
             >
                 {hoveredSlot && (
                     <div>
