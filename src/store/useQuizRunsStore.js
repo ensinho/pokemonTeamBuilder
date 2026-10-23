@@ -73,7 +73,7 @@ const loadLocalRuns = () => {
         legacyRuns.forEach((run) => {
             try {
                 localStorage.setItem(`generationQuizRun:${run.id}`, JSON.stringify(run));
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
         });
         return legacyRuns;
     }
@@ -123,7 +123,7 @@ export const useQuizRunsStore = create((set, get) => {
                         mergedMap.set(remote.id, remote);
                         try {
                             localStorage.setItem(`generationQuizRun:${remote.id}`, JSON.stringify(remote));
-                        } catch (_) {}
+                        } catch (_) { /* local storage is a cache here; the store state is the truth */ }
                     } else if (local && local.updatedAt > remote.updatedAt) {
                         // Local is newer, upload to Firestore
                         const docRef = doc(db, `artifacts/${appId}/users/${userId}/quizRuns`, local.id);
@@ -180,7 +180,7 @@ export const useQuizRunsStore = create((set, get) => {
             set({ quizRuns: updatedRuns, activeRunId: signature });
             try {
                 localStorage.setItem('generationQuizActiveRunId', signature);
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
             get().saveRunToStorage(newRun);
         },
 
@@ -190,7 +190,7 @@ export const useQuizRunsStore = create((set, get) => {
                 set({ activeRunId: runId });
                 try {
                     localStorage.setItem('generationQuizActiveRunId', runId);
-                } catch (_) {}
+                } catch (_) { /* local storage is a cache here; the store state is the truth */ }
             }
         },
 
@@ -210,7 +210,7 @@ export const useQuizRunsStore = create((set, get) => {
                 set({ quizRuns: updatedRuns, activeRunId: runId });
                 try {
                     localStorage.setItem('generationQuizActiveRunId', runId);
-                } catch (_) {}
+                } catch (_) { /* local storage is a cache here; the store state is the truth */ }
                 get().saveRunToStorage(resetRun);
             }
         },
@@ -218,7 +218,7 @@ export const useQuizRunsStore = create((set, get) => {
         saveRunToStorage: async (run) => {
             try {
                 localStorage.setItem(`generationQuizRun:${run.id}`, JSON.stringify(run));
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
 
             const userId = useAuthStore.getState().userId;
             if (db && userId) {
@@ -283,13 +283,13 @@ export const useQuizRunsStore = create((set, get) => {
                 set({ activeRunId: null });
                 try {
                     localStorage.removeItem('generationQuizActiveRunId');
-                } catch (_) {}
+                } catch (_) { /* local storage is a cache here; the store state is the truth */ }
             }
 
             try {
                 localStorage.removeItem(`generationQuizRun:${runId}`);
                 localStorage.removeItem(`generationQuizBest:${runId}`);
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
 
             const userId = useAuthStore.getState().userId;
             if (db && userId) {
@@ -310,7 +310,7 @@ export const useQuizRunsStore = create((set, get) => {
                 } else {
                     localStorage.removeItem('generationQuizActiveRunId');
                 }
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
         },
     };
 });

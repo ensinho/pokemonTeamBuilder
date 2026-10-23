@@ -18,8 +18,9 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
-import { MoveChip, pretty, useSmartBack } from './metaShared';
-import { useEntityNavigate } from '../../hooks/useEntityNavigate';
+import { MoveChip } from './metaShared';
+import { pretty } from '../../utils/metaFormat';
+import { useEntityNavigate, useSmartBack } from '../../hooks/useEntityNavigate';
 
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 const EV_LABEL = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
@@ -49,7 +50,7 @@ function TypeChip({ type, count, danger }) {
  * sets each Pokémon ran (item / ability / nature / moves, EVs when reliable),
  * team-wide type coverage, and one-click import into the builder.
  */
-export function TournamentTeamView({ onImport, colors }) {
+export function TournamentTeamView({ onImport }) {
     const { id } = useParams();
     const { language } = useTranslation();
     const { goToAbility, linkState } = useEntityNavigate();
@@ -144,7 +145,7 @@ export function TournamentTeamView({ onImport, colors }) {
                             <button
                                 type="button"
                                 onClick={() => onImport({ name: team.title || team.tournament || 'Tournament Team', pokemons: team.pokemons || [], evScale: team.evScale })}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1 text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                             >
                                 <ShowdownIcon className="h-4 w-4" /> {pt ? 'Importar' : 'Import to builder'}
                             </button>

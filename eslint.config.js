@@ -32,7 +32,14 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // `_`-prefixed names are deliberate: a skipped tuple slot, an unused
+      // argument, a key split off with ...rest.
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]',
+        argsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      }],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -40,9 +47,15 @@ export default [
     },
   },
   {
-    files: ['api/**/*.js', 'functions/**/*.js', 'vite.config.js', 'scripts/**/*.mjs'],
+    files: ['api/**/*.js', 'functions/**/*.js', 'vite.config.js', 'scripts/**/*.mjs', '**/*.test.js'],
     languageOptions: {
       globals: nodeGlobals,
     },
+  },
+  // Data tables that happen to hold JSX (badge icons): never hot-reloaded as
+  // components, so the fast-refresh export rule has nothing to protect there.
+  {
+    files: ['src/constants/**/*.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
 ]

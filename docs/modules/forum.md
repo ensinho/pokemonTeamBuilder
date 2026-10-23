@@ -40,6 +40,14 @@ The page is the panel; rows run edge to edge under the shell gutter.
   engagement; New is creation. Trending = community topics with activity in the
   last 7 days and at least one like or reply, best Hot first.
 
+- **Team of the week** (`forum/TeamOfTheWeek.jsx`, `src/utils/teamOfTheWeek.js`,
+  tested, 2026-10-23) heads the unsearched feed under All or Times, above the
+  list or its empty state: the shared team with the most engagement among the
+  posts of the last 7 days that have a team and at least one like; with none,
+  a featured tournament team that changes on Monday (UTC). It ends with the
+  line that says how to take the spot ("Postar meu time" opens Create with the
+  rail's team). Opening it tracks `team_of_week_open`.
+
 ## A post
 
 - Two shapes in one component: a **post** (any trainer's topic) opens at the

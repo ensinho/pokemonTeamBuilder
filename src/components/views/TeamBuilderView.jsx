@@ -52,7 +52,7 @@ import { usePokedexStore } from '../../store/usePokedexStore';
 
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
-export function typeDiscStyle(pokemon) {
+function typeDiscStyle(pokemon) {
     const types = pokemon?.types || [];
     const a = typeColors[types[0]] || '#6390F0';
     const b = typeColors[types[1]] || a;

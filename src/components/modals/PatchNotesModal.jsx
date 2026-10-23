@@ -35,7 +35,7 @@ const ChampionsDexVisual = ({ language }) => {
                             style={{ imageRendering: 'pixelated' }}
                         />
                         {id === 3 && (
-                            <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-2xs font-bold uppercase text-white tracking-[0.06em]">
+                            <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-2xs font-bold uppercase text-on-primary tracking-[0.06em]">
                                 Mega
                             </span>
                         )}
@@ -102,7 +102,7 @@ const PlaythroughVisual = ({ t }) => (
             {[25, 6].map((id) => (
                 <span key={id} className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
                     <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
-                    <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-2xs font-bold uppercase text-white tracking-[0.06em]">
+                    <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-2xs font-bold uppercase text-on-primary tracking-[0.06em]">
                         Meta
                     </span>
                 </span>
@@ -259,7 +259,7 @@ const InvitesVisual = ({ t, language }) => {
                     <SwordsIcon className="h-3.5 w-3.5 shrink-0 text-primary" />
                     {t('forum.inviteTitle')}
                 </span>
-                <span className="rounded-full bg-primary px-2 py-0.5 text-2xs font-bold uppercase text-white tracking-[0.06em]">
+                <span className="rounded-full bg-primary px-2 py-0.5 text-2xs font-bold uppercase text-on-primary tracking-[0.06em]">
                     {t('forum.inviteAccept')}
                 </span>
             </div>
@@ -349,7 +349,7 @@ const SmogonTiersVisual = ({ language }) => {
                     <span
                         key={tier}
                         className={`rounded-full px-2 py-0.5 text-2xs font-bold ${
-                            i === 0 ? 'bg-primary text-white' : 'bg-surface-raised text-muted'
+                            i === 0 ? 'bg-primary text-on-primary' : 'bg-surface-raised text-muted'
                         }`}
                     >
                         {tier}
@@ -361,7 +361,7 @@ const SmogonTiersVisual = ({ language }) => {
                     <span
                         key={band}
                         className={`rounded px-1.5 py-0.5 font-mono text-2xs font-bold tabular-nums ${
-                            i === 2 ? 'bg-primary text-white' : 'text-muted'
+                            i === 2 ? 'bg-primary text-on-primary' : 'text-muted'
                         }`}
                     >
                         {band === '0' ? (pt ? 'Todos' : 'All') : `${band}+`}
@@ -386,7 +386,7 @@ const TierFilterVisual = ({ language }) => {
                     <span
                         key={tier}
                         className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${
-                            i === 0 ? 'bg-primary text-white' : 'bg-surface-raised text-muted'
+                            i === 0 ? 'bg-primary text-on-primary' : 'bg-surface-raised text-muted'
                         }`}
                     >
                         {tier}
@@ -828,7 +828,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                     <div className="text-center">
                         <button
                             onClick={onClose}
-                            className="rounded-lg bg-primary px-8 py-3 font-bold text-white transition-colors hover:opacity-90"
+                            className="rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-colors hover:opacity-90"
                         >
                             {t('patchNotes.gotIt')}
                         </button>

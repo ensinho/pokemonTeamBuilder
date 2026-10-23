@@ -486,7 +486,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         key={value}
                                         type="button"
                                         onClick={() => setStatusFilter(value)}
-                                        className={`rounded-lg px-2 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'bg-primary text-white' : 'bg-surface-raised text-fg'}`}
+                                        className={`rounded-lg px-2 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'bg-primary text-on-primary' : 'bg-surface-raised text-fg'}`}
                                     >
                                         {label}
                                     </button>
@@ -606,7 +606,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             type="button"
                                             onClick={handleSendEmail}
                                             disabled={!hasRecipientEmail || isSendingEmail}
-                                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             <ShareIcon />
                                             {ADMIN_EMAIL_ENDPOINT ? (isSendingEmail ? t('admin.sending') : t('admin.sendEmail')) : t('admin.openDraft')}

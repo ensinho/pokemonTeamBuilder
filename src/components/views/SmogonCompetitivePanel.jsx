@@ -11,7 +11,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { formatIvNotes, setSpreadParts } from '../../utils/smogonSets';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
-import { UsageBar, MonSprite, pctOf } from './metaShared';
+import { UsageBar, MonSprite } from './metaShared';
+import { pctOf } from '../../utils/metaFormat';
 
 const pretty = (slug = '') => String(slug).replace(/-/g, ' ');
 
@@ -147,7 +148,7 @@ function RecentTournamentTeams({ pokemonId }) {
     );
     if (!featured.length) return null;
 
-    const shown = featured.slice(0, 4);
+    const shown = featured.slice(0, 6);
     const tournamentPct = pctOf(featured.length, teams.length);
 
     return (

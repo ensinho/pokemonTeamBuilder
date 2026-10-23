@@ -34,7 +34,7 @@ const LANDING_LINKS = {
     builder: '/builder', pokedex: '/pokedex', calc: '/damage-calculator', meta: '/meta', types: '/types', challenge: '/challenge',
 };
 
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, pokemons = [] }) {
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, pokemons = [] }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
@@ -86,6 +86,24 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
                 .map((k) => `${escapeHtml(t(`seo.snapshot.stats.${k}`))}: ${pokemon.baseStats[k]}`)));
         }
         body.push(`<p>${link(`/meta/${pokemon.name}`, t('seo.metaPokemon.title', { name: formatSlug(pokemon.name) }))}</p>`);
+    }
+
+    // What the page's "In tournaments" card shows (utils/tournamentPresence.js):
+    // the teams that carried it and the partners it was built with.
+    if ((meta.key === 'pokemon' || meta.key === 'metaPokemon') && pokemon && presence?.count) {
+        const slugOf = (id) => pokemons.find((p) => p.id === id)?.name || id;
+        body.push(`<h2>${escapeHtml(t('seo.snapshot.tournamentTeams', { name: formatSlug(pokemon.name) }))}</h2>`);
+        body.push(`<p>${escapeHtml(t('seo.snapshot.tournamentShare', { count: presence.count, total: presence.total }))}</p>`);
+        body.push(list(presence.teams.map((tm) => {
+            const event = [tm.tournament, tm.placement, tm.format].filter(Boolean).join(' · ');
+            return `${link(`/tournaments/team/${tm.id}`, tm.title || tm.tournament)}${event ? ` — ${escapeHtml(event)}` : ''}`;
+        })));
+        if (presence.partners.length) {
+            body.push(`<h2>${escapeHtml(t('seo.snapshot.tournamentPartners'))}</h2>`);
+            body.push(list(presence.partners.map((p) => (
+                `${link(`/pokemon/${slugOf(p.id)}`, formatSlug(p.name))} (${escapeHtml(t('seo.snapshot.timesTogether', { count: p.count }))})`
+            ))));
+        }
     }
 
     if (meta.key === 'type') {

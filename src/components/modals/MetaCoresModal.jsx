@@ -43,7 +43,7 @@ function PickCard({ member, accent, selected, onTeam, disabled, onToggle, addLab
                     loading="lazy"
                 />
                 {member.usage > 0 && (
-                    <span className="absolute -right-1.5 -bottom-1 inline-flex items-center gap-0.5 rounded-full bg-primary px-1 text-2xs font-bold text-white">
+                    <span className="absolute -right-1.5 -bottom-1 inline-flex items-center gap-0.5 rounded-full bg-primary px-1 text-2xs font-bold text-on-primary">
                         <Trophy className="h-1.5 w-1.5" />{member.usage}
                     </span>
                 )}
@@ -203,7 +203,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                                         <div className="mt-2 text-lg font-extrabold text-fg">{core.name}</div>
                                         <div className="mt-0.5 text-2xs font-semibold text-muted">{core.memberCount} {pt ? 'Pokémon' : 'mons'}</div>
                                         {matches.has(core.id) && (
-                                            <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-2xs font-bold text-white">
+                                            <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-2xs font-bold text-on-primary">
                                                 {pt ? 'no seu time' : 'on your team'}
                                             </span>
                                         )}
@@ -325,7 +325,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                             type="button"
                             onClick={confirmAdd}
                             disabled={picked.size === 0}
-                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 font-bold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                         >
                             <Plus className="h-4 w-4" />
                             {pt ? `Adicionar ${picked.size || ''}`.trim() + ' ao time' : `Add ${picked.size || ''}`.trim() + ' to team'}

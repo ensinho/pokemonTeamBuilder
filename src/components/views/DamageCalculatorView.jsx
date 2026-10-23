@@ -989,7 +989,7 @@ export function DamageCalculatorView() {
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${activeTab === tab.key ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-fg'}`}
+                        className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${activeTab === tab.key ? 'bg-primary text-on-primary shadow-sm' : 'text-muted hover:text-fg'}`}
                     >
                         {tab.label}
                     </button>

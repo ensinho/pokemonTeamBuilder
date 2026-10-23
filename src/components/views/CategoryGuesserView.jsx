@@ -287,9 +287,8 @@ export function CategoryGuesserView({ showDetails }) {
         return new Map(activePokemonList.map((p) => [p.id, p]));
     }, [activePokemonList]);
 
-    const foundNames = useMemo(() => {
-        return new Set(activeRun ? activeRun.foundNames : []);
-    }, [activeRun?.foundNames]);
+    const activeFoundNames = activeRun?.foundNames;
+    const foundNames = useMemo(() => new Set(activeFoundNames || []), [activeFoundNames]);
 
     const foundCount = foundNames.size;
     const totalCount = activePokemonList.length;

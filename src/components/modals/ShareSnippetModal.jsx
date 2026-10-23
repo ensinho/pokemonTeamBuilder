@@ -302,7 +302,7 @@ const preloadSnippetAssets = async (pokemons = [], cardTab = 'moves', moveTypesM
 // Poster Banner Canvas Renderer
 // ---------------------------------------------------------------------------
 
-const renderPosterSnippetSync = ({ canvas, background, title, subtitle, pokemons, shareUrl, assets }) => {
+const renderPosterSnippetSync = ({ canvas, title, subtitle, pokemons, shareUrl, assets }) => {
     const { width: W, height: H } = SNIPPET_DIMENSIONS;
     canvas.width = W;
     canvas.height = H;
@@ -541,7 +541,6 @@ const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamI
         const item = customization.item || '';
 
         // --- Left Half: Artwork, Name, Types, Ability, Item ---
-        const leftBoxW = 265;
         const spriteSize = 92;
         const spriteX = cardX + 12;
         const spriteY = cardY + (rowH - spriteSize) / 2;
@@ -1106,7 +1105,7 @@ export const ShareSnippetModal = ({
                             onClick={() => setMode('cards')}
                             className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
                                 mode === 'cards'
-                                    ? 'bg-primary text-white shadow-md'
+                                    ? 'bg-primary text-on-primary shadow-md'
                                     : 'text-muted hover:text-fg'
                             }`}
                         >
@@ -1118,7 +1117,7 @@ export const ShareSnippetModal = ({
                             onClick={() => setMode('poster')}
                             className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
                                 mode === 'poster'
-                                    ? 'bg-primary text-white shadow-md'
+                                    ? 'bg-primary text-on-primary shadow-md'
                                     : 'text-muted hover:text-fg'
                             }`}
                         >
@@ -1170,7 +1169,7 @@ export const ShareSnippetModal = ({
                                         onClick={() => setCardTab('moves')}
                                         className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-all ${
                                             cardTab === 'moves'
-                                                ? 'bg-primary text-white'
+                                                ? 'bg-primary text-on-primary'
                                                 : 'text-muted hover:text-fg'
                                         }`}
                                     >
@@ -1182,7 +1181,7 @@ export const ShareSnippetModal = ({
                                         onClick={() => setCardTab('stats')}
                                         className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-all ${
                                             cardTab === 'stats'
-                                                ? 'bg-primary text-white'
+                                                ? 'bg-primary text-on-primary'
                                                 : 'text-muted hover:text-fg'
                                         }`}
                                     >
@@ -1300,7 +1299,7 @@ export const ShareSnippetModal = ({
                         type="button"
                         onClick={handleShareToForum}
                         disabled={isRendering || isPosting}
-                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-white py-2.5 text-xs font-bold shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-on-primary py-2.5 text-xs font-bold shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
                     >
                         {isPosting ? (
                             <span>{language === 'pt' ? 'Postando...' : 'Posting...'}</span>

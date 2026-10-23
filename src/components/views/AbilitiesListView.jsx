@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
@@ -50,8 +50,8 @@ export function AbilitiesListView() {
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
     useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
-    const getRelatedNames = useCallback(
-        makePokemonRelatedNamesResolver(pokemonIndex, resolvePokemonDetail, 'abilities'),
+    const getRelatedNames = useMemo(
+        () => makePokemonRelatedNamesResolver(pokemonIndex, resolvePokemonDetail, 'abilities'),
         [pokemonIndex],
     );
 

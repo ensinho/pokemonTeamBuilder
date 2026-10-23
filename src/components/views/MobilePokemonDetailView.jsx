@@ -27,6 +27,8 @@ import { getPokemonArtworkSpriteUrl, getPokemonDisplaySprite } from '../../utils
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
+import { TournamentPresence } from '../TournamentPresence';
+import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -130,6 +132,7 @@ export function MobilePokemonDetailView({
 
     // In the URL (?tab=), so Back from a move lands on the tab it came from.
     const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
+    const tournamentPresence = useTournamentPresence(pokemonId);
 
     const {
         selectedPokemonDetails,
@@ -359,6 +362,12 @@ export function MobilePokemonDetailView({
                         <Row label={t('pokedex.eggCycles')} value={eggCyclesText || '—'} />
                     </dl>
                 </Section>
+
+                {tournamentPresence && (
+                    <Section title={t('pdetail.tournaments.title')}>
+                        <TournamentPresence presence={tournamentPresence} onShowAll={() => setActiveTab('competitive')} />
+                    </Section>
+                )}
             </>
         );
     };

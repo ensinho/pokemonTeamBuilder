@@ -77,7 +77,7 @@ export const useCategoryGuesserStore = create((set, get) => {
                         mergedMap.set(remote.id, remote);
                         try {
                             localStorage.setItem(`${LOCAL_STORAGE_PREFIX}${remote.id}`, JSON.stringify(remote));
-                        } catch (_) {}
+                        } catch (_) { /* local storage is a cache here; the store state is the truth */ }
                     } else if (local && local.updatedAt > remote.updatedAt) {
                         const docRef = doc(db, `artifacts/${appId}/users/${userId}/categoryGuesserRuns`, local.id);
                         setDoc(docRef, local).catch((err) => console.error('Failed to sync newer local PokéQuiz run:', err));
@@ -176,7 +176,7 @@ export const useCategoryGuesserStore = create((set, get) => {
             try {
                 localStorage.setItem(ACTIVE_RUN_KEY, listId);
                 localStorage.setItem(RECENT_LISTS_KEY, JSON.stringify(updatedRecent));
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
 
             get().saveRunToStorage(newRun);
         },
@@ -187,7 +187,7 @@ export const useCategoryGuesserStore = create((set, get) => {
                 set({ activeRunId: listId });
                 try {
                     localStorage.setItem(ACTIVE_RUN_KEY, listId);
-                } catch (_) {}
+                } catch (_) { /* local storage is a cache here; the store state is the truth */ }
             }
         },
 
@@ -225,7 +225,7 @@ export const useCategoryGuesserStore = create((set, get) => {
                 set({ quizRuns: updatedRuns, activeRunId: listId });
                 try {
                     localStorage.setItem(ACTIVE_RUN_KEY, listId);
-                } catch (_) {}
+                } catch (_) { /* local storage is a cache here; the store state is the truth */ }
                 get().saveRunToStorage(resetRun);
             }
         },
@@ -233,7 +233,7 @@ export const useCategoryGuesserStore = create((set, get) => {
         saveRunToStorage: async (run) => {
             try {
                 localStorage.setItem(`${LOCAL_STORAGE_PREFIX}${run.id}`, JSON.stringify(run));
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
 
             const userId = useAuthStore.getState().userId;
             if (db && userId) {
@@ -298,12 +298,12 @@ export const useCategoryGuesserStore = create((set, get) => {
                 set({ activeRunId: null });
                 try {
                     localStorage.removeItem(ACTIVE_RUN_KEY);
-                } catch (_) {}
+                } catch (_) { /* local storage is a cache here; the store state is the truth */ }
             }
 
             try {
                 localStorage.removeItem(`${LOCAL_STORAGE_PREFIX}${listId}`);
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
 
             const userId = useAuthStore.getState().userId;
             if (db && userId) {
@@ -324,7 +324,7 @@ export const useCategoryGuesserStore = create((set, get) => {
                 } else {
                     localStorage.removeItem(ACTIVE_RUN_KEY);
                 }
-            } catch (_) {}
+            } catch (_) { /* local storage is a cache here; the store state is the truth */ }
         },
     };
 });

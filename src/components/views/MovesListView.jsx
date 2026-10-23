@@ -99,8 +99,8 @@ export function MovesListView() {
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
     useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
-    const getRelatedNames = useCallback(
-        makePokemonRelatedNamesResolver(pokemonIndex, resolvePokemonDetail, 'moves'),
+    const getRelatedNames = useMemo(
+        () => makePokemonRelatedNamesResolver(pokemonIndex, resolvePokemonDetail, 'moves'),
         [pokemonIndex],
     );
 

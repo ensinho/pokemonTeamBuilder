@@ -16,6 +16,10 @@ const data = {
     pokemons,
     findPokemon: (p) => pokemons.find((x) => x.name === p || String(x.id) === p) || null,
     findTeam: (id) => (id === 'worlds' ? { id, title: 'Worlds winner', tournament: 'Worlds', placement: '1st', pokemons: [{ name: 'Incineroar' }] } : null),
+    tournamentTeams: [
+        { id: 'w1', title: 'Wolfe\'s team', tournament: 'Worlds 2026', placement: '1st', format: 'Reg M-B', pokemons: [{ id: 6, name: 'Charizard-Mega-Y' }, { id: 4, name: 'Charmander' }] },
+        { id: 'r2', title: 'Regional pick', tournament: 'Lille', pokemons: [{ id: 4, name: 'Charmander' }] },
+    ],
 };
 
 const page = (urlPath, extra = {}) => buildPage(shell, { urlPath, data, ...extra }).html;
@@ -66,6 +70,16 @@ describe('render-meta buildPage', () => {
         expect(snapshot).toContain('href="/pt/types/rock">Pedra</a> (4×)');
         expect(snapshot).toContain('Velocidade: 100');
         expect(snapshot).toContain('href="/pt/meta/charizard"');
+    });
+
+    it('lists the tournament teams and partners of a Pokémon, as its page shows them', () => {
+        const snapshot = page('/pt/pokemon/charizard');
+        expect(snapshot).toContain('<h2>Times de torneio com Charizard</h2>');
+        expect(snapshot).toContain('Em 1 de 2 times de torneio recentes.');
+        expect(snapshot).toContain('href="/pt/tournaments/team/w1">Wolfe&#39;s team</a> — Worlds 2026 · 1st · Reg M-B');
+        expect(snapshot).toContain('href="/pt/pokemon/charmander">Charmander</a> (1 times juntos)');
+        // Nothing for a Pokémon no team carried.
+        expect(page('/pokemon/10034')).not.toContain('Tournament teams with');
     });
 
     it('lists only base-form Pokémon on a type page', () => {

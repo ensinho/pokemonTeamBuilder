@@ -21,6 +21,8 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
+import { TournamentPresence } from '../TournamentPresence';
+import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -69,6 +71,7 @@ export function PokemonDetailPanel({
 
     // In the URL (?tab=): Pikachu → Moves → a move → Back used to land on Data.
     const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
+    const tournamentPresence = useTournamentPresence(pokemonId);
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
     // The sparkle a shiny makes, fired by the two buttons that earn it.
     const shinyBurst = useShinyBurst();
@@ -435,6 +438,16 @@ export function PokemonDetailPanel({
                             </div>
                         </div>
                     </div>
+
+                    {tournamentPresence && (
+                        <div className="rounded-xl bg-surface p-4 border border-border">
+                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 mb-3">
+                                <Trophy className="w-3.5 h-3.5 text-primary" />
+                                <span>{t('pdetail.tournaments.title')}</span>
+                            </h4>
+                            <TournamentPresence presence={tournamentPresence} onShowAll={() => setActiveTab('competitive')} />
+                        </div>
+                    )}
                 </div>
             );
         }

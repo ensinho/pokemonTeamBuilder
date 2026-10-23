@@ -650,7 +650,7 @@ export default function AppLayout() {
         t('splash.msg3'),
         t('splash.msg4'),
         t('splash.msg5'),
-    ], [language, t]);
+    ], [t]);
 
     // Caches for dynamic fetches
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
@@ -726,7 +726,7 @@ export default function AppLayout() {
             versionBumpHandled = true;
 
             // 1. Clear session storage completely
-            try { sessionStorage.clear(); } catch (e) { }
+            try { sessionStorage.clear(); } catch (_) { /* storage blocked: nothing to clear */ }
 
             // 2. Clear non-essential localStorage keys
             try {
@@ -781,7 +781,7 @@ export default function AppLayout() {
                         localStorage.removeItem(key);
                     }
                 }
-            } catch (e) { }
+            } catch (_) { /* storage blocked: nothing to clear */ }
 
             // 3. Record the version we are now on, and show what changed.
             localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
@@ -1075,7 +1075,7 @@ export default function AppLayout() {
             showToast(t('layout.loadDetailsError', { id: pokemonId }), "error");
             return null;
         }
-    }, [pokemonDetailsCache, showToast]);
+    }, [pokemonDetailsCache, showToast, t]);
 
     // A legacy share link (/builder?team=ID, every share before 2026-10-21)
     // opens that team's page now: a preview with an Import button, instead of
@@ -1117,7 +1117,7 @@ export default function AppLayout() {
         navigate('/builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
+    }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId, t]);
 
     // A tournament roster. It must not go through handleEditTeam: that path reads
     // `customization` and `instanceId` off each member, and a tournament set has
@@ -1762,7 +1762,7 @@ export default function AppLayout() {
                                         <TournamentsView db={db} onOpenTeam={handleImportTeam} />
                                     } />
                                     <Route path="/tournaments/team/:id" element={
-                                        <TournamentTeamView onImport={handleImportTeam} colors={colors} />
+                                        <TournamentTeamView onImport={handleImportTeam} />
                                     } />
                                     <Route path="/meta" element={<MetaUsageView />} />
                                     <Route path="/meta/:idOrName" element={<PokemonUsageView />} />

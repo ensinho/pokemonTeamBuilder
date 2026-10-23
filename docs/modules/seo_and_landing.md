@@ -79,6 +79,18 @@ route it knows; the copy lives under `seo.*` in `translations.js`.
   it is visually hidden until then (`.seo-prerender` in `index.html`). **It must
   only say what the rendered page says.**
 
+### Pokémon pages in tournaments (2026-10-23)
+
+People search "best team with Garchomp". `src/utils/tournamentPresence.js`
+(pure, tested, Node-safe) reads the baked `tournaments.json`: how many recent
+teams carried the Pokémon, the latest of them and its most frequent partners
+(tournament ids are base species, so a Mega counts as its base). The Data tab
+shows it as **Em torneios** (`TournamentPresence.jsx`, the hook
+`useTournamentPresence`; a card on desktop, a band on the phone), and the
+prerender writes the same teams and partners as links on `/pokemon/:name` and
+`/meta/:name`. The Competitive tab's tournament list shows six teams, the
+prerender six, the Data tab three with a link to the rest.
+
 ## 4. Sitemap
 
 `scripts/build-sitemap.mjs` (prebuild) lists each page once per language with

@@ -114,6 +114,9 @@ export const getLocalWonPuzzleKeys = () => {
  * useTrainerBadges - Hook to inspect, calculate, and manage trainer achievements and badges.
  * Automatically accounts for all past historical records from Firestore and localStorage.
  */
+// One empty list for a store that has none yet, so the memos below stay put.
+const NO_RUNS = Object.freeze([]);
+
 export function useTrainerBadges(extraStats = {}) {
     const userId = useAuthStore((s) => s.userId);
     const streak = useAuthStore((s) => s.streak);
@@ -135,8 +138,8 @@ export function useTrainerBadges(extraStats = {}) {
     const battlesCount = useBattlesStore((s) => s.battles?.length || 0);
 
     // Generation Quiz & Category Guesser stores
-    const genQuizRuns = useQuizRunsStore((s) => s.quizRuns) || [];
-    const catQuizRuns = useCategoryGuesserStore((s) => s.quizRuns) || [];
+    const genQuizRuns = useQuizRunsStore((s) => s.quizRuns) || NO_RUNS;
+    const catQuizRuns = useCategoryGuesserStore((s) => s.quizRuns) || NO_RUNS;
 
     // State for Firestore PokéPuzzle won records
     const [firestoreWonPuzzles, setFirestoreWonPuzzles] = useState(() => new Set());

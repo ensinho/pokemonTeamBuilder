@@ -17,7 +17,8 @@ import { applyEvChange, evLimitsFor, maxEvFor, remainingEvs } from '../../utils/
 import { convertSpread, looksLikeStatPoints, statPointsToEvs } from '../../utils/statPoints';
 import { buildSignature } from '../../utils/teamDraft';
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
-import { UsageBar, pctOf, pretty, RegulationSelect } from '../views/metaShared';
+import { UsageBar, RegulationSelect } from '../views/metaShared';
+import { pctOf, pretty } from '../../utils/metaFormat';
 import { SpriteSelect } from '../SpriteSelect';
 import { Switch } from '../Switch';
 import { RollingNumber } from '../RollingNumber';
