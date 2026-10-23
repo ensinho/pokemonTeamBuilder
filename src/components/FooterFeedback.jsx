@@ -176,7 +176,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                     aria-pressed={hasLiked}
                     aria-label={hasLiked ? 'Remove your like' : 'Like this app'}
                     title={hasLiked ? 'You liked this' : 'Like this app'}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-white hover:opacity-90' : 'border-surface-raised bg-surface-raised text-muted hover:text-fg hover:border-border-hover'}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-on-primary hover:opacity-90' : 'border-surface-raised bg-surface-raised text-muted hover:text-fg hover:border-border-hover'}`}
                 >
                     <HeartIcon color="currentColor" className="w-3.5 h-3.5 shrink-0" />
                     {likeCount !== null && <span>{likeCount}</span>}
@@ -443,7 +443,7 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, showToas
                                     !suggestion.trim() ||
                                     isSubmitting
                                 }
-                                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02] hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                                 {isSubmitting ? 'Sending...' : 'Send'}
                             </button>

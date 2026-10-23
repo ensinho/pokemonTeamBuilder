@@ -539,7 +539,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                 }}
                                 className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-2xs font-extrabold transition-all duration-200 bg-transparent ${isChamp
                                         ? 'border-yellow-500/40 text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500'
-                                        : 'border-border text-primary hover:bg-primary hover:text-white hover:border-primary'
+                                        : 'border-border text-primary hover:bg-primary hover:text-on-primary hover:border-primary'
                                     }`}
                                 title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
                             >
@@ -634,7 +634,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <span
                                                             className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-extrabold ${active
-                                                                    ? 'bg-primary text-white font-black'
+                                                                    ? 'bg-primary text-on-primary font-black'
                                                                     : 'bg-surface-raised border border-border text-muted font-bold'
                                                                 }`}
                                                         >
@@ -686,7 +686,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                                             className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-extrabold ${active
                                                                     ? isChamp
                                                                         ? 'bg-yellow-500 text-white font-black'
-                                                                        : 'bg-primary text-white font-black'
+                                                                        : 'bg-primary text-on-primary font-black'
                                                                     : 'bg-surface-raised border border-border text-muted font-bold'
                                                                 }`}
                                                         >
