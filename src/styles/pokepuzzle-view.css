@@ -597,7 +597,8 @@
 .pokepuzzle-share-preview-tile.is-present { background: var(--color-warning); }
 .pokepuzzle-share-preview-tile.is-absent { background: var(--pp-absent); }
 
-/* One next step (primary), one share (secondary), the rest quiet. */
+/* The forum post (primary), the link and the image as an equal pair under
+   it, then playing on, quiet. Every row spans the card's full width. */
 .pokepuzzle-result-actions {
     display: flex;
     flex-direction: column;
@@ -606,11 +607,10 @@
     margin-top: var(--space-1);
 }
 
-.pokepuzzle-result-more {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-1);
+.pokepuzzle-result-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
 }
 
 /* ---- Layout -------------------------------------------------------------- */

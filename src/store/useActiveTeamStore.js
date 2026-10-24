@@ -128,6 +128,33 @@ const getMegaStones = async () => {
     return {};
 };
 
+/**
+ * Writes the team to `public/data/teams` and returns its page's URL (/t/:id,
+ * SharedTeamView), in the sharer's language: it previews before anything is
+ * imported and unfurls as this team (api/render-meta.js, api/og.js). Null,
+ * with a toast, when the write fails.
+ */
+async function publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf) {
+    const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
+    const teamData = {
+        name: safeName,
+        pokemons: serializeTeam(teamMembers, megaStones, baseIdOf),
+        createdAt: new Date().toISOString(),
+    };
+    try {
+        await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
+        markJourney('shareLink');
+        track('team_shared', { size: teamMembers.length });
+        return new URL(
+            localizePath(`/t/${teamId}`, useLanguageStore.getState().language, deployBase()),
+            window.location.origin,
+        ).toString();
+    } catch {
+        toast.error(t('toast.shareLinkError'));
+        return null;
+    }
+}
+
 // Pre-Fairy (Gen 2–5) analysis, for playthroughs of older games. Per device,
 // like the builder's other view settings.
 const LEGACY_TYPES_KEY = 'ptb-legacy-types';
@@ -662,33 +689,49 @@ export const useActiveTeamStore = create((set, get) => ({
 
         set({ shareModal: { isOpen: true, shareUrl: '', pokemons: snippetPokemons, defaultTitle: safeName } });
 
-        const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
-        const teamData = {
-            name: safeName,
-            pokemons: serializeTeam(teamMembers, megaStones, baseIdOf),
-            createdAt: new Date().toISOString(),
-        };
-
-        try {
-            await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
-            markJourney('shareLink');
-            track('team_shared', { size: teamMembers.length });
-            // The team's own public page (/t/:id, SharedTeamView), in the
-            // sharer's language: it previews before anything is imported, and
-            // unfurls as this team (api/render-meta.js, api/og.js).
-            const shareUrl = new URL(
-                localizePath(`/t/${teamId}`, useLanguageStore.getState().language, deployBase()),
-                window.location.origin,
-            );
-            set((state) => {
-                if (state.shareModal.isOpen) {
-                    return { shareModal: { ...state.shareModal, shareUrl: shareUrl.toString() } };
-                }
-                return {};
-            });
-        } catch {
+        const shareUrl = await publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf);
+        if (!shareUrl) {
             set({ shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' } });
-            toast.error(t('toast.shareLinkError'));
+            return;
+        }
+        set((state) => {
+            if (state.shareModal.isOpen) {
+                return { shareModal: { ...state.shareModal, shareUrl } };
+            }
+            return {};
+        });
+    },
+
+    // The builder's "Link" button: publish the team and hand over its page's
+    // address — the OS share sheet on a touch device, the clipboard elsewhere.
+    // The "Image" button is shareTeamByData's snippet; "Forum" opens the feed.
+    copyTeamLink: async () => {
+        const { currentTeam, teamName } = get();
+        if (!db || !useAuthStore.getState().isAuthReady) {
+            toast.error(t('toast.dbNotReady'), { description: t('toast.dbNotReadyDesc') });
+            return;
+        }
+        if (currentTeam.length === 0) {
+            toast.warning(t('toast.shareEmptyTeam'), { description: t('toast.teamEmptyDesc') });
+            return;
+        }
+        const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
+        const name = teamName || 'Unnamed Team';
+        const url = await publishSharedTeam(currentTeam, name, megaStones, baseIdOf);
+        if (!url) return;
+        if (window.matchMedia?.('(pointer: coarse)').matches && navigator.share) {
+            try {
+                await navigator.share({ title: name, url });
+                return;
+            } catch (error) {
+                if (error?.name === 'AbortError') return;
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(url);
+            toast.success(t('builder.linkCopied'), { description: url });
+        } catch {
+            toast.info(url);
         }
     },
 

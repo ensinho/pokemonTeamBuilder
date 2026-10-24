@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Share2, Trash2, Dices, HelpCircle, Atom } from 'lucide-react';
+import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Trash2, Dices, HelpCircle, Atom } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
@@ -49,6 +49,7 @@ import { AnchoredPopover } from '../AnchoredPopover';
 import { useActiveTeamStore, selectIsTeamDirty, defaultTeamName } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { usePokedexStore } from '../../store/usePokedexStore';
+import { TeamShareRow } from '../TeamShareRow';
 
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
@@ -800,12 +801,12 @@ export function TeamBuilderView({
                             <ComposerMoreMenu
                                 items={[
                                     { id: 'random', label: t('builder.randomizeTeam'), icon: <Dices aria-hidden="true" />, onClick: () => handleRandomizeTeam?.(displayedPokemons), disabled: isRandomizing || displayedPokemons.length === 0 },
-                                    { id: 'share', label: t('builder.shareTeam'), icon: <Share2 aria-hidden="true" />, onClick: handleShareTeam },
                                     { id: 'sep', separator: true },
                                     { id: 'clear', label: t('builder.clearTeam'), icon: <Trash2 aria-hidden="true" />, onClick: handleClearTeam, danger: true, disabled: currentTeam.length === 0 && !teamName },
                                 ]}
                             />
                         </div>
+                        <TeamShareRow onImage={handleShareTeam} disabled={currentTeam.length === 0} />
 
                         {(!isPlaythrough || currentTeam.length > 0) && <div className="tb-team__tools">
                             {!isPlaythrough && (
