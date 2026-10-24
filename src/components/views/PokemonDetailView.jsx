@@ -8,7 +8,6 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { PokemonDetailPanel } from './PokemonDetailPanel';
 import { MobilePokemonDetailView } from './MobilePokemonDetailView';
-import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -60,7 +59,6 @@ export function PokemonDetailView({
         pokemon: indexEntry,
         title: displayName,
         description: `${displayName}${typeLabel ? ` (${typeLabel})` : ''} — base stats, abilities, moves, evolutions, and competitive movesets in Pokémon Team Builder.`,
-        image: getPokemonArtworkSpriteUrl(indexEntry.id),
         // Always canonicalize to the name slug (not whatever id/name variant was
         // actually visited) so /pokemon/25 and /pokemon/raichu consolidate to one URL.
         path: `/pokemon/${indexEntry.name}`,

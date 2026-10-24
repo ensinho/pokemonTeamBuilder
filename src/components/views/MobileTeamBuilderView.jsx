@@ -28,6 +28,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { ShowdownIcon, StarIcon } from '../icons';
 import { Loader } from '../Loader';
+import { TeamShareRow } from '../TeamShareRow';
 
 // Inline CSS custom properties for the per-type ring/tint behind a sprite.
 const typeVars = (pokemon) => {
@@ -638,6 +639,7 @@ export const MobileTeamBuilderView = ({
                                 <MoreHorizontal aria-hidden="true" />
                             </button>
                         </div>
+                        <TeamShareRow onImage={handleShareTeam} disabled={teamSize === 0} className="mt-2" />
 
                         <div className="team-builder-mobile__composer-analysis">
                             {teamSize === 0 ? (
@@ -941,9 +943,6 @@ export const MobileTeamBuilderView = ({
                             disabled={isRandomizing || displayedPokemons.length === 0}
                         >
                             <Dices aria-hidden="true" /> {t('builder.randomizeTeam')}
-                        </button>
-                        <button type="button" className="menu-item" onClick={runAction(handleShareTeam)}>
-                            <Share2 aria-hidden="true" /> {t('builder.shareTeam')}
                         </button>
                         {teamSize > 0 && (
                             <button type="button" className="menu-item" onClick={runAction(onOpenOnboarding)}>

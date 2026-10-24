@@ -228,6 +228,22 @@ export function FeedView({ showToast, navigate }) {
         return savedTeams?.[0] || null;
     }, [currentTeam, teamName, savedTeams]);
 
+    // `?compose=team` (the builder's "Forum" share button): open the composer
+    // with the team being built attached, once, then drop the param so Back
+    // or a refresh does not open it again.
+    const composeRequest = searchParams.get('compose');
+    useEffect(() => {
+        if (composeRequest !== 'team') return;
+        if (featuredTeam) openCreate({ team: featuredTeam, category: 'teams' });
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete('compose');
+            return next;
+        }, { replace: true });
+        // openCreate is a plain function remade each render; the request is the trigger.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [composeRequest]);
+
     // Back to the feed lands where the user left it.
     useLayoutEffect(() => {
         if (!isThreadOpen && feedScrollRef.current) feedScrollRef.current.scrollTop = savedFeedScroll;

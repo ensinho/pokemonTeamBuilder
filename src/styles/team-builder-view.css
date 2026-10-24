@@ -871,6 +871,18 @@
     margin-right: var(--space-1);
 }
 
+/* Share: link · image · forum, three equal columns under Save · Export
+   (TeamShareRow.jsx). Equal widths whatever the label length, so the row
+   reads as one control in either language. */
+.tb-share-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-1);
+}
+.tb-team__actions + .tb-share-row { margin-top: var(--space-2); }
+.tb-share-row .btn { min-width: 0; gap: var(--space-1); padding-inline: var(--space-2); }
+.tb-share-row .btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* Destructive, so it says so on hover — the one glyph in the row that does. */
 .btn.btn-ghost.tb-team__clear:hover:not(:disabled) {
     color: var(--color-danger);

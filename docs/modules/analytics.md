@@ -29,6 +29,7 @@ measures first.
 | `team_first_pokemon` | `useActiveTeamStore.handleAddPokemon` on an empty team | `pokemon_id` |
 | `team_saved` | `handleSaveTeam` success | `size` |
 | `team_shared` | `shareTeamByData` success | `size` |
+| `page_shared` | `useSharePage` (Pokémon page, `/best-teams`) | `page`: the app path |
 | `shared_team_view` | `SharedTeamView` loaded a team | `team_id`, `size` |
 | `shared_team_import` / `shared_team_build_own` | its two buttons | `team_id` |
 | `reminder_offer_view` / `_accept` / `_dismiss` | the "remind me tomorrow" offer after a daily win (`useReminderOffer`) | `topic`: `puzzle` or `challenge` |
@@ -65,3 +66,24 @@ before `initAnalytics()` — a product/legal decision, not taken here.
   `/api/og?puzzle=…` / `?challenge=…` — the same endpoint, so still 9 of 12.
   `og:url` keeps the `?r=` (Facebook and WhatsApp re-read that page); the
   canonical stays the bare game page, so the variants never get indexed.
+- **Pokémon and type pages unfurl as their answer (2026-10-24).** `og:image`
+  on `/pokemon/:name`, `/meta/:name` and `/types/:type` is `/api/og?pokemon=id`
+  / `?type=fire` (`pokemonCardTree` / `typeCardTree` in `api/_lib/ogImage.js`):
+  the Pokémon's types and what it is weak to, or the type's matchups and its
+  strongest Pokémon. Both read `pokemon-index.json` (shipped via
+  `includeFiles`); an unknown id or type is the usual 302.
+- **Sharing leads, symmetric everywhere (2026-10-24, Enzo).** The PokéPuzzle
+  result opens with *Publicar no fórum* (primary, full width), then
+  *Compartilhar* · *Imagem* side by side, then play again. The builder has
+  `TeamShareRow` under Save · Export: *Link* (`copyTeamLink` — publishes `/t/:id`
+  and copies it, or the OS sheet on touch), *Imagem* and *Fórum*
+  (`/feed?compose=team` opens the composer with the team). The Pokémon page and
+  `/best-teams` carry a share button (`useSharePage`).
+- **Share as image (`ShareSnippetModal`, 2026-10-24):** the preview comes
+  first, then style (Cartas · Pôster) and what the cards show or the poster's
+  background; the texts are behind *Editar textos* and redraw once typing
+  settles. The footer is one primary (*Compartilhar imagem* on a phone with the
+  OS file share, *Baixar imagem* elsewhere) over the builder's three: copy the
+  image, copy the link, post to the forum. A copy answers inside its button
+  (on a phone the toast stack covers this footer). The image's footer prints
+  the team's `/t/:id` address, not the repository.

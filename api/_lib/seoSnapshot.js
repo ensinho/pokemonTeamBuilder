@@ -21,6 +21,7 @@ const NAV = [
     ['/pokedex', 'pokedex'],
     ['/types', 'types'],
     ['/meta', 'meta'],
+    ['/best-teams', 'bestTeams'],
     ['/tournaments', 'tournaments'],
     ['/damage-calculator', 'damageCalculator'],
     ['/speed-tiers', 'speedTiers'],
@@ -34,7 +35,7 @@ const LANDING_LINKS = {
     builder: '/builder', pokedex: '/pokedex', calc: '/damage-calculator', meta: '/meta', types: '/types', challenge: '/challenge',
 };
 
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, pokemons = [] }) {
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, pokemons = [] }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
@@ -88,6 +89,23 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
         body.push(`<p>${link(`/meta/${pokemon.name}`, t('seo.metaPokemon.title', { name: formatSlug(pokemon.name) }))}</p>`);
     }
 
+    // The page's "Most used build" card (utils/mostUsedBuild.js): what players
+    // run on the ladder of the default format, each pick with its share.
+    if ((meta.key === 'pokemon' || meta.key === 'metaPokemon') && pokemon && build?.data) {
+        const b = build.data;
+        const label = (key) => escapeHtml(t(`pdetail.build.${key}`));
+        const pick = (p) => `${escapeHtml(p.name)} (${p.share}%)`;
+        const rows = [
+            b.item ? `${label('item')}: ${pick(b.item)}` : null,
+            b.ability ? `${label('ability')}: ${pick(b.ability)}` : null,
+            b.spread ? `${label('spread')}: ${escapeHtml([b.spread.nature, b.spread.evs].filter(Boolean).join(' · '))} (${b.spread.share}%)` : null,
+            b.tera ? `${label('tera')}: ${pick(b.tera)}` : null,
+            b.moves.length ? `${label('moves')}: ${b.moves.map(pick).join(', ')}` : null,
+        ].filter(Boolean);
+        body.push(`<h2>${escapeHtml(t('seo.snapshot.build', { name: formatSlug(pokemon.name), format: build.format }))}</h2>`);
+        body.push(list(rows));
+    }
+
     // What the page's "In tournaments" card shows (utils/tournamentPresence.js):
     // the teams that carried it and the partners it was built with.
     if ((meta.key === 'pokemon' || meta.key === 'metaPokemon') && pokemon && presence?.count) {
@@ -98,6 +116,7 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
             const event = [tm.tournament, tm.placement, tm.format].filter(Boolean).join(' · ');
             return `${link(`/tournaments/team/${tm.id}`, tm.title || tm.tournament)}${event ? ` — ${escapeHtml(event)}` : ''}`;
         })));
+        body.push(`<p>${link('/best-teams', t('seo.bestTeams.title'))}</p>`);
         if (presence.partners.length) {
             body.push(`<h2>${escapeHtml(t('seo.snapshot.tournamentPartners'))}</h2>`);
             body.push(list(presence.partners.map((p) => (

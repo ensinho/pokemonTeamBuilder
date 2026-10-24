@@ -1493,43 +1493,34 @@ export default function PokePuzzleView() {
                                     {/* After a daily win: the one moment "come back tomorrow" is worth asking. */}
                                     <ReminderOffer topic="puzzle" active={mode === 'daily' && isWon} />
 
+                                    {/* Sharing leads (2026-10-24, Enzo): the forum post is the
+                                        one action, the link and the image sit under it as equals,
+                                        and playing on comes last. Same order in both modes. */}
                                     <div className="pokepuzzle-result-actions">
+                                        <button type="button" onClick={handleShareToForum} className="btn btn-primary btn-lg btn-block">
+                                            <MessageSquare aria-hidden="true" />
+                                            {t('games.postToForum')}
+                                        </button>
+                                        <div className="pokepuzzle-result-pair">
+                                            <button type="button" onClick={handleShare} className="btn btn-secondary">
+                                                <Share2 aria-hidden="true" />
+                                                {t('games.share')}
+                                            </button>
+                                            <button type="button" onClick={handleShareImage} className="btn btn-secondary">
+                                                <Image aria-hidden="true" />
+                                                {t('games.shareImage')}
+                                            </button>
+                                        </div>
                                         {mode === 'daily' ? (
-                                            <>
-                                                <button type="button" onClick={() => setMode('ongoing')} className="btn btn-primary btn-lg btn-block">
-                                                    <RefreshIcon />
-                                                    {t('games.playFreeMode')}
-                                                </button>
-                                                <button type="button" onClick={handleShare} className="btn btn-secondary btn-block">
-                                                    <Share2 aria-hidden="true" />
-                                                    {t('games.share')}
-                                                </button>
-                                                <div className="pokepuzzle-result-more">
-                                                    <button type="button" onClick={handleShareImage} className="btn btn-ghost btn-sm">
-                                                        <Image aria-hidden="true" />
-                                                        {t('games.shareImage')}
-                                                    </button>
-                                                    <button type="button" onClick={handleShareToForum} className="btn btn-ghost btn-sm">
-                                                        <MessageSquare aria-hidden="true" />
-                                                        {t('games.postToForum')}
-                                                    </button>
-                                                </div>
-                                            </>
+                                            <button type="button" onClick={() => setMode('ongoing')} className="btn btn-ghost btn-block">
+                                                <RefreshIcon />
+                                                {t('games.playFreeMode')}
+                                            </button>
                                         ) : (
-                                            <>
-                                                <button type="button" onClick={startRandomOngoingGame} className="btn btn-primary btn-lg btn-block">
-                                                    <RefreshIcon />
-                                                    {t('pokepuzzle.playAgain')}
-                                                </button>
-                                                {/* Free mode had no sharing at all. It gets the forum
-                                                    one, since the payload distinguishes the modes. */}
-                                                <div className="pokepuzzle-result-more">
-                                                    <button type="button" onClick={handleShareToForum} className="btn btn-ghost btn-sm">
-                                                        <MessageSquare aria-hidden="true" />
-                                                        {t('games.postToForum')}
-                                                    </button>
-                                                </div>
-                                            </>
+                                            <button type="button" onClick={startRandomOngoingGame} className="btn btn-ghost btn-block">
+                                                <RefreshIcon />
+                                                {t('pokepuzzle.playAgain')}
+                                            </button>
                                         )}
                                     </div>
                                 </section>

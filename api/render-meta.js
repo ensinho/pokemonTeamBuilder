@@ -7,6 +7,7 @@ import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLoc
 import { SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
 import { tournamentPresence } from '../src/utils/tournamentPresence.js';
 import { bestTeamsSummary } from '../src/utils/bestTeams.js';
+import { mostUsedBuild } from '../src/utils/mostUsedBuild.js';
 import { decodeChallengeResult, decodePuzzleResult } from '../src/utils/resultShareCode.js';
 
 // Cache the pokemon index + tournament teams in memory across lambda invocations
@@ -33,6 +34,21 @@ try {
     }
 } catch (e) {
     console.error("Failed to load tournaments.json in render-meta:", e);
+}
+
+// The default format's usage (what the Pokémon page's "Most used build" card
+// reads): usage-index.json names the format, usage/<id>.json holds it.
+let defaultUsage = null;
+try {
+    const dir = path.join(process.cwd(), 'dist', 'data');
+    const index = JSON.parse(fs.readFileSync(path.join(dir, 'usage-index.json'), 'utf8'));
+    const file = path.join(dir, 'usage', `${index.default}.json`);
+    if (index.default && fs.existsSync(file)) {
+        const usage = JSON.parse(fs.readFileSync(file, 'utf8'));
+        defaultUsage = { label: usage.format?.label || index.default, byId: usage.byId || {} };
+    }
+} catch (e) {
+    console.error("Failed to load the default usage format in render-meta:", e?.message || e);
 }
 
 function findPokemon(param) {
@@ -70,6 +86,7 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
     const findT = data.findTeam || findTeam;
     const allPokemons = data.pokemons || pokemons;
     const allTeams = data.tournamentTeams || tournamentTeams;
+    const usage = data.usage === undefined ? defaultUsage : data.usage;
     let html = shell;
 
     const { language, appPath: rawAppPath } = splitLocalePath(urlPath);
@@ -145,7 +162,9 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
 
     const presence = context.pokemon ? tournamentPresence(allTeams, context.pokemon.id) : null;
     const bestTeams = meta.key === 'bestTeams' ? bestTeamsSummary(allTeams) : null;
-    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, presence, bestTeams, pokemons: allPokemons });
+    const buildData = context.pokemon && usage ? mostUsedBuild(usage.byId[context.pokemon.id]) : null;
+    const build = buildData ? { format: usage.label, data: buildData } : null;
+    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, presence, bestTeams, build, pokemons: allPokemons });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
 
     return { html, language, meta };

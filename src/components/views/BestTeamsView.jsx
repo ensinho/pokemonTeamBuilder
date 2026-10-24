@@ -14,6 +14,8 @@ import { EmptyState } from '../EmptyState';
 import { Loader } from '../Loader';
 import { MonSprite, SourceCredit } from './metaShared';
 import { TournamentTeamCard } from './TournamentTeamCard';
+import { Share2 } from 'lucide-react';
+import { useSharePage } from '../../hooks/useSharePage';
 
 /**
  * The best teams of the current regulation (`/best-teams`, 2026-10-24), for
@@ -58,6 +60,7 @@ export function BestTeamsView({ onOpenTeam }) {
     const { linkState } = useEntityNavigate();
     const { teams, status } = useTournamentData();
     const summary = useMemo(() => bestTeamsSummary(teams), [teams]);
+    const sharePage = useSharePage();
     useDocumentMeta({ path: '/best-teams' });
 
     if (status === 'loading') return <Loader size="lg" block />;
@@ -74,6 +77,10 @@ export function BestTeamsView({ onOpenTeam }) {
                 <div className="bt-hero__actions">
                     <Link to="/builder" className="btn btn-primary">{t('bestTeamsPage.buildOwn')}</Link>
                     <Link to="/tournaments" className="btn btn-outline">{t('bestTeamsPage.allTeams')}</Link>
+                    <button type="button" className="btn btn-outline" onClick={() => sharePage('/best-teams', t('bestTeamsPage.title', { format }))}>
+                        <Share2 aria-hidden="true" />
+                        {t('common.sharePage')}
+                    </button>
                 </div>
             </header>
 

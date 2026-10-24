@@ -44,7 +44,7 @@
     },
     "api/og.js": {
       "maxDuration": 15,
-      "includeFiles": "{node_modules/@resvg/resvg-wasm/index_bg.wasm,node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-*-normal.woff}",
+      "includeFiles": "{node_modules/@resvg/resvg-wasm/index_bg.wasm,node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-*-normal.woff,dist/data/pokemon-index.json}",
       "excludeFiles": "api/**/*.test.js"
     }
   },

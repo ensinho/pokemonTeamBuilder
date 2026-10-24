@@ -59,25 +59,41 @@ const alternates = (loc) => [
     `    <xhtml:link rel="alternate" hreflang="x-default" href="${absolute(loc, LANGUAGES[0])}"/>`,
 ].join('\n');
 
-const urlEntries = ({ loc, changefreq, priority }) => LANGUAGES.map((language) => `  <url>
+// `lastmod` only where a dataset says when the page's content last changed
+// (2026-10-24): Google discounts a sitemap whose dates move every build.
+const urlEntries = ({ loc, changefreq, priority, lastmod }) => LANGUAGES.map((language) => `  <url>
     <loc>${absolute(loc, language)}</loc>
-${alternates(loc)}
+${alternates(loc)}${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ''}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`).join('\n');
 
+const dayOf = (iso) => (typeof iso === 'string' && /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : null);
+const latest = (...days) => days.filter(Boolean).sort().at(-1) || null;
+
 const main = async () => {
-    const entries = [...STATIC_ROUTES];
+    // When the data behind the pages last changed: the tournament teams (best
+    // teams, tournaments, each Pokémon's "In tournaments") and the default
+    // format's usage (each Pokémon's "Most used build", the Meta pages).
+    const tournaments = await readJson(DATA_DIR, 'tournaments.json');
+    const usageIndex = await readJson(DATA_DIR, 'usage-index.json');
+    const defaultUsage = usageIndex?.default ? await readJson(DATA_DIR, 'usage', `${usageIndex.default}.json`) : null;
+    const tournamentsDay = dayOf(tournaments?.generatedAt);
+    const usageDay = dayOf(defaultUsage?.generatedAt);
+
+    const entries = STATIC_ROUTES.map((route) => (['/best-teams', '/tournaments'].includes(route.loc)
+        ? { ...route, lastmod: tournamentsDay }
+        : route));
 
     const pokemonIndex = await readJson(DATA_DIR, 'pokemon-index.json');
     const pokemons = pokemonIndex?.pokemons || [];
+    const pokemonDay = latest(tournamentsDay, usageDay);
     for (const p of pokemons) {
-        if (p?.name) entries.push({ loc: `/pokemon/${p.name}`, changefreq: 'monthly', priority: '0.6' });
+        if (p?.name) entries.push({ loc: `/pokemon/${p.name}`, changefreq: 'monthly', priority: '0.6', lastmod: pokemonDay });
     }
 
     // /meta/:name only for Pokémon that actually have usage data in some format —
     // an empty usage page for an unused Pokémon is thin content not worth indexing.
-    const usageIndex = await readJson(DATA_DIR, 'usage-index.json');
     if (usageIndex?.formats?.length && pokemons.length) {
         const nameById = new Map(pokemons.map((p) => [String(p.id), p.name]));
         const usedIds = new Set();
@@ -87,7 +103,7 @@ const main = async () => {
         }
         for (const id of usedIds) {
             const name = nameById.get(id);
-            if (name) entries.push({ loc: `/meta/${name}`, changefreq: 'weekly', priority: '0.6' });
+            if (name) entries.push({ loc: `/meta/${name}`, changefreq: 'weekly', priority: '0.6', lastmod: usageDay });
         }
     }
 
@@ -102,7 +118,6 @@ const main = async () => {
         if (item?.slug) entries.push({ loc: `/items/${item.slug}`, changefreq: 'monthly', priority: '0.4' });
     }
 
-    const tournaments = await readJson(DATA_DIR, 'tournaments.json');
     for (const team of tournaments?.teams || []) {
         if (team?.id) entries.push({ loc: `/tournaments/team/${team.id}`, changefreq: 'monthly', priority: '0.5' });
     }

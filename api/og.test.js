@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import handler, { renderTeamCard } from './og.js';
-import { resultCardTree, teamCardTree } from './_lib/ogImage.js';
+import { pokemonCardTree, resultCardTree, teamCardTree } from './_lib/ogImage.js';
 
 const team = { id: 'x', name: 'Chuva', pokemons: [{ id: 6, name: 'charizard' }, { id: 130, name: 'gyarados' }] };
 const noNetwork = async () => ({ ok: false });
@@ -73,5 +73,32 @@ describe('api/og daily results', () => {
         expect(challenge).toContain('Venci a Cynthia em 14 turnos');
         expect(challenge).toContain('3 Pokémon de pé');
         expect(challenge).toContain('Desafio da Campeã');
+    });
+});
+
+describe('api/og reference pages', () => {
+    it('draws a Pokémon card and a type card even when the artwork fails', async () => {
+        for (const url of ['/api/og?pokemon=445&lang=pt', '/api/og?type=fire&lang=en']) {
+            const res = fakeRes();
+            await handler({ url }, res);
+            expect(res.code, url).toBe(200);
+            expect(Buffer.from(res.body).readUInt32BE(16)).toBe(1200);
+        }
+    }, 30000);
+
+    it('answers an unknown Pokémon or type with the default card', async () => {
+        for (const url of ['/api/og?pokemon=99999', '/api/og?type=shadow', '/api/og?type=<b>']) {
+            const res = fakeRes();
+            await handler({ url }, res);
+            expect(res.code, url).toBe(302);
+        }
+    });
+
+    it('writes the weaknesses in the requested language', () => {
+        const tree = JSON.stringify(pokemonCardTree({ id: 445, name: 'garchomp', types: ['dragon', 'ground'], baseStats: { hp: 108, attack: 130, defense: 95, 'special-attack': 80, 'special-defense': 85, speed: 102 } }, null, 'pt'));
+        expect(tree).toContain('Fraco contra');
+        expect(tree).toContain('Gelo 4×');
+        expect(tree).toContain('Imune a Elétrico');
+        expect(tree).toContain('Soma de status 600');
     });
 });

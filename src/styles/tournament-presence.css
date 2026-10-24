@@ -75,7 +75,7 @@
 .tp__go { width: 1rem; height: 1rem; flex-shrink: 0; color: var(--color-muted); }
 .tp__team:hover .tp__go { color: var(--color-primary); }
 
-.tp__all { align-self: flex-start; }
+.tp__links { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
 @media (max-width: 640px) {
     .tp__mini { width: 1.75rem; height: 1.75rem; }

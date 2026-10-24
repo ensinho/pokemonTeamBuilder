@@ -16,6 +16,7 @@ const data = {
     pokemons,
     findPokemon: (p) => pokemons.find((x) => x.name === p || String(x.id) === p) || null,
     findTeam: (id) => (id === 'worlds' ? { id, title: 'Worlds winner', tournament: 'Worlds', placement: '1st', pokemons: [{ name: 'Incineroar' }] } : null),
+    usage: { label: 'VGC Reg M-C', byId: { 6: { n: 100, usage: 12, items: [{ name: 'Charizardite Y', count: 61 }], abilities: [{ name: 'Blaze', count: 100 }], moves: [{ name: 'Heat Wave', count: 90 }, { name: 'Protect', count: 80 }], spreads: [{ nature: 'Timid', evs: { spa: 32, spe: 32 }, count: 40 }] } } },
     tournamentTeams: [
         { id: 'w1', title: 'Wolfe\'s team', tournament: 'Worlds 2026', placement: '1st', format: 'Reg M-B', pokemons: [{ id: 6, name: 'Charizard-Mega-Y' }, { id: 4, name: 'Charmander' }] },
         { id: 'r2', title: 'Regional pick', tournament: 'Lille', pokemons: [{ id: 4, name: 'Charmander' }] },
@@ -70,6 +71,9 @@ describe('render-meta buildPage', () => {
         expect(snapshot).toContain('href="/pt/types/rock">Pedra</a> (4×)');
         expect(snapshot).toContain('Velocidade: 100');
         expect(snapshot).toContain('href="/pt/meta/charizard"');
+        // Its link preview is the card api/og.js draws for it.
+        expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?pokemon=6&amp;lang=pt');
+        expect(attr(page('/types/water'), /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?type=water&amp;lang=en');
     });
 
     it('lists the tournament teams and partners of a Pokémon, as its page shows them', () => {
@@ -105,6 +109,14 @@ describe('render-meta buildPage', () => {
         expect(html).toContain('<h2>Pokémon mais usados</h2>');
         expect(html).toContain('href="/pt/pokemon/charmander">Charmander</a> (100% dos times)');
         expect(html).toContain('href="/pt/pokemon/charmander">Charmander</a> + <a href="/pt/pokemon/charizard">Charizard Mega Y</a>');
+    });
+
+    it('writes the most used build of a Pokémon in the default format', () => {
+        const html = page('/pt/pokemon/charizard');
+        expect(html).toContain('<h2>Charizard: build mais usada em VGC Reg M-C</h2>');
+        expect(html).toContain('<li>Item: Charizardite Y (61%)</li>');
+        expect(html).toContain('<li>Natureza e EVs: Timid · 32 SpA / 32 Spe (40%)</li>');
+        expect(html).toContain('<li>Golpes: Heat Wave (90%), Protect (80%)</li>');
     });
 
     it('lists only base-form Pokémon on a type page', () => {

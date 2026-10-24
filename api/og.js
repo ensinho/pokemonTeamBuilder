@@ -14,8 +14,9 @@
 
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import path from 'node:path';
 import { fetchSharedTeam } from './_lib/sharedTeam.js';
-import { OG_SIZE, RESULT_DECODERS, artworkUrl, resultCardTree, teamCardTree } from './_lib/ogImage.js';
+import { OG_SIZE, RESULT_DECODERS, artworkUrl, pokemonCardTree, resultCardTree, strongestOfType, teamCardTree, typeCardTree } from './_lib/ogImage.js';
 
 const require = createRequire(import.meta.url);
 const IMAGE_TIMEOUT_MS = 2500;
@@ -73,6 +74,55 @@ export async function renderResultCard(kind, data, language = 'en') {
     return new Resvg(svg, { fitTo: { mode: 'width', value: OG_SIZE.width } }).render().asPng();
 }
 
+// The baked index (render-meta reads the same file): dist/ in a deployment
+// (vercel.json includeFiles), public/ in a local run. Read once per instance.
+let indexPromise = null;
+const loadPokemonIndex = () => {
+    if (!indexPromise) {
+        indexPromise = (async () => {
+            for (const dir of ['dist', 'public']) {
+                try {
+                    const raw = await readFile(path.join(process.cwd(), dir, 'data', 'pokemon-index.json'), 'utf8');
+                    return JSON.parse(raw).pokemons || [];
+                } catch { /* try the next place */ }
+            }
+            return [];
+        })();
+    }
+    return indexPromise;
+};
+
+/** The PNG for a Pokémon's page (`/pokemon/:name`), or null for an unknown id. */
+export async function renderPokemonCard(id, language = 'en', { fetchImpl } = {}) {
+    const pokemon = (await loadPokemonIndex()).find((p) => p.id === Number(id));
+    if (!pokemon) return null;
+    const { satori, Resvg, fonts } = await loadDeps();
+    const image = await fetchImage(artworkUrl(pokemon), fetchImpl);
+    const svg = await satori(pokemonCardTree(pokemon, image, language), { ...OG_SIZE, fonts });
+    return new Resvg(svg, { fitTo: { mode: 'width', value: OG_SIZE.width } }).render().asPng();
+}
+
+/** The PNG for a type's page (`/types/:type`), or null for an unknown type. */
+export async function renderTypeCard(type, language = 'en', { fetchImpl } = {}) {
+    if (!TYPE_IDS_SAFE.has(type)) return null;
+    const { satori, Resvg, fonts } = await loadDeps();
+    const top = strongestOfType(await loadPokemonIndex(), type);
+    const images = await Promise.all(top.map((p) => fetchImage(artworkUrl(p), fetchImpl)));
+    const svg = await satori(typeCardTree(type, top, images, language), { ...OG_SIZE, fonts });
+    return new Resvg(svg, { fitTo: { mode: 'width', value: OG_SIZE.width } }).render().asPng();
+}
+
+const TYPE_IDS_SAFE = new Set(['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy']);
+
+const sendPng = (res, png, cacheControl) => {
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', cacheControl);
+    return res.status(200).send(Buffer.from(png));
+};
+
+// A reference card changes only when a deploy changes the data under it.
+const REFERENCE_CACHE = 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400';
+
 const fallback = (res) => {
     res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300');
     res.setHeader('Location', '/og-image.png');
@@ -83,6 +133,14 @@ export default async function handler(req, res) {
     try {
         const url = new URL(req.url, 'https://pokemonbuilder.app');
         const language = url.searchParams.get('lang') === 'pt' ? 'pt' : 'en';
+        if (url.searchParams.has('pokemon')) {
+            const png = await renderPokemonCard(url.searchParams.get('pokemon'), language);
+            return png ? sendPng(res, png, REFERENCE_CACHE) : fallback(res);
+        }
+        if (url.searchParams.has('type')) {
+            const png = await renderTypeCard(url.searchParams.get('type'), language);
+            return png ? sendPng(res, png, REFERENCE_CACHE) : fallback(res);
+        }
         for (const [kind, decode] of Object.entries(RESULT_DECODERS)) {
             if (!url.searchParams.has(kind)) continue;
             const data = decode(url.searchParams.get(kind));

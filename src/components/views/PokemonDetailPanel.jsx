@@ -4,7 +4,7 @@ import { useUrlTab } from '../../hooks/useUrlTab';
 const DETAIL_TABS = ['data', 'competitive', 'locations', 'moves', 'sprites'];
 import {
     MapPin, Star, Sparkles, ChevronRight, Compass, Footprints, Waves, Fish, Gift, Music,
-    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, Check, ChevronLeft, Trophy, ScrollText,
+    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, Check, ChevronLeft, Trophy, ScrollText, Share2,
 } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
@@ -23,6 +23,10 @@ import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
 import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
+import { useSharePage } from '../../hooks/useSharePage';
+import { titleCaseSlug } from '../../utils/smogonSets';
+import { MostUsedBuild } from '../MostUsedBuild';
+import { useMostUsedBuild } from '../../hooks/useMostUsedBuild';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -72,6 +76,8 @@ export function PokemonDetailPanel({
     // In the URL (?tab=): Pikachu → Moves → a move → Back used to land on Data.
     const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
     const tournamentPresence = useTournamentPresence(pokemonId);
+    const build = useMostUsedBuild(pokemonId);
+    const sharePage = useSharePage();
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
     // The sparkle a shiny makes, fired by the two buttons that earn it.
     const shinyBurst = useShinyBurst();
@@ -439,6 +445,16 @@ export function PokemonDetailPanel({
                         </div>
                     </div>
 
+                    {build && (
+                        <div className="rounded-xl bg-surface p-4 border border-border">
+                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 mb-3">
+                                <Swords className="w-3.5 h-3.5 text-primary" />
+                                <span>{t('pdetail.build.title')}</span>
+                            </h4>
+                            <MostUsedBuild pokemonId={pokemonId} build={build} />
+                        </div>
+                    )}
+
                     {tournamentPresence && (
                         <div className="rounded-xl bg-surface p-4 border border-border">
                             <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 mb-3">
@@ -717,6 +733,16 @@ export function PokemonDetailPanel({
                         {tb.icon}<span>{tb.label}</span>
                     </button>
                 ))}
+                {selectedPokemonDetails && (
+                    <button
+                        type="button"
+                        onClick={() => sharePage(`/pokemon/${selectedPokemonDetails.name}`, titleCaseSlug(selectedPokemonDetails.name))}
+                        className="pb-2.5 px-3 ml-auto flex items-center gap-1.5 font-bold text-sm text-muted hover:text-primary transition-colors shrink-0"
+                    >
+                        <Share2 className="w-4 h-4 shrink-0" />
+                        <span>{t('common.sharePage')}</span>
+                    </button>
+                )}
             </div>
 
             <div className="flex-1">{renderDetailsContent()}</div>
