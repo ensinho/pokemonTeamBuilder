@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-09T01:14:23.125Z",
+  "generatedAt": "2026-09-15T12:17:05.209Z",
   "source": "https://pokeapi.co/api/v2/pokemon?limit=100000",
   "baseCount": 1025,
-  "formCount": 188,
+  "formCount": 194,
   "pokemons": [
     {
       "id": 1,
@@ -20861,6 +20861,68 @@
       }
     },
     {
+      "id": 10250,
+      "name": "Paldean Tauros Combat Breed",
+      "apiName": "tauros-paldea-combat-breed",
+      "url": "https://pokeapi.co/api/v2/pokemon/10250/",
+      "types": [
+        "fighting"
+      ],
+      "generation": "generation-i",
+      "baseId": 128,
+      "isForm": true,
+      "baseStats": {
+        "hp": 75,
+        "attack": 110,
+        "defense": 105,
+        "special-attack": 30,
+        "special-defense": 70,
+        "speed": 100
+      }
+    },
+    {
+      "id": 10251,
+      "name": "Paldean Tauros Blaze Breed",
+      "apiName": "tauros-paldea-blaze-breed",
+      "url": "https://pokeapi.co/api/v2/pokemon/10251/",
+      "types": [
+        "fighting",
+        "fire"
+      ],
+      "generation": "generation-i",
+      "baseId": 128,
+      "isForm": true,
+      "baseStats": {
+        "hp": 75,
+        "attack": 110,
+        "defense": 105,
+        "special-attack": 30,
+        "special-defense": 70,
+        "speed": 100
+      }
+    },
+    {
+      "id": 10252,
+      "name": "Paldean Tauros Aqua Breed",
+      "apiName": "tauros-paldea-aqua-breed",
+      "url": "https://pokeapi.co/api/v2/pokemon/10252/",
+      "types": [
+        "fighting",
+        "water"
+      ],
+      "generation": "generation-i",
+      "baseId": 128,
+      "isForm": true,
+      "baseStats": {
+        "hp": 75,
+        "attack": 110,
+        "defense": 105,
+        "special-attack": 30,
+        "special-defense": 70,
+        "speed": 100
+      }
+    },
+    {
       "id": 10253,
       "name": "Paldean Wooper",
       "apiName": "wooper-paldea",
@@ -20899,6 +20961,69 @@
         "special-attack": 59,
         "special-defense": 90,
         "speed": 65
+      }
+    },
+    {
+      "id": 10273,
+      "name": "Ogerpon Wellspring Mask",
+      "apiName": "ogerpon-wellspring-mask",
+      "url": "https://pokeapi.co/api/v2/pokemon/10273/",
+      "types": [
+        "grass",
+        "water"
+      ],
+      "generation": "generation-ix",
+      "baseId": 1017,
+      "isForm": true,
+      "baseStats": {
+        "hp": 80,
+        "attack": 120,
+        "defense": 84,
+        "special-attack": 60,
+        "special-defense": 96,
+        "speed": 110
+      }
+    },
+    {
+      "id": 10274,
+      "name": "Ogerpon Hearthflame Mask",
+      "apiName": "ogerpon-hearthflame-mask",
+      "url": "https://pokeapi.co/api/v2/pokemon/10274/",
+      "types": [
+        "grass",
+        "fire"
+      ],
+      "generation": "generation-ix",
+      "baseId": 1017,
+      "isForm": true,
+      "baseStats": {
+        "hp": 80,
+        "attack": 120,
+        "defense": 84,
+        "special-attack": 60,
+        "special-defense": 96,
+        "speed": 110
+      }
+    },
+    {
+      "id": 10275,
+      "name": "Ogerpon Cornerstone Mask",
+      "apiName": "ogerpon-cornerstone-mask",
+      "url": "https://pokeapi.co/api/v2/pokemon/10275/",
+      "types": [
+        "grass",
+        "rock"
+      ],
+      "generation": "generation-ix",
+      "baseId": 1017,
+      "isForm": true,
+      "baseStats": {
+        "hp": 80,
+        "attack": 120,
+        "defense": 84,
+        "special-attack": 60,
+        "special-defense": 96,
+        "speed": 110
       }
     },
     {

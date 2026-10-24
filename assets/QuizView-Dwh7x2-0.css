@@ -1,0 +1,1 @@
+.quiz-hub{display:flex;flex-direction:column;gap:var(--space-4);min-width:0}.quiz-hub__modes{align-self:flex-start;margin-inline:var(--space-2)}@media (max-width: 639px){.quiz-hub__modes{--seg-h: var(--control-h-lg);display:flex;align-self:stretch}.quiz-hub__modes>.segmented__item{flex:1 1 0}}
