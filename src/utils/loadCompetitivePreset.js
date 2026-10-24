@@ -10,15 +10,12 @@
 
 import { primaryMoves } from './smogonSets';
 import { looksLikeStatPoints, statPointSpreadToEvs } from './statPoints';
+import { loadStaticData } from '../services/staticData';
 
-const dayStamp = () => {
-    const d = new Date();
-    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-};
-const url = (file) => `${import.meta.env.BASE_URL || '/'}data/${file}`.replace(/([^:])\/{2,}/g, '$1/') + `?d=${dayStamp()}`;
-
+// The same shared request the hooks make (services/staticData.js): adding a
+// member must not download smogon.json a second time.
 const loadJson = async (file) => {
-    try { const r = await fetch(url(file)); if (r.ok) return await r.json(); } catch (_) { /* optional */ }
+    try { return await loadStaticData(file); } catch (_) { /* optional */ }
     return null;
 };
 

@@ -26,6 +26,7 @@ import { track } from '../services/analytics';
 import { localizePath } from '../utils/localePath';
 import { deployBase } from '../services/localeHistory';
 import { useLanguageStore } from './useLanguageStore';
+import { loadStaticData } from '../services/staticData';
 
 export const SHOWDOWN_TEAMBUILDER_URL = 'https://play.pokemonshowdown.com/teambuilder';
 
@@ -117,18 +118,10 @@ const teamScale = (team) => (team.length > 0 && team.every((m) => m?.customizati
 // for them, so a team saved right after a tap is not stored half-built.
 const pendingAdds = new Set();
 
-let cachedMegaStones = null;
+// The request every sprite's useMegaStones shares (services/staticData.js).
 const getMegaStones = async () => {
-    if (cachedMegaStones) return cachedMegaStones;
     try {
-        const basePath = import.meta.env.BASE_URL || '/';
-        const url = `${basePath}data/mega-stones.json`.replace(/([^:])\/{2,}/g, '$1/');
-        const res = await fetch(url);
-        if (res.ok) {
-            const data = await res.json();
-            cachedMegaStones = data?.byStone || {};
-            return cachedMegaStones;
-        }
+        return (await loadStaticData('mega-stones.json'))?.byStone || {};
     } catch (e) {
         console.error("Failed to load mega stones in store", e);
     }

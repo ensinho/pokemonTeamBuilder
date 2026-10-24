@@ -69,6 +69,8 @@ Three-tier cache for PokéAPI data, all funneled through `fetchJsonCached`:
 
 When changing how Pokémon data is fetched, work through this service — never `fetch` PokéAPI directly from components. If you add new static data, regenerate the manifest via the `data:cache` scripts.
 
+**The other baked datasets** (Smogon sets, usage, tournaments, mega stones, move types, gyms…) load through **`src/services/staticData.js`**: `useStaticData(file)` in components, `loadStaticData(file)` elsewhere — one request per file per session, shared by every caller. Never `fetch` a `public/data` file in a hook's own effect: a hook runs per mounted component, and the Competitive tab once asked for `mega-stones.json` 36 times and dropped the PWA's connection (`docs/wounds.md`, 2026-10-23). `src/services/staticData.guard.test.js` fails if it comes back.
+
 ### Firestore data model
 All documents are namespaced under `artifacts/${appId}/` (`appId` from `VITE_APP_ID`, default `pokemonTeamBuilder`):
 - `users/{userId}/teams`, `users/{userId}/quizRuns` — per-user private data.
