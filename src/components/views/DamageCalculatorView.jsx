@@ -32,7 +32,7 @@ const SPREAD_MOVES = [
 ];
 
 const BATTLE_ABILITIES = [
-    { value: '', label: '(No Ability / Neutral)' },
+    { value: '', label: null }, // `damageCalc.noAbility`, in the page's language
     { value: 'sheer-force', label: 'Sheer Force' },
     { value: 'huge-power', label: 'Huge Power' },
     { value: 'pure-power', label: 'Pure Power' },
@@ -129,29 +129,35 @@ const STAT_COLOR_VAR = {
     speed: '--stat-spe',
 };
 
-const WEATHERS = [
-    { v: 'none', l: 'None' }, { v: 'sun', l: 'Sun' }, { v: 'rain', l: 'Rain' },
-    { v: 'sand', l: 'Sand' }, { v: 'snow', l: 'Snow' },
-];
-const TERRAINS = [
-    { v: 'none', l: 'None' }, { v: 'electric', l: 'Electric' }, { v: 'grassy', l: 'Grassy' },
-    { v: 'misty', l: 'Misty' }, { v: 'psychic', l: 'Psychic' },
+// Labels under `damageCalc.weathers.*` / `damageCalc.terrains.*`.
+const WEATHERS = ['none', 'sun', 'rain', 'sand', 'snow'];
+const TERRAINS = ['none', 'electric', 'grassy', 'misty', 'psychic'];
+const STATUSES = ['healthy', 'burned', 'poisoned', 'paralyzed', 'asleep', 'frozen'];
+const ATTACKER_BOOSTS = ['helpingHand', 'battery', 'powerSpot', 'steelySpirit'];
+// Move and ability names, which stay in English (see translations: damageCalc).
+const DEFENDER_SCREENS = [
+    { key: 'reflect', label: 'Reflect' },
+    { key: 'lightScreen', label: 'Light Screen' },
+    { key: 'auroraVeil', label: 'Aurora Veil' },
+    { key: 'friendGuard', label: 'Friend Guard' },
+    { key: 'stealthRock', label: 'Stealth Rock' },
 ];
 
 const capitalize = (s = '') => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 const prettify = (s = '') => s.replace(/-/g, ' ');
 
-const NATURE_OPTIONS = NATURES.map((n) => {
+// Nature names stay English, like the builder's; "Neutral" follows the page.
+const natureOptions = (neutral) => NATURES.map((n) => {
     const mod = NATURE_MODIFIERS[n];
     const label = mod.plus
         ? `${capitalize(n)} (+${STAT_LABELS[mod.plus]} / −${STAT_LABELS[mod.minus]})`
-        : `${capitalize(n)} (Neutral)`;
+        : `${capitalize(n)} (${neutral})`;
     return { value: n, label };
 }).sort((a, b) => a.label.localeCompare(b.label));
 
 // Compact effectiveness label for a move's roll, e.g. 2 → "2×", 0.25 → "¼×".
-const effectivenessLabel = (e) => {
-    if (e === 0) return 'Immune';
+const effectivenessLabel = (e, immune) => {
+    if (e === 0) return immune;
     if (e === 0.25) return '¼×';
     if (e === 0.5) return '½×';
     if (e === 2) return '2×';
@@ -288,8 +294,24 @@ const initialPokemonState = (isAttacker) => ({
     baseStats: { hp: 100, attack: 100, defense: 100, 'special-attack': 100, 'special-defense': 100, speed: 100 }
 });
 
+/**
+ * The KO line in the page's language, from the result's numbers (koHits,
+ * koGuaranteed, koChance). `koText` is the same in English, kept for the
+ * copied calc, which follows Showdown's format.
+ */
+const koLabel = (r, t) => {
+    if (r.koHits === Infinity) return t('damageCalc.ko.none');
+    if (r.koHits === 0) return t('damageCalc.ko.hazards');
+    if (r.koHits >= 5 && !r.koGuaranteed) return t('damageCalc.ko.worse');
+    if (r.koGuaranteed) return t('damageCalc.ko.guaranteed', { n: r.koHits });
+    return r.koChance != null
+        ? t('damageCalc.ko.possibleChance', { n: r.koHits, chance: r.koChance })
+        : t('damageCalc.ko.possible', { n: r.koHits });
+};
+
 export function DamageCalculatorView() {
-    useTranslation();
+    const { t } = useTranslation();
+    const NATURE_OPTIONS = useMemo(() => natureOptions(t('damageCalc.neutral')), [t]);
     useDocumentMeta({
         title: 'Damage Calculator',
         description: 'Calculate exact Pokémon damage ranges for any matchup, factoring stats, items, abilities, weather, and Tera type.',
@@ -503,7 +525,7 @@ export function DamageCalculatorView() {
     const handleSwap = () => {
         setP1(p2);
         setP2(p1);
-        useToastStore.getState().showToast('Swapped Pokémon.', 'info');
+        useToastStore.getState().showToast(t('damageCalc.swapped'), 'info');
     };
 
     const handleResetAll = () => {
@@ -515,14 +537,14 @@ export function DamageCalculatorView() {
         } catch {
             // ignore storage errors
         }
-        useToastStore.getState().showToast('Reset all values.', 'info');
+        useToastStore.getState().showToast(t('damageCalc.reset'), 'info');
     };
 
     const copyRow = (atk, def, move, r, fieldObj) => {
         const text = matchupSummary(atk, def, move, r, fieldObj);
         if (!text) return;
         navigator.clipboard.writeText(text);
-        useToastStore.getState().showToast('Calculation copied!', 'success');
+        useToastStore.getState().showToast(t('damageCalc.copied'), 'success');
     };
 
     // vgcmulticalc-style two-way damage: every move each Pokémon carries, resolved
@@ -579,7 +601,7 @@ export function DamageCalculatorView() {
         return (
             <div key={key} className="flex items-center gap-1.5">
                 <span className="w-7 shrink-0 text-2xs font-bold" style={{ color: statColor }}>{STAT_LABELS[key]}</span>
-                <span className="w-6 shrink-0 text-center text-2xs font-medium text-muted" title="Base">{pState.baseStats?.[key] || 0}</span>
+                <span className="w-6 shrink-0 text-center text-2xs font-medium text-muted" title={t('damageCalc.base')}>{pState.baseStats?.[key] || 0}</span>
                 <input
                     type="number" min="0" max="31"
                     value={iv}
@@ -605,7 +627,7 @@ export function DamageCalculatorView() {
                     aria-label={`${key.replace(/-/g, ' ')} EV value`}
                     className="w-10 shrink-0 text-center bg-bg border border-border rounded text-2xs py-0.5 font-mono focus:border-primary focus:outline-none"
                 />
-                <span className={`w-7 shrink-0 text-right font-bold text-2xs font-mono ${natureColor}`} title="Total">{calculated}</span>
+                <span className={`w-7 shrink-0 text-right font-bold text-2xs font-mono ${natureColor}`} title={t('damageCalc.total')}>{calculated}</span>
             </div>
         );
     };
@@ -642,18 +664,13 @@ export function DamageCalculatorView() {
                         <PokemonPicker pokemons={allPokemons} value={pState.pokemon} onSelect={(p) => handleSelectPokemon(side, p)} />
                         <div className="grid grid-cols-2 gap-2">
                             <div>
-                                <label className="dmg-field__label">Level</label>
+                                <label className="dmg-field__label">{t('damageCalc.level')}</label>
                                 <NumberCounter value={pState.level} onChange={(v) => setP(prev => ({ ...prev, level: v }))} min={1} max={100} className="w-full" />
                             </div>
                             <div>
-                                <label className="dmg-field__label">Status</label>
+                                <label className="dmg-field__label">{t('damageCalc.status')}</label>
                                 <select className="dmg-select text-xs" value={pState.status} onChange={(e) => setP(prev => ({ ...prev, status: e.target.value }))}>
-                                    <option value="healthy">Healthy</option>
-                                    <option value="burned">Burned</option>
-                                    <option value="poisoned">Poisoned</option>
-                                    <option value="paralyzed">Paralyzed</option>
-                                    <option value="asleep">Asleep</option>
-                                    <option value="frozen">Frozen</option>
+                                    {STATUSES.map((st) => <option key={st} value={st}>{t(`damageCalc.statuses.${st}`)}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -665,33 +682,38 @@ export function DamageCalculatorView() {
                     simply never sees it. */}
                 {showTeraType && (
                     <div className="dmg-subpanel bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
-                        <Switch size="sm" checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" tone={accent} />
-                        <select
-                            className="dmg-select text-xs py-1 w-28"
-                            value={pState.teraType}
-                            onChange={(e) => setP(prev => ({ ...prev, teraType: e.target.value }))}
-                            disabled={!pState.isTerastallized}
-                        >
-                            {TYPES.map(tp => <option key={tp} value={tp}>{capitalize(tp)}</option>)}
-                        </select>
+                        <Switch size="sm" checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label={t('damageCalc.terastallize')} tone={accent} />
+                        {/* The shared select rule sets width: 100%, which beats a
+                            width utility on the select itself; the box sets it. */}
+                        <div className="w-28 shrink-0">
+                            <select
+                                className="dmg-select text-xs py-1"
+                                value={pState.teraType}
+                                onChange={(e) => setP(prev => ({ ...prev, teraType: e.target.value }))}
+                                disabled={!pState.isTerastallized}
+                                aria-label={t('damageCalc.terastallize')}
+                            >
+                                {TYPES.map(tp => <option key={tp} value={tp}>{t(`types.${tp}`)}</option>)}
+                            </select>
+                        </div>
                     </div>
                 )}
 
                 {/* Nature + stats */}
                 <div className="dmg-subpanel bg-bg/40 p-2.5 rounded-lg border border-border">
                     <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border">
-                        <label className="dmg-field__label mb-0 shrink-0">Nature</label>
+                        <label className="dmg-field__label mb-0 shrink-0">{t('damageCalc.nature')}</label>
                         <select className="dmg-select text-xs py-1 max-w-[13rem]" value={pState.nature} onChange={(e) => setP(prev => ({ ...prev, nature: e.target.value }))}>
                             {NATURE_OPTIONS.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                         </select>
                     </div>
                     <div className="dmg-caps flex items-center gap-1.5 px-0.5 pb-1.5 text-2xs font-semibold text-muted">
-                        <span className="w-7 shrink-0">Stat</span>
-                        <span className="w-6 shrink-0 text-center">Base</span>
-                        <span className="w-8 shrink-0 text-center">IV</span>
-                        <span className="flex-1 text-center">EV</span>
-                        <span className="w-10 shrink-0 text-center">Val</span>
-                        <span className="w-7 shrink-0 text-right">Tot</span>
+                        <span className="w-7 shrink-0">{t('damageCalc.statHead.stat')}</span>
+                        <span className="w-6 shrink-0 text-center">{t('damageCalc.statHead.base')}</span>
+                        <span className="w-8 shrink-0 text-center">{t('damageCalc.statHead.iv')}</span>
+                        <span className="flex-1 text-center">{t('damageCalc.statHead.ev')}</span>
+                        <span className="w-10 shrink-0 text-center">{t('damageCalc.statHead.val')}</span>
+                        <span className="w-7 shrink-0 text-right">{t('damageCalc.statHead.tot')}</span>
                     </div>
                     <div className="space-y-2">{STAT_KEYS.map(key => renderStatsRow(key, pState, setP))}</div>
                 </div>
@@ -699,26 +721,26 @@ export function DamageCalculatorView() {
                 {/* Ability + Item */}
                 <div className="grid grid-cols-2 gap-2 items-start">
                     <div>
-                        <label className="dmg-field__label">Ability</label>
+                        <label className="dmg-field__label">{t('damageCalc.ability')}</label>
                         <select className="dmg-select text-xs capitalize" value={pState.ability} onChange={(e) => setP(prev => ({ ...prev, ability: e.target.value }))}>
                             {pState.ability && !pState.abilitiesList.some(a => a.name === pState.ability) && !BATTLE_ABILITIES.some(a => a.value === pState.ability) && (
                                 <option value={pState.ability}>{capitalize(pState.ability)}</option>
                             )}
-                            {pState.abilitiesList.map(a => <option key={a.name} value={a.name}>{capitalize(a.name)} {a.is_hidden ? '(H)' : ''}</option>)}
+                            {pState.abilitiesList.map(a => <option key={a.name} value={a.name}>{capitalize(a.name)} {a.is_hidden ? t('damageCalc.hidden') : ''}</option>)}
                             {pState.abilitiesList.length > 0 && <option disabled>────────────</option>}
-                            {BATTLE_ABILITIES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                            {BATTLE_ABILITIES.map(a => <option key={a.value} value={a.value}>{a.label ?? t('damageCalc.noAbility')}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="dmg-field__label">Held Item</label>
+                        <label className="dmg-field__label">{t('damageCalc.heldItem')}</label>
                         <SpriteSelect
                             value={pState.item}
                             onChange={(slug) => setP(prev => ({ ...prev, item: slug }))}
                             options={itemOptions}
                             getSprite={itemSpriteUrl}
-                            placeholder="No Item"
-                            noneLabel="No Item"
-                            searchPlaceholder="Search items…"
+                            placeholder={t('damageCalc.noItem')}
+                            noneLabel={t('damageCalc.noItem')}
+                            searchPlaceholder={t('damageCalc.searchItems')}
                             buttonClassName="!py-1.5 text-xs"
                         />
                     </div>
@@ -726,7 +748,7 @@ export function DamageCalculatorView() {
 
                 {/* Moves */}
                 <div className="pt-2 border-t border-border space-y-2">
-                    <label className="dmg-field__label">Moves</label>
+                    <label className="dmg-field__label">{t('damageCalc.moves')}</label>
                     {pState.moves.map((m, idx) => (
                         <div key={idx} className="space-y-1">
                             <div className="flex items-center gap-1.5">
@@ -735,9 +757,9 @@ export function DamageCalculatorView() {
                                         value={m.name}
                                         onChange={(slug) => handleMoveChange(side, idx, slug)}
                                         options={moveOpts}
-                                        placeholder="Empty slot"
-                                        noneLabel="Empty slot"
-                                        searchPlaceholder="Search moves…"
+                                        placeholder={t('damageCalc.emptySlot')}
+                                        noneLabel={t('damageCalc.emptySlot')}
+                                        searchPlaceholder={t('damageCalc.searchMoves')}
                                         buttonClassName="!py-1 text-xs capitalize"
                                     />
                                 </div>
@@ -748,8 +770,8 @@ export function DamageCalculatorView() {
                             </div>
                             {m.name && (
                                 <div className="flex items-center gap-4 pl-1">
-                                    <Switch size="sm" checked={m.isCritical} onChange={(v) => patchMove(setP, idx, { isCritical: v })} label="Crit" tone={accent} />
-                                    <Switch size="sm" checked={m.isSpread} onChange={(v) => patchMove(setP, idx, { isSpread: v })} label="Spread" tone={accent} />
+                                    <Switch size="sm" checked={m.isCritical} onChange={(v) => patchMove(setP, idx, { isCritical: v })} label={t('damageCalc.crit')} tone={accent} />
+                                    <Switch size="sm" checked={m.isSpread} onChange={(v) => patchMove(setP, idx, { isSpread: v })} label={t('damageCalc.spread')} tone={accent} />
                                 </div>
                             )}
                         </div>
@@ -759,7 +781,7 @@ export function DamageCalculatorView() {
                 {/* Remaining HP (used as the target when the other Pokémon attacks it) */}
                 <div className="dmg-subpanel bg-bg/30 p-2.5 rounded-lg border border-border space-y-1.5">
                     <div className="flex items-center justify-between text-2xs font-semibold select-none">
-                        <span className="text-muted">Remaining HP</span>
+                        <span className="text-muted">{t('damageCalc.remainingHp')}</span>
                         <span className="font-mono text-fg">{pState.currentHp}%</span>
                     </div>
                     <input
@@ -790,7 +812,7 @@ export function DamageCalculatorView() {
                 {hasMoves ? matrix.map((entry) => {
                     const { move, result: r, index } = entry;
                     if (!move.name) return null;
-                    const eff = r ? effectivenessLabel(r.effectiveness) : '';
+                    const eff = r ? effectivenessLabel(r.effectiveness, t('damageCalc.immune')) : '';
                     const effColor = r && r.effectiveness > 1 ? 'text-success' : (r && r.effectiveness < 1 ? 'text-danger' : 'text-muted');
                     return (
                         <button
@@ -798,7 +820,7 @@ export function DamageCalculatorView() {
                             type="button"
                             onClick={() => copyRow(attacker, defender, move, r, fieldObj)}
                             disabled={!r}
-                            title={r ? 'Click to copy this calc' : undefined}
+                            title={r ? t('damageCalc.copyCalc') : undefined}
                             className={`w-full text-left bg-bg/30 border border-border rounded-lg p-2 transition-colors ${r ? 'hover:border-border-hover cursor-pointer' : 'cursor-default'}`}
                         >
                             <div className="flex items-center justify-between gap-2">
@@ -810,7 +832,7 @@ export function DamageCalculatorView() {
                                 {r ? (
                                     <span className="text-xs font-extrabold font-mono shrink-0" style={{ color: accent }}>{r.minPct}–{r.maxPct}%</span>
                                 ) : (
-                                    <span className="text-2xs font-bold text-muted shrink-0">{move.category === 'status' ? 'Status' : '—'}</span>
+                                    <span className="text-2xs font-bold text-muted shrink-0">{move.category === 'status' ? t('damageCalc.statusMove') : '—'}</span>
                                 )}
                             </div>
                             {r && (
@@ -820,7 +842,7 @@ export function DamageCalculatorView() {
                                         <div className="dmg-bar__min" style={{ width: `${Math.min(100, r.minPct)}%` }} />
                                     </div>
                                     <div className="flex items-center justify-between mt-1">
-                                        <span className={`text-2xs font-bold ${r.koGuaranteed ? 'text-danger' : 'text-muted'}`}>{r.koText}</span>
+                                        <span className={`text-2xs font-bold ${r.koGuaranteed ? 'text-danger' : 'text-muted'}`}>{koLabel(r, t)}</span>
                                         <span className="text-2xs text-muted font-mono">{r.minDamage}–{r.maxDamage} / {r.defenderHP}</span>
                                     </div>
                                 </>
@@ -828,7 +850,7 @@ export function DamageCalculatorView() {
                         </button>
                     );
                 }) : (
-                    <p className="text-xs text-muted italic py-1">No moves loaded.</p>
+                    <p className="text-xs text-muted italic py-1">{t('damageCalc.noMoves')}</p>
                 )}
             </div>
         );
@@ -845,33 +867,33 @@ export function DamageCalculatorView() {
                     {/* The shared segmented control: a filter never spends the view's
                         one accent (it was a primary-filled pill), and the thumb
                         glides between options (design system v2). */}
-                    <div className="order-1 segmented segmented--sm" role="group" aria-label="Format">
+                    <div className="order-1 segmented segmented--sm" role="group" aria-label={t('damageCalc.format')}>
                         {['singles', 'doubles'].map((f) => (
                             <button
                                 key={f}
                                 type="button"
                                 onClick={() => setField(prev => ({ ...prev, format: f }))}
                                 aria-pressed={field.format === f}
-                                className="segmented__item capitalize"
+                                className="segmented__item"
                             >
-                                {f}
+                                {t(`damageCalc.formats.${f}`)}
                             </button>
                         ))}
                     </div>
 
                     {/* Weather */}
                     <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
-                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">Weather</span>
-                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label="Weather">
+                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">{t('damageCalc.weather')}</span>
+                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.weather')}>
                             {WEATHERS.map((w) => (
                                 <button
-                                    key={w.v}
+                                    key={w}
                                     type="button"
-                                    onClick={() => setField(prev => ({ ...prev, weather: w.v }))}
-                                    aria-pressed={field.weather === w.v}
+                                    onClick={() => setField(prev => ({ ...prev, weather: w }))}
+                                    aria-pressed={field.weather === w}
                                     className="segmented__item shrink-0"
                                 >
-                                    {w.l}
+                                    {t(`damageCalc.weathers.${w}`)}
                                 </button>
                             ))}
                         </div>
@@ -879,17 +901,17 @@ export function DamageCalculatorView() {
 
                     {/* Terrain */}
                     <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
-                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">Terrain</span>
-                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label="Terrain">
+                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">{t('damageCalc.terrain')}</span>
+                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.terrain')}>
                             {TERRAINS.map((tr) => (
                                 <button
-                                    key={tr.v}
+                                    key={tr}
                                     type="button"
-                                    onClick={() => setField(prev => ({ ...prev, terrain: tr.v }))}
-                                    aria-pressed={field.terrain === tr.v}
+                                    onClick={() => setField(prev => ({ ...prev, terrain: tr }))}
+                                    aria-pressed={field.terrain === tr}
                                     className="segmented__item shrink-0"
                                 >
-                                    {tr.l}
+                                    {t(`damageCalc.terrains.${tr}`)}
                                 </button>
                             ))}
                         </div>
@@ -900,19 +922,19 @@ export function DamageCalculatorView() {
                         <button
                             onClick={() => setShowField(v => !v)}
                             className={`btn btn-outline flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3 ${showField ? 'text-primary border-border' : ''}`}
-                            title="Screens, hazards and side boosts"
-                            aria-label="Field effects"
+                            title={t('damageCalc.fieldHint')}
+                            aria-label={t('damageCalc.fieldEffects')}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
-                            <span className="hidden sm:inline">Field</span>
+                            <span className="hidden sm:inline">{t('damageCalc.field')}</span>
                         </button>
-                        <button onClick={handleSwap} className="btn btn-secondary flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3" title="Swap the two Pokémon" aria-label="Swap the two Pokémon">
+                        <button onClick={handleSwap} className="btn btn-secondary flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3" title={t('damageCalc.swapHint')} aria-label={t('damageCalc.swapHint')}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3 21 7 17 11" /><path d="M3 7h18" /><path d="M7 21 3 17 7 13" /><path d="M21 17H3" /></svg>
-                            <span className="hidden sm:inline">Swap</span>
+                            <span className="hidden sm:inline">{t('damageCalc.swap')}</span>
                         </button>
-                        <button onClick={handleResetAll} className="btn btn-outline flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3 hover:text-danger hover:border-danger" title="Clear everything" aria-label="Clear everything">
+                        <button onClick={handleResetAll} className="btn btn-outline flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3 hover:text-danger hover:border-danger" title={t('damageCalc.resetHint')} aria-label={t('damageCalc.resetHint')}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                            <span className="hidden sm:inline">Reset</span>
+                            <span className="hidden sm:inline">{t('damageCalc.resetShort')}</span>
                         </button>
                     </div>
                 </div>
@@ -921,35 +943,24 @@ export function DamageCalculatorView() {
                 {showField && (
                     <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <span className="dmg-caps text-2xs font-bold text-[#F08030]">Pokémon 1 side (boosts)</span>
+                            <span className="dmg-caps text-2xs font-bold text-[#F08030]">{t('damageCalc.attackerSide')}</span>
                             <div className="grid grid-cols-1 gap-1.5">
-                                {[
-                                    { key: 'helpingHand', label: 'Helping Hand (×1.5)' },
-                                    { key: 'battery', label: 'Battery (Special ×1.3)' },
-                                    { key: 'powerSpot', label: 'Power Spot (×1.3)' },
-                                    { key: 'steelySpirit', label: 'Steely Spirit (Steel ×1.5)' },
-                                ].map((m) => (
+                                {ATTACKER_BOOSTS.map((key) => (
                                     <Switch
-                                        key={m.key}
+                                        key={key}
                                         size="sm"
-                                        checked={field.attackerSide[m.key]}
-                                        onChange={(v) => setField(prev => ({ ...prev, attackerSide: { ...prev.attackerSide, [m.key]: v } }))}
-                                        label={m.label}
+                                        checked={field.attackerSide[key]}
+                                        onChange={(v) => setField(prev => ({ ...prev, attackerSide: { ...prev.attackerSide, [key]: v } }))}
+                                        label={t(`damageCalc.boosts.${key}`)}
                                         tone="#F08030"
                                     />
                                 ))}
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <span className="dmg-caps text-2xs font-bold text-[#6890F0]">Pokémon 2 side (screens / hazards)</span>
+                            <span className="dmg-caps text-2xs font-bold text-[#6890F0]">{t('damageCalc.defenderSide')}</span>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                                {[
-                                    { key: 'reflect', label: 'Reflect' },
-                                    { key: 'lightScreen', label: 'Light Screen' },
-                                    { key: 'auroraVeil', label: 'Aurora Veil' },
-                                    { key: 'friendGuard', label: 'Friend Guard' },
-                                    { key: 'stealthRock', label: 'Stealth Rock' },
-                                ].map((m) => (
+                                {DEFENDER_SCREENS.map((m) => (
                                     <Switch
                                         key={m.key}
                                         size="sm"
@@ -983,7 +994,7 @@ export function DamageCalculatorView() {
             <div className="lg:hidden flex bg-surface rounded-xl p-1 gap-1 border border-border">
                 {[
                     { key: 'pokemon1', label: 'Pokémon 1' },
-                    { key: 'damage', label: '⚡ Damage' },
+                    { key: 'damage', label: t('damageCalc.damageTab') },
                     { key: 'pokemon2', label: 'Pokémon 2' },
                 ].map((tab) => (
                     <button
@@ -1008,13 +1019,13 @@ export function DamageCalculatorView() {
                         <div className="flex items-center justify-between border-b border-border pb-2">
                             <span className="dmg-caps dmg-caps--title text-xs font-extrabold text-fg flex items-center gap-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-                                Live Damage
+                                {t('damageCalc.liveDamage')}
                             </span>
                             {speedInfo && (
-                                <span className="text-2xs font-bold" title="Raw Speed stat (paralysis halves it)">
+                                <span className="text-2xs font-bold" title={t('damageCalc.speedHint')}>
                                     {speedInfo.faster === 0
-                                        ? <span className="text-muted">Speed tie ({speedInfo.s1})</span>
-                                        : <span style={{ color: speedInfo.faster === 1 ? '#F08030' : '#6890F0' }}>⚡ P{speedInfo.faster} first ({speedInfo.s1} / {speedInfo.s2})</span>}
+                                        ? <span className="text-muted">{t('damageCalc.speedTie', { s: speedInfo.s1 })}</span>
+                                        : <span style={{ color: speedInfo.faster === 1 ? '#F08030' : '#6890F0' }}>⚡ {t('damageCalc.fasterFirst', { n: speedInfo.faster, s1: speedInfo.s1, s2: speedInfo.s2 })}</span>}
                                 </span>
                             )}
                         </div>
@@ -1025,12 +1036,12 @@ export function DamageCalculatorView() {
                                 <div className="border-t border-dashed border-border" />
                                 {renderMatchupColumn(p2, p1, matrix21, '#6890F0', reverseField)}
                                 <p className="text-2xs text-muted leading-tight pt-1">
-                                    Tap any move to copy its calc. The Pokémon 2 → 1 side uses weather / terrain / format only.
+                                    {t('damageCalc.copyHint')}
                                 </p>
                             </>
                         ) : (
                             <div className="text-center py-10 text-muted text-sm border border-dashed border-border rounded-xl">
-                                Pick two Pokémon to see damage both ways.
+                                {t('damageCalc.pickTwo')}
                             </div>
                         )}
                     </div>

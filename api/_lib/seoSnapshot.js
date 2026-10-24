@@ -34,7 +34,7 @@ const LANDING_LINKS = {
     builder: '/builder', pokedex: '/pokedex', calc: '/damage-calculator', meta: '/meta', types: '/types', challenge: '/challenge',
 };
 
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, pokemons = [] }) {
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, pokemons = [] }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
@@ -117,6 +117,23 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
             body.push(`<h2>${escapeHtml(t('seo.snapshot.pokemonOfType', { type: typeName(type, language) }))}</h2>`);
             body.push(list(ofType.map((p) => link(`/pokemon/${p.name}`, formatSlug(p.name)))));
         }
+    }
+
+    // The best-teams page (utils/bestTeams.js): the same three lists the page draws.
+    if (meta.key === 'bestTeams' && bestTeams) {
+        const slugOf = (id) => pokemons.find((p) => p.id === id)?.name || id;
+        const mon = (p) => link(`/pokemon/${slugOf(p.id)}`, formatSlug(p.name));
+        body.push(`<p>${escapeHtml(t('bestTeamsPage.lede', { total: bestTeams.total, events: bestTeams.events }))}</p>`);
+        body.push(`<h2>${escapeHtml(t('bestTeamsPage.top'))}</h2>`);
+        body.push(list(bestTeams.top.map((tm) => {
+            const event = [tm.placement, tm.tournament, tm.player].filter(Boolean).join(' · ');
+            const members = (tm.pokemons || []).map((p) => escapeHtml(formatSlug(p.name))).join(', ');
+            return `${link(`/tournaments/team/${tm.id}`, tm.title || tm.tournament)}${event ? ` — ${escapeHtml(event)}` : ''}${members ? `: ${members}` : ''}`;
+        })));
+        body.push(`<h2>${escapeHtml(t('bestTeamsPage.pokemon'))}</h2>`);
+        body.push(list(bestTeams.pokemon.map((p) => `${mon(p)} (${escapeHtml(t('bestTeamsPage.pokemonShare', { share: p.share }))})`)));
+        body.push(`<h2>${escapeHtml(t('bestTeamsPage.pairs'))}</h2>`);
+        body.push(list(bestTeams.pairs.map((pair) => `${mon(pair.a)} + ${mon(pair.b)} (${escapeHtml(t('bestTeamsPage.pairShare', { count: pair.count }))})`)));
     }
 
     if (meta.key === 'types') {

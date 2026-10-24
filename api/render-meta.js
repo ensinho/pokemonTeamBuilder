@@ -6,6 +6,8 @@ import { fetchSharedTeam, sharedTeamIdFrom } from './_lib/sharedTeam.js';
 import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLocalePath } from '../src/utils/localePath.js';
 import { SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
 import { tournamentPresence } from '../src/utils/tournamentPresence.js';
+import { bestTeamsSummary } from '../src/utils/bestTeams.js';
+import { decodeChallengeResult, decodePuzzleResult } from '../src/utils/resultShareCode.js';
 
 // Cache the pokemon index + tournament teams in memory across lambda invocations
 let pokemons = [];
@@ -45,6 +47,11 @@ function findPokemon(param) {
     return pokemons.find(p => p.name.toLowerCase() === clean) || null;
 }
 
+const RESULT_DECODERS = {
+    '/pokepuzzle': ['puzzle', decodePuzzleResult],
+    '/challenge': ['challenge', decodeChallengeResult],
+};
+
 function findTeam(id) {
     if (!id) return null;
     return tournamentTeams.find(t => t.id === id) || null;
@@ -58,7 +65,7 @@ function findTeam(id) {
  * version at its own URL). Pure apart from the data passed in, so the test
  * can drive it without a filesystem.
  */
-export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null, data = {} } = {}) {
+export function buildPage(shell, { urlPath, search = '', topicMeta = null, sharedTeam = null, data = {} } = {}) {
     const findP = data.findPokemon || findPokemon;
     const findT = data.findTeam || findTeam;
     const allPokemons = data.pokemons || pokemons;
@@ -77,6 +84,13 @@ export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null,
     if ((segments[0] === 'pokemon' || segments[0] === 'meta') && segments[1]) context.pokemon = findP(segments[1]);
     if (segments[0] === 'tournaments' && segments[1] === 'team' && segments[2]) context.team = findT(segments[2]);
     if (segments[0] === 't' && sharedTeam) context.sharedTeam = sharedTeam;
+    // A shared daily result: its own card, the game's page underneath.
+    const resultCode = new URLSearchParams(search).get('r');
+    if (resultCode && RESULT_DECODERS[appPath]) {
+        const [kind, decode] = RESULT_DECODERS[appPath];
+        const decoded = decode(resultCode);
+        if (decoded) context.result = { kind, code: resultCode, data: decoded };
+    }
 
     const meta = pageMeta(appPath, language, context);
     let title = meta.title;
@@ -93,7 +107,12 @@ export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null,
     // Pages reachable by both numeric id and slug (/pokemon, /meta) declare the
     // slug form canonical, so both consolidate to one indexable URL per language.
     const canonicalUrl = `${SITE_URL}${localizePath(meta.canonicalPath, language)}${canonicalSearch}`;
-    const url = canonicalSearch ? canonicalUrl : `${SITE_URL}${urlPath}`;
+    // A result link keeps its `?r=` in og:url: Facebook and WhatsApp re-read
+    // the og:url page and would otherwise show the game's generic card. The
+    // canonical stays the bare game page, so variants never get indexed.
+    const url = canonicalSearch
+        ? canonicalUrl
+        : `${SITE_URL}${urlPath}${context.result ? `?r=${encodeURIComponent(context.result.code)}` : ''}`;
     const alternates = alternateUrls(SITE_URL, meta.canonicalPath, canonicalSearch);
 
     // Escaped, because a forum title is user text; replaced through a function,
@@ -125,7 +144,8 @@ export function buildPage(shell, { urlPath, topicMeta = null, sharedTeam = null,
     set(/<\/head>/i, `    ${headExtras}\n  </head>`);
 
     const presence = context.pokemon ? tournamentPresence(allTeams, context.pokemon.id) : null;
-    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, presence, pokemons: allPokemons });
+    const bestTeams = meta.key === 'bestTeams' ? bestTeamsSummary(allTeams) : null;
+    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, presence, bestTeams, pokemons: allPokemons });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
 
     return { html, language, meta };
@@ -168,7 +188,7 @@ export default async function handler(req, res) {
         if (!sharedTeam) previewMissed = true;
     }
 
-    const { html } = buildPage(shell, { urlPath, topicMeta, sharedTeam });
+    const { html } = buildPage(shell, { urlPath, search: query, topicMeta, sharedTeam });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     // Cache at the Edge for 1 day, stale-while-revalidate for 1 hour to allow rapid updates;

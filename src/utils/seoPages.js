@@ -39,12 +39,49 @@ export const STATIC_PAGES = {
     '/challenge': 'challenge',
     '/feed': 'feed',
     '/types': 'types',
+    '/best-teams': 'bestTeams',
 };
 
 const PAGE_IMAGES = {
     pokepuzzle: `${SITE_URL}/pokepuzzle-og.png`,
     challenge: `${SITE_URL}/challenge-og.png`,
 };
+
+/** The daily games whose links can carry a result, and the code each takes. */
+const RESULT_PAGES = { pokepuzzle: 'puzzle', challenge: 'challenge' };
+
+const dayLabel = (dayKey, language) => new Intl.DateTimeFormat(LOCALE_TAG[language], { day: 'numeric', month: 'short', timeZone: 'UTC' })
+    .format(new Date(`${dayKey}T12:00:00Z`));
+
+/**
+ * Title, description and the image's lines for a decoded result
+ * (`{ kind: 'puzzle'|'challenge', code, data }`). api/_lib/ogImage.js draws
+ * the same words, so the card and the text under it agree.
+ */
+export function resultShareMeta({ kind, data }, language) {
+    const t = (key, params) => translate(language, `seo.resultShare.${key}`, params);
+    if (kind === 'puzzle') {
+        const score = `${data.won ? data.attempts : 'X'}/${data.maxAttempts}`;
+        return {
+            title: data.puzzleNumber ? t('puzzleTitle', { n: data.puzzleNumber, score }) : t('puzzleFreeTitle', { score }),
+            description: data.won ? t('puzzleWon', { attempts: data.attempts, max: data.maxAttempts }) : t('puzzleLost'),
+            score,
+            cta: t('puzzleCta'),
+        };
+    }
+    const facts = [
+        data.won ? t('standing', { n: data.remaining }) : null,
+        data.score ? t('score', { n: data.score }) : null,
+        data.streak > 1 ? t('streak', { n: data.streak }) : null,
+    ].filter(Boolean);
+    return {
+        title: data.won ? t('challengeWon', { turns: data.turns }) : t('challengeLost'),
+        description: t('challengeDescription', { date: dayLabel(data.dayKey, language) }),
+        date: dayLabel(data.dayKey, language),
+        facts,
+        cta: t('challengeCta'),
+    };
+}
 
 /** `mr-mime` → `Mr Mime`; the same rule render-meta has always used for slugs. */
 export function formatSlug(slug) {
@@ -107,6 +144,21 @@ export function pageMeta(appPath, language, context = {}) {
     };
 
     const staticKey = STATIC_PAGES[path];
+    // A shared daily result (`?r=`, utils/resultShareCode.js): the page stays
+    // the game's, but the preview is the sharer's result, drawn by api/og.js.
+    const { result } = context;
+    if (staticKey && result && RESULT_PAGES[staticKey] === result.kind) {
+        const share = resultShareMeta(result, language);
+        return {
+            ...base,
+            key: staticKey,
+            title: withBrand(share.title),
+            description: share.description,
+            image: `${SITE_URL}/api/og?${result.kind}=${encodeURIComponent(result.code)}&lang=${language}`,
+            breadcrumbs: crumbsFor(language, [staticCrumb(language, staticKey, path)]),
+            isStatic: true,
+        };
+    }
     if (staticKey) {
         return {
             ...base,
