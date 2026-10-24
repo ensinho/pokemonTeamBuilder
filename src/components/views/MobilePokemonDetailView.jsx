@@ -5,7 +5,7 @@ import { useUrlTab } from '../../hooks/useUrlTab';
 const DETAIL_TABS = ['data', 'competitive', 'locations', 'moves', 'sprites'];
 import {
     ChevronLeft, ChevronRight, Sparkles, Star, AlertCircle, MapPin, Compass,
-    Footprints, Waves, Fish, Gift, Music, Hammer, Plus, Check,
+    Footprints, Waves, Fish, Gift, Music, Hammer, Plus, Check, Share2,
 } from 'lucide-react';
 
 import '../../styles/pokemon-detail-mobile.css';
@@ -29,6 +29,7 @@ import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
 import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
+import { useSharePage } from '../../hooks/useSharePage';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -179,6 +180,7 @@ export function MobilePokemonDetailView({
     const types = identity.types || [];
     const isFavorite = Boolean(favoritePokemons?.has?.(Number(identity.id)));
     const shinyBurst = useShinyBurst();
+    const sharePage = useSharePage();
     const favoriteBurst = useShinyBurst();
 
     /* ── Carousel ─────────────────────────────────────────────────────────── */
@@ -553,6 +555,14 @@ export function MobilePokemonDetailView({
                             <ChevronLeft className="w-5 h-5" />
                         </button>
                         <div className="pdm__bar-actions">
+                            <button
+                                type="button"
+                                onClick={() => sharePage(`/pokemon/${indexEntry?.name || identity.id}`, cleanName(identity.name))}
+                                className="pdm__iconbtn"
+                                aria-label={t('common.sharePage')}
+                            >
+                                <Share2 className="w-5 h-5" />
+                            </button>
                             <button
                                 type="button"
                                 onClick={() => {

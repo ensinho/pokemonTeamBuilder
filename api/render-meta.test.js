@@ -70,6 +70,9 @@ describe('render-meta buildPage', () => {
         expect(snapshot).toContain('href="/pt/types/rock">Pedra</a> (4×)');
         expect(snapshot).toContain('Velocidade: 100');
         expect(snapshot).toContain('href="/pt/meta/charizard"');
+        // Its link preview is the card api/og.js draws for it.
+        expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?pokemon=6&amp;lang=pt');
+        expect(attr(page('/types/water'), /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?type=water&amp;lang=en');
     });
 
     it('lists the tournament teams and partners of a Pokémon, as its page shows them', () => {

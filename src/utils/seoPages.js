@@ -18,7 +18,6 @@ export const SITE_URL = 'https://pokemonbuilder.app';
 export const SITE_NAME = 'Pokémon Team Builder';
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
-const artwork = (id) => `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${id}.png`;
 
 /** App path → copy key for every page that has fixed copy. */
 export const STATIC_PAGES = {
@@ -183,7 +182,8 @@ export function pageMeta(appPath, language, context = {}) {
             staticCrumb(language, parentKey, parentPath),
             { name, path: canonicalPath },
         ]);
-        const image = pokemon?.id ? artwork(pokemon.id) : DEFAULT_IMAGE;
+        // The card api/og.js draws for it: art, types, weaknesses (2026-10-24).
+        const image = pokemon?.id ? `${SITE_URL}/api/og?pokemon=${pokemon.id}&lang=${language}` : DEFAULT_IMAGE;
         if (section === 'pokemon') {
             const types = (pokemon?.types || []).map(chartKey).filter((x) => typeChart[x]);
             const weak = weaknessesOf(types).map((w) => typeName(w.type, language));
@@ -287,6 +287,7 @@ export function pageMeta(appPath, language, context = {}) {
                 weaknesses: joinList(weak, language) || none,
                 strong: joinList(strong, language) || none,
             }),
+            image: `${SITE_URL}/api/og?type=${param}&lang=${language}`,
             breadcrumbs: crumbsFor(language, [staticCrumb(language, 'types', '/types'), { name: type, path }]),
         };
     }
