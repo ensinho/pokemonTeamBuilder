@@ -36,6 +36,20 @@ describe('calcDamage', () => {
         level: 50
     };
 
+    it('reports the KO chance as a number, so the screen can word it in any language', () => {
+        // 85–102 damage against 95 HP left: some rolls KO in one hit, some do not.
+        const res = calcDamage({
+            level: 50, movePower: 110, moveType: 'ice', moveCategory: 'special',
+            attacker: defaultAttacker,
+            defender: { ...defaultDefender, currentHp: 95 },
+        });
+        expect(res.koHits).toBe(1);
+        expect(res.koGuaranteed).toBe(false);
+        expect(res.koChance).toBeGreaterThan(0);
+        expect(res.koChance).toBeLessThan(100);
+        expect(res.koText).toBe(`possible 1HKO (${res.koChance}% chance)`);
+    });
+
     it('returns null if inputs are missing', () => {
         expect(calcDamage({})).toBeNull();
     });

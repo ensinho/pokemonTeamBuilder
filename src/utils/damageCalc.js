@@ -575,6 +575,10 @@ export const calcDamage = ({
     let koText = '';
     let koHits = 1;
     let koGuaranteed = false;
+    // The roll share that KOs, when it is computed (1HKO / 2HKO): the screen
+    // words it in the page's language from koHits / koGuaranteed / koChance;
+    // koText stays English for the copied Showdown-format calc.
+    let koChance = null;
 
     if (minDamage <= 0) {
         koText = 'Deals no damage';
@@ -593,6 +597,7 @@ export const calcDamage = ({
             const koCount = damageRolls.filter(d => d >= hpToDefeat).length;
             const chance = Math.round((koCount / 16) * 100);
             koText = `possible 1HKO (${chance}% chance)`;
+            koChance = chance;
             koHits = 1;
             koGuaranteed = false;
         } else {
@@ -612,6 +617,7 @@ export const calcDamage = ({
                 }
                 const chance = Math.round((koPairs / 256) * 100);
                 koText = `possible 2HKO (${chance}% chance)`;
+                koChance = chance;
                 koHits = 2;
                 koGuaranteed = false;
             } else {
@@ -660,6 +666,7 @@ export const calcDamage = ({
         koHits,
         koGuaranteed,
         koText,
+        koChance,
         damageRolls,
         hazardsDamage,
     };
