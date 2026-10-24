@@ -84,7 +84,7 @@ Account deletion (Profile → Conta → Excluir conta) erases the user's data cl
 Custom, no library. All copy lives in `src/constants/translations.js`; `useLanguageStore` holds the active language and `useTranslation()` (`src/hooks/`) resolves keys. Add new user-facing strings there, not inline.
 
 ### Analytics and shared teams (`docs/modules/analytics.md`)
-`track(name, params)` from `src/services/analytics.js` (Firebase/GA4, loaded after the page in its own chunk, never for crawlers) — keep event names stable, the funnel table lists them. A shared team is a page, **`/t/:id`** (`SharedTeamView`), that unfurls with an image drawn by **`api/og.js`** (satori + resvg-wasm; any failure is a 302 to `/og-image.png`). Endpoints: 9 of 12.
+`track(name, params)` from `src/services/analytics.js` (Firebase/GA4, loaded after the page in its own chunk, never for crawlers) — keep event names stable, the funnel table lists them. A shared team is a page, **`/t/:id`** (`SharedTeamView`), that unfurls with an image drawn by **`api/og.js`** (satori + resvg-wasm; any failure is a 302 to `/og-image.png`). The same endpoint draws a shared PokéPuzzle / Champion Challenge result from the link's `?r=` code (`src/utils/resultShareCode.js` — never the answer, never free text). Endpoints: 9 of 12.
 
 ### Serverless email (`api/send-admin-reply.js`)
 Vercel function that lets admins reply to feedback. Verifies the caller's Firebase ID token via `jose` against Google's JWKS, checks the email against the admin allowlist, then sends mail with `nodemailer`. Has its own CORS allowlist and Firebase project-id resolution independent of the client config.

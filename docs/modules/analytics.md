@@ -56,3 +56,12 @@ before `initAnalytics()` — a product/legal decision, not taken here.
   is 9 of the Hobby plan's 12.
 - `@vercel/og` was tried first and rejected: importing it aborts the process
   (`ENOENT ./hb.wasm`) — the uncatchable failure CLAUDE.md warns about.
+- **Daily results unfurl as the result too (2026-10-24).** The PokéPuzzle and
+  Champion Challenge share texts link to `/pokepuzzle?r=…` / `/challenge?r=…`.
+  The code (`src/utils/resultShareCode.js`, tested) is the board's c/p/a shape
+  or the win's numbers: **never the answer, never free text**, decoded strictly
+  (a bad code changes nothing). `render-meta` titles the link from it
+  (`resultShareMeta` in `seoPages.js`) and points `og:image` at
+  `/api/og?puzzle=…` / `?challenge=…` — the same endpoint, so still 9 of 12.
+  `og:url` keeps the `?r=` (Facebook and WhatsApp re-read that page); the
+  canonical stays the bare game page, so the variants never get indexed.

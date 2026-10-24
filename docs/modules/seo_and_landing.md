@@ -91,6 +91,24 @@ prerender writes the same teams and partners as links on `/pokemon/:name` and
 `/meta/:name`. The Competitive tab's tournament list shows six teams, the
 prerender six, the Data tab three with a link to the rest.
 
+### Best teams (`/best-teams`, 2026-10-24)
+
+`BestTeamsView` over `src/utils/bestTeams.js` (pure, tested): of the baked
+tournament teams, those in the regulation most of them are in — the top
+finishes (`placementRank`: the number wins, so "31st" is not "1st"), the most
+used Pokémon and the pairs most often together. Every Pokémon and team is a
+link; the prerender writes the same three lists. In the Competitive nav
+section, the sitemap (weekly, 0.8) and `STATIC_PAGES`. The tournament card is
+`TournamentTeamCard.jsx`, shared with `/tournaments`.
+
+### Indexed pages must be in the page's language
+
+`/pt/damage-calculator` was indexed in Portuguese and drawn in English until
+2026-10-24; its copy is now `damageCalc.*`. Game terms (moves, abilities,
+items, natures) stay as the games print them in English, and the copied calc
+keeps Showdown's English format. Before adding an indexable route, make sure
+its screen speaks both languages, not just its title.
+
 ## 4. Sitemap
 
 `scripts/build-sitemap.mjs` (prebuild) lists each page once per language with
