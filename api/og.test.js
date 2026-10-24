@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import handler, { renderTeamCard } from './og.js';
-import { teamCardTree } from './_lib/ogImage.js';
+import { resultCardTree, teamCardTree } from './_lib/ogImage.js';
 
 const team = { id: 'x', name: 'Chuva', pokemons: [{ id: 6, name: 'charizard' }, { id: 130, name: 'gyarados' }] };
 const noNetwork = async () => ({ ok: false });
@@ -43,5 +43,35 @@ describe('api/og', () => {
         expect(tree).toContain('Um time Pokémon');
         expect(tree).toContain('Importe este time com um toque');
         expect(tree).toContain('Charizard · Gyarados');
+    });
+});
+
+describe('api/og daily results', () => {
+    it('draws a PokéPuzzle board and a Champion Challenge result as PNGs', async () => {
+        for (const url of ['/api/og?puzzle=42.w.8.apcaa-ccccc&lang=pt', '/api/og?challenge=20261023.w.14.3.1830.5.platinum.3157&lang=en']) {
+            const res = fakeRes();
+            await handler({ url }, res);
+            expect(res.code, url).toBe(200);
+            expect(res.headers['Content-Type']).toBe('image/png');
+            expect(Buffer.from(res.body).readUInt32BE(16)).toBe(1200);
+        }
+    }, 30000);
+
+    it('answers a code that does not decode with the default card', async () => {
+        const res = fakeRes();
+        await handler({ url: '/api/og?puzzle=1.w.8.<b>hi</b>' }, res);
+        expect(res.code).toBe(302);
+        expect(res.headers.Location).toBe('/og-image.png');
+    });
+
+    it('writes the result in the requested language, never the answer', () => {
+        const tree = JSON.stringify(resultCardTree('puzzle', { puzzleNumber: 42, won: true, attempts: 2, maxAttempts: 8, rows: ['apcaa', 'ccccc'] }, 'pt'));
+        expect(tree).toContain('2/8');
+        expect(tree).toContain('Acertei o Pokémon em 2 de 8 tentativas');
+        expect(tree).toContain('Jogue o de hoje');
+        const challenge = JSON.stringify(resultCardTree('challenge', { dayKey: '2026-10-23', won: true, turns: 14, remaining: 3, score: 1830, streak: 5, curve: [0.2, 1] }, 'pt'));
+        expect(challenge).toContain('Venci a Cynthia em 14 turnos');
+        expect(challenge).toContain('3 Pokémon de pé');
+        expect(challenge).toContain('Desafio da Campeã');
     });
 });

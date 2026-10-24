@@ -17,7 +17,10 @@ import { doc, deleteDoc } from 'firebase/firestore';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import '../../styles/pokepuzzle-view.css';
 import { getDailyPokemonIndex, checkLetters, getDaysSinceLaunch } from '../../utils/pokePuzzle';
-import { buildPuzzleShare } from '../../utils/pokePuzzleShare';
+import { buildPuzzleShare, puzzleShareScore, puzzleShareToEmoji } from '../../utils/pokePuzzleShare';
+import { encodePuzzleResult } from '../../utils/resultShareCode';
+import { localizePath } from '../../utils/localePath';
+import { deployBase } from '../../services/localeHistory';
 import { useForumStore } from '../../store/useForumStore';
 import { Loader } from '../Loader';
 import { DecryptText } from '../DecryptText';
@@ -807,24 +810,26 @@ export default function PokePuzzleView() {
 
     const host = typeof window !== 'undefined' ? window.location.host : 'poketeambuilder.com';
 
+    // The link carries the board (`?r=`, utils/resultShareCode.js — the shape
+    // of the attempt, never the answer), so where it is pasted it unfurls as
+    // this result, drawn by api/og.js, rather than the game's generic card.
     const generateShareText = () => {
         const modeTitle = mode === 'daily'
             ? `${language === 'pt' ? 'PokePuzzle Diário' : 'Daily PokePuzzle'}`
             : `${language === 'pt' ? 'PokePuzzle Livre' : 'Ongoing PokePuzzle'}`;
 
-        const emojiGrid = guesses.map(guess => {
-            const norm = normalizeNameForGame(guess);
-            const letterStatuses = checkLetters(norm, targetNormalized);
-            return letterStatuses.map(status => {
-                if (status === 'correct') return '🟩';
-                if (status === 'present') return '🟨';
-                return '⬛';
-            }).join('');
-        }).join('\n');
+        const share = buildPuzzleShare({
+            guesses: guesses.map(normalizeNameForGame),
+            target: targetNormalized,
+            maxAttempts: MAX_ATTEMPTS,
+            won: gameStatus === 'WON',
+            mode: mode === 'daily' ? 'daily' : 'free',
+            puzzleNumber: mode === 'daily' ? getDaysSinceLaunch(selectedDate) + 1 : null,
+        });
+        const code = encodePuzzleResult(share);
+        const shareUrl = `${window.location.origin}${localizePath('/pokepuzzle', language, deployBase())}${code ? `?r=${code}` : ''}`;
 
-        const shareUrl = typeof window !== 'undefined' ? window.location.origin + '/pokepuzzle' : 'https://poketeambuilder.com/pokepuzzle';
-
-        return `PokePuzzle - ${modeTitle} ${guesses.length}/${MAX_ATTEMPTS}\n\n${emojiGrid}\n\nPlay here: ${shareUrl}`;
+        return `PokePuzzle - ${modeTitle} ${puzzleShareScore(share)}\n\n${puzzleShareToEmoji(share)}\n\n${language === 'pt' ? 'Jogue aqui' : 'Play here'}: ${shareUrl}`;
     };
 
     const copyShareText = (text) => {

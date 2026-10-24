@@ -15,6 +15,9 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import { useChampionChallengeStore } from '../../../store/useChampionChallengeStore';
 import { toast } from '../../../store/useToastStore';
 import { buildChallengeShare, buildShareText } from '../../../utils/challengeShare';
+import { encodeChallengeResult } from '../../../utils/resultShareCode';
+import { localizePath } from '../../../utils/localePath';
+import { deployBase } from '../../../services/localeHistory';
 import { useForumStore } from '../../../store/useForumStore';
 import { championRoster, railTeams, timeUntil, trainerSpriteUrl } from '../../../utils/challengeView';
 import { EmptyState } from '../../EmptyState';
@@ -324,6 +327,16 @@ export function ChampionChallengeView() {
             const share = async () => {
                 const run = challenge.run;
                 const outcome = run.result || {};
+                // The link carries the result (`?r=`, utils/resultShareCode.js),
+                // so it unfurls as this win or loss (api/og.js), not the generic card.
+                const code = encodeChallengeResult(buildChallengeShare({
+                    dayKey: challenge.dayKey,
+                    difficulty: challenge.day?.difficulty,
+                    status: run.status,
+                    result: outcome,
+                    streak: challenge.stats?.streak || 0,
+                    curve: run.winChanceCurve || outcome.winChanceCurve || [],
+                }));
                 const text = buildShareText({
                     t,
                     date: new Intl.DateTimeFormat(language === 'pt' ? 'pt-BR' : 'en-US', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }).format(new Date()),
@@ -334,7 +347,7 @@ export function ChampionChallengeView() {
                     place: outcome.place || null,
                     boardLabel: outcome.board ? t(`challenge.ranking.${outcome.board}`) : '',
                     curve: run.winChanceCurve || outcome.winChanceCurve || [],
-                    url: `${window.location.origin}${import.meta.env.BASE_URL}challenge`.replace(/([^:]\/)\/+/g, '$1'),
+                    url: `${window.location.origin}${localizePath('/challenge', language, deployBase())}${code ? `?r=${code}` : ''}`,
                 });
                 if (window.matchMedia?.('(pointer: coarse)').matches && navigator.share) {
                     try {

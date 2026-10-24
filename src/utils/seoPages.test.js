@@ -17,7 +17,7 @@ describe('seo copy', () => {
         const keys = (node, prefix = '') => Object.entries(node).flatMap(([k, v]) => (
             v && typeof v === 'object' ? keys(v, `${prefix}${k}.`) : [`${prefix}${k}`]
         ));
-        for (const section of ['seo', 'landing', 'typesPage', 'sharedTeamView', 'reminderOffer']) {
+        for (const section of ['seo', 'landing', 'typesPage', 'sharedTeamView', 'reminderOffer', 'bestTeamsPage']) {
             expect(keys(TRANSLATIONS.pt[section]).sort(), section).toEqual(keys(TRANSLATIONS.en[section]).sort());
         }
     });

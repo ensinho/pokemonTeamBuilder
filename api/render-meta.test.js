@@ -82,6 +82,31 @@ describe('render-meta buildPage', () => {
         expect(page('/pokemon/10034')).not.toContain('Tournament teams with');
     });
 
+    it('unfurls a shared daily result as that result, keeping the game page canonical', () => {
+        const html = buildPage(shell, { urlPath: '/pt/pokepuzzle', search: 'r=42.w.8.apcaa-ccccc', data }).html;
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('PokéPuzzle nº 42: 2/8 | Pokémon Team Builder');
+        expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?puzzle=42.w.8.apcaa-ccccc&amp;lang=pt');
+        expect(attr(html, /<meta property="og:url" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/pt/pokepuzzle?r=42.w.8.apcaa-ccccc');
+        expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe('https://pokemonbuilder.app/pt/pokepuzzle');
+
+        const challenge = buildPage(shell, { urlPath: '/challenge', search: 'r=20261023.w.14.3.1830.5.platinum.37', data }).html;
+        expect(attr(challenge, /<title>([^<]*)<\/title>/)).toBe('Beat Cynthia in 14 turns | Pokémon Team Builder');
+
+        // A code that does not decode changes nothing.
+        const bogus = buildPage(shell, { urlPath: '/pt/pokepuzzle', search: 'r=<script>', data }).html;
+        expect(attr(bogus, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/pokepuzzle-og.png');
+    });
+
+    it('prerenders the best-teams page with its top teams, Pokémon and pairs as links', () => {
+        const html = page('/pt/best-teams');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Melhores times de Pokémon VGC | Pokémon Team Builder');
+        expect(html).toContain('<h2>Os times do topo</h2>');
+        expect(html).toContain('href="/pt/tournaments/team/w1">Wolfe&#39;s team</a> — 1st · Worlds 2026');
+        expect(html).toContain('<h2>Pokémon mais usados</h2>');
+        expect(html).toContain('href="/pt/pokemon/charmander">Charmander</a> (100% dos times)');
+        expect(html).toContain('href="/pt/pokemon/charmander">Charmander</a> + <a href="/pt/pokemon/charizard">Charizard Mega Y</a>');
+    });
+
     it('lists only base-form Pokémon on a type page', () => {
         const html = page('/types/fire');
         expect(html).toContain('href="/pokemon/charmander"');

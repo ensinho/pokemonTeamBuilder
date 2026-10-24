@@ -7,7 +7,8 @@
 // Discord, where none of the site's themes apply.
 
 import { translate } from '../../src/utils/translateCore.js';
-import { formatSlug } from '../../src/utils/seoPages.js';
+import { formatSlug, resultShareMeta } from '../../src/utils/seoPages.js';
+import { decodeChallengeResult, decodePuzzleResult } from '../../src/utils/resultShareCode.js';
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
@@ -88,3 +89,92 @@ export function teamCardTree(team, images, language = 'en') {
 export const artworkUrl = (member) => (typeof member.sprite === 'string' && /^https:\/\//.test(member.sprite)
     ? member.sprite
     : `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${member.id}.png`);
+
+// ── Daily results (`/pokepuzzle?r=…`, `/challenge?r=…`) ─────────────────────
+// The words come from resultShareMeta (src/utils/seoPages.js), the same the
+// link's title and description use. Everything drawn is a decoded number or
+// a c/p/a status (utils/resultShareCode.js) — never text a sharer typed.
+
+const TILE = { c: '#3fb950', p: '#d4a72c', a: '#3a3a44' };
+
+const resultFrame = (language, kicker, body, cta) => h('div', {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    height: '100%',
+    padding: '52px 60px',
+    background: BRAND.ground,
+    color: BRAND.ink,
+    fontFamily: 'Space Grotesk',
+}, [
+    h('div', { display: 'flex', justifyContent: 'space-between', fontSize: 26, fontWeight: 500 }, [
+        h('div', { display: 'flex', color: BRAND.accent }, kicker),
+        h('div', { display: 'flex', color: BRAND.muted }, 'pokemonbuilder.app'),
+    ]),
+    body,
+    h('div', { display: 'flex', marginTop: 'auto' }, [
+        h('div', {
+            display: 'flex',
+            padding: '10px 26px',
+            borderRadius: 999,
+            background: BRAND.button,
+            color: '#ffffff',
+            fontSize: 26,
+            fontWeight: 700,
+        }, cta),
+    ]),
+]);
+
+/** @param {{ won, attempts, maxAttempts, puzzleNumber, rows: string[] }} result  decoded puzzle code */
+export function puzzleCardTree(result, meta, language = 'en') {
+    const cols = result.rows[0].length;
+    const tile = Math.max(18, Math.min(52, Math.floor(400 / result.rows.length) - 8, Math.floor(500 / cols) - 8));
+    const grid = h('div', { display: 'flex', flexDirection: 'column', gap: 8 }, result.rows.map((row) => h(
+        'div',
+        { display: 'flex', gap: 8 },
+        [...row].map((status) => h('div', { display: 'flex', width: tile, height: tile, borderRadius: 8, background: TILE[status] || TILE.a }, [])),
+    )));
+    const body = h('div', { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 30, gap: 48 }, [
+        h('div', { display: 'flex', flexDirection: 'column', maxWidth: 520 }, [
+            h('div', { display: 'flex', fontSize: 150, fontWeight: 700, lineHeight: 1, color: result.won ? TILE.c : BRAND.ink }, meta.score),
+            h('div', { display: 'flex', marginTop: 22, fontSize: 32, lineHeight: 1.3, color: BRAND.muted }, meta.description),
+        ]),
+        grid,
+    ]);
+    const kicker = result.puzzleNumber ? `PokéPuzzle · #${result.puzzleNumber}` : 'PokéPuzzle';
+    return resultFrame(language, kicker, body, meta.cta);
+}
+
+/** @param {{ won, turns, curve: number[] }} result  decoded challenge code */
+export function challengeCardTree(result, meta, language = 'en') {
+    const kicker = `${translate(language, 'challenge.title')} · ${meta.date}`;
+    const bars = result.curve.length ? h('div', { display: 'flex', alignItems: 'flex-end', gap: 8, height: 120, marginTop: 34 }, result.curve.map((value) => h('div', {
+        display: 'flex',
+        width: 34,
+        height: Math.max(8, Math.round(value * 120)),
+        borderRadius: 6,
+        background: BRAND.accent,
+    }, []))) : null;
+    const body = h('div', { display: 'flex', flexDirection: 'column', marginTop: 30 }, [
+        h('div', { display: 'flex', fontSize: 76, fontWeight: 700, lineHeight: 1.05, maxWidth: 1080 }, meta.title),
+        h('div', { display: 'flex', gap: 14, marginTop: 24 }, meta.facts.map((fact) => h('div', {
+            display: 'flex',
+            padding: '8px 20px',
+            borderRadius: 999,
+            background: BRAND.platform,
+            fontSize: 28,
+            fontWeight: 500,
+        }, fact))),
+        ...(bars ? [bars] : []),
+    ]);
+    return resultFrame(language, kicker, body, meta.cta);
+}
+
+/** `?puzzle=` / `?challenge=` → the decoder for that code. */
+export const RESULT_DECODERS = { puzzle: decodePuzzleResult, challenge: decodeChallengeResult };
+
+/** The card for a decoded result, with the words the link's meta uses. */
+export function resultCardTree(kind, data, language = 'en') {
+    const meta = resultShareMeta({ kind, data }, language);
+    return kind === 'puzzle' ? puzzleCardTree(data, meta, language) : challengeCardTree(data, meta, language);
+}

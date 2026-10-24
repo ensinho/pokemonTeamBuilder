@@ -39,6 +39,7 @@ const STATIC_ROUTES = [
     { loc: '/challenge', changefreq: 'daily', priority: '0.5' },
     { loc: '/feed', changefreq: 'daily', priority: '0.5' },
     { loc: '/types', changefreq: 'monthly', priority: '0.7' },
+    { loc: '/best-teams', changefreq: 'weekly', priority: '0.8' },
 ];
 
 const readJson = async (...parts) => {

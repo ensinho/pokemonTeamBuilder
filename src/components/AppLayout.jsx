@@ -63,7 +63,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, ShieldHalf, Crown, Shapes, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, ShieldHalf, Crown, Shapes, Award, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -123,7 +123,8 @@ const ROUTE_CHUNKS = {
     builder: loadTeamBuilderView, pokedex: loadPokedexView, pokepuzzle: loadPokePuzzleView, meta: loadMetaUsageView,
     challenge: loadChampionChallengeView,
     feed: () => import('./views/FeedView'), favorites: () => import('./views/FavoritesView'),
-    tournaments: () => import('./views/TournamentsView'), damageCalc: () => import('./views/DamageCalculatorView'),
+    tournaments: () => import('./views/TournamentsView'), bestTeams: () => import('./views/BestTeamsView'),
+    damageCalc: () => import('./views/DamageCalculatorView'),
     speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
     abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
     types: () => import('./views/TypesView'),
@@ -168,6 +169,7 @@ const PokemonDetailView = lazy(() => loadPokemonDetailView().then((m) => ({ defa
 const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').then((m) => ({ default: m.DamageCalculatorView })));
 const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
 const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
+const BestTeamsView = lazy(() => import('./views/BestTeamsView').then((m) => ({ default: m.BestTeamsView })));
 const TournamentTeamView = lazy(() => import('./views/TournamentTeamView').then((m) => ({ default: m.TournamentTeamView })));
 const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
 const MetaUsageView = lazy(() => loadMetaUsageView().then((m) => ({ default: m.MetaUsageView })));
@@ -325,6 +327,7 @@ export default function AppLayout() {
         if (path.includes('/moves')) return 'moves';
         if (path.includes('/abilities')) return 'abilities';
         if (path === '/types' || path.startsWith('/types/')) return 'types';
+        if (path === '/best-teams') return 'bestTeams';
         if (path.startsWith('/t/')) return 'sharedTeam';
         if (path.includes('/items')) return 'items';
         if (path.includes('/gyms')) return 'gyms';
@@ -837,6 +840,7 @@ export default function AppLayout() {
             'sharedTeam': { title: t('sharedTeamView.kicker'), subtitle: '' },
             'items': { title: t('nav.items'), subtitle: t('db.itemsSubtitle') },
             'tournaments': { title: t('nav.tournaments'), subtitle: t('tools.tournamentsSubtitle') },
+            'bestTeams': { title: t('nav.bestTeams'), subtitle: '' },
             'meta': { title: language === 'pt' ? 'Meta & uso' : 'Meta & usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
             'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
@@ -903,6 +907,7 @@ export default function AppLayout() {
                 title: t('nav.teamBuilding'),
                 items: [
                     { key: 'meta', label: language === 'pt' ? 'Meta & uso' : 'Meta & usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
+                    { key: 'bestTeams', label: t('nav.bestTeams'), path: '/best-teams', icon: <Award className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
                     // Short in the rail so it can stay narrow; the search keeps the
                     // full name, so "dano" / "tiers" still find them.
@@ -1761,6 +1766,7 @@ export default function AppLayout() {
                                     <Route path="/tournaments" element={
                                         <TournamentsView db={db} onOpenTeam={handleImportTeam} />
                                     } />
+                                    <Route path="/best-teams" element={<BestTeamsView onOpenTeam={handleImportTeam} />} />
                                     <Route path="/tournaments/team/:id" element={
                                         <TournamentTeamView onImport={handleImportTeam} />
                                     } />
