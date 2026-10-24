@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T18:14:13.452Z",
+  "generatedAt": "2026-10-24T07:35:43.316Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -6175,10 +6175,59 @@
       ]
     },
     "128": {
-      "name": "Tauros-Paldea-Blaze",
-      "gen": "Battle Stadium",
+      "name": "Tauros-Paldea-Aqua",
+      "gen": "Champions OU",
       "overview": "Paldean Tauros-F carves a strong niche in NU thanks to its solid matchup against staples like Alolan Ninetales, Amoonguss, and Incineroar. Paldean Tauros-F poses as a wallbreaker with strong STAB attacks that are hard to switch around. It can also use Bulk Up to increase its power and bulk, making it harder to revenge…",
       "sets": [
+        {
+          "name": "Bulk Up",
+          "item": "mystic-water",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "wave-crash"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "aqua-jet"
+            ],
+            [
+              "bulk-up"
+            ]
+          ],
+          "evs": {
+            "hp": 2,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 1,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 1,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
         {
           "name": "FIREFIGHTER (Defensive)",
           "item": "sitrus-berry",
@@ -6321,52 +6370,6 @@
           },
           "level": null,
           "description": "With an Assault Vest, Paldean Tauros-F finds itself a niche checking Choice Band Chien-Pao, Flutter Mane, and Iron Moth.\nRaging Bull Despite Flare Blitz having more power, Raging Bull is Paldean Tauros-F's preferred STAB move as a result of its ability to break Aurora Veil, Reflect, and Light Screen, as well as the…",
-          "source": "Battle Stadium"
-        },
-        {
-          "name": "Choice Band",
-          "item": "choice-band",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "adamant",
-          "tera": [
-            "fighting",
-            "steel"
-          ],
-          "moves": [
-            [
-              "close-combat"
-            ],
-            [
-              "raging-bull",
-              "wave-crash"
-            ],
-            [
-              "aqua-jet"
-            ],
-            [
-              "earthquake",
-              "iron-head"
-            ]
-          ],
-          "evs": {
-            "hp": 4,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "This set is currently in copyediting. It can be found here.",
           "source": "Battle Stadium"
         }
       ]
@@ -11463,36 +11466,38 @@
           "source": "PU"
         },
         {
-          "name": "Fast Attacker",
-          "item": "heavy-duty-boots",
+          "name": "Choice Band",
+          "item": "choice-band",
           "itemAlts": [],
           "ability": "",
           "nature": "jolly",
           "tera": [
-            "ice",
-            "ghost"
+            "dark",
+            "psychic",
+            "fire"
           ],
           "moves": [
             [
-              "knock-off"
+              "close-combat"
             ],
             [
-              "triple-axel"
+              "gunk-shot"
             ],
             [
-              "ice-shard"
+              "shadow-claw",
+              "lash-out",
+              "tera-blast"
             ],
             [
-              "swords-dance",
-              "low-kick"
+              "switcheroo"
             ]
           ],
           "evs": {
             "hp": 0,
             "attack": 252,
-            "defense": 0,
+            "defense": 4,
             "special-attack": 0,
-            "special-defense": 4,
+            "special-defense": 0,
             "speed": 252
           },
           "ivs": {
@@ -11504,8 +11509,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Ice Shard lets Sneasel pick off weakened foes and faster attackers like Whimsicott and Jolteon as well as dance around priority like Mach Punch from Hitmonchan. Swords Dance lets Sneasel pick up OHKOs on Charizard and Dipplin and gives it an easier time cleaning up weakened teams, while Low Kick lets it threaten…",
-          "source": "ZU"
+          "description": "Shadow Claw and Lash Out both target Ghost-types like Rotom, though Shadow Claw comes with the added benefit of hitting opposing Hisuian Sneasel neutrally. Tera Dark makes Hisuian Sneasel immune to Psychic-type moves from Alolan Raichu and Indeedee and also powers up Lash Out. Tera Blast with Tera Psychic or Tera Fire…",
+          "source": "PU"
         }
       ]
     },
@@ -19455,12 +19460,15 @@
           "source": "UU"
         },
         {
-          "name": "Substitute Serene Grace",
+          "name": "Substitute",
           "item": "leftovers",
           "itemAlts": [],
           "ability": "",
           "nature": "hasty",
-          "tera": [],
+          "tera": [
+            "water",
+            "fairy"
+          ],
           "moves": [
             [
               "substitute"
@@ -19493,7 +19501,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "With Substitute, Jirachi can capitalize on the opponent's switches that they might make and to fish for paralysis from opposing Pokemon. Zen Headbutt allows it to hit foes such as Keldeo, Clodsire, and Conkeldurr. Alternatively, Wish can be used to recover Jirachi's HP quickly after using Substitute and allows it to…",
           "source": "UU"
         }
       ]
@@ -21989,28 +21997,28 @@
           "source": "PU"
         },
         {
-          "name": "Physical Wall",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "infiltrator",
+          "name": "Calm Mind",
+          "item": "heavy-duty-boots",
+          "itemAlts": [
+            "leftovers"
+          ],
+          "ability": "",
           "nature": "bold",
           "tera": [
-            "poison"
+            "dark",
+            "fairy"
           ],
           "moves": [
             [
-              "foul-play"
+              "calm-mind"
             ],
             [
-              "will-o-wisp"
+              "dark-pulse"
             ],
             [
-              "pain-split",
               "rest"
             ],
             [
-              "hex",
-              "toxic",
               "sleep-talk"
             ]
           ],
@@ -22018,13 +22026,13 @@
             "hp": 252,
             "attack": 0,
             "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
+            "special-attack": 4,
+            "special-defense": 0,
             "speed": 0
           },
           "ivs": {
             "hp": 31,
-            "attack": 0,
+            "attack": 31,
             "defense": 31,
             "special-attack": 31,
             "special-defense": 31,
@@ -22032,7 +22040,94 @@
           },
           "level": null,
           "description": "",
-          "source": "ZU"
+          "source": "PU"
+        },
+        {
+          "name": "Nasty Plot",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "modest",
+          "tera": [
+            "dark"
+          ],
+          "moves": [
+            [
+              "nasty-plot"
+            ],
+            [
+              "dark-pulse"
+            ],
+            [
+              "will-o-wisp",
+              "shadow-ball"
+            ],
+            [
+              "pain-split"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 52,
+            "special-defense": 0,
+            "speed": 204
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "PU"
+        },
+        {
+          "name": "Utility",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "pressure",
+          "nature": "adamant",
+          "tera": [
+            "dark"
+          ],
+          "moves": [
+            [
+              "will-o-wisp"
+            ],
+            [
+              "foul-play"
+            ],
+            [
+              "pain-split"
+            ],
+            [
+              "shadow-sneak"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 252,
+            "defense": 4,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "PU"
         }
       ]
     },
@@ -23088,6 +23183,49 @@
           "level": null,
           "description": "",
           "source": "Little Cup"
+        },
+        {
+          "name": "Physical Wall",
+          "item": "eviolite",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "relaxed",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "blizzard"
+            ],
+            [
+              "giga-drain"
+            ],
+            [
+              "ice-shard"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 36,
+            "attack": 20,
+            "defense": 196,
+            "special-attack": 100,
+            "special-defense": 116,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Little Cup"
         }
       ]
     },
@@ -23231,50 +23369,6 @@
           },
           "level": null,
           "description": "Abomasnow fulfills a unique niche on Grass teams as the best dual screens setter that the type has access to. With Aurora Veil and its ability Snow Warning, it can significantly decrease the amount of damage common setup sweepers on Grass teams take, such as Sinistcha and the Ogerpon formes. Blizzard's perfect…",
-          "source": "Monotype"
-        },
-        {
-          "name": "Hail Setter (Ice)",
-          "item": "icy-rock",
-          "itemAlts": [
-            "light-clay"
-          ],
-          "ability": "",
-          "nature": "modest",
-          "tera": [],
-          "moves": [
-            [
-              "aurora-veil"
-            ],
-            [
-              "blizzard"
-            ],
-            [
-              "giga-drain",
-              "grass-knot"
-            ],
-            [
-              "earth-power"
-            ]
-          ],
-          "evs": {
-            "hp": 40,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 216
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Thanks to its ability to set snow and Aurora Veil, Abomasnow is a valuable choice for Ice-type teams. Its Grass typing provides a way to deal with Water-types such as Azumarill, Basculegion, and Quagsire. Giga Drain is its main STAB move, dealing damage while providing recovery for Abomasnow. Alternatively, it can use…",
           "source": "Monotype"
         }
       ]
@@ -23698,7 +23792,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Rhyperior functions as a great Stealth Rock setter due to its fantastic coverage with Earthquake and Stone Edge, which allows it to force switches against the likes of Heatran, Tyranitar, and Hisuian Arcanine. Swords Dance allows Rhyperior to be more threatening against Skarmory and Hippowdon, whereas Dragon Tail can…",
           "source": "UU"
         },
         {
@@ -24516,26 +24610,29 @@
           "source": "OU"
         },
         {
-          "name": "Substitute",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "thick-fat",
-          "nature": "adamant",
+          "name": "Stealth Rock",
+          "item": "focus-sash",
+          "itemAlts": [
+            "loaded-dice"
+          ],
+          "ability": "oblivious",
+          "nature": "jolly",
           "tera": [
-            "grass"
+            "ghost"
           ],
           "moves": [
             [
-              "substitute"
+              "stealth-rock"
             ],
             [
               "earthquake"
             ],
             [
-              "icicle-crash"
+              "icicle-crash",
+              "icicle-spear"
             ],
             [
-              "trailblaze"
+              "ice-shard"
             ]
           ],
           "evs": {
@@ -24555,8 +24652,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Mamoswine functions as an excellent wallbreaker thanks to its nearly unwallable Ice / Ground STAB combination and high base Attack, allowing it to break through common threats such as Hydrapple, Heatran, Toxapex, and Skeledirge. Ice Shard is a reliable priority move that allows Mamoswine to bypass its below average…",
-          "source": "UU"
+          "description": "",
+          "source": "OU"
         }
       ]
     },
@@ -32423,9 +32520,53 @@
     },
     "625": {
       "name": "Bisharp",
-      "gen": "RU",
+      "gen": "UU",
       "overview": "Bisharp stands out as one of the premier setup sweepers in the metagame due its access to Swords Dance, strong priority in Sucker Punch, and impressive Eviolite-boosted bulk. Coupled with a fantastic defensive typing, Bisharp's bulk allows it to tank attacks from some of the most common Pokemon in the tier, including…",
       "sets": [
+        {
+          "name": "Swords Dance",
+          "item": "eviolite",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "adamant",
+          "tera": [
+            "ghost",
+            "fire"
+          ],
+          "moves": [
+            [
+              "swords-dance"
+            ],
+            [
+              "iron-head"
+            ],
+            [
+              "sucker-punch"
+            ],
+            [
+              "throat-chop"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 4,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "UU"
+        },
         {
           "name": "Swords Dance",
           "item": "eviolite",
@@ -32551,49 +32692,6 @@
           },
           "level": null,
           "description": "Bisharp's extra bulk provided by Eviolite allows it to lure in unsuspecting checks to the non-Eviolite Bisharp set such as Ogerpon-H and Choice Specs Flutter Mane and set up on them with Swords Dance or KO them outright. Furthermore, its Steel typing is incredibly valuable, as it enables it to take Fairy-type attacks…",
-          "source": "Monotype"
-        },
-        {
-          "name": "Swords Dance (Dark)",
-          "item": "life-orb",
-          "itemAlts": [
-            "black-glasses"
-          ],
-          "ability": "",
-          "nature": "adamant",
-          "tera": [],
-          "moves": [
-            [
-              "swords-dance"
-            ],
-            [
-              "iron-head"
-            ],
-            [
-              "throat-chop"
-            ],
-            [
-              "sucker-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Bisharp serves a niche role on Dark teams with its secondary Steel typing and Defiant ability enabling it to take on the bulky Calm Mind Fairy-types of the tier such as Primarina and Clefable and punish Defog from the likes of Mandibuzz or Sticky Web from Araquanid or Galvantula, respectively. At +2 Attack, Iron Head…",
           "source": "Monotype"
         }
       ]
@@ -37377,7 +37475,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Hyper Voice allows Sylveon to utilize Throat Spray as well as being a strong spread move after the boost from Pixilate. Misty Terrain allows Sylveon to block Spore from Amoonguss, while Calm Mind is also viable as another way to further increase Sylveon‘s damage output. Quick Attack picks off Urshifu-S and Chien-Pao,…",
+          "description": "Hyper Voice allows Sylveon to utilize Throat Spray as well as being a strong spread move after the boost from Pixilate. Misty Terrain allows Sylveon to block Spore from Amoonguss, while Calm Mind is also viable as another way to further increase Sylveon's damage output. Quick Attack picks off Urshifu-S and Chien-Pao,…",
           "source": "VGC 2024"
         },
         {
@@ -38002,34 +38100,34 @@
           "source": "Monotype"
         },
         {
-          "name": "Iron Defense + Calm Mind (Steel)",
-          "item": "leftovers",
+          "name": "Screen Setter (Fairy)",
+          "item": "light-clay",
           "itemAlts": [],
           "ability": "",
           "nature": "bold",
           "tera": [],
           "moves": [
             [
-              "iron-defense"
+              "reflect"
             ],
             [
-              "calm-mind"
+              "light-screen"
             ],
             [
-              "magnet-rise",
-              "stored-power"
+              "foul-play",
+              "thunder-wave"
             ],
             [
-              "draining-kiss"
+              "spikes"
             ]
           ],
           "evs": {
             "hp": 252,
             "attack": 0,
-            "defense": 200,
+            "defense": 252,
             "special-attack": 0,
-            "special-defense": 0,
-            "speed": 56
+            "special-defense": 4,
+            "speed": 0
           },
           "ivs": {
             "hp": 31,
@@ -38040,8 +38138,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "This is a sample set as we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
-          "source": "Monotype"
+          "description": "Klefki is the ideal dual screens setter on Fairy due to its Steel typing, which negates Poison-type attacks from Nihilego and Alolan Muk and ability to fend off threats like Mega Scizor with Foul Play. Klefki is a better option than Grimmsnarl due to its typing and ability to set up Spikes, which, like its screens, go…",
+          "source": "Nat Dex Mono"
         }
       ]
     },
@@ -39022,8 +39120,8 @@
             ],
             [
               "knock-off",
-              "trick",
-              "gunk-shot"
+              "gunk-shot",
+              "trick"
             ]
           ],
           "evs": {
@@ -39043,7 +39141,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Hoopa-U's strong physical STAB moves and sky-high Attack make it one of the tier's strongest wallbreakers. When utilizing a Choice Band, it finds itself a niche 2HKOing common physically defensive threats such as Alomomola, Corviknight, Gliscor, and even Dondozo after Terastallizing into the Dark typing. This is in…",
           "source": "OU"
         },
         {
@@ -42230,6 +42328,52 @@
             "defense": 4,
             "special-attack": 0,
             "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "PU"
+        },
+        {
+          "name": "Choice",
+          "item": "choice-scarf",
+          "itemAlts": [
+            "choice-band"
+          ],
+          "ability": "defiant",
+          "nature": "jolly",
+          "tera": [
+            "fighting",
+            "dark"
+          ],
+          "moves": [
+            [
+              "close-combat"
+            ],
+            [
+              "knock-off"
+            ],
+            [
+              "earthquake"
+            ],
+            [
+              "u-turn"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
@@ -45770,7 +45914,7 @@
     "812": {
       "name": "Rillaboom",
       "gen": "Champions VGC",
-      "overview": "Welcome to Battle Stadium Singles Regulation F! This Pokemon has been updated to reflect the new Pokemon that The Indigo Disk has brought!\nIf you feel that this analysis is missing important information, feel free to leave feedback here.",
+      "overview": "Rillaboom is a versatile offensive Pokemon with moderate support capabilities, being largely defined by its automatic setup of Grassy Terrain. Grassy Terrain's passive recovery helps Rillaboom and its allies avoid getting KOed by some attacks, though opponents can also exploit that with their own Pokemon. More…",
       "sets": [
         {
           "name": "Bulky Offensive",
@@ -45783,13 +45927,13 @@
           "tera": [],
           "moves": [
             [
-              "wood-hammer"
+              "fake-out"
             ],
             [
               "grassy-glide"
             ],
             [
-              "fake-out"
+              "wood-hammer"
             ],
             [
               "high-horsepower",
@@ -45821,7 +45965,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Rillaboom can deal heavy damage with its STAB attacks and handle faster threats with Grassy Glide while supporting its team with passive recovery from Grassy Terrain and timely disruption with Fake Out.\nHigh Horsepower deals solid damage against Fire- and Steel-types like Sneasler, Kingambit, and Gholdengo. U-turn…",
           "source": "Champions VGC"
         },
         {
@@ -45963,9 +46107,111 @@
     },
     "815": {
       "name": "Cinderace",
-      "gen": "OU",
+      "gen": "Champions OU",
       "overview": "",
       "sets": [
+        {
+          "name": "Air Balloon",
+          "item": "air-balloon",
+          "itemAlts": [],
+          "ability": "libero",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "pyro-ball"
+            ],
+            [
+              "u-turn"
+            ],
+            [
+              "high-jump-kick",
+              "sucker-punch",
+              "gunk-shot",
+              "will-o-wisp"
+            ],
+            [
+              "court-change",
+              "will-o-wisp"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 6,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 0,
+            "attack": 32,
+            "defense": 2,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
+        {
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
+          "itemAlts": [],
+          "ability": "libero",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "pyro-ball"
+            ],
+            [
+              "gunk-shot"
+            ],
+            [
+              "high-jump-kick"
+            ],
+            [
+              "u-turn"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 6,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 0,
+            "attack": 32,
+            "defense": 2,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
         {
           "name": "Offensive Pivot",
           "item": "heavy-duty-boots",
@@ -46055,90 +46301,6 @@
           "level": null,
           "description": "When combining its good Speed with HP investment, Cinderace becomes one of OU's better pivots, able to check threats such as Gholdengo, Scizor, and Kingambit. U-turn allows Cinderace to chip foes and capitalize on switch-ins to bring in its teammates safely as well as greatly damage foes Cinderace might lose to in…",
           "source": "OU"
-        },
-        {
-          "name": "Choice Scarf",
-          "item": "choice-scarf",
-          "itemAlts": [],
-          "ability": "libero",
-          "nature": "jolly",
-          "tera": [],
-          "moves": [
-            [
-              "pyro-ball"
-            ],
-            [
-              "gunk-shot"
-            ],
-            [
-              "high-jump-kick"
-            ],
-            [
-              "u-turn"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 4,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Cinderace is a staple on Fire teams thanks to its incredible Speed tier and coverage, which allow it to take advantage of Libero to sweep effectively. With Choice Scarf, Cinderace outspeeds and OHKOes foes like Iron Valiant, non-Choice Scarf Greninja, and non-Choice Scarf Flutter Mane. Gunk Shot allows Cinderace to…",
-          "source": "Monotype"
-        },
-        {
-          "name": "Offensive Utility",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "libero",
-          "nature": "jolly",
-          "tera": [],
-          "moves": [
-            [
-              "pyro-ball"
-            ],
-            [
-              "high-jump-kick",
-              "u-turn"
-            ],
-            [
-              "sucker-punch",
-              "u-turn"
-            ],
-            [
-              "court-change"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Cinderace is a great asset to Fire teams due to its mix of offensive presence and utility. Pyro Ball deals a lot of damage under sun and comes with the nice touch of not activating Libero. Libero-boosted High Jump Kick provides valuable coverage, hitting Archaludon, Hydreigon, and Garganacl. Low Kick is an…",
-          "source": "Monotype"
         }
       ]
     },
@@ -46659,11 +46821,10 @@
           "source": "NU"
         },
         {
-          "name": "Stealth Rock",
+          "name": "Utility",
           "item": "rocky-helmet",
           "itemAlts": [
-            "leftovers",
-            "heavy-duty-boots"
+            "leftovers"
           ],
           "ability": "shed-skin",
           "nature": "impish",
@@ -46689,10 +46850,10 @@
           "evs": {
             "hp": 252,
             "attack": 0,
-            "defense": 252,
+            "defense": 176,
             "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
+            "special-defense": 0,
+            "speed": 80
           },
           "ivs": {
             "hp": 31,
@@ -46703,8 +46864,52 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
-          "source": "PU"
+          "description": "Sandaconda is one of the best Pokemon in NU and provides teams with several forms of useful utility, including blocking Volt Switch, setting Stealth Rock, spreading paralysis, and sponging Knock Off. Shed Skin lets Sandaconda absorb status and, in combination with Rest, support its team and take on physical attackers…",
+          "source": "NU"
+        },
+        {
+          "name": "Coil",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "shed-skin",
+          "nature": "jolly",
+          "tera": [
+            "dragon",
+            "ghost"
+          ],
+          "moves": [
+            [
+              "coil"
+            ],
+            [
+              "earthquake"
+            ],
+            [
+              "stone-edge"
+            ],
+            [
+              "rest"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 4,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "With rock-solid physical bulk, Shed Skin, and good offensive power, Sandaconda makes for a deadly mid- and late-game Coil sweeper, setting up on Pokemon like Passimian, Muk, and Umbreon. Stone Edge targets Pokemon resistant or immune to Earthquake, like Rotom, Drifblim, and Oricorio. Rest keeps Sandaconda healthy and…",
+          "source": "NU"
         },
         {
           "name": "Physical Wall",
@@ -46750,50 +46955,6 @@
           },
           "level": null,
           "description": "Sandaconda is a great wall thanks to its natural bulk, Shed Skin, and Ground typing. Common physical attackers like Muk, Primeape, and Regirock struggle to break through Sandaconda, and its great defensive profile enables it to consistently set up Stealth Rock. Rock Blast lets Sandaconda strike foes such as Articuno,…",
-          "source": "ZU"
-        },
-        {
-          "name": "Coil",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "shed-skin",
-          "nature": "jolly",
-          "tera": [
-            "dragon"
-          ],
-          "moves": [
-            [
-              "coil"
-            ],
-            [
-              "earthquake"
-            ],
-            [
-              "scale-shot",
-              "stone-edge"
-            ],
-            [
-              "rest"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Sandaconda serves as a deadly late-game threat with the powerful combination of Coil, Rest, and Shed Skin. Earthquake hits most of the tier for at least neutral damage, while Sandaconda's other attacking move hits Pokemon that are immune to Earthquake like Charizard and Dodrio. Scale Shot allows Sandaconda to boost…",
           "source": "ZU"
         }
       ]
@@ -52202,104 +52363,6 @@
           "source": "Champions BSS"
         },
         {
-          "name": "Blunder Song",
-          "item": "blunder-policy",
-          "itemAlts": [],
-          "ability": "unaware",
-          "nature": "modest",
-          "tera": [
-            "fairy",
-            "water",
-            "fire"
-          ],
-          "moves": [
-            [
-              "sing"
-            ],
-            [
-              "torch-song"
-            ],
-            [
-              "slack-off"
-            ],
-            [
-              "shadow-ball",
-              "tera-blast",
-              "earth-power"
-            ]
-          ],
-          "evs": {
-            "hp": 204,
-            "attack": 0,
-            "defense": 4,
-            "special-attack": 132,
-            "special-defense": 4,
-            "speed": 164
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "With Blunder Policy, this Skeledirge provides a unique approach to offense: it'll either put important foes to sleep or threaten to snowball into a sweep with Speed and Special Attack boosts!\nShadow Ball: Even with Skeledirge's wide variety of viable Tera types, Shadow Ball is still an excellent secondary STAB attack…",
-          "source": "Battle Stadium"
-        },
-        {
-          "name": "Offensive Gator",
-          "item": "assault-vest",
-          "itemAlts": [
-            "throat-spray",
-            "choice-specs"
-          ],
-          "ability": "unaware",
-          "nature": "modest",
-          "tera": [
-            "fairy",
-            "fire",
-            "water"
-          ],
-          "moves": [
-            [
-              "torch-song"
-            ],
-            [
-              "shadow-ball"
-            ],
-            [
-              "earth-power",
-              "slack-off"
-            ],
-            [
-              "tera-blast",
-              "overheat",
-              "slack-off"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 4
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "This set does not have a full write-up yet. If you'd like to finish this, feel free to reserve it here!",
-          "source": "Battle Stadium"
-        },
-        {
           "name": "Defensive",
           "item": "heavy-duty-boots",
           "itemAlts": [],
@@ -52342,6 +52405,92 @@
           "level": null,
           "description": "Due to its great natural bulk, unique defensive typing, and access to Unaware, Skeledirge manages to be a fantastic defensive presence that is able to stave off the likes of Iron Moth, Iron Valiant, and Zamazenta. Moreover, Torch Song prevents it from being too passive, even letting it clean late-game with enough…",
           "source": "OU"
+        },
+        {
+          "name": "Defensive",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "unaware",
+          "nature": "bold",
+          "tera": [
+            "fairy"
+          ],
+          "moves": [
+            [
+              "torch-song"
+            ],
+            [
+              "will-o-wisp"
+            ],
+            [
+              "hex"
+            ],
+            [
+              "slack-off"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Skeledirge is a good physical wall, acting as an important check to Koraidon, Zacian-C, and Extreme Killer Arceus. It can switch into these powerful Swords Dance sweepers, beating them or halting their sweep. Torch Song allows it to potentially sweep a weakened team late-game. Earth Power is an option that chips…",
+          "source": "Anything Goes"
+        },
+        {
+          "name": "Physically Defensive (Ghost)",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "unaware",
+          "nature": "bold",
+          "tera": [],
+          "moves": [
+            [
+              "torch-song"
+            ],
+            [
+              "earth-power",
+              "hex",
+              "shadow-ball"
+            ],
+            [
+              "will-o-wisp"
+            ],
+            [
+              "slack-off"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 8,
+            "special-defense": 0,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Skeledirge makes for an excellent physical wall on Ghost teams due to its remarkable bulk, access to reliable recovery, and a great ability in Unaware. Torch Song is an incredible STAB move option that pressures teams like Fairy, Steel, and Flying. Will-O-Wisp allows Skeledirge to punish physical attackers like…",
+          "source": "Monotype"
         }
       ]
     },
@@ -52835,9 +52984,61 @@
     },
     "923": {
       "name": "Pawmot",
-      "gen": "Battle Stadium",
+      "gen": "Champions OU",
       "overview": "This analysis is for the Regulation C format of Battle Stadium Singles, which lasts until June 30th, 2023. For more information on this format and its current events, check out the format page!\nIf you feel this analysis is missing anything important or needs an update, feel free to suggest any changes here.",
       "sets": [
+        {
+          "name": "Offensive",
+          "item": "life-orb",
+          "itemAlts": [
+            "leppa-berry"
+          ],
+          "ability": "iron-fist",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "double-shock"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "ice-punch"
+            ],
+            [
+              "mach-punch",
+              "revival-blessing"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
         {
           "name": "Offensive Utility",
           "item": "focus-sash",
@@ -52981,54 +53182,6 @@
           "level": null,
           "description": "Set Details\nPawmot is a devastating wallbreaker, utilizing its unique STAB combination to destroy common defensive Pokemon such as Slowbro and Registeel. Knock Off can remove items from switch-ins including Chesnaught and Reuniclus, while Ice Punch can hit Dragon- and Grass-types such as Noivern and Amoonguss. Mach…",
           "source": "RU"
-        },
-        {
-          "name": "Revival Blessing",
-          "item": "air-balloon",
-          "itemAlts": [
-            "leppa-berry",
-            "choice-scarf"
-          ],
-          "ability": "iron-fist",
-          "nature": "jolly",
-          "tera": [
-            "electric",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "revival-blessing"
-            ],
-            [
-              "double-shock"
-            ],
-            [
-              "close-combat"
-            ],
-            [
-              "mach-punch",
-              "ice-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "NU"
         }
       ]
     },
@@ -57478,8 +57631,53 @@
     "977": {
       "name": "Dondozo",
       "gen": "VGC 2025",
-      "overview": "This Pokemon has been updated for the return of the Regulation G format and its powerful restricted threats!",
+      "overview": "Dondozo is a formidable threat thanks to its stats being doubled when combined with Tatsugiri's Commander ability. Due to its immense bulk, Dondozo is difficult to remove without adequate answers, easily sweeping through entire teams on its own.\nDondozo performs best with offensive threats that can break apart teams…",
       "sets": [
+        {
+          "name": "Bulky Attacker",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "impish",
+          "tera": [
+            "grass"
+          ],
+          "moves": [
+            [
+              "order-up"
+            ],
+            [
+              "body-press"
+            ],
+            [
+              "protect"
+            ],
+            [
+              "substitute",
+              "earthquake",
+              "wave-crash"
+            ]
+          ],
+          "evs": {
+            "hp": 4,
+            "attack": 4,
+            "defense": 196,
+            "special-attack": 0,
+            "special-defense": 148,
+            "speed": 156
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Set Details\nDondozo is a powerful tool, able to utilize its bulk to stay on the battlefield for long periods, chip foes down, and set up a favorable late-game scenario for Tatsugiri-D and a partner Restricted Pokemon. Dondozo matches up well against many physical attackers, including Incineroar, Zamazenta-C, and…",
+          "source": "VGC 2025"
+        },
         {
           "name": "Commander Sweeper",
           "item": "leftovers",
@@ -57573,81 +57771,38 @@
           "source": "VGC 2025"
         },
         {
-          "name": "Bulky Attacker",
-          "item": "leftovers",
-          "itemAlts": [],
+          "name": "Offensive Sweeper",
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "leftovers",
+            "clear-amulet"
+          ],
           "ability": "",
-          "nature": "impish",
+          "nature": "adamant",
           "tera": [
             "grass"
           ],
           "moves": [
+            [
+              "wave-crash"
+            ],
             [
               "order-up"
             ],
             [
-              "body-press"
-            ],
-            [
-              "protect"
-            ],
-            [
-              "substitute",
-              "earthquake",
-              "wave-crash"
-            ]
-          ],
-          "evs": {
-            "hp": 4,
-            "attack": 4,
-            "defense": 196,
-            "special-attack": 0,
-            "special-defense": 148,
-            "speed": 156
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nDondozo is a powerful tool, able to utilize its bulk to stay on the battlefield for long periods, chip foes down, and set up a favorable late-game scenario for Tatsugiri-D and a partner Restricted Pokemon. Dondozo matches up well against many physical attackers, including Incineroar, Zamazenta-C, and…",
-          "source": "VGC 2025"
-        },
-        {
-          "name": "Body Press",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "impish",
-          "tera": [
-            "grass"
-          ],
-          "moves": [
-            [
-              "wave-crash",
               "earthquake"
             ],
             [
-              "order-up"
-            ],
-            [
-              "body-press"
-            ],
-            [
               "protect"
             ]
           ],
           "evs": {
             "hp": 4,
-            "attack": 4,
-            "defense": 196,
+            "attack": 156,
+            "defense": 20,
             "special-attack": 0,
-            "special-defense": 148,
-            "speed": 156
+            "special-defense": 76,
+            "speed": 252
           },
           "ivs": {
             "hp": 31,
@@ -57658,7 +57813,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Dondozo takes advantage of Unaware and its good natural bulk to boast a good matchup against metagame staples such as Calyrex-I and Zamazenta-C while picking away at the opponent's team for Calyrex-S to clean it up. Order Up boosts Dondozo's Body Press when paired with Tatsugiri-D and hits Dragon-types such as Tera…",
+          "description": "Wave Crash is Dondozo's strongest Water-type move, OHKOing Pokemon like Tornadus and Gholdengo. Earthquake bypasses Follow Me from Ogerpon-W, and provides it a strong spread move thats picks off weakened foes.\nRocky Helmet breaks Focus Sash on Chien-Pao and Urshifu, allowing for an OHKO. It also allows for big damage…",
           "source": "VGC 2024"
         }
       ]
@@ -61834,7 +61989,7 @@
     "1003": {
       "name": "Ting-Lu",
       "gen": "VGC 2025",
-      "overview": "Thanks to its naturally high base stats and Vessel of Ruin, Ting-Lu is a powerful wall, able to tank most attacks in the format and retaliate with solid damage. Additionally, thanks to its deep supportive movepool with options like Sand Tomb and more niche moves like Taunt, Ting-Lu works as a great bulky supportive…",
+      "overview": "With an incredible typing, fantastic bulk, and an amazing ability in Vessel of Ruin, Ting-Lu is one of the best special walls in the tier, being able to check threats like Darkrai, Raging Bolt, Gholdengo, and Iron Moth while possessing immense natural physical bulk to take on even Pokemon like non-Low Kick Kingambit…",
       "sets": [
         {
           "name": "Bulky Support",
@@ -61879,6 +62034,55 @@
           "level": null,
           "description": "Set Details\nTing-Lu serves as a support member to its team, able to mitigate incoming special damage with Snarl and Vessel of Ruin while chipping foes with Ruination and Sand Tomb. Its high bulk allows it to stay on the field for a long time, letting it spread more damage and protect its teammates with Vessel of Ruin…",
           "source": "VGC 2025"
+        },
+        {
+          "name": "Support",
+          "item": "assault-vest",
+          "itemAlts": [
+            "rocky-helmet"
+          ],
+          "ability": "",
+          "nature": "adamant",
+          "tera": [
+            "poison"
+          ],
+          "moves": [
+            [
+              "ruination",
+              "taunt"
+            ],
+            [
+              "throat-chop",
+              "snarl"
+            ],
+            [
+              "stomping-tantrum",
+              "sand-tomb"
+            ],
+            [
+              "heavy-slam",
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 84,
+            "attack": 132,
+            "defense": 60,
+            "special-attack": 0,
+            "special-defense": 228,
+            "speed": 4
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Ting-Lu finds its niche as a bulky support Pokemon due to Vessel of Ruin, impressive defenses, and great natural typing. It is able to slow down powerful special attackers like Terapagos with Snarl and use its typing to have a positive matchup against Calyrex-S, Miraidon, and Raging Bolt. Ruination provides constant…",
+          "source": "VGC 2024"
         },
         {
           "name": "Sand Tomb Support",
@@ -61966,49 +62170,6 @@
           },
           "level": null,
           "description": "Heavy Slam allows Ting-Lu to OHKO Flutter Mane, while Ruination and Body Press provide consistent damage. Alternatively, Throat Chop can be used as a reliable Dark-Type STAB move that can also prevent Parting Shot from Incineroar and Hyper Voice from Ursaluna-B.\nTing-Lu uses Assault Vest to bolster its special bulk.…",
-          "source": "VGC 2024"
-        },
-        {
-          "name": "Bulky Attacker",
-          "item": "clear-amulet",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "adamant",
-          "tera": [
-            "poison"
-          ],
-          "moves": [
-            [
-              "earthquake"
-            ],
-            [
-              "throat-chop"
-            ],
-            [
-              "tera-blast"
-            ],
-            [
-              "protect"
-            ]
-          ],
-          "evs": {
-            "hp": 244,
-            "attack": 100,
-            "defense": 20,
-            "special-attack": 0,
-            "special-defense": 100,
-            "speed": 44
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Clear Amulet Ting-Lu aims to be a tank, sitting in front of many Pokemon such as Landorus and Raging Bolt while firing back with strong attacks, trading damage well with them while racking up damage throughout the course of a battle.\nEarthquake is used for strong spread damage, synergizing well with Clear Amulet…",
           "source": "VGC 2024"
         }
       ]
