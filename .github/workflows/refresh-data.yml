@@ -100,6 +100,14 @@ jobs:
           # very deploy this commit exists to trigger. There is no loop to guard
           # against — this workflow runs only on a schedule or a manual dispatch.
           git commit -m 'chore(data): refresh competitive datasets'
+          # The build also rewrites tracked files outside public/data — the
+          # sitemap gets today's date — and `git pull --rebase` refuses to run
+          # over unstaged changes. That one line failed this job every day from
+          # 2026-10-16 to 2026-10-23, after a full scrape, so the data never
+          # reached main. Vercel regenerates those files in its own build, so
+          # they are dropped here (dist/ is ignored and survives for Pages).
+          git status --short
+          git checkout -- .
           # Rebase onto anything pushed while the scrape was running, rather than
           # failing the job and losing a whole day of data.
           git pull --rebase origin "${GITHUB_REF_NAME}"
