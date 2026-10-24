@@ -101,6 +101,16 @@ link; the prerender writes the same three lists. In the Competitive nav
 section, the sitemap (weekly, 0.8) and `STATIC_PAGES`. The tournament card is
 `TournamentTeamCard.jsx`, shared with `/tournaments`.
 
+### Most used build (2026-10-24)
+
+"Best Garchomp build" is the question. `src/utils/mostUsedBuild.js` (pure,
+tested) takes one entry of the default format's usage file: the top item,
+ability, spread, Tera and four moves, each with its share. The Data tab shows
+it above *Em torneios* (`MostUsedBuild.jsx`, hook `useMostUsedBuild`), and the
+prerender writes the same rows (`render-meta` reads `usage-index.json`'s
+default format; `seoSnapshot`'s `build`). The tournament card and the
+prerender link to `/best-teams`, which is also in the prerendered nav.
+
 ### Indexed pages must be in the page's language
 
 `/pt/damage-calculator` was indexed in Portuguese and drawn in English until
@@ -116,6 +126,11 @@ its screen speaks both languages, not just its title.
 pages, `/challenge`, and `/items/:slug` for the battle items only
 (`battle-items.json`, not PokéAPI's 2000). Moves and abilities still come from
 PokéAPI at build time and are skipped when offline.
+
+`<lastmod>` comes from the data, never the build time (Google ignores a lastmod
+that changes on every deploy): the tournaments' `generatedAt` for
+`/best-teams` and `/tournaments`, the usage file's for `/meta/*`, and the later
+of the two for Pokémon pages. Pages with no dated source carry none.
 
 ## 5. Type chart (`/types`, `/types/:type`)
 
