@@ -1,0 +1,91 @@
+/* ============================================================
+   SHARE AS IMAGE (ShareSnippetModal.jsx, 2026-10-24)
+   Preview first, then the two choices that change it (style and
+   what the cards show), text edits one tap down, and the footer
+   the builder's share row mirrors: one primary, three equals.
+   The panel owns the only border; everything inside is a fill.
+   ============================================================ */
+
+.share-snip__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.share-snip__preview {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1200 / 675;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+.share-snip__preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+/* A redraw keeps the last image and dims it only if it takes a while, so a
+   quick switch never flickers. */
+.share-snip__preview.is-refreshing img {
+    opacity: 0.6;
+    transition-delay: 200ms;
+}
+.share-snip__empty { font-size: var(--text-sm); color: var(--color-muted); }
+
+.share-snip__options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.share-snip__swatches { display: flex; flex: 1 1 auto; min-width: 0; gap: var(--space-1_5); }
+/* Shrink before the row wraps: four swatches and the edit button share a
+   phone's width. */
+.share-snip__swatch {
+    flex: 0 1 3.5rem;
+    min-width: 2.25rem;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                outline-color var(--duration-fast) var(--ease-smooth);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+.share-snip__swatch:hover { opacity: 1; }
+.share-snip__swatch[aria-pressed='true'] { opacity: 1; outline-color: var(--color-primary); }
+.share-snip__swatch img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.share-snip__edit { flex-shrink: 0; margin-left: auto; gap: var(--space-1_5); }
+.share-snip__chevron { transition: transform var(--duration-fast) var(--ease-smooth); }
+.share-snip__edit[aria-expanded='true'] .share-snip__chevron { transform: rotate(180deg); }
+
+.share-snip__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+/* Primary on top, the three equals under it — the PokéPuzzle result's order.
+   Compound selector: .modal-footer (index.css) is a row, reversed on phones. */
+.modal-footer.share-snip__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+}
+.share-snip__more {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+}
+.share-snip__more .btn { min-width: 0; gap: var(--space-1); padding-inline: var(--space-2); }
+.share-snip__more .btn > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-24 — "Share on forum" from a saved team posted the builder's team instead `bug`
+- **Symptom:** the share-as-image dialog opens from the builder and from the saved-teams list. From the list, its forum button posted whatever team was open in the builder, under the saved team's name.
+- **Root cause:** `handleShareToForum` read `useActiveTeamStore.getState().currentTeam` instead of the `pokemons` the dialog was opened with and was drawing. A store read inside a dialog skipped the dialog's own input.
+- **Fix:** the post is built from `pokemons` (the same list the image shows). Found while redesigning the dialog (preview first, text one tap down, footer mirroring the builder's Imagem · Link · Fórum row, the image footer naming the team's `/t/:id` page instead of the GitHub repository).
+- **Correct pattern:** a dialog that acts on "the thing it shows" takes that thing as a prop and reads nothing else for it. If two screens open it, test the action from both.
+- **Files:** `src/components/modals/ShareSnippetModal.jsx`
+
 ### 2026-10-24 — The daily data refresh failed every day, after a full scrape `bug`
 - **Symptom:** "Refresh competitive data" (`.github/workflows/refresh-data.yml`) red every morning from 2026-10-16 to 2026-10-23, about 16 minutes in; the datasets on main went stale (Enzo, 2026-10-24).
 - **Root cause:** the scrape and build succeeded; the commit step then ran `git pull --rebase` with tracked files still modified outside `public/data` (the build rewrites `public/sitemap.xml` with the day's date). Git refuses to rebase over unstaged changes: `error: cannot pull with rebase: You have unstaged changes` — exit 128, nothing pushed.

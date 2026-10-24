@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import QRCode from 'qrcode';
-import { Palette, Swords, BarChart3, Image as ImageIcon, User, Sparkles } from 'lucide-react';
+import { BarChart3, Check, ChevronDown, Copy, Download, LayoutGrid, Link2, MessageSquare, Palette, Pencil, Share2, Swords } from 'lucide-react';
+import '../../styles/share-snippet.css';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import {
     SHARE_BACKGROUNDS,
@@ -8,18 +8,21 @@ import {
     SNIPPET_DIMENSIONS,
     getBackgroundById,
 } from '../../assets/backgrounds';
-import { CloseIcon, ShareIcon, SwordsIcon, ChartColumnIcon } from '../icons';
+import { CloseIcon } from '../icons';
+import { Loader } from '../Loader';
+import { useDebounce } from '../../hooks/useDebounce';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useMegaStones, megaDisplayName } from '../../hooks/useMegaStones';
 import { typeColors, typeIcons } from '../../constants/types';
 import { loadStaticData } from '../../services/staticData';
+import { SITE_URL } from '../../utils/seoPages';
 
-const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
-const BRAND_LABEL = 'github.com/ensinho/pokemonTeamBuilder';
+// The image's footer names the site, and the team's own page once it is
+// published (2026-10-24: it used to advertise the GitHub repository).
+const BRAND_LABEL = SITE_URL.replace(/^https?:\/\//, '');
 const BRAND_LOGO_URL = typeof window !== 'undefined'
     ? `${window.location.origin}${window.location.pathname.includes('/pokemonTeamBuilder') ? '/pokemonTeamBuilder/' : '/'}LogoCuteGengarRounded.png`.replace(/([^:]\/)\/+/g, "$1")
     : '/LogoCuteGengarRounded.png';
@@ -740,8 +743,9 @@ const drawFooterStripSync = (ctx, W, H, FOOTER_H, shareUrl, logoImg) => {
     ctx.fillText('Pokémon Team Builder', logoX + logoSize + 14, footerY + FOOTER_H / 2 - 10);
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
     ctx.font = '500 15px system-ui, -apple-system, sans-serif';
-    ctx.fillText(BRAND_LABEL, logoX + logoSize + 14, footerY + FOOTER_H / 2 + 12);
+    ctx.fillText(shareUrl ? shareUrl.replace(/^https?:\/\//, '') : BRAND_LABEL, logoX + logoSize + 14, footerY + FOOTER_H / 2 + 12);
 };
+
 
 // ---------------------------------------------------------------------------
 // Main Modal Component
@@ -755,7 +759,7 @@ export const ShareSnippetModal = ({
     shareUrl = '',
     showToast,
 }) => {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
     const megaStones = useMegaStones();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
@@ -792,7 +796,25 @@ export const ShareSnippetModal = ({
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isPosting, setIsPosting] = useState(false);
 
+    const [isEditingText, setIsEditingText] = useState(false);
+    // A copy answers inside the button that was pressed ("Copiado" for a
+    // moment): on a phone the toast stack sits right over this footer.
+    const [copied, setCopied] = useState(null);
+    const copiedTimer = useRef(null);
+    const flashCopied = useCallback((what) => {
+        setCopied(what);
+        clearTimeout(copiedTimer.current);
+        copiedTimer.current = setTimeout(() => setCopied(null), 1600);
+    }, []);
+    useEffect(() => () => clearTimeout(copiedTimer.current), []);
+
     const background = useMemo(() => getBackgroundById(backgroundId), [backgroundId]);
+
+    // Typing stays instant: the canvas redraws from the text once it settles.
+    const renderTitle = useDebounce(title, 180);
+    const renderSubtitle = useDebounce(subtitle, 180);
+    const renderTrainer = useDebounce(trainerName, 180);
+    const renderTeamId = useDebounce(teamIdCode, 180);
 
     useEffect(() => {
         if (isOpen) {
@@ -802,6 +824,7 @@ export const ShareSnippetModal = ({
             setTrainerName(useAuthStore.getState().displayName || 'Trainer');
             setTeamIdCode(generateRandomTeamId());
             setPreviewUrl(null);
+            setIsEditingText(false);
             useForumStore.getState().initTopicsListener();
         }
     }, [isOpen, defaultTitle, pokemons.length, t]);
@@ -823,8 +846,8 @@ export const ShareSnippetModal = ({
                     renderCompetitiveCardSnippetSync({
                         canvas,
                         pokemons,
-                        trainerName,
-                        teamIdCode,
+                        trainerName: renderTrainer,
+                        teamIdCode: renderTeamId,
                         cardTab,
                         moveTypesMap,
                         megaStones,
@@ -835,8 +858,8 @@ export const ShareSnippetModal = ({
                     renderPosterSnippetSync({
                         canvas,
                         background,
-                        title,
-                        subtitle,
+                        title: renderTitle,
+                        subtitle: renderSubtitle,
                         pokemons,
                         shareUrl,
                         assets,
@@ -857,7 +880,7 @@ export const ShareSnippetModal = ({
         return () => {
             cancelled = true;
         };
-    }, [isOpen, mode, cardTab, background, title, subtitle, pokemons, shareUrl, trainerName, teamIdCode, moveTypesMap, megaStones]);
+    }, [isOpen, mode, cardTab, background, renderTitle, renderSubtitle, pokemons, shareUrl, renderTrainer, renderTeamId, moveTypesMap, megaStones]);
 
     const exportBlob = useCallback(
         () =>
@@ -944,7 +967,7 @@ export const ShareSnippetModal = ({
         if (!shareUrl) return;
         try {
             await navigator.clipboard.writeText(shareUrl);
-            showToast?.(t('modals.shareModalSuccess'), 'success');
+            flashCopied('link');
         } catch {
             try {
                 const ta = document.createElement('textarea');
@@ -955,12 +978,12 @@ export const ShareSnippetModal = ({
                 ta.select();
                 document.execCommand('copy');
                 ta.remove();
-                showToast?.(t('modals.shareModalSuccess'), 'success');
+                flashCopied('link');
             } catch {
                 showToast?.(t('modals.shareModalErrCopy'), 'error');
             }
         }
-    }, [shareUrl, showToast, t]);
+    }, [shareUrl, flashCopied, showToast, t]);
 
     const handleNativeShare = useCallback(async () => {
         try {
@@ -985,15 +1008,31 @@ export const ShareSnippetModal = ({
         }
     }, [shareImageFile, title, shareUrl, handleCopyLink, showToast, t]);
 
+    // Desktop: the image goes straight to the clipboard, ready to paste into
+    // Discord or a chat. The blob is handed over as a promise so Safari keeps
+    // the click's permission while it encodes.
+    const canCopyImage = typeof window !== 'undefined'
+        && typeof window.ClipboardItem === 'function'
+        && typeof navigator.clipboard?.write === 'function';
+
+    const handleCopyImage = useCallback(async () => {
+        try {
+            await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': exportBlob() })]);
+            flashCopied('image');
+        } catch {
+            showToast?.(t('modals.shareModalErrGenerate'), 'error');
+        }
+    }, [exportBlob, flashCopied, showToast, t]);
+
+    // Posts the team this dialog shows — the saved-teams list opens it too, so
+    // reading the builder's active team here posted the wrong one.
     const handleShareToForum = useCallback(async () => {
         const userId = useAuthStore.getState().userId;
         if (!userId) {
             showToast?.(t('modals.shareModalForumError'), 'error');
             return;
         }
-
-        const currentTeam = useActiveTeamStore.getState().currentTeam;
-        if (!currentTeam || currentTeam.length === 0) {
+        if (!pokemons.length) {
             showToast?.(t('modals.shareModalErrGenerate'), 'error');
             return;
         }
@@ -1002,7 +1041,7 @@ export const ShareSnippetModal = ({
         try {
             const forumTeamData = {
                 name: title || t('modals.shareModalDefaultTitle'),
-                pokemons: currentTeam.map((p) => {
+                pokemons: pokemons.map((p) => {
                     const item = p?.customization?.item;
                     const mega = item && megaStones ? megaStones[item] : null;
                     const isMega = mega && mega.baseId === p.id;
@@ -1027,9 +1066,9 @@ export const ShareSnippetModal = ({
                 : `${title || t('modals.shareModalDefaultTitle')}`;
 
             const topics = useForumStore.getState().topics;
-            let targetTopic = topics.find((t) => t.title === 'Teams');
-            if (!targetTopic) targetTopic = topics.find((t) => t.title?.toLowerCase() === 'teams');
-            if (!targetTopic) targetTopic = topics.find((t) => t.category === 'teams');
+            let targetTopic = topics.find((topic) => topic.title === 'Teams');
+            if (!targetTopic) targetTopic = topics.find((topic) => topic.title?.toLowerCase() === 'teams');
+            if (!targetTopic) targetTopic = topics.find((topic) => topic.category === 'teams');
             const targetTopicId = targetTopic ? targetTopic.id : 'general';
 
             const success = await useForumStore.getState().sendMessage(targetTopicId, postText, forumTeamData);
@@ -1045,11 +1084,20 @@ export const ShareSnippetModal = ({
         } finally {
             setIsPosting(false);
         }
-    }, [title, subtitle, onClose, showToast, t, megaStones]);
+    }, [pokemons, title, subtitle, onClose, showToast, t, megaStones]);
 
     if (!isOpen) return null;
 
-    const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
+    const busy = isPosting || !previewUrl;
+    const textFields = mode === 'cards'
+        ? [
+            { id: 'trainer', label: t('modals.shareModalTrainerLabel'), value: trainerName, max: 30, placeholder: 'Trainer', onChange: setTrainerName },
+            { id: 'code', label: t('modals.shareModalTeamIdLabel'), value: teamIdCode, max: 14, placeholder: '7Q9H36N438', onChange: (v) => setTeamIdCode(v.toUpperCase()), mono: true },
+        ]
+        : [
+            { id: 'title', label: t('modals.shareModalTitleLabel'), value: title, max: 60, placeholder: t('modals.shareModalDefaultTitle'), onChange: setTitle },
+            { id: 'subtitle', label: t('modals.shareModalSubtitleLabel'), value: subtitle, max: 80, placeholder: t('modals.shareModalOptional'), onChange: setSubtitle },
+        ];
 
     return (
         <div
@@ -1063,266 +1111,148 @@ export const ShareSnippetModal = ({
                 aria-modal="true"
                 aria-labelledby="share-snippet-title"
                 tabIndex={-1}
-                className="modal-panel modal-panel--lg"
+                className="modal-panel modal-panel--lg share-snip"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Modal Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-surface-raised bg-surface-raised/30">
-                    <div>
-                        <h3 id="share-snippet-title" className="text-lg font-bold text-fg">
-                            {t('modals.shareModalTitle')}
-                        </h3>
-                        <p className="text-xs text-muted">
-                            {prefersNativeSave
-                                ? t('modals.shareModalDescMobile')
-                                : t('modals.shareModalDescDesktop')}
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label={t('modals.shareModalCloseAria')}
-                        className="rounded-lg bg-surface-raised p-2 text-fg hover:bg-surface-raised/80 transition-all"
-                    >
+                <div className="modal-header">
+                    <h3 id="share-snippet-title" className="modal-title">{t('modals.shareModalTitle')}</h3>
+                    <button type="button" onClick={onClose} aria-label={t('modals.shareModalCloseAria')} className="modal-close">
                         <CloseIcon />
                     </button>
                 </div>
 
-                {/* Scrollable Content Body */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
-                    {/* Mode Switcher Tabs (Lucide icons, NO emojis) */}
-                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-surface-raised border border-surface-raised">
-                        <button
-                            type="button"
-                            onClick={() => setMode('cards')}
-                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                                mode === 'cards'
-                                    ? 'bg-primary text-on-primary shadow-md'
-                                    : 'text-muted hover:text-fg'
-                            }`}
-                        >
-                            <SwordsIcon className="w-4 h-4" />
+                <div className="modal-body share-snip__body custom-scrollbar">
+                    {/* What will be shared comes first; everything below edits it. */}
+                    <div className={`share-snip__preview${isRendering && previewUrl ? ' is-refreshing' : ''}`}>
+                        {previewUrl ? (
+                            <img src={previewUrl} alt={t('modals.shareModalTitle')} width={SNIPPET_DIMENSIONS.width} height={SNIPPET_DIMENSIONS.height} />
+                        ) : isRendering ? (
+                            <Loader size="sm" label={t('modals.shareModalRendering')} />
+                        ) : (
+                            <span className="share-snip__empty">{t('modals.shareModalPreviewUnavailable')}</span>
+                        )}
+                        <canvas ref={canvasRef} hidden aria-hidden="true" />
+                    </div>
+
+                    <div className="segmented segmented--block" role="group" aria-label={t('modals.shareModalStyleAria')}>
+                        <button type="button" className="segmented__item" aria-pressed={mode === 'cards'} onClick={() => setMode('cards')}>
+                            <LayoutGrid aria-hidden="true" />
                             {t('modals.shareModalModeCards')}
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setMode('poster')}
-                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                                mode === 'poster'
-                                    ? 'bg-primary text-on-primary shadow-md'
-                                    : 'text-muted hover:text-fg'
-                            }`}
-                        >
-                            <Palette className="w-4 h-4" />
+                        <button type="button" className="segmented__item" aria-pressed={mode === 'poster'} onClick={() => setMode('poster')}>
+                            <Palette aria-hidden="true" />
                             {t('modals.shareModalModePoster')}
                         </button>
                     </div>
 
-                    {/* Mode Specific Controls */}
-                    {mode === 'cards' ? (
-                        <div className="p-3.5 rounded-xl bg-surface-raised/40 border border-surface-raised space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label className="mb-1 block text-2xs font-bold text-muted">
-                                        {t('modals.shareModalTrainerLabel')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={trainerName}
-                                        onChange={(e) => setTrainerName(e.target.value.slice(0, 30))}
-                                        placeholder="Trainer"
-                                        maxLength={30}
-                                        className="w-full rounded-lg border border-surface-raised bg-surface p-2 text-xs font-medium text-fg focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-2xs font-bold text-muted">
-                                        {t('modals.shareModalTeamIdLabel')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={teamIdCode}
-                                        onChange={(e) => setTeamIdCode(e.target.value.toUpperCase().slice(0, 14))}
-                                        placeholder="7Q9H36N438"
-                                        maxLength={14}
-                                        className="w-full rounded-lg border border-surface-raised bg-surface p-2 text-xs font-mono font-bold text-fg focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
+                    <div className="share-snip__options">
+                        {mode === 'cards' ? (
+                            <div className="segmented segmented--sm" role="group" aria-label={t('modals.shareModalContentAria')}>
+                                <button type="button" className="segmented__item" aria-pressed={cardTab === 'moves'} onClick={() => setCardTab('moves')}>
+                                    <Swords aria-hidden="true" />
+                                    {t('modals.shareModalTabMoves')}
+                                </button>
+                                <button type="button" className="segmented__item" aria-pressed={cardTab === 'stats'} onClick={() => setCardTab('stats')}>
+                                    <BarChart3 aria-hidden="true" />
+                                    {t('modals.shareModalTabStats')}
+                                </button>
                             </div>
-
-                            {/* Card Content Sub-Tab */}
-                            <div className="flex items-center justify-between pt-1">
-                                <span className="text-2xs font-bold text-muted">
-                                    Display Content:
-                                </span>
-                                <div className="inline-flex rounded-lg bg-surface p-0.5 border border-surface-raised">
-                                    <button
-                                        type="button"
-                                        onClick={() => setCardTab('moves')}
-                                        className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-all ${
-                                            cardTab === 'moves'
-                                                ? 'bg-primary text-on-primary'
-                                                : 'text-muted hover:text-fg'
-                                        }`}
-                                    >
-                                        <SwordsIcon className="w-3.5 h-3.5" />
-                                        {t('modals.shareModalTabMoves')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setCardTab('stats')}
-                                        className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-all ${
-                                            cardTab === 'stats'
-                                                ? 'bg-primary text-on-primary'
-                                                : 'text-muted hover:text-fg'
-                                        }`}
-                                    >
-                                        <ChartColumnIcon className="w-3.5 h-3.5" />
-                                        {t('modals.shareModalTabStats')}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="p-3.5 rounded-xl bg-surface-raised/40 border border-surface-raised space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label className="mb-1 block text-2xs font-bold text-muted">
-                                        {t('modals.shareModalTitleLabel')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value.slice(0, 60))}
-                                        placeholder={t('modals.shareModalDefaultTitle')}
-                                        maxLength={60}
-                                        className="w-full rounded-lg border border-surface-raised bg-surface p-2 text-xs font-medium text-fg focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-2xs font-bold text-muted">
-                                        {t('modals.shareModalSubtitleLabel')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={subtitle}
-                                        onChange={(e) => setSubtitle(e.target.value.slice(0, 80))}
-                                        placeholder={t('modals.shareModalOptional')}
-                                        maxLength={80}
-                                        className="w-full rounded-lg border border-surface-raised bg-surface p-2 text-xs font-medium text-fg focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Background Selector */}
-                            <div>
-                                <label className="mb-1.5 block text-2xs font-bold text-muted">
-                                    {t('modals.shareModalBackgroundLabel')}
-                                </label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {SHARE_BACKGROUNDS.map((bg) => {
-                                        const selected = bg.id === backgroundId;
-                                        return (
-                                            <button
-                                                key={bg.id}
-                                                type="button"
-                                                onClick={() => setBackgroundId(bg.id)}
-                                                className={`relative aspect-video overflow-hidden rounded-lg border-2 transition-all hover:scale-105 ${
-                                                    selected
-                                                        ? 'border-primary ring-2 ring-primary/40'
-                                                        : 'border-transparent opacity-75 hover:opacity-100'
-                                                }`}
-                                                title={bg.name}
-                                            >
-                                                <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
-                                                <span className="absolute inset-x-0 bottom-0 text-2xs font-bold bg-black/60 text-white text-center py-0.5">
-                                                    {bg.name}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Live Preview Canvas Box */}
-                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black/40 border border-surface-raised shadow-inner flex items-center justify-center">
-                        {previewUrl ? (
-                            <img
-                                src={previewUrl}
-                                alt="Team snippet preview"
-                                className="w-full h-full object-contain block"
-                            />
                         ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs text-muted">
-                                {isRendering ? t('modals.shareModalRendering') : t('modals.shareModalPreviewUnavailable')}
+                            <div className="share-snip__swatches" role="group" aria-label={t('modals.shareModalBackgroundLabel')}>
+                                {SHARE_BACKGROUNDS.map((bg) => (
+                                    <button
+                                        key={bg.id}
+                                        type="button"
+                                        className="share-snip__swatch"
+                                        aria-pressed={bg.id === backgroundId}
+                                        aria-label={bg.name}
+                                        title={bg.name}
+                                        onClick={() => setBackgroundId(bg.id)}
+                                    >
+                                        <img src={bg.url} alt="" />
+                                    </button>
+                                ))}
                             </div>
                         )}
-                        <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+                        <button
+                            type="button"
+                            className="btn btn-ghost btn-sm share-snip__edit"
+                            aria-expanded={isEditingText}
+                            aria-controls="share-snip-fields"
+                            onClick={() => setIsEditingText((open) => !open)}
+                        >
+                            <Pencil aria-hidden="true" />
+                            <span>{t('modals.shareModalEditText')}</span>
+                            <ChevronDown aria-hidden="true" className="share-snip__chevron" />
+                        </button>
                     </div>
 
-                    {/* Share URL copy field */}
-                    {shareUrl && (
-                        <div className="flex items-center gap-2 rounded-xl bg-surface-raised p-2 border border-surface-raised">
-                            <input
-                                type="text"
-                                readOnly
-                                value={shareUrl}
-                                onFocus={(e) => e.target.select()}
-                                className="min-w-0 flex-1 bg-transparent px-1 text-xs text-muted focus:outline-none font-mono"
-                                aria-label="Share URL"
-                            />
-                            <button
-                                type="button"
-                                onClick={handleCopyLink}
-                                className="rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 px-3 py-1.5 text-xs font-bold transition-all"
-                            >
-                                {t('modals.shareModalCopyBtn')}
-                            </button>
+                    {isEditingText && (
+                        <div id="share-snip-fields" className="share-snip__fields">
+                            {textFields.map((field) => (
+                                <label key={field.id} className="field">
+                                    <span className="field-label">{field.label}</span>
+                                    <input
+                                        type="text"
+                                        className={`input-clean${field.mono ? ' font-mono' : ''}`}
+                                        value={field.value}
+                                        maxLength={field.max}
+                                        placeholder={field.placeholder}
+                                        onChange={(e) => field.onChange(e.target.value.slice(0, field.max))}
+                                    />
+                                </label>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* Sticky Action Footer */}
-                <div className="p-4 border-t border-surface-raised bg-surface-raised/40 space-y-2">
-                    {/* Share on Forum Button */}
-                    <button
-                        type="button"
-                        onClick={handleShareToForum}
-                        disabled={isRendering || isPosting}
-                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-on-primary py-2.5 text-xs font-bold shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
-                    >
-                        {isPosting ? (
-                            <span>{language === 'pt' ? 'Postando...' : 'Posting...'}</span>
-                        ) : (
-                            <>
-                                <ShareIcon className="w-4 h-4 text-white" />
-                                {t('modals.shareModalForumBtn')}
-                            </>
+                {/* One primary, then the builder's three (Imagem · Link · Fórum), here as copy / copy / post. */}
+                <div className="modal-footer modal-footer--ruled share-snip__footer">
+                    {prefersNativeSave ? (
+                        <button type="button" className="btn btn-primary btn-lg btn-block" onClick={handleNativeShare} disabled={busy}>
+                            <Share2 aria-hidden="true" />
+                            {t('modals.shareModalShareImage')}
+                        </button>
+                    ) : (
+                        <button type="button" className="btn btn-primary btn-lg btn-block" onClick={handleDownload} disabled={busy}>
+                            <Download aria-hidden="true" />
+                            {t('modals.shareModalDownloadImage')}
+                        </button>
+                    )}
+                    <div className="share-snip__more">
+                        {canCopyImage && (
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={handleCopyImage} disabled={busy} aria-label={t('modals.shareModalCopyImage')} title={t('modals.shareModalCopyImage')}>
+                                {copied === 'image' ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+                                <span>{copied === 'image' ? t('modals.shareModalCopied') : t('builder.shareImage')}</span>
+                            </button>
                         )}
-                    </button>
-
-                    {/* Actions Grid */}
-                    <div className="grid grid-cols-2 gap-2">
                         <button
                             type="button"
-                            onClick={handleDownload}
-                            disabled={isRendering || isPosting}
-                            className="rounded-xl bg-surface-raised border border-surface-raised px-4 py-2.5 text-xs font-bold text-fg transition-all hover:bg-surface-raised/80 active:scale-[0.98] disabled:opacity-60"
+                            className="btn btn-secondary btn-sm"
+                            onClick={handleCopyLink}
+                            disabled={!shareUrl}
+                            aria-label={t('modals.shareModalCopyLinkBtn')}
+                            title={shareUrl ? t('modals.shareModalCopyLinkBtn') : t('modals.shareModalLinkPending')}
                         >
-                            {prefersNativeSave ? t('modals.shareModalSaveImage') : t('modals.shareModalDownloadImage')}
+                            {copied === 'link' ? <Check aria-hidden="true" /> : <Link2 aria-hidden="true" />}
+                            <span>{copied === 'link' ? t('modals.shareModalCopied') : t('builder.shareLink')}</span>
                         </button>
                         <button
                             type="button"
-                            onClick={handleNativeShare}
-                            disabled={isRendering || isPosting}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-surface-raised border border-primary/40 text-primary px-4 py-2.5 text-xs font-bold transition-all hover:bg-primary/10 active:scale-[0.98] disabled:opacity-60"
+                            className="btn btn-secondary btn-sm"
+                            onClick={handleShareToForum}
+                            disabled={busy}
+                            aria-label={t('modals.shareModalForumAria')}
+                            title={t('modals.shareModalForumAria')}
                         >
-                            <ShareIcon className="w-3.5 h-3.5" />
-                            {canNativeShare ? t('modals.shareModalShareBtn') : t('modals.shareModalCopyLinkBtn')}
+                            {isPosting ? <Loader size="xs" /> : <MessageSquare aria-hidden="true" />}
+                            <span>{t('builder.shareForum')}</span>
                         </button>
                     </div>
+                    <span className="sr-only" role="status">
+                        {copied === 'image' && t('modals.shareModalImageCopied')}
+                        {copied === 'link' && t('modals.shareModalSuccess')}
+                    </span>
                 </div>
             </div>
         </div>

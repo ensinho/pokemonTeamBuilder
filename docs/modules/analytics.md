@@ -79,3 +79,11 @@ before `initAnalytics()` — a product/legal decision, not taken here.
   and copies it, or the OS sheet on touch), *Imagem* and *Fórum*
   (`/feed?compose=team` opens the composer with the team). The Pokémon page and
   `/best-teams` carry a share button (`useSharePage`).
+- **Share as image (`ShareSnippetModal`, 2026-10-24):** the preview comes
+  first, then style (Cartas · Pôster) and what the cards show or the poster's
+  background; the texts are behind *Editar textos* and redraw once typing
+  settles. The footer is one primary (*Compartilhar imagem* on a phone with the
+  OS file share, *Baixar imagem* elsewhere) over the builder's three: copy the
+  image, copy the link, post to the forum. A copy answers inside its button
+  (on a phone the toast stack covers this footer). The image's footer prints
+  the team's `/t/:id` address, not the repository.
