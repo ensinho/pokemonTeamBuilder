@@ -70,11 +70,14 @@ export function TournamentPresence({ presence, onShowAll }) {
                 </ul>
             </section>
 
-            {onShowAll && presence.count > TEAMS_SHOWN && (
-                <button type="button" className="btn btn-ghost btn-sm tp__all" onClick={onShowAll}>
-                    {t('pdetail.tournaments.showAll')}
-                </button>
-            )}
+            <div className="tp__links">
+                {onShowAll && presence.count > TEAMS_SHOWN && (
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={onShowAll}>
+                        {t('pdetail.tournaments.showAll')}
+                    </button>
+                )}
+                <Link to="/best-teams" className="btn btn-ghost btn-sm">{t('pdetail.tournaments.bestTeams')}</Link>
+            </div>
         </div>
     );
 }

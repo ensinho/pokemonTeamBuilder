@@ -25,6 +25,8 @@ import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 import { useSharePage } from '../../hooks/useSharePage';
 import { titleCaseSlug } from '../../utils/smogonSets';
+import { MostUsedBuild } from '../MostUsedBuild';
+import { useMostUsedBuild } from '../../hooks/useMostUsedBuild';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -74,6 +76,7 @@ export function PokemonDetailPanel({
     // In the URL (?tab=): Pikachu → Moves → a move → Back used to land on Data.
     const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
     const tournamentPresence = useTournamentPresence(pokemonId);
+    const build = useMostUsedBuild(pokemonId);
     const sharePage = useSharePage();
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
     // The sparkle a shiny makes, fired by the two buttons that earn it.
@@ -441,6 +444,16 @@ export function PokemonDetailPanel({
                             </div>
                         </div>
                     </div>
+
+                    {build && (
+                        <div className="rounded-xl bg-surface p-4 border border-border">
+                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 mb-3">
+                                <Swords className="w-3.5 h-3.5 text-primary" />
+                                <span>{t('pdetail.build.title')}</span>
+                            </h4>
+                            <MostUsedBuild pokemonId={pokemonId} build={build} />
+                        </div>
+                    )}
 
                     {tournamentPresence && (
                         <div className="rounded-xl bg-surface p-4 border border-border">

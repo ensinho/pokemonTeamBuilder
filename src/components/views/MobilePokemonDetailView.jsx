@@ -30,6 +30,8 @@ import { Loader } from '../Loader';
 import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 import { useSharePage } from '../../hooks/useSharePage';
+import { MostUsedBuild } from '../MostUsedBuild';
+import { useMostUsedBuild } from '../../hooks/useMostUsedBuild';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -134,6 +136,7 @@ export function MobilePokemonDetailView({
     // In the URL (?tab=), so Back from a move lands on the tab it came from.
     const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
     const tournamentPresence = useTournamentPresence(pokemonId);
+    const build = useMostUsedBuild(pokemonId);
 
     const {
         selectedPokemonDetails,
@@ -364,6 +367,12 @@ export function MobilePokemonDetailView({
                         <Row label={t('pokedex.eggCycles')} value={eggCyclesText || '—'} />
                     </dl>
                 </Section>
+
+                {build && (
+                    <Section title={t('pdetail.build.title')}>
+                        <MostUsedBuild pokemonId={pokemonId} build={build} />
+                    </Section>
+                )}
 
                 {tournamentPresence && (
                     <Section title={t('pdetail.tournaments.title')}>
