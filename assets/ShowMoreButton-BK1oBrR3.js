@@ -1,1 +1,0 @@
-import{j as s}from"./react-vendor-D1jwkorh.js";import{u as e}from"./index-DECF2OG2.js";function a({remaining:o,onClick:t,className:n=""}){const{t:r}=e();return s.jsx("button",{type:"button",onClick:t,className:`show-more-button ${n}`,children:r("common.showMore",{count:o})})}export{a as S};

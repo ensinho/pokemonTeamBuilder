@@ -1,0 +1,1 @@
+import{r as a}from"./react-vendor-D1jwkorh.js";import{B as e}from"./index-BWB7vRvJ.js";const m={};function p({enabled:s=!0}={}){const{data:o,status:n}=e("smogon.json",{enabled:s}),t=(o==null?void 0:o.byId)||m,r=a.useMemo(()=>u=>t[u]||null,[t]);return{byId:t,smogonFor:r,status:n}}export{p as u};
