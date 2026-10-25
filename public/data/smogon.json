@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T07:35:43.316Z",
+  "generatedAt": "2026-10-25T07:36:04.004Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -22188,20 +22188,22 @@
       "sets": [
         {
           "name": "Fast Attacker",
-          "item": "life-orb",
+          "item": "garchompite-z",
           "itemAlts": [],
           "ability": "rough-skin",
-          "nature": "jolly",
+          "nature": "modest",
           "tera": [],
           "moves": [
             [
-              "earthquake"
+              "dragon-pulse",
+              "draco-meteor"
             ],
             [
-              "dragon-claw"
+              "power-gem"
             ],
             [
-              "rock-slide"
+              "earth-power",
+              "flamethrower"
             ],
             [
               "protect"
@@ -22209,17 +22211,17 @@
           ],
           "evs": {
             "hp": 6,
-            "attack": 252,
+            "attack": 0,
             "defense": 0,
-            "special-attack": 0,
+            "special-attack": 252,
             "special-defense": 0,
             "speed": 252
           },
           "sp": {
             "hp": 2,
-            "attack": 32,
+            "attack": 0,
             "defense": 0,
-            "special-attack": 0,
+            "special-attack": 32,
             "special-defense": 0,
             "speed": 32
           },
@@ -22232,7 +22234,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Garchomp, thanks to its strong offense, good coverage against the current format's major threats, and nice Speed tier, cements itself as a top threat in Regulation M-B, offensively checking the likes of Mega Charizard Y, Sneasler, Incineroar, and Kingambit with ease.\nRock Slide: Rock Slide allows Garchomp to threaten…",
+          "description": "Mega Garchomp Z uses its great Speed and Special Attack to quickly threaten heavy damage against Pokemon like Mega Salamence and Garchomp and trade positively against general metagame staples like Incineroar and Mega Raichu Y.\nDragon Pulse can 2HKO Rillaboom without suffering a massive Special Attack drop. Draco…",
           "source": "Champions VGC"
         },
         {
@@ -34733,7 +34735,8 @@
               "fusion-bolt"
             ],
             [
-              "dragon-dance"
+              "dragon-dance",
+              "scale-shot"
             ],
             [
               "protect"
