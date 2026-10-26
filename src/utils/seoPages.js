@@ -18,7 +18,7 @@ export const SITE_URL = 'https://pokemonbuilder.app';
 export const SITE_NAME = 'PokemonBuilder';
 /** What people search for, and what the site was called until 2026-10-26 —
  *  given to search engines as the brand's alternate names (JSON-LD). */
-export const SITE_ALTERNATE_NAMES = ['Pokémon Builder', 'Pokémon Team Builder', 'Pokemon Team Builder', 'PokeBuilder'];
+export const SITE_ALTERNATE_NAMES = ['Pokémon Builder', 'Pokémon Team Builder', 'Pokemon Team Builder'];
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 
