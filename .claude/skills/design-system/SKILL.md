@@ -5,6 +5,54 @@ description: Enforce the strict spacing grid, token vocabulary, restraint rules 
 
 # Design System — calm structure, living material
 
+## This branch: Ghost Lab (`claude/theme-ghost-lab`, 2026-10-26)
+
+**A calm instrument; the logo is the only thing that shouts.** The graffiti
+wordmark is yellow + magenta, and in a team builder yellow reads as Electric
+and magenta as Fairy/Psychic — so the interface carries neither. Where this
+section and the rest of the skill disagree, this section wins on this branch.
+
+- **Palette (`dark` / `light` in `theme.js` + `index.css`).** Dark: ground
+  `#0B0910`, surface `#14111B`, raised `#1C1826`, border `#2A2534`, control
+  edge (`--color-border-strong`) `#3A3446`, text `#F2F0F7`, muted `#A49EB3`,
+  primary Ectoplasm `#7C4DFF` with white ink, success `#2DD4BF`, danger
+  `#FF5C61`. Light: `#F6F5F9` / `#FFFFFF` / `#F1EFF6`, border `#E6E3EC`, edge
+  `#D3CEDC`, text `#17131F`, muted `#5E5870`, primary `#6A35F0`. The other
+  eight themes keep their colours and inherit every shape/type rule below.
+- **No amber as a brand accent.** `--color-warning` is a warning, nothing
+  else. `--color-accent` (favourite star, streak, badge case, shiny burst) is
+  a lighter Ectoplasm on `dark` (`#B39DFF`) and the primary on `light`.
+- **Colour comes from the Pokémon.** Chrome is neutral; the 18 canon type
+  colours (type chips, the type-tinted floor under a card's sprite via
+  `--card-type`, the detail hero, the Home hero) are the colour on the page.
+- **Type.** No display face — the wordmark is the display. `--font-display`
+  is **Space Grotesk** (headings 600, sentence case, `--tracking-display`
+  -0.028em / `--tracking-heading` -0.018em), and so are nav, tabs, buttons and
+  body. **JetBrains Mono (`--font-mono`) is only for figures**: ids, dex
+  numbers, stats, counts, tabular data. A rule that sets a number asks for
+  `--font-mono`, never `--font-display`.
+- **Shape.** Radius 6 chip / 10 control / 14 card / 20 panel. Borders, not
+  shadows: `--shadow-sm`, `--card-sheen`, `--surface-sheen` resolve to an
+  empty shadow; `--shadow-md/lg/xl` are for true overlays only (tooltips,
+  menus, sheets, modals, the dock). No gradients on surfaces; the ground's
+  pool, rings and arc are gone (`--canvas-light: none`, `--canvas-shapes` is
+  four `none` layers) and the dot grid is at 5%.
+- **Selected = inset ring in the primary** (`--ring-primary`) — segmented
+  thumbs, tab underline (primary), chosen cards, today's check-in day.
+- **Buttons.** `btn-primary` is a flat primary fill with `--color-on-primary`
+  ink; `btn-secondary` is outlined (`--color-border-strong`); `btn-ghost` is a
+  raised fill (icon-only ghosts stay bare until touched).
+- **Components.** Stat bars are 6px and primary, a base stat under 60 a dimmer
+  primary (`.stat-bar--low`). Toasts sit on the surface with a neutral
+  countdown and a quiet primary-tint action (Undo). Level and check-in badges
+  are a ring and a number. The current page's rail glyph is the primary.
+- **Brand placement.** The wordmark stays in the rail, the boot splash and the
+  landing hero, and is the only graffiti on screen; the landing hero draws it
+  at 28rem with a clear band under it and no colour pool beside it.
+- Untouched on purpose: `.ds-screen` and the rest of the game exception, the
+  canon stat colours on the EV sliders, weather/terrain chips and the
+  PokéPuzzle's present-yellow (all canon or semantic).
+
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
 few values, used everywhere, landing on a grid. Every rule below exists because
 breaking it produced a UI that read as *mole, solto e desconexo* (soft, loose,
