@@ -13,6 +13,7 @@ import { typeIcons } from '../../constants/types';
 import { TypeChip } from '../TypeChip';
 import { RollingNumber } from '../RollingNumber';
 import { AnimatedSprite } from '../AnimatedSprite';
+import { BrandWordmark } from '../BrandWordmark';
 import { LandingFeatures } from '../landing/LandingFeatures';
 import { THEME_META } from '../../constants/theme';
 import { LANGUAGES } from '../../utils/localePath';
@@ -156,6 +157,10 @@ export function LandingView({ onLeave, onSkip }) {
         <div className="landing">
             <section className="landing-banner">
                 <div className="landing-banner__copy">
+                    <div className="landing-brand">
+                        <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" className="landing-brand__mark" />
+                        <BrandWordmark className="landing-brand__wordmark" sizes="(max-width: 640px) 15rem, 22rem" />
+                    </div>
                     <p className="landing-eyebrow"><span className="landing-eyebrow__dot" aria-hidden="true" />{t('landing.eyebrow')}</p>
                     <h1 className="landing-title">{t('landing.title')}</h1>
                     <p className="landing-lede">{t('landing.lede')}</p>
