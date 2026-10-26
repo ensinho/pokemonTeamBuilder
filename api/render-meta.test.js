@@ -31,7 +31,7 @@ describe('render-meta buildPage', () => {
     it('serves /pt pages in Portuguese, with lang, canonical and hreflang', () => {
         const html = page('/pt/pokemon/charizard');
         expect(html).toContain('<html lang="pt-BR"');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Charizard: fraquezas, status e builds | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Charizard: fraquezas, status e builds | PokeBuilder');
         expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe('https://pokemonbuilder.app/pt/pokemon/charizard');
         expect(html).toContain('<link rel="alternate" hreflang="en" href="https://pokemonbuilder.app/pokemon/charizard" />');
         expect(html).toContain('<link rel="alternate" hreflang="pt-BR" href="https://pokemonbuilder.app/pt/pokemon/charizard" />');
@@ -42,7 +42,7 @@ describe('render-meta buildPage', () => {
     it('serves unprefixed pages in English whatever else is true', () => {
         const html = page('/builder');
         expect(html).toContain('<html lang="en"');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Team Builder | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Team Builder | PokeBuilder');
         expect(html).toContain('<meta property="og:locale:alternate" content="pt_BR" />');
     });
 
@@ -88,13 +88,13 @@ describe('render-meta buildPage', () => {
 
     it('unfurls a shared daily result as that result, keeping the game page canonical', () => {
         const html = buildPage(shell, { urlPath: '/pt/pokepuzzle', search: 'r=42.w.8.apcaa-ccccc', data }).html;
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('PokéPuzzle nº 42: 2/8 | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('PokéPuzzle nº 42: 2/8 | PokeBuilder');
         expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?puzzle=42.w.8.apcaa-ccccc&amp;lang=pt');
         expect(attr(html, /<meta property="og:url" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/pt/pokepuzzle?r=42.w.8.apcaa-ccccc');
         expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe('https://pokemonbuilder.app/pt/pokepuzzle');
 
         const challenge = buildPage(shell, { urlPath: '/challenge', search: 'r=20261023.w.14.3.1830.5.platinum.37', data }).html;
-        expect(attr(challenge, /<title>([^<]*)<\/title>/)).toBe('Beat Cynthia in 14 turns | Pokémon Team Builder');
+        expect(attr(challenge, /<title>([^<]*)<\/title>/)).toBe('Beat Cynthia in 14 turns | PokeBuilder');
 
         // A code that does not decode changes nothing.
         const bogus = buildPage(shell, { urlPath: '/pt/pokepuzzle', search: 'r=<script>', data }).html;
@@ -103,7 +103,7 @@ describe('render-meta buildPage', () => {
 
     it('prerenders the best-teams page with its top teams, Pokémon and pairs as links', () => {
         const html = page('/pt/best-teams');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Melhores times de Pokémon VGC | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Melhores times de Pokémon VGC | PokeBuilder');
         expect(html).toContain('<h2>Os times do topo</h2>');
         expect(html).toContain('href="/pt/tournaments/team/w1">Wolfe&#39;s team</a> — 1st · Worlds 2026');
         expect(html).toContain('<h2>Pokémon mais usados</h2>');
@@ -139,14 +139,14 @@ describe('render-meta buildPage', () => {
 
     it('describes tournament teams from the data and lists the roster', () => {
         const html = page('/pt/tournaments/team/worlds');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Worlds winner | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Worlds winner | PokeBuilder');
         expect(html).toContain('<li>Incineroar</li>');
     });
 
     it('unfurls a shared team as itself, with its generated image', () => {
         const sharedTeam = { id: 'abc', name: 'Chuva', pokemons: [{ id: 6, name: 'charizard', types: ['fire', 'flying'] }, { id: 130, name: 'gyarados', types: ['water', 'flying'] }] };
         const html = page('/pt/t/abc', { sharedTeam });
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Chuva — time Pokémon | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Chuva — time Pokémon | PokeBuilder');
         expect(attr(html, /<meta name="description" content="([^"]*)"/)).toContain('Charizard e Gyarados');
         expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?team=abc&amp;lang=pt');
         expect(html).toContain('href="/pt/types/fire">Fogo</a>');
@@ -160,7 +160,7 @@ describe('render-meta buildPage', () => {
 
     it('keeps the generic card when the team could not be read', () => {
         const html = page('/t/abc');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Shared Team | Pokémon Team Builder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Shared Team | PokeBuilder');
         expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/og-image.png');
     });
 });

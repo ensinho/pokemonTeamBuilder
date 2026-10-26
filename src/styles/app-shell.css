@@ -4,8 +4,8 @@
        "Calculadora de dano" / "Tiers de velocidade" became "Calculadora" /
        "Velocidades" in the rail (nav.*Short — the page titles keep the full
        names), and with that every label in pt and en fits down to 11rem.
-       "Pokémon Team Builder" beside the logo holds two lines down to 12.5rem
-       and breaks into three at 12rem — so a longer label, or a wider
+       "PokeBuilder" beside the logo (2026-10-26; it was "Pokémon Team Builder",
+       two lines at 12.5rem) fits on one line — so a longer label, or a wider
        wordmark, means measuring this again. */
     --app-shell-sidebar-width: 12.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;

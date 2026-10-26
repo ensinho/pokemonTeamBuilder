@@ -1186,7 +1186,7 @@ export default function AppLayout() {
                 <div className="boot-splash w-full max-w-xs text-center">
                     <img
                         src={import.meta.env.BASE_URL + 'logo-mark.webp'}
-                        alt="Pokémon Team Builder"
+                        alt="PokeBuilder"
                         className="mx-auto w-28 h-auto"
                     />
                     <div
@@ -1355,7 +1355,7 @@ export default function AppLayout() {
                                 <div className="app-shell__brand-main">
                                     <img
                                         src={import.meta.env.BASE_URL + 'logo-mark.webp'}
-                                        alt="Pokémon Team Builder Logo"
+                                        alt="PokeBuilder Logo"
                                         className="app-shell__brand-logo cursor-pointer"
                                         onClick={() => navigate('/')}
                                         title={t('layout.goHome')}
@@ -1365,7 +1365,7 @@ export default function AppLayout() {
                                             all-caps "POKÉMON" eyebrow stacked over
                                             "Team Builder" — two type sizes and a caps
                                             treatment to say one name. */}
-                                        <h2 className="app-shell__brand-title">Pokémon Team Builder</h2>
+                                        <h2 className="app-shell__brand-title">PokeBuilder</h2>
                                     </div>
                                 </div>
                                 {/* The rail's own collapse control lives in the rail.

@@ -15,7 +15,7 @@ import { TYPE_IDS, strongAgainst, weaknessesOf } from './typeMatchups.js';
 export { TYPE_IDS, strongAgainst, weaknessesOf };
 
 export const SITE_URL = 'https://pokemonbuilder.app';
-export const SITE_NAME = 'Pokémon Team Builder';
+export const SITE_NAME = 'PokeBuilder';
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 

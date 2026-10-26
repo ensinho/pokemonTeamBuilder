@@ -58,7 +58,7 @@ export function PokemonDetailView({
     useDocumentMeta(indexEntry ? {
         pokemon: indexEntry,
         title: displayName,
-        description: `${displayName}${typeLabel ? ` (${typeLabel})` : ''} — base stats, abilities, moves, evolutions, and competitive movesets in Pokémon Team Builder.`,
+        description: `${displayName}${typeLabel ? ` (${typeLabel})` : ''} — base stats, abilities, moves, evolutions, and competitive movesets in PokeBuilder.`,
         // Always canonicalize to the name slug (not whatever id/name variant was
         // actually visited) so /pokemon/25 and /pokemon/raichu consolidate to one URL.
         path: `/pokemon/${indexEntry.name}`,
