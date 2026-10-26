@@ -64,7 +64,7 @@ export function BadgeUnlockModal() {
                 </div>
 
                 <div className="modal-body flex flex-col items-center gap-2 text-center">
-                    <div className="w-20 h-20" aria-hidden="true">
+                    <div className="reward-emblem spark-host w-20 h-20 my-3" aria-hidden="true">
                         <BadgeIcon className="w-full h-full object-contain" />
                     </div>
                     <h2 id="badge-unlock-title" className="modal-title">{badgeName}</h2>

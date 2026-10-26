@@ -33,14 +33,24 @@
     color: var(--color-muted);
 }
 
+/* The level is earned (Neon Sticker): a gold sticker with the ink edge — the
+   one gold object on the card. */
 .checkin__level-value {
+    display: inline-grid;
+    place-items: center;
+    align-self: flex-start;
+    min-width: 2.25rem;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--brand-gold);
+    box-shadow: inset 0 0 0 2px var(--brand-ink), 3px 3px 0 0 var(--sticker-drop);
     font-family: var(--font-display);
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-heading);
     line-height: 1;
-    color: var(--color-fg);
+    color: var(--brand-on-gold);
 }
 
 .checkin__xp {
@@ -102,7 +112,7 @@
 
 .checkin__day.is-claimed .checkin__day-mark {
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .checkin__day-xp {
@@ -166,7 +176,17 @@
     margin: 0;
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
+}
+
+/* What the check-in just paid out: the reward line, as a gold sticker. */
+.checkin__result > span:first-child {
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    font-weight: var(--weight-semibold);
+    box-shadow: inset 0 0 0 2px var(--brand-ink), 3px 3px 0 0 var(--sticker-drop);
 }
 
 .checkin__note {
@@ -281,7 +301,7 @@
 }
 
 .reward-card__state svg { width: 0.875rem; height: 0.875rem; }
-.reward-card__state.is-on { color: var(--color-primary); font-weight: var(--weight-semibold); }
+.reward-card__state.is-on { color: var(--color-primary-text); font-weight: var(--weight-semibold); }
 
 /* Phones: two to a row, the picture and its state on top, the words under —
    fourteen full-width rows each saying "Locked" made the tab seven screens. */
@@ -375,9 +395,10 @@
     color: var(--color-muted);
 }
 
+/* A level reached is earned: gold with ink. */
 .level-track__step.is-reached .level-track__level {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
 }
 
 .level-track__items {
@@ -408,4 +429,4 @@
 
 .level-track__state svg { width: 0.875rem; height: 0.875rem; }
 .level-track__step.is-reached .level-track__state { color: var(--color-success); }
-.level-track__step.is-next .level-track__state { color: var(--color-primary); }
+.level-track__step.is-next .level-track__state { color: var(--color-primary-text); }
