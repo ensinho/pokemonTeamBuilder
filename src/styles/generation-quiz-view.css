@@ -23,13 +23,13 @@
 .generation-quiz__selector-pill:hover {
     transform: translateY(-1px);
     border-color: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .generation-quiz__selector-pill.is-active {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .generation-quiz__selector-pill-count {
@@ -54,7 +54,7 @@
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-weight: var(--weight-semibold);
     font-size: var(--text-base);
     cursor: pointer;
@@ -340,7 +340,7 @@
 
 .generation-quiz-autocomplete__option.is-active {
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .generation-quiz-autocomplete__meta {
@@ -494,7 +494,7 @@
 .generation-quiz__compact-reset-btn:hover {
     transform: translateY(-1px);
     border-color: var(--color-primary);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .generation-quiz__compact-reset-btn svg {
@@ -666,7 +666,7 @@
     gap: var(--space-1);
     border-radius: var(--radius-sm);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     padding: var(--space-1) var(--space-2);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
@@ -1004,7 +1004,7 @@
     border-radius: var(--radius-sm);
     background: var(--color-primary-soft);
     border: 1px solid var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     margin-bottom: var(--space-6);
@@ -1015,7 +1015,7 @@
 }
 
 .generation-quiz__start-best-run-pill strong {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .generation-quiz__start-selector {

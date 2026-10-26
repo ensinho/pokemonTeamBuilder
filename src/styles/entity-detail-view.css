@@ -48,7 +48,7 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
-.edv-back:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.edv-back:hover { color: var(--color-primary-text); border-color: var(--color-primary); }
 
 /* Header card */
 .edv-header {

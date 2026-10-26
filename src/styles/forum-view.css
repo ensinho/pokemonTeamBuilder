@@ -162,7 +162,7 @@
 .forum-category-btn.is-active {
     background: var(--color-primary-soft);
     border-color: transparent;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-weight: var(--weight-semibold);
 }
 
@@ -210,7 +210,7 @@
 }
 
 .forum-topic-card.is-active .forum-topic-card__title {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-weight: var(--weight-semibold);
 }
 
@@ -554,7 +554,7 @@
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-full);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .forum-message-time {
@@ -622,7 +622,7 @@
 .forum-message-quote__author,
 .forum-replying-banner__label b {
     font-weight: var(--weight-semibold);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     flex-shrink: 0;
 }
 
@@ -714,7 +714,7 @@
     flex-shrink: 0;
     border-color: transparent;
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* The puzzle's score badge keeps its own meaning (won / not won) but loses its
@@ -834,7 +834,7 @@
    to the card so it outranks .btn-ghost without depending on load order. */
 .forum-team-share-card--puzzle .puzzle-share-play {
     background: var(--color-surface-raised);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .forum-team-share-card--puzzle .puzzle-share-play:hover:not(:disabled) {
@@ -904,7 +904,7 @@
 }
 
 .forum-msg-action.is-liked {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .forum-msg-action.is-liked svg {
@@ -1095,7 +1095,7 @@
 }
 
 .forum-attach-menu__item--accent {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-weight: var(--weight-semibold);
 }
 
@@ -1346,7 +1346,7 @@
     font-size: 1.25rem;
     font-weight: var(--weight-semibold);
     line-height: 1;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .teams-topic-notice__text {
@@ -1769,7 +1769,7 @@
 }
 
 .forum-explorer__item[aria-current] .forum-explorer__icon {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .forum-explorer__label {
@@ -2311,7 +2311,7 @@
 
 .forum-pill.is-liked {
     background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-raised));
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .forum-pill.is-liked .forum-pill__heart {
@@ -2522,7 +2522,7 @@
 }
 
 .forum-trending li:first-child .forum-trending__rank {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .forum-trending__body {
@@ -2962,7 +2962,7 @@
 }
 
 .cmt-action.is-liked {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .cmt-action.is-liked .cmt-action__icon {
@@ -3017,7 +3017,7 @@
 
 .cmt__line:hover,
 .cmt__line:hover .cmt__line-icon {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .cmt__children {
@@ -3076,7 +3076,7 @@
 
 .cmt__expand:hover {
     background: var(--color-surface-hover);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Where a jump lands — a quote, a permalink, a comment just posted. Held
@@ -3208,7 +3208,7 @@
 }
 
 .comment-composer__attach.is-active {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .comment-composer__banner {
@@ -3422,7 +3422,7 @@
     }
 
     .post-row__actions .forum-pill.is-liked {
-        color: var(--color-primary);
+        color: var(--color-primary-text);
     }
 
     .post-row__actions .forum-pill--share {
@@ -3632,7 +3632,7 @@
 }
 
 .challenge-share-spark {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-family: var(--font-mono);
     letter-spacing: 0;
 }
@@ -3662,7 +3662,7 @@
     gap: var(--space-1_5);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 .totw__source { font-size: var(--text-xs); color: var(--color-muted); }
 
@@ -3670,7 +3670,7 @@
 .totw__copy { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; flex: 1 1 14rem; }
 .totw__title { margin: 0; font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--color-fg); }
 .totw__title a { color: inherit; text-decoration: none; }
-.totw__title a:hover { color: var(--color-primary); }
+.totw__title a:hover { color: var(--color-primary-text); }
 .totw__title a:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-primary); }
 .totw__meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0; font-size: var(--text-xs); color: var(--color-muted); }
 .totw__likes { display: inline-flex; align-items: center; gap: var(--space-1); }
@@ -3696,7 +3696,7 @@
     background: none;
     font: inherit;
     font-weight: var(--weight-semibold);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     cursor: pointer;
 }
 .totw__post:hover { text-decoration: underline; }

@@ -250,7 +250,7 @@ input[type="number"] {
     font-family: ui-monospace, monospace;
     font-weight: var(--weight-semibold);
     font-size: var(--text-md);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-variant-numeric: tabular-nums;
 }
 
@@ -300,7 +300,7 @@ input[type="number"] {
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth);
 }
-.spd-tier__name:hover { color: var(--color-primary); }
+.spd-tier__name:hover { color: var(--color-primary-text); }
 
 .spd-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 
@@ -319,7 +319,7 @@ input[type="number"] {
     white-space: nowrap;
     transition: border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
-.spd-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.spd-chip:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
 
 .spd-chip__sprite { width: 1.25rem; height: 1.25rem; image-rendering: pixelated; }
 
@@ -358,7 +358,7 @@ input[type="number"] {
 .trn-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
 .trn-card__name { font-weight: var(--weight-semibold); line-height: 1.2; }
 .trn-card__meta { font-size: var(--text-xs); color: var(--color-muted); margin-top: var(--space-0_5); }
-.trn-card__badge { flex-shrink: 0; font-size: var(--text-2xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-caps); text-transform: uppercase; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary); }
+.trn-card__badge { flex-shrink: 0; font-size: var(--text-2xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-caps); text-transform: uppercase; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary-text); }
 .trn-card__roster { display: flex; gap: var(--space-1); flex-wrap: wrap; }
 .trn-card__mon-btn { padding: 0; border: none; background: none; cursor: pointer; border-radius: var(--radius-md); transition: transform var(--duration-fast) var(--ease-smooth); }
 .trn-card__mon-btn:hover { transform: translateY(-2px); }

@@ -214,23 +214,36 @@
      hover is a fill; when a control does need its edge to answer, the edge
      firms up in its own neutral (late-bound, below). */
 
+/* `dark` — Neon Sticker (2026-10-26): the wordmark's own night. Void ground,
+   violet-ink surfaces, Volt as the one accent, and the brand layer (gold,
+   pink, ink) declared below under BRAND LAYER. Muted clears 8.6:1 on surface,
+   white on Volt 5.4:1, ink on gold 12.6:1. */
 :root,
 :root[data-theme='dark'] {
-    --color-primary: #8b7cee;
-    --color-primary-soft: rgba(139, 124, 238, 0.14);
-    --color-on-primary: #09090b;
-    --color-accent: #FBBF24;
-    --color-accent-soft: rgba(251, 191, 36, 0.12);
-    --color-bg: #09090b;
-    --color-surface: #18181c;
-    --color-surface-raised: #212127;
-    --color-fg: #fafafa;
-    --color-muted: #a1a1aa;
-    --color-border: #232329;
-    --color-success: #34D399;
-    --color-danger: #F87171;
+    --color-primary: #7C3AFF;
+    --color-primary-soft: rgba(124, 58, 255, 0.16);
+    --color-on-primary: #FFFFFF;
+    --color-accent: #FFD23F;
+    --color-accent-soft: rgba(255, 210, 63, 0.14);
+    --color-bg: #0C0816;
+    --color-surface: #161024;
+    --color-surface-raised: #20173A;
+    --color-fg: #F4F1FA;
+    --color-muted: #B9A7E6;
+    --color-border: #2E2448;
+    --color-success: #2DD4BF;
+    --color-danger: #FF5C61;
     --color-warning: #FBBF24;
     --color-info: #60A5FA;
+
+    /* Volt as *ink*: #7C3AFF is a fill (white on it 5.4:1) but only 3.4:1 as
+       text on the surface, so links, active labels and `text-primary` read
+       this lifted Volt instead (6.0:1). */
+    --color-primary-text: #A47BFF;
+    /* The primary button's lip and its pressed shade. */
+    --color-primary-lip: #4A1FB8;
+    /* The control edge — an input, an outline button, a segmented track. */
+    --color-border-strong: #4A3A75;
 
     --elevation-1: 0 1px 2px rgba(0,0,0,0.4);
     --elevation-2: 0 4px 16px -4px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.25);
@@ -239,34 +252,39 @@
 }
 
 :root[data-theme='light'] {
-    --color-primary: #6353b3;
-    --color-primary-soft: rgba(99, 83, 179, 0.1);
+    --color-primary: #6A2BF0;
+    --color-primary-soft: rgba(106, 43, 240, 0.1);
     --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
-    --color-bg: #f2f2f3;
+    /* Gold as *text* on white (5.9:1): the gold fill (#FFD23F) only ever
+       carries ink, never sits as a word on paper. */
+    --color-accent: #8A5A00;
+    --color-accent-soft: rgba(255, 210, 63, 0.24);
+    --color-bg: #F7F5FC;
     --color-surface: #ffffff;
-    --color-surface-raised: #f6f6f7;
-    --color-fg: #09090b;
-    --color-muted: #68686f;
-    --color-border: #f7f7f7;
+    --color-surface-raised: #F1ECFB;
+    --color-fg: #170F2B;
+    --color-muted: #5B4F78;
+    --color-border: #E4DCF5;
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
     --color-info: #1D4ED8;
 
-    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
-    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
-    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
-    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
+    --color-primary-lip: #4A1BB5;
+    --color-border-strong: #CDBFEC;
+
+    --elevation-1: 0 1px 2px rgba(23,15,43,0.05);
+    --elevation-2: 0 4px 12px -4px rgba(23,15,43,0.1), 0 1px 3px rgba(23,15,43,0.05);
+    --elevation-3: 0 12px 28px -8px rgba(23,15,43,0.14);
+    --elevation-4: 0 20px 40px -12px rgba(23,15,43,0.18);
 }
 
 :root[data-theme='daybreak'] {
     --color-primary: #2563EB;
     --color-primary-soft: rgba(37, 99, 235, 0.1);
     --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-accent: #8A5A00;
+    --color-accent-soft: rgba(255, 210, 63, 0.24);
     --color-bg: #eef2fb;
     --color-surface: #ffffff;
     --color-surface-raised: #f4f7fd;
@@ -288,8 +306,8 @@
     --color-primary: #a78bfa;
     --color-primary-soft: rgba(167, 139, 250, 0.12);
     --color-on-primary: #050505;
-    --color-accent: #FBBF24;
-    --color-accent-soft: rgba(251, 191, 36, 0.12);
+    --color-accent: #FFD23F;
+    --color-accent-soft: rgba(255, 210, 63, 0.12);
     --color-bg: #050505;
     --color-surface: #141414;
     --color-surface-raised: #1e1e1e;
@@ -311,8 +329,8 @@
     --color-primary: #38BDF8;
     --color-primary-soft: rgba(56, 189, 248, 0.1);
     --color-on-primary: #0a0f1a;
-    --color-accent: #FBBF24;
-    --color-accent-soft: rgba(251, 191, 36, 0.12);
+    --color-accent: #FFD23F;
+    --color-accent-soft: rgba(255, 210, 63, 0.12);
     --color-bg: #0a0f1a;
     --color-surface: #151f38;
     --color-surface-raised: #1d2a45;
@@ -334,8 +352,8 @@
     --color-primary: #9a5f07;
     --color-primary-soft: rgba(154, 95, 7, 0.1);
     --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-accent: #8A5A00;
+    --color-accent-soft: rgba(255, 210, 63, 0.24);
     --color-bg: #f5f2e2;
     --color-surface: #ffffff;
     --color-surface-raised: #fbf9ef;
@@ -359,8 +377,8 @@
     --color-primary: #fb7a3c;
     --color-primary-soft: rgba(251, 122, 60, 0.14);
     --color-on-primary: #0c0807;
-    --color-accent: #FBBF24;
-    --color-accent-soft: rgba(251, 191, 36, 0.12);
+    --color-accent: #FFD23F;
+    --color-accent-soft: rgba(255, 210, 63, 0.12);
     --color-bg: #0c0807;
     --color-surface: #1a1310;
     --color-surface-raised: #241a16;
@@ -382,8 +400,8 @@
     --color-primary: #15803d;
     --color-primary-soft: rgba(21, 128, 61, 0.1);
     --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-accent: #8A5A00;
+    --color-accent-soft: rgba(255, 210, 63, 0.24);
     --color-bg: #eef4ef;
     --color-surface: #ffffff;
     --color-surface-raised: #f3f8f4;
@@ -428,8 +446,8 @@
     --color-primary: #be185d;
     --color-primary-soft: rgba(190, 24, 93, 0.1);
     --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-accent: #8A5A00;
+    --color-accent-soft: rgba(255, 210, 63, 0.24);
     --color-bg: #fbf0f4;
     --color-surface: #ffffff;
     --color-surface-raised: #fdf5f8;
@@ -445,6 +463,128 @@
     --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
     --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
     --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
+}
+
+/* ============================================================
+   BRAND LAYER — "Neon Sticker" (2026-10-26)
+   Calm data, loud moments. The base layer above (flat surfaces, 1px
+   borders, one accent, canon type colours) carries every screen; this
+   layer is the wordmark's own sticker language — ink outline, magenta,
+   yellow — and it is allowed ONLY on things the user holds or earns:
+   a filled team slot, the hovered/selected Pokémon card, a badge, a
+   reward, the primary CTA, the landing hero. Never on a container, a
+   panel, a table or chrome. See the design-system skill's first section.
+
+     --brand-gold   Shiny Gold. Only for something EARNED: a streak, a
+                    level, a journey badge, a reward, the peak stat. As a
+                    fill it carries ink (12.6:1); as a word it is
+                    --color-accent (gold on dark, a deep gold on light).
+     --brand-live   Live Pink. Only for NEW / LIVE: your-turn battles,
+                    today's puzzle, unread counts. A dot or a fill with
+                    ink (5.5:1); as a word, --brand-live-text.
+     --brand-ink    The wordmark's outline. Text on gold and pink.
+
+   Gold and pink never sit next to a type chip and never colour chrome.
+   ============================================================ */
+:root {
+    --brand-ink: #1B0A3D;
+    --brand-gold: #FFD23F;
+    --brand-live: #FF3D9A;
+    --brand-black: #000;
+    --brand-on-gold: var(--brand-ink);
+    --brand-on-live: var(--brand-ink);
+    --brand-live-text: var(--brand-live);
+
+    /* Defaults for the per-theme base tokens the brand layer leans on;
+       `dark` and `light` set their own above. */
+    --color-primary-text: var(--color-primary);
+    --color-primary-lip: color-mix(in srgb, var(--color-primary) 60%, var(--brand-black));
+
+    /* Signature 1 — the logo ring: the wordmark's outline stack (ink, then
+       magenta, then yellow). Keyboard focus, the team slot being edited and
+       the trainer's avatar. Never on hover. */
+    --ring-logo: 0 0 0 2px var(--brand-ink), 0 0 0 4px var(--brand-live), 0 0 0 6px var(--brand-gold);
+
+    /* Signature 2 — the sticker: a 3px outline in the text colour (ink on the
+       light themes) and a hard, unblurred drop. The outline is inset so it
+       never grows the object or gets clipped by a scroller; the drop is the
+       object's own shape, 4px down and right. For a transparent image (a
+       sprite, an emblem) the same edge is a stack of drop-shadows. */
+    --sticker-edge: var(--color-fg);
+    --sticker-drop: var(--brand-black);
+    --sticker: inset 0 0 0 3px var(--sticker-edge), 4px 4px 0 0 var(--sticker-drop);
+    --sticker-filter:
+        drop-shadow(0 2px 0 var(--sticker-edge))
+        drop-shadow(0 -2px 0 var(--sticker-edge))
+        drop-shadow(2px 0 0 var(--sticker-edge))
+        drop-shadow(-2px 0 0 var(--sticker-edge))
+        drop-shadow(3px 3px 0 var(--sticker-drop));
+
+    /* Signature 3 — the spark burst: the wordmark's spiky halo as a clip
+       path. One per screen at most: behind the landing hero (its type
+       colour) and behind a reward or level badge (gold). */
+    --spark-burst: polygon(50% 0%, 56% 23.7%, 68.7% 11.3%, 66.8% 28.9%, 89.1% 18.8%, 74.3% 38.3%, 91.9% 40.4%, 77% 50%, 98.7% 61.1%, 74.3% 61.7%, 83.6% 76.8%, 66.8% 71.1%, 71.7% 95%, 56% 76.3%, 50% 93%, 44% 76.3%, 28.3% 95%, 33.2% 71.1%, 16.4% 76.8%, 25.7% 61.7%, 1.3% 61.1%, 23% 50%, 8.1% 40.4%, 25.7% 38.3%, 10.9% 18.8%, 33.2% 28.9%, 31.3% 11.3%, 44% 23.7%);
+}
+
+/* Light themes: the sticker's edge is the ink, its drop a softer ink, and
+   pink as a word drops to a darker shade (4.8:1 on white). */
+:root[data-theme='light'],
+:root[data-theme='daybreak'],
+:root[data-theme='solar'],
+:root[data-theme='viridian'],
+:root[data-theme='blossom'] {
+    --sticker-edge: var(--brand-ink);
+    --sticker-drop: color-mix(in srgb, var(--brand-ink) 32%, transparent);
+    --brand-live-text: #D6246F;
+}
+
+/* The sticker, as a class for the few objects that are not styled in their
+   own file. A box-shadow, so it composes with nothing else on the element:
+   the objects that wear it own no other shadow. */
+.sticker {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--sticker);
+}
+
+/* A spark burst behind something. The host gets `position: relative` and
+   its own stacking context so the burst can sit at z -1 without falling
+   behind the page. `--spark-color` picks the paint (gold by default). */
+.spark-host {
+    position: relative;
+    isolation: isolate;
+}
+
+.spark-host::before {
+    content: '';
+    position: absolute;
+    inset: var(--spark-inset, -28%);
+    z-index: -1;
+    clip-path: var(--spark-burst);
+    background: var(--spark-color, var(--brand-gold));
+    pointer-events: none;
+}
+
+/* A live dot: something new or happening now. */
+.live-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--brand-live);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-live) 24%, transparent);
+}
+
+/* The peel: a Pokémon arriving in a team slot is a sticker being laid down —
+   a few degrees off, then pressed flat on the pop spring. Plays once, on the
+   slot that just filled; never on load (the view marks only new members). */
+@keyframes sticker-peel {
+    from { opacity: 0.4; transform: rotate(-3deg) scale(0.92); }
+    to   { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+.is-peeling {
+    animation: sticker-peel var(--duration-pop) var(--ease-pop) backwards;
 }
 
 /* Typography — two voices with fixed jobs (v3, 2026-10-02).
@@ -470,6 +610,13 @@
    equivalent and starts wrapping. Space Grotesk is a 300..700 variable font —
    600 is the heaviest weight the interface uses (--weight-semibold). */
 :root {
+    /* Neon Sticker (2026-10-26): page titles, h1/h2 and the primary CTA speak
+       in Unbounded — wide, round, the wordmark's cousin — at 700, its one
+       weight here. Everything else keeps its job: Space Grotesk for body,
+       nav, tabs and labels; JetBrains Mono (--font-display / --font-mono)
+       for every figure, id and eyebrow. */
+    --font-heading: 'Unbounded', 'Space Grotesk', system-ui, sans-serif;
+    --weight-heading: 700;
     --font-display: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
     --font-body: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
@@ -552,7 +699,9 @@
        `scroll` on the scroller), like a surface under glass. Static: nothing
        here animates. Exactly four shape layers — .app-shell__content lists
        their sizes and attachments by position. */
-    --canvas-dots: radial-gradient(circle, color-mix(in srgb, var(--color-fg) 9%, transparent) 0.0625rem, transparent 0.09375rem);
+    /* Neon Sticker: the dots are Volt, barely — the ground is the logo's
+       night, not a grey grid. */
+    --canvas-dots: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 22%, transparent) 0.0625rem, transparent 0.09375rem);
     --canvas-dot-gap: 1.5rem;
     --canvas-ring: color-mix(in srgb, var(--color-primary) 16%, transparent);
     --canvas-ring-quiet: color-mix(in srgb, var(--color-fg) 7%, transparent);
@@ -618,7 +767,10 @@
        controls sit inside `overflow: hidden` containers that clip an outline
        drawn outside the border box — which is why focus was invisible on the
        rail, the popover rows and the modal close buttons. */
-    --ring-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+    /* Neon Sticker: focus wears the logo ring (ink, magenta, yellow — the
+       wordmark's outline), the one brand mark chrome is allowed, because a
+       keyboard user needs it louder than anything else on the page. */
+    --ring-focus: var(--ring-logo);
 
     /* ---- Overlay scrim --------------------------------------------------
        The one backdrop. The app shipped five different ones (black at 40%,
@@ -642,6 +794,17 @@
     --card-sheen: none;
     --card-sheen-hover: none;
     --canvas-light: none;
+}
+
+/* Neon Sticker's base layer is flat: on the retuned pair the border is a
+   real line (#2E2448 on #161024, #E4DCF5 on white), so a panel or a card
+   needs no lit edge, no wash and no lift to read — depth is reserved for the
+   sticker, the one object that stands up off the page. */
+:root[data-theme='dark'],
+:root[data-theme='light'] {
+    --surface-sheen: none;
+    --card-sheen: none;
+    --card-sheen-hover: none;
 }
 
 /* Region panels take the sheen. `:where()` keeps this at zero specificity, so
@@ -740,18 +903,33 @@ body {
     color: var(--color-fg);
 }
 
-/* Headings speak in the readout voice. Tracking scales with the size a role
-   gives them (the role classes below); this is the floor for a heading styled
-   only with utilities. */
-h1, h2, h3, h4, h5, h6,
+/* Neon Sticker (2026-10-26): titles speak in the heading face (Unbounded,
+   the wordmark's cousin) — every h1 (the page title), and the h2s that
+   title a whole page or dialog (listed below, plus any h2 sized as a title).
+   Section headings and labels — the other h2s and h3–h6 — take the body face
+   at semibold: Unbounded on a 13px panel label wraps and shouts. Mono stays
+   the readout voice for figures (.font-display, .figure, the stat roles).
+   Unbounded is wide, so it carries a little negative tracking and never goes
+   above --weight-heading. */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.015em;
+}
+
+h1,
+h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
+    .auth-dialog__title, .session-transition__title, .pokepuzzle-result-title,
+    .category-guesser__title, .text-xl, .text-2xl, .text-3xl) {
+    font-family: var(--font-heading);
+    font-weight: var(--weight-heading);
+    letter-spacing: -0.02em;
+}
+
 .font-display {
     font-family: var(--font-display);
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-heading);
-}
-
-h1, h2 {
-    letter-spacing: -0.035em;
 }
 
 /* Strings that are titles or figures in the markup but not heading tags. Running
@@ -776,43 +954,43 @@ h1, h2 {
    utility on the same element; colour sits in :where() so a colour utility
    still can. */
 .text-hero {
-    font-family: var(--font-display);
+    font-family: var(--font-heading);
     font-size: var(--text-3xl);
-    font-weight: var(--weight-semibold);
-    line-height: 1.05;
-    letter-spacing: var(--tracking-display);
+    font-weight: var(--weight-heading);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
 }
 
 .text-display {
-    font-family: var(--font-display);
+    font-family: var(--font-heading);
     font-size: var(--text-2xl);
-    font-weight: var(--weight-semibold);
-    line-height: 1.1;
-    letter-spacing: var(--tracking-display);
+    font-weight: var(--weight-heading);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
 }
 
 .text-title {
-    font-family: var(--font-display);
+    font-family: var(--font-heading);
     font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-heading);
     line-height: var(--leading-tight);
-    letter-spacing: -0.035em;
+    letter-spacing: -0.02em;
 }
 
 .text-heading {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
     line-height: 1.3;
-    letter-spacing: var(--tracking-heading);
+    letter-spacing: -0.015em;
 }
 
 .text-subheading {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     line-height: var(--leading-snug);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
 }
 
 .text-body {
@@ -864,7 +1042,7 @@ h1, h2 {
     outline: none;
 }
 *:focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--brand-live);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
 }
@@ -926,7 +1104,7 @@ h1, h2 {
     outline: none;
 }
 .ev-slider:focus-visible {
-    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+    box-shadow: var(--ring-logo);
 }
 .ev-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -1164,31 +1342,59 @@ h1, h2 {
 
 .btn-block { width: 100%; }
 
-/* Voices (v3).
-   primary — the one affirmative action in a view, neutral-inverted: a
-   foreground fill with surface ink. Until v3 it was the brand fill, and with a
-   violet "Save", a violet empty-state CTA and violet rings on fifty cards the
-   accent stopped meaning anything; white text on it also failed AA in four
-   themes. Inverted is the highest contrast on every theme (≥ 15:1) and leaves
-   colour to the Pokémon. Hover mixes toward the canvas — it softens, never
-   glows. */
+/* Voices (Neon Sticker, 2026-10-26).
+   primary — the one affirmative action in a view, and part of the brand
+   layer: the Volt fill (on-primary ink is per theme and clears AA in all ten)
+   standing on a tactile lip, a 4px band of its own darker shade. A press
+   pushes it down onto the lip instead of shrinking it: translate, not scale,
+   and the lip shrinks by what the button travelled, so the bottom edge stays
+   put. Only one per view — the rule that made v3 neutral-invert it still
+   holds; what changed is that the one is now unmistakable. */
 .btn-primary {
-    background: var(--color-inverse);
-    color: var(--color-on-inverse);
+    --btn-lip: 4px;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: var(--weight-semibold);
+    box-shadow: 0 var(--btn-lip) 0 0 var(--color-primary-lip);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-press) var(--ease-out),
+                opacity var(--duration-fast) var(--ease-smooth),
+                translate var(--duration-press) var(--ease-out);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-inverse) 86%, var(--color-bg));
+    background: color-mix(in srgb, var(--color-primary) 88%, var(--color-fg));
 }
 
 .btn-primary:active:not(:disabled) {
-    background: color-mix(in srgb, var(--color-inverse) 78%, var(--color-bg));
+    scale: none;
+    translate: 0 3px;
+    background: var(--color-primary);
+    box-shadow: 0 1px 0 0 var(--color-primary-lip);
 }
 
-/* secondary — a filled neutral. A fill already reads as a button, so no line. */
+/* Focus keeps the lip and adds the logo ring outside it. */
+.btn-primary:focus-visible {
+    box-shadow: 0 var(--btn-lip) 0 0 var(--color-primary-lip), var(--ring-logo);
+}
+
+/* The primary CTA (a large primary: the landing hero, the closing call)
+   speaks in the heading face, like the page title it answers. */
+.btn-primary.btn-lg {
+    --btn-lip: 5px;
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-weight: var(--weight-heading);
+    letter-spacing: -0.01em;
+}
+
+/* secondary — a raised fill with the control edge: the outline voice with
+   a little weight, so it reads as the second choice beside a primary. */
 .btn-secondary {
     background: var(--color-surface-raised);
     color: var(--color-fg);
+    border-color: var(--color-border-strong);
 }
 
 .btn-secondary:hover:not(:disabled) { background: var(--color-surface-hover); }
@@ -1243,7 +1449,7 @@ h1, h2 {
     padding: 0;
     border: none;
     background: none;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-weight: var(--weight-medium);
 }
 
@@ -1313,7 +1519,8 @@ h1, h2 {
     gap: var(--space-0_5);
     height: var(--seg-h);
     padding: var(--space-0_5);
-    border-radius: var(--radius-md);
+    /* Neon Sticker: a pill track with a Volt thumb. */
+    border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     /* A hairline drawn as an inset shadow, so it costs no layout and the
        track still reads when it sits on a raised panel. */
@@ -1336,8 +1543,8 @@ h1, h2 {
     min-width: 0;
     padding: 0 var(--space-3);
     border: none;
-    /* Parent is --radius-md (8px); one step in, per the nesting rule. */
-    border-radius: var(--radius-sm);
+    /* A pill inside a pill. */
+    border-radius: var(--radius-full);
     background: transparent;
     color: var(--color-muted);
     font-family: inherit;
@@ -1363,9 +1570,8 @@ h1, h2 {
 .segmented__item[aria-pressed='true'],
 .segmented__item[aria-selected='true'],
 .segmented__item.is-active {
-    background: var(--color-surface-elevated);
-    color: var(--color-fg);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 .segmented__item:disabled {
@@ -1402,9 +1608,8 @@ h1, h2 {
         right: anchor(right);
         bottom: anchor(bottom);
         left: anchor(left);
-        border-radius: var(--radius-sm);
-        background: var(--color-surface-elevated);
-        box-shadow: var(--shadow-sm);
+        border-radius: var(--radius-full);
+        background: var(--color-primary);
         pointer-events: none;
         transition: top var(--duration-glide) var(--ease-glide),
                     right var(--duration-glide) var(--ease-glide),
@@ -1430,6 +1635,7 @@ h1, h2 {
         anchor-name: --segmented-thumb;
         background: transparent;
         box-shadow: none;
+        color: var(--color-on-primary);
     }
 }
 
@@ -1450,6 +1656,13 @@ h1, h2 {
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     line-height: 1;
+}
+
+.segmented__item[aria-pressed='true'] .count-badge,
+.segmented__item[aria-selected='true'] .count-badge,
+.segmented__item.is-active .count-badge {
+    background: color-mix(in srgb, var(--color-on-primary) 18%, transparent);
+    color: var(--color-on-primary);
 }
 
 /* ---- Underlined tabs ------------------------------------------------------
@@ -1500,9 +1713,9 @@ h1, h2 {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 2px;
+    height: 3px;
     border-radius: var(--radius-full);
-    background: var(--color-fg);
+    background: var(--color-primary);
     transform: scaleX(0);
     transition: transform var(--duration-slow) var(--ease-out);
 }
@@ -1539,9 +1752,9 @@ h1, h2 {
         left: anchor(left);
         right: anchor(right);
         bottom: anchor(bottom);
-        height: 2px;
+        height: 3px;
         border-radius: var(--radius-full);
-        background: var(--color-fg);
+        background: var(--color-primary);
         pointer-events: none;
         transition: left var(--duration-glide) var(--ease-glide),
                     right var(--duration-glide) var(--ease-glide),
@@ -1598,6 +1811,21 @@ h1, h2 {
 .badge--danger  { --badge-tone: var(--color-danger); }
 .badge--info    { --badge-tone: var(--color-info); }
 .badge--accent  { --badge-tone: var(--color-accent); }
+
+/* Brand-layer badges. Gold is a fill with ink — something earned (a level, a
+   streak, a reward); live is the pink with ink — something new or happening
+   now. Neither ever sits beside a type chip. */
+.badge--gold {
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    font-weight: var(--weight-semibold);
+}
+
+.badge--live {
+    background: var(--brand-live);
+    color: var(--brand-on-live);
+    font-weight: var(--weight-semibold);
+}
 
 /* Micro tag: the one place caps survive (≤ 11px, tracked). */
 .badge--caps {
@@ -1711,6 +1939,15 @@ h1, h2 {
         0 0 0.875rem 0.25rem color-mix(in srgb, var(--frame-a) 45%, transparent);
 }
 
+/* The trainer's own avatar on their Profile, with no frame equipped, wears
+   the logo ring (Neon Sticker): it is the one person the page is about. An
+   equipped frame ([data-frame]) replaces it; other trainers' avatars in
+   lists never wear it (fifty rings would be an alarm, not an identity). */
+.profile-avatar-button:not([data-frame]) {
+    border-radius: var(--radius-full);
+    box-shadow: var(--ring-logo);
+}
+
 .trainer-title {
     font-family: var(--font-body);
     font-size: var(--text-xs);
@@ -1740,14 +1977,16 @@ h1, h2 {
     min-width: 0;
 }
 
+/* Neon Sticker: a section heading is a label you scan, so the body face at
+   semibold — mono is kept for figures, Unbounded for page titles. */
 .section-title {
     margin: 0;
     min-width: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     line-height: var(--leading-snug);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     color: var(--color-fg);
 }
 
@@ -1929,19 +2168,26 @@ a.data-list__row:hover,
 
 .stat-bar__track {
     display: block;
-    height: 0.375rem;
+    height: 0.5rem;
     overflow: hidden;
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
 }
 
+/* Neon Sticker: one colour for six bars (Volt — the bar is a measure, and
+   six canon colours side by side made the stat block the loudest thing on
+   the entry); the Pokémon's best stat is the one thing earned, so it is
+   gold, its figure too. */
 .stat-bar__fill {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--stat-color);
+    background: var(--color-primary);
     transition: width var(--duration-slow) var(--ease-out);
 }
+
+.stat-bar--peak .stat-bar__fill { background: var(--brand-gold); }
+.stat-bar--peak .stat-bar__value { color: var(--color-accent); }
 
 /* ---- Search field (v3) ------------------------------------------------------
    An input with its glyph inside it. The app had a dozen of these, each with
@@ -2292,9 +2538,10 @@ a.data-list__row:hover,
     margin: 0;
     flex: 1;
     min-width: 0;
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
+    font-family: var(--font-heading);
+    font-size: var(--text-md);
+    font-weight: var(--weight-heading);
+    letter-spacing: -0.015em;
     line-height: 1.3;
     color: var(--color-fg);
 }
@@ -2594,7 +2841,7 @@ a.data-list__row:hover,
 .textarea-clean:hover:not(:disabled),
 .team-builder-select:hover:not(:disabled),
 .dmg-select:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-fg) 26%, var(--color-surface));
+    border-color: var(--color-border-hover);
 }
 
 .input-clean:focus,

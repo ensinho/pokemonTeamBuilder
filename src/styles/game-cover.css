@@ -82,7 +82,7 @@
 .game-cover__hint {
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Replaces the "change game" hint while playthrough mode is on, so the state is
@@ -107,7 +107,7 @@
 .game-card__icon {
     width: 1.6rem;
     height: 1.6rem;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Compact variant — used when the cover is fused into a panel header. */
@@ -470,7 +470,7 @@
 .tier-chip.is-active {
     background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-raised));
     box-shadow: var(--ring-primary);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .tier-chip__label {

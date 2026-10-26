@@ -132,7 +132,7 @@
     transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
 .types-matrix__row-head .types-matrix__icon { margin: 0; }
-.types-matrix__row-head:hover { color: var(--color-primary); }
+.types-matrix__row-head:hover { color: var(--color-primary-text); }
 .types-matrix tbody tr:hover .types-matrix__row-head { background: var(--color-surface-active); }
 
 .types-matrix__cell {

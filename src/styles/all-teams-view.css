@@ -89,7 +89,7 @@
 .all-teams-view__card:hover .team-builder-icon-button:not(.team-builder-icon-button--danger):not(.team-builder-icon-button--accent) {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .all-teams-view__card:hover .team-builder-icon-button--danger {
