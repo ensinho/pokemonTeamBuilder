@@ -95,13 +95,15 @@
     --space-16:  4rem;     /* 64px — page top/bottom */
 
     /* Border radius scale (Ref 2 — shadcn/ui) */
-    --radius-sm: 0.375rem;  /* 6px  — badges, chips */
+    /* Street Ghost (2026-10-26): sticker corners — 18 for a card, 12 for a
+       control, pills for chips. Still 4–6px apart, so the nesting rule holds. */
+    --radius-sm: 0.5rem;    /* 8px  — badges, chips */
     /* One step rounder on 2026-09-24: at 8/12/16 the app's corners were a web
        dashboard's; a dedicated app's panels sit nearer 16–22px. The steps keep
        4–6px apart so the nesting rule (inner = parent − 4) still holds. */
-    --radius-md: 0.625rem;  /* 10px — buttons, inputs */
-    --radius-lg: 1rem;      /* 16px — cards */
-    --radius-xl: 1.375rem;  /* 22px — panels, modals */
+    --radius-md: 0.75rem;   /* 12px — buttons, inputs */
+    --radius-lg: 1.125rem;  /* 18px — cards */
+    --radius-xl: 1.5rem;    /* 24px — panels, modals */
     --radius-full: 9999px;  /* pills, avatars, circular controls */
 
     /* ---- Type scale (design system v3, 2026-10-02) -------------------------
@@ -216,49 +218,49 @@
 
 :root,
 :root[data-theme='dark'] {
-    --color-primary: #8b7cee;
-    --color-primary-soft: rgba(139, 124, 238, 0.14);
-    --color-on-primary: #09090b;
-    --color-accent: #FBBF24;
-    --color-accent-soft: rgba(251, 191, 36, 0.12);
-    --color-bg: #09090b;
-    --color-surface: #18181c;
-    --color-surface-raised: #212127;
-    --color-fg: #fafafa;
-    --color-muted: #a1a1aa;
-    --color-border: #232329;
-    --color-success: #34D399;
-    --color-danger: #F87171;
-    --color-warning: #FBBF24;
-    --color-info: #60A5FA;
-
-    --elevation-1: 0 1px 2px rgba(0,0,0,0.4);
-    --elevation-2: 0 4px 16px -4px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.25);
-    --elevation-3: 0 12px 32px -8px rgba(0,0,0,0.65);
-    --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.75);
+    /* Street Ghost, night (2026-10-26) — the wordmark's own colours: Ink
+       ground, Night cards, Volt, Acid and Hot Pink, paper for the type.
+       --color-primary is Volt *lit* (#A774FF) rather than the wordmark's
+       #7A2BFF: primary is also the colour of links, the active label and the
+       focus ring, and raw Volt reads at 3.2:1 on Night. The true Volt fill
+       lives in --sg-volt (secondary buttons, the halftone). */
+    --color-primary: #A774FF;
+    --color-primary-soft: rgba(122, 43, 255, 0.22);
+    --color-on-primary: #0E0620;
+    --color-accent: #FFE600;
+    --color-accent-soft: rgba(255, 230, 0, 0.14);
+    --color-bg: #0E0620;
+    --color-surface: #1A0B38;
+    --color-surface-raised: #24104A;
+    --color-fg: #FFF8E7;
+    --color-muted: #B9A6E0;
+    --color-border: #3A1F6E;
+    --color-success: #3EE08F;
+    --color-danger: #FF6B8B;
+    --color-warning: #FFE600;
+    --color-info: #5CC8FF;
 }
 
 :root[data-theme='light'] {
-    --color-primary: #6353b3;
-    --color-primary-soft: rgba(99, 83, 179, 0.1);
-    --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
-    --color-bg: #f2f2f3;
+    /* Street Ghost, day: sticker paper ground, white cards, ink type and
+       outlines, the same Volt / Acid / Pink. Acid is unreadable as text on
+       paper, so the accent that colours *text and icons* is the Acid's deep
+       olive (#7A5A00, 6:1); Acid itself stays a fill (--sg-acid). */
+    --color-primary: #7A2BFF;
+    --color-primary-soft: rgba(122, 43, 255, 0.12);
+    --color-on-primary: #FFF8E7;
+    --color-accent: #7A5A00;
+    --color-accent-soft: rgba(255, 230, 0, 0.28);
+    --color-bg: #FFF8E7;
     --color-surface: #ffffff;
-    --color-surface-raised: #f6f6f7;
-    --color-fg: #09090b;
-    --color-muted: #68686f;
-    --color-border: #f7f7f7;
+    --color-surface-raised: #FBF1D9;
+    --color-fg: #22084F;
+    --color-muted: #5E5480;
+    --color-border: #EADFC4;
     --color-success: #047857;
-    --color-danger: #B91C1C;
-    --color-warning: #B45309;
+    --color-danger: #C0124F;
+    --color-warning: #7A5A00;
     --color-info: #1D4ED8;
-
-    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
-    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
-    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
-    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
 }
 
 :root[data-theme='daybreak'] {
@@ -447,6 +449,83 @@
     --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
 }
 
+/* ============================================================
+   STREET GHOST — everything is a sticker (theme proposal, 2026-10-26)
+   The PokemonBuilder wordmark is a graffiti sticker: a thick dark outline,
+   a Volt fill, Acid and Hot Pink strokes around it. This layer makes the
+   whole app speak that language, in every theme:
+
+   - a sticker is a solid outline (--sticker-line: the theme's own ink —
+     paper on the dark themes, ink on the light ones) plus a HARD offset
+     shadow, never blurred (--sticker-shadow*). The --elevation-* scale is
+     redefined as hard offsets below, so every --shadow-* in the app turns
+     into a sticker drop without touching its call site;
+   - pressing a sticker pushes it into its own shadow (translate by the
+     shadow's offset, shadow to zero) — see .btn:active;
+   - Bungee (--font-brand), in caps, is the display voice for headings, nav,
+     buttons, tabs and badges; Space Grotesk stays for prose and names, and
+     JetBrains Mono for every figure;
+   - the burst (--burst-clip) sits behind a score, a level, a badge, the
+     landing's hero — reward and identity moments only, never a list;
+   - rotation is for decoration only (the landing stack, badges, the toast):
+     never a grid, a table, a form or a list.
+   The brand colours below are constants like the canon type colours: they
+   are the wordmark's, so they do not change with the theme. Themes decide
+   ground, surface and ink; the sticker layer is built from those.
+   ============================================================ */
+:root {
+    --sg-ink: #22084F;       /* the wordmark's outline */
+    --sg-ink-deep: #0E0620;  /* the night ground */
+    --sg-paper: #FFF8E7;     /* sticker paper */
+    --sg-volt: #7A2BFF;      /* the wordmark's fill */
+    --sg-acid: #FFE600;      /* the CTA, the burst */
+    --sg-pink: #FF2E9A;      /* the echo stroke */
+    --sg-ink-muted: #5E5480; /* secondary text on sticker paper (5.9:1) */
+
+    /* The echo: Hot Pink as a *text* colour (section heads in the rail, a
+       kicker). Raw pink is 5.3:1 on Night but 3.3:1 on white, so the light
+       themes take its deep shade (below). */
+    --color-echo: var(--sg-pink);
+
+    /* Strokes are hairline-class values (like a 1px border), so px on
+       purpose: a 3px outline must stay 3px at every interface scale. */
+    --sticker-w: 3px;
+    --sticker-w-sm: 2px;
+    --sticker-line: var(--color-fg);
+    --sticker: var(--sticker-w) solid var(--sticker-line);
+    --sticker-sm: var(--sticker-w-sm) solid var(--sticker-line);
+    --sticker-drop: #000;
+    --sticker-offset: 6px;
+    --sticker-shadow: var(--sticker-offset) var(--sticker-offset) 0 0 var(--sticker-drop);
+    --sticker-shadow-md: 4px 4px 0 0 var(--sticker-drop);
+    --sticker-shadow-sm: 3px 3px 0 0 var(--sticker-drop);
+    --sticker-shadow-xs: 2px 2px 0 0 var(--sticker-drop);
+
+    /* The burst: 18 spikes, outer radius a little uneven on purpose — a
+       sprayed star, not a protractor's. */
+    --burst-clip: polygon(50.0% 0.0%, 56.3% 14.5%, 65.7% 6.8%, 68.0% 18.8%, 81.5% 12.5%, 77.6% 26.9%, 89.0% 27.5%, 83.8% 37.7%, 99.2% 41.3%, 86.0% 50.0%, 96.3% 58.2%, 83.8% 62.3%, 93.3% 75.0%, 77.6% 73.1%, 79.6% 85.2%, 68.0% 81.2%, 66.8% 96.0%, 56.3% 85.5%, 50.0% 95.0%, 43.7% 85.5%, 32.9% 97.0%, 32.0% 81.2%, 19.8% 86.0%, 22.4% 73.1%, 6.7% 75.0%, 16.2% 62.3%, 4.7% 58.0%, 14.0% 50.0%, 1.7% 41.5%, 16.2% 37.7%, 11.0% 27.5%, 22.4% 26.9%, 17.9% 11.7%, 32.0% 18.8%, 33.9% 5.8%, 43.7% 14.5%);
+
+    /* Halftone ground: a Volt dot grid, two offset lattices (the 45° screen of
+       a printed comic). Mixed at low alpha so the cards stay the subject. */
+    --halftone-dot: color-mix(in srgb, var(--sg-volt) 30%, transparent);
+
+    /* A strip of tape: torn (zig-zag) short ends, straight long edges. The
+       teeth are fixed px so a wide tab and a narrow segment tear alike. The
+       selected segment and the selected tab are drawn with it, in Acid. */
+    --tape-clip: polygon(0 0, 100% 0, calc(100% - 3px) 25%, 100% 50%, calc(100% - 3px) 75%, 100% 100%, 0 100%, 3px 75%, 0 50%, 3px 25%);
+}
+
+/* Elevation is a hard drop in every theme (the soft blurred shadows were the
+   one thing a sticker never has). Placed after the palettes, same
+   specificity, so it wins over each theme's own --elevation-*. */
+:root,
+:root[data-theme] {
+    --elevation-1: 2px 2px 0 0 var(--sticker-drop);
+    --elevation-2: 4px 4px 0 0 var(--sticker-drop);
+    --elevation-3: 6px 6px 0 0 var(--sticker-drop);
+    --elevation-4: 8px 8px 0 0 var(--sticker-drop);
+}
+
 /* Typography — two voices with fixed jobs (v3, 2026-10-02).
    The families are Enzo's call (2026-09-14) and do not change here; what v3
    changed is which *roles* each one carries, so the pair reads as one system:
@@ -473,6 +552,12 @@
     --font-display: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
     --font-body: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    /* Street Ghost: the sticker voice. Bungee, one weight (400 — it is a heavy
+       face already; a synthesised bold smears it), always in caps with a
+       little air. Headings, nav, buttons, tabs, badges. Never prose, never a
+       Pokémon's or a trainer's name, never a figure. */
+    --font-brand: 'Bungee', 'Space Grotesk', system-ui, sans-serif;
+    --tracking-brand: 0.02em;
 
     /* Semantic shadow aliases. These resolve against the active theme's
        --elevation-* at use-time (var() is late-bound), so a single definition
@@ -517,10 +602,9 @@
        On the light themes a fill needs no highlight; it gets the faintest lift
        instead (their --color-border is a whisper, so this is what defines the
        edge there). Applied once, below, to the app's region panels. */
-    --surface-sheen:
-        inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 10%, transparent),
-        inset 0 4rem 4rem 0 color-mix(in srgb, var(--color-fg) 3%, transparent),
-        var(--elevation-2);
+    /* Street Ghost: a region panel is a big sticker — the hard drop alone
+       (its outline is the panel's own border, see the sticker layer). */
+    --surface-sheen: var(--sticker-shadow);
 
     /* The material of a card (2026-10-09, Enzo: "tudo meio chapado no preto,
        os cards sem vida"). On a near-black page a drop shadow has nothing to
@@ -532,16 +616,14 @@
        shorthand would erase a background-image). The elevation under it is
        what separates a card from the panel it sits on. Light themes: none —
        their whisper border and white fill already read. Applied once, below. */
-    --card-sheen:
-        inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 10%, transparent),
-        inset 0 3rem 3rem 0 color-mix(in srgb, var(--color-fg) 4%, transparent),
-        var(--elevation-1);
+    /* Street Ghost: a card is a sticker — a hard drop, in every theme. */
+    --card-sheen: var(--sticker-shadow-md);
     /* The room the cards sit in. A flat #09090b canvas is what made the page
        read as "chapado": nothing to stand on. A faint pool of the theme's own
        colour falls from the top of the page and is gone before the fold —
        atmosphere, not decoration: it carries no content and never moves.
        Light themes: none. */
-    --canvas-light: radial-gradient(64rem 30rem at 50% -8rem, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 72%);
+    --canvas-light: radial-gradient(64rem 30rem at 50% -8rem, color-mix(in srgb, var(--sg-volt) 14%, transparent), transparent 72%);
 
     /* The page's ground (2026-10-09, Enzo: "fundo levemente pontilhado com
        elementos geométricos suaves… assim os componentes ficam bem mais à
@@ -552,9 +634,13 @@
        `scroll` on the scroller), like a surface under glass. Static: nothing
        here animates. Exactly four shape layers — .app-shell__content lists
        their sizes and attachments by position. */
-    --canvas-dots: radial-gradient(circle, color-mix(in srgb, var(--color-fg) 9%, transparent) 0.0625rem, transparent 0.09375rem);
-    --canvas-dot-gap: 1.5rem;
-    --canvas-ring: color-mix(in srgb, var(--color-primary) 16%, transparent);
+    /* Street Ghost: the dot grid became a halftone screen — Volt dots, two
+       lattices offset by half a cell (the 45° screen of a printed comic). */
+    --canvas-dots:
+        radial-gradient(circle, var(--halftone-dot) 0.09rem, transparent 0.125rem),
+        radial-gradient(circle at 50% 50%, var(--halftone-dot) 0.09rem, transparent 0.125rem);
+    --canvas-dot-gap: 0.875rem;
+    --canvas-ring: color-mix(in srgb, var(--sg-pink) 26%, transparent);
     --canvas-ring-quiet: color-mix(in srgb, var(--color-fg) 7%, transparent);
     --canvas-shapes:
         radial-gradient(circle 15rem at calc(100% - 5rem) 9rem, transparent calc(100% - 1.5px), var(--canvas-ring) calc(100% - 1px), var(--canvas-ring) calc(100% - 0.5px), transparent 100%),
@@ -562,10 +648,7 @@
         radial-gradient(circle 20rem at 3rem calc(100% + 4rem), transparent calc(100% - 1.5px), var(--canvas-ring-quiet) calc(100% - 1px), var(--canvas-ring-quiet) calc(100% - 0.5px), transparent 100%),
         radial-gradient(circle 26rem at 3rem calc(100% + 4rem), color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%);
 
-    --card-sheen-hover:
-        inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 15%, transparent),
-        inset 0 3rem 3rem 0 color-mix(in srgb, var(--color-fg) 6%, transparent),
-        var(--elevation-2);
+    --card-sheen-hover: var(--sticker-shadow);
 
     /* --color-on-primary (ink on a primary fill) is per theme since v3 — see
        the palette blocks above. White failed AA on four of the six primaries. */
@@ -638,10 +721,12 @@
 :root[data-theme='viridian'],
 :root[data-theme='blossom'] {
     --color-surface-elevated: var(--color-surface);
-    --surface-sheen: var(--shadow-sm);
-    --card-sheen: none;
-    --card-sheen-hover: none;
     --canvas-light: none;
+    /* Street Ghost: on paper the drop is the ink itself, like the wordmark's
+       outline — not a grey. */
+    --sticker-drop: var(--color-fg);
+    --halftone-dot: color-mix(in srgb, var(--sg-volt) 18%, transparent);
+    --color-echo: #C2006B;
 }
 
 /* Region panels take the sheen. `:where()` keeps this at zero specificity, so
@@ -754,6 +839,18 @@ h1, h2 {
     letter-spacing: -0.035em;
 }
 
+/* Street Ghost: headings are stickers' captions — Bungee, caps. A heading
+   that is a *name* (a Pokémon, a trainer, a team) opts out with
+   .sg-name / the name classes in the sticker layer below. */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+    line-height: 1.15;
+}
+
 /* Strings that are titles or figures in the markup but not heading tags. Running
    prose and controls are never listed here (v3 moved the nav, tab-bar and quick-
    rail labels back to the body face — they are things you operate). */
@@ -850,6 +947,21 @@ h1, h2 {
     line-height: 1.3;
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+}
+
+/* Street Ghost: the title roles speak in the sticker voice. Same sizes, so
+   nothing reflows by role; Bungee is wide, so they carry no negative
+   tracking. A role used on a figure keeps the readout: .figure wins. */
+.text-hero,
+.text-display,
+.text-title,
+.text-heading,
+.text-subheading {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
 }
 
 /* A figure in running UI: the readout voice at whatever size it sits in. */
@@ -1095,6 +1207,9 @@ h1, h2 {
    size a button with a modifier here, not with `h-8 px-2`. */
 .btn {
     --btn-h: var(--control-h-md);
+    /* Street Ghost: how far this sticker's drop falls, and so how far a press
+       pushes it. Voices without a drop set it to 0. */
+    --btn-drop: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1102,22 +1217,29 @@ h1, h2 {
     height: var(--btn-h);
     padding: 0 var(--space-3_5);
     border-radius: var(--radius-md);
-    font-family: inherit;
-    font-size: var(--text-base);
-    font-weight: var(--weight-medium);
+    /* Street Ghost: a button label is a sticker caption — Bungee, caps, one
+       step smaller than the sans it replaces (caps are taller). */
+    font-family: var(--font-brand);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
     line-height: 1;
     cursor: pointer;
     text-align: center;
     white-space: nowrap;
     user-select: none;
-    border: 1px solid transparent;
+    border: var(--sticker-w-sm) solid transparent;
     background: transparent;
     color: var(--color-fg);
+    box-shadow: 0 0 0 0 var(--sticker-drop);
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 border-color var(--duration-fast) var(--ease-smooth),
                 color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-press) var(--ease-out),
                 opacity var(--duration-fast) var(--ease-smooth),
+                translate var(--duration-press) var(--ease-out),
                 scale var(--duration-press) var(--ease-out);
 }
 
@@ -1128,9 +1250,16 @@ h1, h2 {
     pointer-events: none;
 }
 
-/* `scale`, the independent property, not `transform: scale()`: a button
-   positioned with a translate keeps it, instead of jumping when pressed. */
+/* Street Ghost: a sticker does not shrink when pressed — it is pushed into
+   its own shadow. `translate`, the independent property, so a button that
+   already carries a transform keeps it. A voice with no drop (ghost, link)
+   still sinks by --press-scale. */
 .btn:active:not(:disabled) {
+    translate: var(--btn-drop) var(--btn-drop);
+    box-shadow: 0 0 0 0 var(--sticker-drop);
+}
+
+.btn:is(.btn-ghost, .btn-link):active:not(:disabled) {
     scale: var(--press-scale);
 }
 
@@ -1143,17 +1272,19 @@ h1, h2 {
 /* Sizes */
 .btn-sm {
     --btn-h: var(--control-h-sm);
+    --btn-drop: 3px;
     gap: var(--space-1_5);
     padding: 0 var(--space-2_5);
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
 }
 
 .btn-sm svg { width: 0.875rem; height: 0.875rem; }
 
 .btn-lg {
     --btn-h: var(--control-h-lg);
+    --btn-drop: 5px;
     padding: 0 var(--space-5);
-    font-size: var(--text-md);
+    font-size: var(--text-base);
 }
 
 /* Icon-only: square at whatever size it is. Pair with an aria-label. */
@@ -1164,53 +1295,65 @@ h1, h2 {
 
 .btn-block { width: 100%; }
 
-/* Voices (v3).
-   primary — the one affirmative action in a view, neutral-inverted: a
-   foreground fill with surface ink. Until v3 it was the brand fill, and with a
-   violet "Save", a violet empty-state CTA and violet rings on fifty cards the
-   accent stopped meaning anything; white text on it also failed AA in four
-   themes. Inverted is the highest contrast on every theme (≥ 15:1) and leaves
-   colour to the Pokémon. Hover mixes toward the canvas — it softens, never
-   glows. */
+/* Voices — Street Ghost (2026-10-26). Every voice but ghost and link is a
+   sticker: a solid outline and a hard drop of --btn-drop.
+
+   primary — the one affirmative action in a view: Acid, ink type, ink
+   outline. The same in every theme — it is the wordmark's highlighter, the
+   one thing on a screen you are meant to hit. Ink on Acid is 13.6:1. Hover
+   deepens the Acid toward the ink a step; it never glows. */
 .btn-primary {
-    background: var(--color-inverse);
-    color: var(--color-on-inverse);
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+    border-color: var(--sg-ink);
+    box-shadow: var(--btn-drop) var(--btn-drop) 0 0 var(--sticker-drop);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-inverse) 86%, var(--color-bg));
+    background: color-mix(in srgb, var(--sg-acid) 88%, var(--sg-pink));
 }
 
 .btn-primary:active:not(:disabled) {
-    background: color-mix(in srgb, var(--color-inverse) 78%, var(--color-bg));
+    background: color-mix(in srgb, var(--sg-acid) 80%, var(--sg-pink));
 }
 
-/* secondary — a filled neutral. A fill already reads as a button, so no line. */
+/* secondary — Volt with a line of the theme's ink (paper on the dark themes,
+   as on the wordmark; ink on the light ones). Paper on Volt is 5.5:1. */
 .btn-secondary {
-    background: var(--color-surface-raised);
-    color: var(--color-fg);
+    background: var(--sg-volt);
+    color: var(--sg-paper);
+    border-color: var(--sticker-line);
+    box-shadow: var(--btn-drop) var(--btn-drop) 0 0 var(--sticker-drop);
 }
 
-.btn-secondary:hover:not(:disabled) { background: var(--color-surface-hover); }
-.btn-secondary:active:not(:disabled) { background: var(--color-surface-active); }
+.btn-secondary:hover:not(:disabled) { background: color-mix(in srgb, var(--sg-volt) 86%, var(--sg-pink)); }
+.btn-secondary:active:not(:disabled) { background: color-mix(in srgb, var(--sg-volt) 78%, var(--sg-pink)); }
 
-/* outline — a hairline on the surface it sits on; the claude.ai default. */
+/* outline — the surface it sits on, cut out with the theme's ink. */
 .btn-outline {
-    background: transparent;
+    background: var(--color-surface);
     color: var(--color-fg);
-    border-color: var(--color-border-strong);
+    border-color: var(--sticker-line);
+    box-shadow: var(--btn-drop) var(--btn-drop) 0 0 var(--sticker-drop);
 }
 
 .btn-outline:hover:not(:disabled) { background: var(--color-surface-hover); }
 .btn-outline:active:not(:disabled) { background: var(--color-surface-active); }
 
-/* ghost — no chrome until touched. Toolbars, close buttons, row actions. */
+/* ghost — a sticker not yet stuck down: a dashed line, no drop. Icon-only
+   ghosts (close, share, row actions) keep no line at all until touched — a
+   dashed ring around every glyph in a toolbar would be a stencil sheet. */
 .btn-ghost {
+    --btn-drop: 0px;
     background: transparent;
     color: var(--color-fg);
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--sticker-line) 55%, transparent);
 }
 
-.btn-ghost:hover:not(:disabled) { background: var(--color-surface-hover); }
+.btn-ghost.btn-icon { border-color: transparent; }
+
+.btn-ghost:hover:not(:disabled) { background: var(--color-surface-hover); border-color: var(--sticker-line); }
 .btn-ghost:active:not(:disabled) { background: var(--color-surface-active); }
 
 /* A ghost whose glyph is quiet until touched — the icon buttons in a toolbar
@@ -1218,21 +1361,21 @@ h1, h2 {
 .btn-ghost.btn-muted { color: var(--color-muted); }
 .btn-ghost.btn-muted:hover:not(:disabled) { color: var(--color-fg); }
 
-/* danger — tinted, not solid. A destructive action should be unmistakable,
-   not the loudest thing on the screen; the solid red with white ink also
-   failed AA on the dark themes (#F87171 under white is 2.8:1). The label mix
-   toward fg keeps it ≥ 4.5:1 on its own tint in all six. */
+/* danger — a tinted sticker with a line in its own red. The label mix toward
+   fg keeps it ≥ 4.5:1 on its own tint in every theme. */
 .btn-danger {
-    background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 16%, var(--color-surface));
     color: color-mix(in srgb, var(--color-danger) 80%, var(--color-fg));
+    border-color: color-mix(in srgb, var(--color-danger) 70%, var(--color-fg));
+    box-shadow: var(--btn-drop) var(--btn-drop) 0 0 var(--sticker-drop);
 }
 
 .btn-danger:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-danger) 22%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 24%, var(--color-surface));
 }
 
 .btn-danger:active:not(:disabled) {
-    background: color-mix(in srgb, var(--color-danger) 28%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 30%, var(--color-surface));
 }
 
 /* link — an action that reads as a word in a sentence or a section head
@@ -1240,11 +1383,16 @@ h1, h2 {
    state, not decoration. No box, so no height and no padding. */
 .btn-link {
     --btn-h: auto;
+    --btn-drop: 0px;
     padding: 0;
     border: none;
     background: none;
     color: var(--color-primary);
+    /* A word in a sentence keeps the sentence's voice. */
+    font-family: var(--font-body);
     font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-body);
+    text-transform: none;
 }
 
 .btn-link:hover:not(:disabled) {
@@ -1312,12 +1460,12 @@ h1, h2 {
     align-items: stretch;
     gap: var(--space-0_5);
     height: var(--seg-h);
-    padding: var(--space-0_5);
+    padding: var(--space-1);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    /* A hairline drawn as an inset shadow, so it costs no layout and the
-       track still reads when it sits on a raised panel. */
-    box-shadow: inset 0 0 0 1px var(--color-border);
+    /* Street Ghost: the track is a sticker — its line drawn as an inset
+       shadow (no layout cost), plus the small hard drop. */
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line), var(--sticker-shadow-sm);
     max-width: 100%;
 }
 
@@ -1340,9 +1488,12 @@ h1, h2 {
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--color-muted);
-    font-family: inherit;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
+    font-family: var(--font-brand);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
@@ -1353,19 +1504,33 @@ h1, h2 {
 
 .segmented--sm .segmented__item {
     padding: 0 var(--space-2_5);
-    font-size: var(--text-xs);
+    font-size: var(--text-2xs);
+}
+
+/* Bungee caps run wider than the sans they replaced: on a phone, a four-way
+   control (Home's Today | Journey | Teams | Community) takes them a step
+   smaller and tighter so it never clips the last option. */
+@media (max-width: 639px) {
+    .segmented__item {
+        padding-inline: var(--space-2);
+        font-size: var(--text-2xs);
+        letter-spacing: 0;
+    }
 }
 
 .segmented__item svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; }
 
 .segmented__item:hover { color: var(--color-fg); }
 
+/* Street Ghost: the chosen option is a strip of Acid tape stuck on the
+   track, ink type on it. */
 .segmented__item[aria-pressed='true'],
 .segmented__item[aria-selected='true'],
 .segmented__item.is-active {
-    background: var(--color-surface-elevated);
-    color: var(--color-fg);
-    box-shadow: var(--shadow-sm);
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+    border-radius: 0;
+    clip-path: var(--tape-clip);
 }
 
 .segmented__item:disabled {
@@ -1402,9 +1567,8 @@ h1, h2 {
         right: anchor(right);
         bottom: anchor(bottom);
         left: anchor(left);
-        border-radius: var(--radius-sm);
-        background: var(--color-surface-elevated);
-        box-shadow: var(--shadow-sm);
+        background: var(--sg-acid);
+        clip-path: var(--tape-clip);
         pointer-events: none;
         transition: top var(--duration-glide) var(--ease-glide),
                     right var(--duration-glide) var(--ease-glide),
@@ -1430,6 +1594,7 @@ h1, h2 {
         anchor-name: --segmented-thumb;
         background: transparent;
         box-shadow: none;
+        clip-path: none;
     }
 }
 
@@ -1452,6 +1617,12 @@ h1, h2 {
     line-height: 1;
 }
 
+/* On the Acid tape the count is ink on a faint ink wash. */
+:is(.segmented__item, .tabs__item):is([aria-pressed='true'], [aria-selected='true'], .is-active) .count-badge {
+    background: color-mix(in srgb, var(--sg-ink) 14%, transparent);
+    color: var(--sg-ink);
+}
+
 /* ---- Underlined tabs ------------------------------------------------------
    Sections of one object ("Overview | Content"). The rule under the strip is
    an inset shadow and the indicator is drawn inside each tab, so an
@@ -1460,10 +1631,14 @@ h1, h2 {
    one accent belongs to its action. It grows from the centre on the entrance
    curve, so switching tabs has a direction without a sliding bar that needs
    JavaScript to measure. */
+/* Street Ghost: the tab strip keeps its rule, and the selected tab is a
+   strip of Acid tape behind its label — the same tape as the segmented
+   thumb, travelling the same way. Items take a little inline padding so the
+   tape has somewhere to sit. */
 .tabs {
     display: flex;
     align-items: stretch;
-    gap: var(--space-5);
+    gap: var(--space-2);
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-x: contain;
@@ -1480,13 +1655,16 @@ h1, h2 {
     gap: var(--space-1_5);
     flex-shrink: 0;
     height: 2.5rem;
-    padding: 0;
+    padding: 0 var(--space-2_5);
     border: none;
     background: none;
     color: var(--color-muted);
-    font-family: inherit;
-    font-size: var(--text-base);
-    font-weight: var(--weight-medium);
+    font-family: var(--font-brand);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
     white-space: nowrap;
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth);
@@ -1499,10 +1677,11 @@ h1, h2 {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 2px;
-    border-radius: var(--radius-full);
-    background: var(--color-fg);
+    top: var(--space-1_5);
+    bottom: var(--space-1_5);
+    z-index: -1;
+    background: var(--sg-acid);
+    clip-path: var(--tape-clip);
     transform: scaleX(0);
     transition: transform var(--duration-slow) var(--ease-out);
 }
@@ -1511,7 +1690,8 @@ h1, h2 {
 
 .tabs__item[aria-selected='true'],
 .tabs__item.is-active {
-    color: var(--color-fg);
+    color: var(--sg-ink);
+    isolation: isolate;
 }
 
 .tabs__item[aria-selected='true']::after,
@@ -1538,10 +1718,10 @@ h1, h2 {
         position-anchor: --tabs-underline;
         left: anchor(left);
         right: anchor(right);
-        bottom: anchor(bottom);
-        height: 2px;
-        border-radius: var(--radius-full);
-        background: var(--color-fg);
+        top: calc(anchor(top) + var(--space-1_5));
+        bottom: calc(anchor(bottom) + var(--space-1_5));
+        background: var(--sg-acid);
+        clip-path: var(--tape-clip);
         pointer-events: none;
         transition: left var(--duration-glide) var(--ease-glide),
                     right var(--duration-glide) var(--ease-glide),
@@ -1555,6 +1735,11 @@ h1, h2 {
     .tabs__item[aria-selected='true'],
     .tabs__item.is-active {
         anchor-name: --tabs-underline;
+    }
+
+    /* Labels ride above the tape. */
+    .tabs__item {
+        z-index: 1;
     }
 
     .tabs__item::after {
@@ -1576,14 +1761,19 @@ h1, h2 {
     gap: var(--space-1);
     min-height: 1.25rem;
     padding: 0 var(--space-1_5);
-    border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--badge-tone) 9%, transparent);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--badge-tone) 12%, transparent);
     color: color-mix(in srgb, var(--badge-tone) 82%, var(--color-fg));
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-medium);
+    /* Street Ghost: a badge is a small sticker — Bungee caps, a line in its
+       own tone (inset, so it costs no layout). */
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--badge-tone) 55%, transparent);
+    font-family: var(--font-brand);
+    font-size: var(--text-2xs);
+    font-weight: 400;
+    font-synthesis: none;
     line-height: 1;
-    letter-spacing: 0;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
     white-space: nowrap;
 }
 
@@ -1601,7 +1791,7 @@ h1, h2 {
 
 /* Micro tag: the one place caps survive (≤ 11px, tracked). */
 .badge--caps {
-    font-family: var(--font-mono);
+    font-family: var(--font-brand);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-caps);
@@ -1611,8 +1801,10 @@ h1, h2 {
 /* A badge that is itself a figure ("41%", "#212", "Lv 50"). */
 .badge--figure {
     font-family: var(--font-mono);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
+    text-transform: none;
 }
 
 /* ---- Card (v3) --------------------------------------------------------------
@@ -1625,7 +1817,9 @@ h1, h2 {
     position: relative;
     min-width: 0;
     padding: var(--space-4);
-    border: 1px solid var(--color-border);
+    /* Street Ghost: a card is a sticker — the theme's ink as its outline,
+       and the hard drop from --card-sheen (the :where() list above). */
+    border: var(--sticker);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
@@ -1640,17 +1834,24 @@ h1, h2 {
     text-align: left;
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 border-color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
+                box-shadow var(--duration-press) var(--ease-out),
+                translate var(--duration-press) var(--ease-out);
 }
 
 .card--interactive:hover { background: var(--color-surface-hover); }
-.card--interactive:active { background: var(--color-surface-active); }
+/* Pushed into its drop, like every sticker. */
+.card--interactive:active {
+    background: var(--color-surface-active);
+    translate: 2px 2px;
+    box-shadow: var(--sticker-shadow-xs);
+}
 
 /* Selected is a ring, never a border: a border would resize the card. */
 .card--selected,
 .card--selected:hover {
     background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
-    box-shadow: var(--ring-primary);
+    border-color: var(--color-primary);
+    box-shadow: var(--ring-primary), var(--sticker-shadow-md);
 }
 
 /* A card placed inside another surface (a modal, the builder's composer)
@@ -1740,22 +1941,25 @@ h1, h2 {
     min-width: 0;
 }
 
+/* Street Ghost: a section heading is a sticker caption — Bungee caps. */
 .section-title {
     margin: 0;
     min-width: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-brand);
     font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
+    font-weight: 400;
+    font-synthesis: none;
     line-height: var(--leading-snug);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
     color: var(--color-fg);
 }
 
 /* A section heading that opens a page region rather than a group inside one. */
-.section-title--lg { font-size: var(--text-lg); letter-spacing: var(--tracking-heading); }
+.section-title--lg { font-size: var(--text-lg); }
 
 /* A heading inside a card or a dense panel. */
-.section-title--sm { font-size: var(--text-base); letter-spacing: -0.015em; }
+.section-title--sm { font-size: var(--text-sm); }
 
 .section-title svg {
     display: inline-block;
@@ -1929,17 +2133,24 @@ a.data-list__row:hover,
 
 .stat-bar__track {
     display: block;
-    height: 0.375rem;
+    /* Street Ghost: a thick sticker strip, outlined, with a striped fill. */
+    height: 0.75rem;
     overflow: hidden;
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line);
 }
 
 .stat-bar__fill {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--stat-color);
+    /* The canon stat colour, with ink diagonal stripes printed over it (the
+       stripes are the ink at low alpha, so the canon hue stays the read). */
+    background:
+        repeating-linear-gradient(-45deg, color-mix(in srgb, var(--sg-ink) 22%, transparent) 0 0.25rem, transparent 0.25rem 0.5rem),
+        var(--stat-color);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line);
     transition: width var(--duration-slow) var(--ease-out);
 }
 
@@ -2003,14 +2214,28 @@ a.data-list__row:hover,
     /* Tighter on the icon side — the icon is a filled circle and needs less
        breathing room than the label's baseline does. */
     padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
-    border: 1px solid color-mix(in srgb, var(--type-chip, var(--color-primary)) 45%, transparent);
+    /* Street Ghost: a type is a sticker printed in its canon colour, solid
+       and untouched (the colour is data), with an ink outline and a small
+       hard drop. The label is paper with an ink keyline — graffiti lettering —
+       so it reads on every one of the 18 fills, pale Electric to deep Dark,
+       without mixing the canon colour into anything. */
+    border: var(--sticker-w-sm) solid var(--sg-ink);
     border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--type-chip, var(--color-primary)) 14%, transparent);
-    color: color-mix(in srgb, var(--type-chip, var(--color-primary)) 45%, var(--color-fg));
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
+    background: var(--type-chip, var(--color-primary));
+    box-shadow: var(--sticker-shadow-xs);
+    color: var(--sg-paper);
+    text-shadow:
+        1px 0 0 var(--sg-ink), -1px 0 0 var(--sg-ink),
+        0 1px 0 var(--sg-ink), 0 -1px 0 var(--sg-ink),
+        1px 1px 0 var(--sg-ink), -1px -1px 0 var(--sg-ink),
+        1px -1px 0 var(--sg-ink), -1px 1px 0 var(--sg-ink);
+    font-family: var(--font-brand);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: 0.04em;
     line-height: 1.2;
-    text-transform: capitalize;
+    text-transform: uppercase;
     white-space: nowrap;
 }
 
@@ -2214,12 +2439,10 @@ a.data-list__row:hover,
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    /* Street Ghost: the biggest sticker — full outline, the deepest drop. */
+    border: var(--sticker);
     border-radius: var(--radius-xl);
     background: var(--color-surface);
-    /* The one place a border and a shadow legitimately coexist: the panel is
-       genuinely floating, and the border is what keeps its edge legible where
-       the shadow washes out against a dark scrim. */
     box-shadow: var(--shadow-xl);
     animation: modal-panel-in var(--duration-slow) var(--ease-out-expo);
 }
@@ -2292,9 +2515,12 @@ a.data-list__row:hover,
     margin: 0;
     flex: 1;
     min-width: 0;
+    font-family: var(--font-brand);
     font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
+    font-weight: 400;
+    font-synthesis: none;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-brand);
     line-height: 1.3;
     color: var(--color-fg);
 }
@@ -2478,7 +2704,7 @@ a.data-list__row:hover,
     display: flex;
     flex-direction: column;
     padding: var(--space-1);
-    border: 1px solid var(--color-border);
+    border: var(--sticker);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
     box-shadow: var(--shadow-lg);
@@ -2560,9 +2786,12 @@ a.data-list__row:hover,
 .dmg-select {
     width: 100%;
     min-width: 0;
-    border: 1px solid var(--color-border-strong);
+    /* Street Ghost: a field is a sticker you write on — the theme's ink as
+       its line and the small hard drop. */
+    border: var(--sticker-sm);
     border-radius: var(--radius-md);
     background: var(--color-surface);
+    box-shadow: var(--sticker-shadow-sm);
     color: var(--color-fg);
     font-family: inherit;
     font-size: var(--text-base);
@@ -2594,7 +2823,7 @@ a.data-list__row:hover,
 .textarea-clean:hover:not(:disabled),
 .team-builder-select:hover:not(:disabled),
 .dmg-select:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-fg) 26%, var(--color-surface));
+    border-color: var(--color-primary);
 }
 
 .input-clean:focus,
@@ -2610,7 +2839,7 @@ a.data-list__row:hover,
     outline: none;
     border-color: var(--color-primary);
     /* Inset, so focusing a field never nudges the row it sits in. */
-    box-shadow: inset 0 0 0 1px var(--color-primary);
+    box-shadow: inset 0 0 0 1px var(--color-primary), var(--sticker-shadow-sm);
 }
 
 .input-clean:disabled,
@@ -2661,7 +2890,7 @@ a.data-list__row:hover,
 .textarea-clean:focus-visible,
 .team-builder-select:focus-visible,
 .dmg-select:focus-visible {
-    box-shadow: inset 0 0 0 1px var(--color-primary);
+    box-shadow: inset 0 0 0 1px var(--color-primary), var(--sticker-shadow-sm);
 }
 
 /* ============================================================
@@ -2737,12 +2966,16 @@ summary {
     min-height: 2.75rem;
     margin-top: var(--space-4);
     padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--color-border);
+    border: var(--sticker-sm);
     border-radius: var(--radius-md);
     background: var(--color-surface);
+    box-shadow: var(--sticker-shadow-sm);
     color: var(--color-fg);
-    font-size: var(--text-base);
-    font-weight: var(--weight-medium);
+    font-family: var(--font-brand);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-brand);
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 border-color var(--duration-fast) var(--ease-smooth);

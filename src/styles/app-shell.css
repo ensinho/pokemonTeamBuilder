@@ -1695,9 +1695,12 @@
 @media (min-width: 1024px) {
     .app-shell__content {
         background-image: var(--canvas-light), var(--canvas-shapes), var(--canvas-dots);
-        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat;
-        background-size: auto, auto, auto, auto, auto, var(--canvas-dot-gap) var(--canvas-dot-gap);
-        background-attachment: local, scroll, scroll, scroll, scroll, scroll;
+        /* --canvas-dots is two lattices (Street Ghost halftone): the second is
+           offset by half a cell, so the screen reads at 45°. */
+        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
+        background-size: auto, auto, auto, auto, auto, var(--canvas-dot-gap) var(--canvas-dot-gap), var(--canvas-dot-gap) var(--canvas-dot-gap);
+        background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, calc(var(--canvas-dot-gap) / 2) calc(var(--canvas-dot-gap) / 2);
+        background-attachment: local, scroll, scroll, scroll, scroll, scroll, scroll;
     }
 }
 

@@ -18,21 +18,25 @@ export const POKEBALL_PLACEHOLDER_URL = pokeballPlaceholderUrl;
 // JS-side mirror of the CSS variables. Components that still
 // pass a `colors` prop read from here.
 export const THEMES = {
+    // Street Ghost (2026-10-26): `dark` and `light` wear the wordmark's
+    // palette — Ink / Night / Volt / Acid / Hot Pink on dark, sticker paper
+    // and ink on light. The brand constants (--sg-*) and the sticker tokens
+    // live in index.css; this is only what applyTheme writes per theme.
     dark: {
-        primary: '#8b7cee',
-        primarySoft: 'rgba(139, 124, 238, 0.14)',
-        onPrimary: '#09090b',
-        accent: '#FBBF24',
-        background: '#09090b',
-        card: '#18181c',
-        cardLight: '#212127',
-        text: '#fafafa',
-        textMuted: '#a1a1aa',
-        border: '#232329',
-        success: '#34D399',
-        danger: '#F87171',
-        warning: '#FBBF24',
-        info: '#60A5FA',
+        primary: '#A774FF',
+        primarySoft: 'rgba(122, 43, 255, 0.22)',
+        onPrimary: '#0E0620',
+        accent: '#FFE600',
+        background: '#0E0620',
+        card: '#1A0B38',
+        cardLight: '#24104A',
+        text: '#FFF8E7',
+        textMuted: '#B9A6E0',
+        border: '#3A1F6E',
+        success: '#3EE08F',
+        danger: '#FF6B8B',
+        warning: '#FFE600',
+        info: '#5CC8FF',
     },
     eclipse: {
         primary: '#a78bfa',
@@ -51,19 +55,19 @@ export const THEMES = {
         info: '#60A5FA',
     },
     light: {
-        primary: '#6353b3',
-        primarySoft: 'rgba(99, 83, 179, 0.1)',
-        onPrimary: '#ffffff',
-        accent: '#B45309',
-        background: '#f2f2f3',
+        primary: '#7A2BFF',
+        primarySoft: 'rgba(122, 43, 255, 0.12)',
+        onPrimary: '#FFF8E7',
+        accent: '#7A5A00',
+        background: '#FFF8E7',
         card: '#FFFFFF',
-        cardLight: '#f6f6f7',
-        text: '#09090b',
-        textMuted: '#68686f',
-        border: '#f7f7f7',
+        cardLight: '#FBF1D9',
+        text: '#22084F',
+        textMuted: '#5E5480',
+        border: '#EADFC4',
         success: '#047857',
-        danger: '#B91C1C',
-        warning: '#B45309',
+        danger: '#C0124F',
+        warning: '#7A5A00',
         info: '#1D4ED8',
     },
     daybreak: {
@@ -187,11 +191,11 @@ export const THEMES = {
 // `isThemeUnlocked` (store/useRewardsStore.js) before offering one.
 // `mode` groups themes as dark vs light so the picker can label them separately.
 export const THEME_META = [
-    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#8b7cee', mode: 'dark' },
+    { id: 'dark', label: 'Dark', hint: 'Street Ghost night: ink and Volt', swatch: '#7A2BFF', mode: 'dark' },
     { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6', mode: 'dark' },
     { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8', mode: 'dark' },
     { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB', mode: 'light' },
-    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3', mode: 'light' },
+    { id: 'light', label: 'Light', hint: 'Street Ghost day: sticker paper', swatch: '#FFE600', mode: 'light' },
     { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04', mode: 'light' },
     { id: 'ember', label: 'Ember', hint: 'Warm embers, Charizard nights', swatch: '#f97316', mode: 'dark', reward: true },
     { id: 'viridian', label: 'Viridian', hint: 'Forest-green daylight', swatch: '#16a34a', mode: 'light', reward: true },
