@@ -51,8 +51,8 @@ export function topicMetaFromDoc(doc) {
     const body = clip(str('bodyPreview') || str('lastMessageText'), 180);
     const by = str('creatorName');
     return {
-        title: `${title} | PokeBuilder Forum`,
-        description: body || (by ? `A discussion by @${by} on the PokeBuilder forum.` : 'A discussion on the PokeBuilder forum.'),
+        title: `${title} | PokemonBuilder Forum`,
+        description: body || (by ? `A discussion by @${by} on the PokemonBuilder forum.` : 'A discussion on the PokemonBuilder forum.'),
     };
 }
 

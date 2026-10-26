@@ -1363,10 +1363,10 @@ export default function AppLayout() {
                                         title={t('layout.goHome')}
                                     />
                                     <div className={`app-shell__brand-copy ${isRailCollapsed ? 'is-hidden' : ''}`}>
-                                        {/* The PokeBuilder wordmark (2026-10-26). Its alt
+                                        {/* The PokemonBuilder wordmark (2026-10-26). Its alt
                                             text is the heading's name. */}
                                         <h2 className="app-shell__brand-title">
-                                            <BrandWordmark className="app-shell__brand-wordmark" sizes="8rem" />
+                                            <BrandWordmark className="app-shell__brand-wordmark" sizes="9rem" />
                                         </h2>
                                     </div>
                                 </div>

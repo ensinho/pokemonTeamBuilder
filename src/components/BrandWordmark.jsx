@@ -6,7 +6,7 @@ const SMALL = `${BASE}logo-wordmark-480.webp`;
 const LARGE = `${BASE}logo-wordmark.webp`;
 
 /**
- * The PokeBuilder wordmark (2026-10-26): the graffiti lettering, drawn on a
+ * The PokemonBuilder wordmark (2026-10-26): the graffiti lettering, drawn on a
  * transparent ground with its own dark outline, so it reads the same on all
  * six themes. It names the product; the Gengar icon (`logo-mark.webp`) stays
  * the app's mark and favicon, and sits beside it wherever both appear.
@@ -21,7 +21,7 @@ export function BrandWordmark({ className = '', sizes = '10rem' }) {
             srcSet={`${SMALL} 480w, ${LARGE} 960w`}
             sizes={sizes}
             width={480}
-            height={154}
+            height={119}
             alt={SITE_NAME}
             decoding="async"
             draggable={false}

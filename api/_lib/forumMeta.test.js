@@ -22,7 +22,7 @@ describe('topicIdFromUrl', () => {
 describe('topicMetaFromDoc', () => {
     it('builds a title and a description from the post', () => {
         const meta = topicMetaFromDoc(doc({ title: 'Best Platinum team?', bodyPreview: 'Empoleon,  Luxray\nand Garchomp' }));
-        expect(meta.title).toBe('Best Platinum team? | PokeBuilder Forum');
+        expect(meta.title).toBe('Best Platinum team? | PokemonBuilder Forum');
         expect(meta.description).toBe('Empoleon, Luxray and Garchomp');
     });
 

@@ -1,4 +1,4 @@
-# PokeBuilder — Agent Knowledge Base
+# PokemonBuilder — Agent Knowledge Base
 
 > **For all AI agents:** Read this document before making architectural changes, modifying UI components, or adding features. This is the entry map. For build commands and high-level architecture, read `CLAUDE.md` at the repo root first.
 

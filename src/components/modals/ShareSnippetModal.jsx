@@ -455,7 +455,7 @@ const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamI
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '700 17px system-ui, -apple-system, sans-serif';
-    ctx.fillText('POKEBUILDER', titleX, headerY + 10);
+    ctx.fillText('POKEMONBUILDER', titleX, headerY + 10);
 
     ctx.fillStyle = '#A5B4FC';
     ctx.font = '700 9px system-ui, sans-serif';
@@ -740,7 +740,7 @@ const drawFooterStripSync = (ctx, W, H, FOOTER_H, shareUrl, logoImg) => {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 20px system-ui, -apple-system, sans-serif';
-    ctx.fillText('PokeBuilder', logoX + logoSize + 14, footerY + FOOTER_H / 2 - 10);
+    ctx.fillText('PokemonBuilder', logoX + logoSize + 14, footerY + FOOTER_H / 2 - 10);
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
     ctx.font = '500 15px system-ui, -apple-system, sans-serif';
     ctx.fillText(shareUrl ? shareUrl.replace(/^https?:\/\//, '') : BRAND_LABEL, logoX + logoSize + 14, footerY + FOOTER_H / 2 + 12);

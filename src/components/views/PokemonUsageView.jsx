@@ -127,7 +127,7 @@ export function PokemonUsageView() {
     useDocumentMeta(entry ? {
         pokemon: entry,
         title: `${displayName} Usage & Sets`,
-        description: `${displayName} competitive usage, items, EV spreads, and top teammates${format?.name ? ` in ${format.name}` : ''}${usage?.usage ? ` — ${usage.usage.toFixed(1)}% usage` : ''} on PokeBuilder.`,
+        description: `${displayName} competitive usage, items, EV spreads, and top teammates${format?.name ? ` in ${format.name}` : ''}${usage?.usage ? ` — ${usage.usage.toFixed(1)}% usage` : ''} on PokemonBuilder.`,
         image: getPokemonArtworkSpriteUrl(entry.id),
         // Always canonicalize to the name slug so /meta/25 and /meta/raichu consolidate.
         path: `/meta/${entry.name}`,
