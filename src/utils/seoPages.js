@@ -16,6 +16,9 @@ export { TYPE_IDS, strongAgainst, weaknessesOf };
 
 export const SITE_URL = 'https://pokemonbuilder.app';
 export const SITE_NAME = 'PokeBuilder';
+/** What people search for, and what the site was called until 2026-10-26 —
+ *  given to search engines as the brand's alternate names (JSON-LD). */
+export const SITE_ALTERNATE_NAMES = ['Pokémon Team Builder', 'Pokemon Team Builder'];
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 
@@ -308,6 +311,7 @@ export function structuredData(meta, language) {
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             name: SITE_NAME,
+            alternateName: SITE_ALTERNATE_NAMES,
             url: abs('/'),
             inLanguage,
             potentialAction: {
@@ -320,6 +324,7 @@ export function structuredData(meta, language) {
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
             name: SITE_NAME,
+            alternateName: SITE_ALTERNATE_NAMES,
             url: abs('/'),
             description: meta.description,
             inLanguage,

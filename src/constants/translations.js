@@ -202,11 +202,11 @@ export const TRANSLATIONS = {
         seo: {
             siteName: 'PokeBuilder',
             home: {
-                title: 'PokeBuilder: build your competitive Pokémon team',
-                description: 'Build and share competitive Pokémon teams with a full Pokédex, damage calculator, speed tiers, Smogon sets, and real tournament usage stats.',
+                title: 'PokeBuilder: Pokémon Team Builder for competitive teams',
+                description: 'PokeBuilder is a free Pokémon team builder: build and share competitive teams with a Pokédex, damage calculator, speed tiers, Smogon sets and tournament stats.',
             },
             pokedex: { title: 'Pokédex & Database', description: 'Search the full Pokédex, filter by type or generation, and view stats, movesets, and competitive usage details.' },
-            builder: { title: 'Team Builder', description: 'Build your competitive Pokémon team with live type coverage, speed checks, damage previews, and Smogon set suggestions.' },
+            builder: { title: 'Team Builder', description: 'The Pokémon team builder: build your competitive team with live type coverage, speed checks, damage previews, and Smogon set suggestions.' },
             meta: { title: 'Meta & Usage', description: 'Competitive Pokémon usage stats by format: the most used Pokémon and their moves, items, abilities, and teammates.' },
             tournaments: { title: 'Tournament Teams', description: 'Browse real competitive Pokémon VGC teams from major tournaments. Import them directly into the builder with one click.' },
             damageCalculator: { title: 'Damage Calculator', description: 'Calculate damage rolls between Pokémon using competitive VGC/Smogon formats. Fully integrated with active team editing.' },
@@ -3057,11 +3057,11 @@ export const TRANSLATIONS = {
         seo: {
             siteName: 'PokeBuilder',
             home: {
-                title: 'PokeBuilder: monte seu time Pokémon competitivo',
-                description: 'Monte e compartilhe times Pokémon competitivos com Pokédex completa, fraquezas do time, calculadora de dano, speed tiers, sets do Smogon e uso real em torneios.',
+                title: 'PokeBuilder: Pokémon Team Builder para times competitivos',
+                description: 'PokeBuilder é um Pokémon team builder grátis: monte e compartilhe times competitivos com Pokédex, calculadora de dano, speed tiers, sets do Smogon e dados de torneios.',
             },
             pokedex: { title: 'Pokédex completa', description: 'Pesquise a Pokédex completa, filtre por tipo ou geração e veja status base, fraquezas, golpes e uso competitivo de cada Pokémon.' },
-            builder: { title: 'Montador de times Pokémon', description: 'Monte seu time Pokémon competitivo e veja na hora a cobertura de tipos, as fraquezas, os speed tiers, a prévia de dano e sugestões de sets do Smogon.' },
+            builder: { title: 'Montador de times Pokémon', description: 'Pokémon team builder: monte seu time competitivo e veja na hora a cobertura de tipos, as fraquezas, os speed tiers, a prévia de dano e sugestões de sets do Smogon.' },
             meta: { title: 'Meta e uso competitivo', description: 'Estatísticas de uso competitivo por formato: os Pokémon mais usados e seus golpes, itens, habilidades e parceiros de time.' },
             tournaments: { title: 'Times de torneio', description: 'Veja times reais de VGC dos principais torneios e importe qualquer um para o montador com um clique.' },
             damageCalculator: { title: 'Calculadora de dano Pokémon', description: 'Calcule o dano entre Pokémon nos formatos competitivos de VGC e Smogon, integrada ao time que você está montando.' },
