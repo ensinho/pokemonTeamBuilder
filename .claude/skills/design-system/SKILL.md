@@ -5,6 +5,64 @@ description: Enforce the strict spacing grid, token vocabulary, restraint rules 
 
 # Design System — calm structure, living material
 
+## This branch: the Street Ghost theme (read first)
+
+`claude/theme-street-ghost` is a theme proposal (2026-10-26): **everything is
+a sticker**, in the language of the graffiti wordmark. Where it conflicts with
+the rules below, this section wins on this branch; the spacing grid, the
+token-only rule, the interaction tokens and the `.ds-screen` exception still
+hold unchanged.
+
+- **Palette.** Brand constants in `index.css` `:root` — `--sg-ink` #22084F,
+  `--sg-ink-deep` #0E0620, `--sg-paper` #FFF8E7, `--sg-volt` #7A2BFF,
+  `--sg-acid` #FFE600, `--sg-pink` #FF2E9A, `--sg-ink-muted`. They are the
+  wordmark's, theme-independent like the canon type colours. `dark` = Ink
+  ground / Night `#1A0B38` cards / paper text, primary Volt *lit* `#A774FF`
+  (raw Volt is 3.2:1 as text); `light` = paper ground / white cards / ink
+  text, primary Volt, accent `#7A5A00` (Acid is a fill, never text on paper).
+  `--color-echo` is Hot Pink as text (deep `#C2006B` on the light themes).
+  The other eight themes keep their colours and inherit everything else.
+- **Sticker = line + hard drop.** `--sticker` / `--sticker-sm` (3px / 2px of
+  `--sticker-line` = the theme's `--color-fg`: paper on dark, ink on light)
+  and `--sticker-shadow` (6px) / `-md` (4) / `-sm` (3) / `-xs` (2), offset,
+  never blurred, in `--sticker-drop` (#000 on dark themes, the ink on light).
+  `--elevation-*` are hard drops in every theme, so every `--shadow-*`
+  already is one; `--card-sheen` / `--surface-sheen` are drops too. Strokes
+  and drop offsets are px on purpose (hairline-class values).
+- **Press = pushed into the drop**: `translate` by the drop's offset and the
+  shadow to zero (`.btn` reads `--btn-drop`). Ghost and link still sink by
+  `--press-scale`. Never a lift on hover.
+- **Type: three voices.** `--font-brand` (Bungee, weight 400, always
+  `text-transform: uppercase`, `--tracking-brand`) for headings, nav, button
+  labels, tabs, segmented items, badges, section/modal titles. **This branch
+  deliberately breaks the sentence-case rule** for those. Space Grotesk stays
+  for prose and for *names* (Pokémon, trainers, teams — never Bungee);
+  JetBrains Mono for every figure. Bungee is wide: step a label one size
+  down when converting it, and check it at 390px.
+- **Shape.** Radius 8 / 12 / 18 / 24 (`--radius-sm/md/lg/xl`) + pills.
+- **Components.** `.btn-primary` Acid + ink + ink line; `-secondary` Volt +
+  paper + theme line; `-outline` surface + theme line; `-ghost` dashed (icon
+  ghosts lineless); type chip = solid canon colour, ink line, paper label with
+  an ink keyline (`text-shadow`) — the canon colour is never mixed; selected
+  segment / tab = Acid tape (`--tape-clip`); stat bars thick, outlined,
+  striped; Pokémon cards and filled team slots are **paper stickers** in every
+  theme (the paper scope re-points `--color-fg`/`--color-surface*` inside them
+  — see `street-ghost.css`); toast = Hot Pink sticker.
+- **Burst** (`--burst-clip`, an 18-point polygon; utility `.sg-burst`) only
+  behind identity and reward moments: the team score, the landing hero, the
+  check-in level, earned journey tiles and unlocked badges, the boot mark.
+  Never on a list of things.
+- **Rotation (±1–3°) only on decoration**: the landing stack and eyebrow,
+  badge emblems, the toast, the boot mark. Never a grid, table, form or list.
+- **Ground**: `--canvas-dots` is a two-lattice Volt halftone (desktop only, as
+  before); the rings are Hot Pink.
+- **Where it lives.** Tokens and the shared vocabulary: `index.css`. The
+  sticker layer over pre-vocabulary views (shell, landing, Home, builder,
+  Pokédex, toast, journeys, rewards, boot splash): `src/styles/street-ghost.css`,
+  loaded from `main.jsx` after `index.css`, every rule led by `html` so it
+  beats a lazy view's single-class rule. Add a new view's stickers there or,
+  better, build it from the vocabulary.
+
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
 few values, used everywhere, landing on a grid. Every rule below exists because
 breaking it produced a UI that read as *mole, solto e desconexo* (soft, loose,
