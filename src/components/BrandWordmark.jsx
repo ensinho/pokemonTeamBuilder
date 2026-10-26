@@ -21,7 +21,7 @@ export function BrandWordmark({ className = '', sizes = '10rem' }) {
             srcSet={`${SMALL} 480w, ${LARGE} 960w`}
             sizes={sizes}
             width={480}
-            height={153}
+            height={154}
             alt={SITE_NAME}
             decoding="async"
             draggable={false}
