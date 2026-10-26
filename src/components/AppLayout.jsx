@@ -1355,18 +1355,30 @@ export default function AppLayout() {
                             {/* Top: Gengar Logo + Title */}
                             <div className={`app-shell__brand ${isRailCollapsed ? 'is-collapsed' : ''}`}>
                                 <div className="app-shell__brand-main">
-                                    <img
-                                        src={import.meta.env.BASE_URL + 'logo-mark.webp'}
-                                        alt=""
-                                        className="app-shell__brand-logo cursor-pointer"
-                                        onClick={() => navigate('/')}
-                                        title={t('layout.goHome')}
-                                    />
+                                    {/* Expanded, the wordmark is the whole brand — the
+                                        Gengar icon beside it squeezed both (2026-10-26).
+                                        The 60px icon rail has no room for the wordmark,
+                                        so there the icon stands in for it. */}
+                                    {isRailCollapsed && (
+                                        <img
+                                            src={import.meta.env.BASE_URL + 'logo-mark.webp'}
+                                            alt=""
+                                            className="app-shell__brand-logo cursor-pointer"
+                                            onClick={() => navigate('/')}
+                                            title={t('layout.goHome')}
+                                        />
+                                    )}
                                     <div className={`app-shell__brand-copy ${isRailCollapsed ? 'is-hidden' : ''}`}>
-                                        {/* The PokemonBuilder wordmark (2026-10-26). Its alt
-                                            text is the heading's name. */}
+                                        {/* Its alt text is the heading's name. */}
                                         <h2 className="app-shell__brand-title">
-                                            <BrandWordmark className="app-shell__brand-wordmark" sizes="9rem" />
+                                            <button
+                                                type="button"
+                                                className="app-shell__brand-home"
+                                                onClick={() => navigate('/')}
+                                                title={t('layout.goHome')}
+                                            >
+                                                <BrandWordmark className="app-shell__brand-wordmark" sizes="10.5rem" />
+                                            </button>
                                         </h2>
                                     </div>
                                 </div>
