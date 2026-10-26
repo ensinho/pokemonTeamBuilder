@@ -1,7 +1,7 @@
 {
-  "name": "Pokémon Team Builder",
-  "short_name": "TeamBuilder",
-  "description": "Build and manage your perfect Pokémon team",
+  "name": "PokemonBuilder",
+  "short_name": "PokemonBuilder",
+  "description": "PokemonBuilder — the Pokémon team builder: build, analyse and share competitive teams",
   "icons": [
     { "src": "android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
