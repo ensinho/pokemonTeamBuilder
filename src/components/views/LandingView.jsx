@@ -9,7 +9,7 @@ import { analyzeTeam, rateTeam } from '../../utils/teamAnalysis';
 import { DEMO_POOL, DEMO_START, toggleDemoMember } from '../../utils/landing';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
-import { typeIcons } from '../../constants/types';
+import { typeColors, typeIcons } from '../../constants/types';
 import { TypeChip } from '../TypeChip';
 import { RollingNumber } from '../RollingNumber';
 import { AnimatedSprite } from '../AnimatedSprite';
@@ -36,6 +36,9 @@ import { LANGUAGES } from '../../utils/localePath';
 // the page).
 const STAGE_BACK = [727, 130, 598];
 const STAGE_FRONT = [6, 445, 282];
+// The front-centre Pokémon (Garchomp) leads the party: the stage's one spark
+// burst sits behind it, in its primary type's canon colour.
+const STAGE_LEAD_TYPE = 'dragon';
 
 function LandingStage() {
     const row = (ids, depth) => (
@@ -48,7 +51,7 @@ function LandingStage() {
         </div>
     );
     return (
-        <div className="landing-stage" aria-hidden="true">
+        <div className="landing-stage" aria-hidden="true" style={{ '--spark-color': typeColors[STAGE_LEAD_TYPE] }}>
             <span className="landing-stage__ball" />
             {row(STAGE_BACK, 'back')}
             {row(STAGE_FRONT, 'front')}

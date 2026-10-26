@@ -24,17 +24,27 @@
     padding-block: var(--space-2) var(--space-8);
 }
 
-/* ── Ink: the action voice of this page ────────────────────────────────── */
+/* ── Ink: the action voice of this page ──────────────────────────────────
+   Neon Sticker: the actions are the primary — Volt on its lip, the same
+   object as .btn-primary — in this page's round shape. */
 
 .cozy-home .cozy-ink {
     border-color: transparent;
     border-radius: var(--radius-full);
-    background: var(--color-fg);
-    color: var(--color-bg);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: var(--weight-semibold);
+    box-shadow: 0 3px 0 0 var(--color-primary-lip);
 }
 
 .cozy-home .cozy-ink:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-fg) 86%, var(--color-bg));
+    background: color-mix(in srgb, var(--color-primary) 88%, var(--color-fg));
+}
+
+.cozy-home .cozy-ink:active:not(:disabled) {
+    scale: none;
+    translate: 0 2px;
+    box-shadow: 0 1px 0 0 var(--color-primary-lip);
 }
 
 .cozy-home .cozy-ink svg,
@@ -109,10 +119,14 @@ button.cozy-chip:hover {
     font-family: var(--font-mono);
 }
 
+/* The streak is earned: Shiny Gold with ink, worn as a sticker (the one
+   chip on the page that is a reward, not a status). */
 .cozy-chip--streak {
-    --chip-tone: var(--color-warning);
-    background: color-mix(in srgb, var(--chip-tone) 22%, var(--color-surface));
-    color: color-mix(in srgb, var(--chip-tone) 30%, var(--color-fg));
+    --chip-tone: var(--brand-gold);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    font-family: var(--font-mono);
+    box-shadow: inset 0 0 0 2px var(--brand-ink), 3px 3px 0 0 var(--sticker-drop);
 }
 
 .cozy-chip__dot {
@@ -153,25 +167,9 @@ button.cozy-chip:hover {
     border-radius: var(--radius-full);
 }
 
-/* The thumb is ink, like the actions: the chosen section reads at a glance
-   on every theme, where an elevated-white thumb on a white track did not. */
-.cozy-home .cozy-tabs > .segmented__item[aria-pressed='true'] {
-    background: var(--color-fg);
-    color: var(--color-bg);
-    box-shadow: none;
-}
-
-@supports (anchor-scope: all) {
-    .cozy-home .cozy-tabs::before {
-        border-radius: var(--radius-full);
-        background: var(--color-fg);
-        box-shadow: none;
-    }
-
-    .cozy-home .cozy-tabs > .segmented__item[aria-pressed='true'] {
-        background: transparent;
-    }
-}
+/* Neon Sticker: the home's tabs are the system's — a pill track with the
+   Volt thumb (index.css). Only the track's ground differs: it sits on the
+   page, so it takes the surface. */
 
 /* ── 2. Hero: the trainer card ─────────────────────────────────────────── */
 
@@ -301,12 +299,14 @@ button.cozy-chip:hover {
     color: color-mix(in srgb, var(--hero-type) 45%, var(--color-fg));
 }
 
+/* An h2 in the heading face (Neon Sticker): Unbounded keeps its own
+   spacing — the mono's -0.045em made its letters collide. */
 .cozy-home .cozy-hero__title {
     margin: var(--space-1) 0 0;
     font-size: var(--text-3xl);
-    font-weight: var(--weight-semibold);
-    line-height: 1.05;
-    letter-spacing: -0.045em;
+    font-weight: var(--weight-heading);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
 }
 
 .cozy-hero__sub {
@@ -577,6 +577,12 @@ button.cozy-chip:hover {
     color: color-mix(in srgb, var(--day-tone) 45%, var(--color-fg));
 }
 
+/* Today's puzzle, still open: the live dot (new / happening now). */
+.cozy-day__eyebrow .live-dot {
+    margin-inline-end: var(--space-1_5);
+    vertical-align: 0.0625em;
+}
+
 /* "Play" is drawn as a button but the whole card is the control. */
 .cozy-home .cozy-day__go {
     pointer-events: none;
@@ -628,7 +634,7 @@ button.cozy-chip:hover {
 }
 
 .cozy-case i.is-on {
-    background: var(--color-warning);
+    background: var(--brand-gold);
 }
 
 /* Featured + compact (2026-10-06; the Champion took the feature on
@@ -860,10 +866,12 @@ button.cozy-chip:hover {
         height: 120%;
     }
 
+    /* The day's one battle is a moment: its title takes the heading face. */
     .cozy-day__card--feature .cozy-day__title {
-        font-family: var(--font-display);
+        font-family: var(--font-heading);
         font-size: var(--text-xl);
-        letter-spacing: -0.03em;
+        font-weight: var(--weight-heading);
+        letter-spacing: -0.015em;
     }
 
     .cozy-day__card--feature .cozy-day__sub {
@@ -1332,7 +1340,8 @@ button.cozy-journey__row:hover {
     }
 
     .cozy-home .cozy-hero__title {
-        font-size: clamp(var(--text-xl), (100cqi - min(38cqi, 15rem)) / 13, var(--text-3xl));
+        /* /14, not /13: Unbounded runs wider than the mono this was fitted to. */
+        font-size: clamp(var(--text-xl), (100cqi - min(38cqi, 15rem)) / 14, var(--text-3xl));
     }
 }
 
@@ -1400,6 +1409,12 @@ button.cozy-journey__row:hover {
     .cozy-hero__clock,
     .cozy-home .cozy-hero__title {
         padding-inline-end: 34%;
+    }
+
+    /* Unbounded is wider than the mono this headline was drawn in: a step
+       down keeps it to two or three lines beside the partner. */
+    .cozy-home .cozy-hero__title {
+        font-size: var(--text-2xl);
     }
 
     .cozy-hero__sub {
