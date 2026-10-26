@@ -38,7 +38,7 @@
 .st-verdict__row dd { margin: 0; }
 .st-verdict__chips { display: flex; flex-wrap: wrap; gap: var(--space-1_5); }
 .st-verdict__figure {
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);

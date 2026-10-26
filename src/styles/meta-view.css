@@ -44,7 +44,7 @@
     /* The value, then its label: "40.7%" is what the card is for, and it was
        the same 10px muted weight as the word "uso" beside it. */
     .meta-mon-card__value {
-        font-family: var(--font-display);
+        font-family: var(--font-mono);
         font-size: var(--text-sm);
         font-weight: var(--weight-semibold);
         color: var(--color-fg);

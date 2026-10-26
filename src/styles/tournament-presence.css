@@ -18,7 +18,7 @@
     color: var(--color-muted);
 }
 .tp__figure {
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);

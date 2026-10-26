@@ -135,7 +135,7 @@
 
 .greeting-selector__count {
     margin: 0 0 var(--space-2);
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--color-muted);
 }

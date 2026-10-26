@@ -2552,7 +2552,7 @@
 }
 
 .team-rating__score {
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-weight: var(--weight-semibold);
 }

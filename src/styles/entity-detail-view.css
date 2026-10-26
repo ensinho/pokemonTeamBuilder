@@ -192,7 +192,7 @@
     }
 
     .edv-stat__value {
-        font-family: var(--font-display);
+        font-family: var(--font-mono);
         font-weight: var(--weight-semibold);
     }
 

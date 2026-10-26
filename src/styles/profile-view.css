@@ -206,7 +206,7 @@
 
 .profile-stat dd {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;

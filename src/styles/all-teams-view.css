@@ -310,7 +310,7 @@
 }
 
 .all-teams-view__list-item-index {
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
