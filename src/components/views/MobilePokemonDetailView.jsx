@@ -266,7 +266,7 @@ export function MobilePokemonDetailView({
                     >
                         <div className="pdm-stats">
                             {selectedPokemonDetails.stats.map((stat) => (
-                                <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} />
+                                <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} peak={stat.base_stat === Math.max(...selectedPokemonDetails.stats.map((s) => s.base_stat))} />
                             ))}
                         </div>
                     </Section>

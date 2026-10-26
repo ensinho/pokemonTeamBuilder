@@ -213,7 +213,7 @@ export function PokemonDetailPanel({
                         <div className="rounded-xl bg-surface p-4 border border-border flex flex-col justify-between">
                             <h4 className="mb-3 text-center text-xs font-bold text-muted">{t('pokedex.baseStats')}</h4>
                             <div className="space-y-2 flex-1 flex flex-col justify-center">
-                                {selectedPokemonDetails.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
+                                {selectedPokemonDetails.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} peak={stat.base_stat === Math.max(...selectedPokemonDetails.stats.map((s) => s.base_stat))} />)}
                             </div>
                         </div>
                     </div>

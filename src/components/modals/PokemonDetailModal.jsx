@@ -261,7 +261,7 @@ export function PokemonDetailModal({
                             <h4 className="mb-3 text-center text-xs font-bold text-muted">{t('pokedex.baseStats')}</h4>
                             <div className="space-y-2 flex-1 flex flex-col justify-center">
                                 {pokemon.stats?.map((stat) => (
-                                    <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />
+                                    <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} peak={stat.base_stat === Math.max(...pokemon.stats.map((s) => s.base_stat))} />
                                 ))}
                             </div>
                         </div>

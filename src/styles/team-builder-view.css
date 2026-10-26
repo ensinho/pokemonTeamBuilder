@@ -187,15 +187,15 @@
     box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
+/* Keyboard focus wears the logo ring (Neon Sticker). */
 .team-builder-toggle:focus-visible,
 .team-builder-button:focus-visible,
 .team-builder-icon-button:focus-visible,
 .team-builder-type-button:focus-visible,
-.team-builder-slot:focus-visible,
 .team-builder-mobile-card:focus-visible,
 .team-builder-mobile-slot:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 /* Six slots on the team surface itself. No well around them: the card owns
@@ -217,11 +217,25 @@
     justify-content: center;
     gap: var(--space-1);
     border: 1px solid transparent;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     padding: var(--space-2) var(--space-1);
     text-align: center;
     background: var(--color-surface-raised);
     cursor: pointer;
+}
+
+/* Neon Sticker: a filled slot is a sticker — the team is the thing you hold.
+   The edge is inset (the slot never grows), the drop is its own shape. The
+   member open in the editor, and the slot under keyboard focus, add the logo
+   ring around it. */
+.team-builder-slot:not(.team-builder-slot--empty) {
+    box-shadow: var(--sticker);
+}
+
+.team-builder-slot.is-editing,
+.team-builder-slot:not(.team-builder-slot--empty):focus-visible {
+    outline: none;
+    box-shadow: var(--sticker), var(--ring-logo);
 }
 
 /* Hover states */
@@ -274,7 +288,7 @@
 .team-builder-recent-card:hover .team-builder-icon-button:not(.team-builder-icon-button--danger):not(.team-builder-icon-button--accent) {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-builder-recent-card:hover .team-builder-icon-button--danger {
@@ -374,6 +388,7 @@
 
 .team-builder-slot--empty {
     border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
     background: transparent;
     cursor: default;
 }
@@ -427,7 +442,7 @@
 .team-builder-button--inline {
     padding: var(--space-1_5) var(--space-2_5);
     font-size: var(--text-xs);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-builder-button--inline-compact {
@@ -838,7 +853,7 @@
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--color-fg);
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     letter-spacing: -0.02em;
@@ -920,7 +935,7 @@
     width: 1rem;
     height: 1rem;
     flex-shrink: 0;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .tb-core-row__label {
@@ -1230,7 +1245,7 @@
 .team-builder-mobile__filter-toggle.is-open {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-builder-mobile__filter-toggle:active {
@@ -1424,9 +1439,16 @@
     background: var(--color-bg);
 }
 
+/* A filled phone slot is a sticker too: the edge is its border (the type
+   ring's own border yields to it) plus a 2px inset, and the hard drop. */
 .team-builder-mobile-slot.is-filled {
     border-color: var(--color-primary);
     background: var(--color-surface);
+}
+
+.team-builder-mobile-slot.is-filled.tb-type-ring {
+    border-color: var(--sticker-edge) !important;
+    box-shadow: inset 0 0 0 2px var(--sticker-edge), 3px 3px 0 0 var(--sticker-drop);
 }
 
 .team-builder-mobile-slot.is-empty {
@@ -1995,7 +2017,7 @@
 .pokedex-mobile-iconbtn.is-active {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .pokedex-mobile-iconbtn.is-active-fav {
@@ -2211,7 +2233,7 @@
 .team-builder-mobile__saved-icon:active {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-builder-mobile__saved-icon-badge {
@@ -2310,7 +2332,7 @@
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     letter-spacing: 0;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     padding: var(--space-1) 0 var(--space-2);
     margin: var(--space-2) var(--space-1_5) var(--space-2_5);
     display: flex;

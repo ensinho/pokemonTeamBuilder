@@ -24,11 +24,14 @@ const STAT_LABELS = {
  * pale canon colour (Def's yellow, SpD's green) were the least legible numbers
  * in the app, and a 16px bar was the loudest thing on the Pokédex entry. The
  * bar keeps the canonical stat colour; it is information, not decoration.
+ *
+ * Neon Sticker (2026-10-26): the bars are Volt and `peak` — the Pokémon's
+ * highest base stat — is Shiny Gold, the one figure on the entry it earned.
  */
-export const StatBar = ({ stat, value, max = 255 }) => {
+export const StatBar = ({ stat, value, max = 255, peak = false }) => {
     const pct = Math.max(2, Math.min(100, (value / max) * 100));
     return (
-        <div className="stat-bar" style={{ '--stat-color': `var(${STAT_VAR[stat] ?? '--stat-hp'})` }}>
+        <div className={`stat-bar ${peak ? 'stat-bar--peak' : ''}`} style={{ '--stat-color': `var(${STAT_VAR[stat] ?? '--stat-hp'})` }}>
             <span className="stat-bar__label">{STAT_LABELS[stat] ?? stat.replace('-', ' ')}</span>
             <span className="stat-bar__value">{value}</span>
             <span className="stat-bar__track" aria-hidden="true">
