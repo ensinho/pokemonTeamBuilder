@@ -1185,22 +1185,22 @@ export default function AppLayout() {
         return (
             <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
                 <div className="boot-splash w-full max-w-xs text-center">
-                    <img
-                        src={import.meta.env.BASE_URL + 'logo-mark.webp'}
-                        alt=""
-                        className="mx-auto w-28 h-auto"
-                    />
+                    <span className="boot-splash__mark sg-burst">
+                        <img
+                            src={import.meta.env.BASE_URL + 'logo-mark.webp'}
+                            alt=""
+                            className="mx-auto w-28 h-auto"
+                        />
+                    </span>
                     <BrandWordmark className="mx-auto mt-4 block w-48 h-auto" sizes="12rem" />
                     <div
-                        className="mt-5 h-1 w-full overflow-hidden rounded-full"
-                        style={{ backgroundColor: colors.cardLight }}
+                        className="boot-splash__track mt-5 w-full overflow-hidden"
                         aria-hidden="true"
                     >
                         <span
-                            className="block h-full rounded-full"
+                            className="boot-splash__fill block h-full rounded-full"
                             style={{
                                 width: `${authSplashProgress}%`,
-                                backgroundColor: colors.primary,
                                 transition: `width ${splashBar.durationMs}ms ease-out`,
                             }}
                         />

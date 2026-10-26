@@ -1,0 +1,665 @@
+/* ============================================================
+   STREET GHOST — the sticker layer over the app's own views
+   (theme proposal, 2026-10-26; tokens in index.css)
+
+   index.css turned the shared vocabulary into stickers (.btn, .segmented,
+   .tabs, .badge, .card, .type-chip, fields, dialogs, menus). This file
+   carries the same language onto the surfaces that predate that vocabulary
+   — the shell, the landing, Home, the builder, the Pokédex, the toast, the
+   journey and reward badges — and nothing else. Layout is untouched: only
+   lines, drops, fills, faces and the burst.
+
+   Loaded from main.jsx after index.css. Lazy views append their own
+   stylesheets later, so every rule here leads with `html` (one element of
+   specificity) to beat the single-class rule it restyles. Only tokens —
+   no raw colour; the brand constants are --sg-*.
+   ============================================================ */
+
+/* ---- Utilities -------------------------------------------------------------
+   .sg-burst: an Acid burst behind whatever it wraps (a score, a level, a
+   mark). The element keeps its own box; the burst is a ::before cut with
+   --burst-clip and sized past the box by --burst-bleed. */
+.sg-burst {
+    --burst-bleed: 35%;
+    --burst-fill: var(--sg-acid);
+    position: relative;
+    isolation: isolate;
+}
+
+.sg-burst::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--burst-bleed));
+    z-index: -1;
+    background: var(--burst-fill);
+    clip-path: var(--burst-clip);
+    pointer-events: none;
+}
+
+/* A sticker made of paper, in every theme: the theme's own tokens are
+   re-pointed inside it, so its children (names, dex numbers, quiet icons)
+   keep using --color-fg / --color-muted and come out as ink on paper. */
+html :is(.pokemon-card, .team-builder-mobile-card, .team-builder-slot:not(.team-builder-slot--empty), .team-builder-mobile-slot.is-filled, .landing-pick) {
+    --color-fg: var(--sg-ink);
+    --color-muted: var(--sg-ink-muted);
+    --color-fg-secondary: var(--sg-ink);
+    --color-bg: color-mix(in srgb, var(--sg-ink) 10%, var(--sg-paper));
+    --color-surface: var(--sg-paper);
+    --color-surface-raised: var(--sg-paper);
+    --color-surface-hover: color-mix(in srgb, var(--sg-acid) 18%, var(--sg-paper));
+    --color-surface-active: color-mix(in srgb, var(--sg-acid) 28%, var(--sg-paper));
+    --sticker-line: var(--sg-ink);
+}
+
+/* ---- Region panels and cards ------------------------------------------------
+   The panels that take --surface-sheen (index.css) are the big stickers of
+   the desktop layout: they get the full outline to go with the drop. Below
+   1024px a panel *is* the page (no box), so it stays bare there. */
+@media (min-width: 1024px) {
+    html :is(
+        .hd-panel, .hd-quick-rail,
+        .home-panel, .home-readme-panel, .home-profile-sidebar-card, .home-shortcuts-sidebar-card,
+        .team-builder-panel, .all-teams-view__card,
+        .battle-panel, .battle-header, .edv-header, .edv-section,
+        .forum-right-card, .forum-new-topic-card, .friends-invite,
+        .pdv__identity, .pdv__panel, .profile-hero,
+        .dmg-card, .dmg-result, .trn-card
+    ) {
+        border: var(--sticker);
+    }
+}
+
+/* The cards that take --card-sheen are smaller stickers: a 2px line. */
+html :is(
+    .meta-mon-card, .team-builder-recent-card,
+    .forum-sidebar-card,
+    .friend-card, .battle-card, .pokepuzzle-tip-card, .pokepuzzle-history__item
+) {
+    border: var(--sticker-sm);
+}
+
+/* ---- Shell: the rail ------------------------------------------------------- */
+html .app-shell__sidebar {
+    border-right: var(--sticker);
+}
+
+/* Nav labels are sticker captions. Bungee is wide, so the rail's labels run
+   one step smaller than the sans they replace, and a long one ("Champion
+   Challenge") may take two lines rather than be cut. */
+html .app-shell__nav-text {
+    font-family: var(--font-brand);
+    font-size: var(--text-2xs);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+    line-height: 1.15;
+}
+
+/* Section heads are the echo: Hot Pink, caps, like the wordmark's outer
+   stroke. */
+html :is(.app-shell__nav-group-heading, .app-shell__nav-group-label) {
+    font-family: var(--font-brand);
+    font-size: var(--text-2xs);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-echo);
+}
+
+/* The current page is a Volt sticker stuck on the rail: paper type, the
+   theme's line, the small drop. */
+html .app-shell__nav-link.is-active {
+    background: var(--sg-volt);
+    color: var(--sg-paper);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line), var(--sticker-shadow-xs);
+}
+
+html .app-shell__nav-link.is-active .app-shell__nav-icon {
+    color: var(--sg-paper);
+}
+
+html .app-shell__nav-badge {
+    background: var(--sg-pink);
+    color: var(--sg-ink);
+    box-shadow: inset 0 0 0 1.5px var(--sg-ink);
+    font-family: var(--font-mono);
+}
+
+/* ---- Shell: the header ----------------------------------------------------- */
+html .app-shell__header-title {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+html .app-shell__search-trigger {
+    border: var(--sticker-sm);
+    box-shadow: var(--sticker-shadow-sm);
+}
+
+html .app-shell__search-trigger > kbd {
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+    box-shadow: inset 0 0 0 1.5px var(--sg-ink);
+}
+
+/* The header's icon buttons (theme toggle, account) are small stickers. */
+html .app-shell__header .app-shell__icon-button {
+    border: var(--sticker-sm);
+    box-shadow: var(--sticker-shadow-xs);
+}
+
+/* ---- Shell: the phone dock ------------------------------------------------- */
+html .app-shell__tabbar {
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 var(--sticker-w) var(--sticker-line), var(--sticker-shadow-md);
+}
+
+
+/* The dock's cells are too narrow for Bungee ("Pokédex" at 11px is wider
+   than a fifth of a 390px dock), so its labels keep the sans — in caps, the
+   sticker's register. */
+html .app-shell__tab-label {
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* The current tab: an Acid sticker, ink glyph and label. */
+html .app-shell__tab.is-active {
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sg-ink);
+}
+
+/* ---- Shell: the phone's "Mais" sheet --------------------------------------- */
+html .more-tile__label {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+html .more-tile__icon {
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line), var(--sticker-shadow-xs);
+}
+
+html .more-tile.is-active .more-tile__icon {
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+}
+
+html .more-sheet__section-title {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-echo);
+}
+
+/* ---- The guest card in the rail ---------------------------------------------
+   Two buttons side by side in a 12.5rem rail: Bungee caps do not fit on one
+   line there, so the rail's pair runs a step smaller and may wrap. Home and
+   the phone sheet have the room and keep the normal size. */
+html .guest-card:not(.guest-card--home, .guest-card--sheet) .guest-card__actions .btn {
+    height: auto;
+    min-height: var(--control-h-md);
+    padding: var(--space-1) var(--space-1_5);
+    font-size: var(--text-2xs);
+    letter-spacing: 0;
+    line-height: 1.1;
+    white-space: normal;
+}
+
+/* ---- Empty state ----------------------------------------------------------- */
+html .empty-state__title {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+/* ---- Pokémon cards: paper stickers ----------------------------------------- */
+html .pokemon-card {
+    border: var(--sticker-sm);
+    background: var(--sg-paper);
+    box-shadow: var(--sticker-shadow-md);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-press) var(--ease-out),
+                translate var(--duration-press) var(--ease-out);
+}
+
+html .pokemon-card:hover {
+    background: color-mix(in srgb, var(--sg-acid) 18%, var(--sg-paper));
+    box-shadow: var(--sticker-shadow);
+}
+
+/* Pressed into its drop. */
+html .pokemon-card:active {
+    background: color-mix(in srgb, var(--sg-acid) 28%, var(--sg-paper));
+    translate: 3px 3px;
+    box-shadow: var(--sticker-shadow-xs);
+}
+
+html .pokemon-card--selected,
+html .pokemon-card--selected:hover {
+    background: color-mix(in srgb, var(--sg-volt) 16%, var(--sg-paper));
+    border-color: var(--sg-volt);
+    box-shadow: inset 0 0 0 1px var(--sg-volt), var(--sticker-shadow-md);
+}
+
+html .pokemon-card:focus-visible {
+    box-shadow: var(--ring-focus), var(--sticker-shadow-md);
+}
+
+/* A name is a name: the sans, never the sticker caps. */
+html .pokemon-card__name {
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
+}
+
+html .pokemon-card__favorite.is-active {
+    color: var(--sg-pink);
+}
+
+/* The phone's Pokédex / builder grid: the same paper stickers, smaller drop
+   (three to a row). */
+/* Scoped like the rules they restyle (the Pokédex grid, the phone builder),
+   which set their own fill and drop the shadow. */
+html :is(.pokedex-mobile-grid, .team-builder-mobile, .team-builder) .team-builder-mobile-card {
+    border: var(--sticker-sm);
+    background: var(--sg-paper);
+    box-shadow: var(--sticker-shadow-sm);
+}
+
+html :is(.pokedex-mobile-grid, .team-builder-mobile, .team-builder) .team-builder-mobile-card:active {
+    background: var(--color-surface-active);
+    translate: 2px 2px;
+    box-shadow: var(--sticker-shadow-xs);
+}
+
+html :is(.pokedex-mobile-grid, .team-builder-mobile, .team-builder) .team-builder-mobile-card:is(.is-suggested, .is-synergy) {
+    background: color-mix(in srgb, var(--sg-acid) 14%, var(--sg-paper));
+}
+
+/* ---- Builder and Pokédex fields and small controls -------------------------- */
+html :is(.team-builder-field, .team-builder-toggle) {
+    border: var(--sticker-sm);
+    box-shadow: var(--sticker-shadow-sm);
+}
+
+html :is(.team-builder-field, .team-builder-toggle):focus {
+    border-color: var(--color-primary);
+}
+
+html :is(.pokedex-mobile-iconbtn, .team-builder-button, .team-builder-icon-button) {
+    border: var(--sticker-sm);
+    box-shadow: var(--sticker-shadow-xs);
+}
+
+/* ---- Team builder ---------------------------------------------------------- */
+html .team-builder-slot:not(.team-builder-slot--empty) {
+    border: var(--sticker-sm);
+    background: var(--sg-paper);
+    box-shadow: var(--sticker-shadow-sm);
+}
+
+html .team-builder-slot:not(.team-builder-slot--empty):hover,
+html .team-builder-slot:not(.team-builder-slot--empty):focus-within {
+    background: color-mix(in srgb, var(--sg-acid) 18%, var(--sg-paper));
+}
+
+/* An empty slot stays dashed — dashed still means "empty" — but in the
+   sticker's weight. */
+html .team-builder-slot--empty,
+html .team-builder-mobile-slot.is-empty {
+    border: var(--sticker-w-sm) dashed color-mix(in srgb, var(--sticker-line) 45%, transparent);
+}
+
+html .team-builder-mobile-slot.is-filled {
+    border: var(--sticker-sm);
+    background: var(--sg-paper);
+    box-shadow: var(--sticker-shadow-xs);
+}
+
+/* The team score: an Acid burst behind the figure, ink on it. */
+html .team-rating__score {
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.75rem;
+    color: var(--sg-ink);
+}
+
+html .team-rating__score::before {
+    content: '';
+    position: absolute;
+    inset: -45%;
+    z-index: -1;
+    background: var(--sg-acid);
+    clip-path: var(--burst-clip);
+}
+
+/* ---- Landing --------------------------------------------------------------- */
+html .landing-title {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    font-synthesis: none;
+    font-size: calc(var(--text-3xl) * 1.05);
+    line-height: 1.02;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    max-width: 18ch;
+}
+
+/* The eyebrow is a pink tag stuck above the title. */
+html .landing-eyebrow {
+    padding: var(--space-1) var(--space-2_5);
+    border: var(--sticker-w-sm) solid var(--sg-ink);
+    border-radius: var(--radius-full);
+    background: var(--sg-pink);
+    color: var(--sg-ink);
+    box-shadow: var(--sticker-shadow-xs);
+    font-family: var(--font-brand);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-brand);
+    rotate: -2deg;
+}
+
+html .landing-eyebrow__dot {
+    background: var(--sg-ink);
+}
+
+/* The hero stack: a big Acid burst behind the stage with a Hot Pink echo
+   offset under it, and the two rows of Pokémon tilted a little each way —
+   the one place on the page that is allowed to lean. */
+html .landing-stage {
+    isolation: isolate;
+}
+
+html .landing-stage::before,
+html .landing-stage::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: min(25rem, 90%);
+    aspect-ratio: 1;
+    clip-path: var(--burst-clip);
+    pointer-events: none;
+}
+
+html .landing-stage::before {
+    z-index: -3;
+    translate: calc(-50% + 0.75rem) calc(-50% + 0.75rem);
+    rotate: 8deg;
+    background: var(--sg-pink);
+}
+
+html .landing-stage::after {
+    z-index: -2;
+    translate: -50% -50%;
+    background: var(--sg-acid);
+}
+
+/* The Poké Ball is a sticker on the burst: a Volt top (the wordmark's fill),
+   a paper bottom, ink lines. */
+html .landing-stage__ball {
+    z-index: -1;
+    width: min(16rem, 58%);
+    border: var(--sticker-w) solid var(--sg-ink);
+    background: linear-gradient(to bottom, var(--sg-volt) 50%, var(--sg-paper) 50%);
+    box-shadow: var(--sticker-shadow);
+}
+
+html .landing-stage__ball::before {
+    height: var(--sticker-w);
+    background: var(--sg-ink);
+}
+
+html .landing-stage__ball::after {
+    border: var(--sticker-w) solid var(--sg-ink);
+    background: var(--sg-paper);
+}
+
+html .landing-stage__row--back { rotate: -2deg; }
+html .landing-stage__row--front { rotate: 1.5deg; }
+
+html .landing-stage__slot::after {
+    background: color-mix(in srgb, var(--sg-ink) 28%, transparent);
+}
+
+html .landing-demo {
+    border: var(--sticker);
+    box-shadow: var(--sticker-shadow);
+}
+
+html .landing-pick {
+    border: var(--sticker-sm);
+    background: var(--sg-paper);
+    color: var(--sg-ink-muted);
+    box-shadow: var(--sticker-shadow-xs);
+}
+
+html .landing-pick:hover {
+    background: color-mix(in srgb, var(--sg-acid) 18%, var(--sg-paper));
+    color: var(--sg-ink);
+}
+
+html .landing-pick[aria-pressed='true'] {
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+    box-shadow: var(--sticker-shadow-sm);
+}
+
+html .landing-pick__name {
+    font-family: var(--font-body);
+}
+
+/* The demo's score: the figure on an Acid burst. */
+html .landing-demo__score {
+    position: relative;
+    isolation: isolate;
+    width: max-content;
+    padding: var(--space-1) var(--space-2);
+    color: var(--sg-ink);
+}
+
+html .landing-demo__score::before {
+    content: '';
+    position: absolute;
+    inset: -40% -18%;
+    z-index: -1;
+    background: var(--sg-acid);
+    clip-path: var(--burst-clip);
+}
+
+html .landing-demo__score span {
+    color: var(--sg-ink);
+}
+
+html .landing-feature {
+    border: var(--sticker);
+    box-shadow: var(--sticker-shadow-md);
+}
+
+html .landing-feature:hover {
+    border-color: var(--sticker-line);
+    box-shadow: var(--sticker-shadow);
+}
+
+html .landing-feature__kicker {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-echo);
+}
+
+html .landing-feature__cta {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+html :is(.landing-section-title, .landing-feature__title) {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+/* ---- Home (cozy) ----------------------------------------------------------- */
+html .cozy-hero {
+    border: var(--sticker);
+    box-shadow: var(--sticker-shadow);
+}
+
+/* The day's featured card (the Champion Challenge) is titled like a poster. */
+html .cozy-day__card--feature .cozy-day__title {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+html .cozy-chip {
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line), var(--sticker-shadow-xs);
+}
+
+/* ---- Toast: a Hot Pink sticker --------------------------------------------- */
+html .toast {
+    border: var(--sticker-w) solid var(--sg-ink);
+    background: var(--sg-pink);
+    box-shadow: var(--sticker-shadow);
+    /* Slapped on, a degree off true. `rotate` is its own property, so it
+       composes with the swipe's `translate`. */
+    rotate: -1deg;
+    --color-fg: var(--sg-ink);
+    --color-muted: color-mix(in srgb, var(--sg-ink) 82%, var(--sg-pink));
+    --color-surface-hover: color-mix(in srgb, var(--sg-ink) 12%, var(--sg-pink));
+}
+
+html .toast__title {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+html .toast__icon {
+    background: var(--sg-ink);
+    color: color-mix(in srgb, var(--toast-accent) 55%, var(--sg-paper));
+}
+
+html .toast__action.primary {
+    border: var(--sticker-w-sm) solid var(--sg-ink);
+    background: var(--sg-acid);
+    color: var(--sg-ink);
+    box-shadow: var(--sticker-shadow-xs);
+    font-family: var(--font-brand);
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+html .toast__action.primary:hover {
+    background: color-mix(in srgb, var(--sg-acid) 88%, var(--sg-pink));
+}
+
+html .toast__action.ghost {
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sg-ink);
+    color: var(--sg-ink);
+}
+
+html .toast__timer {
+    background: var(--sg-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html .toast { rotate: none; }
+}
+
+/* ---- Journeys and rewards: badges on bursts -------------------------------- */
+html .journey__tile.is-current {
+    background: var(--sg-volt);
+    color: var(--sg-paper);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line), var(--sticker-shadow-xs);
+}
+
+/* An earned level, an unlocked badge, a badge up close: the emblem stands on
+   an Acid burst, a degree or two off true — decoration, so it may lean. */
+html :is(.journey__tile.is-earned, .badge-tile.is-unlocked .badge-tile__emblem, .badge-detail__emblem:not(.is-locked)) {
+    position: relative;
+    isolation: isolate;
+    rotate: -2deg;
+}
+
+html :is(.journey__tile.is-earned, .badge-tile.is-unlocked .badge-tile__emblem, .badge-detail__emblem:not(.is-locked))::before {
+    content: '';
+    position: absolute;
+    inset: -14%;
+    z-index: -1;
+    background: var(--sg-acid);
+    clip-path: var(--burst-clip);
+}
+
+html .badge-group__grid > :nth-child(even) .badge-tile__emblem { rotate: 2deg; }
+
+html :is(.journey__title, .badge-tile__name, .journey-mini__title) {
+    font-family: var(--font-brand);
+    font-weight: 400;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+}
+
+/* Badge names sit five to a row under their emblems; in Bungee caps they
+   need the micro size or neighbours touch ("Tactician Familiar Face"). */
+html .badge-tile__name {
+    font-size: var(--text-2xs);
+    letter-spacing: 0;
+}
+
+/* The trainer level on the check-in card: the figure on a burst. */
+html .checkin__level-value {
+    position: relative;
+    isolation: isolate;
+    color: var(--sg-ink);
+}
+
+html .checkin__level-value::before {
+    content: '';
+    position: absolute;
+    inset: -45% -70%;
+    z-index: -1;
+    background: var(--sg-acid);
+    clip-path: var(--burst-clip);
+}
+
+/* ---- Boot splash ----------------------------------------------------------- */
+html .boot-splash__mark {
+    --burst-bleed: 18%;
+    display: block;
+    width: 7rem;
+    margin-inline: auto;
+    rotate: -3deg;
+}
+
+html .boot-splash__track {
+    height: 0.75rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line), var(--sticker-shadow-xs);
+}
+
+html .boot-splash__fill {
+    background:
+        repeating-linear-gradient(-45deg, color-mix(in srgb, var(--sg-ink) 22%, transparent) 0 0.25rem, transparent 0.25rem 0.5rem),
+        var(--sg-acid);
+    box-shadow: inset 0 0 0 var(--sticker-w-sm) var(--sticker-line);
+}

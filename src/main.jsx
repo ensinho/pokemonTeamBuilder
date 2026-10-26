@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css' // <-- ADICIONE ESTA LINHA
 import './styles/motion.css' // shared entrance/hover motion utilities
 import './styles/interactions.css' // design system v2: switch, check, loader, rolling figures, theme reveal
+import './styles/street-ghost.css' // Street Ghost theme: the sticker layer over the views (tokens in index.css)
 import { applyTheme } from './constants/theme'
 import { LocaleRouter } from './components/LocaleRouter'
 import { useLanguageStore } from './store/useLanguageStore'
