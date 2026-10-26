@@ -275,8 +275,26 @@
 .app-shell__brand-wordmark {
     display: block;
     width: 100%;
-    max-width: 9rem;
+    max-width: 10.5rem;
     height: auto;
+}
+
+/* The wordmark is the way home, as the icon was. A bare button so it is
+   reachable by keyboard; it adds no box of its own. */
+.app-shell__brand-home {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+/* Alone in the band (no icon beside it), the wordmark runs the rail's full
+   width — ~2.6rem tall at 10.5rem — so the band gives it one step more room
+   top and bottom than the header's 0.75rem. */
+.app-shell__brand:not(.is-collapsed) {
+    padding-block: var(--space-2);
 }
 
 /* Quiet at rest, present on hover. It is chrome for the chrome — it should never
