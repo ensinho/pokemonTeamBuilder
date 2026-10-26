@@ -162,6 +162,13 @@
     --toast-accent: var(--color-info);
 }
 
+/* A live event (Neon Sticker): calm like any toast, with the pink live dot
+   before its title — new, happening now. */
+.toast__live {
+    margin-inline-end: var(--space-2);
+    vertical-align: 0.0625em;
+}
+
 .toast__sprite {
     width: 1.75rem;
     height: 1.75rem;

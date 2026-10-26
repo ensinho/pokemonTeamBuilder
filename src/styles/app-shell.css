@@ -626,9 +626,11 @@
 
 /* Active is a fill and nothing else — no accent bar, no weight bump, no border.
    The row is already at foreground colour, so the fill is the whole signal, and
-   one fill is enough for a list where exactly one item is ever selected. */
+   one fill is enough for a list where exactly one item is ever selected.
+   Neon Sticker: the fill is a breath of Volt and the glyph takes the Volt ink,
+   so "you are here" is the rail's one accent. */
 .app-shell__nav-link.is-active {
-    background: var(--color-surface-active);
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav,
@@ -675,9 +677,12 @@
 }
 
 .app-shell__nav-link:hover .app-shell__nav-icon,
-.app-shell__nav-link.is-active .app-shell__nav-icon,
 .app-shell__account-button:hover .app-shell__nav-icon {
     color: var(--color-fg);
+}
+
+.app-shell__nav-link.is-active .app-shell__nav-icon {
+    color: var(--color-primary-text);
 }
 
 /* Pending-count badge on a nav entry (e.g. incoming friend requests). */
@@ -690,8 +695,11 @@
     margin-left: auto;
     padding: 0 var(--space-1);
     border-radius: var(--radius-full);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    /* A count of things waiting on you (friend requests, your-turn battles):
+       live, so Live Pink with ink. */
+    background: var(--brand-live);
+    color: var(--brand-on-live);
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
@@ -706,7 +714,7 @@
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
-    background: var(--color-primary);
+    background: var(--brand-live);
     border: 1.5px solid var(--color-surface);
 }
 
@@ -883,7 +891,7 @@
 .app-shell__account-menu-trigger.is-open {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .app-shell__account-menu-trigger.is-open svg {
@@ -1169,7 +1177,7 @@
     justify-content: center;
     border-radius: var(--radius-md);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .app-shell__account-menu-item-icon svg {
@@ -1282,7 +1290,7 @@
 }
 
 .app-shell__account-theme-group-tag--light {
-    color: var(--color-accent);
+    color: var(--color-fg-secondary);
 }
 
 .app-shell__account-theme-group-icon {
@@ -1316,7 +1324,7 @@
 .app-shell__account-header-trigger:hover svg,
 .app-shell__account-header-trigger.is-open svg {
     transform: rotate(45deg);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Mobile drawer account card acting as a direct link to the profile page */
@@ -1351,7 +1359,7 @@
 
 .app-shell__account-summary-block.is-shortcut:hover .app-shell__account-summary-chevron {
     transform: translateX(2px);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* One-line rationale under a settings row — used where the setting's name isn't
@@ -1646,7 +1654,7 @@
 /* Liked: the one state worth marking, in the heart and the count only. */
 .app-shell__nav-link.is-liked .app-shell__nav-icon,
 .app-shell__nav-link.is-liked .app-shell__nav-trailing {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Credit line closing the section: quiet text on the row inset, the two links
@@ -1884,16 +1892,24 @@
 
 .empty-state__title {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-heading);
     font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-heading);
     line-height: var(--leading-snug);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     color: var(--color-fg);
 }
 
 .empty-state.is-compact .empty-state__title {
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
     font-size: var(--text-base);
+}
+
+/* A full empty state is a moment (brand layer): its own sprite is a sticker. */
+.empty-state:not(.is-compact) img.empty-state__illustration {
+    opacity: 1;
+    filter: var(--sticker-filter);
 }
 
 .empty-state__message {
@@ -2045,12 +2061,13 @@
     scale: 0.9;
 }
 
-/* The indicator is the whole cell, a tinted lozenge under icon and label — the
-   current tab says where you are in shape as well as colour (WCAG 1.4.1). Tinted,
-   never filled: the dock's one accent stays quiet. */
+/* The indicator is the whole cell, a lozenge under icon and label — the
+   current tab says where you are in shape as well as colour (WCAG 1.4.1).
+   Neon Sticker: the lozenge is the Volt thumb of a segmented control, the
+   dock's one accent, with on-primary ink. */
 .app-shell__tab.is-active {
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
+    color: var(--color-on-primary);
+    background: var(--color-primary);
 }
 
 .app-shell__tab-icon {
@@ -2238,9 +2255,22 @@
 /* Boot splash: invisible for its first 300ms, so a boot that is ready by then
    never shows it — the page just paints. The delay must equal
    SPLASH_REVEAL_MS in src/utils/bootSplash.js, which times the hold from the
-   moment the splash could first have been seen (2026-10-06). */
+   moment the splash could first have been seen (2026-10-06).
+   Neon Sticker: the mark and the wordmark stand in a soft pool of Volt — the
+   wordmark's own glow, static (nothing here loops). */
 .boot-splash {
+    position: relative;
+    isolation: isolate;
     animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 300ms both;
+}
+
+.boot-splash::before {
+    content: '';
+    position: absolute;
+    inset: -40% -30% 10%;
+    z-index: -1;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--color-primary) 28%, transparent), transparent);
+    pointer-events: none;
 }
 
 /* Same idea for a lazy route's loader: under ~200ms nobody needs to be told

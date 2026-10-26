@@ -10,9 +10,11 @@ import { create } from 'zustand';
 
    Shape of a toast:
      { id, severity, title, description, spriteUrl, actions, duration,
-       closable, phase }
+       closable, live, phase }
 
      severity  'success' | 'error' | 'warning' | 'info'
+     live      true for a live event (a friend's battle turn arriving): the
+               toast stays calm and carries the pink live dot
      title     the one line that must be readable at a glance
      description  optional second line — context, never the message itself
      actions   [{ label, onClick, variant, keepOpen }] — max 2, see below
@@ -99,6 +101,7 @@ const normalize = (message, type, options) => {
         title: opts.title ?? message ?? '',
         description: opts.description ?? null,
         spriteUrl: opts.spriteUrl ?? null,
+        live: opts.live === true,
         actions,
         duration,
         closable: opts.closable !== false,

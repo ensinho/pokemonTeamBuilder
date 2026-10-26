@@ -120,7 +120,7 @@
 /* Where you are. The page's one accent in the sheet. */
 .more-tile.is-active .more-tile__icon {
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* A shortcut card: the whole card is the object, filled like the account row
@@ -158,11 +158,11 @@
 
 .more-tile.more-tile--featured.is-active {
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .more-tile--featured.is-active .more-tile__label {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .more-tile__label {
@@ -171,11 +171,12 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    font-family: var(--font-display);
+    /* A label you operate: the body face (Neon Sticker keeps mono for figures). */
+    font-family: var(--font-body);
     font-size: var(--text-2xs);
     font-weight: var(--weight-medium);
     line-height: 1.25;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.01em;
     text-align: center;
     overflow-wrap: break-word;
     color: var(--color-fg);
@@ -191,8 +192,9 @@
     height: 1.125rem;
     padding: 0 var(--space-1);
     border-radius: var(--radius-full);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    /* Waiting on you: live. */
+    background: var(--brand-live);
+    color: var(--brand-on-live);
     font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
