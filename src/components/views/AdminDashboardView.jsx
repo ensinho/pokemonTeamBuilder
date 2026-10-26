@@ -23,8 +23,8 @@ import {
 } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const DEFAULT_REPLY_SUBJECT = 'Thanks for your Pokemon Team Builder suggestion';
-const DEFAULT_REPLY_MESSAGE = 'I really appreciate you taking the time to help improve Pokemon Team Builder. Your feedback helps me decide what to polish next.';
+const DEFAULT_REPLY_SUBJECT = 'Thanks for your PokeBuilder suggestion';
+const DEFAULT_REPLY_MESSAGE = 'I really appreciate you taking the time to help improve PokeBuilder. Your feedback helps me decide what to polish next.';
 const SUGGESTIONS_LIMIT = 100;
 
 const makeAssetUrl = (assetUrl) => {
@@ -114,14 +114,14 @@ const buildReplyTemplate = ({ suggestion, author, subject, message, background, 
     const backgroundUrl = makeAssetUrl(background?.url || SHARE_BACKGROUNDS[0]?.url || '');
     const authorName = author.name || 'Trainer';
     const suggestionText = suggestion?.text || '';
-    const pageLabel = suggestion?.pageTitle || suggestion?.page || 'Pokemon Team Builder';
+    const pageLabel = suggestion?.pageTitle || suggestion?.page || 'PokeBuilder';
     const defaultMsg = t ? t('admin.defaultMessage') : DEFAULT_REPLY_MESSAGE;
     const replyMessage = message.trim() || defaultMsg;
 
     const plainText = [
         t ? t('admin.emailGreeting', { name: authorName }) : `Hi ${authorName},`,
         '',
-        t ? t('admin.emailThankYou') : 'Thank you for sending this suggestion to Pokemon Team Builder:',
+        t ? t('admin.emailThankYou') : 'Thank you for sending this suggestion to PokeBuilder:',
         `"${suggestionText}"`,
         '',
         replyMessage,
@@ -140,8 +140,8 @@ const buildReplyTemplate = ({ suggestion, author, subject, message, background, 
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;border-radius:18px;overflow:hidden;background:#ffffff;box-shadow:0 20px 45px rgba(0,0,0,0.28);">
             <tr>
               <td style="background-image:linear-gradient(135deg,rgba(17,24,39,0.38),rgba(17,24,39,0.78)),url('${escapeHtml(backgroundUrl)}');background-size:cover;background-position:center;padding:32px 28px;color:#ffffff;">
-                <img src="${escapeHtml(logoUrl)}" width="76" alt="Pokemon Team Builder" style="display:block;border:0;margin-bottom:18px;" />
-                <div style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;font-weight:700;opacity:0.86;">Pokemon Team Builder</div>
+                <img src="${escapeHtml(logoUrl)}" width="76" alt="PokeBuilder" style="display:block;border:0;margin-bottom:18px;" />
+                <div style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;font-weight:700;opacity:0.86;">PokeBuilder</div>
                 <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2;font-weight:800;">${t ? t('admin.emailThankYou') : 'Thanks for the suggestion'}</h1>
               </td>
             </tr>
@@ -159,7 +159,7 @@ const buildReplyTemplate = ({ suggestion, author, subject, message, background, 
             </tr>
             <tr>
               <td style="padding:18px 28px;background:#f9fafb;color:#6b7280;font-size:12px;line-height:1.5;">
-                ${t ? t('admin.emailFooter') : 'You are receiving this because you sent feedback through Pokemon Team Builder.'}
+                ${t ? t('admin.emailFooter') : 'You are receiving this because you sent feedback through PokeBuilder.'}
               </td>
             </tr>
           </table>
@@ -660,8 +660,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             backgroundPosition: 'center',
                                         }}
                                     >
-                                        <img src={brandLogoUrl()} alt="Pokemon Team Builder" className="w-16 h-auto mb-4" />
-                                        <p className="text-2xs font-bold opacity-80">Pokemon Team Builder</p>
+                                        <img src={brandLogoUrl()} alt="PokeBuilder" className="w-16 h-auto mb-4" />
+                                        <p className="text-2xs font-bold opacity-80">PokeBuilder</p>
                                         <p className="text-2xl font-extrabold leading-tight">{t('admin.emailThankYou')}</p>
                                     </div>
                                     <div className="p-5 space-y-3 text-sm leading-relaxed" style={{ color: '#111827' }}>

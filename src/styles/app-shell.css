@@ -4,8 +4,8 @@
        "Calculadora de dano" / "Tiers de velocidade" became "Calculadora" /
        "Velocidades" in the rail (nav.*Short — the page titles keep the full
        names), and with that every label in pt and en fits down to 11rem.
-       "Pokémon Team Builder" beside the logo holds two lines down to 12.5rem
-       and breaks into three at 12rem — so a longer label, or a wider
+       "PokeBuilder" beside the logo (2026-10-26; it was "Pokémon Team Builder",
+       two lines at 12.5rem) fits on one line — so a longer label, or a wider
        wordmark, means measuring this again. */
     --app-shell-sidebar-width: 12.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
@@ -242,6 +242,7 @@
 }
 
 .app-shell__brand-copy {
+    flex: 1 1 auto;
     min-width: 0;
     transition: width var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth);
 }
@@ -266,11 +267,16 @@
 
 .app-shell__brand-title {
     margin: 0;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    color: var(--color-fg);
+    line-height: 0;
+}
+
+/* The wordmark image (2026-10-26) — sized by width, so it fills what the icon
+   and the collapse control leave and never pushes the control out. */
+.app-shell__brand-wordmark {
+    display: block;
+    width: 100%;
+    max-width: 8rem;
+    height: auto;
 }
 
 /* Quiet at rest, present on hover. It is chrome for the chrome — it should never

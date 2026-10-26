@@ -177,7 +177,7 @@ export default async function handler(req, res) {
         }
 
         const emailFrom = process.env.ADMIN_EMAIL_FROM || 'pokemonteambuilderadmin@gmail.com';
-        const emailFromName = cleanHeaderValue(process.env.ADMIN_EMAIL_FROM_NAME, 'Pokemon Team Builder');
+        const emailFromName = cleanHeaderValue(process.env.ADMIN_EMAIL_FROM_NAME, 'PokeBuilder');
         const transporter = createTransport();
         const info = await transporter.sendMail({
             from: `"${emailFromName}" <${emailFrom}>`,

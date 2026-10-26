@@ -53,6 +53,30 @@
     gap: var(--space-6);
 }
 
+/* The brand: Gengar icon + PokeBuilder wordmark (2026-10-26). The wordmark
+   brings its own outline and colour, so it stands on every theme as is. */
+.landing-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.landing-brand__mark {
+    width: 3.5rem;
+    height: auto;
+    flex-shrink: 0;
+}
+.landing-brand__wordmark {
+    display: block;
+    width: 22rem;
+    max-width: 100%;
+    height: auto;
+    min-width: 0;
+}
+@media (max-width: 640px) {
+    .landing-brand__mark { width: 2.75rem; }
+    .landing-brand__wordmark { width: 15rem; }
+}
+
 .landing-eyebrow {
     display: inline-flex;
     align-items: center;

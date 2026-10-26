@@ -198,15 +198,15 @@ export const TRANSLATIONS = {
            src/utils/seoPages.js on both sides — api/render-meta.js writes them
            into the HTML and useDocumentMeta keeps them after client
            navigation — so the two can never drift. A page title here is the
-           part before " | Pokémon Team Builder". */
+           part before " | PokeBuilder". */
         seo: {
-            siteName: 'Pokémon Team Builder',
+            siteName: 'PokeBuilder',
             home: {
-                title: 'Pokémon Team Builder',
-                description: 'Build and share competitive Pokémon teams with a full Pokédex, damage calculator, speed tiers, Smogon sets, and real tournament usage stats.',
+                title: 'PokeBuilder: Pokémon Team Builder for competitive teams',
+                description: 'PokeBuilder is a free Pokémon team builder: build and share competitive teams with a Pokédex, damage calculator, speed tiers, Smogon sets and tournament stats.',
             },
             pokedex: { title: 'Pokédex & Database', description: 'Search the full Pokédex, filter by type or generation, and view stats, movesets, and competitive usage details.' },
-            builder: { title: 'Team Builder', description: 'Build your competitive Pokémon team with live type coverage, speed checks, damage previews, and Smogon set suggestions.' },
+            builder: { title: 'Team Builder', description: 'The Pokémon team builder: build your competitive team with live type coverage, speed checks, damage previews, and Smogon set suggestions.' },
             meta: { title: 'Meta & Usage', description: 'Competitive Pokémon usage stats by format: the most used Pokémon and their moves, items, abilities, and teammates.' },
             tournaments: { title: 'Tournament Teams', description: 'Browse real competitive Pokémon VGC teams from major tournaments. Import them directly into the builder with one click.' },
             damageCalculator: { title: 'Damage Calculator', description: 'Calculate damage rolls between Pokémon using competitive VGC/Smogon formats. Fully integrated with active team editing.' },
@@ -219,7 +219,7 @@ export const TRANSLATIONS = {
             quiz: { title: 'Pokémon Quiz', description: 'Two ways to play: name every Pokémon of a generation, or every Pokémon that shares an official trait.' },
             pokepuzzle: { title: 'Daily PokePuzzle', description: 'Solve the daily PokePuzzle! Guess the Pokémon of the day from its types, stats, height, and weight. Play here!' },
             challenge: { title: 'Champion Challenge', description: 'Walk up to Cynthia and battle her every day: a new Champion team at midnight, a Team of the day to borrow, and a win streak to keep. A DS-style battle in your browser.' },
-            feed: { title: 'Community Feed', description: 'See what the community is building and sharing on Pokémon Team Builder.' },
+            feed: { title: 'Community Feed', description: 'See what the community is building and sharing on PokeBuilder.' },
             types: { title: 'Pokémon Type Chart', description: 'The complete Pokémon type chart: weaknesses, resistances, and immunities for all 18 types, with the Pokémon of each type.' },
             bestTeams: { title: 'Best Pokémon VGC Teams', description: 'The teams that finished on top of VGC tournaments, the Pokémon they use most and the pairs that keep coming back, each one a tap away from the builder.' },
             pokemon: {
@@ -2574,15 +2574,15 @@ export const TRANSLATIONS = {
             emailPreview: 'Email preview',
             shuffle: 'Shuffle',
             emailGreeting: 'Hi {{name}},',
-            emailThankYou: 'Thank you for sending this suggestion to Pokemon Team Builder:',
+            emailThankYou: 'Thank you for sending this suggestion to PokeBuilder:',
             emailThanksAgain: 'Thanks again,\nEnzo',
-            emailFooter: 'You are receiving this because you sent feedback through Pokemon Team Builder.',
+            emailFooter: 'You are receiving this because you sent feedback through PokeBuilder.',
             noCapturedEmailWarning: 'This suggestion has no captured email, so only copy actions are available.',
             directSendingNote: 'Direct sending needs an email backend endpoint. Draft mode opens your email app with the reply text.',
             noSuggestionSelected: 'No suggestion selected',
             chooseSuggestion: 'Choose a suggestion from the inbox.',
-            defaultSubject: 'Thanks for your Pokemon Team Builder suggestion',
-            defaultMessage: 'I really appreciate you taking the time to help improve Pokemon Team Builder. Your feedback helps me decide what to polish next.',
+            defaultSubject: 'Thanks for your PokeBuilder suggestion',
+            defaultMessage: 'I really appreciate you taking the time to help improve PokeBuilder. Your feedback helps me decide what to polish next.',
             copyHtmlSuccess: 'HTML email copied.',
             copyTextSuccess: 'Plain email copied.',
             markAnsweredSuccess: 'Suggestion marked as answered.',
@@ -3055,13 +3055,13 @@ export const TRANSLATIONS = {
             },
         },
         seo: {
-            siteName: 'Pokémon Team Builder',
+            siteName: 'PokeBuilder',
             home: {
-                title: 'Pokémon Team Builder: monte seu time Pokémon competitivo',
-                description: 'Monte e compartilhe times Pokémon competitivos com Pokédex completa, fraquezas do time, calculadora de dano, speed tiers, sets do Smogon e uso real em torneios.',
+                title: 'PokeBuilder: Pokémon Team Builder para times competitivos',
+                description: 'PokeBuilder é um Pokémon team builder grátis: monte e compartilhe times competitivos com Pokédex, calculadora de dano, speed tiers, sets do Smogon e dados de torneios.',
             },
             pokedex: { title: 'Pokédex completa', description: 'Pesquise a Pokédex completa, filtre por tipo ou geração e veja status base, fraquezas, golpes e uso competitivo de cada Pokémon.' },
-            builder: { title: 'Montador de times Pokémon', description: 'Monte seu time Pokémon competitivo e veja na hora a cobertura de tipos, as fraquezas, os speed tiers, a prévia de dano e sugestões de sets do Smogon.' },
+            builder: { title: 'Montador de times Pokémon', description: 'Pokémon team builder: monte seu time competitivo e veja na hora a cobertura de tipos, as fraquezas, os speed tiers, a prévia de dano e sugestões de sets do Smogon.' },
             meta: { title: 'Meta e uso competitivo', description: 'Estatísticas de uso competitivo por formato: os Pokémon mais usados e seus golpes, itens, habilidades e parceiros de time.' },
             tournaments: { title: 'Times de torneio', description: 'Veja times reais de VGC dos principais torneios e importe qualquer um para o montador com um clique.' },
             damageCalculator: { title: 'Calculadora de dano Pokémon', description: 'Calcule o dano entre Pokémon nos formatos competitivos de VGC e Smogon, integrada ao time que você está montando.' },
@@ -3074,7 +3074,7 @@ export const TRANSLATIONS = {
             quiz: { title: 'Quiz Pokémon', description: 'Dois jeitos de jogar: diga todos os Pokémon de uma geração ou todos os que compartilham uma característica oficial.' },
             pokepuzzle: { title: 'PokéPuzzle diário', description: 'Resolva o PokéPuzzle do dia: descubra o Pokémon pelos tipos, status, altura e peso. Jogue agora!' },
             challenge: { title: 'Desafio da Campeã', description: 'Enfrente a Cynthia todo dia: um time de Campeã novo à meia-noite, um Time do dia para pegar emprestado e uma sequência de vitórias para manter. Uma batalha estilo DS no navegador.' },
-            feed: { title: 'Comunidade', description: 'Veja o que a comunidade está montando e compartilhando no Pokémon Team Builder.' },
+            feed: { title: 'Comunidade', description: 'Veja o que a comunidade está montando e compartilhando no PokeBuilder.' },
             types: { title: 'Tabela de tipos Pokémon', description: 'A tabela de tipos Pokémon completa: fraquezas, resistências e imunidades dos 18 tipos, com os Pokémon de cada tipo.' },
             bestTeams: { title: 'Melhores times de Pokémon VGC', description: 'Os times que chegaram ao topo dos torneios de VGC, os Pokémon que eles mais usam e as duplas que se repetem, com importação para o montador em um toque.' },
             pokemon: {

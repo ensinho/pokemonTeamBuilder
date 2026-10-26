@@ -1,6 +1,8 @@
 <div align="center">
 
-# pokemonbuilder.app
+# PokeBuilder
+
+**[pokemonbuilder.app](https://pokemonbuilder.app)**
 
 ### Build better Pokémon teams. Faster.
 

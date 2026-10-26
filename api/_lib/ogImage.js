@@ -57,7 +57,7 @@ export function teamCardTree(team, images, language = 'en') {
         fontFamily: 'Space Grotesk',
     }, [
         h('div', { display: 'flex', justifyContent: 'space-between', fontSize: 26, fontWeight: 500 }, [
-            h('div', { display: 'flex', color: BRAND.accent }, 'Pokémon Team Builder'),
+            h('div', { display: 'flex', color: BRAND.accent }, 'PokeBuilder'),
             h('div', { display: 'flex', color: BRAND.muted }, 'pokemonbuilder.app'),
         ]),
         h('div', {
@@ -222,7 +222,7 @@ const referenceFrame = (body, cta) => h('div', {
     fontFamily: 'Space Grotesk',
 }, [
     h('div', { display: 'flex', justifyContent: 'space-between', fontSize: 26, fontWeight: 500 }, [
-        h('div', { display: 'flex', color: BRAND.accent }, 'Pokémon Team Builder'),
+        h('div', { display: 'flex', color: BRAND.accent }, 'PokeBuilder'),
         h('div', { display: 'flex', color: BRAND.muted }, 'pokemonbuilder.app'),
     ]),
     body,

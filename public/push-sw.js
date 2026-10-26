@@ -25,7 +25,7 @@ const parsePushPayload = (raw) => {
         data = {};
     }
     return {
-        title: data.title || 'Pokémon Team Builder',
+        title: data.title || 'PokeBuilder',
         body: data.body || '',
         url: typeof data.url === 'string' ? data.url : '/',
         group: data.group || 'general',

@@ -58,7 +58,7 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
         body.push(list(LANDING_FEATURES.map((f) => `<h3>${link(LANDING_LINKS[f], t(`landing.features.${f}.title`))}</h3><p>${escapeHtml(t(`landing.features.${f}.body`))}</p>`)));
     } else {
         // The page title without the brand suffix reads as the page's heading.
-        body.push(`<h1>${escapeHtml(meta.title.replace(/ \| Pokémon Team Builder$/, ''))}</h1>`);
+        body.push(`<h1>${escapeHtml(meta.title.replace(/ \| PokeBuilder$/, ''))}</h1>`);
         body.push(`<p>${escapeHtml(meta.description)}</p>`);
     }
 
