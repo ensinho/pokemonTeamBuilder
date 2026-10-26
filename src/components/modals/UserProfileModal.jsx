@@ -94,7 +94,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                             </p>
                         )}
                         <p className="text-xs text-muted">
-                            {language === 'pt' ? 'Membro ativo da comunidade PokeBuilder.' : 'Active member of the PokeBuilder community.'}
+                            {language === 'pt' ? 'Membro ativo da comunidade PokemonBuilder.' : 'Active member of the PokemonBuilder community.'}
                         </p>
                     </div>
 

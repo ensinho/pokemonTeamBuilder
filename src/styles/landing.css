@@ -53,7 +53,7 @@
     gap: var(--space-6);
 }
 
-/* The brand: Gengar icon + PokeBuilder wordmark (2026-10-26). The wordmark
+/* The brand: Gengar icon + PokemonBuilder wordmark (2026-10-26). The wordmark
    brings its own outline and colour, so it stands on every theme as is. */
 .landing-brand {
     display: flex;

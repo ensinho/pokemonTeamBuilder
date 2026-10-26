@@ -4,7 +4,7 @@
        "Calculadora de dano" / "Tiers de velocidade" became "Calculadora" /
        "Velocidades" in the rail (nav.*Short — the page titles keep the full
        names), and with that every label in pt and en fits down to 11rem.
-       "PokeBuilder" beside the logo (2026-10-26; it was "Pokémon Team Builder",
+       "PokemonBuilder" beside the logo (2026-10-26; it was "Pokémon Team Builder",
        two lines at 12.5rem) fits on one line — so a longer label, or a wider
        wordmark, means measuring this again. */
     --app-shell-sidebar-width: 12.5rem;
@@ -275,7 +275,7 @@
 .app-shell__brand-wordmark {
     display: block;
     width: 100%;
-    max-width: 8rem;
+    max-width: 9rem;
     height: auto;
 }
 
@@ -291,7 +291,27 @@
                 color var(--duration-fast) var(--ease-smooth);
 }
 
-.app-shell__sidebar:hover .app-shell__collapse-toggle,
+/* Expanded, it floats over the wordmark's right end instead of taking a
+   column of its own (2026-10-26): the PokemonBuilder wordmark is ~4:1, and
+   beside an in-flow button it came out 23px tall. So it shows only while the
+   pointer is on the brand band (or it has focus), on the rail's own fill. */
+.app-shell__brand:not(.is-collapsed) {
+    position: relative;
+}
+
+.app-shell__brand:not(.is-collapsed) .app-shell__collapse-toggle {
+    position: absolute;
+    inset-inline-end: var(--app-shell-gutter);
+    top: 50%;
+    translate: 0 -50%;
+    background: var(--color-surface);
+}
+
+.app-shell__brand:not(.is-collapsed) .app-shell__collapse-toggle:hover {
+    background: var(--color-surface-hover);
+}
+
+.app-shell__brand:hover .app-shell__collapse-toggle,
 .app-shell__collapse-toggle:focus-visible {
     opacity: 1;
 }

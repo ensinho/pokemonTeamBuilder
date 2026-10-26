@@ -43,7 +43,7 @@ export const sendNotificationEmail = async ({ to, subject, text, html }) => {
     }
 
     const emailFrom = process.env.ADMIN_EMAIL_FROM || 'pokemonteambuilderadmin@gmail.com';
-    const emailFromName = process.env.ADMIN_EMAIL_FROM_NAME || 'PokeBuilder';
+    const emailFromName = process.env.ADMIN_EMAIL_FROM_NAME || 'PokemonBuilder';
 
     try {
         await transporter.sendMail({

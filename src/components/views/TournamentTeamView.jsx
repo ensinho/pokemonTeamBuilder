@@ -90,7 +90,7 @@ export function TournamentTeamView({ onImport }) {
     useDocumentMeta(team ? {
         team,
         title: team.title,
-        description: `${team.placement ? `${team.placement} at ` : ''}${team.tournament}${team.format ? ` (${team.format})` : ''} — team featuring ${memberNames.slice(0, 6).join(', ')}. Import it into PokeBuilder.`,
+        description: `${team.placement ? `${team.placement} at ` : ''}${team.tournament}${team.format ? ` (${team.format})` : ''} — team featuring ${memberNames.slice(0, 6).join(', ')}. Import it into PokemonBuilder.`,
         image: members[0] ? getPokemonArtworkSpriteUrl(members[0].resolvedId) : undefined,
         path: `/tournaments/team/${id}`,
     } : undefined);

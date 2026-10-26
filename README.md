@@ -1,6 +1,6 @@
 <div align="center">
 
-# PokeBuilder
+# PokemonBuilder
 
 **[pokemonbuilder.app](https://pokemonbuilder.app)**
 
