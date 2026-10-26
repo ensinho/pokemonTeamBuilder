@@ -25,10 +25,14 @@ const STAT_LABELS = {
  * in the app, and a 16px bar was the loudest thing on the Pokédex entry. The
  * bar keeps the canonical stat colour; it is information, not decoration.
  */
+// Below this a base stat reads as a weak spot (Ghost Lab draws it in a dimmer
+// primary). 60 is roughly the bottom fifth of all base stats.
+const LOW_STAT = 60;
+
 export const StatBar = ({ stat, value, max = 255 }) => {
     const pct = Math.max(2, Math.min(100, (value / max) * 100));
     return (
-        <div className="stat-bar" style={{ '--stat-color': `var(${STAT_VAR[stat] ?? '--stat-hp'})` }}>
+        <div className={`stat-bar${value < LOW_STAT ? ' stat-bar--low' : ''}`} style={{ '--stat-color': `var(${STAT_VAR[stat] ?? '--stat-hp'})` }}>
             <span className="stat-bar__label">{STAT_LABELS[stat] ?? stat.replace('-', ' ')}</span>
             <span className="stat-bar__value">{value}</span>
             <span className="stat-bar__track" aria-hidden="true">

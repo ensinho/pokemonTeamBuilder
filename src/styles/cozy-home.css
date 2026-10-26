@@ -24,17 +24,20 @@
     padding-block: var(--space-2) var(--space-8);
 }
 
-/* ── Ink: the action voice of this page ────────────────────────────────── */
+/* ── Ink: the action voice of this page ──────────────────────────────────
+   Ghost Lab (2026-10-26): the action voice is the primary, flat, as on every
+   other page — the chrome around it is neutral, so the partner's type colour
+   and this one fill are the only colours in the hero. */
 
 .cozy-home .cozy-ink {
     border-color: transparent;
     border-radius: var(--radius-full);
-    background: var(--color-fg);
-    color: var(--color-bg);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 .cozy-home .cozy-ink:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-fg) 86%, var(--color-bg));
+    background: var(--color-primary-hover);
 }
 
 .cozy-home .cozy-ink svg,
@@ -110,7 +113,8 @@ button.cozy-chip:hover {
 }
 
 .cozy-chip--streak {
-    --chip-tone: var(--color-warning);
+    /* A streak is a reward: the accent (Ectoplasm on Ghost Lab), not amber. */
+    --chip-tone: var(--color-accent);
     background: color-mix(in srgb, var(--chip-tone) 22%, var(--color-surface));
     color: color-mix(in srgb, var(--chip-tone) 30%, var(--color-fg));
 }
@@ -153,19 +157,19 @@ button.cozy-chip:hover {
     border-radius: var(--radius-full);
 }
 
-/* The thumb is ink, like the actions: the chosen section reads at a glance
-   on every theme, where an elevated-white thumb on a white track did not. */
+/* Ghost Lab: the chosen section is the house selection — an elevated fill
+   with an inset primary ring — so this track reads like every other one. */
 .cozy-home .cozy-tabs > .segmented__item[aria-pressed='true'] {
-    background: var(--color-fg);
-    color: var(--color-bg);
-    box-shadow: none;
+    background: var(--color-surface-elevated);
+    color: var(--color-fg);
+    box-shadow: var(--ring-primary);
 }
 
 @supports (anchor-scope: all) {
     .cozy-home .cozy-tabs::before {
         border-radius: var(--radius-full);
-        background: var(--color-fg);
-        box-shadow: none;
+        background: var(--color-surface-elevated);
+        box-shadow: var(--ring-primary);
     }
 
     .cozy-home .cozy-tabs > .segmented__item[aria-pressed='true'] {
@@ -612,7 +616,7 @@ button.cozy-chip:hover {
 }
 
 /* The badge case: one slot per step toward the next badge (ten at most), lit
-   in gold as they are earned. */
+   in the accent as they are earned. */
 .cozy-case {
     display: grid;
     grid-auto-columns: 1fr;
@@ -628,7 +632,7 @@ button.cozy-chip:hover {
 }
 
 .cozy-case i.is-on {
-    background: var(--color-warning);
+    background: var(--color-accent);
 }
 
 /* Featured + compact (2026-10-06; the Champion took the feature on

@@ -34,7 +34,7 @@
 }
 
 .checkin__level-value {
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
@@ -92,7 +92,7 @@
     width: 1.75rem;
     height: 1.75rem;
     border-radius: var(--radius-full);
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
@@ -100,9 +100,15 @@
 
 .checkin__day-mark svg { width: 1rem; height: 1rem; }
 
+/* Ghost Lab: a badge is a ring and a number — the ring is the control edge
+   until it is earned, then the primary. No fill. */
+.checkin__day-mark {
+    box-shadow: inset 0 0 0 1px var(--color-border-strong);
+}
+
 .checkin__day.is-claimed .checkin__day-mark {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+    box-shadow: var(--ring-primary);
+    color: color-mix(in srgb, var(--color-primary) 70%, var(--color-fg));
 }
 
 .checkin__day-xp {
@@ -367,8 +373,9 @@
     width: 2.25rem;
     height: 2.25rem;
     border-radius: var(--radius-full);
-    background: var(--color-surface-raised);
-    font-family: var(--font-display);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--color-border-strong);
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
@@ -376,8 +383,8 @@
 }
 
 .level-track__step.is-reached .level-track__level {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+    box-shadow: var(--ring-primary);
+    color: color-mix(in srgb, var(--color-primary) 70%, var(--color-fg));
 }
 
 .level-track__items {

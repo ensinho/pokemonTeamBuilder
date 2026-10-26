@@ -550,7 +550,7 @@ export function CozyHomeView({
                     </button>
                 )}
 
-                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-warning)' }}
+                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-accent)' }}
                     onClick={() => navigate('/journeys?tab=badges')}>
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--badge" aria-hidden="true">

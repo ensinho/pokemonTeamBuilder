@@ -113,13 +113,14 @@ export const FlowerIcon = () => (
     </svg>
 );
 
-// Favourite star. Filled + warning-coloured when on; the colour is the theme's
-// token, not a literal amber, so it holds contrast on the light themes too.
+// Favourite star. Filled + accent-coloured when on — --color-accent is the
+// token for a favourite / streak / reward (a lighter Ectoplasm on the Ghost
+// Lab themes, gold on the others); --color-warning stays a warning.
 export const StarIcon = ({ className = 'w-6 h-6', isFavorite, color }) => (
     <Star
         className={className}
         fill={isFavorite ? 'currentColor' : 'none'}
-        style={{ color: isFavorite ? 'var(--color-warning)' : color }}
+        style={{ color: isFavorite ? 'var(--color-accent)' : color }}
         aria-hidden="true"
     />
 );

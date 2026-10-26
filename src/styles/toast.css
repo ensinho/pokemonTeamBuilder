@@ -105,7 +105,7 @@
     padding: var(--space-3_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
+    background: var(--color-surface);
     /* Border *and* shadow, against the usual rule. A toast floats over
        arbitrary page content, so it needs the shadow to separate — but on the
        three dark themes a shadow over a near-black background is invisible and
@@ -225,13 +225,16 @@
         color var(--duration-fast) var(--ease-smooth);
 }
 
+/* Ghost Lab: the continuing action (most often "Undo") is a quiet text action
+   in the primary — the toast is a note over a page the user is still reading,
+   not a second call to action. */
 .toast__action.primary {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    background: var(--color-primary-soft);
+    color: color-mix(in srgb, var(--color-primary) 70%, var(--color-fg));
 }
 
 .toast__action.primary:hover {
-    background: color-mix(in srgb, var(--color-fg) 12%, var(--color-primary));
+    background: color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
 
 .toast__action.ghost {
@@ -281,8 +284,8 @@
     height: 2px;
     width: 100%;
     transform-origin: left;
-    background: var(--toast-accent);
-    opacity: 0.45;
+    /* Ghost Lab: a neutral hairline — the severity is already in the mark. */
+    background: var(--color-border-strong);
     animation-name: toast-timer;
     animation-timing-function: linear;
     animation-fill-mode: forwards;

@@ -80,7 +80,7 @@
     align-items: center;
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
 }
@@ -91,8 +91,8 @@
 }
 
 .game-history__badge.is-progress {
-    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
-    color: color-mix(in srgb, var(--color-warning) 55%, var(--color-fg));
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: color-mix(in srgb, var(--color-primary) 55%, var(--color-fg));
 }
 
 /* A secondary button sits on the row's raised fill: lift it to the surface,

@@ -680,6 +680,12 @@
     color: var(--color-fg);
 }
 
+/* Ghost Lab: the current page's glyph is the primary — the one state colour
+   in the rail. The row stays a neutral fill. */
+.app-shell__nav-link.is-active .app-shell__nav-icon {
+    color: color-mix(in srgb, var(--color-primary) 75%, var(--color-fg));
+}
+
 /* Pending-count badge on a nav entry (e.g. incoming friend requests). */
 .app-shell__nav-badge {
     display: inline-flex;
@@ -1282,7 +1288,7 @@
 }
 
 .app-shell__account-theme-group-tag--light {
-    color: var(--color-accent);
+    color: var(--color-muted);
 }
 
 .app-shell__account-theme-group-icon {

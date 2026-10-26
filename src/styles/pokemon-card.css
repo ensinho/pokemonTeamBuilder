@@ -163,8 +163,10 @@
     scale: 0.88;
 }
 
+/* The accent, not the warning: a favourite is a reward, and on the Ghost Lab
+   themes amber is kept for things that are actually wrong. */
 .pokemon-card__favorite.is-active {
-    color: var(--color-warning);
+    color: var(--color-accent);
 }
 
 .pokemon-card__media {
@@ -172,6 +174,16 @@
     max-width: 5.5rem;
     aspect-ratio: 1 / 1;
     margin: var(--space-0_5) auto 0;
+    /* Ghost Lab: the card is flat, and the sprite stands on a soft floor of its
+       first type's canon colour (--card-type, set by PokemonCard) — the one
+       place the card takes colour, and it is the Pokémon's. A canon colour
+       mixed into transparency, per the type-chip rule; a missing type falls
+       back to a neutral floor. */
+    background: radial-gradient(
+        50% 14% at 50% 88%,
+        color-mix(in srgb, var(--card-type, var(--color-fg)) 24%, transparent),
+        transparent 100%
+    );
     transition: transform var(--duration-slow) var(--ease-out);
 }
 

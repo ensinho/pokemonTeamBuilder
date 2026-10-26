@@ -159,7 +159,7 @@ export function LandingView({ onLeave, onSkip }) {
                 <div className="landing-banner__copy">
                     <div className="landing-brand">
                         <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" className="landing-brand__mark" />
-                        <BrandWordmark className="landing-brand__wordmark" sizes="(max-width: 640px) 15rem, 22rem" />
+                        <BrandWordmark className="landing-brand__wordmark" sizes="(max-width: 640px) 16.5rem, 28rem" />
                     </div>
                     <p className="landing-eyebrow"><span className="landing-eyebrow__dot" aria-hidden="true" />{t('landing.eyebrow')}</p>
                     <h1 className="landing-title">{t('landing.title')}</h1>

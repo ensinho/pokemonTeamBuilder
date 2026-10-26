@@ -329,7 +329,7 @@
     width: var(--size);
     height: var(--size);
     margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
-    background: var(--burst-color, var(--color-warning));
+    background: var(--burst-color, var(--color-accent));
     clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
     opacity: 0;
     animation: shiny-spark 620ms var(--ease-out) var(--delay, 0ms) both;
@@ -337,7 +337,7 @@
 
 /* Two of the six are white-hot, as in the games. */
 .shiny-burst > i:nth-child(3n) {
-    --burst-color: color-mix(in srgb, var(--color-warning) 35%, var(--color-fg));
+    --burst-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-fg));
 }
 
 @keyframes shiny-spark {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trophy, ShieldCheck, Sparkles, Info } from 'lucide-react';
-import { typeIcons } from '../constants/types';
+import { typeIcons, typeColors } from '../constants/types';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../utils/pokemonSprites';
 import { SkeletonCard } from './SkeletonCard';
 import { Sprite } from './Sprite';
@@ -87,7 +87,12 @@ export const PokemonCard = React.memo(function PokemonCard({
             tabIndex={0}
             aria-label={addOnClick ? t('builder.addToTeamAria', { name: details.name }) : `View details for ${details.name}`}
             className={`pokemon-card group ${addOnClick ? 'pokemon-card--picker' : ''} ${hasSynergy ? 'pokemon-card--synergy' : isSuggested ? 'pokemon-card--suggested' : ''}  ${isSelected ? 'pokemon-card--selected' : ''}`}
-            style={hasSynergy ? { '--synergy-color': reasonColor } : undefined}
+            style={{
+                // The canon colour of the first type, for the soft floor under
+                // the sprite (pokemon-card.css).
+                '--card-type': typeColors[details.types?.[0]],
+                ...(hasSynergy ? { '--synergy-color': reasonColor } : null),
+            }}
         >
             <div className="pokemon-card__topbar">
                 <div className="pokemon-card__types">
