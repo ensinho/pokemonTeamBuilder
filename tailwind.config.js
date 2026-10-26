@@ -77,9 +77,11 @@ export default {
             fontFamily: {
                 // Main fonts
                 sans: ['Space Grotesk', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-                // `font-display` is the structural voice (JetBrains Mono), not a
-                // second sans — see the typography note in src/index.css.
-                display: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                // `font-display` is the structural voice. Ghost Lab (2026-10-26):
+                // Space Grotesk, like --font-display — the wordmark is the only
+                // display face, and mono is kept for figures (`font-mono`). See
+                // the typography note in src/index.css.
+                display: ['Space Grotesk', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
                 // Monospace & Detail fonts mapping to JetBrains Mono
                 mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                 pixel: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],

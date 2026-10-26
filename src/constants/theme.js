@@ -18,19 +18,24 @@ export const POKEBALL_PLACEHOLDER_URL = pokeballPlaceholderUrl;
 // JS-side mirror of the CSS variables. Components that still
 // pass a `colors` prop read from here.
 export const THEMES = {
+    // Ghost Lab (2026-10-26, branch claude/theme-ghost-lab): a calm
+    // instrument. Neutral violet-black chrome, one primary (Ectoplasm), no
+    // yellow or magenta in the interface — the wordmark owns those, and in a
+    // team builder yellow reads as Electric and magenta as Fairy/Psychic. The
+    // accent (favourite, streak, reward) is a lighter Ectoplasm, never amber.
     dark: {
-        primary: '#8b7cee',
-        primarySoft: 'rgba(139, 124, 238, 0.14)',
-        onPrimary: '#09090b',
-        accent: '#FBBF24',
-        background: '#09090b',
-        card: '#18181c',
-        cardLight: '#212127',
-        text: '#fafafa',
-        textMuted: '#a1a1aa',
-        border: '#232329',
-        success: '#34D399',
-        danger: '#F87171',
+        primary: '#7C4DFF',
+        primarySoft: 'rgba(124, 77, 255, 0.14)',
+        onPrimary: '#ffffff',
+        accent: '#B39DFF',
+        background: '#0B0910',
+        card: '#14111B',
+        cardLight: '#1C1826',
+        text: '#F2F0F7',
+        textMuted: '#A49EB3',
+        border: '#2A2534',
+        success: '#2DD4BF',
+        danger: '#FF5C61',
         warning: '#FBBF24',
         info: '#60A5FA',
     },
@@ -51,16 +56,16 @@ export const THEMES = {
         info: '#60A5FA',
     },
     light: {
-        primary: '#6353b3',
-        primarySoft: 'rgba(99, 83, 179, 0.1)',
+        primary: '#6A35F0',
+        primarySoft: 'rgba(106, 53, 240, 0.1)',
         onPrimary: '#ffffff',
-        accent: '#B45309',
-        background: '#f2f2f3',
+        accent: '#6A35F0',
+        background: '#F6F5F9',
         card: '#FFFFFF',
-        cardLight: '#f6f6f7',
-        text: '#09090b',
-        textMuted: '#68686f',
-        border: '#f7f7f7',
+        cardLight: '#F1EFF6',
+        text: '#17131F',
+        textMuted: '#5E5870',
+        border: '#E6E3EC',
         success: '#047857',
         danger: '#B91C1C',
         warning: '#B45309',
@@ -187,11 +192,11 @@ export const THEMES = {
 // `isThemeUnlocked` (store/useRewardsStore.js) before offering one.
 // `mode` groups themes as dark vs light so the picker can label them separately.
 export const THEME_META = [
-    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#8b7cee', mode: 'dark' },
+    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#7C4DFF', mode: 'dark' },
     { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6', mode: 'dark' },
     { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8', mode: 'dark' },
     { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB', mode: 'light' },
-    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3', mode: 'light' },
+    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6A35F0', mode: 'light' },
     { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04', mode: 'light' },
     { id: 'ember', label: 'Ember', hint: 'Warm embers, Charizard nights', swatch: '#f97316', mode: 'dark', reward: true },
     { id: 'viridian', label: 'Viridian', hint: 'Forest-green daylight', swatch: '#16a34a', mode: 'light', reward: true },

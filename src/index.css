@@ -100,8 +100,11 @@
        dashboard's; a dedicated app's panels sit nearer 16–22px. The steps keep
        4–6px apart so the nesting rule (inner = parent − 4) still holds. */
     --radius-md: 0.625rem;  /* 10px — buttons, inputs */
-    --radius-lg: 1rem;      /* 16px — cards */
-    --radius-xl: 1.375rem;  /* 22px — panels, modals */
+    /* Ghost Lab (2026-10-26): 6 chip / 10 control / 14 card / 20 panel. A
+       hair tighter than v2's 16/22 — an instrument, not a toy — and still
+       4–6px apart, so the nesting rule (inner = parent − 4) holds. */
+    --radius-lg: 0.875rem;  /* 14px — cards */
+    --radius-xl: 1.25rem;   /* 20px — panels, modals */
     --radius-full: 9999px;  /* pills, avatars, circular controls */
 
     /* ---- Type scale (design system v3, 2026-10-02) -------------------------
@@ -140,10 +143,12 @@
     --leading-snug:   1.35;  /* labels and captions that may wrap */
     --leading-normal: 1.5;   /* prose */
 
-    /* Mono is wide; the display roles take tracking back (see h1–h6 below).
+    /* Ghost Lab: headings are Space Grotesk, not mono, so they need far less
+       tracking taken back — a grotesk at -0.04em starts to touch. A slight
+       negative keeps a heading tight without clotting it.
        Caps tracking exists for one thing: the micro tag (.badge--caps). */
-    --tracking-display: -0.04em;
-    --tracking-heading: -0.025em;
+    --tracking-display: -0.028em;
+    --tracking-heading: -0.018em;
     --tracking-body:    -0.011em;
     --tracking-caps:    0.06em;
 
@@ -194,7 +199,18 @@
    Single source of truth for runtime colors.
    ============================================================ */
 
-/* ---- Theme palettes -------------------------------------------------------
+/* ---- Ghost Lab (2026-10-26, branch claude/theme-ghost-lab) ----------------
+   A calm instrument; the logo is the only thing that shouts. The graffiti
+   wordmark is yellow + magenta, and in a team builder yellow reads as Electric
+   and magenta as Fairy/Psychic — so the interface carries neither. The chrome
+   is neutral violet-black (dark) / cool paper (light), one primary marks
+   state (Ectoplasm #7C4DFF / #6A35F0, white ink at 4.8 / 6.2:1), and the 18
+   canon type colours are the colour on the page. `dark` and `light` are
+   retuned to it; the other eight keep their colours and inherit the shape
+   rules (borders, not shadows; no decorative ground). Amber stays the
+   semantic warning only — --color-accent is a lighter Ectoplasm here.
+
+   ---- Theme palettes -------------------------------------------------------
    Six themes, one structure. The values that applyTheme() also writes inline
    live in constants/theme.js (THEMES) — keep the two in step.
 
@@ -216,19 +232,19 @@
 
 :root,
 :root[data-theme='dark'] {
-    --color-primary: #8b7cee;
-    --color-primary-soft: rgba(139, 124, 238, 0.14);
-    --color-on-primary: #09090b;
-    --color-accent: #FBBF24;
-    --color-accent-soft: rgba(251, 191, 36, 0.12);
-    --color-bg: #09090b;
-    --color-surface: #18181c;
-    --color-surface-raised: #212127;
-    --color-fg: #fafafa;
-    --color-muted: #a1a1aa;
-    --color-border: #232329;
-    --color-success: #34D399;
-    --color-danger: #F87171;
+    --color-primary: #7C4DFF;
+    --color-primary-soft: rgba(124, 77, 255, 0.14);
+    --color-on-primary: #ffffff;
+    --color-accent: #B39DFF;
+    --color-accent-soft: rgba(179, 157, 255, 0.12);
+    --color-bg: #0B0910;
+    --color-surface: #14111B;
+    --color-surface-raised: #1C1826;
+    --color-fg: #F2F0F7;
+    --color-muted: #A49EB3;
+    --color-border: #2A2534;
+    --color-success: #2DD4BF;
+    --color-danger: #FF5C61;
     --color-warning: #FBBF24;
     --color-info: #60A5FA;
 
@@ -238,18 +254,28 @@
     --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.75);
 }
 
+/* The control edge, a step firmer than a region's border. Stated, not mixed,
+   on the two Ghost Lab palettes (the mix lands a hair off the spec). */
+:root[data-theme='dark'] {
+    --color-border-strong: #3A3446;
+}
+
 :root[data-theme='light'] {
-    --color-primary: #6353b3;
-    --color-primary-soft: rgba(99, 83, 179, 0.1);
+    --color-border-strong: #D3CEDC;
+}
+
+:root[data-theme='light'] {
+    --color-primary: #6A35F0;
+    --color-primary-soft: rgba(106, 53, 240, 0.1);
     --color-on-primary: #ffffff;
-    --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.08);
-    --color-bg: #f2f2f3;
-    --color-surface: #ffffff;
-    --color-surface-raised: #f6f6f7;
-    --color-fg: #09090b;
-    --color-muted: #68686f;
-    --color-border: #f7f7f7;
+    --color-accent: #6A35F0;
+    --color-accent-soft: rgba(106, 53, 240, 0.08);
+    --color-bg: #F6F5F9;
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #F1EFF6;
+    --color-fg: #17131F;
+    --color-muted: #5E5870;
+    --color-border: #E6E3EC;
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
@@ -468,16 +494,28 @@
    Mono is wide: display roles carry negative tracking (--tracking-display /
    --tracking-heading), or a headline measures ~8% longer than its sans
    equivalent and starts wrapping. Space Grotesk is a 300..700 variable font —
-   600 is the heaviest weight the interface uses (--weight-semibold). */
+   600 is the heaviest weight the interface uses (--weight-semibold).
+
+   Ghost Lab (2026-10-26) repoints --font-display to Space Grotesk: the
+   wordmark is the only display face, so headings, nav, tabs and buttons are
+   all the one grotesk (600, sentence case, slight negative tracking), and
+   JetBrains Mono is reserved for what it is genuinely good at — figures, ids,
+   stat numbers, tabular data (--font-mono, .figure, .stat__value…). A rule
+   that sets a *number* must ask for --font-mono, not --font-display. */
 :root {
-    --font-display: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    --font-display: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-body: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 
     /* Semantic shadow aliases. These resolve against the active theme's
        --elevation-* at use-time (var() is late-bound), so a single definition
        here works for every theme. Prefer these names in component CSS. */
-    --shadow-sm: var(--elevation-1);
+    /* Ghost Lab: borders, not shadows. --shadow-sm is what cards, chips and
+       segmented thumbs reached for, and none of them float — so it resolves
+       to an empty shadow (a real value, so a list like `var(--shadow-sm),
+       inset …` stays valid). md/lg/xl are for overlays: tooltips, menus,
+       sheets, modals. */
+    --shadow-sm: 0 0 0 0 transparent;
     --shadow-md: var(--elevation-2);
     --shadow-lg: var(--elevation-3);
     --shadow-xl: var(--elevation-4);
@@ -517,10 +555,9 @@
        On the light themes a fill needs no highlight; it gets the faintest lift
        instead (their --color-border is a whisper, so this is what defines the
        edge there). Applied once, below, to the app's region panels. */
-    --surface-sheen:
-        inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 10%, transparent),
-        inset 0 4rem 4rem 0 color-mix(in srgb, var(--color-fg) 3%, transparent),
-        var(--elevation-2);
+    /* Ghost Lab: none. A panel is a 1px border on a flat fill; light and
+       shadow are reserved for what genuinely floats. */
+    --surface-sheen: 0 0 0 0 transparent;
 
     /* The material of a card (2026-10-09, Enzo: "tudo meio chapado no preto,
        os cards sem vida"). On a near-black page a drop shadow has nothing to
@@ -532,16 +569,15 @@
        shorthand would erase a background-image). The elevation under it is
        what separates a card from the panel it sits on. Light themes: none —
        their whisper border and white fill already read. Applied once, below. */
-    --card-sheen:
-        inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 10%, transparent),
-        inset 0 3rem 3rem 0 color-mix(in srgb, var(--color-fg) 4%, transparent),
-        var(--elevation-1);
+    /* Ghost Lab: none — a card is flat; its border or its fill is the edge. */
+    --card-sheen: 0 0 0 0 transparent;
     /* The room the cards sit in. A flat #09090b canvas is what made the page
        read as "chapado": nothing to stand on. A faint pool of the theme's own
        colour falls from the top of the page and is gone before the fold —
        atmosphere, not decoration: it carries no content and never moves.
        Light themes: none. */
-    --canvas-light: radial-gradient(64rem 30rem at 50% -8rem, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 72%);
+    /* Ghost Lab: no pool of colour on the ground — calm. */
+    --canvas-light: none;
 
     /* The page's ground (2026-10-09, Enzo: "fundo levemente pontilhado com
        elementos geométricos suaves… assim os componentes ficam bem mais à
@@ -552,20 +588,14 @@
        `scroll` on the scroller), like a surface under glass. Static: nothing
        here animates. Exactly four shape layers — .app-shell__content lists
        their sizes and attachments by position. */
-    --canvas-dots: radial-gradient(circle, color-mix(in srgb, var(--color-fg) 9%, transparent) 0.0625rem, transparent 0.09375rem);
+    /* Ghost Lab: the dot grid survives as a lab bench's faint graph paper —
+       half its former strength — and the four shapes are gone (`none` is a
+       valid image layer, so .app-shell__content's layer lists still line up). */
+    --canvas-dots: radial-gradient(circle, color-mix(in srgb, var(--color-fg) 5%, transparent) 0.0625rem, transparent 0.09375rem);
     --canvas-dot-gap: 1.5rem;
-    --canvas-ring: color-mix(in srgb, var(--color-primary) 16%, transparent);
-    --canvas-ring-quiet: color-mix(in srgb, var(--color-fg) 7%, transparent);
-    --canvas-shapes:
-        radial-gradient(circle 15rem at calc(100% - 5rem) 9rem, transparent calc(100% - 1.5px), var(--canvas-ring) calc(100% - 1px), var(--canvas-ring) calc(100% - 0.5px), transparent 100%),
-        radial-gradient(circle 9.5rem at calc(100% - 5rem) 9rem, transparent calc(100% - 1.5px), var(--canvas-ring-quiet) calc(100% - 1px), var(--canvas-ring-quiet) calc(100% - 0.5px), transparent 100%),
-        radial-gradient(circle 20rem at 3rem calc(100% + 4rem), transparent calc(100% - 1.5px), var(--canvas-ring-quiet) calc(100% - 1px), var(--canvas-ring-quiet) calc(100% - 0.5px), transparent 100%),
-        radial-gradient(circle 26rem at 3rem calc(100% + 4rem), color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%);
+    --canvas-shapes: none, none, none, none;
 
-    --card-sheen-hover:
-        inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 15%, transparent),
-        inset 0 3rem 3rem 0 color-mix(in srgb, var(--color-fg) 6%, transparent),
-        var(--elevation-2);
+    --card-sheen-hover: 0 0 0 0 transparent;
 
     /* --color-on-primary (ink on a primary fill) is per theme since v3 — see
        the palette blocks above. White failed AA on four of the six primaries. */
@@ -638,10 +668,6 @@
 :root[data-theme='viridian'],
 :root[data-theme='blossom'] {
     --color-surface-elevated: var(--color-surface);
-    --surface-sheen: var(--shadow-sm);
-    --card-sheen: none;
-    --card-sheen-hover: none;
-    --canvas-light: none;
 }
 
 /* Region panels take the sheen. `:where()` keeps this at zero specificity, so
@@ -751,7 +777,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 h1, h2 {
-    letter-spacing: -0.035em;
+    letter-spacing: var(--tracking-display);
 }
 
 /* Strings that are titles or figures in the markup but not heading tags. Running
@@ -796,7 +822,7 @@ h1, h2 {
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     line-height: var(--leading-tight);
-    letter-spacing: -0.035em;
+    letter-spacing: var(--tracking-display);
 }
 
 .text-heading {
@@ -1164,31 +1190,33 @@ h1, h2 {
 
 .btn-block { width: 100%; }
 
-/* Voices (v3).
-   primary — the one affirmative action in a view, neutral-inverted: a
-   foreground fill with surface ink. Until v3 it was the brand fill, and with a
-   violet "Save", a violet empty-state CTA and violet rings on fifty cards the
-   accent stopped meaning anything; white text on it also failed AA in four
-   themes. Inverted is the highest contrast on every theme (≥ 15:1) and leaves
-   colour to the Pokémon. Hover mixes toward the canvas — it softens, never
-   glows. */
+/* Voices (Ghost Lab, 2026-10-26).
+   primary — the one affirmative action in a view: a flat Ectoplasm fill with
+   its own ink (--color-on-primary is per theme; white on both Ghost Lab
+   primaries, 4.8 and 6.2:1). No gradient, no glow; hover mixes toward the
+   foreground, so it firms up on light themes and lifts on dark ones. With the
+   rest of the chrome neutral, this fill is the one place the brand colour is
+   spent in a view. (v3 had made primary neutral-inverted; Ghost Lab gives the
+   colour back to the action because the wordmark, not the chrome, now
+   carries the identity.) */
 .btn-primary {
-    background: var(--color-inverse);
-    color: var(--color-on-inverse);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-inverse) 86%, var(--color-bg));
+    background: var(--color-primary-hover);
 }
 
 .btn-primary:active:not(:disabled) {
-    background: color-mix(in srgb, var(--color-inverse) 78%, var(--color-bg));
+    background: color-mix(in srgb, var(--color-primary) 78%, var(--color-fg));
 }
 
-/* secondary — a filled neutral. A fill already reads as a button, so no line. */
+/* secondary — outlined: a hairline in the control edge, no fill. */
 .btn-secondary {
-    background: var(--color-surface-raised);
+    background: transparent;
     color: var(--color-fg);
+    border-color: var(--color-border-strong);
 }
 
 .btn-secondary:hover:not(:disabled) { background: var(--color-surface-hover); }
@@ -1204,11 +1232,17 @@ h1, h2 {
 .btn-outline:hover:not(:disabled) { background: var(--color-surface-hover); }
 .btn-outline:active:not(:disabled) { background: var(--color-surface-active); }
 
-/* ghost — no chrome until touched. Toolbars, close buttons, row actions. */
+/* ghost — the quiet fill (Ghost Lab): a raised neutral with no line, for
+   toolbars, "Cancel" and row actions. Icon-only ghosts (`btn-icon`, and the
+   `btn-muted` corner glyphs) stay bare until touched, so a card corner of
+   share/export/edit glyphs or a toggle inside a field is not a row of tiles. */
 .btn-ghost {
-    background: transparent;
+    background: var(--color-surface-raised);
     color: var(--color-fg);
 }
+
+.btn-ghost.btn-icon,
+.btn-ghost.btn-muted { background: transparent; }
 
 .btn-ghost:hover:not(:disabled) { background: var(--color-surface-hover); }
 .btn-ghost:active:not(:disabled) { background: var(--color-surface-active); }
@@ -1365,7 +1399,8 @@ h1, h2 {
 .segmented__item.is-active {
     background: var(--color-surface-elevated);
     color: var(--color-fg);
-    box-shadow: var(--shadow-sm);
+    /* Ghost Lab: selected is an inset ring in the primary, not a lift. */
+    box-shadow: var(--ring-primary);
 }
 
 .segmented__item:disabled {
@@ -1404,7 +1439,7 @@ h1, h2 {
         left: anchor(left);
         border-radius: var(--radius-sm);
         background: var(--color-surface-elevated);
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--ring-primary);
         pointer-events: none;
         transition: top var(--duration-glide) var(--ease-glide),
                     right var(--duration-glide) var(--ease-glide),
@@ -1502,7 +1537,7 @@ h1, h2 {
     bottom: 0;
     height: 2px;
     border-radius: var(--radius-full);
-    background: var(--color-fg);
+    background: var(--color-primary);
     transform: scaleX(0);
     transition: transform var(--duration-slow) var(--ease-out);
 }
@@ -1541,7 +1576,7 @@ h1, h2 {
         bottom: anchor(bottom);
         height: 2px;
         border-radius: var(--radius-full);
-        background: var(--color-fg);
+        background: var(--color-primary);
         pointer-events: none;
         transition: left var(--duration-glide) var(--ease-glide),
                     right var(--duration-glide) var(--ease-glide),
@@ -1939,8 +1974,16 @@ a.data-list__row:hover,
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--stat-color);
+    /* Ghost Lab: one colour, the primary — the bar encodes a value, and six
+       canon stat colours stacked under a type-coloured hero were a seventh
+       palette on the screen. A low base stat (StatBar marks it) is a dimmer
+       primary, so the weak spots read at a glance without a second hue. */
+    background: var(--color-primary);
     transition: width var(--duration-slow) var(--ease-out);
+}
+
+.stat-bar--low .stat-bar__fill {
+    background: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface-raised));
 }
 
 /* ---- Search field (v3) ------------------------------------------------------
