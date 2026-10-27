@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T07:54:21.869Z",
+  "generatedAt": "2026-10-27T07:43:03.921Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -20637,6 +20637,93 @@
           "level": null,
           "description": "Floatzel is a niche but threatening wallbreaker and pivot thanks to its good Attack, amazing Speed, and STAB Flip Turn, escaping its problematic matchups against Milotic, Amoonguss, Goodra, and Qwilfish; it finds use over the more common Bruxish thanks to its higher Speed. Aqua Jet allows Floatzel to revenge kill…",
           "source": "PU"
+        },
+        {
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
+          "itemAlts": [],
+          "ability": "water-veil",
+          "nature": "adamant",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "wave-crash"
+            ],
+            [
+              "flip-turn"
+            ],
+            [
+              "ice-spinner"
+            ],
+            [
+              "liquidation",
+              "aqua-jet"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Nothing besides particularly fast Choice Scarf users like Grafaiai and Mismagius can outspeed Floatzel when equipped with a Choice Scarf. Flip Turn lets Floatzel keep up offensive momentum, luring in passive Pokemon like Defog Hisuian Decidueye and Lanturn for its teammates to exploit. Ice Spinner lets Floatzel…",
+          "source": "ZU"
+        },
+        {
+          "name": "Bulk Up",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "water-veil",
+          "nature": "jolly",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "bulk-up"
+            ],
+            [
+              "wave-crash"
+            ],
+            [
+              "ice-spinner"
+            ],
+            [
+              "aqua-jet"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Bulk Up enables Floatzel to sweep teams, take advantage of its offensive flexibility, and take a hit after it sets up. Ice Spinner nails bulky Grass-types like Dipplin and Hisuian Decidueye. Aqua Jet lets Floatzel pick off faster revenge killers like Jolteon and Choice Scarf Mesprit. Leftovers gives Floatzel some…",
+          "source": "ZU"
         }
       ]
     },
@@ -29188,34 +29275,34 @@
       "sets": [
         {
           "name": "Stealth Rock",
-          "item": "leftovers",
+          "item": "rocky-helmet",
           "itemAlts": [],
           "ability": "",
           "nature": "jolly",
           "tera": [
-            "poison"
+            "water"
           ],
           "moves": [
             [
               "stealth-rock"
             ],
             [
-              "knock-off"
-            ],
-            [
               "earthquake"
             ],
             [
-              "gunk-shot"
+              "knock-off"
+            ],
+            [
+              "taunt"
             ]
           ],
           "evs": {
-            "hp": 0,
-            "attack": 252,
+            "hp": 248,
+            "attack": 0,
             "defense": 0,
             "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
+            "special-defense": 20,
+            "speed": 240
           },
           "ivs": {
             "hp": 31,
@@ -53930,9 +54017,62 @@
     },
     "936": {
       "name": "Armarouge",
-      "gen": "VGC 2023",
+      "gen": "Champions VGC",
       "overview": "",
       "sets": [
+        {
+          "name": "Psychic Terrain Attacker",
+          "item": "focus-sash",
+          "itemAlts": [
+            "life-orb"
+          ],
+          "ability": "",
+          "nature": "modest",
+          "tera": [],
+          "moves": [
+            [
+              "expanding-force"
+            ],
+            [
+              "armor-cannon"
+            ],
+            [
+              "protect",
+              "trick-room"
+            ],
+            [
+              "trick-room",
+              "wide-guard"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 6,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 2,
+            "special-attack": 32,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Armarouge utilizes the Psychic Terrain set by a partner Indeedee-F to deal massive spread damage to the opposing team. Unlike alternatives like Hatterene, Armarouge is fast enough to where it can function both in Trick Room and Tailwind, and its typing and ability make it better against Mega Charizard Y.\nArmor Cannon…",
+          "source": "Champions VGC"
+        },
         {
           "name": "TR Sweeper",
           "item": "life-orb",
@@ -54075,57 +54215,6 @@
           },
           "level": null,
           "description": "Armarouge's combination of powerful STAB moves, excellent coverage, Weak Armor, and Psychic Terrain makes it a strong candidate to use Focus Sash.\nPsychic Terrain: Psychic Terrain is a powerful setup move for Armarouge thanks to Expanding Force; it also protects Armarouge from priority moves after Weak Armor triggers.…",
-          "source": "Battle Stadium"
-        },
-        {
-          "name": "Offensive",
-          "item": "assault-vest",
-          "itemAlts": [
-            "choice-specs",
-            "choice-scarf"
-          ],
-          "ability": "flash-fire",
-          "nature": "modest",
-          "tera": [
-            "fairy",
-            "grass",
-            "fire"
-          ],
-          "moves": [
-            [
-              "armor-cannon"
-            ],
-            [
-              "psyshock",
-              "psychic"
-            ],
-            [
-              "aura-sphere",
-              "tera-blast"
-            ],
-            [
-              "energy-ball",
-              "tera-blast"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 4
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "This set does not have a full write-up yet. If you'd like to finish this, feel free to reserve it here!",
           "source": "Battle Stadium"
         }
       ]
