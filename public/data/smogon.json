@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T07:36:04.004Z",
+  "generatedAt": "2026-10-28T07:31:57.101Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -9714,6 +9714,51 @@
       "overview": "Espeon is a Magic Bounce support Pokemon that compresses entry hazard denial, status spreading, and possibly momentum grabbing into one slot. It punishes common utility Pokemon such as Gligar, Swampert, Bronzong, Klefki, Bellibolt, Dudunsparce, and Vaporeon for setting hazards and using disruptive moves like Thunder…",
       "sets": [
         {
+          "name": "Rocky Helmet",
+          "item": "rocky-helmet",
+          "itemAlts": [],
+          "ability": "magic-bounce",
+          "nature": "timid",
+          "tera": [
+            "fairy"
+          ],
+          "moves": [
+            [
+              "psychic-noise"
+            ],
+            [
+              "morning-sun"
+            ],
+            [
+              "reflect"
+            ],
+            [
+              "thunder-wave",
+              "grass-knot",
+              "shadow-ball"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 4,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
+        {
           "name": "Choice Specs",
           "item": "choice-specs",
           "itemAlts": [],
@@ -9778,13 +9823,11 @@
               "psyshock"
             ],
             [
-              "draining-kiss",
-              "tera-blast"
+              "draining-kiss"
             ],
             [
               "shadow-ball",
-              "morning-sun",
-              "tera-blast"
+              "morning-sun"
             ]
           ],
           "evs": {
@@ -9819,7 +9862,8 @@
           ],
           "moves": [
             [
-              "psychic"
+              "psychic",
+              "psychic-noise"
             ],
             [
               "shadow-ball"
@@ -9850,55 +9894,6 @@
           "level": null,
           "description": "",
           "source": "RU"
-        },
-        {
-          "name": "Magic Bounce Support",
-          "item": "rocky-helmet",
-          "itemAlts": [
-            "eject-button"
-          ],
-          "ability": "magic-bounce",
-          "nature": "timid",
-          "tera": [
-            "fairy",
-            "steel",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "psychic-noise"
-            ],
-            [
-              "thunder-wave"
-            ],
-            [
-              "grass-knot",
-              "alluring-voice",
-              "shadow-ball"
-            ],
-            [
-              "morning-sun"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 80,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 176
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nPsychic Noise makes it harder for Pokemon such as Vaporeon, Bellibolt, and Chansey to sit in front of Espeon after Magic Bounce denies their utility moves. Thunder Wave provides speed control, letting Espeon punish faster threats like Munkidori, Flamigo, and Scyther as well as setup sweepers such as…",
-          "source": "NU"
         }
       ]
     },
@@ -13549,13 +13544,12 @@
           "source": "Battle Stadium"
         },
         {
-          "name": "Substitute + Calm Mind",
+          "name": "VinCune",
           "item": "leftovers",
           "itemAlts": [],
           "ability": "",
           "nature": "timid",
           "tera": [
-            "dark",
             "fairy"
           ],
           "moves": [
@@ -13569,18 +13563,16 @@
               "scald"
             ],
             [
-              "protect",
-              "ice-beam",
-              "shadow-ball"
+              "protect"
             ]
           ],
           "evs": {
             "hp": 252,
             "attack": 0,
-            "defense": 4,
+            "defense": 0,
             "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
+            "special-defense": 40,
+            "speed": 216
           },
           "ivs": {
             "hp": 31,
@@ -13591,8 +13583,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nThis set focuses on Suicune being a wincon by making use of Pressure and its HP and Speed stats. Substitute + Calm Mind ensures Suicune can set up on bulky but offensively weak Pokemon such as Slowbro, Gastrodon, and Wo-Chien. Protect is excellent for scouting moves on Choice-locked Pokemon, such as…",
-          "source": "RU"
+          "description": "",
+          "source": "UU"
         }
       ]
     },
@@ -14617,16 +14609,14 @@
           "source": "Battle Stadium"
         },
         {
-          "name": "Defensive Utility",
-          "item": "rocky-helmet",
-          "itemAlts": [
-            "leftovers"
-          ],
+          "name": "Physically Defensive",
+          "item": "leftovers",
+          "itemAlts": [],
           "ability": "",
-          "nature": "impish",
+          "nature": "relaxed",
           "tera": [
-            "ghost",
-            "poison"
+            "poison",
+            "ghost"
           ],
           "moves": [
             [
@@ -14636,10 +14626,10 @@
               "earthquake"
             ],
             [
-              "knock-off"
+              "flip-turn"
             ],
             [
-              "flip-turn",
+              "knock-off",
               "roar"
             ]
           ],
@@ -14660,8 +14650,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nSwampert is able to leverage its good defensive typing and bulk in order to act as a solid Stealth Rock setter for a variety of teams. Knock Off lets Swampert punish Pokemon reliant on Heavy-Duty Boots that attempt to switch in, such as Noivern and Flamigo. Flip Turn allows Swampert to act as a slow pivot…",
-          "source": "RU"
+          "description": "",
+          "source": "UU"
         }
       ]
     },
@@ -17772,7 +17762,7 @@
     "373": {
       "name": "Salamence",
       "gen": "Champions VGC",
-      "overview": "Mega Salamence deals consistent strong damage, being able to allow its teammates to clean up or do so itself while using its supportive tools in Tailwind and Intimidate to help its allies beat tough matchups. For example, it can use Tailwind to outspeed Mega Garchomp Z, a problematic matchup otherwise, or to allow an…",
+      "overview": "Mega Salamence deals consistent high damage, being able to allow its teammates to clean up or do so itself while using its supportive tools in Tailwind and Intimidate to help its allies beat tough matchups. For example, it can use Tailwind to outspeed Mega Garchomp Z, a problematic matchup otherwise, or to allow an…",
       "sets": [
         {
           "name": "Special Attacker",
@@ -20104,6 +20094,49 @@
           "source": "Battle Stadium"
         },
         {
+          "name": "Specially Defensive",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "competitive",
+          "nature": "calm",
+          "tera": [
+            "ground"
+          ],
+          "moves": [
+            [
+              "surf"
+            ],
+            [
+              "flip-turn"
+            ],
+            [
+              "stealth-rock"
+            ],
+            [
+              "roost"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 40,
+            "special-attack": 0,
+            "special-defense": 216,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "UU"
+        },
+        {
           "name": "Offensive",
           "item": "leftovers",
           "itemAlts": [],
@@ -20144,53 +20177,6 @@
           },
           "level": null,
           "description": "Offensive Empoleon is uniquely equipped to provide teams with a strong defensive and offensive presence given its natural bulk and exceptional coverage. Its Water / Steel typing and Special Defense is valuable in a metagame with strong Choice Scarf users such as Basculegion-F, Gardevoir, and Gengar threatening to use…",
-          "source": "RU"
-        },
-        {
-          "name": "Specially Defensive",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "competitive",
-          "nature": "calm",
-          "tera": [
-            "fairy",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "surf"
-            ],
-            [
-              "roost"
-            ],
-            [
-              "stealth-rock",
-              "flip-turn"
-            ],
-            [
-              "knock-off",
-              "roar",
-              "ice-beam"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 4,
-            "special-attack": 0,
-            "special-defense": 252,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Specially defensive Empoleon is among the best utility Pokemon in the metagame for its capacity to counter most special attackers, establish entry hazards, remove items, and phaze setup attempts. Roost allows Empoleon to remain healthy enough to switch in against the strong special attackers like Basculegion-F,…",
           "source": "RU"
         }
       ]
@@ -20347,7 +20333,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Mega Staraptor serves as a fantastic cleaner with its great Speed outpacing key Pokemon such as Garchomp and Hisuian Samurott, good offensive typing, a high Attack stat, and high Base Power moves. Its access to Contrary also makes it capable of boosting its defenses with Close Combat, making it very hard to take down,…",
+          "description": "Mega Staraptor serves as a fantastic cleaner with its great Speed outpacing key Pokemon such as Garchomp and Hisuian Samurott, good offensive typing, a high Attack stat, and high-Base Power moves. Its access to Contrary also makes it capable of boosting its defenses with Close Combat, making it very hard to take down,…",
           "source": "Champions OU"
         },
         {
@@ -20651,6 +20637,93 @@
           "level": null,
           "description": "Floatzel is a niche but threatening wallbreaker and pivot thanks to its good Attack, amazing Speed, and STAB Flip Turn, escaping its problematic matchups against Milotic, Amoonguss, Goodra, and Qwilfish; it finds use over the more common Bruxish thanks to its higher Speed. Aqua Jet allows Floatzel to revenge kill…",
           "source": "PU"
+        },
+        {
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
+          "itemAlts": [],
+          "ability": "water-veil",
+          "nature": "adamant",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "wave-crash"
+            ],
+            [
+              "flip-turn"
+            ],
+            [
+              "ice-spinner"
+            ],
+            [
+              "liquidation",
+              "aqua-jet"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Nothing besides particularly fast Choice Scarf users like Grafaiai and Mismagius can outspeed Floatzel when equipped with a Choice Scarf. Flip Turn lets Floatzel keep up offensive momentum, luring in passive Pokemon like Defog Hisuian Decidueye and Lanturn for its teammates to exploit. Ice Spinner lets Floatzel…",
+          "source": "ZU"
+        },
+        {
+          "name": "Bulk Up",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "water-veil",
+          "nature": "jolly",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "bulk-up"
+            ],
+            [
+              "wave-crash"
+            ],
+            [
+              "ice-spinner"
+            ],
+            [
+              "aqua-jet"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Bulk Up enables Floatzel to sweep teams, take advantage of its offensive flexibility, and take a hit after it sets up. Ice Spinner nails bulky Grass-types like Dipplin and Hisuian Decidueye. Aqua Jet lets Floatzel pick off faster revenge killers like Jolteon and Choice Scarf Mesprit. Leftovers gives Floatzel some…",
+          "source": "ZU"
         }
       ]
     },
@@ -20765,7 +20838,7 @@
             "heavy-duty-boots"
           ],
           "ability": "sticky-hold",
-          "nature": "relaxed",
+          "nature": "bold",
           "tera": [
             "ghost",
             "poison"
@@ -20775,6 +20848,7 @@
               "spikes"
             ],
             [
+              "earth-power",
               "earthquake"
             ],
             [
@@ -20801,7 +20875,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nSpikes is Gastrodon's main tool for making progress and chipping away at the opposing team's health. Earthquake is used over Earth Power to deal more damage to common specially defensive Pokemon like Hisuian Goodra, Empoleon, and Assault Vest Cyclizar. Ice Beam is very useful coverage that targets Flying-,…",
+          "description": "Set Details\nSpikes is Gastrodon's main tool for making progress and chipping away at the opposing team's health. Earth Power is preferred over Earthquake to deal with Bisharp more effectively. On the other hand, Earthquake pressures specially defensive Pokemon like Hisuian Goodra, Empoleon, and Assault Vest Cyclizar…",
           "source": "RU"
         },
         {
@@ -22234,7 +22308,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Mega Garchomp Z uses its great Speed and Special Attack to quickly threaten heavy damage against Pokemon like Mega Salamence and Garchomp and trade positively against general metagame staples like Incineroar and Mega Raichu Y.\nDragon Pulse can 2HKO Rillaboom without suffering a massive Special Attack drop. Draco…",
+          "description": "Mega Garchomp Z uses its great Speed and Special Attack to quickly threaten heavy damage against Pokemon like Mega Salamence and Garchomp and trade positively against general metagame staples like Incineroar and Mega Raichu Y.\nDragon Pulse can let Mega Garchomp Z 2HKO Rillaboom without suffering a massive Special…",
           "source": "Champions VGC"
         },
         {
@@ -22947,9 +23021,52 @@
     },
     "454": {
       "name": "Toxicroak",
-      "gen": "NU",
+      "gen": "RU",
       "overview": "Toxicroak stands out for having the rare combination of Dry Skin and a great typing both offensively and defensively, which makes it the premier switch-in to Water-types like Vaporeon, Milotic, Paldean Tauros-W, Basculegion, and Inteleon. Toxicroak is also less susceptible to being revenge killed after it has set up;…",
       "sets": [
+        {
+          "name": "Swords Dance",
+          "item": "life-orb",
+          "itemAlts": [],
+          "ability": "dry-skin",
+          "nature": "adamant",
+          "tera": [
+            "dark"
+          ],
+          "moves": [
+            [
+              "swords-dance"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "gunk-shot"
+            ],
+            [
+              "sucker-punch"
+            ]
+          ],
+          "evs": {
+            "hp": 4,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
         {
           "name": "Swords Dance",
           "item": "leftovers",
@@ -23087,54 +23204,6 @@
           "level": null,
           "description": "",
           "source": "PU"
-        },
-        {
-          "name": "Wallbreaker",
-          "item": "life-orb",
-          "itemAlts": [
-            "leftovers"
-          ],
-          "ability": "dry-skin",
-          "nature": "jolly",
-          "tera": [
-            "dark",
-            "fighting"
-          ],
-          "moves": [
-            [
-              "close-combat"
-            ],
-            [
-              "gunk-shot"
-            ],
-            [
-              "swords-dance",
-              "sucker-punch"
-            ],
-            [
-              "knock-off",
-              "sucker-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "ZU"
         }
       ]
     },
@@ -29206,34 +29275,34 @@
       "sets": [
         {
           "name": "Stealth Rock",
-          "item": "leftovers",
+          "item": "rocky-helmet",
           "itemAlts": [],
           "ability": "",
           "nature": "jolly",
           "tera": [
-            "poison"
+            "water"
           ],
           "moves": [
             [
               "stealth-rock"
             ],
             [
-              "knock-off"
-            ],
-            [
               "earthquake"
             ],
             [
-              "gunk-shot"
+              "knock-off"
+            ],
+            [
+              "taunt"
             ]
           ],
           "evs": {
-            "hp": 0,
-            "attack": 252,
+            "hp": 248,
+            "attack": 0,
             "defense": 0,
             "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
+            "special-defense": 20,
+            "speed": 240
           },
           "ivs": {
             "hp": 31,
@@ -31504,9 +31573,148 @@
     },
     "609": {
       "name": "Chandelure",
-      "gen": "NU",
+      "gen": "RU",
       "overview": "With Chandelure's tremendous Special Attack and STAB attacks, it can hit the entire tier for at least neutral damage, barring Incineroar. Chandelure, donning a Choice Specs, easily breaks through would-be checks like Rhyperior and Goodra. However, with Choice Scarf, it becomes a dangerous revenge killer that’s able to…",
       "sets": [
+        {
+          "name": "Weakness Policy",
+          "item": "weakness-policy",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "modest",
+          "tera": [
+            "grass"
+          ],
+          "moves": [
+            [
+              "flamethrower"
+            ],
+            [
+              "shadow-ball"
+            ],
+            [
+              "energy-ball",
+              "taunt"
+            ],
+            [
+              "taunt",
+              "calm-mind"
+            ]
+          ],
+          "evs": {
+            "hp": 240,
+            "attack": 0,
+            "defense": 192,
+            "special-attack": 20,
+            "special-defense": 0,
+            "speed": 56
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "The bulk investment ensures that Chandelure survives a Krookodile Earthquake and Choice Band Stone Edge from Entei.",
+          "source": "RU"
+        },
+        {
+          "name": "Calm Mind",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "modest",
+          "tera": [
+            "fairy",
+            "grass"
+          ],
+          "moves": [
+            [
+              "calm-mind"
+            ],
+            [
+              "fire-blast"
+            ],
+            [
+              "shadow-ball"
+            ],
+            [
+              "substitute",
+              "taunt",
+              "energy-ball"
+            ]
+          ],
+          "evs": {
+            "hp": 56,
+            "attack": 0,
+            "defense": 60,
+            "special-attack": 212,
+            "special-defense": 0,
+            "speed": 180
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "With the given EVs Chandelure survives a Choice Band Earthquake from Krookodile and it outspeeds Timid Magnezone and Adamant Bisharp.",
+          "source": "RU"
+        },
+        {
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "timid",
+          "tera": [
+            "ghost",
+            "fire",
+            "grass"
+          ],
+          "moves": [
+            [
+              "shadow-ball"
+            ],
+            [
+              "flamethrower",
+              "fire-blast",
+              "overheat"
+            ],
+            [
+              "trick"
+            ],
+            [
+              "energy-ball",
+              "overheat"
+            ]
+          ],
+          "evs": {
+            "hp": 4,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
         {
           "name": "Choice Specs",
           "item": "choice-specs",
@@ -31552,101 +31760,6 @@
           },
           "level": null,
           "description": "Set Details\nFire Blast is preferred for better damage rolls against Goodra and Incineroar as to not let them switch in safely, but Flamethrower can be used to be more accurate. Energy Ball hits Fire-type checks such as Swampert and Rhyperior. Trick cripples walls like Vaporeon and Incineroar, but Overheat allows…",
-          "source": "NU"
-        },
-        {
-          "name": "Choice Scarf",
-          "item": "choice-scarf",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "grass",
-            "fire"
-          ],
-          "moves": [
-            [
-              "fire-blast",
-              "flamethrower"
-            ],
-            [
-              "shadow-ball"
-            ],
-            [
-              "energy-ball"
-            ],
-            [
-              "trick"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nFire Blast gives Chandelure a powerful STAB Fire-type attack, but Flamethrower can be run for a more accurate move. Energy Ball hits Fire-resistant Pokemon like Rhyperior, Vaporeon, and Swampert. Trick cripples walls and bulky setup sweepers like Incineroar and Scrafty. When backed into a corner, Tera…",
-          "source": "NU"
-        },
-        {
-          "name": "Calm Mind",
-          "item": "heavy-duty-boots",
-          "itemAlts": [
-            "air-balloon"
-          ],
-          "ability": "flash-fire",
-          "nature": "timid",
-          "tera": [
-            "grass",
-            "fairy",
-            "water",
-            "dark"
-          ],
-          "moves": [
-            [
-              "calm-mind"
-            ],
-            [
-              "fire-blast",
-              "flamethrower"
-            ],
-            [
-              "shadow-ball"
-            ],
-            [
-              "energy-ball",
-              "pain-split"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Fire Blast is preferred for improved damage rolls after a Calm Mind boost and deal greater damage to other special walls like Incineroar and Sylveon, but Flamethrower can be used for its accuracy. Energy Ball targets common Water-, Rock-, and Ground-type switch-ins like Vaporeon, Rhyperior, and Swampert. However, Pain…",
           "source": "NU"
         }
       ]
@@ -39479,59 +39592,10 @@
       ]
     },
     "724": {
-      "name": "Decidueye-Hisui",
-      "gen": "RU",
+      "name": "Decidueye",
+      "gen": "NU",
       "overview": "Decidueye is an incredibly powerful physical attacker, using Swords Dance-boosted Spirit Shackle, Poltergeist, and Leaf Blade to do massive damage to opposing walls, such as Amoonguss, Duraludon, and Gligar, and revenge killing faster foes like Munkidori and Chandelure with Shadow Sneak. It also serves as one of the…",
       "sets": [
-        {
-          "name": "Defogger",
-          "item": "rocky-helmet",
-          "itemAlts": [
-            "heavy-duty-boots",
-            "covert-cloak"
-          ],
-          "ability": "scrappy",
-          "nature": "impish",
-          "tera": [
-            "steel",
-            "water",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "triple-arrows"
-            ],
-            [
-              "u-turn",
-              "knock-off"
-            ],
-            [
-              "roost"
-            ],
-            [
-              "defog"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
         {
           "name": "Swords Dance",
           "item": "spell-tag",
@@ -39672,6 +39736,50 @@
           },
           "level": null,
           "description": "Set Details\nGiga Drain, along with Roost, provides Decidueye with additional longevity, but Leaf Storm can provide immediate power to surprise opponents expecting physically offensive Decidueye sets. U-turn allows Decidueye to pivot on opposing Competitive and Defiant Pokemon like Kilowattrel and Tornadus that might…",
+          "source": "NU"
+        },
+        {
+          "name": "Defog",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "scrappy",
+          "nature": "impish",
+          "tera": [
+            "steel"
+          ],
+          "moves": [
+            [
+              "defog"
+            ],
+            [
+              "roost"
+            ],
+            [
+              "triple-arrows"
+            ],
+            [
+              "u-turn",
+              "knock-off"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 8,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
           "source": "NU"
         }
       ]
@@ -40817,49 +40925,6 @@
           "source": "Champions VGC"
         },
         {
-          "name": "Lead",
-          "item": "focus-sash",
-          "itemAlts": [],
-          "ability": "steadfast",
-          "nature": "jolly",
-          "tera": [
-            "ghost"
-          ],
-          "moves": [
-            [
-              "stealth-rock"
-            ],
-            [
-              "taunt"
-            ],
-            [
-              "endeavor"
-            ],
-            [
-              "accelerock"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 212,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 44,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
-        {
           "name": "All-Out Attacker",
           "item": "choice-band",
           "itemAlts": [
@@ -40949,6 +41014,50 @@
           "level": null,
           "description": "Swords Dance Lycanroc-D is a terrifying wallbreaker in RU, able to rip through defensive teams after a single boost, that packs priority in order to deal with faster teams. Close Combat is Lycanroc-D's strongest move due to Tough Claws and hits Steel-types such as Bisharp and Registeel. Accelerock is good against fast…",
           "source": "RU"
+        },
+        {
+          "name": "Entry Hazard Lead",
+          "item": "focus-sash",
+          "itemAlts": [],
+          "ability": "steadfast",
+          "nature": "jolly",
+          "tera": [
+            "ghost"
+          ],
+          "moves": [
+            [
+              "stealth-rock"
+            ],
+            [
+              "taunt"
+            ],
+            [
+              "endeavor"
+            ],
+            [
+              "rock-blast",
+              "accelerock"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 0,
+            "attack": 31,
+            "defense": 0,
+            "special-attack": 31,
+            "special-defense": 0,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Lycanroc's niche as a Stealth Rock lead stems from it being the fastest Pokemon with Stealth Rock, Taunt, and a multi-hit move, ensuring that it will prevent entry hazards from opposing leads such as Froslass, Vikavolt, and Hisuian Avalugg while breaking their Focus Sashes. Endeavor is useful for ensuring Lycanroc…",
+          "source": "PU"
         }
       ]
     },
@@ -41568,6 +41677,49 @@
         },
         {
           "name": "Sticky Web",
+          "item": "custap-berry",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "adamant",
+          "tera": [
+            "ghost"
+          ],
+          "moves": [
+            [
+              "liquidation"
+            ],
+            [
+              "lunge"
+            ],
+            [
+              "sticky-web"
+            ],
+            [
+              "endeavor"
+            ]
+          ],
+          "evs": {
+            "hp": 100,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 156
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "UU"
+        },
+        {
+          "name": "Sticky Web",
           "item": "focus-sash",
           "itemAlts": [
             "custap-berry"
@@ -41613,50 +41765,6 @@
           "level": null,
           "description": "The Speed EVs help to outpace Vaporeon.",
           "source": "NU"
-        },
-        {
-          "name": "Choice Band",
-          "item": "choice-band",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "adamant",
-          "tera": [
-            "water"
-          ],
-          "moves": [
-            [
-              "liquidation"
-            ],
-            [
-              "leech-life"
-            ],
-            [
-              "poison-jab"
-            ],
-            [
-              "sticky-web",
-              "mirror-coat"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "PU"
         }
       ]
     },
@@ -42396,7 +42504,7 @@
     "768": {
       "name": "Golisopod",
       "gen": "Champions VGC",
-      "overview": "Mega Golisopod is a premier bulky attacker in Regulation M-C. It utilizes its titanic bulk and good defensive typing to shrug off hits while dealing heavy damage back thanks to its high Attack stat and Tough Claws. Mega Golisopod's lackluster Speed lets it makes excellent use of Trick Room, allowing it to outspeed…",
+      "overview": "Mega Golisopod is a premier bulky attacker in Regulation M-C. It utilizes its titanic bulk and good defensive typing to shrug off hits while dealing heavy damage back thanks to its high Attack stat and Tough Claws. Mega Golisopod's lackluster Speed lets it make excellent use of Trick Room, allowing it to outspeed…",
       "sets": [
         {
           "name": "Bulky Attacker",
@@ -50068,6 +50176,96 @@
           "source": "Ubers"
         },
         {
+          "name": "Explosion Lure and Cleaner",
+          "item": "life-orb",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "jolly",
+          "tera": [
+            "normal"
+          ],
+          "moves": [
+            [
+              "supercell-slam"
+            ],
+            [
+              "extreme-speed"
+            ],
+            [
+              "explosion"
+            ],
+            [
+              "rapid-spin"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
+        {
+          "name": "Pivot and Spinner",
+          "item": "heavy-duty-boots",
+          "itemAlts": [
+            "choice-specs"
+          ],
+          "ability": "",
+          "nature": "timid",
+          "tera": [
+            "electric",
+            "normal"
+          ],
+          "moves": [
+            [
+              "thunderbolt"
+            ],
+            [
+              "volt-switch"
+            ],
+            [
+              "rapid-spin"
+            ],
+            [
+              "hyper-beam",
+              "swift"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
+        {
           "name": "Zoomies (Offensive Entry Hazard Support)",
           "item": "heavy-duty-boots",
           "itemAlts": [
@@ -50110,58 +50308,13 @@
           "level": null,
           "description": "Regieleki offers Electric teams an incredibly fast cleaner and pivot, shocking threats such as Iron Valiant, Spectrier, and Greninja. Volt Switch lets Regieleki punish foes like Amoonguss, Galarian Slowking, and Hisuian Goodra, which can take advantage of it, allowing teammates like Zapdos and Iron Hands to exploit…",
           "source": "Monotype"
-        },
-        {
-          "name": "Terrain Attacker",
-          "item": "choice-specs",
-          "itemAlts": [
-            "heavy-duty-boots",
-            "magnet"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [],
-          "moves": [
-            [
-              "rising-voltage"
-            ],
-            [
-              "thunderbolt"
-            ],
-            [
-              "volt-switch"
-            ],
-            [
-              "ancient-power",
-              "rapid-spin"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Regieleki functions as a fearsome wallbreaker on Electric teams thanks to its blistering Speed alongside a stunningly powerful Electric-type STAB move in Terrain-boosted Rising Voltage, being able to 2HKO even the most stalwart of neutral checks such as Assault Vest users like Galarian Slowking and Alolan Muk as well…",
-          "source": "Nat Dex Mono"
         }
       ]
     },
     "895": {
       "name": "Regidrago",
       "gen": "VGC 2024",
-      "overview": "Regidrago's access to Dragon Energy paired with its decent Speed and monstrous HP allows it to be a great sweeper late-game while still having utility as a revenge killer mid-game. Regidrago's ability, Dragon's Maw, is amazing, strengthening its already powerful STAB Dragon Energy even further so that it OHKOes…",
+      "overview": "",
       "sets": [
         {
           "name": "Three Attacks",
@@ -50299,14 +50452,12 @@
           "source": "Doubles OU"
         },
         {
-          "name": "Choice Scarf",
-          "item": "choice-scarf",
+          "name": "Choice Specs",
+          "item": "choice-specs",
           "itemAlts": [],
           "ability": "",
           "nature": "timid",
-          "tera": [
-            "dragon"
-          ],
+          "tera": [],
           "moves": [
             [
               "dragon-energy"
@@ -50315,10 +50466,10 @@
               "draco-meteor"
             ],
             [
-              "earth-power"
+              "dragon-pulse"
             ],
             [
-              "dragon-pulse"
+              "earth-power"
             ]
           ],
           "evs": {
@@ -50338,8 +50489,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nRegidrago is a threatening late-game sweeper, with its powerful Dragon Energy cleanly OHKOing many offensive foes such as Krookodile, Terrakion, and Feraligatr. However, Dragon Energy can be unreliable at times due to its insistence on Regidrago maintaining high HP. Draco Meteor provides a consistently…",
-          "source": "RU"
+          "description": "Modest nature guarantees the 2HKO on Corviknight with Dragon Energy.\nThis is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
+          "source": "Monotype"
         }
       ]
     },
@@ -51454,7 +51605,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Unburden Sneasler aims to outspeed and overwhelm foes with an onslaught of offense, firing off Close Combat and Dire Claw to threaten metagame staples such as Kingambit and Mega Floette.\nFake Out is most commonly used alongside White Herb and Grassy Seed, enabling Sneasler to create opportunities foe for allies like…",
+          "description": "Unburden Sneasler aims to outspeed and overwhelm foes with an onslaught of offense, firing off Close Combat and Dire Claw to threaten metagame staples such as Kingambit and Mega Floette.\nFake Out is most commonly used alongside White Herb and Grassy Seed, enabling Sneasler to create opportunities for allies like…",
           "source": "Champions VGC"
         },
         {
@@ -53866,9 +54017,62 @@
     },
     "936": {
       "name": "Armarouge",
-      "gen": "VGC 2023",
+      "gen": "Champions VGC",
       "overview": "",
       "sets": [
+        {
+          "name": "Psychic Terrain Attacker",
+          "item": "focus-sash",
+          "itemAlts": [
+            "life-orb"
+          ],
+          "ability": "",
+          "nature": "modest",
+          "tera": [],
+          "moves": [
+            [
+              "expanding-force"
+            ],
+            [
+              "armor-cannon"
+            ],
+            [
+              "protect",
+              "trick-room"
+            ],
+            [
+              "trick-room",
+              "wide-guard"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 6,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 2,
+            "special-attack": 32,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Armarouge utilizes the Psychic Terrain set by a partner Indeedee-F to deal massive spread damage to the opposing team. Unlike alternatives like Hatterene, Armarouge is fast enough to where it can function both in Trick Room and Tailwind, and its typing and ability make it better against Mega Charizard Y.\nArmor Cannon…",
+          "source": "Champions VGC"
+        },
         {
           "name": "TR Sweeper",
           "item": "life-orb",
@@ -54011,57 +54215,6 @@
           },
           "level": null,
           "description": "Armarouge's combination of powerful STAB moves, excellent coverage, Weak Armor, and Psychic Terrain makes it a strong candidate to use Focus Sash.\nPsychic Terrain: Psychic Terrain is a powerful setup move for Armarouge thanks to Expanding Force; it also protects Armarouge from priority moves after Weak Armor triggers.…",
-          "source": "Battle Stadium"
-        },
-        {
-          "name": "Offensive",
-          "item": "assault-vest",
-          "itemAlts": [
-            "choice-specs",
-            "choice-scarf"
-          ],
-          "ability": "flash-fire",
-          "nature": "modest",
-          "tera": [
-            "fairy",
-            "grass",
-            "fire"
-          ],
-          "moves": [
-            [
-              "armor-cannon"
-            ],
-            [
-              "psyshock",
-              "psychic"
-            ],
-            [
-              "aura-sphere",
-              "tera-blast"
-            ],
-            [
-              "energy-ball",
-              "tera-blast"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 4
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "This set does not have a full write-up yet. If you'd like to finish this, feel free to reserve it here!",
           "source": "Battle Stadium"
         }
       ]
@@ -56560,9 +56713,54 @@
     },
     "967": {
       "name": "Cyclizar",
-      "gen": "RU",
+      "gen": "UU",
       "overview": "Cyclizar rides in as one of the defining Pokemon of the RU metagame. Its excellent Speed tier, access to Rapid Spin, and ability Regenerator make it the premier entry hazard removal option. It can also break out its utility toolbox, threatening to remove items from common switch-ins like Jirachi and Slowbro with Knock…",
       "sets": [
+        {
+          "name": "Assault Vest",
+          "item": "assault-vest",
+          "itemAlts": [],
+          "ability": "regenerator",
+          "nature": "jolly",
+          "tera": [
+            "fairy",
+            "steel",
+            "ghost"
+          ],
+          "moves": [
+            [
+              "rapid-spin"
+            ],
+            [
+              "knock-off"
+            ],
+            [
+              "u-turn"
+            ],
+            [
+              "dragon-tail"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 80,
+            "speed": 176
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "UU"
+        },
         {
           "name": "Assault Vest",
           "item": "assault-vest",
