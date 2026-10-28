@@ -291,7 +291,7 @@
 }
 
 /* Alone in the band (no icon beside it), the wordmark runs the rail's full
-   width — ~2.6rem tall at 10.5rem — so the band gives it one step more room
+   width — ~2.45rem tall at 10.5rem — so the band gives it one step more room
    top and bottom than the header's 0.75rem. */
 .app-shell__brand:not(.is-collapsed) {
     padding-block: var(--space-2);
