@@ -13,6 +13,7 @@ import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
 import { useReferenceStore } from '../store/useReferenceStore';
+import { useTeamCompareStore } from '../store/useTeamCompareStore';
 import { useNotifications } from '../hooks/useNotifications';
 
 import { PATCH_NOTES_VERSION, THEME_META } from '../constants/theme';
@@ -108,6 +109,7 @@ const TeamPokemonEditorModal = lazy(() => loadTeamPokemonEditorModal().then((m) 
 const ShareSnippetModal = lazy(() => loadShareSnippetModal().then((m) => ({ default: m.ShareSnippetModal })));
 const AuthModal = lazy(() => loadAuthModal().then((m) => ({ default: m.AuthModal })));
 // Mounted only while a badge is waiting to be shown (newlyUnlockedBadge).
+const TeamCompareModal = lazy(() => import('./modals/TeamCompareModal').then((m) => ({ default: m.TeamCompareModal })));
 const BadgeUnlockModal = lazy(() => import('./modals/BadgeUnlockModal').then((m) => ({ default: m.BadgeUnlockModal })));
 const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) => ({ default: m.PatchNotesModal })));
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
@@ -398,6 +400,7 @@ export default function AppLayout() {
     }, [savedTeams, activeTeamId]);
 
     const newlyUnlockedBadge = useAuthStore((s) => s.newlyUnlockedBadge);
+    const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
         generations: s.generations, items: s.items, natures: s.natures, games: s.games,
     })));
@@ -1321,6 +1324,12 @@ export default function AppLayout() {
             {newlyUnlockedBadge && (
                 <Suspense fallback={null}>
                     <BadgeUnlockModal />
+                </Suspense>
+            )}
+
+            {isTeamCompareOpen && (
+                <Suspense fallback={null}>
+                    <TeamCompareModal />
                 </Suspense>
             )}
 

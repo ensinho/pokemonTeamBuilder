@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — Gym teams never resolved a regional form ("Alolan Ninetales") `bug`
+- **Symptom:** a gym Pokémon written as a regional form (`Alolan Ninetales` in Sun/Moon, and the new Lazarus `Hisuian Zorua`, `Paldean Tauros Blaze Breed`) showed a Poké Ball, no types, and was skipped by "Use team".
+- **Root cause:** `GymsView`'s resolver looked names up by slug (`alolan-ninetales`), but the Pokédex index stores forms under display names (`Alolan Ninetales`), and its fallback searched base species only.
+- **Fix:** the index map also keys every form by `slugify(name)`.
+- **Correct pattern:** in `gym-leaders.json` write a form as the index's display name ("Hisuian Sneasel", "Mega Falinks"); the resolver matches it case- and space-insensitively.
+- **Files:** `src/components/views/GymsView.jsx`, `public/data/gym-leaders.json`
+
 ### 2026-10-29 — Cynthia's teams rail collapsed after visiting (or hovering) Friends/Battles `bug`
 - **Symptom:** on desktop (≥1601px, Chrome and Firefox), the Champion Challenge's left rail ("Team of the day") came out ~286px tall beside an ~850px console, its rows squeezed to 13px with sprites and names overlapping. Only F5 fixed it.
 - **Root cause:** a class-name collision between two lazy stylesheets. The rail (`ChallengeTeamsRail`, 2026-10-29) is `.challenge-teams`; the friend-battle `ChallengeModal` already used `.challenge-teams` for its team list, with `display: grid; max-height: 15rem; overflow-y: auto`. `challenge-modal.css` rides in the Friends and Battles chunks, which load when those screens open or their nav links are hovered (route prefetch) — from then on, for the rest of the session, the modal's `max-height: 15rem` capped the rail (no rule in the DS sheet resets max-height, so load order did not even matter). F5 dropped the stylesheet, so it "fixed itself". Headless runs that open `/challenge` directly never load the modal's CSS, which is why it would not reproduce.

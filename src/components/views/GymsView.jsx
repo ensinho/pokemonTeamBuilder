@@ -22,6 +22,8 @@ const slugify = (name = '') => name.toLowerCase().trim().replace(/[.'’:]/g, ''
 const pretty = (s = '') => s.replace(/-/g, ' ');
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 const TRAINER_SPRITE_BASE = 'https://play.pokemonshowdown.com/sprites/trainers/';
+// A hack ROM's leader can carry a note — a random pool, a roster not verified yet.
+const leaderNote = (leader, pt) => (pt ? leader.notePt : null) || leader.note || null;
 
 // Gym game key → game-logo asset key (logos live under public games.json keys).
 const LOGO_KEY = {
@@ -35,6 +37,7 @@ const LOGO_KEY = {
     'sword-shield': 'sword-shield', 'scarlet-violet': 'scarlet-violet',
     'radical-red': 'red-blue-yellow', 'inclement-emerald': 'ruby-sapphire-emerald',
     'renegade-platinum': 'diamond-pearl-platinum', 'blaze-black': 'black-white',
+    'lazarus': 'ruby-sapphire-emerald',
 };
 const logoFor = (g) => getGameLogo(LOGO_KEY[g.key] || g.key);
 const accentFor = (g) => getGameAccent(g.generation);
@@ -153,6 +156,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
 
                 {/* Content */}
                 <div className="overflow-y-auto p-4 sm:p-6 custom-scrollbar flex-1 bg-surface-raised/20">
+                    {leaderNote(leader, pt) && <p className="mb-4 text-sm text-muted">{leaderNote(leader, pt)}</p>}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {leader.team.map((mon, i) => {
                             const entry = resolve(mon.name);
@@ -389,7 +393,12 @@ export function GymsView({ showDetails, onAddToTeam }) {
 
     const indexBySlug = useMemo(() => {
         const m = new Map();
-        for (const p of pokemonIndex || []) m.set(p.name, p);
+        // Forms carry display names in the index ("Hisuian Zorua", "Alolan
+        // Ninetales"), so they are keyed by their slug as well.
+        for (const p of pokemonIndex || []) {
+            m.set(p.name, p);
+            if (p.isForm) m.set(slugify(p.name), p);
+        }
         return m;
     }, [pokemonIndex]);
     // Base species only, for resolving names whose default form carries a suffix
@@ -527,7 +536,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                         {leader.levelCap && (
                             <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} <span className="font-mono">{leader.levelCap}</span></span>
                         )}
-                        {onAddToTeam && (
+                        {onAddToTeam && leader.team.length > 0 && (
                             <button
                                 type="button"
                                 onClick={(e) => {
@@ -543,7 +552,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                     </div>
                 </div>
 
-                <div className="gyms-leader__team grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
+                {leader.team.length > 0 && <div className="gyms-leader__team grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
                     {leader.team.map((mon, i) => {
                         const entry = resolve(mon.name);
                         return (
@@ -557,7 +566,8 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             />
                         );
                     })}
-                </div>
+                </div>}
+                {leaderNote(leader, pt) && <p className="gyms-leader__note text-xs text-muted">{leaderNote(leader, pt)}</p>}
             </article>
         );
     };

@@ -7,10 +7,11 @@ import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
-import { Pencil, Check, Plus, Copy, MoreHorizontal } from 'lucide-react';
+import { Pencil, Check, Plus, Copy, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
 import { PcBox } from '../PcBox';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
+import { openTeamCompare } from '../../store/useTeamCompareStore';
 
 const timestampToDate = (value) => {
     if (!value) return null;
@@ -106,6 +107,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, onD
                     {[
                         { id: 'active', label: isActive ? `★ ${t('common.active')}` : t('savedTeams.setActive'), icon: <Check className="h-4 w-4" />, onClick: onToggleActive },
                         ...(showPin ? [{ id: 'pin', label: team.isFavorite ? t('savedTeams.unpin') : t('savedTeams.pin'), icon: <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />, onClick: () => onToggleFavorite(team) }] : []),
+                        { id: 'compare', label: t('teamCompare.openWith'), icon: <ArrowLeftRight className="h-4 w-4" />, onClick: () => openTeamCompare(team.id, 'saved_teams') },
                         { id: 'duplicate', label: t('savedTeams.duplicateBtn'), icon: <Copy className="h-4 w-4" />, onClick: () => onDuplicate?.(team) },
                         { id: 'export', label: t('savedTeams.exportShowdown'), icon: <ShowdownIcon className="h-4 w-4" />, onClick: () => onExport(team) },
                         { id: 'share', label: t('savedTeams.share'), icon: <ShareIcon className="h-4 w-4" />, onClick: () => onShare(team) },
