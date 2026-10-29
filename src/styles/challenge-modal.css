@@ -4,7 +4,7 @@
  * Short lists stay whole; a long one scrolls inside the dialog's body.
  */
 
-.challenge-teams {
+.challenge-modal-teams {
     display: grid;
     gap: var(--space-1_5);
     max-height: 15rem;
@@ -14,7 +14,7 @@
     list-style: none;
 }
 
-.challenge-teams__row {
+.challenge-modal-teams__row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -31,21 +31,21 @@
     transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
-.challenge-teams__row:hover {
+.challenge-modal-teams__row:hover {
     background: var(--color-surface-hover);
 }
 
-.challenge-teams__row[aria-pressed='true'] {
+.challenge-modal-teams__row[aria-pressed='true'] {
     background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-raised));
     box-shadow: var(--ring-primary);
 }
 
-.challenge-teams__row:disabled {
+.challenge-modal-teams__row:disabled {
     cursor: not-allowed;
     opacity: 0.55;
 }
 
-.challenge-teams__name {
+.challenge-modal-teams__name {
     min-width: 0;
     overflow: hidden;
     font-size: var(--text-sm);
@@ -54,19 +54,19 @@
     white-space: nowrap;
 }
 
-.challenge-teams__warn {
+.challenge-modal-teams__warn {
     grid-column: 1;
     font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
-.challenge-teams__sprites {
+.challenge-modal-teams__sprites {
     display: flex;
     grid-row: 1 / span 2;
     grid-column: 2;
 }
 
-.challenge-teams__sprites img {
+.challenge-modal-teams__sprites img {
     width: 1.75rem;
     height: 1.75rem;
     margin-inline: calc(var(--space-1) * -1);
