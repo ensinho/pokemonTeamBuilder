@@ -969,7 +969,9 @@ export default function AppLayout() {
     // the Mais sheet, which leaves out whatever the bar already shows.
     const mobileTabs = useMemo(() => ([
         { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
-        { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
+        // A fifth of a 360px phone fits about six letters at the dock's size:
+        // "Construtor" was cut to "Constru…". The full name stays its accessible name.
+        { key: 'builder', label: t('nav.builder'), shortLabel: t('nav.builderShort'), icon: <SwordsIcon />, path: '/builder' },
         { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
         // The daily puzzle is the one thing on a phone that is new every day, so it
         // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
@@ -979,37 +981,30 @@ export default function AppLayout() {
     // What the Mais sheet lists — every destination the tab bar has no room for,
     // in exactly one place (2026-10-18, Enzo: "mais fácil, intuitivo e
     // simétrico"). Ordered by how often people come for it (2026-10-29, Enzo:
-    // "ordenar por prioridade do site, o champion challenge deve ser mais fácil
-    // de acessar"):
-    // - shortcuts: the daily Champion Challenge, then your teams, the forum and
-    //   Journeys — a 2 × 2 of cards, each with a line saying what it is for;
-    // - Play: your battles, friends and the Quiz — what the shortcuts leave of
-    //   the rail's Community and Games;
+    // "o champion challenge deve ser mais fácil de acessar… em destaque, único
+    // na linha"):
+    // - hero: the daily Champion Challenge, alone on the first row, a wide card
+    //   with a line saying what it is;
+    // - shortcuts: the pinned destinations the bar leaves out (My teams, Forum,
+    //   Journeys), untitled, one row of equal cards;
+    // - Play: your battles, friends and the Quiz — what is left of the rail's
+    //   Community and Games;
     // - Competitive and PokéData as the rail has them.
     // Admin is a tool, not a destination people browse to: it leaves the grid
     // for a row under it (`moreSheetToolItems`). Sections are derived from the
     // rail's items, never re-listed, so a link added there shows up here too.
     const moreSheetSections = useMemo(() => {
         const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
-        const shortcutHints = {
-            challenge: t('nav.moreHints.challenge'),
-            favorites: t('nav.moreHints.favorites'),
-            feed: t('nav.moreHints.feed'),
-            journeys: t('nav.moreHints.journeys'),
-        };
-        const shortcutKeys = new Set(Object.keys(shortcutHints));
-        const visible = (items) => items.filter((item) => !inTabBar.has(item.key) && !shortcutKeys.has(item.key));
+        const placed = new Set(['challenge', ...primaryNavItems.map((item) => item.key)]);
+        const visible = (items) => items.filter((item) => !inTabBar.has(item.key));
         const groupItems = (key) => navigationGroups.find((group) => group.key === key)?.items ?? [];
-        const itemsOf = (...keys) => visible(keys.flatMap(groupItems));
+        const itemsOf = (...keys) => visible(keys.flatMap(groupItems)).filter((item) => !placed.has(item.key));
         const titleOf = (key) => navigationGroups.find((group) => group.key === key)?.title;
-        const everyItem = [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items)];
-        const shortcuts = Object.keys(shortcutHints)
-            .map((key) => everyItem.find((item) => item.key === key))
-            .filter((item) => item && !inTabBar.has(item.key))
-            // The card has room for the full name; the hint says what it is for.
-            .map((item) => ({ ...item, shortLabel: undefined, hint: shortcutHints[item.key] }));
+        const challenge = navigationGroups.flatMap((group) => group.items).find((item) => item.key === 'challenge');
         return [
-            { key: 'pinned', title: null, featured: true, items: shortcuts },
+            // The card has room for the full name; the hint says what it is.
+            { key: 'hero', title: null, hero: true, items: challenge ? [{ ...challenge, shortLabel: undefined, hint: t('nav.challengeHint') }] : [] },
+            { key: 'pinned', title: null, featured: true, items: visible(primaryNavItems) },
             { key: 'play', title: t('nav.play'), items: itemsOf('dashboard', 'guessing') },
             { key: 'teamBuilding', title: titleOf('teamBuilding'), items: itemsOf('teamBuilding') },
             { key: 'database', title: titleOf('database'), items: itemsOf('database') },
@@ -1985,9 +1980,10 @@ export default function AppLayout() {
                                     className={`app-shell__tab ${tab.active ? 'is-active' : ''}`}
                                     aria-current={tab.active && !tab.action ? 'page' : undefined}
                                     aria-haspopup={tab.action ? 'dialog' : undefined}
+                                    aria-label={tab.shortLabel && tab.shortLabel !== tab.label ? tab.label : undefined}
                                 >
                                     <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
-                                    <span className="app-shell__tab-label">{tab.label}</span>
+                                    <span className="app-shell__tab-label">{tab.shortLabel || tab.label}</span>
                                 </button>
                             ));
                         })()}

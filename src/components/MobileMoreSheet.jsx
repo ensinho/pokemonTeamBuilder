@@ -22,9 +22,10 @@ import '../styles/more-sheet.css';
  *   half the screen instead of running past the fold. Four columns on every
  *   phone, so the sections line up under each other; a larger interface scale
  *   drops to three instead of clipping labels (a container query in rem).
- * - A `featured` section (the untitled pinned one) is a 2 × 2 of shortcut
- *   cards instead of tiles: icon, full name and a `hint` line saying what the
- *   destination is for — the most-used places, so they get the most words.
+ * - A `hero` section is one wide card alone on its row — the daily Champion
+ *   Challenge: icon, full name and a `hint` line saying what it is.
+ * - A `featured` section (the untitled pinned one) is a single row of equal
+ *   shortcut cards instead of tiles — however many it holds, it fills the row.
  * - A tile shows `shortLabel` when the item has one: one line in a quarter of
  *   the sheet. The full name stays its accessible name.
  * - The caller leaves out what the tab bar already shows. The same destination
@@ -50,7 +51,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                             {section.title && (
                                 <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
                             )}
-                            <ul className={`more-sheet__grid ${section.featured ? 'more-sheet__grid--featured' : ''}`}>
+                            <ul className={`more-sheet__grid ${section.featured ? 'more-sheet__grid--featured' : ''} ${section.hero ? 'more-sheet__grid--hero' : ''}`}>
                                 {section.items.map((item) => {
                                     const active = currentPage === item.key;
                                     const shortened = item.shortLabel && item.shortLabel !== item.label;
@@ -58,7 +59,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                         <li key={item.key}>
                                             <button
                                                 type="button"
-                                                className={`more-tile ${section.featured ? 'more-tile--featured' : ''} ${active ? 'is-active' : ''}`}
+                                                className={`more-tile ${section.featured ? 'more-tile--featured' : ''} ${section.hero ? 'more-tile--hero' : ''} ${active ? 'is-active' : ''}`}
                                                 aria-current={active ? 'page' : undefined}
                                                 aria-label={shortened ? item.label : undefined}
                                                 onPointerDown={() => onIntent?.(item.key)}
@@ -70,7 +71,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                                         <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
                                                     )}
                                                 </span>
-                                                {section.featured ? (
+                                                {section.hero ? (
                                                     <span className="more-tile__text">
                                                         <span className="more-tile__label">{item.label}</span>
                                                         {item.hint && <span className="more-tile__hint">{item.hint}</span>}

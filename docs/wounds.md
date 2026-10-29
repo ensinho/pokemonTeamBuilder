@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — The Home's chip strip never scrolled; it was cut at the screen edge `bug`
+- **Symptom:** on a phone the Home's status chips ended in "League Ch" at the right edge and could not be swiped.
+- **Root cause:** `.cozy-toolbar` is `flex-wrap: wrap` and turns into a column below 1024px. In a *wrapping* column flex container the line is as wide as its widest item's max-content, so `.cozy-chips` (overflow-x: auto) stretched to 553px inside a 356px toolbar — it never overflowed itself, so it never scrolled; the page cut it.
+- **Fix:** `flex-wrap: nowrap` on the phone column; the strip now runs to the screen edge (into the gutter) and fades there with a mask, so the last chip reads as "swipe for more".
+- **Correct pattern:** a horizontal scroller inside a `flex-direction: column` parent needs that parent to be `nowrap`. Check `el.scrollWidth > el.clientWidth` on the scroller itself — a scroller whose own box is as wide as its content is not scrolling.
+- **Files:** `src/styles/cozy-home.css`
+
 ### 2026-10-29 — A thread's avatar frame was still cut on the left `bug`
 - **Symptom:** in a forum thread on a phone, the reward frame around the author's avatar lost its left side (reported with a screenshot of `@alex`).
 - **Root cause:** the 2026-10-17 fix pulled `.thread-messages-scroll` one step left with a negative margin and padded it back — but its parent `.thread-detail` has `overflow: hidden`, so the step it reached into was clipped anyway. The avatar still sat flush with the first clipping edge.

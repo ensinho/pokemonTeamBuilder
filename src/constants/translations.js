@@ -499,6 +499,8 @@ export const TRANSLATIONS = {
             home: 'Home',
             teamBuilding: 'Competitive',
             builder: 'Builder',
+            // The phone dock's label: about six letters fit a fifth of 360px.
+            builderShort: 'Builder',
             pokedex: 'Pokédex',
             favorites: 'My teams',
             savedTeams: 'Saved teams',
@@ -524,13 +526,8 @@ export const TRANSLATIONS = {
             // The Mais sheet's tile: one line in a four-column grid.
             challengeShort: 'Challenge',
             play: 'Play',
-            // The More sheet's shortcut cards: what each one is for, in a line.
-            moreHints: {
-                challenge: 'A new battle every day',
-                favorites: 'Your saved teams',
-                feed: 'Talk and share teams',
-                journeys: 'Missions and badges',
-            },
+            // The More sheet's highlighted card: what the Challenge is, in a line.
+            challengeHint: 'A new battle against the Champion every day',
             pokepuzzle: 'PokéPuzzle',
             database: 'PokéData',
             pokemonList: 'Pokédex',
@@ -3353,6 +3350,8 @@ export const TRANSLATIONS = {
             home: 'Início',
             teamBuilding: 'Competitivo',
             builder: 'Construtor',
+            // O rótulo do dock: cabem umas seis letras num quinto de 360px.
+            builderShort: 'Montar',
             pokedex: 'Pokédex',
             favorites: 'Meus times',
             savedTeams: 'Times salvos',
@@ -3378,13 +3377,8 @@ export const TRANSLATIONS = {
             // O tile da folha Mais: uma linha numa grade de quatro colunas.
             challengeShort: 'Desafio',
             play: 'Jogar',
-            // Os cartões de atalho da folha Mais: para que serve cada um, numa linha.
-            moreHints: {
-                challenge: 'Uma batalha nova por dia',
-                favorites: 'Seus times salvos',
-                feed: 'Converse e compartilhe times',
-                journeys: 'Missões e insígnias',
-            },
+            // O cartão em destaque da folha Mais: o que é o Desafio, numa linha.
+            challengeHint: 'Uma batalha nova contra a Campeã todo dia',
             pokepuzzle: 'PokéPuzzle',
             database: 'PokéData',
             pokemonList: 'Pokédex',

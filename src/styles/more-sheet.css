@@ -60,10 +60,17 @@
     }
 }
 
-/* The shortcuts: a 2 × 2 of cards, wide enough for a name and a hint. */
+/* The pinned shortcuts: one row of equal cards, however many there are. */
 .more-sheet__grid.more-sheet__grid--featured {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: var(--space-2);
+}
+
+/* The highlighted destination: one card, alone on its row. */
+.more-sheet__grid.more-sheet__grid--hero {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 /* A tile is a nav item: it never sinks and never takes a fill of its own. The
@@ -124,13 +131,12 @@
 /* A shortcut card: the whole card is the object, filled like the account row
    above it, so the icon drops its own box. A card presses with a fill and
    never sinks (design system: cards, rows and nav items). */
-.more-tile.more-tile--featured {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--space-2_5);
+.more-tile.more-tile--featured,
+.more-tile.more-tile--hero {
     height: 100%;
-    min-height: 4rem;
-    padding: var(--space-3);
+    min-height: 4.5rem;
+    justify-content: center;
+    padding: var(--space-3) var(--space-2);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
     transition: background-color var(--duration-press) var(--ease-out),
@@ -141,13 +147,32 @@
 .more-tile--featured:hover .more-tile__icon,
 .more-tile--featured:active .more-tile__icon,
 .more-tile--featured.is-active .more-tile__icon {
-    flex-shrink: 0;
     width: auto;
     height: auto;
     border-radius: 0;
     background: transparent;
     color: inherit;
     scale: none;
+}
+
+/* The hero card reads left to right: the crown in its own Volt box (the
+   sheet's one accent), then the name and what it is. */
+.more-tile.more-tile--hero {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+}
+
+.more-tile--hero .more-tile__icon,
+.more-tile--hero:hover .more-tile__icon,
+.more-tile--hero:active .more-tile__icon {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 .more-tile__text {
@@ -158,8 +183,8 @@
     text-align: start;
 }
 
-.more-tile--featured .more-tile__label {
-    font-size: var(--text-sm);
+.more-tile--hero .more-tile__label {
+    font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     text-align: start;
 }
@@ -169,25 +194,29 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    font-size: var(--text-2xs);
+    font-size: var(--text-xs);
     line-height: 1.3;
     color: var(--color-muted);
 }
 
-.more-tile.more-tile--featured:hover {
+.more-tile.more-tile--featured:hover,
+.more-tile.more-tile--hero:hover {
     background: var(--color-surface-hover);
 }
 
-.more-tile.more-tile--featured:active {
+.more-tile.more-tile--featured:active,
+.more-tile.more-tile--hero:active {
     background: var(--color-surface-active);
 }
 
-.more-tile.more-tile--featured.is-active {
+.more-tile.more-tile--featured.is-active,
+.more-tile.more-tile--hero.is-active {
     background: var(--color-primary-soft);
     color: var(--color-primary-text);
 }
 
-.more-tile--featured.is-active .more-tile__label {
+.more-tile--featured.is-active .more-tile__label,
+.more-tile--hero.is-active .more-tile__label {
     color: var(--color-primary-text);
 }
 
