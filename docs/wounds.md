@@ -12,6 +12,20 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — The logo focus ring was clipped or erased on core controls `bug`
+- **Symptom:** tabbing the core pages, focus landed on the selected segment ("Today", "Rewards"), on profile/builder tabs, Home's chips, Pokédex card stars, phone builder cards and the composer's Save, and showed no ring or a ring cut on one to three sides; 65 controls still drew Tailwind's flat 2px Volt ring.
+- **Root cause:** Neon Sticker's focus is a 6px outer `box-shadow` (`--ring-logo`). (1) The anchored segmented thumb sets the selected item's `box-shadow: none` after the focus rule; (2) `.tabs`, `.cozy-chips`, `.pokemon-card` and the composer fold clip overflow; (3) `.is-synergy`/`.is-suggested` card tints set their own inset shadow later than the card's focus rule; (4) `focus-visible:ring-2 ring-primary` utilities outrank the `:where()` focus rule.
+- **Fix:** a FOCUS block in `index.css` (selected-segment ring, tabs draw an inset ring on `::before` with a ring's width of strip padding, `[class*='focus-visible:ring-2']` mapped to `--ring-focus`), `--ring-logo-inset` for controls in clipping containers, strip padding given back by negative margin, `scroll-padding` on the nav and the content scroller (phones clear the dock). Verified by a tab-through audit that walks each focused control's ancestors for clipping.
+- **Correct pattern:** a new control inside `overflow: hidden`/`auto` uses `--ring-logo-inset`; a state rule that sets `box-shadow` on a focusable control must not land after its `:focus-visible` rule at equal specificity. Audit by tabbing, not by eye.
+- **Files:** `src/index.css`, `src/styles/cozy-home.css`, `src/styles/pokemon-card.css`, `src/styles/team-builder-view.css`, `src/styles/app-shell.css`
+
+### 2026-10-29 — The Pokémon page went blank when the Firestore mirror read failed `bug`
+- **Symptom:** offline (or with Firestore unreachable) `/pokemon/:id` showed only its tab strip — no sprite, stats, entry or moves — although the static data and PokéAPI were reachable.
+- **Root cause:** `usePokemonDetailData` awaited `getDoc` on the mirror inside the effect's single `try`; its rejection ("client is offline") skipped the static and PokéAPI steps and the whole page stayed empty. `resolvePokemonDetail` already treated the mirror as optional.
+- **Fix:** `readMirrorDoc()` returns `null` on any failure, for the detail and the evolution chain; the modal's chain catches per stage.
+- **Correct pattern:** every cascade step before the last is optional — a cache or mirror read never throws past its own step.
+- **Files:** `src/hooks/usePokemonDetailData.js`, `src/components/modals/PokemonDetailModal.jsx`
+
 ### 2026-10-24 — "Share on forum" from a saved team posted the builder's team instead `bug`
 - **Symptom:** the share-as-image dialog opens from the builder and from the saved-teams list. From the list, its forum button posted whatever team was open in the builder, under the saved team's name.
 - **Root cause:** `handleShareToForum` read `useActiveTeamStore.getState().currentTeam` instead of the `pokemons` the dialog was opened with and was drawing. A store read inside a dialog skipped the dialog's own input.
