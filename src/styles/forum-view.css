@@ -1465,6 +1465,19 @@
     .forum-view {
         gap: var(--space-3);
     }
+
+    /* The feed's rows, its scroller and the filter row reach past the page
+       gutter to the screen's edges (below), but both panes clipped at the
+       gutter (overflow: hidden), so the reach was cut: the avatar frame lost
+       its left side and the row fills stopped short (2026-10-29). The panes
+       only need to hold their height, so on a phone they clip on Y alone —
+       `clip`, unlike `hidden`, leaves the other axis visible. Compound
+       selector: .forum-center's own rule comes later in this file. */
+    .forum-view,
+    .forum-view .forum-center {
+        overflow-x: visible;
+        overflow-y: clip;
+    }
 }
 
 /* Tablet: side by side, narrower list. */

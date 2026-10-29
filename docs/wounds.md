@@ -12,6 +12,20 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — The Challenge ranking sheet could not scroll and sat under the dock (iPhone) `bug`
+- **Symptom:** on an iPhone, "Today's ranking" showed its first rows, the dock covered the bottom (Streak/Wins/Days) and nothing in the sheet scrolled.
+- **Root cause:** `ChallengeRankingSheet` rendered its `.modal-scrim` in place, inside `.challenge-view` — a size container (`container: challenge / inline-size`). Safari still applies layout containment to size containers, which makes the container the box `position: fixed` measures from and a stacking context of its own: the scrim was the page's size, not the screen's, and the dock (z 25 in the shell) drew over it. Chromium dropped that containment, so desktop Chrome and headless runs never show it.
+- **Fix:** the sheet is `createPortal`led to `document.body`. Reproduced headless by adding `contain: layout style` to `.challenge-view`: in place, the scrim measured 292px from y=72 with the dock on top; portalled, it covers 844px and the list scrolls.
+- **Correct pattern:** a dialog rendered inside a view that is a container-query container (or has `transform`, `filter`, `contain`) must portal to `<body>`. Test such bugs with `contain: layout` forced on — Chromium will not show them otherwise.
+- **Files:** `src/components/views/challenge/ChallengeRanking.jsx`
+
+### 2026-10-29 — The forum feed clipped its own edge-to-edge rows on phones `bug`
+- **Symptom:** in the feed list, a framed avatar (`@alex`) lost the left side of its ring.
+- **Root cause:** below 1024px the feed scroller and its rows reach past the page gutter with negative margins, but `.forum-view` and `.forum-center` are `overflow: hidden` and sit on the gutter, so they cut the reach at x=17 (ring started at x=12). Same family as the thread-avatar wound below.
+- **Fix:** on phones both panes are `overflow-x: visible; overflow-y: clip` — they still hold their height, and `clip` (unlike `hidden`) leaves the other axis visible. `.forum-view .forum-center` because `.forum-center`'s own rule comes later in the file.
+- **Correct pattern:** before reaching past a gutter with negative margins, list every ancestor up to the screen whose `overflow-x` is not `visible`. A pane that only needs to contain height should clip on Y alone.
+- **Files:** `src/styles/forum-view.css`
+
 ### 2026-10-29 — The Home's chip strip never scrolled; it was cut at the screen edge `bug`
 - **Symptom:** on a phone the Home's status chips ended in "League Ch" at the right edge and could not be swiped.
 - **Root cause:** `.cozy-toolbar` is `flex-wrap: wrap` and turns into a column below 1024px. In a *wrapping* column flex container the line is as wide as its widest item's max-content, so `.cozy-chips` (overflow-x: auto) stretched to 553px inside a 356px toolbar — it never overflowed itself, so it never scrolled; the page cut it.
