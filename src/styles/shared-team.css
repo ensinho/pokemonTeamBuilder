@@ -78,7 +78,7 @@
     transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 .st-member__stage:hover { background: var(--color-surface-hover); }
-.st-member__stage:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.st-member__stage:focus-visible { outline: none; box-shadow: var(--ring-focus); }
 /* A battle platform under every sprite, like the landing's. */
 .st-member__stage::after {
     content: '';

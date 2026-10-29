@@ -6,6 +6,7 @@ import {
     Zap, BookOpen, Trophy, ArrowUpRight,
 } from 'lucide-react';
 
+import { toneInk, toneWash } from '../../utils/toneInk';
 import { typeColors, typeIcons } from '../../constants/types';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
@@ -41,8 +42,8 @@ const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 function MetricTile({ icon, value, label, accent }) {
     return (
         <div className="flex flex-col items-center rounded-xl border border-border bg-surface px-3 py-2.5 text-center">
-            <span className="mb-0.5" style={accent ? { color: accent } : undefined}>{icon}</span>
-            <span className="text-lg font-extrabold tabular-nums text-fg">{value}</span>
+            <span className="mb-0.5 text-muted" style={accent ? { color: accent } : undefined}>{icon}</span>
+            <span className="figure text-lg font-semibold text-fg">{value}</span>
             <span className="text-2xs font-semibold text-muted">{label}</span>
         </div>
     );
@@ -173,36 +174,32 @@ export function PokemonUsageView() {
 
             {/* Header */}
             <section
-                className="mb-5 overflow-hidden rounded-2xl border border-border bg-surface shadow-md"
-                style={{
-                    borderTop: `4px solid ${accent}`,
-                    background: `radial-gradient(120% 120% at 0% 0%, ${accent}0d, transparent 60%), var(--color-surface)`
-                }}
+                className="mb-5 overflow-hidden rounded-2xl border border-border bg-surface"
+                style={{ borderTop: `4px solid ${accent}` }}
             >
                 <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-                    <div className="relative flex items-center justify-center p-3 rounded-2xl bg-surface-raised shrink-0 border border-border shadow-inner">
+                    <div className="relative flex items-center justify-center p-3 rounded-xl bg-surface-raised shrink-0 self-start">
                         <img
                             src={getPokemonFrontSpriteUrl(id)}
                             alt={entry.name}
-                            className="h-20 w-20 shrink-0 object-contain image-pixelated transition-transform hover:scale-110 duration-300"
-                            style={{ filter: `drop-shadow(0 6px 14px ${accent}44)` }}
+                            className="h-20 w-20 shrink-0 object-contain image-pixelated"
                             onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                         />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2.5">
-                            <h1 className="text-2xl font-extrabold capitalize tracking-tight text-fg sm:text-3xl">{pretty(entry.name)}</h1>
-                            <span className="text-sm font-semibold text-muted">#{String(id).padStart(4, '0')}</span>
+                            <h1 className="min-w-0 break-words text-2xl capitalize text-fg sm:text-3xl">{pretty(entry.name)}</h1>
+                            <span className="figure text-sm text-muted">#{String(id).padStart(4, '0')}</span>
                         </div>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                             {types.map((tp) => (
-                                <span key={tp} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-bold capitalize" style={{ color: typeColors[tp], backgroundColor: `${typeColors[tp]}1f` }}>
+                                <span key={tp} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-semibold capitalize" style={{ color: toneInk(typeColors[tp]), backgroundColor: toneWash(typeColors[tp]) }}>
                                     {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3.5 w-3.5" />}{cap(tp)}
                                 </span>
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-xs font-bold text-fg transition-all active:scale-95">
+                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-xs font-semibold text-fg transition-colors hover:bg-surface-hover">
                                 <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
                             </Link>
                             {format && (
@@ -223,7 +220,7 @@ export function PokemonUsageView() {
                                 // The tournament lens next to the ladder one: how often it
                                 // was registered at Limitless events and how those teams did.
                                 <span
-                                    className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs font-semibold text-muted tabular-nums"
+                                    className="figure rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs text-muted"
                                     title={pt ? 'Times registrados em torneios do Limitless' : 'Teams registered at Limitless tournaments'}
                                 >
                                     {pt ? 'Torneios' : 'Tournaments'}: {usage.tour.usage}%
@@ -244,9 +241,9 @@ export function PokemonUsageView() {
                         </div>
                     </div>
                     <div className="grid shrink-0 grid-cols-3 gap-2 sm:w-64">
-                        <MetricTile icon={<TrendingUp className="h-4 w-4" />} value={hasUsage ? `${usage.usage}%` : '—'} label={pt ? 'Uso' : 'Usage'} accent={accent} />
-                        <MetricTile icon={<Trophy className="h-4 w-4" />} value={rank ? `#${rank}` : '—'} label={pt ? 'Ranking' : 'Rank'} accent="var(--color-accent)" />
-                        <MetricTile icon={<Users className="h-4 w-4" />} value={hasUsage ? (usage.rawCount ?? usage.teams ?? usage.n ?? 0).toLocaleString(pt ? 'pt-BR' : 'en-US') : '—'} label={pt ? 'Partidas' : 'Games'} accent="var(--color-info)" />
+                        <MetricTile icon={<TrendingUp className="h-4 w-4" />} value={hasUsage ? `${usage.usage}%` : '—'} label={pt ? 'Uso' : 'Usage'} />
+                        <MetricTile icon={<Trophy className="h-4 w-4" />} value={rank ? `#${rank}` : '—'} label={pt ? 'Ranking' : 'Rank'} />
+                        <MetricTile icon={<Users className="h-4 w-4" />} value={hasUsage ? (usage.rawCount ?? usage.teams ?? usage.n ?? 0).toLocaleString(pt ? 'pt-BR' : 'en-US') : '—'} label={pt ? 'Partidas' : 'Games'} />
                     </div>
                 </div>
             </section>
@@ -303,7 +300,7 @@ export function PokemonUsageView() {
                         <Panel title={pt ? 'Habilidades' : 'Abilities'} icon={<Zap className="h-4 w-4 text-primary" />}>
                             <div className="space-y-1.5">
                                 {usage.abilities.map((ab) => (
-                                    <UsageBar key={ab.name} label={pretty(ab.name)} pct={pctOf(ab.count, n)} count={ab.count} color="var(--color-accent)" onClick={(e) => goToAbility(ab.name, e)} />
+                                    <UsageBar key={ab.name} label={pretty(ab.name)} pct={pctOf(ab.count, n)} count={ab.count} onClick={(e) => goToAbility(ab.name, e)} />
                                 ))}
                             </div>
                         </Panel>
@@ -322,10 +319,10 @@ export function PokemonUsageView() {
                                     {usage.spreads.slice(0, 6).map((sp, i) => {
                                         const spread = formatUsageSpread(sp.evs);
                                         return (
-                                            <div key={`${sp.nature}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 hover:border-border transition-colors">
-                                                <span className="shrink-0 rounded bg-surface-raised px-2 py-0.5 text-2xs font-bold text-fg">{sp.nature}</span>
+                                            <div key={`${sp.nature}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2">
+                                                <span className="shrink-0 rounded bg-surface-raised px-2 py-0.5 text-2xs font-semibold text-fg">{sp.nature}</span>
                                                 <span className="min-w-0 flex-1 truncate font-mono text-2xs text-muted">{spread || (pt ? 'sem EVs' : 'no EVs')}</span>
-                                                <span className="shrink-0 text-2xs font-bold tabular-nums text-primary">{pctOf(sp.count, n)}%</span>
+                                                <span className="figure shrink-0 text-2xs font-semibold text-primary">{pctOf(sp.count, n)}%</span>
                                             </div>
                                         );
                                     })}
@@ -339,9 +336,9 @@ export function PokemonUsageView() {
                                     {teraList.slice(0, 6).map((tt) => {
                                         const c = typeColors[tt.name?.toLowerCase()] || 'var(--color-muted)';
                                         return (
-                                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-bold capitalize" style={{ color: c, backgroundColor: `${c}1f` }}>
+                                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-semibold capitalize" style={{ color: toneInk(c), backgroundColor: toneWash(c) }}>
                                                 {typeIcons[tt.name?.toLowerCase()] && <img src={typeIcons[tt.name.toLowerCase()]} alt="" className="h-3.5 w-3.5" />}
-                                                {tt.name}{n > 0 && tt.count ? ` ${pctOf(tt.count, n)}%` : ''}
+                                                {tt.name}{n > 0 && tt.count ? <span className="figure">{` ${pctOf(tt.count, n)}%`}</span> : ''}
                                             </span>
                                         );
                                     })}
@@ -357,16 +354,16 @@ export function PokemonUsageView() {
                                                 type="button"
                                                 onClick={() => navigate(fmtId ? `/meta/${resolvedTeam.spriteId}?fmt=${fmtId}` : `/meta/${resolvedTeam.spriteId}`, { state: linkState })}
                                                 title={`${pretty(resolvedTeam.name)} · ${pctOf(tm.count, n)}%`}
-                                                className="group flex flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
+                                                className="group flex flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 transition-colors hover:border-primary"
                                             >
                                                 <img
                                                     src={getPokemonFrontSpriteUrl(resolvedTeam.spriteId)}
                                                     alt={resolvedTeam.name}
-                                                    className="h-10 w-10 image-pixelated shrink-0 object-contain transition-transform duration-300 group-hover:scale-110"
+                                                    className="h-10 w-10 image-pixelated shrink-0 object-contain"
                                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                                 />
-                                                <span className="text-2xs font-extrabold text-fg truncate w-full text-center capitalize">{pretty(resolvedTeam.name).split('-')[0]}</span>
-                                                <span className="text-2xs font-bold tabular-nums text-primary">{pctOf(tm.count, n)}%</span>
+                                                <span className="text-2xs font-semibold text-fg truncate w-full text-center capitalize">{pretty(resolvedTeam.name).split('-')[0]}</span>
+                                                <span className="figure text-2xs font-semibold text-primary">{pctOf(tm.count, n)}%</span>
                                             </button>
                                         );
                                     })}
@@ -391,28 +388,27 @@ export function PokemonUsageView() {
                             return (
                                 <article
                                     key={`${set.name}-${i}`}
-                                    className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-lg"
-                                    style={{ borderTop: `4px solid ${accent}`, background: `linear-gradient(135deg, ${accent}04, var(--color-surface) 40%), var(--color-surface)` }}
+                                    className="rounded-2xl border border-border bg-surface p-4"
                                 >
                                     <div className="mb-2.5 flex items-center justify-between gap-2">
-                                        <h3 className="truncate text-sm font-extrabold text-fg">{set.name}</h3>
-                                        {set.source && <span className="shrink-0 rounded-full bg-surface-raised px-2.5 py-0.5 text-2xs font-bold text-muted uppercase tracking-[0.06em]">{set.source}</span>}
+                                        <h3 className="truncate text-sm font-semibold text-fg">{set.name}</h3>
+                                        {set.source && <span className="shrink-0 rounded-full bg-surface-raised px-2.5 py-0.5 text-2xs font-semibold text-muted uppercase tracking-[0.06em]">{set.source}</span>}
                                     </div>
                                     <div className="mb-3 flex flex-wrap gap-1.5 text-2xs">
                                         {set.item && (
-                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none">
                                                 <img src={itemSpriteUrl(slugify(set.item))} alt="" className="h-4 w-4 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                                 {pretty(set.item)}
                                             </button>
                                         )}
                                         {set.ability && (
-                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none">
                                                 {pretty(set.ability)}
                                             </button>
                                         )}
                                         {set.nature && <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-fg">{set.nature}</span>}
                                         {set.tera?.length > 0 && (
-                                            <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold" style={{ color: typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-primary)', backgroundColor: `${typeColors[set.tera[0]?.toLowerCase()] || '#888'}1f` }}>
+                                            <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold" style={{ color: toneInk(typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-primary)'), backgroundColor: toneWash(typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-muted)') }}>
                                                 <Sparkles className="h-3 w-3 shrink-0" /> {pt ? 'Tera' : 'Tera'} {set.tera[0]}
                                             </span>
                                         )}
@@ -420,7 +416,7 @@ export function PokemonUsageView() {
                                     {spread && <p className="mb-3 text-2xs text-muted"><span className="font-semibold text-fg">{spreadUnit}:</span> {spread}</p>}
                                     <div className="grid grid-cols-2 gap-1.5">
                                         {primaryMoves(set).map((mv) => (
-                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg border border-border bg-surface-raised/20 text-2xs hover:border-border transition-colors" />
+                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg text-2xs" />
                                         ))}
                                     </div>
                                 </article>
@@ -442,7 +438,7 @@ export function PokemonUsageView() {
                                 key={tm.id}
                                 type="button"
                                 onClick={() => navigate(`/tournaments/team/${tm.id}`, { state: linkState })}
-                                className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none"
                             >
                                 <div className="flex shrink-0 -space-x-2">
                                     {(tm.pokemons || []).slice(0, 6).map((p, i) => {
@@ -452,14 +448,14 @@ export function PokemonUsageView() {
                                                 key={`${p.id}-${i}`}
                                                 src={getPokemonFrontSpriteUrl(resolvedTourneyMon.spriteId)}
                                                 alt={resolvedTourneyMon.name}
-                                                className="h-8 w-8 image-pixelated shrink-0 object-contain bg-surface-raised rounded-full border border-border shadow-sm"
+                                                className="h-8 w-8 image-pixelated shrink-0 object-contain bg-surface-raised rounded-full border border-surface"
                                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                             />
                                         );
                                     })}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-bold text-fg group-hover:text-primary transition-colors">{tm.tournament || tm.title}</p>
+                                    <p className="truncate text-xs font-semibold text-fg group-hover:text-primary transition-colors">{tm.tournament || tm.title}</p>
                                     <p className="truncate text-2xs font-semibold text-muted mt-0.5">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
                                 </div>
                                 <ArrowUpRight className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-primary" />

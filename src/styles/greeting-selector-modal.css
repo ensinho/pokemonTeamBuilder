@@ -176,7 +176,7 @@
 
 .greeting-selector__tile:focus-visible {
     outline: none;
-    box-shadow: var(--ring-primary);
+    box-shadow: var(--ring-focus);
 }
 
 .greeting-selector__dex {

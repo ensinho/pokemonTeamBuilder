@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — Canon tones used raw as text were illegible in half the themes `dispattern`
+- **Symptom:** on the secondary views (meta detail, tournament team, gyms, damage calculator, move lists) Dark/Ghost/Dragon words were ~2:1 on the night surfaces and Electric/Ice/Steel ~1.5:1 on white; gym level badges were white on Electric yellow (1.3:1); PokéPuzzle's correct/present letters were white on `dark`'s mint and amber (1.9 / 1.7:1).
+- **Root cause:** a canon colour (type, stat, weather, damage class) is a *fill*; written as `style={{ color: typeColors[t] }}` or `text-[#F08030]` it ignores the theme. And `--color-on-primary` is the ink for the primary only — `dark` sets it to white, so it is wrong on any other bright fill.
+- **Fix:** `src/utils/toneInk.js` — `toneInk(tone)` is the tone mixed 45% into `--color-fg` (the `.type-chip` recipe, ≥ 4.6:1 for all 18 types in all ten themes), `toneWash(tone, pct)` its tint; CSS uses the same `color-mix(… 45%, var(--color-fg))`. Letters on success/warning fills take `--color-surface` (≥ 5:1 everywhere).
+- **Correct pattern:** a canon tone is a fill, an edge or an icon; as a word it goes through `toneInk`. Text on a fill that is not the primary never uses `--color-on-primary`.
+- **Files:** `src/utils/toneInk.js`, `src/components/views/{metaShared,PokemonUsageView,TournamentTeamView,GymsView,DamageCalculatorView}.jsx`, `src/styles/{tools-views,reference-views,pokepuzzle-view}.css`
+
 ### 2026-10-24 — "Share on forum" from a saved team posted the builder's team instead `bug`
 - **Symptom:** the share-as-image dialog opens from the builder and from the saved-teams list. From the list, its forum button posted whatever team was open in the builder, under the saved team's name.
 - **Root cause:** `handleShareToForum` read `useActiveTeamStore.getState().currentTeam` instead of the `pokemons` the dialog was opened with and was drawing. A store read inside a dialog skipped the dialog's own input.

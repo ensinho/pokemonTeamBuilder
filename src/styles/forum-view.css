@@ -1742,7 +1742,9 @@
     border-radius: var(--radius-md);
     background: transparent;
     color: var(--color-muted);
-    font-family: var(--font-display);
+    /* A nav row is something you operate: the body face. Its count stays
+       in the readout voice (.forum-explorer__count). */
+    font-family: var(--font-body);
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     text-align: left;
@@ -1782,6 +1784,7 @@
 
 .forum-explorer__count {
     flex-shrink: 0;
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
@@ -1875,8 +1878,9 @@
     color: var(--color-muted);
 }
 
+/* "Active now" is live: Live Pink as a word (Neon Sticker). */
 .forum-feed-head__live {
-    color: var(--color-success);
+    color: var(--brand-live-text);
 }
 
 /* Sort and categories share one row; on a phone the row scrolls sideways. */
@@ -2433,7 +2437,7 @@
 }
 
 .forum-community-stats dd.is-live {
-    color: var(--color-success);
+    color: var(--brand-live-text);
 }
 
 .forum-community-stats dt {
@@ -3508,8 +3512,9 @@
     background: var(--color-surface-hover);
 }
 
+/* The team being edited — Volt, not the earned gold. */
 .comment-composer__menu-item.is-featured {
-    color: var(--color-accent);
+    color: var(--color-primary-text);
     font-weight: var(--weight-semibold);
 }
 
@@ -3671,7 +3676,7 @@
 .totw__title { margin: 0; font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--color-fg); }
 .totw__title a { color: inherit; text-decoration: none; }
 .totw__title a:hover { color: var(--color-primary-text); }
-.totw__title a:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-primary); }
+.totw__title a:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-focus); }
 .totw__meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0; font-size: var(--text-xs); color: var(--color-muted); }
 .totw__likes { display: inline-flex; align-items: center; gap: var(--space-1); }
 
@@ -3700,7 +3705,7 @@
     cursor: pointer;
 }
 .totw__post:hover { text-decoration: underline; }
-.totw__post:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-primary); }
+.totw__post:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-focus); }
 
 @media (max-width: 640px) {
     .totw { margin-inline: 0; padding: var(--space-3); }

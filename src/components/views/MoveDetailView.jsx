@@ -70,10 +70,10 @@ export function MoveDetailView() {
     }
 
     const stats = [
-        { label: t('db.colPower'), value: data.power ?? '—' },
-        { label: t('db.colAccuracy'), value: typeof data.accuracy === 'number' ? `${data.accuracy}%` : '—' },
-        { label: t('db.colPP'), value: data.pp ?? '—' },
-        { label: t('db.priority'), value: data.priority > 0 ? `+${data.priority}` : data.priority },
+        { label: t('db.colPower'), value: data.power ?? '—', figure: true },
+        { label: t('db.colAccuracy'), value: typeof data.accuracy === 'number' ? `${data.accuracy}%` : '—', figure: true },
+        { label: t('db.colPP'), value: data.pp ?? '—', figure: true },
+        { label: t('db.priority'), value: data.priority > 0 ? `+${data.priority}` : data.priority, figure: true },
         { label: t('db.target'), value: data.target ? data.target.replace(/-/g, ' ') : '—' },
     ];
 
@@ -108,7 +108,7 @@ export function MoveDetailView() {
                         {stats.map((s) => (
                             <div key={s.label} className="edv-stat">
                                 <span className="edv-stat__label">{s.label}</span>
-                                <span className="edv-stat__value">{s.value}</span>
+                                <span className={`edv-stat__value${s.figure ? ' figure' : ''}`}>{s.value}</span>
                             </div>
                         ))}
                     </div>

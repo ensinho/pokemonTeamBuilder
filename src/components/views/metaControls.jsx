@@ -25,13 +25,13 @@ function FormatOption({ format, active, onPick }) {
             role="option"
             aria-selected={active}
             onClick={() => onPick(format.id)}
-            className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors focus:outline-none ${
                 active ? 'bg-surface-active text-primary' : 'text-fg hover:bg-surface-hover'
             }`}
         >
             <span className="min-w-0 flex-1 truncate text-sm font-semibold">{format.label}</span>
             {Number.isFinite(format.species) && (
-                <span className="shrink-0 text-2xs tabular-nums text-muted">{format.species}</span>
+                <span className="figure shrink-0 text-2xs text-muted">{format.species}</span>
             )}
             {active && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
         </button>
@@ -60,7 +60,8 @@ function FormatList({ formats, value, onPick, pt, autoFocus }) {
                 />
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar" role="listbox" aria-label={pt ? 'Formatos' : 'Formats'}>
+            {/* p-1.5 is room for the focus ring, which a scroller clips. */}
+            <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-1.5" role="listbox" aria-label={pt ? 'Formatos' : 'Formats'}>
                 {groups.length === 0 ? (
                     <p className="px-3 py-6 text-center text-xs text-muted">
                         {pt ? 'Nenhum formato encontrado.' : 'No format matches that.'}
@@ -126,7 +127,7 @@ export function FormatPicker({ formats = [], value, onChange, pt = false, classN
                 onClick={() => setOpen((v) => !v)}
                 aria-haspopup="listbox"
                 aria-expanded={open}
-                className={`flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'py-1.5' : 'py-2'}  ${className}`}
+                className={`flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-left transition-colors hover:border-primary focus:outline-none ${compact ? 'py-1.5' : 'py-2'}  ${className}`}
             >
                 <span className="min-w-0 flex-1">
                     {current?.group && !compact && (
@@ -222,13 +223,13 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                 type="button"
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
-                className={`flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus:outline-none ${
                     count ? 'border-primary text-primary' : 'border-border bg-surface text-muted hover:text-fg'
                 }`}
             >
                 {pt ? 'Tipos' : 'Types'}
                 {count > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs tabular-nums text-on-primary">
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono text-2xs tabular-nums text-on-primary">
                         {count}
                     </span>
                 )}
@@ -254,7 +255,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                                         backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
                                         color: `color-mix(in srgb, ${color} 45%, var(--color-fg))`,
                                     } : undefined}
-                                    className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-1 text-2xs font-semibold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                    className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-1 text-2xs font-semibold capitalize transition-colors focus:outline-none ${
                                         active ? '' : 'border-transparent bg-surface-raised text-muted hover:bg-surface-hover hover:text-fg'
                                     }`}
                                 >
@@ -268,7 +269,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                         <button
                             type="button"
                             onClick={() => onChange([])}
-                            className="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-2xs font-semibold text-muted transition-colors hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-2xs font-semibold text-muted transition-colors hover:text-fg focus:outline-none"
                         >
                             <X className="h-3 w-3" aria-hidden="true" />
                             {pt ? 'Limpar tipos' : 'Clear types'}

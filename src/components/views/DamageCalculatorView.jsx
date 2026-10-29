@@ -16,6 +16,7 @@ import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { competitivePresetFor } from '../../utils/loadCompetitivePreset';
+import { toneInk } from '../../utils/toneInk';
 
 const NATURES = Object.keys(NATURE_MODIFIERS);
 const TYPES = [
@@ -581,7 +582,9 @@ export function DamageCalculatorView() {
     // One stat row: label · base · IV input · draggable EV bar · direct EV input · total.
     const renderStatsRow = (key, pState, setP) => {
         const natureMod = natureMultiplier(pState.nature, key);
-        const natureColor = natureMod === 1.1 ? 'text-[#F87171]' : (natureMod === 0.9 ? 'text-[#60A5FA]' : 'text-fg');
+        // Nature up / down in Showdown's red / blue, as the theme's own legible
+        // danger and info inks.
+        const natureColor = natureMod === 1.1 ? 'text-danger' : (natureMod === 0.9 ? 'text-info' : 'text-fg');
         const iv = pState.ivs[key] ?? 31;
         const ev = pState.evs[key] ?? 0;
         const calculated = calcStat({
@@ -600,8 +603,8 @@ export function DamageCalculatorView() {
 
         return (
             <div key={key} className="flex items-center gap-1.5">
-                <span className="w-7 shrink-0 text-2xs font-bold" style={{ color: statColor }}>{STAT_LABELS[key]}</span>
-                <span className="w-6 shrink-0 text-center text-2xs font-medium text-muted" title={t('damageCalc.base')}>{pState.baseStats?.[key] || 0}</span>
+                <span className="w-7 shrink-0 text-2xs font-semibold" style={{ color: toneInk(statColor) }}>{STAT_LABELS[key]}</span>
+                <span className="w-6 shrink-0 text-center font-mono text-2xs text-muted" title={t('damageCalc.base')}>{pState.baseStats?.[key] || 0}</span>
                 <input
                     type="number" min="0" max="31"
                     value={iv}
@@ -627,7 +630,7 @@ export function DamageCalculatorView() {
                     aria-label={`${key.replace(/-/g, ' ')} EV value`}
                     className="w-10 shrink-0 text-center bg-bg border border-border rounded text-2xs py-0.5 font-mono focus:border-primary focus:outline-none"
                 />
-                <span className={`w-7 shrink-0 text-right font-bold text-2xs font-mono ${natureColor}`} title={t('damageCalc.total')}>{calculated}</span>
+                <span className={`w-7 shrink-0 text-right font-semibold text-2xs font-mono ${natureColor}`} title={t('damageCalc.total')}>{calculated}</span>
             </div>
         );
     };
@@ -636,12 +639,12 @@ export function DamageCalculatorView() {
     const renderPokemonCard = (side, pState, setP, accent) => {
         const moveOpts = (pState.movesPool || []).map((mv) => ({ slug: mv.name, name: capitalize(mv.name) }));
         return (
-            <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-3">
+            <div className="dmg-panel bg-surface border border-border rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-border pb-2">
-                    <span className="dmg-caps dmg-caps--title text-xs font-extrabold flex items-center gap-1.5" style={{ color: accent }}>
+                    <span className="dmg-caps dmg-caps--title text-xs font-semibold flex items-center gap-1.5" style={{ color: toneInk(accent) }}>
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
                         {side === 'p1' ? 'Pokémon 1' : 'Pokémon 2'}
-                        {pState.isMega && <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted">MEGA</span>}
+                        {pState.isMega && <span className="text-2xs font-semibold px-1.5 py-0.5 rounded bg-surface-raised text-muted">MEGA</span>}
                     </span>
                     <div className="flex gap-1">{(pState.types || []).map(tp => <TypeChip key={tp} type={tp} size="sm" />)}</div>
                 </div>
@@ -764,7 +767,7 @@ export function DamageCalculatorView() {
                                     />
                                 </div>
                                 {m.name && m.power > 0 && (
-                                    <span className="text-2xs font-extrabold uppercase px-1.5 py-1 rounded bg-surface-raised text-muted font-mono leading-none shrink-0 tracking-[0.06em]">{m.power}</span>
+                                    <span className="text-2xs font-semibold uppercase px-1.5 py-1 rounded bg-surface-raised text-muted font-mono leading-none shrink-0 tracking-[0.06em]">{m.power}</span>
                                 )}
                                 {m.name && <TypeChip type={getEffectiveMoveType(m.type, pState.ability, m.name)} size="sm" />}
                             </div>
@@ -806,7 +809,7 @@ export function DamageCalculatorView() {
                         className="w-6 h-6 object-contain shrink-0"
                         onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
-                    <span className="text-xs font-bold text-fg truncate capitalize">{prettify(attacker.pokemon.name)}</span>
+                    <span className="text-xs font-semibold text-fg truncate capitalize">{prettify(attacker.pokemon.name)}</span>
                     <span className="text-2xs text-muted shrink-0">→ {prettify(defender.pokemon.name)}</span>
                 </div>
                 {hasMoves ? matrix.map((entry) => {
@@ -827,12 +830,12 @@ export function DamageCalculatorView() {
                                 <div className="flex items-center gap-1.5 min-w-0">
                                     <TypeChip type={r?.effectiveType || getEffectiveMoveType(move.type, attacker.ability, move.name)} size="sm" />
                                     <span className="text-xs font-semibold text-fg truncate capitalize">{prettify(move.name)}</span>
-                                    {eff && <span className={`text-2xs font-extrabold ${effColor}`}>{eff}</span>}
+                                    {eff && <span className={`font-mono text-2xs font-semibold ${effColor}`}>{eff}</span>}
                                 </div>
                                 {r ? (
-                                    <span className="text-xs font-extrabold font-mono shrink-0" style={{ color: accent }}>{r.minPct}–{r.maxPct}%</span>
+                                    <span className="text-xs font-semibold font-mono shrink-0" style={{ color: toneInk(accent) }}>{r.minPct}–{r.maxPct}%</span>
                                 ) : (
-                                    <span className="text-2xs font-bold text-muted shrink-0">{move.category === 'status' ? t('damageCalc.statusMove') : '—'}</span>
+                                    <span className="text-2xs font-semibold text-muted shrink-0">{move.category === 'status' ? t('damageCalc.statusMove') : '—'}</span>
                                 )}
                             </div>
                             {r && (
@@ -842,7 +845,7 @@ export function DamageCalculatorView() {
                                         <div className="dmg-bar__min" style={{ width: `${Math.min(100, r.minPct)}%` }} />
                                     </div>
                                     <div className="flex items-center justify-between mt-1">
-                                        <span className={`text-2xs font-bold ${r.koGuaranteed ? 'text-danger' : 'text-muted'}`}>{koLabel(r, t)}</span>
+                                        <span className={`text-2xs font-semibold ${r.koGuaranteed ? 'text-danger' : 'text-muted'}`}>{koLabel(r, t)}</span>
                                         <span className="text-2xs text-muted font-mono">{r.minDamage}–{r.maxDamage} / {r.defenderHP}</span>
                                     </div>
                                 </>
@@ -861,7 +864,7 @@ export function DamageCalculatorView() {
     return (
         <div className="dmg-calc space-y-4">
             {/* ── FIELD BAR ─────────────────────────────────────────────── */}
-            <div className="dmg-panel bg-surface border border-border rounded-xl px-3 py-2.5 shadow-sm">
+            <div className="dmg-panel bg-surface border border-border rounded-xl px-3 py-2.5">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     {/* Format */}
                     {/* The shared segmented control: a filter never spends the view's
@@ -883,7 +886,7 @@ export function DamageCalculatorView() {
 
                     {/* Weather */}
                     <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
-                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">{t('damageCalc.weather')}</span>
+                        <span className="dmg-caps w-14 shrink-0 text-2xs font-semibold text-muted sm:w-auto">{t('damageCalc.weather')}</span>
                         <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.weather')}>
                             {WEATHERS.map((w) => (
                                 <button
@@ -901,7 +904,7 @@ export function DamageCalculatorView() {
 
                     {/* Terrain */}
                     <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
-                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">{t('damageCalc.terrain')}</span>
+                        <span className="dmg-caps w-14 shrink-0 text-2xs font-semibold text-muted sm:w-auto">{t('damageCalc.terrain')}</span>
                         <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.terrain')}>
                             {TERRAINS.map((tr) => (
                                 <button
@@ -943,7 +946,7 @@ export function DamageCalculatorView() {
                 {showField && (
                     <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <span className="dmg-caps text-2xs font-bold text-[#F08030]">{t('damageCalc.attackerSide')}</span>
+                            <span className="dmg-caps text-2xs font-semibold" style={{ color: toneInk('#F08030') }}>{t('damageCalc.attackerSide')}</span>
                             <div className="grid grid-cols-1 gap-1.5">
                                 {ATTACKER_BOOSTS.map((key) => (
                                     <Switch
@@ -958,7 +961,7 @@ export function DamageCalculatorView() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <span className="dmg-caps text-2xs font-bold text-[#6890F0]">{t('damageCalc.defenderSide')}</span>
+                            <span className="dmg-caps text-2xs font-semibold" style={{ color: toneInk('#6890F0') }}>{t('damageCalc.defenderSide')}</span>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                                 {DEFENDER_SCREENS.map((m) => (
                                     <Switch
@@ -973,12 +976,12 @@ export function DamageCalculatorView() {
                             </div>
                             <div className="flex items-center justify-between pt-1">
                                 <span className="text-2xs font-semibold text-muted">Spikes</span>
-                                <div className="flex bg-bg p-0.5 rounded border border-border text-2xs font-bold">
+                                <div className="flex bg-bg p-0.5 rounded border border-border font-mono text-2xs font-semibold">
                                     {[0, 1, 2, 3].map((v) => (
                                         <button
                                             key={v}
                                             onClick={() => setField(prev => ({ ...prev, defenderSide: { ...prev.defenderSide, spikes: v } }))}
-                                            className={`px-2 py-0.5 rounded-sm ${field.defenderSide.spikes === v ? 'bg-[#6890F0] text-white' : 'text-muted hover:text-fg'}`}
+                                            className={`px-2 py-0.5 rounded-sm ${field.defenderSide.spikes === v ? 'bg-primary text-on-primary' : 'text-muted hover:text-fg'}`}
                                         >
                                             {v}
                                         </button>
@@ -1000,7 +1003,7 @@ export function DamageCalculatorView() {
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${activeTab === tab.key ? 'bg-primary text-on-primary shadow-sm' : 'text-muted hover:text-fg'}`}
+                        className={`flex-1 py-2 text-center text-xs font-semibold rounded-lg transition-colors ${activeTab === tab.key ? 'bg-primary text-on-primary' : 'text-muted hover:text-fg'}`}
                     >
                         {tab.label}
                     </button>
@@ -1015,17 +1018,17 @@ export function DamageCalculatorView() {
 
                 {/* Live damage (centerpiece) */}
                 <div className={`lg:col-span-4 ${activeTab === 'damage' ? 'block' : 'hidden'} lg:block`}>
-                    <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-4 lg:sticky lg:top-4">
+                    <div className="dmg-panel bg-surface border border-border rounded-xl p-4 space-y-4 lg:sticky lg:top-4">
                         <div className="flex items-center justify-between border-b border-border pb-2">
-                            <span className="dmg-caps dmg-caps--title text-xs font-extrabold text-fg flex items-center gap-1.5">
+                            <span className="dmg-caps dmg-caps--title text-xs font-semibold text-fg flex items-center gap-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
                                 {t('damageCalc.liveDamage')}
                             </span>
                             {speedInfo && (
-                                <span className="text-2xs font-bold" title={t('damageCalc.speedHint')}>
+                                <span className="text-2xs font-semibold" title={t('damageCalc.speedHint')}>
                                     {speedInfo.faster === 0
                                         ? <span className="text-muted">{t('damageCalc.speedTie', { s: speedInfo.s1 })}</span>
-                                        : <span style={{ color: speedInfo.faster === 1 ? '#F08030' : '#6890F0' }}>⚡ {t('damageCalc.fasterFirst', { n: speedInfo.faster, s1: speedInfo.s1, s2: speedInfo.s2 })}</span>}
+                                        : <span style={{ color: toneInk(speedInfo.faster === 1 ? '#F08030' : '#6890F0') }}>⚡ {t('damageCalc.fasterFirst', { n: speedInfo.faster, s1: speedInfo.s1, s2: speedInfo.s2 })}</span>}
                                 </span>
                             )}
                         </div>

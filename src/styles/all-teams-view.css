@@ -150,7 +150,7 @@
 
 .all-teams-view__preview:focus-visible {
     outline: none;
-    box-shadow: var(--ring-primary);
+    box-shadow: var(--ring-focus);
 }
 
 /* An empty team: the six dashed cells say "empty" already; the sentence sits

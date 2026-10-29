@@ -21,8 +21,7 @@
 }
 
 .generation-quiz__selector-pill:hover {
-    transform: translateY(-1px);
-    border-color: var(--color-primary-soft);
+    background: var(--color-surface-hover);
     color: var(--color-primary-text);
 }
 
@@ -33,6 +32,8 @@
 }
 
 .generation-quiz__selector-pill-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--color-fg) 8%, transparent);
     padding: var(--space-0_5) var(--space-2);
@@ -119,9 +120,7 @@
     text-align: center;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    background:
-        radial-gradient(circle at top, var(--color-primary-soft), transparent 70%),
-        var(--color-bg);
+    background: var(--color-bg);
     animation: generation-quiz-reveal 320ms ease-out;
 }
 
@@ -168,6 +167,7 @@
 }
 
 .generation-quiz__last-find-id {
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--color-muted);
 }
@@ -182,6 +182,7 @@
 
 .generation-quiz__console-inline-metrics {
     display: none;
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
@@ -207,6 +208,7 @@
 }
 
 .generation-quiz__console-stat strong {
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);
@@ -231,9 +233,11 @@
     padding: 0 var(--space-1_5);
 }
 
+/* A hint is earned (one per ten catches), so a banked one wears Shiny Gold
+   as a word (--color-accent: gold on the night themes, deep gold on paper). */
 .generation-quiz__hint-btn:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 55%, transparent);
-    color: var(--color-accent, #fbbf24);
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    color: var(--color-accent);
 }
 
 .generation-quiz__hint-btn:disabled {
@@ -248,8 +252,9 @@
     justify-content: center;
     min-width: 1.05rem;
     padding: var(--space-0_5) var(--space-1);
-    border-radius: var(--radius-full, 999px);
-    background: color-mix(in srgb, var(--color-accent, #fbbf24) 16%, transparent);
+    border-radius: var(--radius-full);
+    background: var(--color-accent-soft);
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
@@ -270,7 +275,7 @@
 
 .generation-quiz__input:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
     outline: none;
 }
 
@@ -397,7 +402,6 @@
     color: var(--color-warning);
     font-size: var(--text-base);
     font-weight: var(--weight-semibold);
-    box-shadow: var(--shadow-md);
     animation: tip-slide-down 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -429,7 +433,7 @@
     width: 100%;
     height: 0.4rem;
     overflow: hidden;
-    border-radius: var(--radius-full, 999px);
+    border-radius: var(--radius-full);
     background: var(--color-bg);
 }
 
@@ -437,7 +441,7 @@
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-success) 100%);
+    background: var(--color-primary);
     transition: width var(--duration-slow) var(--ease-smooth);
 }
 
@@ -492,7 +496,7 @@
 }
 
 .generation-quiz__compact-reset-btn:hover {
-    transform: translateY(-1px);
+    background: var(--color-surface-hover);
     border-color: var(--color-primary);
     color: var(--color-primary-text);
 }
@@ -996,15 +1000,16 @@
     line-height: 1.5;
 }
 
+/* A personal best is a record — earned — so it is the one gold line here. */
 .generation-quiz__start-best-run-pill {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1_5);
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-sm);
-    background: var(--color-primary-soft);
-    border: 1px solid var(--color-primary-soft);
-    color: var(--color-primary-text);
+    background: var(--color-accent-soft);
+    border: none;
+    color: var(--color-accent);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     margin-bottom: var(--space-6);
@@ -1015,7 +1020,8 @@
 }
 
 .generation-quiz__start-best-run-pill strong {
-    color: var(--color-primary-text);
+    font-family: var(--font-mono);
+    color: var(--color-accent);
 }
 
 .generation-quiz__start-selector {
