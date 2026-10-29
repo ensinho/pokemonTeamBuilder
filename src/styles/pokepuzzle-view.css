@@ -814,6 +814,52 @@
     .pokepuzzle-game-main {
         gap: var(--space-3);
     }
+
+    /* The game fills the screen above the dock, and the keyboard rests at the
+       bottom of it, under the thumb — it used to stop under a short board and
+       leave a third of the phone empty below it (2026-10-29, Enzo: "fica mt
+       pequeno para mobile"). The shell's body and frame are blocks; on this
+       route only they stretch, so every level down to the tray can grow. */
+    .app-shell__body:has(> .app-shell__page-frame > .pokepuzzle-view) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .app-shell__page-frame:has(> .pokepuzzle-view) {
+        display: flex;
+        flex: 1 0 auto;
+        flex-direction: column;
+    }
+
+    .pokepuzzle-view,
+    .pokepuzzle-game-container:not(.has-ended),
+    .pokepuzzle-game-container:not(.has-ended) .pokepuzzle-game-main {
+        flex: 1 0 auto;
+    }
+
+    .pokepuzzle-tray {
+        margin-top: auto;
+    }
+
+    /* Thumb-sized keys: a phone keyboard's height, not a laptop's. */
+    .pokepuzzle-keyboard {
+        gap: var(--space-2);
+    }
+
+    .pokepuzzle-key {
+        height: 3.25rem;
+        font-size: var(--text-lg);
+    }
+
+    .pokepuzzle-key svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .pokepuzzle-tip-card {
+        min-height: 6rem;
+    }
+
 }
 
 @media (max-width: 480px) {
@@ -826,6 +872,20 @@
         gap: var(--space-3);
     }
 
+    /* Three hint tabs and the game's numbers do not share one row on a phone:
+       the last tab was cut under "Gen 2 · 0/8". The numbers lead, on a line
+       of their own; the tabs keep the whole width. */
+    .pokepuzzle-tip-row {
+        flex-wrap: wrap;
+        row-gap: var(--space-1);
+    }
+
+    .pokepuzzle-tip-meta {
+        order: -1;
+        width: 100%;
+        padding-top: var(--space-2);
+    }
+
     .pokepuzzle-tip-description-text {
         max-height: 3.75rem;
         font-size: var(--text-xs);
@@ -833,14 +893,6 @@
 
     .pokepuzzle-tile {
         font-size: var(--text-xl);
-    }
-
-    .pokepuzzle-keyboard {
-        gap: var(--space-1_5);
-    }
-
-    .pokepuzzle-key {
-        height: 2.625rem;
     }
 
     .pokepuzzle-tray {

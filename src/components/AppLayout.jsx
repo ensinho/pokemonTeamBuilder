@@ -56,14 +56,14 @@ import { VersionUpdateModal } from './modals/VersionUpdateModal';
 import {
     GithubIcon, LinkedinIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
-    HomeIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
+    HomeIcon, AccountIcon, ChartColumnIcon,
     MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, ShieldHalf, Crown, Shapes, Award, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, CircleHelp, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -935,7 +935,7 @@ export default function AppLayout() {
                 items: [
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
-                    { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
+                    { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <CircleHelp className="w-5 h-5 shrink-0" /> },
                 ]
             },
             {
@@ -945,8 +945,9 @@ export default function AppLayout() {
                 key: 'dashboard',
                 title: t('nav.dashboard'),
                 items: [
-                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <HeartHandshake className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
+                    // Battles first: a battle waiting on you is the one thing here with a clock on it.
                     { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <ShieldHalf className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
+                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <Users className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
                 ]
             },
         ];
@@ -968,7 +969,9 @@ export default function AppLayout() {
     // the Mais sheet, which leaves out whatever the bar already shows.
     const mobileTabs = useMemo(() => ([
         { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
-        { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
+        // A fifth of a 360px phone fits about six letters at the dock's size:
+        // "Construtor" was cut to "Constru…". The full name stays its accessible name.
+        { key: 'builder', label: t('nav.builder'), shortLabel: t('nav.builderShort'), icon: <SwordsIcon />, path: '/builder' },
         { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
         // The daily puzzle is the one thing on a phone that is new every day, so it
         // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
@@ -976,26 +979,33 @@ export default function AppLayout() {
     ]), [t]);
 
     // What the Mais sheet lists — every destination the tab bar has no room for,
-    // in exactly one place, laid out so each block fills its rows (2026-10-18,
-    // Enzo: "mais fácil, intuitivo e simétrico"; the sheet used to run 3 · 4 ·
-    // 4 · 2 · 2 · 1 tiles, three half-empty rows under three headings):
-    // - the pinned destinations the bar leaves out (Journeys, Forum, My teams),
-    //   untitled, as one row of equal shortcut cards;
-    // - Play: the rail's Games and Community joined — the daily Champion, the
-    //   Quiz, your battles and the friends you battle — four tiles, first,
-    //   because it is what changes from one day to the next;
-    // - Competitive and PokéData as the rail has them, four tiles each.
+    // in exactly one place (2026-10-18, Enzo: "mais fácil, intuitivo e
+    // simétrico"). Ordered by how often people come for it (2026-10-29, Enzo:
+    // "o champion challenge deve ser mais fácil de acessar… em destaque, único
+    // na linha"):
+    // - hero: the daily Champion Challenge, alone on the first row, a wide card
+    //   with a line saying what it is;
+    // - shortcuts: the pinned destinations the bar leaves out (My teams, Forum,
+    //   Journeys), untitled, one row of equal cards;
+    // - Play: your battles, friends and the Quiz — what is left of the rail's
+    //   Community and Games;
+    // - Competitive and PokéData as the rail has them.
     // Admin is a tool, not a destination people browse to: it leaves the grid
     // for a row under it (`moreSheetToolItems`). Sections are derived from the
-    // rail's groups, never re-listed, so a link added there shows up here too.
+    // rail's items, never re-listed, so a link added there shows up here too.
     const moreSheetSections = useMemo(() => {
         const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
+        const placed = new Set(['challenge', ...primaryNavItems.map((item) => item.key)]);
         const visible = (items) => items.filter((item) => !inTabBar.has(item.key));
-        const itemsOf = (...keys) => visible(navigationGroups.filter((group) => keys.includes(group.key)).flatMap((group) => group.items));
+        const groupItems = (key) => navigationGroups.find((group) => group.key === key)?.items ?? [];
+        const itemsOf = (...keys) => visible(keys.flatMap(groupItems)).filter((item) => !placed.has(item.key));
         const titleOf = (key) => navigationGroups.find((group) => group.key === key)?.title;
+        const challenge = navigationGroups.flatMap((group) => group.items).find((item) => item.key === 'challenge');
         return [
+            // The card has room for the full name; the hint says what it is.
+            { key: 'hero', title: null, hero: true, items: challenge ? [{ ...challenge, shortLabel: undefined, hint: t('nav.challengeHint') }] : [] },
             { key: 'pinned', title: null, featured: true, items: visible(primaryNavItems) },
-            { key: 'play', title: t('nav.play'), items: itemsOf('guessing', 'dashboard') },
+            { key: 'play', title: t('nav.play'), items: itemsOf('dashboard', 'guessing') },
             { key: 'teamBuilding', title: titleOf('teamBuilding'), items: itemsOf('teamBuilding') },
             { key: 'database', title: titleOf('database'), items: itemsOf('database') },
         ].filter((section) => section.items.length > 0);
@@ -1970,9 +1980,10 @@ export default function AppLayout() {
                                     className={`app-shell__tab ${tab.active ? 'is-active' : ''}`}
                                     aria-current={tab.active && !tab.action ? 'page' : undefined}
                                     aria-haspopup={tab.action ? 'dialog' : undefined}
+                                    aria-label={tab.shortLabel && tab.shortLabel !== tab.label ? tab.label : undefined}
                                 >
                                     <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
-                                    <span className="app-shell__tab-label">{tab.label}</span>
+                                    <span className="app-shell__tab-label">{tab.shortLabel || tab.label}</span>
                                 </button>
                             ));
                         })()}

@@ -2701,12 +2701,14 @@
 }
 
 /* Room for an avatar's reward frame (rewards, 2026-10-17): the rings sit
-   0.25rem outside the avatar and the avatars touch the left edge, where
-   overflow-x: hidden cut them. The pane reaches one step further left and
-   pads it back, so nothing inside moves. Compound selector: it must beat the
-   phone rule below, which resets the padding. */
+   0.3125rem outside the avatar and the avatars touch the left edge, where
+   overflow-x: hidden cut them. The pane used to reach one step left and pad
+   it back, but .thread-detail clips too (overflow: hidden), so the step it
+   reached into was cut all the same — the ring still lost its left side on
+   phones (2026-10-29). The pane pads its content in by the step instead.
+   Compound selector: it must beat the phone rule below, which resets the
+   padding. */
 .thread-messages-scroll.custom-scrollbar {
-    margin-inline-start: calc(-1 * var(--space-2));
     padding-inline-start: var(--space-2);
 }
 

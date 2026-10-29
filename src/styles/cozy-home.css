@@ -1390,8 +1390,35 @@ button.cozy-journey__row:hover {
         gap: var(--space-3);
     }
 
+    /* The status chips stay one strip you swipe (Enzo, 2026-10-29: "prefiro
+       rolagem no eixo X"), but the strip runs to the screen's edge and fades
+       there: a chip cut flush at the gutter read as broken text ("League
+       Ch…"), one that dissolves into the edge reads as more to swipe. */
+    .cozy-chips {
+        margin-inline-end: calc(var(--page-gutter, var(--space-4)) * -1);
+        padding-inline-end: var(--space-8);
+        mask-image: linear-gradient(to right, var(--color-fg) calc(100% - var(--space-8)), transparent);
+    }
+
+    /* A panel's sentence goes under its title, not squeezed between the
+       title and the action, where it wrapped into two lines that overlapped
+       the heading ("Journeys"). */
+    .cozy-home .cozy-panel .section-head {
+        flex-wrap: wrap;
+        row-gap: var(--space-1);
+    }
+
+    .cozy-home .cozy-panel .section-meta {
+        order: 1;
+        flex-basis: 100%;
+    }
+
+    /* No wrap in the column: a wrapping column flex line is as wide as its
+       widest item's content, so the chip strip grew past the screen and was
+       cut at its edge instead of scrolling (2026-10-29). */
     .cozy-toolbar {
         flex-direction: column;
+        flex-wrap: nowrap;
         align-items: stretch;
     }
 
