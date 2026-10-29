@@ -25,17 +25,18 @@
         padding-right: 0;
     }
 
-    /* Section heading: sentence case, the page's heading voice, no rule. */
+    /* Section heading: sentence case, the body face (a section, not the
+       page — Neon Sticker type rule), no rule. */
     .gyms-view .gyms-section-head {
         padding-bottom: 0;
         border-bottom: none;
     }
 
     .gyms-view .gyms-section-head h2 {
-        font-family: var(--font-display);
+        font-family: var(--font-body);
         font-size: var(--text-md);
         font-weight: var(--weight-semibold);
-        letter-spacing: -0.03em;
+        letter-spacing: -0.015em;
         text-transform: none;
         color: var(--color-fg);
     }

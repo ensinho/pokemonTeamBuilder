@@ -644,7 +644,7 @@ export function CategoryGuesserView({ showDetails }) {
                                     <span className="category-guesser__last-find-name">
                                         {lastFind ? formatPokemonDisplayName(lastFind.name) : '---'}
                                     </span>
-                                    {lastFind && <span className="text-xs text-muted">#{lastFind.id}</span>}
+                                    {lastFind && <span className="font-mono text-xs text-muted">#{lastFind.id}</span>}
                                 </div>
                             </div>
 
@@ -652,7 +652,7 @@ export function CategoryGuesserView({ showDetails }) {
                             <div className="category-guesser__hint-box">
                                 <div className="category-guesser__hint-head">
                                     <span className="category-guesser__hint-label">
-                                        <Lightbulb className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+                                        <Lightbulb className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                                         {t('games.categoryHint')}
                                     </span>
                                     {activeCategory.wikiRef && (
@@ -697,7 +697,7 @@ export function CategoryGuesserView({ showDetails }) {
 
                             {manualHint && (
                                 <div className="generation-quiz__tip-banner">
-                                    <HelpCircle className="w-4 h-4 text-accent" aria-hidden="true" />
+                                    <HelpCircle className="w-4 h-4" aria-hidden="true" />
                                     <span className="generation-quiz__tip-text">{manualHint}</span>
                                 </div>
                             )}
