@@ -343,3 +343,10 @@
     background: var(--color-primary);
     color: var(--color-on-primary);
 }
+
+/* The card clips (overflow: hidden, for the art), so its two small controls
+   wear the logo ring inward — drawn outward it lost its right side. */
+.pokemon-card__favorite:focus-visible,
+.pokemon-card__info:focus-visible {
+    box-shadow: var(--ring-logo-inset);
+}

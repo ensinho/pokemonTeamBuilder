@@ -12,6 +12,20 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — The logo focus ring was clipped or erased on core controls `bug`
+- **Symptom:** tabbing the core pages, focus landed on the selected segment ("Today", "Rewards"), on profile/builder tabs, Home's chips, Pokédex card stars, phone builder cards and the composer's Save, and showed no ring or a ring cut on one to three sides; 65 controls still drew Tailwind's flat 2px Volt ring.
+- **Root cause:** Neon Sticker's focus is a 6px outer `box-shadow` (`--ring-logo`). (1) The anchored segmented thumb sets the selected item's `box-shadow: none` after the focus rule; (2) `.tabs`, `.cozy-chips`, `.pokemon-card` and the composer fold clip overflow; (3) `.is-synergy`/`.is-suggested` card tints set their own inset shadow later than the card's focus rule; (4) `focus-visible:ring-2 ring-primary` utilities outrank the `:where()` focus rule.
+- **Fix:** a FOCUS block in `index.css` (selected-segment ring, tabs draw an inset ring on `::before` with a ring's width of strip padding, `[class*='focus-visible:ring-2']` mapped to `--ring-focus`), `--ring-logo-inset` for controls in clipping containers, strip padding given back by negative margin, `scroll-padding` on the nav and the content scroller (phones clear the dock). Verified by a tab-through audit that walks each focused control's ancestors for clipping.
+- **Correct pattern:** a new control inside `overflow: hidden`/`auto` uses `--ring-logo-inset`; a state rule that sets `box-shadow` on a focusable control must not land after its `:focus-visible` rule at equal specificity. Audit by tabbing, not by eye.
+- **Files:** `src/index.css`, `src/styles/cozy-home.css`, `src/styles/pokemon-card.css`, `src/styles/team-builder-view.css`, `src/styles/app-shell.css`
+
+### 2026-10-29 — The Pokémon page went blank when the Firestore mirror read failed `bug`
+- **Symptom:** offline (or with Firestore unreachable) `/pokemon/:id` showed only its tab strip — no sprite, stats, entry or moves — although the static data and PokéAPI were reachable.
+- **Root cause:** `usePokemonDetailData` awaited `getDoc` on the mirror inside the effect's single `try`; its rejection ("client is offline") skipped the static and PokéAPI steps and the whole page stayed empty. `resolvePokemonDetail` already treated the mirror as optional.
+- **Fix:** `readMirrorDoc()` returns `null` on any failure, for the detail and the evolution chain; the modal's chain catches per stage.
+- **Correct pattern:** every cascade step before the last is optional — a cache or mirror read never throws past its own step.
+- **Files:** `src/hooks/usePokemonDetailData.js`, `src/components/modals/PokemonDetailModal.jsx`
+
 ### 2026-10-29 — Canon tones used raw as text were illegible in half the themes `dispattern`
 - **Symptom:** on the secondary views (meta detail, tournament team, gyms, damage calculator, move lists) Dark/Ghost/Dragon words were ~2:1 on the night surfaces and Electric/Ice/Steel ~1.5:1 on white; gym level badges were white on Electric yellow (1.3:1); PokéPuzzle's correct/present letters were white on `dark`'s mint and amber (1.9 / 1.7:1).
 - **Root cause:** a canon colour (type, stat, weather, damage class) is a *fill*; written as `style={{ color: typeColors[t] }}` or `text-[#F08030]` it ignores the theme. And `--color-on-primary` is the ink for the primary only — `dark` sets it to white, so it is wrong on any other bright fill.

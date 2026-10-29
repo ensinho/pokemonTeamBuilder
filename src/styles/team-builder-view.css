@@ -2163,7 +2163,22 @@
    opacity animates. */
 .team-builder-mobile__composer-fold {
     overflow: hidden;
+    /* A focus ring's width of room on each side, given back by the margin
+       (inline only — the height is what the collapse mirrors): Save's and
+       the ⋯ button's logo rings were cut at the fold's edges. */
+    padding-inline: var(--space-1_5);
+    margin-inline: calc(var(--space-1_5) * -1);
     transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+/* The hint's link sits on the fold's clipped bottom edge, so its focus is
+   drawn on the word itself: a gold highlight with ink, the ring's colours. */
+.team-builder-mobile__composer-fold .tb-empty-hint__link:focus-visible {
+    box-shadow: none;
+    border-radius: var(--radius-sm);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    text-decoration: underline 2px var(--brand-live);
 }
 
 /* Save and Export share the row; the overflow button keeps its square. Both
@@ -2853,4 +2868,18 @@
     .modal-footer .editor-remove {
         margin-right: auto;
     }
+}
+
+/* Keyboard focus on a phone card (Neon Sticker). The suggested and synergy
+   tints set the card's own inset ring after the shared focus rule above, and
+   erased it: focus landed on a card and nothing showed. The doubled class
+   outranks them. The info button sits in the clipped corner, so its ring is
+   drawn inward. */
+.team-builder-mobile-card.team-builder-mobile-card:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
+}
+
+.team-builder-mobile-card__info:focus-visible {
+    box-shadow: var(--ring-logo-inset);
 }

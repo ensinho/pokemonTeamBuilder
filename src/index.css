@@ -412,6 +412,9 @@
     --color-danger: #B91C1C;
     --color-warning: #B45309;
     --color-info: #1D4ED8;
+    /* Forest green as a word on the page ground was 4.50:1 — one shade
+       deeper clears AA on bg, surface and raised. */
+    --color-primary-text: #136B34;
 
     --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
     --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
@@ -499,11 +502,20 @@
        `dark` and `light` set their own above. */
     --color-primary-text: var(--color-primary);
     --color-primary-lip: color-mix(in srgb, var(--color-primary) 60%, var(--brand-black));
+    /* A Volt *fill* answering hover — the primary button, Home's ink pill.
+       It deepens toward the lip instead of lifting toward fg: mixed toward
+       white, `dark`'s Volt dropped its white label to 4.50:1; deepened it
+       holds ≥ 5.4:1, and the themes with dark ink keep ≥ 6:1. */
+    --color-primary-fill-hover: color-mix(in srgb, var(--color-primary) 86%, var(--color-primary-lip));
 
     /* Signature 1 — the logo ring: the wordmark's outline stack (ink, then
        magenta, then yellow). Keyboard focus, the team slot being edited and
        the trainer's avatar. Never on hover. */
     --ring-logo: 0 0 0 2px var(--brand-ink), 0 0 0 4px var(--brand-live), 0 0 0 6px var(--brand-gold);
+    /* The same three rings drawn inward, for a control whose container clips
+       (a card with `overflow: hidden`, a scrolling strip): gold at the edge,
+       then pink, then ink — the wordmark's stack read from outside in. */
+    --ring-logo-inset: inset 0 0 0 1.5px var(--brand-gold), inset 0 0 0 3px var(--brand-live), inset 0 0 0 4.5px var(--brand-ink);
 
     /* Signature 2 — the sticker: a 3px outline in the text colour (ink on the
        light themes) and a hard, unblurred drop. The outline is inset so it
@@ -920,7 +932,11 @@ h1, h2, h3, h4, h5, h6 {
 h1,
 h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
     .auth-dialog__title, .session-transition__title, .pokepuzzle-result-title,
-    .category-guesser__title, .text-xl, .text-2xl, .text-3xl) {
+    .category-guesser__title, .text-xl, .text-2xl, .text-3xl),
+/* A dialog's own title — the h2 its aria-labelledby names — whatever
+   utilities size it (the member editor's `text-lg sm:text-xl`, the trainer
+   picker's `text-lg`): it titles the whole dialog. */
+:is(.modal-panel, [role='dialog']) h2[id$='-title'] {
     font-family: var(--font-heading);
     font-weight: var(--weight-heading);
     letter-spacing: -0.02em;
@@ -1364,7 +1380,7 @@ h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-primary) 88%, var(--color-fg));
+    background: var(--color-primary-fill-hover);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -1454,7 +1470,8 @@ h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
 }
 
 .btn-link:hover:not(:disabled) {
-    color: var(--color-primary-hover);
+    /* The underline is the hover; the ink stays the AA-measured Volt text. */
+    color: var(--color-primary-text);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -2899,6 +2916,55 @@ a.data-list__row:hover,
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
     outline: none;
     box-shadow: var(--ring-focus);
+}
+
+/* Neon Sticker: the logo ring is 6px wide, and a ring a container clips is
+   no ring (WCAG 2.4.7, and the 2026-09 "invisible focus" wound). Four
+   places it was being cut or replaced, measured by tabbing every core page: */
+
+/* 1. The selected segment. The anchored thumb sets the chosen item's own
+   box-shadow to none (it rides on the track instead), which also erased its
+   focus ring — focus landed on "Today" and nothing showed. */
+.segmented__item:focus-visible,
+.segmented__item:is([aria-pressed='true'], [aria-selected='true'], .is-active):focus-visible {
+    box-shadow: var(--ring-focus);
+}
+
+/* 2. Tabs scroll sideways, so the strip clips both axes. The strip gets a
+   ring's width of inline room (given back with a negative margin, so no
+   edge moves) and the tab draws its ring inside its own box, around the
+   label, on a layer of its own (::after is the underline). */
+.tabs {
+    padding-inline: var(--space-1_5);
+    margin-inline: calc(var(--space-1_5) * -1);
+}
+
+.tabs__item:focus-visible {
+    box-shadow: none;
+}
+
+.tabs__item:focus-visible::before {
+    content: '';
+    position: absolute;
+    inset: var(--space-1_5) calc(var(--space-1_5) * -1);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-logo-inset);
+    pointer-events: none;
+}
+
+/* 3. Controls still styled with Tailwind's `focus-visible:ring-2
+   ring-primary` (65 of them: patch notes, the member editor, the meta
+   pages…) drew a flat 2px Volt ring, not the logo ring. These rules come
+   after the utilities at the same specificity, so one rule brings every one
+   of them onto the system's ring. */
+[class*='focus-visible:ring-2']:focus-visible {
+    box-shadow: var(--ring-focus);
+}
+
+/* 4. Scrollers bring a focused control into view flush with their edge, ring
+   outside it: one ring's width of scroll padding keeps it whole. */
+.app-shell__nav {
+    scroll-padding-block: var(--space-2);
 }
 
 /* Fields already draw their own inset focus treatment above; without this the

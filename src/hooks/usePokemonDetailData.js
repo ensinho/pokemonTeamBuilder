@@ -15,6 +15,20 @@ import { VERSION_GROUPS, formatLocationName } from '../constants/pokemonVersions
 import { buildPokemonForms, formDisplayName } from '../utils/pokemonForms';
 import { sanitizeSpriteUrl } from '../utils/pokemonSprites';
 
+// The Firestore mirror is the first stop, never the only one: offline (or a
+// rule/network failure) getDoc rejects, and that must fall through to the
+// static detail and PokéAPI like resolvePokemonDetail does — before, one
+// rejection emptied the whole page (Data, Moves, Sprites: blank).
+const readMirrorDoc = async (db, id) => {
+    if (!db) return null;
+    try {
+        const snap = await getDoc(doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(id)));
+        return snap.exists() ? snap.data() : null;
+    } catch (_) {
+        return null;
+    }
+};
+
 const displayNameFromApi = (apiData) =>
     apiData?.id > 1025 ? formDisplayName(apiData.name, apiData.species?.name) : apiData?.name;
 
@@ -82,11 +96,7 @@ export function usePokemonDetailData({
                     details = selectedPokemon;
                     setPokemonDetailsCache?.((prev) => ({ ...prev, [selectedPokemon.id]: selectedPokemon }));
                 } else {
-                    if (db) {
-                        const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(selectedPokemon.id));
-                        const docSnap = await getDoc(docRef);
-                        if (docSnap.exists()) details = docSnap.data();
-                    }
+                    details = await readMirrorDoc(db, selectedPokemon.id);
                     if (!details) details = await getStaticPokemonDetail(selectedPokemon.id);
                     if (!details) {
                         const apiData = await getPokemonApiData(selectedPokemon.id);
@@ -165,9 +175,8 @@ export function usePokemonDetailData({
                     const staticDetail = await getStaticPokemonDetail(id);
                     if (staticDetail) { setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: staticDetail })); return staticDetail; }
                     if (!db) return { name: evo.name, id: Number(id), sprite: POKEBALL_PLACEHOLDER_URL };
-                    const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) { const d = docSnap.data(); setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: d })); return d; }
+                    const d = await readMirrorDoc(db, id);
+                    if (d) { setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: d })); return d; }
                     return { name: evo.name, id: Number(id), sprite: POKEBALL_PLACEHOLDER_URL };
                 });
                 const resolved = await Promise.all(detailsPromises);

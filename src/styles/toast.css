@@ -39,6 +39,21 @@
     pointer-events: auto;
 }
 
+/* With the floating dock on screen, the stack stands just above it instead
+   of over it: three toasts used to hide the whole tab bar for their five
+   seconds, so the one control a phone navigates with went dead. The sum is
+   the dock's own reservation (app-shell.css: tab row + its padding + its
+   offset from the edge) plus one small gap. */
+@media (max-width: 639px) {
+    body:has(.app-shell__tabbar) .toast-stack {
+        bottom: calc(
+            var(--app-shell-tab-height) + var(--space-1_5) * 2
+            + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+            + var(--space-2)
+        );
+    }
+}
+
 @media (min-width: 640px) {
     .toast-stack {
         top: calc(var(--app-shell-top-band-height, 4rem) + var(--space-3));

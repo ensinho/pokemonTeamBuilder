@@ -750,10 +750,14 @@
         display: none;
     }
 
-    /* Side by side: one row instead of two. "Criar conta" / "Entrar" fit
-       the rail's width at btn-sm. */
+    /* Side by side when they fit ("Criar conta" / "Entrar"), wrapped onto
+       two rows when they don't: the Volt primary is semibold now, and
+       "Create account" + "Sign in" ran ~20px past the rail's edge, the
+       second button clipped by the card. */
     .guest-card--rail .guest-card__actions {
-        grid-template-columns: auto auto;
-        justify-content: start;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-1) var(--space-2);
     }
 }
