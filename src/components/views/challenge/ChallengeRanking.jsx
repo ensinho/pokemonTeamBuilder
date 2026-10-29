@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft } from 'lucide-react';
 
 import { useModalA11y } from '../../../hooks/useModalA11y';
@@ -200,11 +201,19 @@ export function ChallengeRanking({ ranks, defaultBoard = 'daily', stats = null, 
     );
 }
 
-/** The ranking where no rail fits (phones, narrow columns): an app dialog — a sheet below 640px. */
+/**
+ * The ranking where no rail fits (phones, narrow columns): an app dialog — a sheet below 640px.
+ *
+ * Portalled to <body>. Rendered in place it sat inside `.challenge-view`, a
+ * size container (`container: … / inline-size`), and containment makes that
+ * element the box `position: fixed` measures from and a stacking context of
+ * its own: the sheet was as tall as the page, so nothing in it scrolled, and
+ * the dock drew over its bottom (2026-10-29).
+ */
 export function ChallengeRankingSheet({ ranks, defaultBoard, stats, onClose }) {
     const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
-    return (
+    return createPortal(
         <div className="modal-scrim">
             <div
                 ref={dialogRef}
@@ -224,6 +233,7 @@ export function ChallengeRankingSheet({ ranks, defaultBoard, stats, onClose }) {
                     <ChallengeRanking ranks={ranks} defaultBoard={defaultBoard} stats={stats} showTitle={false} />
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }
