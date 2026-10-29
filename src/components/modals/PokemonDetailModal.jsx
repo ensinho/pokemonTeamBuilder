@@ -113,9 +113,10 @@ export function PokemonDetailModal({
 
                     if (!db) return { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
 
-                    const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
+                    // A failed mirror read (offline) leaves this stage of the
+                    // chain as a placeholder instead of dropping the whole chain.
+                    const docSnap = await getDoc(doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id)).catch(() => null);
+                    if (docSnap?.exists()) {
                         const detail = docSnap.data();
                         setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: detail }));
                         return detail;
