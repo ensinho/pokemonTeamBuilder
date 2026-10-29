@@ -11,6 +11,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
 import { typeIcons } from '../../constants/types';
 import { trainerSpriteUrl } from '../../utils/challengeView';
+import { BrandWordmark } from '../BrandWordmark';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
 
@@ -558,6 +559,31 @@ const ChallengeVisual = ({ language }) => {
     );
 };
 
+// 1.18.0: the new name, as the splash and the landing show it — the Gengar
+// beside the wordmark — over the look it arrived with: three filled team
+// slots wearing the sticker (Neon Sticker's brand layer, `.sticker`).
+const BrandVisual = () => (
+    <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-5 bg-bg p-5" aria-hidden="true">
+        <div className="flex min-w-0 max-w-full items-center gap-3">
+            <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" className="h-12 w-12 shrink-0" />
+            <BrandWordmark className="block h-auto w-52 min-w-0 max-w-full" sizes="13rem" />
+        </div>
+        <div className="flex items-center gap-3">
+            {[6, 94, 445].map((id) => (
+                <span key={id} className="sticker flex h-14 w-14 items-center justify-center bg-surface-raised">
+                    <img
+                        src={`${SPRITE_BASE}/${id}.png`}
+                        alt=""
+                        className="h-12 w-12 object-contain"
+                        style={{ imageRendering: 'pixelated' }}
+                    />
+                </span>
+            ))}
+        </div>
+        <span className="font-mono text-2xs font-semibold text-muted">pokemonbuilder.app</span>
+    </div>
+);
+
 // 1.17.0: you and a friend on the VS card, and the one tap that starts it.
 const VersusVisual = ({ language }) => {
     const pt = language === 'pt';
@@ -606,6 +632,7 @@ const NOTE_ICONS = {
 };
 
 const NOTE_VISUALS = {
+    brand: BrandVisual,
     champions: ChampionsDexVisual,
     playthrough: PlaythroughVisual,
     newGames: NewGamesVisual,
@@ -795,14 +822,8 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
 
                 <div className="shrink-0 border-t border-surface-raised px-5 pb-5 pt-4">
                     {(isInstallable || isIOS) && (
-                        <div
-                            className="mb-4 flex items-center gap-3 rounded-xl p-3"
-                            style={{ backgroundColor: colors.primary + '18', border: `1px solid ${colors.primary}35` }}
-                        >
-                            <div
-                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
-                                style={{ backgroundColor: colors.primary }}
-                            >
+                        <div className="mb-4 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/10 p-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary">
                                 <DownloadIcon className="w-4 h-4" />
                             </div>
                             <div className="flex-1 min-w-0 text-left">
@@ -817,8 +838,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                 <button
                                     type="button"
                                     onClick={onInstall}
-                                    className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-bold text-white transition-opacity hover:opacity-90 active:opacity-75"
-                                    style={{ backgroundColor: colors.primary }}
+                                    className="btn btn-secondary btn-sm shrink-0"
                                 >
                                     {t('patchNotes.installBtn')}
                                 </button>
@@ -827,8 +847,9 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                     )}
                     <div className="text-center">
                         <button
+                            type="button"
                             onClick={onClose}
-                            className="rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-colors hover:opacity-90"
+                            className="btn btn-primary btn-lg"
                         >
                             {t('patchNotes.gotIt')}
                         </button>
