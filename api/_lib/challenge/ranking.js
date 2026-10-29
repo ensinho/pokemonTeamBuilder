@@ -24,6 +24,30 @@ export const emptyRanks = (dayKey) => ({
     updatedAt: null,
 });
 
+const shortText = (value) => (typeof value === 'string' && value.length > 0 && value.length <= 48 ? value : null);
+
+/**
+ * What a row shows of its trainer — their public profile as it was when they
+ * won (`publicProfiles/{uid}`, world-readable already): avatar, frame, title,
+ * level. A day's board lasts a day, so a stamp never goes stale for long, and
+ * the screen gets a face without ever learning the uid. Ids are only shaped
+ * here; the client keeps the ones its catalogue knows (rewards.js validEquip).
+ */
+export const rankProfileOf = (profile) => {
+    if (!profile || typeof profile !== 'object') return null;
+    const pokemonId = Number.isInteger(profile.avatarPokemonId) && profile.avatarPokemonId > 0 && profile.avatarPokemonId < 20000
+        ? profile.avatarPokemonId
+        : null;
+    return {
+        avatarPokemonId: pokemonId,
+        avatarIsShiny: profile.avatarIsShiny === true,
+        trainerSprite: shortText(profile.trainerSprite),
+        frameId: shortText(profile.frameId),
+        titleId: shortText(profile.titleId),
+        level: Number.isInteger(profile.trainerLevel) && profile.trainerLevel > 0 ? profile.trainerLevel : null,
+    };
+};
+
 /** Higher score first; then the quicker win; then whoever finished first. */
 const byPlace = (a, b) => b.score - a.score || a.turns - b.turns || String(a.at).localeCompare(String(b.at));
 
@@ -31,13 +55,13 @@ const byPlace = (a, b) => b.score - a.score || a.turns - b.turns || String(a.at)
  * The ranking after one official finish. A player already on the board is
  * never entered twice (an official run ends once; this is the belt to that).
  */
-export const nextRanks = (doc, { dayKey, teamSource, uid, name, status, result, at }) => {
+export const nextRanks = (doc, { dayKey, teamSource, uid, name, status, result, at, profile = null }) => {
     const base = doc && doc.boards ? doc : emptyRanks(dayKey);
     const board = boardOf(teamSource);
     const list = base.boards[board] || [];
     const won = status === 'won';
     const entries = won && !list.some((entry) => entry.uid === uid)
-        ? [...list, { uid, name, score: result?.score ?? 0, turns: result?.turns ?? 0, remaining: result?.remaining ?? 0, at }]
+        ? [...list, { uid, name, score: result?.score ?? 0, turns: result?.turns ?? 0, remaining: result?.remaining ?? 0, at, profile: rankProfileOf(profile) }]
             .sort(byPlace)
             .slice(0, RANK_LIMIT)
         : list;
@@ -84,7 +108,13 @@ export const publicRanks = (doc, uid, top = 10) => {
     for (const board of BOARDS) {
         const list = ranks.boards[board] || [];
         boards[board] = list.slice(0, top).map((entry) => ({
-            name: entry.name, score: entry.score, turns: entry.turns, remaining: entry.remaining, me: Boolean(uid) && entry.uid === uid,
+            name: entry.name,
+            score: entry.score,
+            turns: entry.turns,
+            remaining: entry.remaining,
+            at: entry.at || null,
+            profile: entry.profile || null,
+            me: Boolean(uid) && entry.uid === uid,
         }));
         mine[board] = placeOf(ranks, board, uid);
     }

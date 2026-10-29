@@ -373,6 +373,8 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
             const fresh = await tx.get(ref(p.run(body.runId)));
             const statsSnap = out.ended && !run.practice ? await tx.get(ref(p.stats(caller.uid))) : null;
             const ranksSnap = statsSnap ? await tx.get(ref(p.ranks(run.dayKey))) : null;
+            // A win takes a place, and the row shows the trainer's public profile.
+            const profileSnap = ranksSnap && status === 'won' ? await tx.get(ref(p.profile(caller.uid))) : null;
             if (fresh.data()?.turn !== run.turn || fresh.data()?.status !== 'active') {
                 throw fail(409, 'staleTurn', { turn: fresh.data()?.turn ?? run.turn });
             }
@@ -407,6 +409,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
             if (ranksSnap) {
                 nextRanksDoc = nextRanks(ranksSnap.exists ? ranksSnap.data() : null, {
                     dayKey: run.dayKey, teamSource: run.teamSource, uid: caller.uid, name: secret.names?.p1 || 'Trainer', status, result, at: stamp,
+                    profile: profileSnap?.exists ? profileSnap.data() : null,
                 });
                 tx.set(ref(p.ranks(run.dayKey)), nextRanksDoc);
             }
