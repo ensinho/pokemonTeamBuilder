@@ -1,1 +1,0 @@
-import{r as s}from"./react-vendor-D1jwkorh.js";import{B as r}from"./index-DMITkUi1.js";const n={},c=(o="")=>String(o).toLowerCase().replace(/[^a-z0-9]/g,"");function u(){const{data:o}=r("move-types.json"),e=(o==null?void 0:o.byId)||n;return{typeForMove:s.useMemo(()=>t=>e[c(t)]||null,[e])}}export{u};
