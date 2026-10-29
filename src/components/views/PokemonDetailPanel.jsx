@@ -520,7 +520,7 @@ export function PokemonDetailPanel({
                                                             return (
                                                                 <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface transition-colors">
                                                                     <div className="flex items-center gap-2.5 min-w-0">
-                                                                        <span className="px-2 py-0.5 rounded text-2xs font-extrabold uppercase border shrink-0 text-center tracking-[0.06em]" style={{ borderColor: `${conf.color}55`, backgroundColor: `${conf.color}18`, color: conf.color }}>{conf.label}</span>
+                                                                        <span className="px-2 py-0.5 rounded text-2xs font-extrabold uppercase border shrink-0 text-center tracking-[0.06em]" style={{ borderColor: `${conf.color}55`, backgroundColor: `${conf.color}18`, color: `color-mix(in srgb, ${conf.color} 45%, var(--color-fg))` }}>{conf.label}</span>
                                                                         <span className="flex items-center gap-1.5 text-xs text-muted truncate">
                                                                             <IconComp className="w-3.5 h-3.5 text-muted shrink-0" /><span className="capitalize">{detail.method}</span>
                                                                         </span>

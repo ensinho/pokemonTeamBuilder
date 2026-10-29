@@ -583,7 +583,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     // let me set precise numbers".
                                     return (
                                         <div key={statName} className="flex items-center gap-3">
-                                            <span className="w-10 shrink-0 text-xs font-bold" style={{ color: statColor }}>{STAT_ABBR[statName]}</span>
+                                            <span className="w-10 shrink-0 text-xs font-bold" style={{ color: `color-mix(in srgb, ${statColor} 45%, var(--color-fg))` }}>{STAT_ABBR[statName]}</span>
                                             <input
                                                 type="range"
                                                 min="0"
