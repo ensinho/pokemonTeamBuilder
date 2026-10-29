@@ -485,6 +485,38 @@ const SearchVisual = () => {
     );
 };
 
+// Team comparison: two teams, the split of their duels, and a corner of the
+// one-on-one grid (green = the left team wins that duel, red = it loses).
+const CompareVisual = ({ language }) => {
+    const pt = language === 'pt';
+    const cells = ['win', 'loss', 'win', 'even', 'win', 'loss', 'win', 'win', 'loss'];
+    const tone = {
+        win: 'color-mix(in srgb, var(--color-success) 30%, var(--color-surface-raised))',
+        loss: 'color-mix(in srgb, var(--color-danger) 30%, var(--color-surface-raised))',
+        even: 'var(--color-surface-raised)',
+    };
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2 bg-bg p-3" aria-hidden="true">
+            <span className="flex w-[15rem] max-w-full items-center justify-between text-2xs font-semibold text-fg">
+                <span>{pt ? 'Chuva' : 'Rain'}</span>
+                <span className="font-mono text-muted">vs</span>
+                <span>{pt ? 'Sol' : 'Sun'}</span>
+            </span>
+            <span className="flex h-1.5 w-[15rem] max-w-full gap-0.5 overflow-hidden rounded-full">
+                <span className="bg-success" style={{ flexGrow: 5 }} />
+                <span className="bg-danger" style={{ flexGrow: 3 }} />
+            </span>
+            <span className="grid grid-cols-3 gap-1">
+                {cells.map((cell, i) => (
+                    <span key={i} className="flex h-6 w-9 items-center justify-center rounded font-mono text-2xs text-fg" style={{ background: tone[cell] }}>
+                        {cell === 'win' ? '2×' : cell === 'loss' ? '½×' : '1×'}
+                    </span>
+                ))}
+            </span>
+        </div>
+    );
+};
+
 const DelightVisual = ({ language }) => {
     const pt = language === 'pt';
     const step = useDemoStep(2, 1400);
@@ -652,6 +684,7 @@ const NOTE_VISUALS = {
     challenge: ChallengeVisual,
     versus: VersusVisual,
     regMc: RegMcVisual,
+    compare: CompareVisual,
 };
 
 // One "what's new" card. The featured one carries its illustration and grows to
