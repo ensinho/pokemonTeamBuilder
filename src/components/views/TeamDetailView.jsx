@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Copy, Pencil, Share2, Star, Trash2, Trophy, Shield, Swords,
-    AlertTriangle, Sparkles, ArrowUpRight,
+    AlertTriangle, Sparkles, ArrowUpRight, ArrowLeftRight,
 } from 'lucide-react';
 
 import '../../styles/team-detail-view.css';
@@ -23,6 +23,7 @@ import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { EmptyState } from '../EmptyState';
+import { openTeamCompare } from '../../store/useTeamCompareStore';
 
 // A type in the coverage panel: the standard TypeChip (canon colour mixed into
 // theme tokens), plus how many members it applies to. It used to be a bespoke
@@ -167,6 +168,9 @@ export function TeamDetailView({
                             className="btn btn-secondary team-detail-active-toggle"
                         >
                             {isActive ? `★ ${t('common.active')}` : t('savedTeams.setActive')}
+                        </button>
+                        <button type="button" onClick={() => openTeamCompare(team.id, 'team_detail')} className="btn btn-secondary" aria-label={t('teamCompare.openAria', { name: team.name })}>
+                            <ArrowLeftRight className="w-4 h-4" aria-hidden="true" /> {t('teamCompare.open')}
                         </button>
                         <button type="button" onClick={() => onExport?.(team)} className="btn btn-ghost btn-icon btn-sm touch-target" title={t('savedTeams.exportShowdown')} aria-label={t('savedTeams.exportShowdown')}>
                             <ShowdownIcon className="w-4 h-4" />

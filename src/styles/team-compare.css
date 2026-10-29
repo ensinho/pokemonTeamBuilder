@@ -1,0 +1,350 @@
+/* Team comparison dialog (TeamCompareModal). Inside a bordered panel, so every
+   block separates by fill, never by a border of its own. A duel's colour is
+   read from A's side: success = A wins, danger = B wins, raised = even. */
+
+.team-compare {
+    --compare-win: color-mix(in srgb, var(--color-success) 22%, var(--color-surface-raised));
+    --compare-loss: color-mix(in srgb, var(--color-danger) 22%, var(--color-surface-raised));
+    --compare-win-ink: color-mix(in srgb, var(--color-success) 55%, var(--color-fg));
+    --compare-loss-ink: color-mix(in srgb, var(--color-danger) 55%, var(--color-fg));
+}
+
+.team-compare .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+/* ── Pickers ─────────────────────────────────────────────────────────── */
+.team-compare__pickers {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: end;
+    gap: var(--space-3);
+}
+
+.team-compare__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.team-compare__box {
+    max-width: 100%;
+}
+
+.team-compare__swap {
+    margin-bottom: var(--space-2);
+}
+
+/* A phone keeps both pickers on one row; the duel grid below already
+   shows every member, so the boxes go. */
+@media (max-width: 640px) {
+    .team-compare__box {
+        display: none;
+    }
+
+    .team-compare__swap {
+        margin-bottom: 0;
+    }
+
+    .team-compare .modal-footer {
+        flex-direction: row;
+    }
+
+    .team-compare .modal-footer .btn {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+/* ── Verdict ─────────────────────────────────────────────────────────── */
+.team-compare__verdict {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.team-compare__verdict-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-md);
+    font-weight: var(--weight-heading);
+    letter-spacing: -0.015em;
+    color: var(--color-fg);
+}
+
+.team-compare__bar {
+    display: flex;
+    gap: var(--space-0_5);
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+}
+
+.team-compare__bar > span {
+    flex-basis: 0;
+    min-width: 0;
+}
+
+.team-compare__bar-a { background: var(--color-success); }
+.team-compare__bar-even { background: color-mix(in srgb, var(--color-fg) 18%, transparent); }
+.team-compare__bar-b { background: var(--color-danger); }
+
+.team-compare__record {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+/* ── Versus sheet ────────────────────────────────────────────────────── */
+.team-compare__sheet {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.team-compare__sheet th,
+.team-compare__sheet td {
+    padding: var(--space-2) var(--space-1);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.team-compare__sheet thead th {
+    padding-bottom: var(--space-1);
+}
+
+.team-compare__sheet-team {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.team-compare__sheet tbody th {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    color: var(--color-muted);
+}
+
+.team-compare__sheet tbody td {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.team-compare__sheet tbody tr:nth-child(odd) > * {
+    background: color-mix(in srgb, var(--color-fg) 3%, transparent);
+}
+
+.team-compare__sheet tbody td.is-lead {
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.team-compare__sheet .team-rating {
+    justify-content: center;
+}
+
+/* ── Duel grid ───────────────────────────────────────────────────────── */
+.team-compare__duels {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.team-compare__h3 {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.team-compare__note {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.team-compare__grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+    max-width: 30rem;
+    align-self: center;
+}
+
+.team-compare__grid-row {
+    display: grid;
+    grid-template-columns: 2.5rem repeat(var(--compare-cols), minmax(0, 1fr));
+    gap: var(--space-1);
+}
+
+.team-compare__head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-compare__head.is-current {
+    background: var(--color-surface-active);
+}
+
+.team-compare__sprite {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.team-compare__sprite--sm {
+    width: 2rem;
+    height: 2rem;
+}
+
+.team-compare__cell {
+    min-height: 2.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.team-compare__cell:active { scale: var(--press-scale); }
+
+.team-compare__cell.is-a {
+    background: var(--compare-win);
+    color: var(--compare-win-ink);
+}
+
+.team-compare__cell.is-b {
+    background: var(--compare-loss);
+    color: var(--compare-loss-ink);
+}
+
+.team-compare__cell:hover {
+    background: var(--color-surface-hover);
+}
+
+.team-compare__cell.is-a:hover { background: color-mix(in srgb, var(--color-success) 32%, var(--color-surface-raised)); }
+.team-compare__cell.is-b:hover { background: color-mix(in srgb, var(--color-danger) 32%, var(--color-surface-raised)); }
+
+.team-compare__cell.is-selected {
+    box-shadow: var(--ring-primary);
+}
+
+/* The selected duel, spelled out. */
+.team-compare__duel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.team-compare__duel-title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.team-compare__duel-title.is-a { color: var(--compare-win-ink); }
+.team-compare__duel-title.is-b { color: var(--compare-loss-ink); }
+
+.team-compare__hit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.team-compare__hit-who {
+    font-weight: var(--weight-semibold);
+    text-transform: capitalize;
+    color: var(--color-fg);
+}
+
+.team-compare__hit-target { text-transform: none; }
+
+.team-compare__mult {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--weight-semibold);
+}
+
+.team-compare__mult--up { color: var(--compare-win-ink); }
+.team-compare__mult--down { color: var(--compare-loss-ink); }
+.team-compare__mult--flat { color: var(--color-fg); }
+
+/* ── No answer ───────────────────────────────────────────────────────── */
+.team-compare__threat-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+    .team-compare__threat-cols { grid-template-columns: minmax(0, 1fr); }
+}
+
+.team-compare__threats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.team-compare__threat-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.team-compare__threat {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-0_5) var(--space-2) var(--space-0_5) var(--space-0_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-size: var(--text-xs);
+    color: var(--color-fg);
+}
+
+.team-compare__basis {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.team-compare .modal-footer .btn { max-width: 100%; }

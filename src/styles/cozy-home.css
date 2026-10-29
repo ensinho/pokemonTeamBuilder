@@ -970,7 +970,7 @@ button.cozy-chip:hover {
     background: color-mix(in srgb, var(--color-fg) 7%, var(--color-surface-raised));
 }
 
-.cozy-home .cozy-team:focus-visible,
+.cozy-home .cozy-team:has(.cozy-team__open:focus-visible),
 .cozy-home .cozy-post:focus-visible {
     outline: none;
     box-shadow: var(--ring-primary);
@@ -978,14 +978,50 @@ button.cozy-chip:hover {
 
 /* Teams */
 .cozy-team {
+    position: relative;
     display: grid;
-    grid-template-areas: 'roster text status';
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'roster text status menu';
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
     gap: var(--space-4);
     width: 100%;
     color: var(--color-fg);
     font: inherit;
+    cursor: pointer;
+}
+
+/* The card's one "open": the name, stretched over the whole card, so the
+   menu beside it can be a button of its own. */
+.cozy-team__open {
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cozy-team__open::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+
+.cozy-team__open:focus-visible {
+    outline: none;
+}
+
+.cozy-team__open .cozy-team__name {
+    display: block;
+}
+
+/* Above the stretched button. */
+.cozy-team__menu {
+    grid-area: menu;
+    position: relative;
+    z-index: 1;
 }
 
 /* The roster is a PC box strip (PcBox, pc-box.css); its hop on hover comes
@@ -1043,9 +1079,9 @@ button.cozy-chip:hover {
 
     .cozy-home .cozy-team {
         grid-template-areas:
-            'roster roster'
-            'text status';
-        grid-template-columns: minmax(0, 1fr) auto;
+            'roster roster roster'
+            'text status menu';
+        grid-template-columns: minmax(0, 1fr) auto auto;
         align-items: center;
         gap: var(--space-3);
     }
@@ -1567,12 +1603,14 @@ button.cozy-journey__row:hover {
         justify-content: space-between;
     }
 
+    /* The box takes the row under the name: beside a status and a menu
+       its six cells no longer fit a phone's column. */
     .cozy-team {
         grid-template-areas:
-            'text status'
-            'roster status';
-        grid-template-columns: minmax(0, 1fr) auto;
-        row-gap: var(--space-1);
+            'text status menu'
+            'roster roster roster';
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        row-gap: var(--space-2);
     }
 
     .cozy-journey {

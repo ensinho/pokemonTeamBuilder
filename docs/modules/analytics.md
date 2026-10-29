@@ -34,6 +34,7 @@ measures first.
 | `shared_team_import` / `shared_team_build_own` | its two buttons | `team_id` |
 | `reminder_offer_view` / `_accept` / `_dismiss` | the "remind me tomorrow" offer after a daily win (`useReminderOffer`) | `topic`: `puzzle` or `challenge` |
 | `team_of_week_open` | the forum's team of the week (`TeamOfTheWeek`) | `kind`: `community` or `tournament` |
+| `team_compare_open` | `openTeamCompare` (any shortcut to the team comparison) | `source`: `home`, `team_detail`, `saved_teams`, `builder_recent`, `builder_saved_sheet`, `builder_menu` |
 
 Return visits, sessions and countries are GA4's own (no event needed).
 

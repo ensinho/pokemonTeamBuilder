@@ -3,7 +3,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
 import {
     Dices, Trophy, ShieldCheck, Sparkles, SlidersHorizontal, Search, HelpCircle, Info,
-    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, SaveAll, Check, Share2, Trash2,
+    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, SaveAll, Check, Share2, Trash2, ArrowLeftRight,
 } from 'lucide-react';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
@@ -29,6 +29,7 @@ import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { ShowdownIcon, StarIcon } from '../icons';
 import { Loader } from '../Loader';
 import { TeamShareRow } from '../TeamShareRow';
+import { openTeamCompare } from '../../store/useTeamCompareStore';
 
 // Inline CSS custom properties for the per-type ring/tint behind a sprite.
 const typeVars = (pokemon) => {
@@ -953,6 +954,11 @@ export const MobileTeamBuilderView = ({
                         >
                             <Dices aria-hidden="true" /> {t('builder.randomizeTeam')}
                         </button>
+                        {editingTeamId && (
+                            <button type="button" className="menu-item" onClick={runAction(() => openTeamCompare(editingTeamId, 'builder_menu'))}>
+                                <ArrowLeftRight aria-hidden="true" /> {t('teamCompare.openWith')}
+                            </button>
+                        )}
                         {teamSize > 0 && (
                             <button type="button" className="menu-item" onClick={runAction(onOpenOnboarding)}>
                                 <HelpCircle aria-hidden="true" /> {t('builder.howItWorks')}
@@ -1017,6 +1023,14 @@ export const MobileTeamBuilderView = ({
                                             className="btn btn-ghost btn-sm flex-1 tb-recent-card__active"
                                         >
                                             {isActive ? `★ ${t('common.active')}` : t('builder.setActive')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setSavedTeamsOpen(false); openTeamCompare(team.id, 'builder_saved_sheet'); }}
+                                            className="btn btn-ghost btn-sm btn-icon"
+                                            aria-label={t('teamCompare.openAria', { name: team.name })}
+                                        >
+                                            <ArrowLeftRight aria-hidden="true" />
                                         </button>
                                         <button
                                             type="button"

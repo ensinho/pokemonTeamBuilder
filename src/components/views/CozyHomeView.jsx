@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
-import { Check, ChevronRight, Crown, Hourglass, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, Check, ChevronRight, Crown, Hourglass, MoreHorizontal, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GuestAccountCard } from '../GuestAccountCard';
 import { useForumStore } from '../../store/useForumStore';
@@ -43,6 +43,8 @@ import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
 import { FramedAvatar } from '../rewards/FramedAvatar';
+import { AnchoredPopover } from '../AnchoredPopover';
+import { openTeamCompare } from '../../store/useTeamCompareStore';
 
 /**
  * The cozy Home (2026-10-06 proposal). One trainer card that says where the
@@ -52,6 +54,77 @@ import { FramedAvatar } from '../rewards/FramedAvatar';
  * this reads as a Trainer Card. It is the only Home since 2026-10-06 — the
  * classic one and the switch between them are gone.
  */
+
+// A saved team's "⋯" on Home: open its page, edit it, or compare it with
+// another team. The card itself still edits on a tap, as it always has.
+function TeamCardMenu({ team, onOpen, onEdit }) {
+    const { t } = useTranslation();
+    const [isOpen, setIsOpen] = useState(false);
+    const anchorRef = useRef(null);
+    const popoverRef = useRef(null);
+
+    useEffect(() => {
+        if (!isOpen) return undefined;
+        const onDown = (event) => {
+            if (anchorRef.current?.contains(event.target) || popoverRef.current?.contains(event.target)) return;
+            setIsOpen(false);
+        };
+        const onKey = (event) => {
+            if (event.key === 'Escape') { setIsOpen(false); anchorRef.current?.focus(); }
+        };
+        document.addEventListener('mousedown', onDown);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onDown);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [isOpen]);
+
+    const items = [
+        { id: 'open', label: t('teamCompare.openTeam'), icon: <ArrowUpRight aria-hidden="true" />, onClick: onOpen },
+        { id: 'edit', label: t('common.edit'), icon: <Pencil aria-hidden="true" />, onClick: onEdit },
+        { id: 'compare', label: t('teamCompare.openWith'), icon: <ArrowLeftRight aria-hidden="true" />, onClick: () => openTeamCompare(team.id, 'home') },
+    ];
+
+    return (
+        <>
+            <button
+                ref={anchorRef}
+                type="button"
+                onClick={() => setIsOpen((v) => !v)}
+                className={`btn btn-ghost btn-icon btn-sm touch-target cozy-team__menu ${isOpen ? 'is-active' : ''}`}
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                aria-label={t('teamCompare.teamMenu', { name: team.name })}
+                title={t('teamCompare.teamMenu', { name: team.name })}
+            >
+                <MoreHorizontal aria-hidden="true" />
+            </button>
+            <AnchoredPopover
+                isOpen={isOpen}
+                anchorRef={anchorRef}
+                popoverRef={popoverRef}
+                role="menu"
+                ariaLabel={t('teamCompare.teamMenu', { name: team.name })}
+                offset={6}
+                className="menu-surface tb-more-menu"
+            >
+                {items.map((item) => (
+                    <button
+                        key={item.id}
+                        type="button"
+                        role="menuitem"
+                        className="menu-item"
+                        onClick={() => { setIsOpen(false); item.onClick?.(); }}
+                    >
+                        {item.icon}
+                        {item.label}
+                    </button>
+                ))}
+            </AnchoredPopover>
+        </>
+    );
+}
 
 const PERIOD_PARTNER = { morning: 196, afternoon: 25, evening: 197, night: 197 };
 // Meta left the tabs on 2026-10-17 for the trainer's journey: Home guides
@@ -633,17 +706,23 @@ export function CozyHomeView({
                         const s = team === activeTeam ? summary : summarizeTeam(team, typesById);
                         return (
                             <li key={team.id}>
-                                <button type="button" className="card card--inset card--interactive card--compact cozy-team pc-box-host" onClick={() => handleEditTeam(team)}>
+                                {/* The name is the card's button, stretched over the
+                                    whole card (::after), so the "⋯" beside it can be
+                                    a button of its own — a button may not hold one. */}
+                                <div className="card card--inset card--interactive card--compact cozy-team pc-box-host">
                                     <PcBox members={s.members} size={isPhone ? 'sm' : 'md'} className={`cozy-team__roster ${isPhone ? '' : 'pc-box--fluid'}`} />
                                     <span className="cozy-team__text">
-                                        <span className="cozy-team__name">{team.name}</span>
+                                        <button type="button" className="cozy-team__open" onClick={() => handleEditTeam(team)}>
+                                            <span className="cozy-team__name">{team.name}</span>
+                                        </button>
                                         <span className="cozy-team__sub">
                                             {[team.updatedAt && t('cozyHome.edited', { when: whenLabel(team.updatedAt) }), t('cozyHome.ofSix', { n: s.size })]
                                                 .filter(Boolean).join(' · ')}
                                         </span>
                                     </span>
                                     {teamStatus(s)}
-                                </button>
+                                    <TeamCardMenu team={team} onOpen={() => navigate(`/teams/${team.id}`)} onEdit={() => handleEditTeam(team)} />
+                                </div>
                             </li>
                         );
                     })}

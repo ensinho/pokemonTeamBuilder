@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Trash2, Dices, HelpCircle, Atom } from 'lucide-react';
+import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Trash2, Dices, HelpCircle, Atom, ArrowLeftRight } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
@@ -27,6 +27,7 @@ import { isPlaythroughMode } from '../../constants/regulations';
 import { isPreFairyGeneration } from '../../utils/teamAnalysis';
 import { LegacyTypesSwitch } from '../LegacyTypesSwitch';
 import { toast } from '../../store/useToastStore';
+import { openTeamCompare } from '../../store/useTeamCompareStore';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
@@ -812,6 +813,7 @@ export function TeamBuilderView({
                             <ComposerMoreMenu
                                 items={[
                                     { id: 'random', label: t('builder.randomizeTeam'), icon: <Dices aria-hidden="true" />, onClick: () => handleRandomizeTeam?.(displayedPokemons), disabled: isRandomizing || displayedPokemons.length === 0 },
+                                    ...(editingTeamId ? [{ id: 'compare', label: t('teamCompare.openWith'), icon: <ArrowLeftRight aria-hidden="true" />, onClick: () => openTeamCompare(editingTeamId, 'builder_menu') }] : []),
                                     { id: 'sep', separator: true },
                                     { id: 'clear', label: t('builder.clearTeam'), icon: <Trash2 aria-hidden="true" />, onClick: handleClearTeam, danger: true, disabled: currentTeam.length === 0 && !teamName },
                                 ]}
@@ -1192,6 +1194,7 @@ export function TeamBuilderView({
                                                     {isActive ? `★ ${t('common.active')}` : t('builder.setActive')}
                                                 </button>
                                                 <button type="button" onClick={() => handleEditTeam(team)} className="btn btn-secondary btn-sm tb-recent-card__edit">{t('common.edit')}</button>
+                                                <button type="button" onClick={() => openTeamCompare(team.id, 'builder_recent')} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__compare" aria-label={t('teamCompare.openAria', { name: team.name })} title={t('teamCompare.openWith')}><ArrowLeftRight aria-hidden="true" /></button>
                                                 <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__delete" aria-label={t('builder.deleteTeamAria', { name: team.name })}><TrashIcon /></button>
                                             </div>
                                         </article>

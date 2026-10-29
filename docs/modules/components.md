@@ -290,6 +290,23 @@ start > all-words-prefix > substring; groups are ordered by their best hit plus 
 `boost` (Pokémon 8, Pages 6), so "char" leads with Charmander but "charm" (an exact
 move) leads with the move, and "meta" finds the page through its route alias.
 
+### TeamCompareModal (`modals/TeamCompareModal.jsx`, 2026-10-29)
+
+Two saved teams head to head — a dialog, never a page. Anything that shows a saved
+team opens it with `openTeamCompare(teamId, source)` (`store/useTeamCompareStore.js`):
+the team page's **Compare** button, the "⋯" menu of each team on Home and in My
+teams, the builder's saved-team cards and sheet, and the builder's "⋯" while a saved
+team is being edited. `AppLayout` lazy-mounts the modal while the store is open; the
+right side defaults to the active team, else the newest other one.
+
+The math is `utils/teamMatchup.js` (tested): each member of A against each of B, the
+harder hitter wins (best of its saved damaging moves via the battle dex, else its own
+types; STAB counts), base Speed breaks ties. The modal shows the verdict, a versus
+sheet (rating, super-effective pressure, duels moving first, members without an
+answer), the 6×6 duel grid with the picked duel spelled out, and who each side has no
+answer to. It says what it ignores (items, abilities, EVs, natures). A new shortcut
+passes its own `source` (the `team_compare_open` event, `analytics.md`).
+
 ## Quiz Components
 
 ### PokemonGenerationQuizCard

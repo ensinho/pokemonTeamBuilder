@@ -20965,6 +20965,172 @@
           ]
         }
       ]
+    },
+    {
+      "key": "lazarus",
+      "label": "Pokémon Lazarus",
+      "kind": "hackrom",
+      "region": "Ilios",
+      "base": "Emerald",
+      "source": "mrwalkthroughs.com/pokemon-lazarus + pokemonlazarus.net (gym leaders) + RetroAchievements (Hard-mode level caps) — partial: several leaders draw part of their team from a random pool, and unlisted teams have not been verified yet",
+      "leaders": [
+        {
+          "order": 1,
+          "name": "Polymnia",
+          "gym": "Jusmail Gym",
+          "city": "Jusmail Town",
+          "type": "grass",
+          "levelCap": 12,
+          "team": [
+            {
+              "name": "Cutiefly"
+            },
+            {
+              "name": "Skiddo"
+            }
+          ],
+          "note": "Three Pokémon: Cutiefly always leads and Skiddo always closes; the middle one is drawn from a pool.",
+          "notePt": "Três Pokémon: Cutiefly sempre abre e Skiddo sempre fecha; o do meio é sorteado."
+        },
+        {
+          "order": 2,
+          "name": "Ourani",
+          "gym": "Kalami Gym",
+          "city": "Kalami City",
+          "type": "rock",
+          "levelCap": 19,
+          "team": [
+            {
+              "name": "Klawf",
+              "level": 17
+            },
+            {
+              "name": "Larvitar",
+              "level": 19
+            }
+          ],
+          "note": "Plus one random pick: Sneasel (Lv 17), Mawile (Lv 17) or Voltorb (Lv 18).",
+          "notePt": "Mais um sorteado: Sneasel (Nv 17), Mawile (Nv 17) ou Voltorb (Nv 18)."
+        },
+        {
+          "order": 3,
+          "name": "Kleio",
+          "gym": "Pythios Gym",
+          "city": "Pythios Town",
+          "type": "ghost",
+          "levelCap": 22,
+          "team": [
+            {
+              "name": "Hisuian Zorua",
+              "level": 20
+            },
+            {
+              "name": "Mimikyu",
+              "level": 22
+            }
+          ],
+          "note": "Hisuian Zorua comes in disguised as Mimikyu. She also brings two picks from a pool that includes Bruxish (Lv 18) and Shuppet (Lv 20).",
+          "notePt": "O Zorua de Hisui entra disfarçado de Mimikyu. Ela também leva dois sorteados de um grupo que inclui Bruxish (Nv 18) e Shuppet (Nv 20)."
+        },
+        {
+          "order": 4,
+          "name": "Terpsikore",
+          "gym": "Sofos Gym",
+          "city": "Sofos City",
+          "type": "fighting",
+          "levelCap": 27,
+          "team": [],
+          "note": "Fighting and Psychic specialist. Her gym roster has not been verified yet.",
+          "notePt": "Especialista em Lutador e Psíquico. O time do ginásio ainda não foi verificado."
+        },
+        {
+          "order": 5,
+          "name": "Euterpe",
+          "gym": "Myrrini Gym",
+          "city": "Myrrini Island",
+          "type": "poison",
+          "levelCap": 31,
+          "team": [
+            {
+              "name": "Gyarados",
+              "level": 29
+            },
+            {
+              "name": "Tentacruel",
+              "level": 31
+            },
+            {
+              "name": "Grafaiai",
+              "level": 30
+            },
+            {
+              "name": "Hisuian Sneasel",
+              "level": 30
+            },
+            {
+              "name": "Hypno",
+              "level": 29
+            }
+          ],
+          "note": "Poison and Water specialist. Part of this list may be a random pool.",
+          "notePt": "Especialista em Venenoso e Água. Parte desta lista pode ser sorteada."
+        },
+        {
+          "order": 6,
+          "name": "Thalia & Melpomene",
+          "gym": "Fresco Gym",
+          "city": "Fresco Isles",
+          "type": "electric",
+          "levelCap": 36,
+          "team": [],
+          "note": "A double battle: Thalia uses Electric types, Melpomene Ground types. Their roster has not been verified yet.",
+          "notePt": "Batalha dupla: Thalia usa Elétrico, Melpomene usa Terra. O time ainda não foi verificado."
+        },
+        {
+          "order": 7,
+          "name": "Rhadine",
+          "gym": "Palati Gym",
+          "city": "Palati City",
+          "type": "fire",
+          "levelCap": 40,
+          "team": [
+            {
+              "name": "Braviary",
+              "level": 38
+            },
+            {
+              "name": "Paldean Tauros Blaze Breed",
+              "level": 39
+            },
+            {
+              "name": "Salazzle",
+              "level": 39
+            },
+            {
+              "name": "Chandelure",
+              "level": 39
+            }
+          ],
+          "note": "Fire and Flying specialist.",
+          "notePt": "Especialista em Fogo e Voador."
+        },
+        {
+          "order": 8,
+          "name": "Kalliope",
+          "gym": "Areios Hideout",
+          "city": "Areios Town",
+          "type": "dragon",
+          "levelCap": 50,
+          "team": [
+            {
+              "name": "Hydrapple",
+              "level": 48
+            }
+          ],
+          "note": "The former leader, now with Team Chimera; Dragon and Fairy specialist, no random picks. Only Hydrapple is verified so far.",
+          "notePt": "A ex-líder, agora na Equipe Quimera; especialista em Dragão e Fada, sem sorteio. Por enquanto só o Hydrapple foi verificado."
+        }
+      ]
     }
   ]
 }
