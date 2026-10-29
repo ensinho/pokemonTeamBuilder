@@ -38,7 +38,7 @@
 }
 
 .cozy-home .cozy-ink:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-primary) 88%, var(--color-fg));
+    background: var(--color-primary-fill-hover);
 }
 
 .cozy-home .cozy-ink:active:not(:disabled) {
@@ -77,6 +77,10 @@
     display: flex;
     gap: var(--space-2);
     min-width: 0;
+    /* A focus ring's width of room inside the scrolling strip, given back
+       outside it: the chips' logo ring was cut on three sides. */
+    padding: var(--space-1_5);
+    margin: calc(var(--space-1_5) * -1);
     overflow-x: auto;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
@@ -1387,7 +1391,11 @@ button.cozy-journey__row:hover {
         align-items: stretch;
     }
 
+    /* Sized by their labels, not split four equal ways: at 360px a quarter
+       of the track was narrower than "Comunidade", which ran into the
+       track's edge. */
     .cozy-home .cozy-tabs > .segmented__item {
+        flex: 1 1 auto;
         padding-inline: var(--space-1);
     }
 

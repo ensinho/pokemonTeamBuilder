@@ -334,6 +334,17 @@
     opacity: 1;
 }
 
+/* Without a hovering pointer (a touch laptop, a tablet wide enough for the
+   rail) a hover-only control would never appear, so the rail could not be
+   collapsed. There it stands in flow beside a slightly narrower wordmark. */
+@media (hover: none) {
+    .app-shell__brand:not(.is-collapsed) .app-shell__collapse-toggle {
+        position: static;
+        translate: none;
+        opacity: 1;
+    }
+}
+
 /* On the icon rail it is the only control in the band, so it always shows —
    there is no logo-plus-wordmark for it to compete with. */
 .app-shell__brand.is-collapsed .app-shell__collapse-toggle {
@@ -1417,6 +1428,11 @@
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
+    /* A control tabbed into view stops a ring's width clear of the sticky
+       header and of the bottom edge, its focus ring whole (phones add the
+       dock below). */
+    scroll-padding-top: calc(var(--app-shell-top-band-height) + var(--space-2));
+    scroll-padding-bottom: var(--space-2);
     -webkit-overflow-scrolling: touch;
     /* `none`, not `contain`. `contain` only stops the scroll chaining to the
        document; the scroller still rubber-bands on iOS, and on a phone that
@@ -2030,6 +2046,14 @@
             + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
             + var(--space-4)
         );
+        /* Keyboard focus is never hidden behind the floating dock (WCAG
+           2.4.11): a control tabbed to near the bottom scrolls up past it.
+           Same sum as the reservation above. */
+        scroll-padding-bottom: calc(
+            var(--app-shell-tab-height) + var(--space-1_5) * 2
+            + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+            + var(--space-2)
+        );
     }
 
     .app-shell__body.is-mobile-detail {
@@ -2058,7 +2082,10 @@
     gap: var(--space-0_5);
     min-width: 0;
     min-height: var(--app-shell-tab-height);
-    padding: var(--space-0_5) var(--space-1);
+    /* Inline padding is a hairline: the lozenge is the whole cell either way,
+       and at 360px the label needs every pixel — "Construtor" ellipsed to
+       "Constr…" with a 4px gutter on each side. */
+    padding: var(--space-0_5) var(--space-0_5);
     border: none;
     /* Concentric with the dock: a pill inside a pill. */
     border-radius: var(--radius-full);
