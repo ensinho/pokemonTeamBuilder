@@ -87,6 +87,9 @@
 @media (max-width: 640px) {
     .landing-brand__mark { width: 2.75rem; }
     .landing-brand__wordmark { width: 15rem; }
+    /* The glow stays inside the column: its -12% right edge ran 8px past a
+       360px screen, a sideways scroll the page's overflow only hid. */
+    .landing-brand::before { inset-inline: 0; }
 }
 
 .landing-eyebrow {
