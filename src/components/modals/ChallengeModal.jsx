@@ -188,19 +188,19 @@ export function ChallengeModal({
                                     </button>
                                 </div>
                             ) : (
-                                <ul className="challenge-teams custom-scrollbar">
+                                <ul className="challenge-modal-teams custom-scrollbar">
                                     {teams.map(({ team, members, ready }) => (
                                         <li key={team.id}>
                                             <button
                                                 type="button"
-                                                className="challenge-teams__row"
+                                                className="challenge-modal-teams__row"
                                                 aria-pressed={team.id === selectedTeamId}
                                                 disabled={!ready}
                                                 onClick={() => setSelectedTeamId(team.id)}
                                             >
-                                                <span className="challenge-teams__name">{team.name || t('challenge.picker.untitled')}</span>
-                                                {!ready && <span className="challenge-teams__warn">{t('battle.stage.teamNotReady')}</span>}
-                                                <span className="challenge-teams__sprites" aria-hidden="true">
+                                                <span className="challenge-modal-teams__name">{team.name || t('challenge.picker.untitled')}</span>
+                                                {!ready && <span className="challenge-modal-teams__warn">{t('battle.stage.teamNotReady')}</span>}
+                                                <span className="challenge-modal-teams__sprites" aria-hidden="true">
                                                     {members.slice(0, 6).map((mon, index) => (
                                                         // A saved team keeps its order.
                                                         <img key={`${mon.id}-${index}`} src={getTeamPokemonDisplaySprite(mon)} alt="" width={28} height={28} loading="lazy" decoding="async" />

@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — Cynthia's teams rail collapsed after visiting (or hovering) Friends/Battles `bug`
+- **Symptom:** on desktop (≥1601px, Chrome and Firefox), the Champion Challenge's left rail ("Team of the day") came out ~286px tall beside an ~850px console, its rows squeezed to 13px with sprites and names overlapping. Only F5 fixed it.
+- **Root cause:** a class-name collision between two lazy stylesheets. The rail (`ChallengeTeamsRail`, 2026-10-29) is `.challenge-teams`; the friend-battle `ChallengeModal` already used `.challenge-teams` for its team list, with `display: grid; max-height: 15rem; overflow-y: auto`. `challenge-modal.css` rides in the Friends and Battles chunks, which load when those screens open or their nav links are hovered (route prefetch) — from then on, for the rest of the session, the modal's `max-height: 15rem` capped the rail (no rule in the DS sheet resets max-height, so load order did not even matter). F5 dropped the stylesheet, so it "fixed itself". Headless runs that open `/challenge` directly never load the modal's CSS, which is why it would not reproduce.
+- **Fix:** the modal's block is `.challenge-modal-teams` (its file's own prefix). Reproduced by importing `ChallengeModal.jsx` before mounting the room: card 254px / rows 13px before, 845px / 54px after.
+- **Correct pattern:** lazy CSS is global once loaded — a class in a route's stylesheet must be namespaced by its file/component (`.challenge-modal-*`, `.ds-*`), never a generic block name another view could pick. Before naming a new block, `grep -rn "\.<name>\b" src/styles`. When a layout breaks "only on first visit" or "until F5", suspect a stylesheet some *other* route brought in, and reproduce by loading that route's chunk first.
+- **Files:** `src/components/modals/ChallengeModal.jsx`, `src/styles/challenge-modal.css`
+
 ### 2026-10-29 — The Challenge ranking sheet could not scroll and sat under the dock (iPhone) `bug`
 - **Symptom:** on an iPhone, "Today's ranking" showed its first rows, the dock covered the bottom (Streak/Wins/Days) and nothing in the sheet scrolled.
 - **Root cause:** `ChallengeRankingSheet` rendered its `.modal-scrim` in place, inside `.challenge-view` — a size container (`container: challenge / inline-size`). Safari still applies layout containment to size containers, which makes the container the box `position: fixed` measures from and a stacking context of its own: the scrim was the page's size, not the screen's, and the dock (z 25 in the shell) drew over it. Chromium dropped that containment, so desktop Chrome and headless runs never show it.
