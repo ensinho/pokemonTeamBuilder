@@ -2525,115 +2525,6 @@
 /* The Time do dia as BW party cards: sprite left, name right, 3 × 2 — rows that
    can shrink, so the privacy line and the foot always fit under them. */
 /* Two wide columns, three rows: the whole name fits beside the sprite. */
-/* ── The day's ranking (DsRanking): a BW menu with two boards ────────── */
-
-.ds-ranking {
-    gap: calc(4 * var(--px));
-}
-
-.ds-ranking__title {
-    flex: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.ds-ranking__tabs {
-    display: grid;
-    flex: none;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: calc(4 * var(--px));
-}
-
-.ds-ranking__tab {
-    min-width: 0;
-    height: calc(14 * var(--px));
-    padding: 0 calc(8 * var(--px));
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    border: none;
-    border-radius: calc(7 * var(--px));
-    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
-    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--bw-rim);
-    color: var(--bw-white);
-    font: inherit;
-    font-size: calc(7 * var(--px));
-    cursor: pointer;
-}
-
-.ds-ranking__tab.is-on {
-    background: var(--bw-white);
-    color: var(--bw-dark);
-    text-shadow: none;
-}
-
-.ds-ranking__list {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: calc(2 * var(--px));
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    list-style: none;
-}
-
-.ds-ranking__row {
-    display: grid;
-    grid-template-columns: calc(14 * var(--px)) minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: calc(5 * var(--px));
-    padding: calc(1 * var(--px)) calc(6 * var(--px));
-    border-radius: calc(5 * var(--px));
-    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
-    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--bw-card-rim);
-    font-size: calc(8 * var(--px));
-    line-height: calc(12 * var(--px));
-}
-
-.ds-ranking__row.is-me {
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-gold);
-}
-
-.ds-ranking__place {
-    color: var(--bw-gold);
-    text-align: center;
-}
-
-.ds-ranking__name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.ds-ranking__turns {
-    color: color-mix(in srgb, var(--bw-white) 70%, transparent);
-    font-size: calc(6 * var(--px));
-}
-
-.ds-ranking__score {
-    min-width: calc(22 * var(--px));
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-}
-
-.ds-ranking__counts {
-    margin: 0;
-    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
-    font-size: calc(7 * var(--px));
-    text-align: center;
-}
-
-.ds-ranking__empty {
-    display: grid;
-    flex: 1;
-    place-items: center;
-    text-align: center;
-}
-
 .ds-result__place {
     margin: 0;
     color: var(--bw-gold);
@@ -2863,11 +2754,13 @@
 
 
 /* ── A desktop's side rails (DsConsole `rails`, useRailMode) ───────────
-   BW menus beside the one screen, in the room a wide column leaves: the
-   teams and the ranking — what a phone keeps in its Pokétch and menus. One
-   rail stacks both on the right, half the height each; two put the teams on
-   the left. A rail is the game, so it holds the screen's palette, at a fixed
-   DS pixel (2 px at full density), and stretches to the console's height. */
+   Beside the one screen, in the room a wide column leaves: the teams and the
+   ranking — what a phone keeps in its Pokétch and the ranking sheet. One rail
+   stacks both on the right, half the height each; two put the teams on the
+   left. The challenge's rails are app UI (2026-10-29): the console's own
+   panel material, theme tokens, the app's type. A game panel in a rail (the
+   friend battle's chat, .ds-panel) keeps the screen's palette and DS pixel
+   (2 px at full density). Both stretch to the console's height. */
 
 .challenge-view {
     container: challenge / inline-size;
@@ -2908,11 +2801,6 @@
     min-height: 0;
     overflow: hidden;
     border-radius: var(--radius-xl);
-    color: var(--bw-white);
-    font-family: 'DotGothic16', var(--font-display);
-    font-synthesis: none;
-    line-height: 1.2;
-    user-select: none;
     container: rail / size;
 }
 
@@ -2929,16 +2817,15 @@
 }
 
 .ds-rail > .ds-panel {
+    color: var(--bw-white);
+    font-family: 'DotGothic16', var(--font-display);
+    font-synthesis: none;
+    line-height: 1.2;
+    user-select: none;
     gap: calc(4 * var(--px));
     padding: calc(8 * var(--px));
     border-radius: inherit;
     box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-rim);
-}
-
-/* A rail's boards: the same two tabs, a step smaller. */
-.ds-rail .ds-ranking__tab {
-    padding: 0 calc(4 * var(--px));
-    font-size: calc(6 * var(--px));
 }
 
 .ds-rail .ds-panel__title {
@@ -2949,101 +2836,211 @@
     white-space: nowrap;
 }
 
-/* Both teams: BW party cards, two columns — one, roomier, in a tall rail. */
-.ds-teams__grid {
+/* The app's rails: the console's panel, its children separated by fill.
+   Type comes from utilities in the markup; this sheet carries the layout. */
+.ds-rail > :is(.challenge-teams, .challenge-rank) {
+    position: absolute;
+    inset: 0;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: inherit;
+    background: var(--color-surface);
+}
+
+.challenge-teams,
+.challenge-rank,
+.challenge-rank__detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 0;
+}
+
+/* Both teams: two columns of party cards — one, roomier, in a tall rail. */
+.challenge-teams__grid {
     display: grid;
     flex: 1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-auto-rows: minmax(0, 1fr);
-    gap: calc(3 * var(--px));
+    gap: var(--space-2);
     min-height: 0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
 }
 
-.ds-teams .bw-card {
-    grid-template-columns: calc(20 * var(--px)) minmax(0, 1fr);
-    column-gap: calc(3 * var(--px));
-    padding: calc(2 * var(--px)) calc(4 * var(--px));
-    border-radius: calc(6 * var(--px));
-    cursor: default;
+.challenge-team__mon {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-content: center;
+    gap: var(--space-1) var(--space-2);
+    min-height: 0;
+    padding: var(--space-1_5) var(--space-2);
 }
 
-.ds-teams .bw-card:active {
-    transform: none;
+.challenge-team__mon > :first-child {
+    grid-row: span 2;
+    width: 2rem;
+    height: 1.5rem;
+    object-fit: contain;
+    text-align: center;
 }
 
-.ds-teams .bw-card img,
-.ds-teams .bw-card__unknown {
-    width: calc(20 * var(--px));
-    height: calc(15 * var(--px));
+/* The name alone, centred, while she has not sent it out. */
+.challenge-team__mon:not(:has(.challenge-team__hp)) > span {
+    grid-row: span 2;
 }
 
-.ds-teams .bw-card__unknown {
-    font-size: calc(10 * var(--px));
+.challenge-team__mon.is-active,
+.challenge-rank__row.is-me {
+    box-shadow: var(--ring-primary);
 }
 
-.ds-teams .bw-card__name {
-    font-size: calc(7 * var(--px));
+.challenge-team__mon.is-fainted {
+    opacity: 0.45;
+    filter: grayscale(1);
 }
 
-/* On the field now: BW's white rim. */
-.ds-teams .bw-card.is-active {
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-white);
+.challenge-team__hp {
+    height: 0.25rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-fg) 12%, transparent);
 }
+
+.challenge-team__hp > span {
+    display: block;
+    height: 100%;
+    background: var(--color-success);
+    transform-origin: left;
+    scale: var(--hp) 1;
+    transition: scale var(--duration-slow) var(--ease-smooth);
+}
+
+.challenge-team__hp > .is-mid { background: var(--color-warning); }
+.challenge-team__hp > .is-low { background: var(--color-danger); }
 
 @container rail (min-height: 34rem) {
-    .ds-teams__grid {
+    .challenge-teams__grid {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .ds-teams .bw-card {
-        grid-template-columns: calc(26 * var(--px)) minmax(0, 1fr);
+    .challenge-team__mon {
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+        padding-inline: var(--space-3);
     }
 
-    .ds-teams .bw-card img,
-    .ds-teams .bw-card__unknown {
-        width: calc(26 * var(--px));
-        height: calc(20 * var(--px));
-    }
-
-    .ds-teams .bw-card__name {
-        font-size: calc(8 * var(--px));
+    .challenge-team__mon > :first-child {
+        width: 2.5rem;
+        height: 1.875rem;
     }
 }
 
-/* Your record under the ranking (the rail only): three figures, one row. */
-.ds-ranking__record {
+/* ── The day's ranking (ChallengeRanking): a rail, or the sheet on a phone ── */
+
+.challenge-rank__list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.challenge-rank__row {
     display: grid;
-    flex: none;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: calc(3 * var(--px));
-    margin: 0;
+    grid-template-columns: 1.5rem 2.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+    text-align: left;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.ds-ranking__record div {
+.challenge-rank__row:hover {
+    background: var(--color-surface-hover);
+}
+
+.challenge-rank__place {
+    display: grid;
+    place-items: center;
+    height: 1.5rem;
+}
+
+/* First place is earned: the one gold on the board. */
+.challenge-rank__place.is-first {
+    border-radius: var(--radius-sm);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+}
+
+.challenge-rank__avatar {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+}
+
+.challenge-rank__avatar.is-lg {
+    width: 4.5rem;
+    height: 4.5rem;
+    margin-bottom: var(--space-2);
+}
+
+.challenge-rank__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.challenge-rank__avatar svg {
+    width: 50%;
+    height: 50%;
+}
+
+/* Figures: the attempt's four, or your record's three — tiles of one size. */
+.challenge-rank__figures {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.challenge-rank__figures > div {
+    padding: var(--space-2) var(--space-3);
+}
+
+.challenge-rank__card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 0;
-    padding: calc(2 * var(--px)) calc(3 * var(--px));
-    border-radius: calc(5 * var(--px));
-    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-3);
 }
 
-.ds-ranking__record dt {
-    max-width: 100%;
-    overflow: hidden;
-    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
-    font-size: calc(6 * var(--px));
-    text-overflow: ellipsis;
-    white-space: nowrap;
+/* A short rail (two stacked): the list keeps the room, the tiles give it. */
+@container rail (max-height: 26rem) {
+    .challenge-rank__figures > div {
+        padding: var(--space-1) var(--space-2);
+    }
+
+    .challenge-rank__figures dd {
+        font-size: var(--text-base);
+    }
+
+    .challenge-rank__card {
+        padding: var(--space-3);
+    }
+
+    .challenge-rank__avatar.is-lg {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 0;
+    }
 }
 
-.ds-ranking__record dd {
-    margin: 0;
-    font-size: calc(10 * var(--px));
-    font-variant-numeric: tabular-nums;
+/* In the sheet the dialog's body scrolls, not the list. */
+.challenge-rank-sheet :is(.challenge-rank__list, .challenge-rank__detail) {
+    overflow: visible;
 }

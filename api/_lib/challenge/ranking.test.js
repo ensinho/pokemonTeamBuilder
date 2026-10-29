@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { RANK_LIMIT, boardOf, emptyRanks, forgetPlayer, nextRanks, placeOf, publicRanks } from './ranking.js';
+import { RANK_LIMIT, boardOf, emptyRanks, forgetPlayer, nextRanks, placeOf, publicRanks, rankProfileOf } from './ranking.js';
 
-const finish = (doc, uid, { won = true, score = 1200, turns = 20, teamSource = 'daily', at = '2026-10-15T15:00:00Z' } = {}) => nextRanks(doc, {
-    dayKey: '2026-10-15', teamSource, uid, name: uid.toUpperCase(), status: won ? 'won' : 'lost', result: { score: won ? score : 0, turns, remaining: 2 }, at,
+const finish = (doc, uid, { won = true, score = 1200, turns = 20, teamSource = 'daily', at = '2026-10-15T15:00:00Z', profile = null } = {}) => nextRanks(doc, {
+    dayKey: '2026-10-15', teamSource, uid, name: uid.toUpperCase(), status: won ? 'won' : 'lost', result: { score: won ? score : 0, turns, remaining: 2 }, at, profile,
 });
 
 describe('the daily ranking', () => {
@@ -49,7 +49,7 @@ describe('the daily ranking', () => {
         let ranks = finish(null, 'ana', { score: 1500 });
         ranks = finish(ranks, 'me', { score: 1200 });
         const shown = publicRanks(ranks, 'me', 1);
-        expect(shown.boards.daily).toEqual([{ name: 'ANA', score: 1500, turns: 20, remaining: 2, me: false }]);
+        expect(shown.boards.daily).toEqual([{ name: 'ANA', score: 1500, turns: 20, remaining: 2, at: '2026-10-15T15:00:00Z', profile: null, me: false }]);
         expect(shown.mine).toEqual({ daily: 2, free: null });
         expect(JSON.stringify(shown)).not.toMatch(/"uid"|"ana"/);
         expect(publicRanks(null, 'me')).toBe(null);
@@ -65,5 +65,16 @@ describe('the daily ranking', () => {
         expect(forgotten.players.sort()).toEqual(['ana2', 'bia']);
         expect(forgotten.played).toEqual(ranks.played);
         expect(forgotten.wins).toEqual(ranks.wins);
+    });
+
+    it('stamps the public face of a win, shaped, and never the uid', () => {
+        const ranks = finish(null, 'ana', {
+            profile: { displayName: 'Ana', avatarPokemonId: 94, avatarIsShiny: true, trainerSprite: null, frameId: 'frame-ghost', titleId: 'x'.repeat(200), trainerLevel: 7, battleRecord: { wins: 3 } },
+        });
+        const [row] = publicRanks(ranks, null).boards.daily;
+        expect(row.profile).toEqual({ avatarPokemonId: 94, avatarIsShiny: true, trainerSprite: null, frameId: 'frame-ghost', titleId: null, level: 7 });
+        expect(JSON.stringify(row)).not.toMatch(/"uid"|battleRecord/);
+        expect(rankProfileOf(null)).toBe(null);
+        expect(rankProfileOf({ avatarPokemonId: -1, trainerLevel: 'nine' })).toMatchObject({ avatarPokemonId: null, level: null });
     });
 });

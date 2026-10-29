@@ -28,11 +28,11 @@ import { DsBattleStage } from './ds/DsBattleStage';
 import { DsConsole } from './ds/DsConsole';
 import { DsResult, DsSignInGate } from './ds/DsPanels';
 import { DsPoketch } from './ds/DsPoketch';
-import { DsTeamsRail } from './ds/DsRails';
-import { DsRanking } from './ds/DsRanking';
 import { DsTeamPicker } from './ds/DsTeamPicker';
 import { DsVersusLazy } from './ds/DsVersusLazy';
 import { preloadVersus } from './ds/versusChunk';
+import { ChallengeRanking, ChallengeRankingSheet } from './ChallengeRanking';
+import { ChallengeTeamsRail } from './ChallengeTeamsRail';
 import '../../../styles/champion-challenge-ds.css';
 import { ReminderOffer } from '../../ReminderOffer';
 
@@ -189,8 +189,8 @@ export function ChampionChallengeView() {
     useConsoleInput({
         enabled: stage !== 'battle',
         onAction: (action) => {
-            if (showRanks) screenInput.current?.onAction?.(action);
-            else if (stage === 'arena' || stage === 'dialogue') arenaInput.current?.onAction?.(action);
+            // The ranking sheet is a dialog: it owns the keyboard while open (useConsoleInput).
+            if (stage === 'arena' || stage === 'dialogue') arenaInput.current?.onAction?.(action);
             else screenInput.current?.onAction?.(action);
         },
         onRelease: (action) => arenaInput.current?.onRelease?.(action),
@@ -293,18 +293,19 @@ export function ChampionChallengeView() {
     }
 
     // The day's ranking, on the board of today's official run: a side rail where
-    // there is room beside the screen, a menu like the others where there is not.
+    // there is room beside the screen, an app sheet over the page where there is not.
     const defaultBoard = (challenge.official?.result?.board) || (challenge.run?.teamSource === 'saved' ? 'free' : 'daily');
-    const rankingPanel = showRanks && !railsOn && (
-        <DsRanking
+    const recordStats = isAnonymous ? null : challenge.stats;
+    const rankingSheet = showRanks && !railsOn && (
+        <ChallengeRankingSheet
             ranks={challenge.ranks}
             defaultBoard={defaultBoard}
+            stats={recordStats}
             onClose={() => setShowRanks(false)}
-            inputRef={screenInput}
         />
     );
     const ranksRail = railsOn && (
-        <DsRanking ranks={challenge.ranks} defaultBoard={defaultBoard} stats={isAnonymous ? null : challenge.stats} />
+        <ChallengeRanking ranks={challenge.ranks} defaultBoard={defaultBoard} stats={recordStats} />
     );
     const railsWith = (start) => (railsOn ? { mode: railMode, start, end: ranksRail } : null);
 
@@ -401,13 +402,12 @@ export function ChampionChallengeView() {
                             label={t('challenge.title')}
                             bar={bar}
                             rails={railsWith(teams && (
-                                <DsTeamsRail title={t('challenge.rail.yourTeam')} mine={teams.mine} foe={teams.foe} championName={championName} />
+                                <ChallengeTeamsRail title={t('challenge.rail.yourTeam')} mine={teams.mine} foe={teams.foe} championName={championName} />
                             ))}
                             // The chart above, the outcome and the next step in a strip below it.
                             screen={(
                                 <>
                                     {hasChart ? <div className="bw-result"><div className="bw-result__report">{report}</div>{result}</div> : result}
-                                    {rankingPanel && <div className="bw-overlay is-menu">{rankingPanel}</div>}
                                 </>
                             )}
                         />
@@ -416,12 +416,13 @@ export function ChampionChallengeView() {
                             label={t('challenge.title')}
                             bar={bar}
                             top={report}
-                            bottom={rankingPanel || result}
+                            bottom={result}
                             onAction={route}
                             onRelease={() => {}}
                             controls={false}
                         />
                     )}
+                    {rankingSheet}
                 </div>
             );
         }
@@ -499,7 +500,7 @@ export function ChampionChallengeView() {
 
     if (layout === 'single') {
         // One screen: the room, and the choice of team (or the gate) opening over it as a menu.
-        const menu = rankingPanel || ((stage === 'gate' || stage === 'pick' || stage === 'transition') && bottom);
+        const menu = ((stage === 'gate' || stage === 'pick' || stage === 'transition') && bottom);
         return (
             <div className="challenge-view" ref={viewRef}>
                 <DsConsole
@@ -507,7 +508,7 @@ export function ChampionChallengeView() {
                     label={t('challenge.title')}
                     bar={bar}
                     rails={railsWith(railsOn && (
-                        <DsTeamsRail
+                        <ChallengeTeamsRail
                             title={t('challenge.rail.dailyTeam')}
                             mine={(challenge.day?.dailyTeam?.members || []).map((m) => ({ species: m.species }))}
                             foe={dossier}
@@ -522,6 +523,7 @@ export function ChampionChallengeView() {
                         </>
                     )}
                 />
+                {rankingSheet}
             </div>
         );
     }
@@ -532,11 +534,12 @@ export function ChampionChallengeView() {
                 label={t('challenge.title')}
                 bar={bar}
                 top={<>{room}{transition}</>}
-                bottom={rankingPanel || bottom}
+                bottom={bottom}
                 onAction={route}
                 onRelease={(action) => arenaInput.current?.onRelease?.(action)}
                 controls={stage === 'arena' || stage === 'dialogue'}
             />
+            {rankingSheet}
         </div>
     );
 }

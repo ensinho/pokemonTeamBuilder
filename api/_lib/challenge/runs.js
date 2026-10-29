@@ -17,6 +17,7 @@ import { championLineupFor, difficultyFor, publicLineup } from './rotation.js';
  *     secret/state                      nobody reads: seed, teams, choices, AI trace
  *   challengeStats/{uid}                owner reads: streak and records
  *   public/data/challengeRanks/{day}    anyone reads: the day's two boards (ranking.js)
+ *   publicProfiles/{uid}                anyone reads; read here to stamp a ranked row
  *   aiTraining/{id}                     nobody reads: anonymous training rows
  */
 export const paths = (appId) => {
@@ -28,6 +29,7 @@ export const paths = (appId) => {
         secret: (runId) => `${base}/challengeRuns/${runId}/secret/state`,
         stats: (uid) => `${base}/challengeStats/${uid}`,
         ranks: (dayKey) => `${base}/public/data/challengeRanks/${dayKey}`,
+        profile: (uid) => `${base}/publicProfiles/${uid}`,
         training: (id) => `${base}/aiTraining/${id}`,
     };
 };

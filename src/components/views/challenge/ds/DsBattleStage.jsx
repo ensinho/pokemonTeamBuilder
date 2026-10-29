@@ -18,7 +18,7 @@ import { championRoster, faintedSpecies, myRoster, railTeams, switchCounts } fro
 import { DsBattleScene } from './DsBattleScene';
 import { DsHud, DsTouchMenu } from './DsBwCommands';
 import { DsConsole } from './DsConsole';
-import { DsTeamsRail } from './DsRails';
+import { ChallengeTeamsRail } from '../ChallengeTeamsRail';
 
 const moveKey = (name) => String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const clockNow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -208,7 +208,7 @@ export function DsBattleStage({
                 rails={rails && {
                     ...rails,
                     start: (
-                        <DsTeamsRail
+                        <ChallengeTeamsRail
                             title={t('challenge.rail.yourTeam')}
                             mine={teams.mine}
                             foe={teams.foe}
