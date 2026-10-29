@@ -191,6 +191,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                         </button>
                                         <div className="min-w-0 flex-1">
                                             <h3 className="truncate font-semibold capitalize text-fg text-sm">{pretty(mon.name)}</h3>
+                                            {mon.pool && <p className="text-2xs text-muted">{pt ? 'Sorteio — pode não aparecer' : 'Random pick — may not appear'}</p>}
                                             <div className="mt-1 flex gap-1 flex-wrap">
                                                 {types.map((tp) => (
                                                     <span
@@ -299,7 +300,7 @@ function TrainerAvatar({ sprite, type, order, accent }) {
     );
 }
 
-function TeamMon({ mon, entry, accent, levelCap, onClick }) {
+function TeamMon({ mon, entry, accent, levelCap, onClick, pt }) {
     const id = entry?.id;
     const types = entry?.types || [];
     const handleMonClick = (e) => {
@@ -311,8 +312,9 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
             type="button"
             onClick={handleMonClick}
             disabled={!id}
-            title={pretty(mon.name)}
-            className="gyms-mon group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-hover p-3 text-center transition-colors focus:outline-none w-full"
+            title={mon.pool ? `${pretty(mon.name)} — ${pt ? 'pode ser sorteado' : 'may be picked at random'}` : pretty(mon.name)}
+            // Dashed = may be absent: a hack ROM leader's random pick.
+            className={`gyms-mon group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-hover p-3 text-center transition-colors focus:outline-none w-full ${mon.pool ? 'border-dashed border-border-strong' : ''}`}
         >
             <div className="relative">
                 <div
@@ -355,6 +357,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
                         </span>
                     ))}
                 </div>
+                {mon.pool && <span className="mt-1 text-2xs text-muted">{pt ? 'sorteio' : 'random pick'}</span>}
             </div>
         </button>
     );
@@ -408,10 +411,13 @@ export function GymsView({ showDetails, onAddToTeam }) {
         [pokemonIndex]
     );
     const resolve = (name) => {
-        const slug = slugify(name);
-        return indexBySlug.get(slug)
+        const find = (slug) => indexBySlug.get(slug)
             || baseSpecies.find((p) => p.name === slug || p.name.startsWith(`${slug}-`))
             || null;
+        const slug = slugify(name);
+        // A hack ROM's own Mega ("Mega Toucannon" in Lazarus) has no entry of
+        // its own: it shows as its base species.
+        return find(slug) || (slug.startsWith('mega-') ? find(slug.slice(5)) : null);
     };
 
     const official = games.filter((g) => g.kind !== 'hackrom');
@@ -473,7 +479,12 @@ export function GymsView({ showDetails, onAddToTeam }) {
 
     const buildTeam = (leader) => {
         if (!onAddToTeam) return;
-        for (const mon of leader.team.slice(0, 6)) {
+        // A leader with random picks: the fixed members plus as many of the
+        // pool as the leader actually brings.
+        const roster = leader.poolPick
+            ? [...leader.team.filter((mon) => !mon.pool), ...leader.team.filter((mon) => mon.pool).slice(0, leader.poolPick)]
+            : leader.team;
+        for (const mon of roster.slice(0, 6)) {
             const entry = resolve(mon.name);
             if (entry) onAddToTeam(entry);
         }
@@ -563,6 +574,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                 accent={accent}
                                 levelCap={leader.levelCap}
                                 onClick={() => entry && showDetails?.({ id: entry.id, name: entry.name })}
+                                pt={pt}
                             />
                         );
                     })}

@@ -22,6 +22,24 @@ export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
         month: '2026-10',
+        // Both notes answer feedback sent through the footer: the default thanks.
+        notes: [
+            {
+                key: 'team-compare',
+                featured: true,
+                icon: 'scale',
+                visual: 'compare',
+                title: 'patchNotes.compareTitle',
+                description: 'patchNotes.compareDesc',
+                cta: 'patchNotes.compareCta',
+                path: '/teams',
+            },
+            { key: 'lazarus-gyms', icon: 'trophy', title: 'patchNotes.lazarusTitle', description: 'patchNotes.lazarusDesc', cta: 'patchNotes.lazarusCta', path: '/gyms?game=lazarus' },
+        ],
+    },
+    {
+        version: '1.18.0',
+        month: '2026-10',
         // Not a suggestion-driven release, so it thanks in its own words.
         thanks: 'patchNotes.brandThanks',
         notes: [

@@ -20972,7 +20972,7 @@
       "kind": "hackrom",
       "region": "Ilios",
       "base": "Emerald",
-      "source": "mrwalkthroughs.com/pokemon-lazarus + pokemonlazarus.net (gym leaders) + RetroAchievements (Hard-mode level caps) — partial: several leaders draw part of their team from a random pool, and unlisted teams have not been verified yet",
+      "source": "mrwalkthroughs.com/pokemon-lazarus (walkthrough parts 2–21: gym, Elite Four and Champion teams) + pokemonlazarus.net (leaders, types) + RetroAchievements (Hard-mode level caps)",
       "leaders": [
         {
           "order": 1,
@@ -20981,16 +20981,35 @@
           "city": "Jusmail Town",
           "type": "grass",
           "levelCap": 12,
+          "poolPick": 2,
           "team": [
             {
-              "name": "Cutiefly"
+              "name": "Cutiefly",
+              "level": 10
             },
             {
-              "name": "Skiddo"
+              "name": "Skiddo",
+              "level": 12,
+              "pool": true
+            },
+            {
+              "name": "Timburr",
+              "level": 11,
+              "pool": true
+            },
+            {
+              "name": "Pumpkaboo",
+              "level": 11,
+              "pool": true
+            },
+            {
+              "name": "Shroomish",
+              "level": 11,
+              "pool": true
             }
           ],
-          "note": "Three Pokémon: Cutiefly always leads and Skiddo always closes; the middle one is drawn from a pool.",
-          "notePt": "Três Pokémon: Cutiefly sempre abre e Skiddo sempre fecha; o do meio é sorteado."
+          "note": "Brings 2 random picks from those marked “random pick”. Grass and Bug specialist.",
+          "notePt": "Leva 2 sorteados entre os marcados como “sorteio”. Especialista em Planta e Inseto."
         },
         {
           "order": 2,
@@ -20999,6 +21018,7 @@
           "city": "Kalami City",
           "type": "rock",
           "levelCap": 19,
+          "poolPick": 1,
           "team": [
             {
               "name": "Klawf",
@@ -21007,10 +21027,25 @@
             {
               "name": "Larvitar",
               "level": 19
+            },
+            {
+              "name": "Sneasel",
+              "level": 17,
+              "pool": true
+            },
+            {
+              "name": "Mawile",
+              "level": 17,
+              "pool": true
+            },
+            {
+              "name": "Voltorb",
+              "level": 18,
+              "pool": true
             }
           ],
-          "note": "Plus one random pick: Sneasel (Lv 17), Mawile (Lv 17) or Voltorb (Lv 18).",
-          "notePt": "Mais um sorteado: Sneasel (Nv 17), Mawile (Nv 17) ou Voltorb (Nv 18)."
+          "note": "Brings 1 random pick from those marked “random pick”. Rock and Steel specialist.",
+          "notePt": "Leva 1 sorteado entre os marcados como “sorteio”. Especialista em Pedra e Aço."
         },
         {
           "order": 3,
@@ -21019,6 +21054,7 @@
           "city": "Pythios Town",
           "type": "ghost",
           "levelCap": 22,
+          "poolPick": 2,
           "team": [
             {
               "name": "Hisuian Zorua",
@@ -21027,10 +21063,30 @@
             {
               "name": "Mimikyu",
               "level": 22
+            },
+            {
+              "name": "Bruxish",
+              "level": 18,
+              "pool": true
+            },
+            {
+              "name": "Shuppet",
+              "level": 20,
+              "pool": true
+            },
+            {
+              "name": "Pumpkaboo",
+              "level": 20,
+              "pool": true
+            },
+            {
+              "name": "Noctowl",
+              "level": 19,
+              "pool": true
             }
           ],
-          "note": "Hisuian Zorua comes in disguised as Mimikyu. She also brings two picks from a pool that includes Bruxish (Lv 18) and Shuppet (Lv 20).",
-          "notePt": "O Zorua de Hisui entra disfarçado de Mimikyu. Ela também leva dois sorteados de um grupo que inclui Bruxish (Nv 18) e Shuppet (Nv 20)."
+          "note": "Brings 2 random picks from those marked “random pick”. Hisuian Zorua comes in disguised as Mimikyu.",
+          "notePt": "Leva 2 sorteados entre os marcados como “sorteio”. O Zorua de Hisui entra disfarçado de Mimikyu."
         },
         {
           "order": 4,
@@ -21039,9 +21095,41 @@
           "city": "Sofos City",
           "type": "fighting",
           "levelCap": 27,
-          "team": [],
-          "note": "Fighting and Psychic specialist. Her gym roster has not been verified yet.",
-          "notePt": "Especialista em Lutador e Psíquico. O time do ginásio ainda não foi verificado."
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Meditite",
+              "level": 25,
+              "pool": true
+            },
+            {
+              "name": "Hisuian Sneasel",
+              "level": 25,
+              "pool": true
+            },
+            {
+              "name": "Pawmo",
+              "level": 25,
+              "pool": true
+            },
+            {
+              "name": "Mienfoo",
+              "level": 27,
+              "pool": true
+            },
+            {
+              "name": "Gothorita",
+              "level": 25,
+              "pool": true
+            },
+            {
+              "name": "Unown",
+              "level": 26,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”. Fighting and Psychic specialist.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”. Especialista em Lutador e Psíquico."
         },
         {
           "order": 5,
@@ -21050,6 +21138,7 @@
           "city": "Myrrini Island",
           "type": "poison",
           "levelCap": 31,
+          "poolPick": 2,
           "team": [
             {
               "name": "Gyarados",
@@ -21061,19 +21150,22 @@
             },
             {
               "name": "Grafaiai",
-              "level": 30
+              "level": 30,
+              "pool": true
             },
             {
               "name": "Hisuian Sneasel",
-              "level": 30
+              "level": 30,
+              "pool": true
             },
             {
               "name": "Hypno",
-              "level": 29
+              "level": 29,
+              "pool": true
             }
           ],
-          "note": "Poison and Water specialist. Part of this list may be a random pool.",
-          "notePt": "Especialista em Venenoso e Água. Parte desta lista pode ser sorteada."
+          "note": "Brings 2 random picks from those marked “random pick”. Poison and Water specialist.",
+          "notePt": "Leva 2 sorteados entre os marcados como “sorteio”. Especialista em Venenoso e Água."
         },
         {
           "order": 6,
@@ -21082,9 +21174,40 @@
           "city": "Fresco Isles",
           "type": "electric",
           "levelCap": 36,
-          "team": [],
-          "note": "A double battle: Thalia uses Electric types, Melpomene Ground types. Their roster has not been verified yet.",
-          "notePt": "Batalha dupla: Thalia usa Elétrico, Melpomene usa Terra. O time ainda não foi verificado."
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Camerupt",
+              "level": 35,
+              "pool": true
+            },
+            {
+              "name": "Lanturn",
+              "pool": true
+            },
+            {
+              "name": "Steelix",
+              "level": 36,
+              "pool": true
+            },
+            {
+              "name": "Alolan Raichu",
+              "level": 36,
+              "pool": true
+            },
+            {
+              "name": "Hisuian Electrode",
+              "level": 34,
+              "pool": true
+            },
+            {
+              "name": "Mudsdale",
+              "level": 34,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”. A double battle: Thalia uses Electric types, Melpomene Ground types.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”. Batalha dupla: Thalia usa Elétrico, Melpomene usa Terra."
         },
         {
           "order": 7,
@@ -21093,26 +21216,47 @@
           "city": "Palati City",
           "type": "fire",
           "levelCap": 40,
+          "poolPick": 2,
           "team": [
             {
-              "name": "Braviary",
+              "name": "Oricorio",
               "level": 38
             },
             {
-              "name": "Paldean Tauros Blaze Breed",
+              "name": "Hisuian Arcanine",
               "level": 39
+            },
+            {
+              "name": "Togekiss",
+              "level": 38
+            },
+            {
+              "name": "Mega Toucannon",
+              "level": 40
+            },
+            {
+              "name": "Braviary",
+              "level": 38,
+              "pool": true
+            },
+            {
+              "name": "Paldean Tauros Blaze Breed",
+              "level": 39,
+              "pool": true
             },
             {
               "name": "Salazzle",
-              "level": 39
+              "level": 39,
+              "pool": true
             },
             {
               "name": "Chandelure",
-              "level": 39
+              "level": 39,
+              "pool": true
             }
           ],
-          "note": "Fire and Flying specialist.",
-          "notePt": "Especialista em Fogo e Voador."
+          "note": "Brings 2 random picks from those marked “random pick”. Fire and Flying specialist; her Toucannon is a Lazarus Mega.",
+          "notePt": "Leva 2 sorteados entre os marcados como “sorteio”. Especialista em Fogo e Voador; o Toucannon dela é uma Mega da Lazarus."
         },
         {
           "order": 8,
@@ -21125,10 +21269,304 @@
             {
               "name": "Hydrapple",
               "level": 48
+            },
+            {
+              "name": "Dracozolt",
+              "level": 49
+            },
+            {
+              "name": "Grimmsnarl",
+              "level": 48
+            },
+            {
+              "name": "Mega Tinkaton",
+              "level": 49
+            },
+            {
+              "name": "Silvally",
+              "level": 49
+            },
+            {
+              "name": "Raging Bolt",
+              "level": 50
             }
           ],
-          "note": "The former leader, now with Team Chimera; Dragon and Fairy specialist, no random picks. Only Hydrapple is verified so far.",
-          "notePt": "A ex-líder, agora na Equipe Quimera; especialista em Dragão e Fada, sem sorteio. Por enquanto só o Hydrapple foi verificado."
+          "note": "The former leader, now head of Team Chimera; Dragon and Fairy specialist, no random picks. Her Tinkaton is a Lazarus Mega.",
+          "notePt": "A ex-líder, agora chefe da Equipe Quimera; especialista em Dragão e Fada, sem sorteio. A Tinkaton dela é uma Mega da Lazarus."
+        },
+        {
+          "order": 9,
+          "name": "Polymnia",
+          "gym": "Elite Four",
+          "city": "Ruins of Ahiyawa",
+          "type": "grass",
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Jumpluff",
+              "level": 52
+            },
+            {
+              "name": "Mega Ribombee",
+              "level": 53
+            },
+            {
+              "name": "Meganium",
+              "level": 48,
+              "pool": true
+            },
+            {
+              "name": "Leafeon",
+              "level": 48,
+              "pool": true
+            },
+            {
+              "name": "Abomasnow",
+              "level": 49,
+              "pool": true
+            },
+            {
+              "name": "Appletun",
+              "level": 52,
+              "pool": true
+            },
+            {
+              "name": "Crustle",
+              "level": 52,
+              "pool": true
+            },
+            {
+              "name": "Tsareena",
+              "level": 52,
+              "pool": true
+            },
+            {
+              "name": "Dhelmise",
+              "level": 52,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”. Ribombee is a Lazarus Mega.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”. O Ribombee é uma Mega da Lazarus."
+        },
+        {
+          "order": 10,
+          "name": "Terpsikore",
+          "gym": "Elite Four",
+          "city": "Ruins of Ahiyawa",
+          "type": "fighting",
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Hisuian Braviary",
+              "level": 53
+            },
+            {
+              "name": "Mega Falinks",
+              "level": 54
+            },
+            {
+              "name": "Bruxish",
+              "level": 52,
+              "pool": true
+            },
+            {
+              "name": "Reuniclus",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Wyrdeer",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Pangoro",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Gallade",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Kommo-o",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Medicham",
+              "level": 53,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”."
+        },
+        {
+          "order": 11,
+          "name": "Euterpe",
+          "gym": "Elite Four",
+          "city": "Ruins of Ahiyawa",
+          "type": "poison",
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Tentacruel",
+              "level": 54
+            },
+            {
+              "name": "Mega Gyarados",
+              "level": 55
+            },
+            {
+              "name": "Lanturn",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Arbok",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Clodsire",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Gliscor",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Sneasler",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Carracosta",
+              "level": 53,
+              "pool": true
+            },
+            {
+              "name": "Kabutops",
+              "level": 53,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”. Her Mega Gyarados stays Water/Flying in Lazarus.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”. A Mega Gyarados dela continua Água/Voador na Lazarus."
+        },
+        {
+          "order": 12,
+          "name": "Rhadine",
+          "gym": "Elite Four",
+          "city": "Ruins of Ahiyawa",
+          "type": "fire",
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Oricorio",
+              "level": 55
+            },
+            {
+              "name": "Mega Mandibuzz",
+              "level": 55
+            },
+            {
+              "name": "Pyroar",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Chatot",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Alolan Marowak",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Toucannon",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Simisear",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Togekiss",
+              "level": 54,
+              "pool": true
+            },
+            {
+              "name": "Centiskorch",
+              "level": 54,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”. Mandibuzz is a Lazarus Mega.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”. A Mandibuzz é uma Mega da Lazarus."
+        },
+        {
+          "order": 13,
+          "name": "Anyalios",
+          "gym": "Champion",
+          "city": "Ruins of Ahiyawa",
+          "poolPick": 4,
+          "team": [
+            {
+              "name": "Ceruledge",
+              "level": 56
+            },
+            {
+              "name": "Mega Cyclizar",
+              "level": 56
+            },
+            {
+              "name": "Obstagoon",
+              "level": 55,
+              "pool": true
+            },
+            {
+              "name": "Alolan Muk",
+              "level": 55,
+              "pool": true
+            },
+            {
+              "name": "Spiritomb",
+              "level": 55,
+              "pool": true
+            },
+            {
+              "name": "Aegislash",
+              "level": 55,
+              "pool": true
+            },
+            {
+              "name": "Scrafty",
+              "level": 55,
+              "pool": true
+            },
+            {
+              "name": "Tyrantrum",
+              "level": 55,
+              "pool": true
+            },
+            {
+              "name": "Golisopod",
+              "level": 55,
+              "pool": true
+            }
+          ],
+          "note": "Brings 4 random picks from those marked “random pick”. Cyclizar is a Lazarus Mega.",
+          "notePt": "Leva 4 sorteados entre os marcados como “sorteio”. O Cyclizar é uma Mega da Lazarus."
         }
       ]
     }
