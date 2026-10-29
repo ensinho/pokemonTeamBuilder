@@ -447,9 +447,11 @@ input[type="number"] {
         width: 100%;
     }
 
+    /* Grow from the label's width: "Máx neutro" and "Máx positivo" were
+       squeezed into equal quarters and touched at 360px. */
     .spd-controls .segmented > .segmented__item {
-        flex: 1 1 0;
-        padding-inline: var(--space-1_5);
+        flex: 1 1 auto;
+        padding-inline: var(--space-1);
     }
 
     /* Search and generation each take a full row: as two halves of 358px the

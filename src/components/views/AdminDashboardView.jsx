@@ -526,12 +526,14 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             <p className="truncate text-sm font-semibold text-fg">{author.name}</p>
                                             <p className="truncate text-2xs text-muted">{author.email || t('admin.noEmailCaptured')}</p>
                                         </div>
-                                        {/* Open = unanswered = new: Live Pink as a word. */}
+                                        {/* Open = unanswered = new: Live Pink, as a fill with the
+                                            brand ink (5.5:1) — pink as a word on its own tint
+                                            measured 3.6–4.5:1. */}
                                         <span
                                             className="shrink-0 px-2 py-0.5 rounded-full text-2xs font-semibold"
                                             style={answered
                                                 ? { backgroundColor: 'color-mix(in srgb, var(--color-success) 14%, transparent)', color: 'color-mix(in srgb, var(--color-success) 55%, var(--color-fg))' }
-                                                : { backgroundColor: 'color-mix(in srgb, var(--brand-live) 12%, transparent)', color: 'var(--brand-live-text)' }}
+                                                : { backgroundColor: 'var(--brand-live)', color: 'var(--brand-on-live)' }}
                                         >
                                             {answered ? t('admin.answered') : t('admin.open')}
                                         </span>
