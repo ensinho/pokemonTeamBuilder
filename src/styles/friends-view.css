@@ -11,10 +11,10 @@
 /* ── Tabs ─────────────────────────────────────────────────────────── */
 /* The strip and its counters are the shared .tabs / .count-badge (index.css).
    A pending request is the one count that asks for action, so it alone is
-   filled. */
+   filled — in Live Pink, with the brand ink (5.5:1), since it is new. */
 .friends-count--alert {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    background: var(--brand-live);
+    color: var(--brand-on-live);
 }
 
 /* ── Sections ─────────────────────────────────────────────────────── */
@@ -71,9 +71,11 @@
     border-color: var(--color-border-hover);
 }
 
+/* An incoming request is new — it carries the Live Pink edge, and a wash
+   faint enough that the row's text keeps its ink. */
 .friends-list--invite .friends-row {
-    border-color: var(--color-primary);
-    background: var(--color-primary-soft);
+    border-color: var(--brand-live);
+    background: color-mix(in srgb, var(--brand-live) 7%, var(--color-surface));
 }
 
 .friends-row__avatar {

@@ -322,8 +322,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     }, [profileMap, suggestions, language]);
 
     const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-    const secondaryButtonClassName = 'inline-flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-sm font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-    const tertiaryButtonClassName = 'inline-flex items-center gap-1 rounded-lg bg-surface-raised px-3 py-1.5 text-xs font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+    const secondaryButtonClassName = 'btn btn-secondary';
+    const tertiaryButtonClassName = 'btn btn-secondary btn-sm';
 
     const copyToClipboard = useCallback(async (value, successMessage) => {
         if (!value) return;
@@ -427,19 +427,18 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
     return (
         <div className="max-w-7xl mx-auto pb-10">
-            <section
-                className="relative mb-5 overflow-hidden rounded-2xl border border-primary p-5 text-white shadow-elevation-2 md:p-6"
-                style={{ backgroundImage: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 120%)' }}
-            >
+            {/* A flat surface, like every other page header (Neon Sticker base
+                layer) — it was a Volt-to-gold gradient with white type. */}
+            <section className="relative mb-5 overflow-hidden rounded-2xl border border-border bg-surface p-5 text-fg md:p-6">
                 <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                        <div className="w-14 h-14 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
                             <ChartColumnIcon className="w-7 h-7" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-2xs opacity-80 font-semibold">{t('admin.ownerPanel')}</p>
-                            <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">{t('admin.suggestionInbox')}</h2>
-                            <p className="text-xs md:text-sm opacity-85 mt-1">{t('admin.subtitle')}</p>
+                            <p className="font-mono text-2xs text-muted">{t('admin.ownerPanel')}</p>
+                            <h2 className="text-2xl leading-tight">{t('admin.suggestionInbox')}</h2>
+                            <p className="text-xs md:text-sm text-muted mt-1">{t('admin.subtitle')}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-[min(100%,32rem)]">
@@ -449,9 +448,9 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                             [t('admin.answered'), stats.answered],
                             [t('admin.email'), stats.withEmail],
                         ].map(([label, value]) => (
-                            <div key={label} className="rounded-lg bg-black/20 px-3 py-2 text-center">
-                                <p className="text-2xs opacity-75 font-semibold">{label}</p>
-                                <p className="text-2xl font-extrabold leading-none mt-1">{value}</p>
+                            <div key={label} className="rounded-lg bg-surface-raised px-3 py-2 text-center">
+                                <p className="text-2xs text-muted font-semibold">{label}</p>
+                                <p className="font-mono text-2xl font-semibold leading-none mt-1">{value}</p>
                             </div>
                         ))}
                     </div>
@@ -462,7 +461,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                 <section className="overflow-hidden rounded-xl border border-border bg-surface">
                     <div className="border-b border-border p-4">
                         <div className="flex items-center justify-between gap-3 mb-3">
-                            <h3 className="font-bold text-fg">{t('admin.suggestions')}</h3>
+                            <h3 className="font-semibold text-fg">{t('admin.suggestions')}</h3>
                             <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted">
                                 <RefreshIcon className="w-3.5 h-3.5" />
                                 {t('admin.live')}
@@ -486,7 +485,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         key={value}
                                         type="button"
                                         onClick={() => setStatusFilter(value)}
-                                        className={`rounded-lg px-2 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'bg-primary text-on-primary' : 'bg-surface-raised text-fg'}`}
+                                        className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors focus:outline-none ${active ? 'bg-primary text-on-primary' : 'bg-surface-raised text-fg hover:bg-surface-hover'}`}
                                     >
                                         {label}
                                     </button>
@@ -520,16 +519,19 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                     key={suggestion.id}
                                     type="button"
                                     onClick={() => setSelectedId(suggestion.id)}
-                                    className={`w-full rounded-lg border p-3 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-primary bg-primary-soft' : 'border-transparent bg-surface-raised'}`}
+                                    className={`w-full rounded-lg border p-3 text-left transition-colors focus:outline-none ${active ? 'border-primary bg-primary-soft' : 'border-transparent bg-surface-raised hover:bg-surface-hover'}`}
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-bold text-fg">{author.name}</p>
+                                            <p className="truncate text-sm font-semibold text-fg">{author.name}</p>
                                             <p className="truncate text-2xs text-muted">{author.email || t('admin.noEmailCaptured')}</p>
                                         </div>
+                                        {/* Open = unanswered = new: Live Pink as a word. */}
                                         <span
-                                            className="shrink-0 px-2 py-0.5 rounded-full text-2xs font-bold"
-                                            style={{ backgroundColor: answered ? colors.success + '22' : colors.warning + '22', color: answered ? colors.success : colors.warning }}
+                                            className="shrink-0 px-2 py-0.5 rounded-full text-2xs font-semibold"
+                                            style={answered
+                                                ? { backgroundColor: 'color-mix(in srgb, var(--color-success) 14%, transparent)', color: 'color-mix(in srgb, var(--color-success) 55%, var(--color-fg))' }
+                                                : { backgroundColor: 'color-mix(in srgb, var(--brand-live) 12%, transparent)', color: 'var(--brand-live-text)' }}
                                         >
                                             {answered ? t('admin.answered') : t('admin.open')}
                                         </span>
@@ -558,7 +560,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                                 <AccountIcon className="w-5 h-5" />
                                             </span>
                                             <div className="min-w-0">
-                                                <h3 className="truncate text-xl font-extrabold text-fg">{selectedAuthor.name}</h3>
+                                                <h3 className="truncate text-xl font-semibold text-fg">{selectedAuthor.name}</h3>
                                                 <p className="truncate text-xs text-muted">{selectedAuthor.email || t('admin.noEmailAvailable')}</p>
                                             </div>
                                         </div>
@@ -576,7 +578,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                 <div className="mb-5 rounded-xl bg-surface-raised p-4">
                                     <div className="mb-2 flex items-center gap-2 text-primary">
                                         <InfoIcon />
-                                        <p className="text-xs font-bold">{t('admin.suggestionLabel')}</p>
+                                        <p className="text-xs font-semibold">{t('admin.suggestionLabel')}</p>
                                     </div>
                                     <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg md:text-base">
                                         {selectedSuggestion.text || t('admin.emptySuggestion')}
@@ -585,7 +587,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
                                 <div className="space-y-3">
                                     <label className="block">
-                                        <span className="mb-1 block text-xs font-bold text-muted">{t('admin.subjectLabel')}</span>
+                                        <span className="mb-1 block text-xs font-semibold text-muted">{t('admin.subjectLabel')}</span>
                                         <input
                                             value={subject}
                                             onChange={(event) => setSubject(event.target.value.slice(0, 120))}
@@ -593,7 +595,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1 block text-xs font-bold text-muted">{t('admin.messageLabel')}</span>
+                                        <span className="mb-1 block text-xs font-semibold text-muted">{t('admin.messageLabel')}</span>
                                         <textarea
                                             value={customMessage}
                                             onChange={(event) => setCustomMessage(event.target.value.slice(0, 1500))}
@@ -606,7 +608,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             type="button"
                                             onClick={handleSendEmail}
                                             disabled={!hasRecipientEmail || isSendingEmail}
-                                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="btn btn-primary"
                                         >
                                             <ShareIcon />
                                             {ADMIN_EMAIL_ENDPOINT ? (isSendingEmail ? t('admin.sending') : t('admin.sendEmail')) : t('admin.openDraft')}
@@ -622,7 +624,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         <button
                                             type="button"
                                             onClick={() => copyToClipboard(plainTextEmail, t('admin.copyTextSuccess'))}
-                                            className="rounded-lg bg-surface-raised px-4 py-2 text-sm font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="btn btn-secondary"
                                         >
                                             {t('admin.copyText')}
                                         </button>
@@ -630,7 +632,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             type="button"
                                             onClick={() => markSuggestionResponded('manual')}
                                             disabled={isMarkingResponded}
-                                            className="inline-flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="btn btn-secondary"
                                         >
                                             <SaveIcon />
                                             {isMarkingResponded ? t('admin.saving') : t('admin.markAnswered')}
@@ -641,7 +643,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
                             <aside className="p-5 md:p-6">
                                 <div className="flex items-center justify-between gap-3 mb-3">
-                                    <h4 className="font-bold text-fg">{t('admin.emailPreview')}</h4>
+                                    <h4 className="font-semibold text-fg">{t('admin.emailPreview')}</h4>
                                     <button
                                         type="button"
                                         onClick={() => setEmailBackgroundId(pickRandomBackgroundId())}
