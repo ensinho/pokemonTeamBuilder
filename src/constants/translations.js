@@ -524,6 +524,13 @@ export const TRANSLATIONS = {
             // The Mais sheet's tile: one line in a four-column grid.
             challengeShort: 'Challenge',
             play: 'Play',
+            // The More sheet's shortcut cards: what each one is for, in a line.
+            moreHints: {
+                challenge: 'A new battle every day',
+                favorites: 'Your saved teams',
+                feed: 'Talk and share teams',
+                journeys: 'Missions and badges',
+            },
             pokepuzzle: 'PokéPuzzle',
             database: 'PokéData',
             pokemonList: 'Pokédex',
@@ -3371,6 +3378,13 @@ export const TRANSLATIONS = {
             // O tile da folha Mais: uma linha numa grade de quatro colunas.
             challengeShort: 'Desafio',
             play: 'Jogar',
+            // Os cartões de atalho da folha Mais: para que serve cada um, numa linha.
+            moreHints: {
+                challenge: 'Uma batalha nova por dia',
+                favorites: 'Seus times salvos',
+                feed: 'Converse e compartilhe times',
+                journeys: 'Missões e insígnias',
+            },
             pokepuzzle: 'PokéPuzzle',
             database: 'PokéData',
             pokemonList: 'Pokédex',

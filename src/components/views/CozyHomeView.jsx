@@ -449,8 +449,8 @@ export function CozyHomeView({
                             <dd className="stat__value">{nextAction}</dd>
                         </div>
                     </dl>
-                    <button type="button" className="btn btn-lg cozy-ink cozy-hero__cta" onClick={continueTeam}>
-                        <Swords aria-hidden="true" /> {ctaLabel}
+                    <button type="button" className="btn btn-lg cozy-ink cozy-hero__cta" onClick={continueTeam} title={ctaLabel}>
+                        <Swords aria-hidden="true" /> <span className="btn__label">{ctaLabel}</span>
                     </button>
                 </div>
             </div>

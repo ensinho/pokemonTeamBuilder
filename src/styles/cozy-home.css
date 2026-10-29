@@ -1390,6 +1390,26 @@ button.cozy-journey__row:hover {
         gap: var(--space-3);
     }
 
+    /* The status chips wrap instead of scrolling: a strip that ran off the
+       right edge read as cut text ("League Ch…"), not as more to swipe. */
+    .cozy-chips {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    /* A panel's sentence goes under its title, not squeezed between the
+       title and the action, where it wrapped into two lines that overlapped
+       the heading ("Journeys"). */
+    .cozy-home .cozy-panel .section-head {
+        flex-wrap: wrap;
+        row-gap: var(--space-1);
+    }
+
+    .cozy-home .cozy-panel .section-meta {
+        order: 1;
+        flex-basis: 100%;
+    }
+
     .cozy-toolbar {
         flex-direction: column;
         align-items: stretch;

@@ -22,8 +22,9 @@ import '../styles/more-sheet.css';
  *   half the screen instead of running past the fold. Four columns on every
  *   phone, so the sections line up under each other; a larger interface scale
  *   drops to three instead of clipping labels (a container query in rem).
- * - A `featured` section (the untitled pinned one) is a single row of equal
- *   shortcut cards instead of tiles — however many it holds, it fills the row.
+ * - A `featured` section (the untitled pinned one) is a 2 × 2 of shortcut
+ *   cards instead of tiles: icon, full name and a `hint` line saying what the
+ *   destination is for — the most-used places, so they get the most words.
  * - A tile shows `shortLabel` when the item has one: one line in a quarter of
  *   the sheet. The full name stays its accessible name.
  * - The caller leaves out what the tab bar already shows. The same destination
@@ -69,7 +70,14 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                                         <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
                                                     )}
                                                 </span>
-                                                <span className="more-tile__label">{shortened ? item.shortLabel : item.label}</span>
+                                                {section.featured ? (
+                                                    <span className="more-tile__text">
+                                                        <span className="more-tile__label">{item.label}</span>
+                                                        {item.hint && <span className="more-tile__hint">{item.hint}</span>}
+                                                    </span>
+                                                ) : (
+                                                    <span className="more-tile__label">{shortened ? item.shortLabel : item.label}</span>
+                                                )}
                                             </button>
                                         </li>
                                     );

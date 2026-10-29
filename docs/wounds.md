@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-29 — A thread's avatar frame was still cut on the left `bug`
+- **Symptom:** in a forum thread on a phone, the reward frame around the author's avatar lost its left side (reported with a screenshot of `@alex`).
+- **Root cause:** the 2026-10-17 fix pulled `.thread-messages-scroll` one step left with a negative margin and padded it back — but its parent `.thread-detail` has `overflow: hidden`, so the step it reached into was clipped anyway. The avatar still sat flush with the first clipping edge.
+- **Fix:** dropped the negative margin; the scroller pads its content in by `--space-2`. Measured in a harness at 390 and 1440: ring's left edge is now 3.5px inside `.thread-detail` (it was 5px outside).
+- **Correct pattern:** a negative-margin "reach into the gutter" only works if no ancestor between the element and that gutter clips. Measure the ring's left edge against *every* clipping ancestor, not just the scroller.
+- **Files:** `src/styles/forum-view.css`
+
 ### 2026-10-29 — The logo focus ring was clipped or erased on core controls `bug`
 - **Symptom:** tabbing the core pages, focus landed on the selected segment ("Today", "Rewards"), on profile/builder tabs, Home's chips, Pokédex card stars, phone builder cards and the composer's Save, and showed no ring or a ring cut on one to three sides; 65 controls still drew Tailwind's flat 2px Volt ring.
 - **Root cause:** Neon Sticker's focus is a 6px outer `box-shadow` (`--ring-logo`). (1) The anchored segmented thumb sets the selected item's `box-shadow: none` after the focus rule; (2) `.tabs`, `.cozy-chips`, `.pokemon-card` and the composer fold clip overflow; (3) `.is-synergy`/`.is-suggested` card tints set their own inset shadow later than the card's focus rule; (4) `focus-visible:ring-2 ring-primary` utilities outrank the `:where()` focus rule.

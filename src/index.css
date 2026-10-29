@@ -1358,6 +1358,17 @@ h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
 
 .btn-block { width: 100%; }
 
+/* A label that can outgrow its button (a team name, a trainer's name): it
+   ends in "…" instead of running past the edges and pushing the icon out of
+   view. The button needs a width to end at — max-width or a stretched row. */
+.btn { max-width: 100%; }
+
+.btn__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Voices (Neon Sticker, 2026-10-26).
    primary — the one affirmative action in a view, and part of the brand
    layer: the Volt fill (on-primary ink is per theme and clears AA in all ten)
