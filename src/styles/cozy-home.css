@@ -875,7 +875,11 @@ button.cozy-chip:hover {
         font-family: var(--font-heading);
         font-size: var(--text-xl);
         font-weight: var(--weight-heading);
+        /* Wraps on a medium monitor ("Desafio da / Campeã"): a title's
+           leading, not the body's, so the two lines read as one name. */
+        line-height: var(--leading-tight);
         letter-spacing: -0.015em;
+        text-wrap: balance;
     }
 
     .cozy-day__card--feature .cozy-day__sub {
