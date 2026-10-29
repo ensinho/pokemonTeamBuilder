@@ -540,7 +540,7 @@ export function CozyHomeView({
                                 ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.solved')}</span>
                                 : <span className="btn btn-sm cozy-ink cozy-day__go">{t('cozyHome.play')}</span>}
                         </span>
-                        <span className="cozy-day__eyebrow">#{String(puzzle.target.id).padStart(3, '0')}</span>
+                        <span className="cozy-day__eyebrow">{!puzzle.summary?.solved && <span className="live-dot" aria-hidden="true" />}#{String(puzzle.target.id).padStart(3, '0')}</span>
                         <span className="cozy-day__title">{t('cozyHome.puzzleTitle')}</span>
                         <span className="cozy-day__sub">
                             {puzzle.summary?.solved
@@ -550,7 +550,7 @@ export function CozyHomeView({
                     </button>
                 )}
 
-                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-warning)' }}
+                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-accent)' }}
                     onClick={() => navigate('/journeys?tab=badges')}>
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--badge" aria-hidden="true">

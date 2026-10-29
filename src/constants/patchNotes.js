@@ -22,6 +22,25 @@ export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
         month: '2026-10',
+        // Not a suggestion-driven release, so it thanks in its own words.
+        thanks: 'patchNotes.brandThanks',
+        notes: [
+            {
+                key: 'pokemonbuilder-brand',
+                featured: true,
+                icon: 'sparkles',
+                visual: 'brand',
+                title: 'patchNotes.brandTitle',
+                description: 'patchNotes.brandDesc',
+                cta: 'patchNotes.brandCta',
+                path: '/',
+            },
+            { key: 'neon-sticker-look', icon: 'flower', title: 'patchNotes.lookTitle', description: 'patchNotes.lookDesc', cta: 'patchNotes.lookCta', path: '/profile?tab=appearance' },
+        ],
+    },
+    {
+        version: '1.17.0',
+        month: '2026-10',
         notes: [
             {
                 key: 'friend-battles-console',

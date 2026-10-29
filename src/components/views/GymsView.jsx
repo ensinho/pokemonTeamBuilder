@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Swords, Trophy, ChevronRight, Sparkles, X } from 'lucide-react';
+import { Swords, Trophy, ChevronRight, X } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
 import { useGymLeaders } from '../../hooks/useGymLeaders';
@@ -14,6 +14,7 @@ import { maxWidthBelow } from '../../constants/breakpoints';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getGameLogo, getGameAccent } from '../../assets/gameLogos';
+import { toneInk, toneWash } from '../../utils/toneInk';
 import '../../styles/game-cover.css';
 import '../../styles/gyms-view.css';
 
@@ -65,7 +66,7 @@ function GymGamePickerModal({ open, onClose, official, hacks, selectedKey, onSel
     const choose = (key) => { onSelect(key); onClose(); };
     const Group = ({ title, items }) => (items.length ? (
         <div className="space-y-2">
-            <p className="text-2xs font-bold text-muted px-1">{title}</p>
+            <p className="text-2xs font-semibold text-muted px-1">{title}</p>
             <div className="game-picker__grid !p-1 !overflow-visible">
                 {items.map((g) => <GameCard key={g.key} game={g} active={g.key === selectedKey} onClick={() => choose(g.key)} />)}
             </div>
@@ -123,7 +124,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                     <div className="flex items-center gap-3">
                         <div
                             className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl"
-                            style={{ backgroundImage: `linear-gradient(135deg, ${accent}33, ${accent}0d)`, border: `1px solid ${accent}55` }}
+                            style={{ backgroundColor: toneWash(accent), border: `1px solid ${toneWash(accent, 45)}` }}
                         >
                             {leader.sprite ? (
                                 <img
@@ -133,11 +134,11 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                             ) : (
-                                <Trophy className="h-6 w-6 text-white" />
+                                <Trophy className="h-6 w-6 text-muted" />
                             )}
                         </div>
                         <div>
-                            <h2 id="leader-team-title" className="text-base sm:text-lg font-extrabold text-fg">
+                            <h2 id="leader-team-title" className="font-heading text-base sm:text-lg text-fg">
                                 {leader.name} — {pt ? 'Time Detalhado' : 'Detailed Team'}
                             </h2>
                             <p className="text-xs text-muted">
@@ -161,10 +162,10 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                             return (
                                 <div
                                     key={`${mon.name}-${i}`}
-                                    className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-all hover:border-border relative overflow-hidden"
+                                    className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 relative overflow-hidden"
                                 >
                                     {/* Level badge */}
-                                    <div className="absolute right-3 top-3 rounded-md px-2 py-0.5 text-xs font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
+                                    <div className="absolute right-3 top-3 rounded-md border bg-surface px-2 py-0.5 font-mono text-xs font-semibold" style={{ color: toneInk(accent), borderColor: toneWash(accent, 45) }}>
                                         Lv{mon.level || levelCap || '?'}
                                     </div>
 
@@ -181,20 +182,20 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                                 src={id ? getPokemonFrontSpriteUrl(id) : POKEBALL_PLACEHOLDER_URL}
                                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                                 alt=""
-                                                className="h-14 w-14 image-pixelated group-hover:scale-110 transition-transform"
+                                                className="h-14 w-14 image-pixelated"
                                             />
                                         </button>
                                         <div className="min-w-0 flex-1">
-                                            <h3 className="truncate font-extrabold capitalize text-fg text-sm">{pretty(mon.name)}</h3>
+                                            <h3 className="truncate font-semibold capitalize text-fg text-sm">{pretty(mon.name)}</h3>
                                             <div className="mt-1 flex gap-1 flex-wrap">
                                                 {types.map((tp) => (
                                                     <span
                                                         key={tp}
-                                                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs font-bold capitalize border"
+                                                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs font-semibold capitalize border"
                                                         style={{
-                                                            color: typeColors[tp],
-                                                            backgroundColor: `${typeColors[tp]}1a`,
-                                                            borderColor: `${typeColors[tp]}40`
+                                                            color: toneInk(typeColors[tp]),
+                                                            backgroundColor: toneWash(typeColors[tp], 10),
+                                                            borderColor: toneWash(typeColors[tp], 25)
                                                         }}
                                                     >
                                                         {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3 w-3 shrink-0 object-contain" />}
@@ -225,7 +226,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
 
                                     {/* Moves */}
                                     <div>
-                                        <p className="mb-1 text-2xs font-bold text-muted">{pt ? 'Ataques' : 'Moves'}</p>
+                                        <p className="mb-1 text-2xs font-semibold text-muted">{pt ? 'Ataques' : 'Moves'}</p>
                                         <div className="grid grid-cols-2 gap-1.5">
                                             {Array.isArray(mon.moves) && mon.moves.length > 0 ? (
                                                 mon.moves.map((mv, idx) => {
@@ -239,9 +240,9 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                                             onClick={(e) => { onClose(); goToMove(name, e); }}
                                                             className="truncate cursor-pointer rounded-md border px-2 py-1 text-center text-2xs font-medium capitalize flex items-center justify-center gap-1 leading-tight min-h-[22px] transition-opacity hover:opacity-75 focus:outline-none"
                                                             style={{
-                                                                color,
-                                                                borderColor: `${color}40`,
-                                                                backgroundColor: `${color}15`
+                                                                color: toneInk(color),
+                                                                borderColor: toneWash(color, 25),
+                                                                backgroundColor: toneWash(color, 8)
                                                             }}
                                                             title={pretty(name)}
                                                         >
@@ -275,10 +276,10 @@ function TrainerAvatar({ sprite, type, order, accent }) {
         <span className="relative h-16 w-16 shrink-0">
             <span
                 className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl"
-                style={{ backgroundImage: `linear-gradient(135deg, ${accent}33, ${accent}0d)`, border: `1px solid ${accent}55` }}
+                style={{ backgroundColor: toneWash(accent), border: `1px solid ${toneWash(accent, 45)}` }}
             >
                 {failed ? (
-                    typeIcons[type] ? <img src={typeIcons[type]} alt={type} className="h-7 w-7" /> : <Trophy className="h-7 w-7 text-white" />
+                    typeIcons[type] ? <img src={typeIcons[type]} alt={type} className="h-7 w-7" /> : <Trophy className="h-7 w-7 text-muted" />
                 ) : (
                     <img
                         src={`${TRAINER_SPRITE_BASE}${sprite}.png`}
@@ -289,7 +290,7 @@ function TrainerAvatar({ sprite, type, order, accent }) {
                     />
                 )}
             </span>
-            <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-surface text-2xs font-bold text-fg shadow-sm z-10">{order}</span>
+            <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-surface font-mono text-2xs font-semibold text-fg z-10">{order}</span>
         </span>
     );
 }
@@ -307,7 +308,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
             onClick={handleMonClick}
             disabled={!id}
             title={pretty(mon.name)}
-            className="gyms-mon group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-raised/60 hover:border-border p-3 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
+            className="gyms-mon group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-hover p-3 text-center transition-colors focus:outline-none w-full"
         >
             <div className="relative">
                 <div
@@ -321,26 +322,28 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
                         src={id ? getPokemonFrontSpriteUrl(id) : POKEBALL_PLACEHOLDER_URL}
                         onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                         alt=""
-                        className="h-12 w-12 image-pixelated group-hover:scale-110 transition-transform"
+                        className="h-12 w-12 image-pixelated"
                         loading="lazy"
                     />
                 </div>
-                <span className="absolute -right-1.5 -top-1.5 rounded-md px-1.5 py-0.5 text-2xs font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
+                {/* The level on the surface, in the leader's tone as ink: white
+                    on Electric or Ice yellow was 1.3:1. */}
+                <span className="absolute -right-1.5 -top-1.5 rounded-md border bg-surface px-1.5 py-0.5 font-mono text-2xs font-semibold" style={{ color: toneInk(accent), borderColor: toneWash(accent, 45) }}>
                     Lv{mon.level || levelCap || '?'}
                 </span>
             </div>
 
             <div className="flex flex-col items-center min-w-0 w-full mt-1.5">
-                <span className="w-full truncate text-xs font-extrabold capitalize text-fg leading-tight">{pretty(mon.name)}</span>
+                <span className="w-full truncate text-xs font-semibold capitalize text-fg leading-tight">{pretty(mon.name)}</span>
                 <div className="gyms-mon__types flex flex-wrap justify-center gap-1 mt-1.5">
                     {types.map((tp) => (
                         <span
                             key={tp}
-                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-extrabold capitalize border"
+                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-semibold capitalize border"
                             style={{
-                                color: typeColors[tp],
-                                backgroundColor: `${typeColors[tp]}15`,
-                                borderColor: `${typeColors[tp]}30`
+                                color: toneInk(typeColors[tp]),
+                                backgroundColor: toneWash(typeColors[tp], 8),
+                                borderColor: toneWash(typeColors[tp], 20)
                             }}
                         >
                             {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-2.5 w-2.5 shrink-0 object-contain" />}
@@ -480,29 +483,23 @@ export function GymsView({ showDetails, onAddToTeam }) {
                 key={`${leader.order}-${leader.name}`}
                 id={`leader-${leader.order}-${slugify(leader.name)}`}
                 onClick={() => setModalLeader(leader)}
-                className={`gyms-leader team-builder-panel p-4 flex flex-col gap-4 border border-border border-l-4 transition-all duration-200 cursor-pointer shadow-sm relative overflow-hidden group/card animate-fade-in-up ${isChamp
-                        ? active
-                            ? 'border-yellow-500 shadow-yellow-500/10'
-                            : 'hover:border-yellow-500/50'
-                        : active
-                            ? 'border-primary shadow-primary/10'
-                            : 'hover:border-border'
-                    }`}
+                // The champion is the league's last leader, not something the
+                // trainer earned: it keeps its type's rail like every other
+                // leader (Shiny Gold is for earned things only).
+                className={`gyms-leader team-builder-panel p-4 flex flex-col gap-4 border border-border border-l-4 transition-colors duration-200 cursor-pointer relative overflow-hidden group/card animate-fade-in-up ${active ? 'border-primary' : 'hover:border-border-strong'}`}
                 style={{
-                    borderLeftColor: isChamp ? '#eab308' : accent,
-                    background: isChamp
-                        ? 'linear-gradient(135deg, var(--color-surface) 75%, rgba(234, 179, 8, 0.04) 100%)'
-                        : 'var(--color-surface)',
+                    borderLeftColor: accent,
+                    background: 'var(--color-surface)',
                     scrollMarginTop: '1.5rem',
                 }}
             >
                 <div className="gyms-leader__head flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
                     <div className="flex items-center gap-3">
-                        <TrainerAvatar sprite={leader.sprite} type={leader.type} order={isChamp ? '★' : leader.order} accent={isChamp ? '#eab308' : accent} />
+                        <TrainerAvatar sprite={leader.sprite} type={leader.type} order={isChamp ? '★' : leader.order} accent={accent} />
                         <div className="min-w-0">
-                            <h2 className="text-lg font-extrabold text-fg leading-none flex items-center gap-1.5">
+                            <h2 className="text-lg font-semibold text-fg leading-none flex items-center gap-1.5">
                                 {leader.name}
-                                {isChamp && <Sparkles className="gyms-leader__sparkle h-4 w-4 text-yellow-500 animate-pulse shrink-0" />}
+                                {isChamp && <Trophy className="gyms-leader__sparkle h-4 w-4 text-primary shrink-0" aria-hidden="true" />}
                             </h2>
                             <p className="text-xs text-muted mt-1.5">
                                 {[leader.gym, leader.city].filter(Boolean).join(' · ')}
@@ -510,25 +507,25 @@ export function GymsView({ showDetails, onAddToTeam }) {
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className={`opacity-0 group-hover/card:opacity-100 transition-opacity text-xs font-bold mr-1 hidden sm:inline ${isChamp ? 'text-yellow-500' : 'text-primary'}`}>
+                        <span className="opacity-0 group-hover/card:opacity-100 transition-opacity text-xs font-semibold mr-1 hidden sm:inline text-primary">
                             {pt ? 'Ver time completo' : 'View full team'} ➔
                         </span>
                         <span
-                            className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-2xs font-bold capitalize"
+                            className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-2xs font-semibold capitalize"
                             style={{
-                                color: isChamp ? '#eab308' : accent,
-                                borderColor: 'currentColor',
-                                backgroundColor: 'transparent'
+                                color: toneInk(accent),
+                                borderColor: toneWash(accent, 45),
+                                backgroundColor: toneWash(accent)
                             }}
                         >
                             {typeIcons[leader.type] && <img src={typeIcons[leader.type]} alt="" className="h-3.5 w-3.5 object-contain" />}
                             {isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
                         </span>
                         {leader.badge && (
-                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">{leader.badge}</span>
+                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-muted">{leader.badge}</span>
                         )}
                         {leader.levelCap && (
-                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} {leader.levelCap}</span>
+                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} <span className="font-mono">{leader.levelCap}</span></span>
                         )}
                         {onAddToTeam && (
                             <button
@@ -537,10 +534,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                     e.stopPropagation();
                                     buildTeam(leader);
                                 }}
-                                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-2xs font-extrabold transition-all duration-200 bg-transparent ${isChamp
-                                        ? 'border-yellow-500/40 text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500'
-                                        : 'border-border text-primary hover:bg-primary hover:text-on-primary hover:border-primary'
-                                    }`}
+                                className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-2xs font-semibold transition-colors duration-200 bg-transparent border-border text-primary hover:bg-primary hover:text-on-primary hover:border-primary"
                                 title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
                             >
                                 <Swords className="h-3 w-3" /> {pt ? 'Usar time' : 'Use team'}
@@ -557,7 +551,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                 key={`${mon.name}-${i}`}
                                 mon={mon}
                                 entry={entry}
-                                accent={isChamp ? '#eab308' : accent}
+                                accent={accent}
                                 levelCap={leader.levelCap}
                                 onClick={() => entry && showDetails?.({ id: entry.id, name: entry.name })}
                             />
@@ -613,7 +607,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                         <nav className="team-builder-panel p-3.5 space-y-4 hidden lg:block">
                             {gymLeaders.length > 0 && (
                                 <div>
-                                    <p className="text-2xs font-bold text-muted px-2.5 mb-2.5">
+                                    <p className="text-2xs font-semibold text-muted px-2.5 mb-2.5">
                                         {pt ? 'Líderes de Ginásio' : 'Gym Leaders'}
                                     </p>
                                     <div className="space-y-1">
@@ -626,16 +620,16 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                                     key={`${leader.order}-${leader.name}`}
                                                     type="button"
                                                     onClick={() => scrollToLeader(leader)}
-                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-all duration-200 ${active
-                                                            ? 'bg-surface-raised border border-primary text-fg shadow-sm font-extrabold'
-                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-raised'
+                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-colors duration-200 ${active
+                                                            ? 'bg-surface-active border border-primary text-fg font-semibold'
+                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-hover'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <span
-                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-extrabold ${active
-                                                                    ? 'bg-primary text-on-primary font-black'
-                                                                    : 'bg-surface-raised border border-border text-muted font-bold'
+                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full font-mono text-2xs font-semibold ${active
+                                                                    ? 'bg-primary text-on-primary'
+                                                                    : 'bg-surface-raised border border-border text-muted'
                                                                 }`}
                                                         >
                                                             {leader.order}
@@ -659,7 +653,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
 
                             {eliteFourAndChamp.length > 0 && (
                                 <div>
-                                    <p className="text-2xs font-bold text-primary px-2.5 mb-2.5 flex items-center gap-1.5">
+                                    <p className="text-2xs font-semibold text-primary px-2.5 mb-2.5 flex items-center gap-1.5">
                                         <Trophy className="h-3.5 w-3.5 text-primary" />
                                         <span>{pt ? 'Liga Pokémon' : 'Pokémon League'}</span>
                                     </p>
@@ -674,33 +668,29 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                                     key={`${leader.order}-${leader.name}`}
                                                     type="button"
                                                     onClick={() => scrollToLeader(leader)}
-                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-all duration-200 ${active
-                                                            ? isChamp
-                                                                ? 'bg-surface-raised border border-yellow-500 text-fg shadow-sm font-extrabold'
-                                                                : 'bg-surface-raised border border-primary text-fg shadow-sm font-extrabold'
-                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-raised'
+                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-colors duration-200 ${active
+                                                            ? 'bg-surface-active border border-primary text-fg font-semibold'
+                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-hover'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <span
-                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-extrabold ${active
-                                                                    ? isChamp
-                                                                        ? 'bg-yellow-500 text-white font-black'
-                                                                        : 'bg-primary text-on-primary font-black'
-                                                                    : 'bg-surface-raised border border-border text-muted font-bold'
+                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full font-mono text-2xs font-semibold ${active
+                                                                    ? 'bg-primary text-on-primary'
+                                                                    : 'bg-surface-raised border border-border text-muted'
                                                                 }`}
                                                         >
                                                             {isChamp ? '★' : leader.order}
                                                         </span>
                                                         <span className="truncate text-xs capitalize leading-tight flex items-center gap-1">
                                                             {leader.name}
-                                                            {isChamp && <Sparkles className="h-3 w-3 text-yellow-500 shrink-0" />}
+                                                            {isChamp && <Trophy className="h-3 w-3 text-primary shrink-0" aria-hidden="true" />}
                                                         </span>
                                                     </div>
                                                     <span
                                                         className="h-2 w-2 shrink-0 rounded-full transition-all duration-200"
                                                         style={{
-                                                            backgroundColor: isChamp ? '#eab308' : accent,
+                                                            backgroundColor: accent,
                                                             transform: active ? 'scale(1.2)' : 'none'
                                                         }}
                                                         title={isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
@@ -725,7 +715,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                     <div className="gyms-section-head border-b border-border pb-2">
                                         <h2 className="text-sm font-bold text-muted flex items-center gap-2">
                                             <span>{pt ? 'Líderes de Ginásio' : 'Gym Leaders'}</span>
-                                            <span className="text-xs font-normal text-muted">({gymLeaders.length})</span>
+                                            <span className="font-mono text-xs font-normal text-muted">({gymLeaders.length})</span>
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
@@ -741,7 +731,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                         <h2 className="text-sm font-bold text-primary flex items-center gap-2">
                                             <Trophy className="h-4 w-4 text-primary" />
                                             <span>{pt ? 'Elite dos Quatro & Campeão' : 'Elite Four & Champion'}</span>
-                                            <span className="text-xs font-normal text-primary">({eliteFourAndChamp.length})</span>
+                                            <span className="font-mono text-xs font-normal text-primary">({eliteFourAndChamp.length})</span>
                                         </h2>
                                     </div>
                                     <div className="space-y-4">

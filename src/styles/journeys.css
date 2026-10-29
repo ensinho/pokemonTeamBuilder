@@ -33,8 +33,9 @@
 /* Something new in the Rewards tab: the one count in the strip that asks
    to be opened, so it takes the primary. */
 .count-badge.count-badge--new {
-    background: color-mix(in srgb, var(--color-primary) 18%, transparent);
-    color: color-mix(in srgb, var(--color-primary) 70%, var(--color-fg));
+    /* New: Live Pink with ink (Neon Sticker). */
+    background: var(--brand-live);
+    color: var(--brand-on-live);
 }
 
 .journeys-view__progress {
@@ -104,7 +105,8 @@
 }
 
 .journey__tile.is-earned { background: transparent; }
-.journey__tile.is-earned svg { width: 3rem; height: 3rem; }
+/* An earned emblem is a sticker: the edge and the drop follow its shape. */
+.journey__tile.is-earned svg { width: 3rem; height: 3rem; filter: var(--sticker-filter); }
 
 .journey__text {
     display: flex;
@@ -119,7 +121,7 @@
 }
 
 .journey__title {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     line-height: var(--leading-snug);
@@ -399,7 +401,11 @@ button.mission:active { background: var(--color-surface-active); }
 .badge-tile:hover { background: var(--color-surface-hover); }
 .badge-tile:active { background: var(--color-surface-active); }
 
-.badge-tile.is-equipped { box-shadow: var(--ring-primary); }
+/* The badge the trainer wears is held: it is a sticker. */
+.badge-tile.is-equipped { box-shadow: var(--sticker); }
+
+/* Earned emblems stand up off the page (the sticker edge follows the shape). */
+.badge-tile.is-unlocked .badge-tile__emblem { filter: var(--sticker-filter); }
 
 .badge-tile__emblem {
     display: inline-flex;
@@ -441,6 +447,29 @@ button.mission:active { background: var(--color-surface-active); }
     height: 6rem;
     margin-bottom: var(--space-2);
 }
+
+/* An earned badge up close is a reward moment: a sticker on the gold spark
+   burst (the dialog's one burst). */
+.badge-detail__emblem:not(.is-locked) {
+    position: relative;
+    isolation: isolate;
+}
+
+.badge-detail__emblem:not(.is-locked) svg { filter: var(--sticker-filter); }
+
+.badge-detail__emblem:not(.is-locked)::before {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    z-index: -1;
+    clip-path: var(--spark-burst);
+    background: var(--brand-gold);
+    pointer-events: none;
+}
+
+/* The unlock dialog's emblem (BadgeUnlockModal): the same moment. */
+.reward-emblem { --spark-inset: -30%; }
+.reward-emblem > * { filter: var(--sticker-filter); }
 
 .badge-detail__emblem svg { width: 100%; height: 100%; }
 

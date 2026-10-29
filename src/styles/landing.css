@@ -54,11 +54,23 @@
 }
 
 /* The brand: Gengar icon + PokemonBuilder wordmark (2026-10-26). The wordmark
-   brings its own outline and colour, so it stands on every theme as is. */
+   brings its own outline and colour, so it stands on every theme as is.
+   Neon Sticker: it stands in a soft pool of Volt — a glow, not a burst (the
+   page's one burst is behind the hero party). */
 .landing-brand {
+    position: relative;
+    isolation: isolate;
     display: flex;
     align-items: center;
     gap: var(--space-3);
+}
+.landing-brand::before {
+    content: '';
+    position: absolute;
+    inset: -45% -12% -45% -8%;
+    z-index: -1;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--color-primary) 30%, transparent), transparent);
+    pointer-events: none;
 }
 .landing-brand__mark {
     width: 3.5rem;
@@ -75,6 +87,9 @@
 @media (max-width: 640px) {
     .landing-brand__mark { width: 2.75rem; }
     .landing-brand__wordmark { width: 15rem; }
+    /* The glow stays inside the column: its -12% right edge ran 8px past a
+       360px screen, a sideways scroll the page's overflow only hid. */
+    .landing-brand::before { inset-inline: 0; }
 }
 
 .landing-eyebrow {
@@ -95,12 +110,13 @@
 }
 .landing-title {
     margin: 0;
-    font-family: var(--font-display);
-    font-size: calc(var(--text-3xl) * 1.2);
-    font-weight: var(--weight-semibold);
-    line-height: 1.05;
+    font-family: var(--font-heading);
+    font-size: calc(var(--text-3xl) * 1.08);
+    font-weight: var(--weight-heading);
+    line-height: 1.1;
+    letter-spacing: -0.012em;
     color: var(--color-fg);
-    max-width: 16ch;
+    max-width: 17ch;
     text-wrap: balance;
 }
 .landing-lede {
@@ -182,12 +198,14 @@
 }
 .landing-pick:hover { background: var(--color-surface-hover); color: var(--color-fg); }
 .landing-pick:active { scale: var(--press-scale); }
-.landing-pick:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.landing-pick:focus-visible { outline: none; box-shadow: var(--ring-logo); }
+/* On the team: a sticker (the brand layer's held object). */
 .landing-pick[aria-pressed='true'] {
     color: var(--color-fg);
-    background: var(--color-surface-active);
-    box-shadow: inset 0 0 0 1px var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-raised));
+    box-shadow: var(--sticker);
 }
+.landing-pick[aria-pressed='true']:focus-visible { box-shadow: var(--sticker), var(--ring-logo); }
 .landing-pick__stage {
     position: relative;
     display: flex;
@@ -301,8 +319,26 @@
 .landing-stage__row--back .landing-stage__slot { height: 6.5rem; }
 .landing-stage__row--front .landing-stage__slot { height: 9rem; }
 /* Scaled, not sized: each GIF keeps its own proportions, so Gyarados still
-   towers over Incineroar. Bottom-anchored, so feet stay on the platform. */
-.landing-stage__sprite { max-height: none; transform-origin: 50% 100%; }
+   towers over Incineroar. Bottom-anchored, so feet stay on the platform.
+   Neon Sticker: the hero party are stickers — the edge and the hard drop
+   follow each sprite's own silhouette. */
+.landing-stage__sprite { max-height: none; transform-origin: 50% 100%; filter: var(--sticker-filter); }
+
+/* The page's one spark burst: behind the party's lead (the front-centre
+   slot), in its type's canon colour (--spark-color, set on the stage). */
+.landing-stage__row--front .landing-stage__slot:nth-child(2)::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 15rem;
+    aspect-ratio: 1;
+    translate: -50% 18%;
+    z-index: 0;
+    clip-path: var(--spark-burst);
+    background: color-mix(in srgb, var(--spark-color, var(--color-primary)) 62%, transparent);
+    pointer-events: none;
+}
 .landing-stage__row--back .landing-stage__sprite { scale: 1.05; }
 .landing-stage__row--front .landing-stage__sprite { scale: 1.3; }
 
@@ -390,7 +426,7 @@
     background: var(--color-surface-hover);
     border-color: var(--color-border-strong);
 }
-.landing-feature:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.landing-feature:focus-visible { outline: none; box-shadow: var(--ring-logo); }
 
 .landing-feature__copy {
     display: flex;
@@ -697,6 +733,7 @@
     .landing-stage__row--back .landing-stage__slot { height: 5rem; }
     .landing-stage__row--front .landing-stage__slot { height: 6.5rem; }
     .landing-stage__row--front .landing-stage__sprite { scale: 1; }
+    .landing-stage__row--front .landing-stage__slot:nth-child(2)::before { width: 10rem; }
     .landing-stage__row--back .landing-stage__sprite { scale: 0.8; }
     .landing-actions { width: 100%; }
     .landing-actions .btn { flex: 1 1 100%; }

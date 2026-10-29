@@ -54,7 +54,7 @@
 }
 .tool-picker__option:hover, .tool-picker__option.is-active { background: var(--color-surface-raised); }
 .tool-picker__option img { width: 1.5rem; height: 1.5rem; image-rendering: pixelated; }
-.tool-picker__option-sub { margin-left: auto; font-size: var(--text-2xs); color: var(--color-muted); font-family: ui-monospace, monospace; }
+.tool-picker__option-sub { margin-left: auto; font-size: var(--text-2xs); color: var(--color-muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 /* ---- damage calculator ---- */
 .dmg-grid {
@@ -76,8 +76,11 @@
     font-weight: var(--weight-semibold);
     margin-bottom: var(--space-3);
 }
-.dmg-card__title--atk { color: #F08030; }
-.dmg-card__title--def { color: #6890F0; }
+/* The two sides keep the calculator's canon tones (Fire for the attacker,
+   Water for the defender) — mixed into the theme's ink so the word reads on
+   white as well as on the night surfaces. */
+.dmg-card__title--atk { color: color-mix(in srgb, #F08030 45%, var(--color-fg)); }
+.dmg-card__title--def { color: color-mix(in srgb, #6890F0 45%, var(--color-fg)); }
 
 .dmg-field { margin-top: var(--space-2_5); }
 .dmg-field__label {
@@ -133,48 +136,24 @@ input[type="number"] {
 .dmg-options { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4); }
 .dmg-check { display: inline-flex; align-items: center; gap: var(--space-1_5); font-size: var(--text-sm); color: var(--color-fg); cursor: pointer; }
 
-/* weather active states */
-.active-sun {
-    color: #FBBF24 !important;
-    background: rgba(251, 191, 36, 0.12) !important;
-    border-color: rgba(251, 191, 36, 0.35) !important;
-}
-.active-rain {
-    color: #60A5FA !important;
-    background: rgba(96, 165, 250, 0.12) !important;
-    border-color: rgba(96, 165, 250, 0.35) !important;
-}
-.active-sand {
-    color: #F59E0B !important;
-    background: color-mix(in srgb, var(--color-accent) 12%, transparent) !important;
-    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent) !important;
-}
-.active-snow {
-    color: #22D3EE !important;
-    background: rgba(34, 211, 238, 0.12) !important;
-    border-color: rgba(34, 211, 238, 0.35) !important;
-}
+/* Weather and terrain, when set: each wears its own game tone (data, not
+   chrome), mixed into the theme the way a type chip is — the raw yellows and
+   cyans were 1.5:1 as words on the light themes. Sand is the Ground tone,
+   not the reward gold. */
+.active-sun      { --wx: #FBBF24; }
+.active-rain     { --wx: #60A5FA; }
+.active-sand     { --wx: #E2BF65; }
+.active-snow     { --wx: #22D3EE; }
+.active-electric { --wx: #FACC15; }
+.active-grassy   { --wx: #34D399; }
+.active-misty    { --wx: #F472B6; }
+.active-psychic  { --wx: #A78BFA; }
 
-/* terrain active states */
-.active-electric {
-    color: #FACC15 !important;
-    background: rgba(250, 204, 21, 0.12) !important;
-    border-color: rgba(250, 204, 21, 0.35) !important;
-}
-.active-grassy {
-    color: #34D399 !important;
-    background: rgba(52, 211, 153, 0.12) !important;
-    border-color: rgba(52, 211, 153, 0.35) !important;
-}
-.active-misty {
-    color: #F472B6 !important;
-    background: rgba(244, 114, 182, 0.12) !important;
-    border-color: rgba(244, 114, 182, 0.35) !important;
-}
-.active-psychic {
-    color: #A78BFA !important;
-    background: rgba(167, 139, 250, 0.12) !important;
-    border-color: rgba(167, 139, 250, 0.35) !important;
+:is(.active-sun, .active-rain, .active-sand, .active-snow,
+    .active-electric, .active-grassy, .active-misty, .active-psychic) {
+    color: color-mix(in srgb, var(--wx) 45%, var(--color-fg)) !important;
+    background: color-mix(in srgb, var(--wx) 14%, transparent) !important;
+    border-color: color-mix(in srgb, var(--wx) 40%, transparent) !important;
 }
 
 /* result card */
@@ -182,12 +161,9 @@ input[type="number"] {
     padding: var(--space-6);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    background:
-        radial-gradient(120% 120% at 0% 0%, var(--color-primary-soft), transparent 60%),
-        var(--color-surface);
-    box-shadow: var(--elevation-2);
+    background: var(--color-surface);
 }
-.dmg-result__headline { font-size: var(--text-2xl); font-weight: var(--weight-semibold); color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.dmg-result__headline { font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: var(--weight-semibold); color: var(--color-fg); font-variant-numeric: tabular-nums; }
 .dmg-result__ko { margin-top: var(--space-1); font-weight: var(--weight-semibold); }
 .dmg-result__ko--guaranteed { color: var(--color-danger); }
 .dmg-result__ko--possible { color: var(--color-warning); }
@@ -206,7 +182,8 @@ input[type="number"] {
     position: absolute;
     inset: 0 auto 0 0;
     border-radius: var(--radius-full);
-    background: linear-gradient(90deg, #FBBF24, #EF4444);
+    /* A data bar: the gradient encodes how close the roll is to a KO. */
+    background: linear-gradient(90deg, var(--color-warning), var(--color-danger));
     transition: width var(--duration-slow) var(--ease-out-expo);
 }
 .dmg-bar__min {
@@ -214,7 +191,7 @@ input[type="number"] {
     top: 0;
     bottom: 0;
     border-radius: var(--radius-full);
-    background: #EF4444;
+    background: var(--color-danger);
     opacity: 0.4;
     transition: width var(--duration-slow) var(--ease-out-expo);
 }
@@ -242,15 +219,15 @@ input[type="number"] {
 }
 .spd-row:last-child { border-bottom: none; }
 .spd-row:hover { background: var(--color-surface-raised); }
-.spd-row__rank { font-size: var(--text-xs); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.spd-row__rank { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .spd-row__sprite { width: 2rem; height: 2rem; image-rendering: pixelated; }
 .spd-row__name { font-weight: var(--weight-semibold); text-transform: capitalize; }
 .spd-row__types { display: inline-flex; gap: var(--space-1); margin-left: var(--space-2); }
 .spd-row__speed {
-    font-family: ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-weight: var(--weight-semibold);
     font-size: var(--text-md);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-variant-numeric: tabular-nums;
 }
 
@@ -300,7 +277,7 @@ input[type="number"] {
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth);
 }
-.spd-tier__name:hover { color: var(--color-primary); }
+.spd-tier__name:hover { color: var(--color-primary-text); }
 
 .spd-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 
@@ -319,7 +296,7 @@ input[type="number"] {
     white-space: nowrap;
     transition: border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
-.spd-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.spd-chip:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
 
 .spd-chip__sprite { width: 1.25rem; height: 1.25rem; image-rendering: pixelated; }
 
@@ -341,6 +318,8 @@ input[type="number"] {
 .trn-search-clear:hover { color: var(--color-fg); }
 .trn-section + .trn-section { margin-top: var(--space-8); }
 .trn-section__title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3_5); }
+/* A win: the placement in Shiny Gold, as a word (--color-accent). */
+.trn-card__place.is-top { color: var(--color-accent); font-weight: var(--weight-semibold); }
 .trn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
 .trn-card {
     display: flex;
@@ -354,11 +333,11 @@ input[type="number"] {
 }
 .trn-card:hover { border-color: var(--color-primary); }
 .trn-card--clickable { cursor: pointer; }
-.trn-card--clickable:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.trn-card--clickable:focus-visible { outline: none; box-shadow: var(--ring-focus); }
 .trn-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
 .trn-card__name { font-weight: var(--weight-semibold); line-height: 1.2; }
-.trn-card__meta { font-size: var(--text-xs); color: var(--color-muted); margin-top: var(--space-0_5); }
-.trn-card__badge { flex-shrink: 0; font-size: var(--text-2xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-caps); text-transform: uppercase; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary); }
+.trn-card__meta { font-size: var(--text-xs); color: var(--color-muted); margin-top: var(--space-0_5); font-variant-numeric: tabular-nums; }
+.trn-card__badge { flex-shrink: 0; font-size: var(--text-2xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-caps); text-transform: uppercase; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary-text); }
 .trn-card__roster { display: flex; gap: var(--space-1); flex-wrap: wrap; }
 .trn-card__mon-btn { padding: 0; border: none; background: none; cursor: pointer; border-radius: var(--radius-md); transition: transform var(--duration-fast) var(--ease-smooth); }
 .trn-card__mon-btn:hover { transform: translateY(-2px); }
@@ -468,9 +447,11 @@ input[type="number"] {
         width: 100%;
     }
 
+    /* Grow from the label's width: "Máx neutro" and "Máx positivo" were
+       squeezed into equal quarters and touched at 360px. */
     .spd-controls .segmented > .segmented__item {
-        flex: 1 1 0;
-        padding-inline: var(--space-1_5);
+        flex: 1 1 auto;
+        padding-inline: var(--space-1);
     }
 
     /* Search and generation each take a full row: as two halves of 358px the
@@ -494,11 +475,12 @@ input[type="number"] {
         max-width: none;
     }
 
+    /* A section heading is the body face (Neon Sticker type rule). */
     .trn-section__title {
-        font-family: var(--font-display);
+        font-family: var(--font-body);
         font-size: var(--text-md);
         font-weight: var(--weight-semibold);
-        letter-spacing: -0.03em;
+        letter-spacing: -0.015em;
         margin-bottom: var(--space-3);
     }
 
@@ -550,6 +532,13 @@ input[type="number"] {
     }
 }
 
+/* A group inside a bordered panel separates by its fill, at every width —
+   the panel owns the only line (never a border inside a border). Compound
+   selector: the subpanel's own `border` utility loads after this file. */
+.dmg-calc .dmg-subpanel {
+    border-color: transparent;
+}
+
 /* ============================================================
    DAMAGE CALCULATOR — phones (< lg)
    Every panel was bordered and shadowed, and every group inside it bordered
@@ -564,10 +553,6 @@ input[type="number"] {
         box-shadow: none;
     }
 
-    .dmg-calc .dmg-subpanel {
-        border-color: transparent;
-    }
-
     .dmg-calc .dmg-caps {
         font-size: var(--text-xs);
         letter-spacing: 0;
@@ -575,10 +560,10 @@ input[type="number"] {
     }
 
     .dmg-calc .dmg-caps--title {
-        font-family: var(--font-display);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         font-weight: var(--weight-semibold);
-        letter-spacing: -0.03em;
+        letter-spacing: -0.015em;
     }
 
     /* Weather and terrain: sideways rails that scroll without a painted bar

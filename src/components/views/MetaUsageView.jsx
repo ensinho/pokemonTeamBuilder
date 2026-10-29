@@ -35,7 +35,7 @@ const formatDay = (iso, pt) => {
 function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
     return (
         <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
-            <span className="w-5 shrink-0 text-center text-2xs font-bold text-muted">#{rank}</span>
+            <span className="figure w-6 shrink-0 text-center text-2xs text-muted">#{rank}</span>
             <div className="flex shrink-0 -space-x-1.5">
                 {core.ids.map((id) => (
                     <button
@@ -43,7 +43,7 @@ function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
                         type="button"
                         onClick={() => onOpenMon(id)}
                         title={pretty(core.names[core.ids.indexOf(id)])}
-                        className="rounded-full border border-border bg-surface-raised transition-transform hover:z-10 hover:-translate-y-0.5"
+                        className="relative rounded-full border border-border bg-surface-raised transition-colors hover:z-10 hover:border-primary focus-visible:z-10"
                     >
                         <MonSprite id={id} name="" className="h-9 w-9 image-pixelated" />
                     </button>
@@ -53,8 +53,8 @@ function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
                 {core.names.map(pretty).join(' · ')}
             </span>
             <div className="shrink-0 text-right">
-                <span className="block text-sm font-extrabold tabular-nums text-primary">{core.pct}%</span>
-                <span className="block text-2xs tabular-nums text-muted">{core.count.toLocaleString()} {unit}</span>
+                <span className="figure block text-sm font-semibold text-primary">{core.pct}%</span>
+                <span className="block text-2xs text-muted"><span className="figure">{core.count.toLocaleString()}</span> {unit}</span>
             </div>
         </div>
     );
@@ -399,13 +399,13 @@ export function MetaUsageView() {
                                     key={tm.ids.join('-')}
                                     type="button"
                                     onClick={() => openTeam(tm.teamId)}
-                                    className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none"
                                 >
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs font-bold text-muted">#{i + 1}</span>
+                                        <span className="figure flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs text-muted">#{i + 1}</span>
                                         <span className="text-right">
-                                            <span className="text-sm font-extrabold tabular-nums text-primary">{tm.count}</span>
-                                            <span className="ml-1 text-2xs text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · {tm.pct}%</span>
+                                            <span className="figure text-sm font-semibold text-primary">{tm.count}</span>
+                                            <span className="ml-1 text-2xs text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · <span className="figure">{tm.pct}%</span></span>
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-1.5">
@@ -443,20 +443,20 @@ export function MetaUsageView() {
                                         key={mon.id}
                                         type="button"
                                         onClick={() => openMon(mon.id)}
-                                        className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none"
                                     >
-                                        <span className="absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs font-bold text-muted">{rank}</span>
+                                        <span className="figure absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs text-muted">{rank}</span>
                                         <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
-                                        <span className="w-full truncate text-xs font-bold capitalize text-fg">{pretty(mon.name)}</span>
+                                        <span className="w-full truncate text-xs font-semibold capitalize text-fg">{pretty(mon.name)}</span>
                                         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
                                             <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(mon.pct, 3)}%` }} />
                                         </div>
-                                        <span className="meta-mon-card__pct mt-1 text-2xs font-semibold tabular-nums text-muted">
-                                            <strong className="meta-mon-card__value">{mon.pct}%</strong> {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
+                                        <span className="meta-mon-card__pct mt-1 text-2xs font-semibold text-muted">
+                                            <strong className="meta-mon-card__value figure">{mon.pct}%</strong> {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
                                         </span>
                                         {Number.isFinite(mon.winRate) && (
-                                            <span className="text-2xs font-semibold tabular-nums text-muted">
-                                                {mon.winRate}% {pt ? 'vit' : 'WR'}
+                                            <span className="text-2xs font-semibold text-muted">
+                                                <span className="figure">{mon.winRate}%</span> {pt ? 'vit' : 'WR'}
                                             </span>
                                         )}
                                     </button>

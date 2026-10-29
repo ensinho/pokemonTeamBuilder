@@ -74,7 +74,16 @@ export default {
                 warning: themeColor('--color-warning'),
                 info: themeColor('--color-info'),
             },
+            // Neon Sticker (2026-10-26): `text-primary` is Volt as *ink* — on
+            // the dark theme the fill (#7C3AFF) is only 3.4:1 as a word, so the
+            // text utility reads --color-primary-text (the fill everywhere else
+            // it is legible). bg-/border-/ring-primary keep the fill.
+            textColor: {
+                primary: themeColor('--color-primary-text'),
+            },
             fontFamily: {
+                // Neon Sticker: the heading face (page titles, h1/h2, the CTA).
+                heading: ['Unbounded', 'Space Grotesk', 'system-ui', 'sans-serif'],
                 // Main fonts
                 sans: ['Space Grotesk', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
                 // `font-display` is the structural voice (JetBrains Mono), not a

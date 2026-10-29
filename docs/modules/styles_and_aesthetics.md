@@ -205,16 +205,65 @@ mixed toward `--color-fg` — so one chip is legible on all six themes. See
 
 ## Themes
 
-Six themes defined in `src/constants/theme.js` under `THEME_META`:
+Ten themes in `src/constants/theme.js` (`THEMES` + `THEME_META`), mirrored in
+`index.css` under `:root[data-theme="..."]`. Six are free; four are rewards
+(locked in the picker until earned — `localStorage.theme` still applies them,
+which is how to test one). `applyTheme` writes each theme's colours onto
+`:root` inline, so per-theme CSS only adds what `THEMES` has no field for
+(`--color-primary-text`, `--color-primary-lip`, `--color-border-strong`).
 
-| Key | Description |
-|-----|-------------|
-| `dark` | Default. Deep zinc dark, purple primary |
-| `eclipse` | Near-black, violet/purple accent |
-| `midnight` | Navy dark, cyan primary |
-| `daybreak` | Blue-tinted light, strong blue primary |
-| `light` | Clean white, muted purple |
-| `solar` | Warm off-white, amber/gold primary |
+| Key | Mode | Description |
+|-----|------|-------------|
+| `dark` | dark | Default. **Neon Sticker** night: Void `#0C0816`, Volt `#7C3AFF` |
+| `eclipse` | dark | Near-black, soft violet |
+| `midnight` | dark | Navy, cyan |
+| `daybreak` | light | Blue-tinted daylight |
+| `light` | light | **Neon Sticker** day: lavender paper, Volt `#6A2BF0` |
+| `solar` | light | Warm paper, amber |
+| `ember` | dark | Reward — warm embers, orange |
+| `viridian` | light | Reward — forest green |
+| `aurum` | dark | Reward — gold on black |
+| `blossom` | light | Reward — fairy pink |
+
+### Neon Sticker (2026-10-26 → shipped as 1.18.0)
+
+"Calm data, loud moments." The full rule table lives in the first section of
+`.claude/skills/design-system/SKILL.md`; this is the map.
+
+- **Base layer (everywhere):** flat surfaces with a real 1px border (no sheen
+  on `dark`/`light`), one accent (`--color-primary`), canon type colours carry
+  meaning. Volt as *text* is `--color-primary-text` (Tailwind `text-primary`
+  reads it) — the fill is only 3.4:1 as a word on `dark`'s surface.
+- **Brand layer (held objects and moments only)** — tokens in `index.css`
+  "BRAND LAYER", valid in all ten themes:
+  - `--ring-logo` (ink · pink · gold) = `--ring-focus`: every `:focus-visible`,
+    the team slot being edited, the trainer's own frameless avatar.
+    `--ring-logo-inset` draws it inward for a control inside a clipping
+    container (a card with `overflow: hidden`, a scrolling strip, a tab).
+  - `--sticker` / `.sticker` / `--sticker-filter`: filled team slots, the
+    hovered or selected Pokémon card, earned badges, hero sprites.
+  - `--brand-gold` (+ `--brand-on-gold`, word = `--color-accent`): only for
+    something earned — streak, level, badges, rewards, the peak stat.
+  - `--brand-live` (+ `--brand-on-live`, word = `--brand-live-text`): only
+    for new/live — your-turn battles, pending counts, a live toast.
+  - `--spark-burst` / `.spark-host`: one per screen at most.
+- **Type:** Unbounded (`--font-heading`) for `h1`, page/dialog-level `h2`
+  (`.modal-title`, any dialog's `h2[id$="-title"]`, `h2.text-xl+`, the listed
+  view titles) and the large primary CTA (`.btn-primary.btn-lg`). Space
+  Grotesk for everything read or operated; JetBrains Mono for figures.
+- **Primary button:** Volt on a 4px lip (`--color-primary-lip`); hover deepens
+  toward the lip (`--color-primary-fill-hover`) so the label keeps AA; press
+  translates onto the lip.
+- **Motion:** `.is-peeling` on a slot the user just filled; the global
+  reduced-motion rule flattens it with everything else.
+- **Measured contrast (2026-10-29, all ten themes, browser-resolved):** fg on
+  every ground ≥ 13:1; muted ≥ 4.8:1 on surface/raised/bg; primary text ≥
+  4.6:1 on bg and ≥ 5.0:1 on surface; on-primary on primary ≥ 5.0:1 and on its
+  hover ≥ 5.5:1; gold word ≥ 5.9:1; live word ≥ 4.8:1; ink on gold 12.6:1,
+  ink on pink 5.5:1. The ring always has one layer ≥ 3:1 on the page (gold /
+  pink on dark grounds, ink on light ones). Known and accepted: the control
+  edge `--color-border-strong` is 1.3–1.9:1 (fields also differ by fill and
+  show a Volt edge on focus).
 
 ### Adding a New Token
 
@@ -345,6 +394,6 @@ The `custom-scrollbar` class in `index.css` reads `--scrollbar-track-color` and 
 
 ## Accessibility
 
-- Focus ring: Global `*:focus-visible` rule in `index.css` applies `2px solid var(--color-primary)` with `outline-offset: 2px`. Do not suppress `outline` without a replacement.
+- Focus ring: every focusable control gets `box-shadow: var(--ring-focus)` (the Neon Sticker logo ring, 6px) from the `FOCUS` block in `index.css`; Tailwind `focus-visible:ring-2` controls are mapped onto it there too. A ring a container clips is no ring: inside `overflow: hidden`/scrolling containers use `--ring-logo-inset` or give the strip a ring's width of padding (given back with a negative margin), and keep `scroll-padding` on the scrollers so a tabbed control lands clear of the header and the phone dock. Fields keep their own inset Volt edge.
 - Reduced motion: Global `@media (prefers-reduced-motion: reduce)` in `index.css` overrides all animation/transition durations to `0.001ms`. Do not add `!important` overrides that would bypass this.
 - Modals use `useModalA11y` (`src/hooks/useModalA11y.js`) for focus trap and escape-key close.

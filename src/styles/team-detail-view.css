@@ -37,7 +37,7 @@
 }
 
 .team-detail-back:hover {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     border-color: var(--color-primary);
 }
 
@@ -88,7 +88,7 @@
     gap: var(--space-1);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     background: color-mix(in srgb, var(--color-primary) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
     padding: var(--space-0_5) var(--space-2);
@@ -183,7 +183,7 @@
 }
 
 .team-detail-coverage__title--primary {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-detail-coverage__title--danger {
@@ -254,7 +254,7 @@
 }
 
 .team-detail-member__name:hover {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-detail-member__id {
@@ -350,7 +350,7 @@
 
 .team-detail-item:hover .team-detail-item__go {
     opacity: 1;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .team-detail-item__name {

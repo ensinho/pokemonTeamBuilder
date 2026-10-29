@@ -248,7 +248,7 @@ function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough,
     );
 }
 
-const MobileTeamSlot = ({ pokemon, index, onEdit }) => {
+const MobileTeamSlot = ({ pokemon, index, onEdit, peeling = false, onSettle }) => {
     const { t } = useTranslation();
     const megaStones = useMegaStones();
     const mega = pokemon ? megaFormFor(pokemon, megaStones) : null;
@@ -260,7 +260,8 @@ const MobileTeamSlot = ({ pokemon, index, onEdit }) => {
         <button
             type="button"
             onClick={() => pokemon && onEdit?.(pokemon)}
-            className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'}`}
+            className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'} ${peeling ? 'is-peeling' : ''}`}
+            onAnimationEnd={(e) => { if (pokemon && e.animationName === 'sticker-peel') onSettle?.(pokemon.instanceId); }}
             style={pokemon ? typeVars(mega ? { types: mega.types } : pokemon) : undefined}
             aria-label={pokemon ? t('builder.editAria', { name: displayName }) : t('builder.emptySlotAria', { slot: index + 1 })}
             disabled={!pokemon}
@@ -348,6 +349,12 @@ export const MobileTeamBuilderView = ({
     const [savedTeamsOpen, setSavedTeamsOpen] = React.useState(false);
     const [analysisOpen, setAnalysisOpen] = React.useState(false);
     const [actionsOpen, setActionsOpen] = React.useState(false);
+    // The peel (Neon Sticker), as on desktop: only a member added while this
+    // view is open is laid down; it settles when its animation ends.
+    const [settledSlotIds, setSettledSlotIds] = React.useState(() => new Set(currentTeam.map((p) => p.instanceId)));
+    const settleSlot = React.useCallback((id) => {
+        setSettledSlotIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+    }, []);
     // Sticky composer condenses to a 2-row header once the user scrolls past
     // the top, then re-expands near the top. Hysteresis (56/16) keeps it from
     // flickering right at the threshold. The scroll surface is the app shell's
@@ -594,6 +601,8 @@ export const MobileTeamBuilderView = ({
                                 pokemon={currentTeam[index]}
                                 index={index}
                                 onEdit={onEditTeamPokemon}
+                                peeling={Boolean(currentTeam[index]) && !settledSlotIds.has(currentTeam[index].instanceId)}
+                                onSettle={settleSlot}
                             />
                         ))}
                     </div>

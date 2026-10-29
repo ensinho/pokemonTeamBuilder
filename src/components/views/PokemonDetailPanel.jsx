@@ -27,6 +27,7 @@ import { useSharePage } from '../../hooks/useSharePage';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { MostUsedBuild } from '../MostUsedBuild';
 import { useMostUsedBuild } from '../../hooks/useMostUsedBuild';
+import { toneInk } from '../../utils/toneInk';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -213,7 +214,7 @@ export function PokemonDetailPanel({
                         <div className="rounded-xl bg-surface p-4 border border-border flex flex-col justify-between">
                             <h4 className="mb-3 text-center text-xs font-bold text-muted">{t('pokedex.baseStats')}</h4>
                             <div className="space-y-2 flex-1 flex flex-col justify-center">
-                                {selectedPokemonDetails.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
+                                {selectedPokemonDetails.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} peak={stat.base_stat === Math.max(...selectedPokemonDetails.stats.map((s) => s.base_stat))} />)}
                             </div>
                         </div>
                     </div>
@@ -520,7 +521,7 @@ export function PokemonDetailPanel({
                                                             return (
                                                                 <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface transition-colors">
                                                                     <div className="flex items-center gap-2.5 min-w-0">
-                                                                        <span className="px-2 py-0.5 rounded text-2xs font-extrabold uppercase border shrink-0 text-center tracking-[0.06em]" style={{ borderColor: `${conf.color}55`, backgroundColor: `${conf.color}18`, color: conf.color }}>{conf.label}</span>
+                                                                        <span className="px-2 py-0.5 rounded text-2xs font-extrabold uppercase border shrink-0 text-center tracking-[0.06em]" style={{ borderColor: `${conf.color}55`, backgroundColor: `${conf.color}18`, color: toneInk(conf.color) }}>{conf.label}</span>
                                                                         <span className="flex items-center gap-1.5 text-xs text-muted truncate">
                                                                             <IconComp className="w-3.5 h-3.5 text-muted shrink-0" /><span className="capitalize">{detail.method}</span>
                                                                         </span>

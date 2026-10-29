@@ -89,7 +89,7 @@
 .all-teams-view__card:hover .team-builder-icon-button:not(.team-builder-icon-button--danger):not(.team-builder-icon-button--accent) {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .all-teams-view__card:hover .team-builder-icon-button--danger {
@@ -150,7 +150,7 @@
 
 .all-teams-view__preview:focus-visible {
     outline: none;
-    box-shadow: var(--ring-primary);
+    box-shadow: var(--ring-focus);
 }
 
 /* An empty team: the six dashed cells say "empty" already; the sentence sits

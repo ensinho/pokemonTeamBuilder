@@ -192,7 +192,7 @@
     gap: var(--space-1);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     text-decoration: none;
 }
 
@@ -271,8 +271,10 @@
         margin-left: 0;
     }
 
+    /* Grow from each label's own width: three equal thirds of 328px could
+       not hold "Adivinhados 0", and the PT labels ran into each other. */
     .category-guesser .generation-quiz__grid-filters > .segmented__item {
-        flex: 1 1 0;
+        flex: 1 1 auto;
         padding: 0 var(--space-1);
     }
 
@@ -315,5 +317,16 @@
     /* The reroll keeps its icon and its aria-label; the title gets the room. */
     .category-guesser__action-label {
         display: none;
+    }
+
+    /* The filter's icons repeat its words; on the narrowest phones the
+       words and counts get the room. The category title steps down once
+       more — Unbounded is wide and a PT title ran to four lines. */
+    .category-guesser .generation-quiz__grid-filters > .segmented__item svg {
+        display: none;
+    }
+
+    .category-guesser__title {
+        font-size: var(--text-md);
     }
 }

@@ -53,7 +53,7 @@
 .tp__partner:hover,
 .tp__team:hover { background: var(--color-surface-hover); }
 .tp__partner:focus-visible,
-.tp__team:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.tp__team:focus-visible { outline: none; box-shadow: var(--ring-focus); }
 
 .tp__sprite { width: 2.5rem; height: 2.5rem; flex-shrink: 0; }
 .tp__name {
@@ -73,7 +73,7 @@
 .tp__event { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .tp__event .tp__count { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tp__go { width: 1rem; height: 1rem; flex-shrink: 0; color: var(--color-muted); }
-.tp__team:hover .tp__go { color: var(--color-primary); }
+.tp__team:hover .tp__go { color: var(--color-primary-text); }
 
 .tp__links { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 

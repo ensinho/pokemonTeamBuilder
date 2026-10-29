@@ -3,6 +3,9 @@ import '../../styles/tools-views.css';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { ShowdownIcon, ShareIcon } from '../icons';
 
+// A win is earned, so it is the one placement that wears Shiny Gold.
+const isTopPlacement = (placement = '') => /^(champion|winner|1st|1º|campe)/i.test(String(placement).trim());
+
 /**
  * One tournament team: name, event and placement, the six (each opens its
  * Meta page), and Import. Shared by the Tournaments list and the best-teams
@@ -12,6 +15,8 @@ export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt })
     const roster = Array.isArray(team.pokemons) ? team.pokemons.slice(0, 6) : [];
     const openDetail = () => { if (team.id) navigate(`/tournaments/team/${team.id}`, { state: linkState }); };
     const stop = (e) => e.stopPropagation();
+    const metaParts = [team.tournament, team.placement, team.date].filter(Boolean);
+    const topPlacement = isTopPlacement(team.placement);
     return (
         <article
             className="trn-card trn-card--clickable"
@@ -25,7 +30,14 @@ export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt })
                 <div>
                     <div className="trn-card__name">{team.title || team.player || 'Tournament Team'}</div>
                     <div className="trn-card__meta">
-                        {[team.tournament, team.placement, team.date].filter(Boolean).join(' · ')}
+                        {metaParts.map((part, i) => (
+                            <React.Fragment key={`${i}-${part}`}>
+                                {i > 0 && ' · '}
+                                {topPlacement && part === team.placement
+                                    ? <span className="trn-card__place is-top">{part}</span>
+                                    : part}
+                            </React.Fragment>
+                        ))}
                     </div>
                 </div>
                 {team.format && <span className="trn-card__badge">{team.format}</span>}

@@ -915,18 +915,18 @@ export default function PokePuzzleView() {
             const ctx = canvas.getContext('2d');
 
             // 1. Background (sleek deep purple)
-            ctx.fillStyle = '#0f0b21'; // Deep midnight purple
+            ctx.fillStyle = '#0C0816'; // Neon Sticker void (the `dark` theme's ground)
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Draw a subtle radial glow in the center matching target type
             const grad = ctx.createRadialGradient(200, 240, 20, 200, 240, 250);
-            grad.addColorStop(0, '#7c3aed40'); // violet-600 with 25% opacity
+            grad.addColorStop(0, '#7C3AFF40'); // Volt at 25%
             grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Draw purple border
-            ctx.strokeStyle = '#7c3aed';
+            ctx.strokeStyle = '#7C3AFF';
             ctx.lineWidth = 4;
             ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
@@ -936,7 +936,7 @@ export default function PokePuzzleView() {
             ctx.textAlign = 'center';
             ctx.fillText('POKÉPUZZLE', 200, 50);
 
-            ctx.fillStyle = '#c084fc'; // Light purple subtitle
+            ctx.fillStyle = '#A47BFF'; // Volt as ink
             ctx.font = '14px sans-serif';
             const modeText = mode === 'daily'
                 ? (language === 'pt' ? 'Desafio Diário' : 'Daily Challenge')
@@ -980,11 +980,11 @@ export default function PokePuzzleView() {
 
             if (logoImg) {
                 // Draw a nice container box background for logo (sleek indigo/purple theme)
-                ctx.fillStyle = '#1e1b4b'; // Deep indigo/purple
+                ctx.fillStyle = '#161024'; // the dark theme's surface
                 ctx.beginPath();
                 ctx.roundRect(125, 100, 150, 150, 20);
                 ctx.fill();
-                ctx.strokeStyle = '#4c1d95'; // Dark violet border
+                ctx.strokeStyle = '#2E2448'; // the dark theme's border
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
@@ -998,7 +998,7 @@ export default function PokePuzzleView() {
             ctx.fillText(language === 'pt' ? 'Quem é esse Pokémon?' : "Who's That Pokémon?", 200, 290);
 
             // Result Message
-            ctx.fillStyle = '#c084fc';
+            ctx.fillStyle = '#A47BFF';
             ctx.font = '14px sans-serif';
             const msg = gameStatus === 'WON'
                 ? (language === 'pt' ? `Acertou em ${guesses.length} tentativas!` : `Guessed correctly in ${guesses.length} attempts!`)
@@ -1062,11 +1062,11 @@ export default function PokePuzzleView() {
             }
 
             ctx.textAlign = 'left';
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#B9A7E6';
             ctx.font = 'bold 11px sans-serif';
             ctx.fillText(language === 'pt' ? 'ESCANEIE PARA JOGAR' : 'SCAN TO PLAY', 150, footerY + 45);
 
-            ctx.fillStyle = '#a78bfa';
+            ctx.fillStyle = '#A47BFF';
             ctx.font = 'bold 14px sans-serif';
             const displayUrl = (host + getRuntimeBaseURL() + 'pokepuzzle').replace(/\/{2,}/g, '/');
             ctx.fillText(displayUrl, 150, footerY + 65);
@@ -1432,7 +1432,7 @@ export default function PokePuzzleView() {
                         {gameStatus !== 'IN_PROGRESS' && (
                             <div className="pokepuzzle-game-sidebar">
                                 <section ref={resultRef} className="pokepuzzle-result-card" aria-labelledby="pokepuzzle-result-title">
-                                    <div className={`pokepuzzle-result-badge ${isWon ? 'is-win' : 'is-lose'}`} aria-hidden="true">
+                                    <div className={`pokepuzzle-result-badge ${isWon ? 'is-win spark-host' : 'is-lose'}`} aria-hidden="true">
                                         {isWon ? <Award /> : <Frown />}
                                     </div>
 

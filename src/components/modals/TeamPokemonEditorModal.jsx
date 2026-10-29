@@ -29,6 +29,7 @@ import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
+import { toneInk } from '../../utils/toneInk';
 
 // Slugify a display name ("Rock Slide" → "rock-slide") to match the slugs used
 // by the move/ability selects and the Showdown export.
@@ -583,7 +584,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     // let me set precise numbers".
                                     return (
                                         <div key={statName} className="flex items-center gap-3">
-                                            <span className="w-10 shrink-0 text-xs font-bold" style={{ color: statColor }}>{STAT_ABBR[statName]}</span>
+                                            <span className="w-10 shrink-0 text-xs font-bold" style={{ color: toneInk(statColor) }}>{STAT_ABBR[statName]}</span>
                                             <input
                                                 type="range"
                                                 min="0"

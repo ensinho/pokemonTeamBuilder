@@ -211,6 +211,16 @@ export function TeamBuilderView({
         setSearchInput('');
     }, [handleAddPokemonToTeam, setSearchInput]);
     const [dragIndex, setDragIndex] = React.useState(null);
+    // The peel (Neon Sticker): a member that arrives while the builder is open
+    // is laid down like a sticker, once. Members present when the view mounted
+    // start settled, so nothing peels on load; a slot settles when its
+    // animation ends, so a later reorder (a DOM move) never replays it.
+    const [settledSlotIds, setSettledSlotIds] = React.useState(() => new Set(currentTeam.map((p) => p.instanceId)));
+    const settleSlot = React.useCallback((id) => {
+        setSettledSlotIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+    }, []);
+    // The member open in the editor wears the logo ring on its slot.
+    const editingInstanceId = useActiveTeamStore((s) => s.editingTeamMember?.instanceId ?? null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     // The guide opens on request only. It used to open itself on the first
@@ -680,7 +690,8 @@ export function TeamBuilderView({
                                 return (
                                 <div
                                     key={pokemon.instanceId}
-                                    className={`team-builder-slot group ${dragIndex === idx ? 'is-dragging' : ''}`}
+                                    className={`team-builder-slot group ${dragIndex === idx ? 'is-dragging' : ''} ${editingInstanceId === pokemon.instanceId ? 'is-editing' : ''} ${settledSlotIds.has(pokemon.instanceId) ? '' : 'is-peeling'}`}
+                                    onAnimationEnd={(e) => { if (e.animationName === 'sticker-peel') settleSlot(pokemon.instanceId); }}
                                     draggable
                                     tabIndex={0}
                                     role="button"

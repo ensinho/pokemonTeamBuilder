@@ -235,17 +235,20 @@
 }
 
 /* Flip Animations for Tile Checks */
+/* A letter on a state fill takes the surface as ink: --color-on-primary is
+   white on `dark`, which on its mint and amber was 1.9 and 1.7:1; the
+   surface clears 5:1 on both fills in all ten themes. */
 .pokepuzzle-tile.is-correct {
     background: var(--color-success);
     border-color: var(--color-success);
-    color: var(--color-on-primary);
+    color: var(--color-surface);
     animation: tile-flip var(--duration-slow) var(--ease-smooth) forwards;
 }
 
 .pokepuzzle-tile.is-present {
     background: var(--color-warning);
     border-color: var(--color-warning);
-    color: var(--color-on-primary);
+    color: var(--color-surface);
     animation: tile-flip var(--duration-slow) var(--ease-smooth) forwards;
 }
 
@@ -451,12 +454,12 @@
 
 .pokepuzzle-key.is-correct {
     background: var(--color-success);
-    color: var(--color-on-primary);
+    color: var(--color-surface);
 }
 
 .pokepuzzle-key.is-present {
     background: var(--color-warning);
-    color: var(--color-on-primary);
+    color: var(--color-surface);
 }
 
 /* A letter ruled out: no fill, muted ink — one de-emphasis, not two. */
@@ -495,9 +498,12 @@
     height: 1.5rem;
 }
 
+/* A win is earned: the medal is Shiny Gold, held like a sticker, with the
+   screen's one spark burst behind it (.spark-host in the view). */
 .pokepuzzle-result-badge.is-win {
-    background: color-mix(in srgb, var(--color-success) 15%, transparent);
-    color: var(--color-success);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    box-shadow: var(--sticker);
 }
 
 .pokepuzzle-result-badge.is-lose {
@@ -512,7 +518,7 @@
     margin: 0;
 }
 
-.pokepuzzle-result-title.is-win { color: var(--color-success); }
+.pokepuzzle-result-title.is-win { color: var(--color-fg); }
 .pokepuzzle-result-title.is-lose { color: var(--color-danger); }
 
 .pokepuzzle-result-sprite-box {
@@ -662,7 +668,7 @@
     font-family: var(--font-mono);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     letter-spacing: 0.05em;
     font-variant-numeric: tabular-nums;
 }
@@ -720,7 +726,7 @@
     width: 1.1rem;
     height: 1.1rem;
     flex-shrink: 0;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .pokepuzzle-history-exit-btn {
@@ -729,7 +735,7 @@
     justify-content: center;
     background: var(--color-surface);
     border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
     padding: var(--space-1_5) var(--space-3);
@@ -749,18 +755,9 @@
     scale: var(--press-scale);
 }
 
-/* Visual Theme Overrides for Historical/Archived puzzles */
-.pokepuzzle-view.is-archive-mode {
-    --color-primary: var(--color-accent);
-    --color-primary-soft: color-mix(in srgb, var(--color-accent) 12%, transparent);
-    --ring-primary: inset 0 0 0 1px var(--color-accent);
-}
-
-/* A past day: the daily mode's thumb label takes the accent, like the rest of
-   the archive chrome, so "you are not playing today's" stays legible. */
-.pokepuzzle-view.is-archive-mode .pokepuzzle-tabs .segmented__item[aria-selected='true'] {
-    color: var(--color-accent);
-}
+/* A past day used to repaint the whole view in the accent gold. Gold is for
+   earned things only (Neon Sticker), so the archive keeps the theme's Volt;
+   the history banner above the board is what says "not today's". */
 
 /* Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {

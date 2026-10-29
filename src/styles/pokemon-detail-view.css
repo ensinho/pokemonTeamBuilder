@@ -20,7 +20,7 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
-.pdv__back:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.pdv__back:hover { color: var(--color-primary-text); border-color: var(--color-primary); }
 
 /* Type-tinted glow behind the profile artwork (--type-glow set inline). */
 .pdv__glow {

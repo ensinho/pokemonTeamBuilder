@@ -9,7 +9,7 @@ import { normalizeUiScale } from '../utils/uiScale';
 // ============================================================
 
 // Bump this when the patch-notes screen has new content to surface.
-export const PATCH_NOTES_VERSION = '1.17.0';
+export const PATCH_NOTES_VERSION = '1.18.0';
 // Local, not hotlinked: the old pixilart URL answers 403 / NotSameOrigin, so
 // every empty slot and every sprite fallback rendered a broken-image glyph
 // (2026-10-06). A neutral grey reads on all six themes; callers dim it.
@@ -18,19 +18,22 @@ export const POKEBALL_PLACEHOLDER_URL = pokeballPlaceholderUrl;
 // JS-side mirror of the CSS variables. Components that still
 // pass a `colors` prop read from here.
 export const THEMES = {
+    // Neon Sticker (2026-10-26): the wordmark's night — Void ground, Volt
+    // primary, Shiny Gold as the "earned" accent. index.css adds the brand
+    // layer (ink, live pink, the logo ring, the sticker) on top.
     dark: {
-        primary: '#8b7cee',
-        primarySoft: 'rgba(139, 124, 238, 0.14)',
-        onPrimary: '#09090b',
-        accent: '#FBBF24',
-        background: '#09090b',
-        card: '#18181c',
-        cardLight: '#212127',
-        text: '#fafafa',
-        textMuted: '#a1a1aa',
-        border: '#232329',
-        success: '#34D399',
-        danger: '#F87171',
+        primary: '#7C3AFF',
+        primarySoft: 'rgba(124, 58, 255, 0.16)',
+        onPrimary: '#FFFFFF',
+        accent: '#FFD23F',
+        background: '#0C0816',
+        card: '#161024',
+        cardLight: '#20173A',
+        text: '#F4F1FA',
+        textMuted: '#B9A7E6',
+        border: '#2E2448',
+        success: '#2DD4BF',
+        danger: '#FF5C61',
         warning: '#FBBF24',
         info: '#60A5FA',
     },
@@ -38,7 +41,7 @@ export const THEMES = {
         primary: '#a78bfa',
         primarySoft: 'rgba(167, 139, 250, 0.12)',
         onPrimary: '#050505',
-        accent: '#FBBF24',
+        accent: '#FFD23F',
         background: '#050505',
         card: '#141414',
         cardLight: '#1e1e1e',
@@ -51,16 +54,16 @@ export const THEMES = {
         info: '#60A5FA',
     },
     light: {
-        primary: '#6353b3',
-        primarySoft: 'rgba(99, 83, 179, 0.1)',
+        primary: '#6A2BF0',
+        primarySoft: 'rgba(106, 43, 240, 0.1)',
         onPrimary: '#ffffff',
-        accent: '#B45309',
-        background: '#f2f2f3',
+        accent: '#8A5A00',
+        background: '#F7F5FC',
         card: '#FFFFFF',
-        cardLight: '#f6f6f7',
-        text: '#09090b',
-        textMuted: '#68686f',
-        border: '#f7f7f7',
+        cardLight: '#F1ECFB',
+        text: '#170F2B',
+        textMuted: '#5B4F78',
+        border: '#E4DCF5',
         success: '#047857',
         danger: '#B91C1C',
         warning: '#B45309',
@@ -70,7 +73,7 @@ export const THEMES = {
         primary: '#2563EB',
         primarySoft: 'rgba(37, 99, 235, 0.1)',
         onPrimary: '#ffffff',
-        accent: '#B45309',
+        accent: '#8A5A00',
         background: '#eef2fb',
         card: '#FFFFFF',
         cardLight: '#f4f7fd',
@@ -86,7 +89,7 @@ export const THEMES = {
         primary: '#38BDF8',
         primarySoft: 'rgba(56, 189, 248, 0.1)',
         onPrimary: '#0a0f1a',
-        accent: '#FBBF24',
+        accent: '#FFD23F',
         background: '#0a0f1a',
         card: '#151f38',
         cardLight: '#1d2a45',
@@ -102,7 +105,7 @@ export const THEMES = {
         primary: '#9a5f07',
         primarySoft: 'rgba(154, 95, 7, 0.1)',
         onPrimary: '#ffffff',
-        accent: '#B45309',
+        accent: '#8A5A00',
         background: '#f5f2e2',
         card: '#FFFFFF',
         cardLight: '#fbf9ef',
@@ -120,7 +123,7 @@ export const THEMES = {
         primary: '#fb7a3c',
         primarySoft: 'rgba(251, 122, 60, 0.14)',
         onPrimary: '#0c0807',
-        accent: '#FBBF24',
+        accent: '#FFD23F',
         background: '#0c0807',
         card: '#1a1310',
         cardLight: '#241a16',
@@ -136,7 +139,7 @@ export const THEMES = {
         primary: '#15803d',
         primarySoft: 'rgba(21, 128, 61, 0.1)',
         onPrimary: '#ffffff',
-        accent: '#B45309',
+        accent: '#8A5A00',
         background: '#eef4ef',
         card: '#FFFFFF',
         cardLight: '#f3f8f4',
@@ -168,7 +171,7 @@ export const THEMES = {
         primary: '#be185d',
         primarySoft: 'rgba(190, 24, 93, 0.1)',
         onPrimary: '#ffffff',
-        accent: '#B45309',
+        accent: '#8A5A00',
         background: '#fbf0f4',
         card: '#FFFFFF',
         cardLight: '#fdf5f8',
@@ -187,11 +190,11 @@ export const THEMES = {
 // `isThemeUnlocked` (store/useRewardsStore.js) before offering one.
 // `mode` groups themes as dark vs light so the picker can label them separately.
 export const THEME_META = [
-    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#8b7cee', mode: 'dark' },
+    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#7C3AFF', mode: 'dark' },
     { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6', mode: 'dark' },
     { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8', mode: 'dark' },
     { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB', mode: 'light' },
-    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3', mode: 'light' },
+    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6A2BF0', mode: 'light' },
     { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04', mode: 'light' },
     { id: 'ember', label: 'Ember', hint: 'Warm embers, Charizard nights', swatch: '#f97316', mode: 'dark', reward: true },
     { id: 'viridian', label: 'Viridian', hint: 'Forest-green daylight', swatch: '#16a34a', mode: 'light', reward: true },

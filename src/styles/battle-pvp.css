@@ -21,12 +21,14 @@
     white-space: nowrap;
 }
 
+/* Unread chat is new: Live Pink with the brand ink. */
 .pvp-chip__count {
     min-width: 1.125rem;
     padding-inline: var(--space-1);
     border-radius: var(--radius-full);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    background: var(--brand-live);
+    color: var(--brand-on-live);
+    font-family: var(--font-mono);
     font-size: 0.7rem;
     line-height: 1.125rem;
     text-align: center;

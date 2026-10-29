@@ -5,6 +5,52 @@ description: Enforce the strict spacing grid, token vocabulary, restraint rules 
 
 # Design System — calm structure, living material
 
+## This branch: "Neon Sticker" — calm data, loud moments (2026-10-26)
+
+Read this first; everything below still holds, with these overrides. The
+theme takes the graffiti wordmark's own language (purple letters, an ink
+outline, then magenta, then yellow) and splits the app into two layers.
+
+**Base layer — calm, data-first (everywhere).** Flat surfaces with a real 1px
+border (no sheen on `dark`/`light`), one accent (`--color-primary`, Volt
+`#7C3AFF` on `dark`, `#6A2BF0` on `light`), canon type colours carry meaning.
+Volt as a *word* is `--color-primary-text` (`text-primary` in Tailwind reads it)
+— the fill is only 3.4:1 as text on the dark surface. The page's dots are Volt
+at low alpha. No amber in chrome.
+
+**Brand layer — only on objects you hold and on moments.** Tokens in
+`index.css` → "BRAND LAYER"; they exist and read in all ten themes.
+
+| Mark | Token / class | Allowed on | Never on |
+|---|---|---|---|
+| Logo ring (ink · pink · gold) | `--ring-logo` (= `--ring-focus`) | `:focus-visible`, the team slot being edited (`.team-builder-slot.is-editing`), the trainer's own avatar on Profile with no frame | hover; lists of other trainers |
+| Sticker (3px inset edge — fg on dark, ink on light — + hard 4px drop) | `--sticker`, `.sticker`; `--sticker-filter` for a transparent sprite/emblem | filled team slots, the hovered/selected Pokémon card, the landing demo's picked members, earned badges/emblems, landing hero sprites, a full empty state's sprite | containers, panels, tables, rows, chrome |
+| Spark burst | `--spark-burst` (clip-path), `.spark-host` (+ `--spark-color`) | ONE per screen: behind the landing hero lead (its type colour), behind a reward/badge emblem (gold) | anything repeated |
+| Shiny Gold `#FFD23F` | `--brand-gold` fill + `--brand-on-gold` ink; as a word `--color-accent`; `.badge--gold` | something EARNED: streak, level, reward line, journey badge, the peak stat (`StatBar peak`), a favourite, the shiny sparkle | chrome, beside a type chip |
+| Live Pink `#FF3D9A` | `--brand-live` fill + `--brand-on-live` ink; as a word `--brand-live-text` (`#D6246F` on light); `.live-dot`, `.badge--live` | NEW / LIVE: your-turn battles, pending counts, today's open puzzle, a live toast (`showToast(…, { live: true })`), the "new" count | chrome, beside a type chip |
+
+- **Primary button** (`.btn-primary`): Volt on a 4px lip (`--color-primary-lip`);
+  a press translates 3px onto the lip (no scale). `.btn-primary.btn-lg` (the
+  primary CTA) speaks in Unbounded. Secondary = raised fill + control edge;
+  ghost = no chrome until hover.
+- **Segmented**: pill track, Volt thumb (still the anchor-positioned traveller),
+  on-primary label. **Tabs**: a 3px Volt underline. **Dock**: the active tab is
+  a Volt lozenge.
+- **Stat bars**: 8px, Volt; the peak stat gold.
+- **Type**: three families. `--font-heading` Unbounded 700 for every `h1`, the
+  page/dialog-level `h2`s (`.modal-title`, `.landing-section-title`,
+  `.cozy-hero__title`, `.pdm__name`, `.auth-dialog__title`, any `h2.text-xl+`),
+  `.text-hero/-display/-title`, a full empty state's title and the primary CTA
+  — sentence case, `-0.01…-0.02em`. Section headings, `h3`–`h6`, nav, tabs and
+  labels: Space Grotesk. Figures, ids, eyebrows: JetBrains Mono
+  (`--font-display` / `--font-mono` are still the mono readout voice).
+  Unbounded is wider than the mono it replaced — re-check any fitted headline.
+- **Motion**: 150ms for data, the glide spring for selection, and the *peel* —
+  `.is-peeling` (rotate −3° → 0 on the pop spring) on a team slot that was
+  filled while the builder is open; never on load, settles on `animationend`.
+- **Untouched**: `.ds-screen` and the rest of the game exception.
+
+
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
 few values, used everywhere, landing on a grid. Every rule below exists because
 breaking it produced a UI that read as *mole, solto e desconexo* (soft, loose,

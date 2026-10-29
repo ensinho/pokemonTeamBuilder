@@ -113,6 +113,7 @@ export function useBattleNotifications() {
         if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
             showToast(title, 'info', {
                 description: body,
+                live: true,
                 duration: 10000,
                 actions: [{ label: t('battle.notifyOpen'), onClick: () => navigate(url) }],
             });

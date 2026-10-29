@@ -48,7 +48,7 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
-.edv-back:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.edv-back:hover { color: var(--color-primary-text); border-color: var(--color-primary); }
 
 /* Header card */
 .edv-header {
@@ -57,22 +57,31 @@
     border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
+/* The eyebrow is the readout voice (Neon Sticker: figures, ids, eyebrows). */
 .edv-kicker {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
     margin-bottom: var(--space-1_5);
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-medium);
+    letter-spacing: -0.01em;
     color: var(--color-muted);
 }
+/* The page title: Unbounded at its one weight (the class outranks the h1
+   rule, so the weight is restated here), and allowed to break — the face is
+   wide, and "Fire type: weaknesses & strengths" ran past 390px. */
 .edv-title {
     margin: 0;
+    font-family: var(--font-heading);
     font-size: var(--text-2xl);
-    font-weight: var(--weight-semibold);
-    line-height: 1.2;
+    font-weight: var(--weight-heading);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
     text-transform: capitalize;
+    overflow-wrap: break-word;
     color: var(--color-fg);
 }
 .edv-lead {
@@ -191,11 +200,6 @@
         border-color: transparent;
     }
 
-    .edv-stat__value {
-        font-family: var(--font-display);
-        font-weight: var(--weight-semibold);
-    }
-
     /* The utility-built pages: the shell owns the gutter (they added their own
        on top), and their rounded bordered boxes are cards like the ones above —
        the fill carries them. Controls keep their edge: the format picker
@@ -213,12 +217,13 @@
         box-shadow: none;
     }
 
-    /* Section headings set in tracked caps become the page's heading voice. */
+    /* Section headings set in tracked caps become a section heading: the
+       body face (Neon Sticker type rule), not caps signage. */
     .edv-page h2.uppercase {
-        font-family: var(--font-display);
+        font-family: var(--font-body);
         font-size: var(--text-md);
         font-weight: var(--weight-semibold);
-        letter-spacing: -0.03em;
+        letter-spacing: -0.015em;
         text-transform: none;
         color: var(--color-fg);
     }

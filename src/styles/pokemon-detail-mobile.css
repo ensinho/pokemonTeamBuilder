@@ -561,7 +561,7 @@
     flex: 0 0 auto;
 }
 
-.pdm-encounter__meta b { color: var(--color-primary); }
+.pdm-encounter__meta b { color: var(--color-primary-text); }
 
 /* ── Sprites ───────────────────────────────────────────────── */
 

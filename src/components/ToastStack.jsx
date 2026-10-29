@@ -126,7 +126,7 @@ function Toast({ toast, onDismiss, onSettle, onHold, onRelease, closeLabel }) {
             role={toast.severity === 'error' ? 'alert' : 'status'}
             aria-live={toast.severity === 'error' ? 'assertive' : 'polite'}
         >
-            <div className={`toast toast--${toast.severity}`} {...swipe}>
+            <div className={`toast toast--${toast.severity} ${toast.live ? 'toast--live' : ''}`} {...swipe}>
                 <span className="toast__icon" aria-hidden="true">
                     {toast.spriteUrl
                         ? <img src={toast.spriteUrl} alt="" className="toast__sprite" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -134,7 +134,7 @@ function Toast({ toast, onDismiss, onSettle, onHold, onRelease, closeLabel }) {
                 </span>
 
                 <div className="toast__body">
-                    <p className="toast__title">{toast.title}</p>
+                    <p className="toast__title">{toast.live && <span className="live-dot toast__live" aria-hidden="true" />}{toast.title}</p>
                     {toast.description && <p className="toast__desc">{toast.description}</p>}
 
                     {toast.actions.length > 0 && (

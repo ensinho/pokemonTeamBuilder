@@ -492,7 +492,7 @@
     color: var(--color-muted);
 }
 
-.profile-theme-card.is-selected .profile-theme-card__icon { color: var(--color-primary); }
+.profile-theme-card.is-selected .profile-theme-card__icon { color: var(--color-primary-text); }
 
 /* The page-sized stepper: a full control height rather than the popover's
    1.5rem, since here it is a setting of its own and a thumb's target. */
@@ -538,7 +538,7 @@
 .profile-shortcut__keys.is-recording {
     border-color: var(--color-primary);
     box-shadow: var(--ring-primary);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 @media (hover: none) and (pointer: coarse) {

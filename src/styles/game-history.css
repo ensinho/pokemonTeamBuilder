@@ -90,9 +90,10 @@
     color: color-mix(in srgb, var(--color-success) 55%, var(--color-fg));
 }
 
+/* Unfinished is a state, not a warning: the view's one accent, not amber. */
 .game-history__badge.is-progress {
-    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
-    color: color-mix(in srgb, var(--color-warning) 55%, var(--color-fg));
+    background: var(--color-primary-soft);
+    color: var(--color-primary-text);
 }
 
 /* A secondary button sits on the row's raised fill: lift it to the surface,

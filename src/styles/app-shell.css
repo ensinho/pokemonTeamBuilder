@@ -275,8 +275,26 @@
 .app-shell__brand-wordmark {
     display: block;
     width: 100%;
-    max-width: 9rem;
+    max-width: 10.5rem;
     height: auto;
+}
+
+/* The wordmark is the way home, as the icon was. A bare button so it is
+   reachable by keyboard; it adds no box of its own. */
+.app-shell__brand-home {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+/* Alone in the band (no icon beside it), the wordmark runs the rail's full
+   width — ~2.45rem tall at 10.5rem — so the band gives it one step more room
+   top and bottom than the header's 0.75rem. */
+.app-shell__brand:not(.is-collapsed) {
+    padding-block: var(--space-2);
 }
 
 /* Quiet at rest, present on hover. It is chrome for the chrome — it should never
@@ -314,6 +332,17 @@
 .app-shell__brand:hover .app-shell__collapse-toggle,
 .app-shell__collapse-toggle:focus-visible {
     opacity: 1;
+}
+
+/* Without a hovering pointer (a touch laptop, a tablet wide enough for the
+   rail) a hover-only control would never appear, so the rail could not be
+   collapsed. There it stands in flow beside a slightly narrower wordmark. */
+@media (hover: none) {
+    .app-shell__brand:not(.is-collapsed) .app-shell__collapse-toggle {
+        position: static;
+        translate: none;
+        opacity: 1;
+    }
 }
 
 /* On the icon rail it is the only control in the band, so it always shows —
@@ -626,9 +655,11 @@
 
 /* Active is a fill and nothing else — no accent bar, no weight bump, no border.
    The row is already at foreground colour, so the fill is the whole signal, and
-   one fill is enough for a list where exactly one item is ever selected. */
+   one fill is enough for a list where exactly one item is ever selected.
+   Neon Sticker: the fill is a breath of Volt and the glyph takes the Volt ink,
+   so "you are here" is the rail's one accent. */
 .app-shell__nav-link.is-active {
-    background: var(--color-surface-active);
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav,
@@ -675,9 +706,12 @@
 }
 
 .app-shell__nav-link:hover .app-shell__nav-icon,
-.app-shell__nav-link.is-active .app-shell__nav-icon,
 .app-shell__account-button:hover .app-shell__nav-icon {
     color: var(--color-fg);
+}
+
+.app-shell__nav-link.is-active .app-shell__nav-icon {
+    color: var(--color-primary-text);
 }
 
 /* Pending-count badge on a nav entry (e.g. incoming friend requests). */
@@ -690,8 +724,11 @@
     margin-left: auto;
     padding: 0 var(--space-1);
     border-radius: var(--radius-full);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    /* A count of things waiting on you (friend requests, your-turn battles):
+       live, so Live Pink with ink. */
+    background: var(--brand-live);
+    color: var(--brand-on-live);
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
@@ -706,7 +743,7 @@
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
-    background: var(--color-primary);
+    background: var(--brand-live);
     border: 1.5px solid var(--color-surface);
 }
 
@@ -883,7 +920,7 @@
 .app-shell__account-menu-trigger.is-open {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .app-shell__account-menu-trigger.is-open svg {
@@ -1169,7 +1206,7 @@
     justify-content: center;
     border-radius: var(--radius-md);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 .app-shell__account-menu-item-icon svg {
@@ -1282,7 +1319,7 @@
 }
 
 .app-shell__account-theme-group-tag--light {
-    color: var(--color-accent);
+    color: var(--color-fg-secondary);
 }
 
 .app-shell__account-theme-group-icon {
@@ -1316,7 +1353,7 @@
 .app-shell__account-header-trigger:hover svg,
 .app-shell__account-header-trigger.is-open svg {
     transform: rotate(45deg);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Mobile drawer account card acting as a direct link to the profile page */
@@ -1351,7 +1388,7 @@
 
 .app-shell__account-summary-block.is-shortcut:hover .app-shell__account-summary-chevron {
     transform: translateX(2px);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* One-line rationale under a settings row — used where the setting's name isn't
@@ -1391,6 +1428,11 @@
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
+    /* A control tabbed into view stops a ring's width clear of the sticky
+       header and of the bottom edge, its focus ring whole (phones add the
+       dock below). */
+    scroll-padding-top: calc(var(--app-shell-top-band-height) + var(--space-2));
+    scroll-padding-bottom: var(--space-2);
     -webkit-overflow-scrolling: touch;
     /* `none`, not `contain`. `contain` only stops the scroll chaining to the
        document; the scroller still rubber-bands on iOS, and on a phone that
@@ -1646,7 +1688,7 @@
 /* Liked: the one state worth marking, in the heart and the count only. */
 .app-shell__nav-link.is-liked .app-shell__nav-icon,
 .app-shell__nav-link.is-liked .app-shell__nav-trailing {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 }
 
 /* Credit line closing the section: quiet text on the row inset, the two links
@@ -1884,16 +1926,24 @@
 
 .empty-state__title {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-heading);
     font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-heading);
     line-height: var(--leading-snug);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     color: var(--color-fg);
 }
 
 .empty-state.is-compact .empty-state__title {
+    font-family: var(--font-body);
+    font-weight: var(--weight-semibold);
     font-size: var(--text-base);
+}
+
+/* A full empty state is a moment (brand layer): its own sprite is a sticker. */
+.empty-state:not(.is-compact) img.empty-state__illustration {
+    opacity: 1;
+    filter: var(--sticker-filter);
 }
 
 .empty-state__message {
@@ -1996,6 +2046,14 @@
             + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
             + var(--space-4)
         );
+        /* Keyboard focus is never hidden behind the floating dock (WCAG
+           2.4.11): a control tabbed to near the bottom scrolls up past it.
+           Same sum as the reservation above. */
+        scroll-padding-bottom: calc(
+            var(--app-shell-tab-height) + var(--space-1_5) * 2
+            + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+            + var(--space-2)
+        );
     }
 
     .app-shell__body.is-mobile-detail {
@@ -2024,7 +2082,10 @@
     gap: var(--space-0_5);
     min-width: 0;
     min-height: var(--app-shell-tab-height);
-    padding: var(--space-0_5) var(--space-1);
+    /* Inline padding is a hairline: the lozenge is the whole cell either way,
+       and at 360px the label needs every pixel — "Construtor" ellipsed to
+       "Constr…" with a 4px gutter on each side. */
+    padding: var(--space-0_5) var(--space-0_5);
     border: none;
     /* Concentric with the dock: a pill inside a pill. */
     border-radius: var(--radius-full);
@@ -2045,12 +2106,13 @@
     scale: 0.9;
 }
 
-/* The indicator is the whole cell, a tinted lozenge under icon and label — the
-   current tab says where you are in shape as well as colour (WCAG 1.4.1). Tinted,
-   never filled: the dock's one accent stays quiet. */
+/* The indicator is the whole cell, a lozenge under icon and label — the
+   current tab says where you are in shape as well as colour (WCAG 1.4.1).
+   Neon Sticker: the lozenge is the Volt thumb of a segmented control, the
+   dock's one accent, with on-primary ink. */
 .app-shell__tab.is-active {
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
+    color: var(--color-on-primary);
+    background: var(--color-primary);
 }
 
 .app-shell__tab-icon {
@@ -2126,9 +2188,19 @@
     }
 
     /* The title is the band's one job now that the menu button is gone: the
-       navigation-bar size, on the page's left edge. */
+       navigation-bar size, on the page's left edge. Unbounded is wide, so a
+       long title ("Página não encontrada" at 360px) wraps onto a second,
+       balanced line inside the same band instead of ending in "encontra…";
+       two tight lines fit the band's height, so nothing around it moves. */
     .app-shell__header-title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
         font-size: var(--text-md);
+        line-height: 1.08;
+        white-space: normal;
+        text-wrap: balance;
+        overflow-wrap: anywhere;
     }
 
     /* Glyphs, not bordered squares — a bordered surface tile in a title bar is a
@@ -2238,9 +2310,22 @@
 /* Boot splash: invisible for its first 300ms, so a boot that is ready by then
    never shows it — the page just paints. The delay must equal
    SPLASH_REVEAL_MS in src/utils/bootSplash.js, which times the hold from the
-   moment the splash could first have been seen (2026-10-06). */
+   moment the splash could first have been seen (2026-10-06).
+   Neon Sticker: the mark and the wordmark stand in a soft pool of Volt — the
+   wordmark's own glow, static (nothing here loops). */
 .boot-splash {
+    position: relative;
+    isolation: isolate;
     animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 300ms both;
+}
+
+.boot-splash::before {
+    content: '';
+    position: absolute;
+    inset: -40% -30% 10%;
+    z-index: -1;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--color-primary) 28%, transparent), transparent);
+    pointer-events: none;
 }
 
 /* Same idea for a lazy route's loader: under ~200ms nobody needs to be told

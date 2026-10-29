@@ -48,9 +48,10 @@
     border-color: var(--color-border-hover);
 }
 
-/* The left edge carries the state, so the list scans without reading. */
+/* The left edge carries the state, so the list scans without reading.
+   Your turn is live (Neon Sticker): Live Pink. */
 .battle-card.is-urgent {
-    border-left-color: var(--color-primary);
+    border-left-color: var(--brand-live);
 }
 
 .battle-card.is-active {
@@ -100,7 +101,7 @@
 }
 
 .battle-card.is-urgent .battle-card__vs-mark {
-    color: var(--color-primary);
+    color: var(--brand-live-text);
 }
 
 .battle-card__vs > .battle-card__avatar:last-child {
@@ -148,9 +149,10 @@
     text-transform: uppercase;
 }
 
+/* "Your move" is live: Live Pink with the brand ink (5.5:1). */
 .battle-card__flag {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    background: var(--brand-live);
+    color: var(--brand-on-live);
 }
 
 .battle-card__result {
@@ -158,9 +160,10 @@
     color: var(--color-muted);
 }
 
+/* A win is earned: Shiny Gold with the brand ink (12.6:1). */
 .battle-card__result.is-won {
-    background: color-mix(in srgb, var(--color-success) 14%, transparent);
-    color: color-mix(in srgb, var(--color-success) 60%, var(--color-fg));
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
 }
 
 .battle-card__dismiss {
@@ -212,5 +215,11 @@
 
     .battle-card__dismiss-label {
         display: none;
+    }
+
+    /* Beside the "your move" flag the status had ~80px and read "They
+       challe…"; on a phone it may take a second line instead. */
+    .battle-card__status {
+        white-space: normal;
     }
 }
