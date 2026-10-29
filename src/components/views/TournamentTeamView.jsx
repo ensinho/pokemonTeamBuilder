@@ -20,6 +20,7 @@ import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
 import { MoveChip } from './metaShared';
 import { pretty } from '../../utils/metaFormat';
+import { toneInk, toneWash } from '../../utils/toneInk';
 import { useEntityNavigate, useSmartBack } from '../../hooks/useEntityNavigate';
 
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
@@ -35,12 +36,15 @@ function formatEvs(evs) {
     return EV_ORDER.filter((k) => evs[k] > 0).map((k) => `${evs[k]} ${EV_LABEL[k]}`).join(' / ');
 }
 
+// A type, the way .type-chip names one: canon tone as wash and edge, the
+// word in the tone mixed into the theme's ink (raw Dark/Ghost on the night
+// surfaces and Ice/Electric on white were under 2:1).
 function TypeChip({ type, count, danger }) {
-    const c = typeColors[type] || '#777';
+    const c = typeColors[type] || 'var(--color-muted)';
     return (
-        <span className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-2xs font-bold uppercase tracking-[0.06em]" style={{ color: c, borderColor: `${c}8c`, backgroundColor: `${c}22` }}>
+        <span className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.06em]" style={{ color: toneInk(c), borderColor: toneWash(c, 45), backgroundColor: toneWash(c) }}>
             {typeIcons[type] && <img src={typeIcons[type]} alt="" className="h-3 w-3" />}
-            {type}{count > 1 && <span className={danger ? 'text-danger' : ''}>{count}×</span>}
+            {type}{count > 1 && <span className={`font-mono ${danger ? 'text-danger' : ''}`}>{count}×</span>}
         </span>
     );
 }
@@ -118,26 +122,33 @@ export function TournamentTeamView({ onImport }) {
 
             {/* Header */}
             <section
-                className="mb-6 rounded-2xl border border-border bg-surface p-5 sm:p-6 shadow-md transition-all"
-                style={{ background: 'radial-gradient(100% 100% at 0% 0%, var(--color-primary-soft), transparent 60%), var(--color-surface)' }}
+                className="mb-6 rounded-2xl border border-border bg-surface p-5 sm:p-6"
             >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2.5">
-                            <h1 className="text-xl font-extrabold tracking-tight text-fg sm:text-3xl">{team.tournament || team.title || (pt ? 'Time de torneio' : 'Tournament team')}</h1>
+                            <h1 className="min-w-0 break-words text-xl text-fg sm:text-3xl">{team.tournament || team.title || (pt ? 'Time de torneio' : 'Tournament team')}</h1>
                             {team.featured && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-0.5 text-2xs font-bold text-accent">
+                                // Featured is the curators' pick, not a medal: Volt, not gold.
+                                <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-2xs font-semibold text-primary">
                                     <Medal className="h-3 w-3" /> {pt ? 'Destaque' : 'Featured'}
                                 </span>
                             )}
                         </div>
                         <p className="mt-1.5 text-sm font-medium text-muted">
-                            {[team.placement, team.player && `${pt ? 'por' : 'by'} ${team.player}`, team.date].filter(Boolean).join(' · ')}
+                            {team.placement && (
+                                <span className={/^(champion|winner|1st|1º|campe)/i.test(team.placement) ? 'font-semibold text-accent' : undefined}>
+                                    {team.placement}
+                                </span>
+                            )}
+                            {[team.player && `${pt ? 'por' : 'by'} ${team.player}`, team.date].filter(Boolean).map((part, i) => (
+                                <React.Fragment key={part}>{(team.placement || i > 0) && ' · '}{part}</React.Fragment>
+                            ))}
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         {team.format && (
-                            <span className="rounded-full bg-primary-soft px-3 py-1 text-2xs font-bold text-primary">
+                            <span className="rounded-full bg-primary-soft px-3 py-1 text-2xs font-semibold text-primary">
                                 {team.format}
                             </span>
                         )}
@@ -145,7 +156,7 @@ export function TournamentTeamView({ onImport }) {
                             <button
                                 type="button"
                                 onClick={() => onImport({ name: team.title || team.tournament || 'Tournament Team', pokemons: team.pokemons || [], evScale: team.evScale })}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                                className="btn btn-primary btn-sm"
                             >
                                 <ShowdownIcon className="h-4 w-4" /> {pt ? 'Importar' : 'Import to builder'}
                             </button>
@@ -155,7 +166,7 @@ export function TournamentTeamView({ onImport }) {
                                 href={team.pokepaste || team.sourceUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1 text-xs font-bold text-fg transition-all active:scale-95"
+                                className="btn btn-secondary btn-sm"
                                 title={team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}
                             >
                                 <ExternalLink className="h-3.5 w-3.5" /> {team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}
@@ -166,7 +177,7 @@ export function TournamentTeamView({ onImport }) {
                 {/* Coverage Panel */}
                 <div className="mt-5 space-y-3 border-t border-border pt-4">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
-                        <span className="inline-flex items-center gap-1.5 font-bold text-success w-24 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-success w-24 shrink-0">
                             <Swords className="h-3.5 w-3.5" /> {pt ? 'Ofensa' : 'Offense'}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
@@ -174,7 +185,7 @@ export function TournamentTeamView({ onImport }) {
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
-                        <span className="inline-flex items-center gap-1.5 font-bold text-primary w-24 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-primary w-24 shrink-0">
                             <Shield className="h-3.5 w-3.5" /> {pt ? 'Resistências' : 'Resists'}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
@@ -182,7 +193,7 @@ export function TournamentTeamView({ onImport }) {
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
-                        <span className="inline-flex items-center gap-1.5 font-bold text-danger w-24 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-danger w-24 shrink-0">
                             <AlertTriangle className="h-3.5 w-3.5" /> {pt ? 'Fraquezas' : 'Weaknesses'}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
@@ -200,11 +211,8 @@ export function TournamentTeamView({ onImport }) {
                     return (
                         <article
                             key={`${m.id}-${i}`}
-                            className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
-                            style={{
-                                borderTop: `3px solid ${accent}`,
-                                background: `linear-gradient(180deg, ${accent}04, var(--color-surface) 40%), var(--color-surface)`
-                            }}
+                            className="group rounded-2xl border border-border bg-surface p-4"
+                            style={{ borderTop: `3px solid ${accent}` }}
                         >
                             <div className="flex items-center gap-4">
                                 <Link
@@ -216,7 +224,7 @@ export function TournamentTeamView({ onImport }) {
                                     <img
                                         src={getPokemonFrontSpriteUrl(m.resolvedId || m.id)}
                                         alt={m.resolvedName || m.name}
-                                        className="h-14 w-14 image-pixelated shrink-0 object-contain transition-transform duration-300 group-hover:scale-110"
+                                        className="h-14 w-14 image-pixelated shrink-0 object-contain"
                                         onError={(e) => { e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; }}
                                     />
                                 </Link>
@@ -225,19 +233,19 @@ export function TournamentTeamView({ onImport }) {
                                         <Link
                                             to={`/meta/${m.resolvedId || m.id}`}
                                             state={linkState}
-                                            className="truncate text-base font-extrabold capitalize text-fg hover:text-primary transition-colors"
+                                            className="truncate text-base font-semibold capitalize text-fg hover:text-primary transition-colors"
                                         >
                                             {pretty(m.resolvedName || m.name)}
                                         </Link>
                                         {m.level && (
-                                            <span className="shrink-0 rounded bg-surface-raised px-1.5 py-0.5 text-2xs font-bold text-muted">
+                                            <span className="shrink-0 rounded bg-surface-raised px-1.5 py-0.5 font-mono text-2xs text-muted">
                                                 Lv{m.level}
                                             </span>
                                         )}
                                     </div>
                                     <div className="mt-1 flex flex-wrap gap-1.5">
                                         {(m.types || []).map((tp) => (
-                                            <span key={tp} className="inline-flex items-center gap-1 text-2xs font-bold capitalize" style={{ color: typeColors[tp] }}>
+                                            <span key={tp} className="inline-flex items-center gap-1 text-2xs font-semibold capitalize" style={{ color: toneInk(typeColors[tp]) }}>
                                                 {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3.5 w-3.5" />}{cap(tp)}
                                             </span>
                                         ))}
@@ -254,7 +262,7 @@ export function TournamentTeamView({ onImport }) {
                                     </span>
                                 )}
                                 {m.ability && (
-                                    <button type="button" onClick={(e) => goToAbility(m.ability, e)} className="inline-flex cursor-pointer items-center rounded-md bg-surface-raised px-2 py-0.75 capitalize text-fg border border-border transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title={pt ? 'Habilidade' : 'Ability'}>
+                                    <button type="button" onClick={(e) => goToAbility(m.ability, e)} className="inline-flex cursor-pointer items-center rounded-md bg-surface-raised px-2 py-0.75 capitalize text-fg border border-border transition-colors hover:border-primary hover:text-primary focus:outline-none" title={pt ? 'Habilidade' : 'Ability'}>
                                         {pretty(m.ability)}
                                     </button>
                                 )}
@@ -264,7 +272,7 @@ export function TournamentTeamView({ onImport }) {
                                     </span>
                                 )}
                                 {m.tera && (
-                                    <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.75 font-bold border" style={{ color: typeColors[m.tera?.toLowerCase()] || 'var(--color-primary)', borderColor: `${typeColors[m.tera?.toLowerCase()] || '#888'}33`, backgroundColor: `${typeColors[m.tera?.toLowerCase()] || '#888'}12` }}>
+                                    <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.75 font-semibold border" style={{ color: toneInk(typeColors[m.tera?.toLowerCase()] || 'var(--color-primary)'), borderColor: toneWash(typeColors[m.tera?.toLowerCase()] || 'var(--color-muted)', 20), backgroundColor: toneWash(typeColors[m.tera?.toLowerCase()] || 'var(--color-muted)', 7) }}>
                                         <Sparkles className="h-3 w-3 shrink-0" />
                                         {m.tera}
                                     </span>
@@ -273,8 +281,8 @@ export function TournamentTeamView({ onImport }) {
 
                             {/* EVs display */}
                             {evs && (
-                                <div className="mt-3 text-2xs text-muted font-medium">
-                                    <span className="font-bold text-fg mr-1.5">EVs:</span>
+                                <div className="mt-3 font-mono text-2xs text-muted">
+                                    <span className="font-sans font-semibold text-fg mr-1.5">EVs:</span>
                                     {evs}
                                 </div>
                             )}

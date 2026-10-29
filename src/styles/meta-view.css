@@ -26,8 +26,11 @@
         width: 100%;
     }
 
+    /* Grow from the label's own width, not from zero: an equal fifth of
+       358px cannot hold "Tournaments", which ran out of the track. */
     .meta-toolbar__context > .segmented > .segmented__item {
-        flex: 1 1 0;
+        flex: 1 1 auto;
+        padding-inline: var(--space-2);
     }
 
     /* A grid of 24 bordered cards on the page is 24 boxes; the fill already

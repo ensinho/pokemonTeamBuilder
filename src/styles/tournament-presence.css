@@ -53,7 +53,7 @@
 .tp__partner:hover,
 .tp__team:hover { background: var(--color-surface-hover); }
 .tp__partner:focus-visible,
-.tp__team:focus-visible { outline: none; box-shadow: var(--ring-primary); }
+.tp__team:focus-visible { outline: none; box-shadow: var(--ring-focus); }
 
 .tp__sprite { width: 2.5rem; height: 2.5rem; flex-shrink: 0; }
 .tp__name {

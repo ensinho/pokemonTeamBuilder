@@ -7,6 +7,7 @@ import { useMegaStones } from '../../hooks/useMegaStones';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { pretty } from '../../utils/metaFormat';
+import { toneInk, toneWash } from '../../utils/toneInk';
 
 /**
  * A move name rendered as a compact chip, tinted by its type (with the type
@@ -17,13 +18,13 @@ export function MoveChip({ name, type, className = '' }) {
     const { goToMove } = useEntityNavigate();
     const color = type ? (typeColors[type] || null) : null;
     const style = color
-        ? { color, backgroundColor: `${color}1a`, borderColor: `${color}55` }
+        ? { color: toneInk(color), backgroundColor: toneWash(color, 10), borderColor: toneWash(color, 33) }
         : undefined;
     return (
         <button
             type="button"
             onClick={(e) => goToMove(name, e)}
-            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-semibold capitalize transition-opacity hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${color ? '' : 'border-border bg-surface-raised text-fg'}  ${className}`}
+            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-semibold capitalize transition-opacity hover:opacity-75 focus:outline-none ${color ? '' : 'border-border bg-surface-raised text-fg'}  ${className}`}
             style={style}
             title={pretty(name)}
         >
@@ -69,13 +70,16 @@ export function RegulationSelect({ formats = [], value, onChange, pt = false, cl
  */
 export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary)', onClick, title, active = false, trailing }) {
     const Comp = onClick ? 'button' : 'div';
+    // The bar keeps the raw tone; the figure is a word, so it takes the
+    // legible ink (Volt's own text colour when the tone is the primary).
+    const ink = color === 'var(--color-primary)' ? 'var(--color-primary-text)' : toneInk(color);
     return (
         <Comp
             type={onClick ? 'button' : undefined}
             onClick={onClick}
             title={title}
             aria-pressed={onClick ? active : undefined}
-            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border bg-surface px-2.5 py-1.5 text-left ${active ? 'border-primary ring-1 ring-primary/40' : 'border-border'}  ${onClick ? 'transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
+            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border bg-surface px-2.5 py-1.5 text-left ${active ? 'border-primary ring-1 ring-primary/40' : 'border-border'}  ${onClick ? 'transition-colors hover:border-primary focus:outline-none' : ''}`}
         >
             <span
                 className="absolute inset-y-0 left-0 rounded-lg opacity-15 transition-all"
@@ -84,8 +88,8 @@ export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary
             />
             {icon && <span className="relative z-10 flex h-4 w-4 shrink-0 items-center justify-center">{icon}</span>}
             <span className="relative z-10 min-w-0 flex-1 truncate text-xs font-semibold capitalize text-fg">{label}</span>
-            <span className="relative z-10 shrink-0 text-2xs font-bold tabular-nums" style={{ color }}>{pct}%</span>
-            {count != null && <span className="relative z-10 shrink-0 text-2xs tabular-nums text-muted">{count}</span>}
+            <span className="figure relative z-10 shrink-0 text-2xs font-semibold" style={{ color: ink }}>{pct}%</span>
+            {count != null && <span className="figure relative z-10 shrink-0 text-2xs text-muted">{count}</span>}
             {trailing && <span className="relative z-10 flex shrink-0 items-center justify-center">{trailing}</span>}
         </Comp>
     );
