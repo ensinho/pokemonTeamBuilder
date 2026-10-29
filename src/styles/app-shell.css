@@ -2188,9 +2188,19 @@
     }
 
     /* The title is the band's one job now that the menu button is gone: the
-       navigation-bar size, on the page's left edge. */
+       navigation-bar size, on the page's left edge. Unbounded is wide, so a
+       long title ("Página não encontrada" at 360px) wraps onto a second,
+       balanced line inside the same band instead of ending in "encontra…";
+       two tight lines fit the band's height, so nothing around it moves. */
     .app-shell__header-title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
         font-size: var(--text-md);
+        line-height: 1.08;
+        white-space: normal;
+        text-wrap: balance;
+        overflow-wrap: anywhere;
     }
 
     /* Glyphs, not bordered squares — a bordered surface tile in a title bar is a
