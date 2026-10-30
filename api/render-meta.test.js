@@ -42,7 +42,7 @@ describe('render-meta buildPage', () => {
     it('serves unprefixed pages in English whatever else is true', () => {
         const html = page('/builder');
         expect(html).toContain('<html lang="en"');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Team Builder | PokemonBuilder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Pokémon Team Builder | PokemonBuilder');
         expect(html).toContain('<meta property="og:locale:alternate" content="pt_BR" />');
     });
 
@@ -57,7 +57,7 @@ describe('render-meta buildPage', () => {
 
     it('emits JSON-LD that parses, and keeps it from closing its script tag', () => {
         const blocks = [...page('/pt').matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
-        expect(blocks.map((b) => b['@type'])).toEqual(['WebSite', 'WebApplication']);
+        expect(blocks.map((b) => b['@type'])).toEqual(['Organization', 'WebSite', 'WebApplication']);
         const topicMeta = { id: 'abc', title: '</script><b>hi', description: 'x' };
         const html = page('/feed', { topicMeta });
         expect(head(html)).not.toContain('</script><b>');
@@ -162,5 +162,123 @@ describe('render-meta buildPage', () => {
         const html = page('/t/abc');
         expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Shared Team | PokemonBuilder');
         expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/og-image.png');
+    });
+});
+
+// 2026-10-30: pages that do not exist, pages that should not be indexed, and
+// what a crawler reads on the pages that used to be a title and nothing else.
+describe('render-meta: existence, indexing and the content AI crawlers read', () => {
+    const dex = {
+        move: { karatechop: ['Karate Chop', 'fighting', 'Physical', 50, 100, 25, 'High critical hit ratio.'], swift: ['Swift', 'normal', 'Special', 60, true, 20, 'This move does not check accuracy.'] },
+        ability: { blaze: ['Blaze', "At 1/3 or less of its max HP, this Pokemon's Fire attacks have 1.5x power.", [4, 6]] },
+        item: { charizarditey: ['Charizardite Y', 'If held by a Charizard, this item allows it to Mega Evolve into Mega Charizard Y.', 6] },
+    };
+    const build = (urlPath, extra = {}) => buildPage(shell, { urlPath, data: { ...data, dex }, ...extra });
+    const blocksOf = (html) => [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+    const robots = (html) => attr(html, /<meta name="robots" content="([^"]*)"/);
+    const main = (html) => html.match(/<main>([\s\S]*?)<\/main>/)?.[1] || '';
+
+    it('answers 404, noindex, for a path no route knows', () => {
+        const { html, status } = build('/pt/nao-existe');
+        expect(status).toBe(404);
+        expect(robots(html)).toBe('noindex, follow');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Página não encontrada | PokemonBuilder');
+        expect(main(html)).toContain('href="/pt/builder"');
+    });
+
+    it('answers 404 for a Pokémon, a tournament team, a type or a guide that does not exist', () => {
+        expect(build('/pokemon/notreal').status).toBe(404);
+        expect(build('/meta/notreal').status).toBe(404);
+        expect(build('/tournaments/team/nope').status).toBe(404);
+        expect(build('/types/shadow').status).toBe(404);
+        expect(build('/guides/nope').status).toBe(404);
+        expect(build('/pokemon/charizard/extra').status).toBe(404);
+    });
+
+    it('keeps real pages indexable and the visitor’s own pages out of the index', () => {
+        for (const path of ['/', '/pt', '/pokemon/charizard', '/pt/types/fire', '/guides', '/pt/guides/first-vgc-team', '/moves/karate-chop']) {
+            const { html, status } = build(path);
+            expect(status, path).toBe(200);
+            expect(robots(html), path).toBeUndefined();
+        }
+        for (const path of ['/profile', '/pt/battles/abc', '/teams', '/favorites', '/admin']) {
+            const { html, status } = build(path);
+            expect(status, path).toBe(200);
+            expect(robots(html), path).toBe('noindex, follow');
+        }
+    });
+
+    it('serves a move the dex lacks, but not for the index', () => {
+        const { html, status } = build('/moves/brand-new-move');
+        expect(status).toBe(200);
+        expect(robots(html)).toBe('noindex, follow');
+    });
+
+    it('opens <main> with the H1 and a definition, the site links coming last', () => {
+        const html = build('/pt/builder').html;
+        const snapshot = html.match(/<div class="seo-prerender">([\s\S]*?)<\/div>/)?.[1] || '';
+        expect(snapshot.indexOf('<main>')).toBeLessThan(snapshot.indexOf('<footer>'));
+        expect(attr(snapshot, /<p>([^<]*)<\/p>/)).toMatch(/^Montador de times Pokémon grátis/);
+    });
+
+    it('writes a move’s facts and effect', () => {
+        const html = main(build('/pt/moves/karate-chop').html);
+        expect(html).toContain('<p>Karate Chop é um golpe físico do tipo Lutador.</p>');
+        expect(html).toContain('Tipo: <a href="/pt/types/fighting">Lutador</a>');
+        expect(html).toContain('Poder: 50');
+        expect(html).toContain('Precisão: 100%');
+        expect(html).toContain('High critical hit ratio.');
+        expect(main(build('/moves/swift').html)).toContain('Accuracy: never misses');
+    });
+
+    it('titles a move page with its real name', () => {
+        expect(attr(build('/moves/karate-chop').html, /<title>([^<]*)<\/title>/)).toBe('Karate Chop (move): type, power and effect | PokemonBuilder');
+    });
+
+    it('lists the Pokémon that can have an ability, and the Pokémon a Mega Stone is for', () => {
+        const ability = main(build('/abilities/blaze').html);
+        expect(ability).toContain('What Blaze does');
+        expect(ability).toContain('<a href="/pokemon/charmander">Charmander</a>');
+        expect(main(build('/pt/items/charizardite-y').html)).toContain('Charizardite Y é a Mega Stone de <a href="/pt/pokemon/charizard">Charizard</a>.');
+    });
+
+    it('writes a guide in full, with its FAQ as FAQPage and the page as an Article', () => {
+        const html = build('/pt/guides/first-vgc-team').html;
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Como montar um time competitivo de Pokémon VGC, passo a passo | PokemonBuilder');
+        expect(main(html)).toContain('<h2>Por que a velocidade importa tanto nas duplas?</h2>');
+        expect(main(html)).toContain('<h3>O PokemonBuilder é grátis?</h3>');
+        const types = blocksOf(html).map((b) => b['@type']);
+        expect(types).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList']);
+        const faq = blocksOf(html).find((b) => b['@type'] === 'FAQPage');
+        expect(faq.mainEntity[0]).toMatchObject({ '@type': 'Question', name: 'O PokemonBuilder é grátis?' });
+    });
+
+    it('lists the guides on /guides', () => {
+        expect(main(build('/guides').html)).toContain('href="/guides/team-from-tournament-data"');
+    });
+
+    it('describes each tool as a WebApplication with what it does', () => {
+        const app = blocksOf(build('/damage-calculator').html).find((b) => b['@type'] === 'WebApplication');
+        expect(app).toMatchObject({ name: 'Pokémon Damage Calculator', url: 'https://pokemonbuilder.app/damage-calculator', isAccessibleForFree: true });
+        expect(app.featureList).toContain('Damage rolls and KO chances');
+    });
+
+    it('gives the Meta page its ranking and the method behind it', () => {
+        const usage = {
+            label: 'VGC Reg M-C', kind: 'vgc', month: '2026-09', totalBattles: 1631943, byId: {},
+            top: [{ id: 6, name: 'Charizard', usage: 12.5 }],
+        };
+        const html = main(buildPage(shell, { urlPath: '/pt/meta', data: { ...data, dex, usage } }).html);
+        expect(html).toContain('<h2>Pokémon mais usados em VGC Reg M-C</h2>');
+        expect(html).toContain('<a href="/pt/meta/charizard">Charizard</a> (em 12.5% dos times)');
+        expect(html).toContain('1.631.943 partidas de VGC Reg M-C em setembro de 2026');
+        expect(html).toContain('href="/pt/guides/team-from-tournament-data"');
+    });
+
+    it('states where the best teams come from and when they were refreshed', () => {
+        const html = main(buildPage(shell, { urlPath: '/best-teams', data: { ...data, dex, tournamentsGeneratedAt: '2026-10-29T07:32:04.383Z' } }).html);
+        expect(html).toContain('<h2>Where does this data come from?</h2>');
+        expect(html).toContain('VGCPastes');
+        expect(html).toContain('last update: Oct 29, 2026');
     });
 });

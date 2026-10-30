@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { challengeDevApi } from './scripts/lib/challengeDevApi.mjs'
+import { prerenderHome } from './scripts/lib/prerenderHome.mjs'
 
 // Unique id for this build, used to cache-bust static /data/*.json files on every
 // deploy (see src/services/pokemonDataCache.js). Overridable via VITE_BUILD_ID
@@ -20,6 +21,9 @@ export default defineConfig({
     // `npm run dev` only: /api/challenge served in-process over an in-memory
     // database, since /api/* otherwise exists only on Vercel.
     challengeDevApi(),
+    // `/` is served as the static index.html on Vercel, never through
+    // api/render-meta.js — so the build writes the English home into it.
+    prerenderHome(),
     VitePWA({
       registerType: 'prompt',
       // Use the existing site.webmanifest — only add the service worker
@@ -41,6 +45,8 @@ export default defineConfig({
           '**/challenge-og.png',
           '**/android-chrome-512x512.png',
           '**/logoLogin*.png',
+          // api/render-meta.js's template (scripts/lib/prerenderHome.mjs).
+          '**/shell.html',
         ],
         // Web Push lives in the *generated* worker rather than a second
         // registration of its own — a second service worker is what caused the

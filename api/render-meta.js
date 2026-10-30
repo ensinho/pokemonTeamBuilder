@@ -4,7 +4,10 @@ import { escapeHtml, fetchTopicMeta, topicIdFromUrl } from './_lib/forumMeta.js'
 import { renderSnapshot } from './_lib/seoSnapshot.js';
 import { fetchSharedTeam, sharedTeamIdFrom } from './_lib/sharedTeam.js';
 import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLocalePath } from '../src/utils/localePath.js';
-import { SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
+import { SITE_NAME, SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
+import { translate } from '../src/utils/translateCore.js';
+import { guideContent } from '../src/content/guides.js';
+import { usageRows } from '../src/utils/metaFormats.js';
 import { tournamentPresence } from '../src/utils/tournamentPresence.js';
 import { bestTeamsSummary } from '../src/utils/bestTeams.js';
 import { mostUsedBuild } from '../src/utils/mostUsedBuild.js';
@@ -26,15 +29,35 @@ try {
 }
 
 let tournamentTeams = [];
+let tournamentsGeneratedAt = null;
 try {
     const jsonPath = path.join(process.cwd(), 'dist', 'data', 'tournaments.json');
     if (fs.existsSync(jsonPath)) {
-        const data = fs.readFileSync(jsonPath, 'utf8');
-        tournamentTeams = JSON.parse(data).teams || [];
+        const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        tournamentTeams = data.teams || [];
+        tournamentsGeneratedAt = data.generatedAt || null;
     }
 } catch (e) {
     console.error("Failed to load tournaments.json in render-meta:", e);
 }
+
+// What a move, ability or item page says (2026-10-30): moves from the battle
+// tooltips' dex, abilities and items from seo-dex.json (scripts/build-seo-dex.mjs).
+// Keyed by Showdown id — the page slug without its hyphens.
+let dex = null;
+try {
+    const dir = path.join(process.cwd(), 'dist', 'data');
+    const battle = JSON.parse(fs.readFileSync(path.join(dir, 'battle-dex.json'), 'utf8'));
+    const seo = JSON.parse(fs.readFileSync(path.join(dir, 'seo-dex.json'), 'utf8'));
+    dex = { move: battle.moves || {}, ability: seo.abilities || {}, item: seo.items || {} };
+} catch (e) {
+    console.error("Failed to load the move/ability/item dex in render-meta:", e?.message || e);
+}
+const dexId = (slug) => {
+    let text = slug || '';
+    try { text = decodeURIComponent(text); } catch { /* keep the raw slug */ }
+    return text.toLowerCase().replace(/[^a-z0-9]/g, '');
+};
 
 // The default format's usage (what the Pokémon page's "Most used build" card
 // reads): usage-index.json names the format, usage/<id>.json holds it.
@@ -45,7 +68,15 @@ try {
     const file = path.join(dir, 'usage', `${index.default}.json`);
     if (index.default && fs.existsSync(file)) {
         const usage = JSON.parse(fs.readFileSync(file, 'utf8'));
-        defaultUsage = { label: usage.format?.label || index.default, byId: usage.byId || {} };
+        defaultUsage = {
+            label: usage.format?.label || index.default,
+            kind: usage.format?.kind || null,
+            month: usage.month || index.month || null,
+            totalBattles: usage.totalBattles || null,
+            byId: usage.byId || {},
+            // The ranking Meta & usage opens on (its default rating band).
+            top: usageRows(usage, usage.detailCutoff ?? usage.format?.cutoff ?? null),
+        };
     }
 } catch (e) {
     console.error("Failed to load the default usage format in render-meta:", e?.message || e);
@@ -62,6 +93,15 @@ function findPokemon(param) {
     }
     return pokemons.find(p => p.name.toLowerCase() === clean) || null;
 }
+
+/**
+ * App routes that exist but are nobody's search result — the visitor's own
+ * pages (robots.txt already disallows most) and old addresses the app
+ * redirects. Served with `noindex`; any other path the table does not know
+ * is a 404.
+ */
+const NOINDEX_ROUTES = ['/favorites', '/teams', '/friends', '/battles', '/profile', '/admin', '/guesser', '/pokeroom'];
+const isNoindexRoute = (appPath) => NOINDEX_ROUTES.some((r) => appPath === r || appPath.startsWith(`${r}/`));
 
 const RESULT_DECODERS = {
     '/pokepuzzle': ['puzzle', decodePuzzleResult],
@@ -101,6 +141,17 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
     if ((segments[0] === 'pokemon' || segments[0] === 'meta') && segments[1]) context.pokemon = findP(segments[1]);
     if (segments[0] === 'tournaments' && segments[1] === 'team' && segments[2]) context.team = findT(segments[2]);
     if (segments[0] === 't' && sharedTeam) context.sharedTeam = sharedTeam;
+    const allDex = data.dex === undefined ? dex : data.dex;
+    const DETAIL = { moves: 'move', abilities: 'ability', items: 'item' };
+    let entity = null;
+    if (DETAIL[segments[0]] && segments[1] && !segments[2] && allDex) {
+        const kind = DETAIL[segments[0]];
+        const entry = allDex[kind]?.[dexId(segments[1])];
+        if (entry) {
+            entity = { kind, data: entry };
+            context.name = entry[0];
+        }
+    }
     // A shared daily result: its own card, the game's page underneath.
     const resultCode = new URLSearchParams(search).get('r');
     if (resultCode && RESULT_DECODERS[appPath]) {
@@ -109,7 +160,35 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
         if (decoded) context.result = { kind, code: resultCode, data: decoded };
     }
 
-    const meta = pageMeta(appPath, language, context);
+    let meta = pageMeta(appPath, language, context);
+
+    // Does the page exist, and should it be indexed? (2026-10-30: every path
+    // answered 200 with an indexable page — /pokemon/notreal became
+    // "Notreal: weaknesses, stats & builds".) Lookups only count as a miss
+    // when their data loaded; a cold start without it keeps the old answer.
+    let status = 200;
+    let indexable = true;
+    if (meta.isStatic || meta.key === 'type' || meta.key === 'guide' || meta.key === 'sharedTeamPage') {
+        // exists
+    } else if (meta.key === 'pokemon' || meta.key === 'metaPokemon') {
+        if (!context.pokemon && allPokemons.length) status = 404;
+    } else if (meta.key === 'tournamentTeam') {
+        if (!context.team && allTeams.length) status = 404;
+    } else if (meta.key === 'move' || meta.key === 'ability' || meta.key === 'item') {
+        // The app still draws a page from PokéAPI for a slug the dex lacks
+        // (a brand-new move, say), so it stays a page, but not an indexed one.
+        if (!entity && allDex) indexable = false;
+    } else if (meta.key === 'sharedTeam' || isNoindexRoute(appPath)) {
+        indexable = false;
+    } else {
+        status = 404;
+    }
+    if (status === 404) {
+        indexable = false;
+        const t = (key) => translate(language, key);
+        meta = { ...meta, key: 'notFound', title: `${t('seo.notFound.title')} | ${SITE_NAME}`, description: t('seo.notFound.description'), breadcrumbs: [] };
+    }
+
     let title = meta.title;
     let description = meta.description;
     let canonicalSearch = '';
@@ -151,12 +230,14 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
     set(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${esc.description}" />`);
     set(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${esc.image}" />`);
 
+    const guide = meta.key === 'guide' ? guideContent(meta.guide, language) : null;
     const headExtras = [
         ...alternates.map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${escapeHtml(a.href)}" />`),
         `<link rel="alternate" hreflang="x-default" href="${escapeHtml(alternates.find((a) => a.language === 'en').href)}" />`,
         `<meta property="og:locale" content="${OG_LOCALE[language]}" />`,
         ...LANGUAGES.filter((l) => l !== language).map((l) => `<meta property="og:locale:alternate" content="${OG_LOCALE[l]}" />`),
-        ...structuredData(meta, language).map((block) => `<script type="application/ld+json">${jsonLdScript(block)}</script>`),
+        ...(indexable ? [] : ['<meta name="robots" content="noindex, follow" />']),
+        ...structuredData(meta, language, { faq: guide?.faq }).map((block) => `<script type="application/ld+json">${jsonLdScript(block)}</script>`),
     ].join('\n    ');
     set(/<\/head>/i, `    ${headExtras}\n  </head>`);
 
@@ -164,18 +245,32 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
     const bestTeams = meta.key === 'bestTeams' ? bestTeamsSummary(allTeams) : null;
     const buildData = context.pokemon && usage ? mostUsedBuild(usage.byId[context.pokemon.id]) : null;
     const build = buildData ? { format: usage.label, data: buildData } : null;
-    const snapshot = renderSnapshot({ meta: { ...meta, title, description }, language, appPath, pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam, presence, bestTeams, build, pokemons: allPokemons });
+    const notes = meta.key === 'bestTeams'
+        ? { generatedAt: data.tournamentsGeneratedAt ?? tournamentsGeneratedAt }
+        : meta.key === 'meta' && usage
+            ? { format: usage.label, battles: usage.totalBattles, month: usage.month, kind: usage.kind }
+            : null;
+    const snapshot = renderSnapshot({
+        meta: { ...meta, title, description }, language, appPath,
+        pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam,
+        presence, bestTeams, build, pokemons: allPokemons,
+        entity, guide, usage: meta.key === 'meta' ? usage : null, notes, notFound: status === 404,
+    });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
 
-    return { html, language, meta };
+    return { html, language, meta, status, indexable };
 }
 
 export default async function handler(req, res) {
     const [urlPath, query = ''] = req.url.split('?');
 
     // Read the compiled index.html file
+    // The pristine shell. dist/index.html is the English home already rendered
+    // (scripts/lib/prerenderHome.mjs — Vercel serves "/" as that static file,
+    // never through this function), so the template is saved beside it.
     let shell = '';
-    const htmlPath = path.join(process.cwd(), 'dist', 'index.html');
+    const shellPath = path.join(process.cwd(), 'dist', 'shell.html');
+    const htmlPath = fs.existsSync(shellPath) ? shellPath : path.join(process.cwd(), 'dist', 'index.html');
 
     try {
         if (fs.existsSync(htmlPath)) {
@@ -207,7 +302,7 @@ export default async function handler(req, res) {
         if (!sharedTeam) previewMissed = true;
     }
 
-    const { html } = buildPage(shell, { urlPath, search: query, topicMeta, sharedTeam });
+    const { html, status } = buildPage(shell, { urlPath, search: query, topicMeta, sharedTeam });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     // Cache at the Edge for 1 day, stale-while-revalidate for 1 hour to allow rapid updates;
@@ -216,5 +311,5 @@ export default async function handler(req, res) {
         ? 'public, max-age=60, s-maxage=60'
         : 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600');
 
-    return res.status(200).send(html);
+    return res.status(status).send(html);
 }

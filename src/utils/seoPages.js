@@ -11,6 +11,8 @@ import { translate } from './translateCore.js';
 import { typeChart } from '../constants/typeChart.js';
 import { LOCALE_TAG, localizePath } from './localePath.js';
 import { TYPE_IDS, strongAgainst, weaknessesOf } from './typeMatchups.js';
+import { guideMeta } from '../content/guideIndex.js';
+import { STRUCTURED_COPY } from '../content/structuredCopy.js';
 
 export { TYPE_IDS, strongAgainst, weaknessesOf };
 
@@ -20,6 +22,13 @@ export const SITE_NAME = 'PokemonBuilder';
  *  given to search engines as the brand's alternate names (JSON-LD). */
 export const SITE_ALTERNATE_NAMES = ['Pokémon Builder', 'Pokémon Team Builder', 'Pokemon Team Builder'];
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
+/** Who makes the site — the Organization JSON-LD on every page, which is how
+ *  search engines and AI assistants learn what PokemonBuilder is (2026-10-30). */
+export const SITE_LOGO = `${SITE_URL}/android-chrome-512x512.png`;
+export const SITE_FOUNDER = 'Enzo Esmeraldo';
+export const SITE_SAME_AS = ['https://github.com/ensinho/pokemonTeamBuilder'];
+const ORG_ID = `${SITE_URL}/#organization`;
+const WEBSITE_ID = `${SITE_URL}/#website`;
 
 
 /** App path → copy key for every page that has fixed copy. */
@@ -42,7 +51,12 @@ export const STATIC_PAGES = {
     '/feed': 'feed',
     '/types': 'types',
     '/best-teams': 'bestTeams',
+    '/guides': 'guides',
 };
+
+/** The pages that are a tool you use (WebApplication JSON-LD, with the
+ *  feature list in content/structuredCopy.js). */
+const TOOL_PAGES = new Set(['home', 'builder', 'damageCalculator', 'speedTiers', 'meta', 'pokedex', 'types']);
 
 const PAGE_IMAGES = {
     pokepuzzle: `${SITE_URL}/pokepuzzle-og.png`,
@@ -276,6 +290,23 @@ export function pageMeta(appPath, language, context = {}) {
         };
     }
 
+    // A guide (/guides/:slug, content/guides.js): titled from guideIndex.js so
+    // the client and the server agree without loading the guide's text.
+    if (section === 'guides' && param && !extra) {
+        const guide = guideMeta(param, language);
+        if (guide) {
+            return {
+                ...base,
+                key: 'guide',
+                guide: guide.slug,
+                updated: guide.updated,
+                title: withBrand(guide.title),
+                description: guide.description,
+                breadcrumbs: crumbsFor(language, [staticCrumb(language, 'guides', '/guides'), { name: guide.title, path }]),
+            };
+        }
+    }
+
     if (section === 'types' && param && !extra && typeChart[param]) {
         const type = typeName(param, language);
         const weak = weaknessesOf([param]).map((w) => typeName(w.type, language));
@@ -299,44 +330,95 @@ export function pageMeta(appPath, language, context = {}) {
 }
 
 /**
- * schema.org JSON-LD for a page: the site and the app on Home, a breadcrumb
- * trail everywhere else. `searchPath` is the page that honours `?q=`.
+ * schema.org JSON-LD for a page. Every page names the Organization behind the
+ * site; Home adds the WebSite (with its search) and the app; a tool page adds
+ * itself as a WebApplication with what it does; deeper pages get a breadcrumb
+ * trail. `extras.faq` ([{ q, a }], a guide's visible FAQ) adds a FAQPage, and
+ * a guide is an Article. `searchPath` is the page that honours `?q=`.
  */
-export function structuredData(meta, language) {
+export function structuredData(meta, language, extras = {}) {
+    const copy = STRUCTURED_COPY[language] || STRUCTURED_COPY.en;
     const inLanguage = LOCALE_TAG[language];
     const abs = (appPath) => `${SITE_URL}${localizePath(appPath, language)}`;
-    const blocks = [];
+    const context = 'https://schema.org';
+    const blocks = [{
+        '@context': context,
+        '@type': 'Organization',
+        '@id': ORG_ID,
+        name: SITE_NAME,
+        alternateName: SITE_ALTERNATE_NAMES,
+        url: `${SITE_URL}/`,
+        logo: SITE_LOGO,
+        description: copy.org,
+        founder: { '@type': 'Person', name: SITE_FOUNDER },
+        sameAs: SITE_SAME_AS,
+    }];
     if (meta.key === 'home') {
         blocks.push({
-            '@context': 'https://schema.org',
+            '@context': context,
             '@type': 'WebSite',
+            '@id': WEBSITE_ID,
             name: SITE_NAME,
             alternateName: SITE_ALTERNATE_NAMES,
             url: abs('/'),
             inLanguage,
+            publisher: { '@id': ORG_ID },
             potentialAction: {
                 '@type': 'SearchAction',
                 target: { '@type': 'EntryPoint', urlTemplate: `${abs('/pokedex')}?q={search_term_string}` },
                 'query-input': 'required name=search_term_string',
             },
         });
+    }
+    if (TOOL_PAGES.has(meta.key)) {
         blocks.push({
-            '@context': 'https://schema.org',
+            '@context': context,
             '@type': 'WebApplication',
-            name: SITE_NAME,
-            alternateName: SITE_ALTERNATE_NAMES,
-            url: abs('/'),
+            name: meta.key === 'home' ? SITE_NAME : meta.title.replace(` | ${SITE_NAME}`, ''),
+            ...(meta.key === 'home' ? { alternateName: SITE_ALTERNATE_NAMES } : {}),
+            url: abs(meta.canonicalPath || '/'),
             description: meta.description,
             inLanguage,
             applicationCategory: 'GameApplication',
             operatingSystem: 'Web',
-            image: DEFAULT_IMAGE,
+            isAccessibleForFree: true,
+            image: meta.image || DEFAULT_IMAGE,
+            featureList: copy.features[meta.key] || [],
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            publisher: { '@id': ORG_ID },
+        });
+    }
+    if (meta.key === 'guide') {
+        blocks.push({
+            '@context': context,
+            '@type': 'Article',
+            headline: meta.title.replace(` | ${SITE_NAME}`, ''),
+            description: meta.description,
+            inLanguage,
+            url: abs(meta.canonicalPath),
+            mainEntityOfPage: abs(meta.canonicalPath),
+            datePublished: meta.updated,
+            dateModified: meta.updated,
+            author: { '@id': ORG_ID },
+            publisher: { '@id': ORG_ID },
+            image: meta.image || DEFAULT_IMAGE,
+        });
+    }
+    if (extras.faq?.length) {
+        blocks.push({
+            '@context': context,
+            '@type': 'FAQPage',
+            inLanguage,
+            mainEntity: extras.faq.map(({ q, a }) => ({
+                '@type': 'Question',
+                name: q,
+                acceptedAnswer: { '@type': 'Answer', text: a },
+            })),
         });
     }
     if (meta.breadcrumbs?.length) {
         blocks.push({
-            '@context': 'https://schema.org',
+            '@context': context,
             '@type': 'BreadcrumbList',
             itemListElement: meta.breadcrumbs.map((crumb, i) => ({
                 '@type': 'ListItem',

@@ -59,5 +59,8 @@ export function useTournamentData({ enabled = true } = {}) {
         [synergy]
     );
 
-    return { teams, popular, recent, status, partnersFor, synergy };
+    // When the dataset was baked — the data notes on Best teams say it.
+    const generatedAt = data?.generatedAt || null;
+
+    return { teams, popular, recent, status, partnersFor, synergy, generatedAt };
 }

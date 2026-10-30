@@ -6,6 +6,12 @@
 // text either. It carries the same facts the rendered page shows — never
 // anything a visitor wouldn't find there.
 //
+// Order matters to readers that skim (2026-10-30): the breadcrumb, then
+// <main> — its H1 and a first paragraph that says what the page is — and the
+// site's own name and links last, in a <footer>. Before, every page opened
+// with the brand link in a <p>, so "the first paragraph" of every page was the
+// word PokemonBuilder.
+//
 // Pure: everything arrives as arguments, so api/render-meta.test.js can
 // snapshot it without a filesystem.
 
@@ -15,6 +21,8 @@ import { localizePath } from '../../src/utils/localePath.js';
 import { formatSlug, typeName } from '../../src/utils/seoPages.js';
 import { immunitiesOf, resistancesOf, strongAgainst, weaknessesOf } from '../../src/utils/typeMatchups.js';
 import { typeChart } from '../../src/constants/typeChart.js';
+import { GUIDE_INDEX } from '../../src/content/guideIndex.js';
+import { bestTeamsNotes, metaNotes } from '../../src/utils/dataNotes.js';
 
 const NAV = [
     ['/builder', 'builder'],
@@ -27,7 +35,14 @@ const NAV = [
     ['/speed-tiers', 'speedTiers'],
     ['/challenge', 'challenge'],
     ['/pokepuzzle', 'pokepuzzle'],
+    ['/guides', 'guides'],
 ];
+
+const MOVE_TYPE = (raw) => String(raw || '').toLowerCase();
+/** How many holders of an ability the page lists before "and more". */
+const HOLDER_LIMIT = 60;
+/** How many of the default format's Pokémon the Meta page's HTML lists. */
+const META_TOP = 30;
 
 const STAT_KEYS = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
 const LANDING_FEATURES = ['builder', 'pokedex', 'calc', 'meta', 'types', 'challenge'];
@@ -35,22 +50,37 @@ const LANDING_LINKS = {
     builder: '/builder', pokedex: '/pokedex', calc: '/damage-calculator', meta: '/meta', types: '/types', challenge: '/challenge',
 };
 
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, pokemons = [] }) {
+/**
+ * `entity` — { kind: 'move'|'ability'|'item', data } from the baked dex
+ * (battle-dex.json / seo-dex.json, see render-meta.js); `guide` — a guide's
+ * text (content/guides.js); `usage` — the default format, for /meta;
+ * `notes` — the numbers behind the data notes (bestTeams: generatedAt;
+ * meta: format, battles, month, kind); `notFound` — the page does not exist.
+ */
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, pokemons = [], entity = null, guide = null, usage = null, notes = null, notFound = false }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
     const list = (items) => (items.length ? `<ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>` : '');
     const typeLink = (type) => link(`/types/${type}`, typeName(type, language));
 
-    const parts = [];
-    parts.push(`<header><p>${link('/', t('seo.siteName'))}</p><nav aria-label="${escapeHtml(t('seo.snapshot.explore'))}">${list(NAV.map(([path, key]) => link(path, t(`seo.${key}.title`))))}</nav></header>`);
+    const slugOf = (id) => pokemons.find((p) => p.id === id)?.name || id;
+    const notesSection = (paragraphs) => (paragraphs.length
+        ? `<h2>${escapeHtml(t('dataNotes.heading'))}</h2>${paragraphs.map((x) => `<p>${escapeHtml(x)}</p>`).join('')}<p>${link('/guides/team-from-tournament-data', t('dataNotes.guideLink'))}</p>`
+        : '');
 
+    const parts = [];
     if (meta.breadcrumbs?.length) {
         parts.push(`<nav aria-label="breadcrumb"><ol>${meta.breadcrumbs.map((c) => `<li>${link(c.path, c.name)}</li>`).join('')}</ol></nav>`);
     }
 
     const body = [];
-    if (meta.key === 'home') {
+    if (notFound) {
+        body.push(`<h1>${escapeHtml(t('seo.notFound.title'))}</h1>`);
+        body.push(`<p>${escapeHtml(t('seo.notFound.description'))}</p>`);
+        body.push(`<p>${escapeHtml(t('seo.snapshot.notFound'))}</p>`);
+        body.push(list(NAV.map(([path, key]) => link(path, t(`seo.${key}.title`)))));
+    } else if (meta.key === 'home') {
         body.push(`<h1>${escapeHtml(t('landing.title'))}</h1>`);
         body.push(`<p>${escapeHtml(t('landing.lede'))}</p>`);
         body.push(`<p>${link('/builder', t('landing.primaryCta'))} · ${link('/pokedex', t('landing.secondaryCta'))}</p>`);
@@ -109,7 +139,6 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
     // What the page's "In tournaments" card shows (utils/tournamentPresence.js):
     // the teams that carried it and the partners it was built with.
     if ((meta.key === 'pokemon' || meta.key === 'metaPokemon') && pokemon && presence?.count) {
-        const slugOf = (id) => pokemons.find((p) => p.id === id)?.name || id;
         body.push(`<h2>${escapeHtml(t('seo.snapshot.tournamentTeams', { name: formatSlug(pokemon.name) }))}</h2>`);
         body.push(`<p>${escapeHtml(t('seo.snapshot.tournamentShare', { count: presence.count, total: presence.total }))}</p>`);
         body.push(list(presence.teams.map((tm) => {
@@ -140,7 +169,6 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
 
     // The best-teams page (utils/bestTeams.js): the same three lists the page draws.
     if (meta.key === 'bestTeams' && bestTeams) {
-        const slugOf = (id) => pokemons.find((p) => p.id === id)?.name || id;
         const mon = (p) => link(`/pokemon/${slugOf(p.id)}`, formatSlug(p.name));
         body.push(`<p>${escapeHtml(t('bestTeamsPage.lede', { total: bestTeams.total, events: bestTeams.events }))}</p>`);
         body.push(`<h2>${escapeHtml(t('bestTeamsPage.top'))}</h2>`);
@@ -153,7 +181,80 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
         body.push(list(bestTeams.pokemon.map((p) => `${mon(p)} (${escapeHtml(t('bestTeamsPage.pokemonShare', { share: p.share }))})`)));
         body.push(`<h2>${escapeHtml(t('bestTeamsPage.pairs'))}</h2>`);
         body.push(list(bestTeams.pairs.map((pair) => `${mon(pair.a)} + ${mon(pair.b)} (${escapeHtml(t('bestTeamsPage.pairShare', { count: pair.count }))})`)));
+        body.push(notesSection(bestTeamsNotes({ ...bestTeams, generatedAt: notes?.generatedAt }, language)));
     }
+
+    // Move, ability and item pages: the facts the page shows, from the dex
+    // the battle tooltips use (the page itself fetches PokéAPI in the browser).
+    if (!notFound && entity?.kind === 'move') {
+        const [name, rawType, category, power, accuracy, pp, desc] = entity.data;
+        const type = MOVE_TYPE(rawType);
+        const categoryText = t(`seo.snapshot.categories.${category}`);
+        body.push(`<p>${escapeHtml(t('seo.snapshot.moveFacts', { name, type: typeName(type, language), category: categoryText }))}</p>`);
+        body.push(list([
+            `${escapeHtml(t('seo.snapshot.type'))}: ${typeChart[type] ? typeLink(type) : escapeHtml(rawType)}`,
+            `${escapeHtml(t('seo.snapshot.category'))}: ${escapeHtml(categoryText)}`,
+            power ? `${escapeHtml(t('seo.snapshot.power'))}: ${power}` : null,
+            `${escapeHtml(t('seo.snapshot.accuracy'))}: ${accuracy === true ? escapeHtml(t('seo.snapshot.alwaysHits')) : `${accuracy}%`}`,
+            `${escapeHtml(t('seo.snapshot.pp'))}: ${pp}`,
+        ].filter(Boolean)));
+        if (desc) body.push(`<h2>${escapeHtml(t('seo.snapshot.whatItDoes', { name }))}</h2><p>${escapeHtml(desc)}</p>`);
+    }
+    if (!notFound && entity?.kind === 'ability') {
+        const [name, desc, holders] = entity.data;
+        if (desc) body.push(`<h2>${escapeHtml(t('seo.snapshot.whatItDoes', { name }))}</h2><p>${escapeHtml(desc)}</p>`);
+        const shown = (holders || []).filter((id) => pokemons.some((p) => p.id === id));
+        if (shown.length) {
+            body.push(`<h2>${escapeHtml(t('seo.snapshot.abilityHolders', { name }))}</h2>`);
+            body.push(list(shown.slice(0, HOLDER_LIMIT).map((id) => link(`/pokemon/${slugOf(id)}`, formatSlug(slugOf(id))))));
+        }
+    }
+    if (!notFound && entity?.kind === 'item') {
+        const [name, desc, megaFor] = entity.data;
+        if (desc) body.push(`<h2>${escapeHtml(t('seo.snapshot.whatItDoes', { name }))}</h2><p>${escapeHtml(desc)}</p>`);
+        if (megaFor && pokemons.some((p) => p.id === megaFor)) {
+            const slug = slugOf(megaFor);
+            // Left as {{pokemon}} by translate (no value given), then swapped for the link.
+            body.push(`<p>${escapeHtml(t('seo.snapshot.itemMega', { name })).replace('{{pokemon}}', link(`/pokemon/${slug}`, formatSlug(slug)))}</p>`);
+        }
+    }
+
+    // The guides: the index lists them; a guide is its full text (the same
+    // sections and FAQ GuideView draws).
+    if (!notFound && meta.key === 'guides') {
+        body.push(list(GUIDE_INDEX.map((g) => {
+            const copy = g[language] || g.en;
+            return `<h2>${link(`/guides/${g.slug}`, copy.title)}</h2><p>${escapeHtml(copy.description)}</p>`;
+        })));
+    }
+    if (!notFound && meta.key === 'guide' && guide) {
+        body.push(`<p>${escapeHtml(guide.lede)}</p>`);
+        for (const section of guide.sections) {
+            body.push(`<h2>${escapeHtml(section.heading)}</h2>`);
+            for (const paragraph of section.paragraphs || []) body.push(`<p>${escapeHtml(paragraph)}</p>`);
+            if (section.steps?.length) body.push(`<ol>${section.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>`);
+            if (section.links?.length) body.push(`<p>${section.links.map((l) => link(l.to, l.label)).join(' · ')}</p>`);
+        }
+        if (guide.faq?.length) {
+            body.push(`<h2>${escapeHtml(t('guidesPage.faq'))}</h2>`);
+            for (const item of guide.faq) body.push(`<h3>${escapeHtml(item.q)}</h3><p>${escapeHtml(item.a)}</p>`);
+        }
+        const others = GUIDE_INDEX.filter((g) => g.slug !== meta.guide);
+        if (others.length) {
+            body.push(`<h2>${escapeHtml(t('guidesPage.more'))}</h2>`);
+            body.push(list(others.map((g) => link(`/guides/${g.slug}`, (g[language] || g.en).title))));
+        }
+    }
+
+    // Meta & usage: the default format's ranking, as the page opens on it, and
+    // where the numbers come from.
+    if (!notFound && meta.key === 'meta' && usage?.top?.length) {
+        body.push(`<h2>${escapeHtml(t('seo.snapshot.mostUsed', { format: usage.label }))}</h2>`);
+        body.push(`<ol>${usage.top.slice(0, META_TOP).map((row) => (
+            `<li>${link(`/meta/${slugOf(row.id)}`, row.name || formatSlug(slugOf(row.id)))} (${escapeHtml(t('seo.snapshot.usageShare', { share: row.usage }))})</li>`
+        )).join('')}</ol>`);
+    }
+    if (!notFound && meta.key === 'meta' && notes) body.push(notesSection(metaNotes(notes, language)));
 
     if (meta.key === 'types') {
         body.push(`<h2>${escapeHtml(t('seo.snapshot.allTypes'))}</h2>${list(Object.keys(typeChart).map(typeLink))}`);
@@ -178,5 +279,6 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
     }
 
     parts.push(`<main>${body.join('')}</main>`);
+    parts.push(`<footer><a href="${href('/')}">${escapeHtml(t('seo.siteName'))}</a><nav aria-label="${escapeHtml(t('seo.snapshot.explore'))}">${list(NAV.map(([path, key]) => link(path, t(`seo.${key}.title`))))}</nav></footer>`);
     return `<div class="seo-prerender">${parts.join('')}</div>`;
 }

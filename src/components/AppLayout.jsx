@@ -64,7 +64,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, CircleHelp, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -127,6 +127,7 @@ const ROUTE_CHUNKS = {
     challenge: loadChampionChallengeView,
     feed: () => import('./views/FeedView'), favorites: () => import('./views/FavoritesView'),
     tournaments: () => import('./views/TournamentsView'), bestTeams: () => import('./views/BestTeamsView'),
+    guides: () => import('./views/GuidesView'),
     damageCalc: () => import('./views/DamageCalculatorView'),
     speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
     abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
@@ -173,6 +174,8 @@ const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').t
 const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
 const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
 const BestTeamsView = lazy(() => import('./views/BestTeamsView').then((m) => ({ default: m.BestTeamsView })));
+const GuidesView = lazy(() => import('./views/GuidesView').then((m) => ({ default: m.GuidesView })));
+const GuideView = lazy(() => import('./views/GuidesView').then((m) => ({ default: m.GuideView })));
 const TournamentTeamView = lazy(() => import('./views/TournamentTeamView').then((m) => ({ default: m.TournamentTeamView })));
 const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
 const MetaUsageView = lazy(() => loadMetaUsageView().then((m) => ({ default: m.MetaUsageView })));
@@ -331,6 +334,7 @@ export default function AppLayout() {
         if (path.includes('/abilities')) return 'abilities';
         if (path === '/types' || path.startsWith('/types/')) return 'types';
         if (path === '/best-teams') return 'bestTeams';
+        if (path === '/guides' || path.startsWith('/guides/')) return 'guides';
         if (path.startsWith('/t/')) return 'sharedTeam';
         if (path.includes('/items')) return 'items';
         if (path.includes('/gyms')) return 'gyms';
@@ -917,6 +921,8 @@ export default function AppLayout() {
                     // full name, so "dano" / "tiers" still find them.
                     { key: 'damageCalc', label: t('nav.damageCalcShort'), searchLabel: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
                     { key: 'speedTiers', label: t('nav.speedTiersShort'), searchLabel: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
+                    // How to use the rest of this section (2026-10-30).
+                    { key: 'guides', label: t('nav.guides'), path: '/guides', icon: <BookOpen className="w-5 h-5 shrink-0" /> },
                 ]
             },
             {
@@ -1800,6 +1806,8 @@ export default function AppLayout() {
                                         <TournamentsView db={db} onOpenTeam={handleImportTeam} />
                                     } />
                                     <Route path="/best-teams" element={<BestTeamsView onOpenTeam={handleImportTeam} />} />
+                                    <Route path="/guides" element={<GuidesView />} />
+                                    <Route path="/guides/:slug" element={<GuideView />} />
                                     <Route path="/tournaments/team/:id" element={
                                         <TournamentTeamView onImport={handleImportTeam} />
                                     } />

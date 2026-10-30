@@ -20,6 +20,8 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
 import { Loader } from '../Loader';
+import { DataNotes } from '../DataNotes';
+import { metaNotes } from '../../utils/dataNotes';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 // `unit` names what `count` counts — tournament teams, or weighted ladder games
@@ -512,6 +514,13 @@ export function MetaUsageView() {
                 </section>
             </div>
             )}
+
+            {/* Where the numbers come from, for the format on screen — the same
+                paragraphs api/render-meta.js writes for the default format. */}
+            <DataNotes
+                className="mt-6"
+                paragraphs={metaNotes({ format: format?.label, battles: totalBattles, month, kind: format?.kind }, language)}
+            />
         </div>
     );
 }

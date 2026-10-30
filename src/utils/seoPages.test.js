@@ -17,7 +17,7 @@ describe('seo copy', () => {
         const keys = (node, prefix = '') => Object.entries(node).flatMap(([k, v]) => (
             v && typeof v === 'object' ? keys(v, `${prefix}${k}.`) : [`${prefix}${k}`]
         ));
-        for (const section of ['seo', 'landing', 'typesPage', 'sharedTeamView', 'reminderOffer', 'bestTeamsPage']) {
+        for (const section of ['seo', 'landing', 'typesPage', 'sharedTeamView', 'reminderOffer', 'bestTeamsPage', 'dataNotes', 'guidesPage']) {
             expect(keys(TRANSLATIONS.pt[section]).sort(), section).toEqual(keys(TRANSLATIONS.en[section]).sort());
         }
     });
@@ -85,19 +85,20 @@ describe('pageMeta', () => {
     });
 
     it('marks fixed-copy pages as static and gives Home no breadcrumb', () => {
-        expect(pageMeta('/builder', 'pt')).toMatchObject({ isStatic: true, title: 'Montador de times Pokémon | PokemonBuilder' });
+        expect(pageMeta('/builder', 'pt')).toMatchObject({ isStatic: true, title: 'Montador de times Pokémon (Team Builder) | PokemonBuilder' });
         expect(pageMeta('/', 'en').breadcrumbs).toEqual([]);
     });
 
     it('describes a tournament team from its data', () => {
         const team = { title: 'Wolfe Glick', tournament: 'Worlds 2024', placement: '1st', format: 'VGC' };
-        expect(pageMeta('/tournaments/team/x', 'pt', { team }).description).toBe('1st no Worlds 2024 (VGC) — sets completos e importação para o montador com um clique.');
+        expect(pageMeta('/tournaments/team/x', 'pt', { team }).description).toMatch(/^1st no Worlds 2024 \(VGC\): o time completo/);
     });
 });
 
 describe('structuredData', () => {
     it('declares the site search on Home, pointing at a page that honours ?q=', () => {
-        const [site, app] = structuredData(pageMeta('/', 'pt'), 'pt');
+        const [org, site, app] = structuredData(pageMeta('/', 'pt'), 'pt');
+        expect(org['@type']).toBe('Organization');
         expect(site['@type']).toBe('WebSite');
         expect(site.inLanguage).toBe('pt-BR');
         expect(site.potentialAction.target.urlTemplate).toBe('https://pokemonbuilder.app/pt/pokedex?q={search_term_string}');
@@ -105,12 +106,23 @@ describe('structuredData', () => {
     });
 
     it('gives deeper pages a breadcrumb trail of absolute, localized URLs', () => {
-        const [crumbs] = structuredData(pageMeta('/types/water', 'pt'), 'pt');
+        const crumbs = structuredData(pageMeta('/types/water', 'pt'), 'pt').find((b) => b['@type'] === 'BreadcrumbList');
         expect(crumbs['@type']).toBe('BreadcrumbList');
         expect(crumbs.itemListElement.map((i) => i.item)).toEqual([
             'https://pokemonbuilder.app/pt',
             'https://pokemonbuilder.app/pt/types',
             'https://pokemonbuilder.app/pt/types/water',
         ]);
+    });
+
+    it('names the organisation on every page, the tool on a tool page and the guide as an Article', () => {
+        for (const path of ['/', '/builder', '/pokemon/charizard', '/guides/first-vgc-team']) {
+            expect(structuredData(pageMeta(path, 'en'), 'en')[0]).toMatchObject({ '@type': 'Organization', name: 'PokemonBuilder', url: 'https://pokemonbuilder.app/' });
+        }
+        const app = structuredData(pageMeta('/speed-tiers', 'pt'), 'pt').find((b) => b['@type'] === 'WebApplication');
+        expect(app).toMatchObject({ name: 'Speed tiers de Pokémon', inLanguage: 'pt-BR' });
+        expect(app.featureList).toContain('Trick Room');
+        const guide = structuredData(pageMeta('/guides/first-vgc-team', 'en'), 'en', { faq: [{ q: 'Q?', a: 'A.' }] });
+        expect(guide.map((b) => b['@type'])).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList']);
     });
 });
