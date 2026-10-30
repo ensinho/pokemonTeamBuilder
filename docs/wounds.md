@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-30 — Deleting the raster wordmark broke the logo for visitors still on the previous build `bug`
+- **Symptom:** after #79 shipped, Enzo's rail showed an empty box where the wordmark goes. A fresh visit was fine.
+- **Root cause:** #79 replaced `logo-wordmark*.webp` with `logo-wordmark.svg` and deleted the webp files. The update is `registerType: 'prompt'`, so a client keeps running the old build (and its JS) until the user accepts the update — and that JS still asked for `/logo-wordmark-480.webp`. With the file gone, the `vercel.json` rewrite answered it with render-meta's HTML 404: a broken image.
+- **Fix:** both webp files are back in `public/`, excluded from the precache (`globIgnores` in `vite.config.js`); new builds still use the SVG.
+- **Correct pattern:** a file in `public/` that shipped JS references is part of a released API. When replacing it, keep the old file for at least one release cycle (out of the precache), and delete it later in a separate change. Hashed `assets/` files are not affected: the old precache holds them.
+- **Files:** `public/logo-wordmark-480.webp`, `public/logo-wordmark.webp`, `vite.config.js`
+
 ### 2026-10-30 — SEO and AI copy promised Tailwind and Trick Room in Speed tiers, which it does not have `docs`
 - **Symptom:** the guide `first-vgc-team`, `seo.speedTiers.description` (title tag and meta description), the JSON-LD `featureList` (`content/structuredCopy.js`) and `public/llms.txt` all said Speed tiers compares Speed "with EVs, natures, boosts, Tailwind and Trick Room". The page has none of the last three.
 - **Root cause:** the copy for search engines and answer engines (written the same day) described what the tool *should* do, not what `SpeedTiersView` does: level-50 Speed at four fixed spreads (0 EVs, 252 neutral, 252 with +Speed, and that one with Choice Scarf). Crawlers and AI assistants repeat such claims as fact, and a visitor who arrives looking for them leaves.
