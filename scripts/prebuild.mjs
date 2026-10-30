@@ -31,5 +31,7 @@ if (scraping) {
         '          Then commit public/data — the committed files are what deploys.',
         '',
     ].join('\n'));
-    run('node scripts/build-move-types.mjs && node scripts/build-sitemap.mjs');
+    // seo-dex reads the installed sim (no network) and is deterministic, so it
+    // always runs: the sitemap and api/render-meta.js read it.
+    run('node scripts/build-move-types.mjs && node scripts/build-seo-dex.mjs && node scripts/build-sitemap.mjs');
 }

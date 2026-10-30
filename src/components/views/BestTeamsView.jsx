@@ -16,6 +16,8 @@ import { MonSprite, SourceCredit } from './metaShared';
 import { TournamentTeamCard } from './TournamentTeamCard';
 import { Share2 } from 'lucide-react';
 import { useSharePage } from '../../hooks/useSharePage';
+import { bestTeamsNotes } from '../../utils/dataNotes';
+import { DataNotes } from '../DataNotes';
 
 /**
  * The best teams of the current regulation (`/best-teams`, 2026-10-24), for
@@ -58,7 +60,7 @@ export function BestTeamsView({ onOpenTeam }) {
     const pt = language === 'pt';
     const navigate = useNavigate();
     const { linkState } = useEntityNavigate();
-    const { teams, status } = useTournamentData();
+    const { teams, status, generatedAt } = useTournamentData();
     const summary = useMemo(() => bestTeamsSummary(teams), [teams]);
     const sharePage = useSharePage();
     useDocumentMeta({ path: '/best-teams' });
@@ -108,6 +110,9 @@ export function BestTeamsView({ onOpenTeam }) {
                     </ol>
                 </section>
             </div>
+
+            {/* How the lists above were made — the same paragraphs as the page's HTML. */}
+            <DataNotes paragraphs={bestTeamsNotes({ ...summary, generatedAt }, language)} />
 
             <SourceCredit pt={pt} sources={['vgcpastes', 'limitless']} className="px-1" />
         </div>

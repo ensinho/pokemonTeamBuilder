@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { LANGUAGES, LOCALE_TAG, localizePath } from '../src/utils/localePath.js';
 import { TYPE_IDS } from '../src/utils/seoPages.js';
+import { GUIDE_INDEX } from '../src/content/guideIndex.js';
 
 // Builds public/sitemap.xml so search engines can discover every Pokémon,
 // competitive-usage, and tournament-team page without relying on crawling
@@ -38,6 +39,7 @@ const STATIC_ROUTES = [
     { loc: '/pokepuzzle', changefreq: 'monthly', priority: '0.5' },
     { loc: '/challenge', changefreq: 'daily', priority: '0.5' },
     { loc: '/feed', changefreq: 'daily', priority: '0.5' },
+    { loc: '/guides', changefreq: 'monthly', priority: '0.7' },
     { loc: '/types', changefreq: 'monthly', priority: '0.7' },
     { loc: '/best-teams', changefreq: 'weekly', priority: '0.8' },
 ];
@@ -113,9 +115,17 @@ const main = async () => {
 
     // /items/:name for the battle items the Items page lists — not every one
     // of PokéAPI's 2000 (key items, TMs), which would be thin pages.
+    // Only the ones the dex can describe (2026-10-30): a page api/render-meta.js
+    // has no data for is served noindex, so listing it would ask search
+    // engines to crawl a page they are told not to keep.
+    const battleDex = await readJson(DATA_DIR, 'battle-dex.json');
+    const seoDex = await readJson(DATA_DIR, 'seo-dex.json');
+    const dexId = (slug) => String(slug).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const described = (table) => (name) => !table || Boolean(table[dexId(name)]);
+
     const battleItems = await readJson(DATA_DIR, 'battle-items.json');
     for (const item of battleItems?.items || []) {
-        if (item?.slug) entries.push({ loc: `/items/${item.slug}`, changefreq: 'monthly', priority: '0.4' });
+        if (item?.slug && described(seoDex?.items)(item.slug)) entries.push({ loc: `/items/${item.slug}`, changefreq: 'monthly', priority: '0.4' });
     }
 
     for (const team of tournaments?.teams || []) {
@@ -136,11 +146,14 @@ const main = async () => {
             return [];
         }
     };
-    for (const name of await fetchApiNames('https://pokeapi.co/api/v2/move?limit=1000')) {
+    for (const name of (await fetchApiNames('https://pokeapi.co/api/v2/move?limit=1000')).filter(described(battleDex?.moves))) {
         entries.push({ loc: `/moves/${name}`, changefreq: 'monthly', priority: '0.5' });
     }
-    for (const name of await fetchApiNames('https://pokeapi.co/api/v2/ability?limit=500')) {
+    for (const name of (await fetchApiNames('https://pokeapi.co/api/v2/ability?limit=500')).filter(described(seoDex?.abilities))) {
         entries.push({ loc: `/abilities/${name}`, changefreq: 'monthly', priority: '0.5' });
+    }
+    for (const guide of GUIDE_INDEX) {
+        entries.push({ loc: `/guides/${guide.slug}`, changefreq: 'monthly', priority: '0.7', lastmod: guide.updated });
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
