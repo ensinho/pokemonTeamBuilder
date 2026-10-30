@@ -66,8 +66,9 @@ route it knows; the copy lives under `seo.*` in `translations.js`.
 
 ## 3. Structured data and the prerendered body
 
-- **JSON-LD** (`structuredData`): `WebSite` + `SearchAction` and `WebApplication`
-  on Home; `BreadcrumbList` everywhere else. The SearchAction points at
+- **JSON-LD** (`structuredData`): `Organization` everywhere; `WebSite` +
+  `SearchAction` on Home; `WebApplication` on Home and the tool pages;
+  `Article` + `FAQPage` on a guide; `BreadcrumbList` below Home. The SearchAction points at
   `/pokedex?q=`, which `PokedexView` honours — keep it that way or drop the
   action.
 - **Prerender** (`api/_lib/seoSnapshot.js`): the page's text as plain HTML inside
@@ -118,6 +119,55 @@ prerender link to `/best-teams`, which is also in the prerendered nav.
 items, natures) stay as the games print them in English, and the copied calc
 keeps Showdown's English format. Before adding an indexable route, make sure
 its screen speaks both languages, not just its title.
+
+### What AI crawlers read (2026-10-30)
+
+Answer engines (ChatGPT search, Perplexity, Claude) and their crawlers do not
+run the app: they read `render-meta`'s HTML. Measured on production with
+GPTBot's user agent, most tool and reference pages were 13–35 words. What
+changed (Organicus AI-readiness report, Enzo):
+
+- **The English home is prerendered at build time** (`scripts/lib/prerenderHome.mjs`)
+  because Vercel serves `/` as the static `index.html`, never through the
+  function; `render-meta` reads the clean template from `dist/shell.html`.
+- **Existence:** unknown paths and unknown Pokémon / tournament teams / types /
+  guides are **404 + `noindex`**; the visitor's own pages are 200 + `noindex`
+  (`NOINDEX_ROUTES`); a move/ability/item the dex cannot describe is 200 +
+  `noindex` (the app still draws it from PokéAPI) and is left out of the sitemap.
+- **First paragraph:** the prerender is breadcrumb → `<main>` (H1, then the
+  page's definition) → `<footer>` with the brand and the site links. Before,
+  every page's first `<p>` was the word PokemonBuilder.
+- **Moves, abilities and items** carry their facts: type, category, power,
+  accuracy, PP and effect (battle-dex.json); an ability's effect and holders and
+  an item's effect and Mega target (`public/data/seo-dex.json`,
+  `scripts/build-seo-dex.mjs` — offline, from the installed `@pkmn/sim`, rebuilt
+  by every build).
+- **JSON-LD:** `Organization` (with founder and GitHub `sameAs`) on every page;
+  `WebApplication` with a `featureList` (`content/structuredCopy.js`, only what the page
+  does) on Home and the tools; `Article` + `FAQPage` on a guide.
+- **Titles and descriptions** were rewritten to say the subject (the English
+  builder and calculator titles lacked "Pokémon") and to sit between ~115 and
+  158 characters. The old ones claimed the calculator and speed tiers load your
+  team — they do not; keep feature claims to what the code does.
+- **Data notes** ("Where does this data come from?", `utils/dataNotes.js` +
+  `DataNotes.jsx`): Best teams and Meta & usage state their source, sample and
+  freshness; the prerender writes the same paragraphs, and `/meta`'s HTML lists
+  the default format's top 30.
+- **`public/llms.txt`**: what the site is, its sources, what it does not do, and
+  its key pages and guides.
+
+### Guides (`/guides`, `/guides/:slug`, 2026-10-30)
+
+`GuidesView.jsx` over `src/content/guides.js` (text, both languages) and
+`src/content/guideIndex.js` (slug, date, title, description — small, because
+`seoPages.js` reads it on every route). Written for the questions the report
+showed the site missing from: a first VGC team (speed tiers, damage
+calculator, Switch), choosing a team from tournament data, and how team
+builders compare. Section headings are questions; every answer links to the
+tool that does it. `guides.test.js` keeps the languages on the same structure
+and links, and checks every link is a real route. Only claim what the site
+does today and what a competitor's own pages say (Pikalytics, checked
+2026-10-30). In the Competitive nav section and the sitemap.
 
 ## 4. Sitemap
 

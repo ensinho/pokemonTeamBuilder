@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-30 — The English home reached crawlers empty, and every made-up URL was an indexable page `bug`
+- **Symptom:** measured on production with GPTBot's user agent (Organicus AI-readiness report, Enzo, 2026-10-30): `/` — the root and the `x-default` of every hreflang set — had 0 words, no H1 and no JSON-LD, while `/does-not-exist` got the full home with JSON-LD. `/pokemon/notreal` answered 200 as "Notreal: weaknesses, stats & builds", canonical to itself; `/llms.txt` answered 200 with the app's HTML.
+- **Root cause:** two separate gaps. (1) Vercel serves a file that exists *before* it applies a rewrite, so `/` is `dist/index.html` itself and never reaches `api/render-meta.js` — only the root, which is why `/pt` was fine. (2) `render-meta` answered 200 for every path: an unknown route fell through to the home's meta, and an unknown Pokémon, team or type kept its slug as a name.
+- **Fix:** (1) `scripts/lib/prerenderHome.mjs` (a Vite plugin) writes `buildPage(…, '/')` into `dist/index.html` at build time and saves the untouched template as `dist/shell.html`, which `render-meta` now reads (`X-Robots-Tag: noindex` on `/shell.html`, kept out of the precache). (2) `buildPage` decides existence: a path no route knows, or a Pokémon / tournament team / type / guide its data does not have, is a **404** with `noindex` and a "page not found" prerender; the visitor's own pages (`/profile`, `/teams`, `/battles`…) are 200 + `noindex`; a move/ability/item the dex cannot describe is 200 + `noindex`. Lookups only count as a miss when their data loaded.
+- **Correct pattern:** a page that exists as a static file bypasses every rewrite — anything the function adds to pages must be baked into that file too. And a catch-all renderer must decide existence; "200 for everything" turns every typo and every bot probe into an indexable page.
+- **Files:** `scripts/lib/prerenderHome.mjs`, `vite.config.js`, `api/render-meta.js`, `vercel.json`, `api/render-meta.test.js`
+
 ### 2026-10-29 — Gym teams never resolved a regional form ("Alolan Ninetales") `bug`
 - **Symptom:** a gym Pokémon written as a regional form (`Alolan Ninetales` in Sun/Moon, and the new Lazarus `Hisuian Zorua`, `Paldean Tauros Blaze Breed`) showed a Poké Ball, no types, and was skipped by "Use team".
 - **Root cause:** `GymsView`'s resolver looked names up by slug (`alolan-ninetales`), but the Pokédex index stores forms under display names (`Alolan Ninetales`), and its fallback searched base species only.
