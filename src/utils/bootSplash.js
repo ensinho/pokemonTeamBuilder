@@ -67,3 +67,22 @@ export function splashProgress({ isMobile, isBootSettled }) {
     if (isMobile && !isBootSettled) return { width: 90, durationMs: 1800 };
     return { width: 100, durationMs: SPLASH_MIN_VISIBLE_MS };
 }
+
+/**
+ * Whether this boot skips the splash altogether (2026-10-30): a first visit
+ * arriving on Home sees the landing, which shows nothing of an account and
+ * needs no reference data — its copy and demo are canon constants. Holding
+ * it behind the splash (on a phone, until auth reconciled and generations
+ * loaded) was most of the landing's Largest Contentful Paint. Anything that
+ * reads Firestore still waits on `isAuthReady`; only the curtain goes.
+ *
+ * Every other boot keeps the splash: a returning visitor's Home is their own
+ * data, and a deep link is a view that may read it.
+ *
+ * @param {object} opts
+ * @param {string} opts.appPath      the route, without the language prefix
+ * @param {boolean} opts.isReturning an earlier visit left its marks (utils/landing.js)
+ */
+export function skipsBootSplash({ appPath, isReturning }) {
+    return appPath === '/' && !isReturning;
+}

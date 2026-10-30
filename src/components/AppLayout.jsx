@@ -38,7 +38,8 @@ import { BREAKPOINTS } from '../constants/breakpoints';
 import { setNavigator, setPartnerPicker, setSignInPrompt } from '../utils/navigation';
 import { PAGE_MARKS } from '../utils/journeys';
 import { JourneyCoach } from './journeys/JourneyCoach';
-import { splashHoldMs, splashProgress } from '../utils/bootSplash';
+import { skipsBootSplash, splashHoldMs, splashProgress } from '../utils/bootSplash';
+import { isReturningVisitor } from '../utils/landing';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useTranslation } from '../hooks/useTranslation';
@@ -141,6 +142,11 @@ const ROUTE_CHUNKS = {
     profile: () => import('./views/ProfileView'), admin: () => import('./views/AdminDashboardView'),
 };
 const prefetchRoute = (key) => { ROUTE_CHUNKS[key]?.().catch(() => {}); };
+
+// Storage may throw (blocked site data); a blocked read is a first visit.
+const readLocalStorage = () => {
+    try { return window.localStorage; } catch { return null; }
+};
 
 // Pages whose view draws its own <h1> (every route under the key does). On
 // them the header's title is a <p>: two H1s per page — "Home" and the
@@ -607,7 +613,11 @@ export default function AppLayout() {
 
 
     // Auth Splash Loader
-    const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(true);
+    // A first visit on Home goes straight to the landing (skipsBootSplash).
+    const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(() => !skipsBootSplash({
+        appPath: location.pathname,
+        isReturning: isReturningVisitor(readLocalStorage()),
+    }));
     const [authSplashProgress, setAuthSplashProgress] = useState(0);
     const [authSplashMessage, setAuthSplashMessage] = useState(() => t('splash.msg1'));
     const initialBootTimeRef = useRef(Date.now());
