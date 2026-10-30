@@ -59,6 +59,10 @@ export default defineConfig({
           '**/*-latin-ext-*.woff2',
           '**/*-italic-*.woff2',
           '**/dotgothic16-*.woff2',
+          // Legacy: the raster wordmark the build before 2026-10-30 asks for.
+          // Kept in public/ for clients still on that build (they update only
+          // when they accept the prompt); the current build uses the SVG.
+          '**/logo-wordmark*.webp',
         ],
         // Web Push lives in the *generated* worker rather than a second
         // registration of its own — a second service worker is what caused the

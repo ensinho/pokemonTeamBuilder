@@ -12,6 +12,14 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-30 — The vector wordmark drew at 0×0 in the rail on Firefox `bug`
+- **Symptom:** after #79, the rail showed an empty band where the wordmark goes, in Firefox only. Chrome and the landing's wordmark were fine. Firefox's inspector showed the `<img>` pointing at `logo-wordmark.svg`.
+- **Root cause:** the traced SVG had a `viewBox` and no `width`/`height`, so it has no intrinsic width. The rail sizes the wordmark `width: 100%` (max 10.5rem) inside the shrink-to-fit home button, a size that depends on the image itself. Chrome falls back to 300px for an SVG without intrinsic size, so the cycle resolves. Firefox resolves it to 0. The landing gives the wordmark a fixed width in `rem`, so it never depended on the intrinsic size. The webp it replaced was 480px wide by itself. Reproduced in Playwright's Firefox (0×0) before the fix.
+- **Fix:** `width="2022" height="483"` on the SVG root, matching its `viewBox`. 160×38 in the rail in Firefox and Chrome.
+- **Also:** #79 deleted `logo-wordmark*.webp`, which the JS of the build before it still requests; those clients got a 404 HTML page until they accepted the update. Both files are back in `public/`, out of the precache (`globIgnores`), so they can be removed in a later release.
+- **Correct pattern:** an SVG used as an `<img>` carries `width`/`height` on its root (or the CSS gives it a definite size); test a replaced image in Firefox as well as Chrome. A `public/` file that shipped JS references stays at least one release after it is replaced.
+- **Files:** `public/logo-wordmark.svg`, `public/logo-wordmark-480.webp`, `public/logo-wordmark.webp`, `vite.config.js`
+
 ### 2026-10-30 — SEO and AI copy promised Tailwind and Trick Room in Speed tiers, which it does not have `docs`
 - **Symptom:** the guide `first-vgc-team`, `seo.speedTiers.description` (title tag and meta description), the JSON-LD `featureList` (`content/structuredCopy.js`) and `public/llms.txt` all said Speed tiers compares Speed "with EVs, natures, boosts, Tailwind and Trick Room". The page has none of the last three.
 - **Root cause:** the copy for search engines and answer engines (written the same day) described what the tool *should* do, not what `SpeedTiersView` does: level-50 Speed at four fixed spreads (0 EVs, 252 neutral, 252 with +Speed, and that one with Choice Scarf). Crawlers and AI assistants repeat such claims as fact, and a visitor who arrives looking for them leaves.
