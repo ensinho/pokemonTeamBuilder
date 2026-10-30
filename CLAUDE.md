@@ -69,6 +69,8 @@ Three-tier cache for PokéAPI data, all funneled through `fetchJsonCached`:
 
 **The Pokédex/Team Builder list loads from `pokemon-index.json`** (1025 entries with `id`, `name`, `types`, `generation`; sprites derived from id via `pokemonSprites.js`) — loaded once, then filtered/searched/paginated **client-side** in `usePokedexStore`. It does **not** query Firestore for the list (that was a perf wound — see `docs/wounds.md`). The detail panel still lazy-loads the full doc from the Firestore `pokemons` collection (or static detail / PokéAPI) on click.
 
+**Sprite hosts go through `src/utils/assetHost.js`** — never hardcode `cdn.jsdelivr.net` or `play.pokemonshowdown.com`. `VITE_ASSET_MIRROR_URL` points them at our Cloud Storage copy (filled by `npm run assets:mirror`), so networks that block "games" still get images; a file missing there falls back to its origin (`docs/modules/asset_mirror.md`).
+
 When changing how Pokémon data is fetched, work through this service — never `fetch` PokéAPI directly from components. If you add new static data, regenerate the manifest via the `data:cache` scripts.
 
 **The other baked datasets** (Smogon sets, usage, tournaments, mega stones, move types, gyms…) load through **`src/services/staticData.js`**: `useStaticData(file)` in components, `loadStaticData(file)` elsewhere — one request per file per session, shared by every caller. Never `fetch` a `public/data` file in a hook's own effect: a hook runs per mounted component, and the Competitive tab once asked for `mega-stones.json` 36 times and dropped the PWA's connection (`docs/wounds.md`, 2026-10-23). `src/services/staticData.guard.test.js` fails if it comes back.

@@ -1,18 +1,21 @@
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
+import { POKEAPI_SPRITES_BASE, toMirrorUrl } from './assetHost';
 
-const RAW_SPRITE_BASE_URL = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon';
+const RAW_SPRITE_BASE_URL = `${POKEAPI_SPRITES_BASE}/pokemon`;
 
 const toPokemonId = (value) => {
     const parsed = Number.parseInt(value, 10);
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
+// Stored URLs (Firestore docs, saved teams) still name the old hosts — route
+// them to wherever sprites are served from now.
 export const sanitizeSpriteUrl = (url) => {
     if (!url || typeof url !== 'string') return url;
-    return url.replace(
+    return toMirrorUrl(url.replace(
         /^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\//i,
         'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/'
-    );
+    ));
 };
 
 export const getPokemonFrontSpriteUrl = (pokemonId, { shiny = false } = {}) => {

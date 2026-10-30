@@ -1,11 +1,12 @@
 import { useStaticData } from './useStaticData';
+import { SHOWDOWN_SPRITES_BASE } from '../utils/assetHost';
 
 // Loads the baked trainer-sprite roster (public/data/trainer-sprites.json) — the
 // avatars a trainer can pick for their profile. Same shape of loader as
 // useBattleItems: one shared request, best-effort, degrades to an empty list so
 // callers just fall back to the greeting Pokémon.
 
-const SPRITE_BASE_URL = 'https://play.pokemonshowdown.com/sprites/trainers';
+const SPRITE_BASE_URL = `${SHOWDOWN_SPRITES_BASE}/trainers`;
 
 /**
  * URL for a trainer sprite id (e.g. 'cynthia' → …/trainers/cynthia.png).

@@ -53,3 +53,9 @@ dist-ssr
 # Raw AI training data (scripts/ai-dataset.mjs). Only the trained weights in
 # api/_lib/ai/models/ are committed.
 scratch/ai-data/
+
+/keys
+
+# Service-account keys (scripts/mirror-assets.mjs) — never commit
+keys/
+*firebase-adminsdk*.json
