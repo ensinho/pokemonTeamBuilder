@@ -1,9 +1,7 @@
 import React from 'react';
 import { SITE_NAME } from '../utils/seoPages';
 
-const BASE = import.meta.env.BASE_URL;
-const SMALL = `${BASE}logo-wordmark-480.webp`;
-const LARGE = `${BASE}logo-wordmark.webp`;
+const SRC = `${import.meta.env.BASE_URL}logo-wordmark.svg`;
 
 /**
  * The PokemonBuilder wordmark (2026-10-28): brush lettering, "Pokemon" in
@@ -13,18 +11,16 @@ const LARGE = `${BASE}logo-wordmark.webp`;
  * the app's mark and favicon. The expanded rail shows the wordmark alone; the
  * splash and the landing pair it with the icon.
  *
- * Two files: 480w (20 KB) for the rail and the splash, 960w (49 KB) for the
- * landing. `sizes` tells the browser how wide this one is drawn so it picks
- * between them.
+ * One vector file (2026-10-30), traced from the 2169px original: sharp at any
+ * width and pixel density, ~32 KB gzipped, so there is no `srcSet` to pick
+ * between resolutions.
  */
-export function BrandWordmark({ className = '', sizes = '10rem' }) {
+export function BrandWordmark({ className = '' }) {
     return (
         <img
-            src={SMALL}
-            srcSet={`${SMALL} 480w, ${LARGE} 960w`}
-            sizes={sizes}
-            width={480}
-            height={112}
+            src={SRC}
+            width={2022}
+            height={483}
             alt={SITE_NAME}
             decoding="async"
             draggable={false}
