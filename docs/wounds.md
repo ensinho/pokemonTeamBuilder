@@ -12,12 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
-### 2026-10-30 — Deleting the raster wordmark broke the logo for visitors still on the previous build `bug`
-- **Symptom:** after #79 shipped, Enzo's rail showed an empty box where the wordmark goes. A fresh visit was fine.
-- **Root cause:** #79 replaced `logo-wordmark*.webp` with `logo-wordmark.svg` and deleted the webp files. The update is `registerType: 'prompt'`, so a client keeps running the old build (and its JS) until the user accepts the update — and that JS still asked for `/logo-wordmark-480.webp`. With the file gone, the `vercel.json` rewrite answered it with render-meta's HTML 404: a broken image.
-- **Fix:** both webp files are back in `public/`, excluded from the precache (`globIgnores` in `vite.config.js`); new builds still use the SVG.
-- **Correct pattern:** a file in `public/` that shipped JS references is part of a released API. When replacing it, keep the old file for at least one release cycle (out of the precache), and delete it later in a separate change. Hashed `assets/` files are not affected: the old precache holds them.
-- **Files:** `public/logo-wordmark-480.webp`, `public/logo-wordmark.webp`, `vite.config.js`
+### 2026-10-30 — The vector wordmark drew at 0×0 in the rail on Firefox `bug`
+- **Symptom:** after #79, the rail showed an empty band where the wordmark goes, in Firefox only. Chrome and the landing's wordmark were fine. Firefox's inspector showed the `<img>` pointing at `logo-wordmark.svg`.
+- **Root cause:** the traced SVG had a `viewBox` and no `width`/`height`, so it has no intrinsic width. The rail sizes the wordmark `width: 100%` (max 10.5rem) inside the shrink-to-fit home button, a size that depends on the image itself. Chrome falls back to 300px for an SVG without intrinsic size, so the cycle resolves. Firefox resolves it to 0. The landing gives the wordmark a fixed width in `rem`, so it never depended on the intrinsic size. The webp it replaced was 480px wide by itself. Reproduced in Playwright's Firefox (0×0) before the fix.
+- **Fix:** `width="2022" height="483"` on the SVG root, matching its `viewBox`. 160×38 in the rail in Firefox and Chrome.
+- **Also:** #79 deleted `logo-wordmark*.webp`, which the JS of the build before it still requests; those clients got a 404 HTML page until they accepted the update. Both files are back in `public/`, out of the precache (`globIgnores`), so they can be removed in a later release.
+- **Correct pattern:** an SVG used as an `<img>` carries `width`/`height` on its root (or the CSS gives it a definite size); test a replaced image in Firefox as well as Chrome. A `public/` file that shipped JS references stays at least one release after it is replaced.
+- **Files:** `public/logo-wordmark.svg`, `public/logo-wordmark-480.webp`, `public/logo-wordmark.webp`, `vite.config.js`
 
 ### 2026-10-30 — SEO and AI copy promised Tailwind and Trick Room in Speed tiers, which it does not have `docs`
 - **Symptom:** the guide `first-vgc-team`, `seo.speedTiers.description` (title tag and meta description), the JSON-LD `featureList` (`content/structuredCopy.js`) and `public/llms.txt` all said Speed tiers compares Speed "with EVs, natures, boosts, Tailwind and Trick Room". The page has none of the last three.
