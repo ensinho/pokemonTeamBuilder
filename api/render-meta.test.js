@@ -163,6 +163,13 @@ describe('render-meta buildPage', () => {
         expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Shared Team | PokemonBuilder');
         expect(attr(html, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/og-image.png');
     });
+
+    it('declares the card size on a dynamic image too', () => {
+        const html = head(page('/pokemon/charizard'));
+        expect(attr(html, /<meta property="og:image:width" content="([^"]*)"/)).toBe('1200');
+        expect(attr(html, /<meta property="og:image:height" content="([^"]*)"/)).toBe('630');
+        expect(attr(html, /<meta property="og:image:type" content="([^"]*)"/)).toBe('image/png');
+    });
 });
 
 // 2026-10-30: pages that do not exist, pages that should not be indexed, and
