@@ -17,11 +17,12 @@ import { getGameLogo, getGameAccent } from '../../assets/gameLogos';
 import { toneInk, toneWash } from '../../utils/toneInk';
 import '../../styles/game-cover.css';
 import '../../styles/gyms-view.css';
+import { SHOWDOWN_SPRITES_BASE } from '../../utils/assetHost';
 
 const slugify = (name = '') => name.toLowerCase().trim().replace(/[.'’:]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 const pretty = (s = '') => s.replace(/-/g, ' ');
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
-const TRAINER_SPRITE_BASE = 'https://play.pokemonshowdown.com/sprites/trainers/';
+const TRAINER_SPRITE_BASE = `${SHOWDOWN_SPRITES_BASE}/trainers/`;
 // A hack ROM's leader can carry a note — a random pool, a roster not verified yet.
 const leaderNote = (leader, pt) => (pt ? leader.notePt : null) || leader.note || null;
 

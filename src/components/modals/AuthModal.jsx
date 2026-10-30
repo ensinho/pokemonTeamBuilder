@@ -6,6 +6,7 @@ import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
 import { Loader } from '../Loader';
 import { AuthDialogShell, AuthHero, AuthStage } from './auth/AuthDialogShell';
 import { PasswordField } from './auth/PasswordField';
+import { SHOWDOWN_SPRITES_BASE } from '../../utils/assetHost';
 
 const LOGIN_POKEMON = ['pikachu', 'eevee', 'charmander', 'gengar', 'squirtle', 'togepi', 'piplup', 'snivy'];
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
@@ -19,7 +20,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     const { t } = useTranslation();
     // Picked once per opening, not per render — it used to change on every keystroke.
     const sprite = useMemo(
-        () => `https://play.pokemonshowdown.com/sprites/ani/${LOGIN_POKEMON[Math.floor(Math.random() * LOGIN_POKEMON.length)]}.gif`,
+        () => `${SHOWDOWN_SPRITES_BASE}/ani/${LOGIN_POKEMON[Math.floor(Math.random() * LOGIN_POKEMON.length)]}.gif`,
         [],
     );
     const [mode, setMode] = useState(initialMode);

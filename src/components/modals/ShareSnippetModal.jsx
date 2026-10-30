@@ -19,6 +19,7 @@ import { useMegaStones, megaDisplayName } from '../../hooks/useMegaStones';
 import { typeColors, typeIcons } from '../../constants/types';
 import { loadStaticData } from '../../services/staticData';
 import { SITE_URL } from '../../utils/seoPages';
+import { POKEAPI_SPRITES_BASE, isAssetMirrorEnabled } from '../../utils/assetHost';
 
 // The image's footer names the site, and the team's own page once it is
 // published (2026-10-24: it used to advertise the GitHub repository).
@@ -73,6 +74,8 @@ const loadItemImage = async (itemName) => {
     const pokeApiSlug = String(itemName).toLowerCase().replace(/[.'’:]/g, '').replace(/\s+/g, '-').trim();
 
     const candidates = [
+        // Our own copy first when there is one (src/utils/assetHost.js).
+        ...(isAssetMirrorEnabled ? [`${POKEAPI_SPRITES_BASE}/items/${pokeApiSlug}.png`] : []),
         `https://raw.githubusercontent.com/smogon/pokemon-showdown-client/master/sprites/itemicons/${sdSlug}.png`,
         `https://cdn.jsdelivr.net/gh/smogon/pokemon-showdown-client@master/sprites/itemicons/${sdSlug}.png`,
         `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/${pokeApiSlug}.png`,

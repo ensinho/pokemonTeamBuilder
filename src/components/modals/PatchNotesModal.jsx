@@ -12,10 +12,11 @@ import { getGameLogo } from '../../assets/gameLogos';
 import { typeIcons } from '../../constants/types';
 import { trainerSpriteUrl } from '../../utils/challengeView';
 import { BrandWordmark } from '../BrandWordmark';
+import { POKEAPI_SPRITES_BASE } from '../../utils/assetHost';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
 
-const SPRITE_BASE = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon';
+const SPRITE_BASE = `${POKEAPI_SPRITES_BASE}/pokemon`;
 
 // Champions Pokédex — the cover the user will look for in the picker, over the
 // roster it unlocks. Same grammar as the other two visuals: tiles, then caption.

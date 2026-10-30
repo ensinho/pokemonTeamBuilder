@@ -18,6 +18,7 @@ import { HeartIcon, CloseIcon, InfoIcon, MessageIcon } from './icons';
 import { Info } from 'lucide-react';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { useTranslation } from '../hooks/useTranslation';
+import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
@@ -80,7 +81,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                 );
                 // Thank-you toast with a random Pokémon sprite
                 const randomId = Math.floor(Math.random() * 898) + 1;
-                const spriteUrl = `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${randomId}.png`;
+                const spriteUrl = getPokemonFrontSpriteUrl(randomId);
                 const messages = [
                     'Thanks for the like!',
                     'You rock — thanks!',

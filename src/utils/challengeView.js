@@ -8,6 +8,8 @@
  * revealed only once that Pokémon has been sent out.
  */
 
+import { SHOWDOWN_SPRITES_BASE } from './assetHost';
+
 const speciesOf = (details) => String(details || '').split(',')[0].trim();
 
 const lastRequest = (lines) => {
@@ -98,7 +100,7 @@ export const challengePhase = ({ status, hasLoaded, isAnonymous, run, pickingPra
 };
 
 /** Showdown's trainer sprite — the same host every other trainer sprite in the app uses. */
-export const trainerSpriteUrl = (id) => `https://play.pokemonshowdown.com/sprites/trainers/${id}.png`;
+export const trainerSpriteUrl = (id) => `${SHOWDOWN_SPRITES_BASE}/trainers/${id}.png`;
 
 /** Species of `side` that have fainted in these lines (nicknames resolved). */
 export const faintedSpecies = (lines = [], side = 'p1') => {

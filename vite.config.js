@@ -69,6 +69,20 @@ export default defineConfig({
             },
           },
           {
+            // Our own copy of both sprite hosts (VITE_ASSET_MIRROR_URL, see
+            // src/utils/assetHost.js) — the Cloud Storage bucket. Objects are
+            // public with CORS, so responses aren't opaque.
+            urlPattern: /^https:\/\/(storage|firebasestorage)\.googleapis\.com\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'mirrored-sprites',
+              expiration: {
+                maxEntries: 900,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
             // Showdown trainer sprites (and, later, the animated battle sprites).
             // Hotlinked via <img> only — the host sends no CORS header.
             urlPattern: /^https:\/\/play\.pokemonshowdown\.com\/sprites\//,
@@ -122,5 +136,10 @@ export default defineConfig({
         },
       },
     },
+  },
+  test: {
+    // Tests see the origin sprite hosts whatever the local .env says — the
+    // mirror (src/utils/assetHost.js) is a deploy setting, not test input.
+    env: { VITE_ASSET_MIRROR_URL: '' },
   },
 })

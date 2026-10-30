@@ -9,6 +9,7 @@ import { LocaleRouter } from './components/LocaleRouter'
 import { useLanguageStore } from './store/useLanguageStore'
 import { mirrorLanguageInUrl } from './services/localeHistory'
 import { initAnalytics } from './services/analytics'
+import { installAssetFallback } from './utils/assetHost'
 
 // Initialize theme from localStorage before first render so CSS vars are set.
 const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -27,6 +28,10 @@ if (window.location.hash.startsWith('#/')) {
 // the address on the language the visitor arrives in before anything routes:
 // a Brazilian browser opening `/builder` continues at `/pt/builder`.
 mirrorLanguageInUrl(useLanguageStore.getState().language);
+
+// A sprite missing from our mirror retries at its origin (utils/assetHost.js).
+// Installed before the first render so the first <img> is already covered.
+installAssetFallback();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
