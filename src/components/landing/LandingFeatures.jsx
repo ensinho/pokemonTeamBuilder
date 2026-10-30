@@ -27,6 +27,9 @@ import { TypeChip } from '../TypeChip';
  */
 
 const byId = Object.fromEntries(DEMO_POOL.map((p) => [p.id, p]));
+// The illustrations are aria-hidden (the card's text says it), so these alts
+// are for image search and audits, never read twice by a screen reader.
+const nameOf = (id) => titleCaseSlug(byId[id]?.name || '');
 
 // Canon base stats (pokemon-index.json), so the cards draw without loading it.
 const GARDEVOIR_STATS = { hp: 68, attack: 65, defense: 65, 'special-attack': 125, 'special-defense': 115, speed: 80 };
@@ -62,7 +65,7 @@ function ChallengeVisual() {
                 <span className="landing-arena__vs">VS</span>
                 <span className="landing-arena__side">
                     <span className="landing-arena__stage">
-                        <AnimatedSprite id={445} className="landing-arena__ace" lazy />
+                        <AnimatedSprite id={445} alt={nameOf(445)} className="landing-arena__ace" lazy />
                     </span>
                     <span className="landing-arena__label">{titleCaseSlug('garchomp')}</span>
                 </span>
@@ -89,7 +92,7 @@ function BuilderVisual() {
             <div className="landing-slots">
                 {Array.from({ length: 6 }, (_, i) => (
                     team[i]
-                        ? <span key={i} className="landing-slot"><img src={getPokemonFrontSpriteUrl(team[i].id)} alt="" /></span>
+                        ? <span key={i} className="landing-slot"><img src={getPokemonFrontSpriteUrl(team[i].id)} alt={nameOf(team[i].id)} /></span>
                         : <span key={i} className="landing-slot landing-slot--empty" />
                 ))}
             </div>
@@ -106,7 +109,7 @@ function PokedexVisual() {
     return (
         <div className="landing-visual" aria-hidden="true">
             <div className="landing-dex">
-                <span className="landing-dex__sprite"><img src={getPokemonFrontSpriteUrl(282)} alt="" /></span>
+                <span className="landing-dex__sprite"><img src={getPokemonFrontSpriteUrl(282)} alt={nameOf(282)} /></span>
                 <span className="landing-dex__body">
                     <span className="landing-dex__head">
                         <span className="landing-dex__name">Gardevoir</span>
@@ -135,7 +138,7 @@ function SpeedVisual() {
             <div className="landing-speed">
                 {SPEED_LINEUP.map(({ id, speed }) => (
                     <span key={id} className="landing-speed__row">
-                        <img src={getPokemonFrontSpriteUrl(id)} alt="" className="landing-speed__sprite" />
+                        <img src={getPokemonFrontSpriteUrl(id)} alt={nameOf(id)} className="landing-speed__sprite" />
                         <span className="landing-speed__bar"><span style={{ width: `${(speed / top) * 100}%` }} /></span>
                         <span className="landing-speed__value">{speed}</span>
                     </span>
@@ -170,7 +173,7 @@ function MetaVisual() {
                 )) : [0, 1, 2].map((i) => <span key={i} className="landing-meta__row landing-meta__row--ghost" />)}
             </div>
             <span className="landing-visual__caption">
-                <AnimatedSprite id={727} className="landing-meta__mascot" lazy />
+                <AnimatedSprite id={727} alt={nameOf(727)} className="landing-meta__mascot" lazy />
                 {monthLabel ? t('landing.visuals.meta', { month: monthLabel }) : t('landing.visuals.metaLoading')}
             </span>
         </div>
@@ -185,11 +188,11 @@ function TypesVisual() {
                 <tbody>
                     <tr>
                         <td />
-                        {TRIANGLE.map((d) => <td key={d}><img src={typeIcons[d]} alt="" /></td>)}
+                        {TRIANGLE.map((d) => <td key={d}><img src={typeIcons[d]} alt={t(`types.${d}`)} /></td>)}
                     </tr>
                     {TRIANGLE.map((a) => (
                         <tr key={a}>
-                            <td><img src={typeIcons[a]} alt="" /></td>
+                            <td><img src={typeIcons[a]} alt={t(`types.${a}`)} /></td>
                             {TRIANGLE.map((d) => {
                                 const m = offensiveMultiplier(a, d);
                                 const tone = m > 1 ? 'super' : m < 1 ? 'weak' : 'neutral';

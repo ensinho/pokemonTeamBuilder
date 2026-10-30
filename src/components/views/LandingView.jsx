@@ -15,6 +15,7 @@ import { RollingNumber } from '../RollingNumber';
 import { AnimatedSprite } from '../AnimatedSprite';
 import { BrandWordmark } from '../BrandWordmark';
 import { LandingFeatures } from '../landing/LandingFeatures';
+import { LogoMark } from '../LogoMark';
 import { THEME_META } from '../../constants/theme';
 import { LANGUAGES } from '../../utils/localePath';
 
@@ -39,13 +40,15 @@ const STAGE_FRONT = [6, 445, 282];
 // The front-centre Pokémon (Garchomp) leads the party: the stage's one spark
 // burst sits behind it, in its primary type's canon colour.
 const STAGE_LEAD_TYPE = 'dragon';
+// The stage is aria-hidden; the names are for image search and audits.
+const STAGE_NAMES = Object.fromEntries(DEMO_POOL.map((p) => [p.id, titleCaseSlug(p.name)]));
 
 function LandingStage() {
     const row = (ids, depth) => (
         <div className={`landing-stage__row landing-stage__row--${depth}`}>
             {ids.map((id) => (
                 <span key={id} className="landing-stage__slot">
-                    <AnimatedSprite id={id} className="landing-stage__sprite" />
+                    <AnimatedSprite id={id} alt={STAGE_NAMES[id]} className="landing-stage__sprite" />
                 </span>
             ))}
         </div>
@@ -109,9 +112,10 @@ function LandingDemo({ onLeave }) {
                             >
                                 {/* On the team it moves; on the bench it waits, still. */}
                                 <span className="landing-pick__stage">
-                                    <AnimatedSprite id={p.id} still={!on} className="landing-pick__sprite" />
+                                    <AnimatedSprite id={p.id} still={!on} alt={titleCaseSlug(p.name)} className="landing-pick__sprite" />
                                 </span>
-                                <span className="landing-pick__name">{titleCaseSlug(p.name)}</span>
+                                {/* The sprite's alt already names it in the button's label. */}
+                                <span className="landing-pick__name" aria-hidden="true">{titleCaseSlug(p.name)}</span>
                                 <span className="landing-pick__types">
                                     {p.types.map((type) => (
                                         <img key={type} src={typeIcons[type]} alt={t(`types.${type}`)} title={t(`types.${type}`)} className="landing-pick__type" />
@@ -161,8 +165,8 @@ export function LandingView({ onLeave, onSkip }) {
             <section className="landing-banner">
                 <div className="landing-banner__copy">
                     <div className="landing-brand">
-                        <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" className="landing-brand__mark" />
-                        <BrandWordmark className="landing-brand__wordmark" sizes="(max-width: 640px) 15rem, 22rem" />
+                        <LogoMark sizes="3.5rem" className="landing-brand__mark" />
+                        <BrandWordmark className="landing-brand__wordmark" />
                     </div>
                     <p className="landing-eyebrow"><span className="landing-eyebrow__dot" aria-hidden="true" />{t('landing.eyebrow')}</p>
                     <h1 className="landing-title">{t('landing.title')}</h1>
