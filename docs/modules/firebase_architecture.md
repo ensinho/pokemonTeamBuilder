@@ -19,6 +19,17 @@ Lifecycle:
 2. `onAuthStateChanged` fires → hydrates profile (displayName, theme, favorites, streak), determines greeting Pokémon, loads active team id from localStorage.
 3. `cleanupAuth()` — called in `App.jsx` on unmount. Unsubscribes the listener.
 
+**Auth is created with `initializeAuth`, never `getAuth()` (2026-10-30).**
+`getAuth()` adds `browserPopupRedirectResolver`, which on Chromium loads
+apis.google.com, gapi and the firebaseapp.com auth iframe (~135 KB, three
+origins) on every boot — and Auth does not report ready until that iframe is
+up. The app signs in only anonymously, by email link and by email + password,
+so `services/firebase.js` keeps getAuth()'s persistence chain and drops the
+resolver. Measured on the build (Lighthouse mobile, median of 3): FCP 6.4 →
+4.1 s, LCP 8.5 → 6.3 s, 7 → 4 origins (together with the landing skipping the
+splash). A popup or redirect sign-in added later passes the resolver at its
+call site; `services/firebase.guard.test.js` fails otherwise.
+
 ---
 
 ## Firestore Schema
