@@ -1,0 +1,1 @@
+import{r as p}from"./react-vendor-D1jwkorh.js";import{aa as b}from"./vendor-C8nWlvHb.js";function P(o,e){const[c,r]=b(),a=c.get("tab"),n=o.includes(a)?a:e,u=p.useCallback(s=>{r(m=>{const t=new URLSearchParams(m);return s===e?t.delete("tab"):t.set("tab",s),t},{replace:!0,preventScrollReset:!0})},[r,e]);return[n,u]}export{P as u};

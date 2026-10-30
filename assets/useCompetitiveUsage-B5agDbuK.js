@@ -1,0 +1,1 @@
+import{r as i}from"./react-vendor-D1jwkorh.js";import{D as m}from"./index-BlJhcdKR.js";const n={};function l({enabled:e=!0}={}){const{data:t,status:o}=m("competitive-usage.json",{enabled:e}),s=(t==null?void 0:t.byId)||n,r=Number.isFinite(t==null?void 0:t.totalTeams)?t.totalTeams:0,u=i.useMemo(()=>a=>s[a]||null,[s]);return{byId:s,usageFor:u,totalTeams:r,status:o}}export{l as u};
