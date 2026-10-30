@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { Type } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { FileText, Info, ScrollText, Shield, Type } from 'lucide-react';
 import { ShellNavGroup } from './ShellNavGroup';
 import { FooterFeedback } from './FooterFeedback';
 import { TextSizeControl } from './TextSizeControl';
 import { GithubIcon, LinkedinIcon, StarsIcon } from './icons';
 import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useTranslation } from '../hooks/useTranslation';
+import { SITE_PAGE_PATHS } from '../utils/seoPages';
+
+// About, How it works, Privacy, Terms (content/sitePages.js) — the desktop
+// footer lists them; on a phone this section is the footer.
+const SITE_PAGE_ICONS = { about: Info, methodology: FileText, privacy: Shield, terms: ScrollText };
 
 /**
  * The drawer's "About" section — phones only, where the site footer is hidden.
@@ -24,7 +30,7 @@ import { useTranslation } from '../hooks/useTranslation';
  * opened on a phone would silently hold one of the desktop rail's two slots
  * while not even rendering there.
  */
-export function DrawerAboutSection({ onOpenPatchNotes, db, userId, userEmail, displayName, showToast }) {
+export function DrawerAboutSection({ onOpenPatchNotes, onNavigate, db, userId, userEmail, displayName, showToast }) {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -63,6 +69,17 @@ export function DrawerAboutSection({ onOpenPatchNotes, db, userId, userEmail, di
                     <span className="app-shell__nav-trailing"><TextSizeControl variant="inline" /></span>
                 </div>
             </li>
+            {Object.entries(SITE_PAGE_PATHS).map(([path, key]) => {
+                const Icon = SITE_PAGE_ICONS[key];
+                return (
+                    <li key={path}>
+                        <Link to={path} onClick={onNavigate} className="app-shell__nav-link">
+                            <span className="app-shell__nav-icon" aria-hidden="true"><Icon /></span>
+                            <span className="app-shell__nav-text">{t(`sitePages.links.${key}`)}</span>
+                        </Link>
+                    </li>
+                );
+            })}
             <li className="app-shell__nav-credit">
                 <span>
                     {t('layout.developedBy')}{' '}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { createPortal } from 'react-dom';
-import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
+import { SITE_PAGE_PATHS } from '../utils/seoPages';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { chooseTheme } from '../store/themeChoice';
@@ -20,6 +21,8 @@ import { PATCH_NOTES_VERSION, THEME_META } from '../constants/theme';
 import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { DrawerAboutSection } from './DrawerAboutSection';
+import { LogoMark } from './LogoMark';
+import { ConsentBanner } from './ConsentBanner';
 import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { ShellNavGroup } from './ShellNavGroup';
 import ToastStack from './ToastStack';
@@ -127,7 +130,7 @@ const ROUTE_CHUNKS = {
     challenge: loadChampionChallengeView,
     feed: () => import('./views/FeedView'), favorites: () => import('./views/FavoritesView'),
     tournaments: () => import('./views/TournamentsView'), bestTeams: () => import('./views/BestTeamsView'),
-    guides: () => import('./views/GuidesView'),
+    guides: () => import('./views/GuidesView'), sitePage: () => import('./views/InfoPageView'),
     damageCalc: () => import('./views/DamageCalculatorView'),
     speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
     abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
@@ -138,6 +141,13 @@ const ROUTE_CHUNKS = {
     profile: () => import('./views/ProfileView'), admin: () => import('./views/AdminDashboardView'),
 };
 const prefetchRoute = (key) => { ROUTE_CHUNKS[key]?.().catch(() => {}); };
+
+// Pages whose view draws its own <h1> (every route under the key does). On
+// them the header's title is a <p>: two H1s per page — "Home" and the
+// landing's headline — was an SEO audit finding (2026-10-30). Everywhere
+// else the header title is the page's only H1. The first-visit landing is
+// added at the render site (it lives under 'home', whose dashboard has none).
+const VIEWS_WITH_OWN_H1 = new Set(['guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
 const DESKTOP_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
 
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
@@ -176,6 +186,7 @@ const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) =>
 const BestTeamsView = lazy(() => import('./views/BestTeamsView').then((m) => ({ default: m.BestTeamsView })));
 const GuidesView = lazy(() => import('./views/GuidesView').then((m) => ({ default: m.GuidesView })));
 const GuideView = lazy(() => import('./views/GuidesView').then((m) => ({ default: m.GuideView })));
+const InfoPageView = lazy(() => import('./views/InfoPageView').then((m) => ({ default: m.InfoPageView })));
 const TournamentTeamView = lazy(() => import('./views/TournamentTeamView').then((m) => ({ default: m.TournamentTeamView })));
 const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
 const MetaUsageView = lazy(() => loadMetaUsageView().then((m) => ({ default: m.MetaUsageView })));
@@ -335,6 +346,7 @@ export default function AppLayout() {
         if (path === '/types' || path.startsWith('/types/')) return 'types';
         if (path === '/best-teams') return 'bestTeams';
         if (path === '/guides' || path.startsWith('/guides/')) return 'guides';
+        if (SITE_PAGE_PATHS[path]) return 'sitePage';
         if (path.startsWith('/t/')) return 'sharedTeam';
         if (path.includes('/items')) return 'items';
         if (path.includes('/gyms')) return 'gyms';
@@ -860,13 +872,15 @@ export default function AppLayout() {
                     ? 'Líderes de ginásio e os times exatos que eles usam'
                     : 'Gym leaders and the exact teams they run',
             },
+            'guides': { title: t('nav.guides'), subtitle: '' },
+            'sitePage': { title: t(`sitePages.links.${SITE_PAGE_PATHS[location.pathname]}`), subtitle: '' },
             'notFound': { title: t('layout.notFoundPageTitle'), subtitle: '' },
         };
         // Falling back to the Home entry made a missing key look like a working
         // header — /gyms and the old /pokeroom both shipped showing "Início" for exactly
         // that reason. An unknown route now shows nothing rather than a lie.
         return pages[currentPage] || { title: '', subtitle: '' };
-    }, [currentPage, t, language]);
+    }, [currentPage, t, language, location.pathname]);
 
     // One wrapper for every route. It carries no width cap — see the note on
     // .app-shell__page-frame — but it stays a single shared element so the
@@ -1204,12 +1218,8 @@ export default function AppLayout() {
         return (
             <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
                 <div className="boot-splash w-full max-w-xs text-center">
-                    <img
-                        src={import.meta.env.BASE_URL + 'logo-mark.webp'}
-                        alt=""
-                        className="mx-auto w-28 h-auto"
-                    />
-                    <BrandWordmark className="mx-auto mt-4 block w-48 h-auto" sizes="12rem" />
+                    <LogoMark sizes="7rem" className="mx-auto w-28 h-auto" />
+                    <BrandWordmark className="mx-auto mt-4 block w-48 h-auto" />
                     <div
                         className="mt-5 h-1 w-full overflow-hidden rounded-full"
                         style={{ backgroundColor: colors.cardLight }}
@@ -1260,6 +1270,8 @@ export default function AppLayout() {
                 />
                 </Suspense>
             )}
+            {/* LGPD: asks once before Google Analytics loads (services/analytics.js). */}
+            <ConsentBanner />
             {updateAvailable && (
                 <VersionUpdateModal
                     onRefresh={handleVersionRefresh}
@@ -1385,9 +1397,9 @@ export default function AppLayout() {
                                         The 60px icon rail has no room for the wordmark,
                                         so there the icon stands in for it. */}
                                     {isRailCollapsed && (
-                                        <img
-                                            src={import.meta.env.BASE_URL + 'logo-mark.webp'}
-                                            alt=""
+                                        <LogoMark
+                                            sizes="2.15rem"
+                                            decorative={false}
                                             className="app-shell__brand-logo cursor-pointer"
                                             onClick={() => navigate('/')}
                                             title={t('layout.goHome')}
@@ -1402,7 +1414,7 @@ export default function AppLayout() {
                                                 onClick={() => navigate('/')}
                                                 title={t('layout.goHome')}
                                             >
-                                                <BrandWordmark className="app-shell__brand-wordmark" sizes="10.5rem" />
+                                                <BrandWordmark className="app-shell__brand-wordmark" />
                                             </button>
                                         </h2>
                                     </div>
@@ -1540,7 +1552,11 @@ export default function AppLayout() {
                                     title — the same edge as the page under it. */}
                                 <div className="app-shell__header-copy">
                                     <div className="app-shell__header-title-row">
-                                        <h1 className="app-shell__header-title">{pageInfo.shortTitle || pageInfo.title}</h1>
+                                        {React.createElement(
+                                            isLandingOpen || VIEWS_WITH_OWN_H1.has(currentPage) ? 'p' : 'h1',
+                                            { className: 'app-shell__header-title' },
+                                            pageInfo.shortTitle || pageInfo.title,
+                                        )}
                                         {pageGuideTips[currentPage] && (
                                             <PageGuide
                                                 colors={colors}
@@ -1808,6 +1824,9 @@ export default function AppLayout() {
                                     <Route path="/best-teams" element={<BestTeamsView onOpenTeam={handleImportTeam} />} />
                                     <Route path="/guides" element={<GuidesView />} />
                                     <Route path="/guides/:slug" element={<GuideView />} />
+                                    {Object.entries(SITE_PAGE_PATHS).map(([path, key]) => (
+                                        <Route key={path} path={path} element={<InfoPageView pageKey={key} />} />
+                                    ))}
                                     <Route path="/tournaments/team/:id" element={
                                         <TournamentTeamView onImport={handleImportTeam} />
                                     } />
@@ -1963,6 +1982,15 @@ export default function AppLayout() {
                                     </button>
                                 </div>
 
+                                {/* About, How it works, Privacy, Terms — the trust pages
+                                    (content/sitePages.js). On phones they are in the
+                                    drawer's About section. */}
+                                <nav className="app-shell__footer-nav" aria-label={t('sitePages.footerLabel')}>
+                                    {Object.entries(SITE_PAGE_PATHS).map(([path, key]) => (
+                                        <Link key={path} to={path} className="app-shell__footer-link">{t(`sitePages.links.${key}`)}</Link>
+                                    ))}
+                                </nav>
+
                                 <div className="app-shell__footer-links">
                                     {/* Text size left the footer on 2026-10-06: it lives in
                                         Profile, which guests now reach from the rail
@@ -2098,6 +2126,7 @@ export default function AppLayout() {
                                     setIsSidebarOpen(false);
                                     handleOpenPatchNotes();
                                 }}
+                                onNavigate={() => setIsSidebarOpen(false)}
                                 db={db}
                                 userId={userId}
                                 userEmail={userEmail}

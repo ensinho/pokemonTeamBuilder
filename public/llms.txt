@@ -12,7 +12,7 @@ What it does not do: it does not connect to a game console, it has no battle lad
 
 - [Pokémon Team Builder](https://pokemonbuilder.app/builder): build a team of six and see type coverage, shared weaknesses and resistances, meta threats, partner suggestions from tournament teams and Smogon sets; export to Showdown, share by link or image.
 - [Pokémon Damage Calculator](https://pokemonbuilder.app/damage-calculator): damage rolls and KO chances between any two Pokémon in VGC and Smogon formats, with items, abilities, natures, EVs and Tera.
-- [Pokémon Speed Tiers](https://pokemonbuilder.app/speed-tiers): the Speed of every Pokémon with EVs, natures, boosts, Tailwind and Trick Room.
+- [Pokémon Speed Tiers](https://pokemonbuilder.app/speed-tiers): the level 50 Speed of every Pokémon with no EVs, 252 EVs, a +Speed nature or a Choice Scarf.
 - [Pokémon Meta & Usage Stats](https://pokemonbuilder.app/meta): usage by format and rating band, with each Pokémon's top items, abilities, moves, spreads and teammates.
 - [Best Pokémon VGC Teams](https://pokemonbuilder.app/best-teams): the top tournament finishes of the current regulation, the Pokémon those teams use most and the pairs that keep coming back.
 - [Pokémon VGC Tournament Teams](https://pokemonbuilder.app/tournaments): real tournament teams with player, placing and full sets.
@@ -29,6 +29,12 @@ What it does not do: it does not connect to a game console, it has no battle lad
 - [How to build a competitive Pokémon VGC team, step by step](https://pokemonbuilder.app/guides/first-vgc-team)
 - [How to choose a Pokémon team using tournament data](https://pokemonbuilder.app/guides/team-from-tournament-data)
 - [Pokémon team builders compared: PokemonBuilder, Showdown and Pikalytics](https://pokemonbuilder.app/guides/pokemon-team-builders-compared)
+
+## About the site
+
+- [About](https://pokemonbuilder.app/about): who makes PokemonBuilder, where its data comes from and how to get in touch (pokemonteambuilderadmin@gmail.com).
+- [How the team analysis works](https://pokemonbuilder.app/methodology): the weakness rules, the team score formula, how meta threats are ranked, and how the damage calculator and speed tiers compute their numbers.
+- [Privacy policy](https://pokemonbuilder.app/privacy) and [Terms of use](https://pokemonbuilder.app/terms).
 
 ## Optional
 

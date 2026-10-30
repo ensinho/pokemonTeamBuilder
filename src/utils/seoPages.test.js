@@ -17,7 +17,7 @@ describe('seo copy', () => {
         const keys = (node, prefix = '') => Object.entries(node).flatMap(([k, v]) => (
             v && typeof v === 'object' ? keys(v, `${prefix}${k}.`) : [`${prefix}${k}`]
         ));
-        for (const section of ['seo', 'landing', 'typesPage', 'sharedTeamView', 'reminderOffer', 'bestTeamsPage', 'dataNotes', 'guidesPage']) {
+        for (const section of ['seo', 'landing', 'typesPage', 'sharedTeamView', 'reminderOffer', 'bestTeamsPage', 'dataNotes', 'guidesPage', 'sitePages', 'consent']) {
             expect(keys(TRANSLATIONS.pt[section]).sort(), section).toEqual(keys(TRANSLATIONS.en[section]).sort());
         }
     });
@@ -121,8 +121,16 @@ describe('structuredData', () => {
         }
         const app = structuredData(pageMeta('/speed-tiers', 'pt'), 'pt').find((b) => b['@type'] === 'WebApplication');
         expect(app).toMatchObject({ name: 'Speed tiers de Pokémon', inLanguage: 'pt-BR' });
-        expect(app.featureList).toContain('Trick Room');
+        expect(app.featureList).toContain('Choice Scarf');
         const guide = structuredData(pageMeta('/guides/first-vgc-team', 'en'), 'en', { faq: [{ q: 'Q?', a: 'A.' }] });
         expect(guide.map((b) => b['@type'])).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList']);
+    });
+
+    it('gives the organisation a contact and marks the About page as one', () => {
+        const [org] = structuredData(pageMeta('/', 'en'), 'en');
+        expect(org.contactPoint).toMatchObject({ '@type': 'ContactPoint', email: 'pokemonteambuilderadmin@gmail.com' });
+        const about = structuredData(pageMeta('/about', 'pt'), 'pt');
+        expect(about.map((b) => b['@type'])).toEqual(['Organization', 'AboutPage', 'BreadcrumbList']);
+        expect(about[1]).toMatchObject({ url: 'https://pokemonbuilder.app/pt/about', mainEntity: { '@id': 'https://pokemonbuilder.app/#organization' } });
     });
 });

@@ -1,0 +1,85 @@
+/* ============================================================
+   CONSENT BANNER (ConsentBanner.jsx, 2026-10-30 — LGPD)
+   One card at the bottom, asked once. The page stays usable
+   around it: no scrim, no wall. Refuse and Accept are the same
+   button, side by side — refusing must not be harder.
+   Phone: full width above the dock (the toast stack's sum).
+   Desktop: a card in the bottom-right corner.
+   ============================================================ */
+
+.consent-banner {
+    position: fixed;
+    z-index: var(--z-overlay);
+    right: var(--space-4);
+    bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    left: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    animation: consent-banner-in var(--duration-slow) var(--ease-smooth) both;
+}
+
+/* Above the floating dock, never over it (same reservation as .toast-stack). */
+@media (max-width: 639px) {
+    body:has(.app-shell__tabbar) .consent-banner {
+        bottom: calc(
+            var(--app-shell-tab-height) + var(--space-1_5) * 2
+            + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+            + var(--space-2)
+        );
+    }
+}
+
+@media (min-width: 640px) {
+    .consent-banner {
+        left: auto;
+        right: var(--space-6);
+        bottom: var(--space-6);
+        width: min(calc(100% - var(--space-12)), 26rem);
+    }
+}
+
+.consent-banner__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.consent-banner__title {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.consent-banner__text {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.consent-banner__link {
+    color: var(--color-primary-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.consent-banner__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+}
+
+@keyframes consent-banner-in {
+    from { opacity: 0; transform: translateY(var(--space-2)); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .consent-banner { animation: none; }
+}

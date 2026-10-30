@@ -288,4 +288,21 @@ describe('render-meta: existence, indexing and the content AI crawlers read', ()
         expect(html).toContain('VGCPastes');
         expect(html).toContain('last update: Oct 29, 2026');
     });
+
+    it('serves About, How it works, Privacy and Terms in full, and links them from every footer', () => {
+        for (const path of ['/about', '/methodology', '/pt/privacy', '/pt/terms']) {
+            const { status, html } = build(path);
+            expect(status, path).toBe(200);
+            expect(robots(html), path).toBeUndefined();
+        }
+        const methodology = main(build('/methodology').html);
+        expect(methodology).toContain('<h1>How the team analysis works</h1>');
+        expect(methodology).toContain('<h2>How is the team score computed?</h2>');
+        const privacy = main(build('/pt/privacy').html);
+        expect(privacy).toContain('Atualizado em');
+        expect(privacy).toContain('<a href="mailto:pokemonteambuilderadmin@gmail.com">');
+        const footer = build('/pt/pokemon/charizard').html.match(/<footer>([\s\S]*?)<\/footer>/)[1];
+        expect(footer).toContain('<a href="/pt/privacy">Privacidade</a>');
+        expect(footer).toContain('<a href="/pt/about">Sobre</a>');
+    });
 });

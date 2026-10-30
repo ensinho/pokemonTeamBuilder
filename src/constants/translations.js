@@ -227,6 +227,25 @@ export const TRANSLATIONS = {
             more: 'More guides',
             notFound: 'This guide does not exist.',
         },
+        /* About, How it works, Privacy, Terms (InfoPageView). Their text is
+           src/content/sitePages.js; these are the shared labels. */
+        sitePages: {
+            kicker: 'PokemonBuilder',
+            updated: 'Last updated {{date}}',
+            footerLabel: 'About the site',
+            links: { about: 'About', methodology: 'How it works', privacy: 'Privacy', terms: 'Terms' },
+        },
+        /* The analytics cookie question (ConsentBanner, the Privacy page's switch). */
+        consent: {
+            title: 'Can we count your visit?',
+            text: 'With your OK, Google Analytics sets cookies to count visits and a few actions, so we know what to improve. No ads, nothing sold.',
+            privacy: 'Privacy policy',
+            accept: 'Accept',
+            decline: 'Refuse',
+            switchLabel: 'Analytics cookies (Google Analytics)',
+            switchDescription: 'Counts visits and a few actions. Off: it does not load.',
+            switchUnanswered: 'You have not answered yet, so it is off.',
+        },
         seo: {
             siteName: 'PokemonBuilder',
             home: {
@@ -238,7 +257,7 @@ export const TRANSLATIONS = {
             meta: { title: 'Pokémon Meta & Usage Stats', description: 'Competitive Pokémon usage stats by format: the most used Pokémon in VGC and Smogon tiers, with their top items, abilities, moves, spreads and partners.' },
             tournaments: { title: 'Pokémon VGC Tournament Teams', description: 'Real Pokémon VGC teams from recent tournaments, with the player, the placing and every set. Open any team and import it into the builder in one click.' },
             damageCalculator: { title: 'Pokémon Damage Calculator', description: 'A Pokémon damage calculator for VGC and Smogon formats: damage rolls and KO chances between any two Pokémon, with items, abilities, EVs and Tera.' },
-            speedTiers: { title: 'Pokémon Speed Tiers', description: 'Pokémon speed tiers for competitive play: compare every Pokémon\'s Speed with EVs, natures, boosts, Tailwind and Trick Room to plan who moves first.' },
+            speedTiers: { title: 'Pokémon Speed Tiers', description: 'Pokémon speed tiers for competitive play: the level 50 Speed of every Pokémon with no EVs, 252 EVs, a Speed nature or a Choice Scarf, to see who moves first.' },
             moves: { title: 'Pokémon Move List', description: 'Every Pokémon move in one list: type, category, power, accuracy and PP, with what each move does in battle and the Pokémon that can learn it.' },
             abilities: { title: 'Pokémon Abilities List', description: 'Every Pokémon ability explained: what each one does in battle and which Pokémon can have it, with a link to the page of every one of them.' },
             items: { title: 'Pokémon Items List', description: 'Held items, berries, Mega Stones and other battle items for competitive Pokémon teams, each with what it does in battle and its full effect.' },
@@ -305,6 +324,10 @@ export const TRANSLATIONS = {
                 none: 'nothing',
             },
             guides: { title: 'Pokémon team building guides', description: 'Step-by-step guides to competitive Pokémon: build your first VGC team, choose a team from tournament data, and compare the team builders players use.' },
+            about: { title: 'About this Pokémon team builder', description: 'PokemonBuilder is a free, independent Pokémon team builder by Enzo Esmeraldo: who makes it, where its data comes from and how to get in touch.' },
+            methodology: { title: 'How the team analysis works', description: 'How PokemonBuilder grades a team: the weakness rules, the score formula, meta threats, the damage calculator and speed tiers, explained step by step.' },
+            privacy: { title: 'Privacy policy', description: 'What PokemonBuilder stores about you and why: teams, accounts, public profiles, analytics and the services involved, and how to delete your data.' },
+            terms: { title: 'Terms of use', description: "The terms of use of PokemonBuilder, a free and unofficial Pokémon fan project: your account, what you post, community rules and the site's limits." },
             notFound: { title: 'Page not found', description: 'This page does not exist on PokemonBuilder. Search for a Pokémon, open the team builder or browse the Pokédex from the links on this page.' },
             list: { and: 'and' },
             snapshot: {
@@ -1144,6 +1167,7 @@ export const TRANSLATIONS = {
             analysisChipCounts: '{{weak}} weak · {{covered}} covered',
             ratingAria: 'Team rating {{score}} of 100: {{grade}}',
             grade: { building: 'Building', weak: 'Weak', fair: 'Fair', solid: 'Solid', excellent: 'Excellent' },
+            ratingHow: 'How is it computed?',
             formatAria: 'Game and format: {{label}}. Tap to change',
             allFormats: 'All games',
             resultCount: '{{count}} Pokémon',
@@ -3195,6 +3219,22 @@ export const TRANSLATIONS = {
             more: 'Mais guias',
             notFound: 'Este guia não existe.',
         },
+        sitePages: {
+            kicker: 'PokemonBuilder',
+            updated: 'Atualizado em {{date}}',
+            footerLabel: 'Sobre o site',
+            links: { about: 'Sobre', methodology: 'Como funciona', privacy: 'Privacidade', terms: 'Termos' },
+        },
+        consent: {
+            title: 'Podemos contar a sua visita?',
+            text: 'Com o seu OK, o Google Analytics grava cookies para contar visitas e algumas ações, para sabermos o que melhorar. Sem anúncios, nada é vendido.',
+            privacy: 'Política de privacidade',
+            accept: 'Aceitar',
+            decline: 'Recusar',
+            switchLabel: 'Cookies de estatística (Google Analytics)',
+            switchDescription: 'Conta visitas e algumas ações. Desligado: ele não carrega.',
+            switchUnanswered: 'Você ainda não respondeu, então está desligado.',
+        },
         seo: {
             siteName: 'PokemonBuilder',
             home: {
@@ -3206,7 +3246,7 @@ export const TRANSLATIONS = {
             meta: { title: 'Meta e uso competitivo de Pokémon', description: 'Estatísticas de uso competitivo por formato: os Pokémon mais usados no VGC e nas tiers do Smogon, com itens, habilidades, golpes, EVs e parceiros.' },
             tournaments: { title: 'Times de torneio de Pokémon VGC', description: 'Times reais de Pokémon VGC de torneios recentes, com jogador, colocação e todos os sets. Abra qualquer time e importe para o montador com um clique.' },
             damageCalculator: { title: 'Calculadora de dano Pokémon', description: 'Calculadora de dano Pokémon para VGC e Smogon: rolagens de dano e chance de KO entre quaisquer dois Pokémon, com itens, habilidades, EVs e Tera.' },
-            speedTiers: { title: 'Speed tiers de Pokémon', description: 'Speed tiers de Pokémon para o competitivo: compare a velocidade de todos com EVs, naturezas, boosts, Tailwind e Trick Room e saiba quem ataca antes.' },
+            speedTiers: { title: 'Speed tiers de Pokémon', description: 'Speed tiers de Pokémon para o competitivo: a velocidade no nível 50 de todos, sem EVs, com 252 EVs, natureza de Speed ou Choice Scarf, para ver quem age antes.' },
             moves: { title: 'Lista de golpes Pokémon', description: 'Todos os golpes Pokémon numa lista: tipo, categoria, poder, precisão e PP, com o que cada golpe faz em batalha e os Pokémon que podem aprendê-lo.' },
             abilities: { title: 'Lista de habilidades Pokémon', description: 'Todas as habilidades Pokémon explicadas: o que cada uma faz em batalha e quais Pokémon podem tê-la, com o link para a página de cada um deles.' },
             items: { title: 'Lista de itens Pokémon', description: 'Itens de segurar, berries, Mega Stones e outros itens de batalha para times competitivos, cada um com o que faz em batalha e o efeito completo.' },
@@ -3273,6 +3313,10 @@ export const TRANSLATIONS = {
                 none: 'nenhum',
             },
             guides: { title: 'Guias para montar times Pokémon', description: 'Guias passo a passo de Pokémon competitivo: monte seu primeiro time de VGC, escolha um time com dados de torneio e compare os team builders.' },
+            about: { title: 'Sobre este montador de times Pokémon', description: 'O PokemonBuilder é um montador de times Pokémon grátis e independente, de Enzo Esmeraldo: quem faz, de onde vêm os dados e como falar com a gente.' },
+            methodology: { title: 'Como a análise de times funciona', description: 'Como o PokemonBuilder avalia um time: a regra das fraquezas, a fórmula da nota, as ameaças do meta, a calculadora de dano e o speed tiers, passo a passo.' },
+            privacy: { title: 'Política de privacidade', description: 'O que o PokemonBuilder guarda sobre você e por quê: times, contas, perfis públicos, estatísticas e serviços envolvidos, e como apagar os seus dados.' },
+            terms: { title: 'Termos de uso', description: 'Os termos de uso do PokemonBuilder, um projeto de fã de Pokémon grátis e não oficial: a sua conta, o que você publica, as regras e os limites do site.' },
             notFound: { title: 'Página não encontrada', description: 'Esta página não existe no PokemonBuilder. Busque um Pokémon, abra o montador de times ou navegue pela Pokédex pelos links desta página.' },
             list: { and: 'e' },
             snapshot: {
@@ -4097,6 +4141,7 @@ export const TRANSLATIONS = {
             analysisChipCounts: '{{weak}} fraquezas · {{covered}} cobertos',
             ratingAria: 'Nota do time {{score}} de 100: {{grade}}',
             grade: { building: 'Montando', weak: 'Frágil', fair: 'Ajustar', solid: 'Sólido', excellent: 'Excelente' },
+            ratingHow: 'Como é calculada?',
             formatAria: 'Jogo e formato: {{label}}. Toque para trocar',
             allFormats: 'Todos os jogos',
             resultCount: '{{count}} Pokémon',

@@ -22,7 +22,8 @@ import { formatSlug, typeName } from '../../src/utils/seoPages.js';
 import { immunitiesOf, resistancesOf, strongAgainst, weaknessesOf } from '../../src/utils/typeMatchups.js';
 import { typeChart } from '../../src/constants/typeChart.js';
 import { GUIDE_INDEX } from '../../src/content/guideIndex.js';
-import { bestTeamsNotes, metaNotes } from '../../src/utils/dataNotes.js';
+import { bestTeamsNotes, dayLabel, metaNotes } from '../../src/utils/dataNotes.js';
+import { SITE_PAGE_PATHS } from '../../src/utils/seoPages.js';
 
 const NAV = [
     ['/builder', 'builder'],
@@ -55,9 +56,10 @@ const LANDING_LINKS = {
  * (battle-dex.json / seo-dex.json, see render-meta.js); `guide` — a guide's
  * text (content/guides.js); `usage` — the default format, for /meta;
  * `notes` — the numbers behind the data notes (bestTeams: generatedAt;
- * meta: format, battles, month, kind); `notFound` — the page does not exist.
+ * meta: format, battles, month, kind); `sitePage` — About / How it works /
+ * Privacy / Terms (content/sitePages.js); `notFound` — the page does not exist.
  */
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, pokemons = [], entity = null, guide = null, usage = null, notes = null, notFound = false }) {
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, pokemons = [], entity = null, guide = null, sitePage = null, usage = null, notes = null, notFound = false }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
@@ -65,6 +67,16 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
     const typeLink = (type) => link(`/types/${type}`, typeName(type, language));
 
     const slugOf = (id) => pokemons.find((p) => p.id === id)?.name || id;
+    // A guide's or a site page's sections, as GuideView / InfoPageView draw
+    // them. A link with `href` leaves the site (GitHub, mailto).
+    const sectionsHtml = (sections) => sections.map((section) => [
+        `<h2>${escapeHtml(section.heading)}</h2>`,
+        ...(section.paragraphs || []).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`),
+        section.steps?.length ? `<ol>${section.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>` : '',
+        section.links?.length
+            ? `<p>${section.links.map((l) => (l.href ? `<a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a>` : link(l.to, l.label))).join(' · ')}</p>`
+            : '',
+    ].join('')).join('');
     const notesSection = (paragraphs) => (paragraphs.length
         ? `<h2>${escapeHtml(t('dataNotes.heading'))}</h2>${paragraphs.map((x) => `<p>${escapeHtml(x)}</p>`).join('')}<p>${link('/guides/team-from-tournament-data', t('dataNotes.guideLink'))}</p>`
         : '');
@@ -229,12 +241,7 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
     }
     if (!notFound && meta.key === 'guide' && guide) {
         body.push(`<p>${escapeHtml(guide.lede)}</p>`);
-        for (const section of guide.sections) {
-            body.push(`<h2>${escapeHtml(section.heading)}</h2>`);
-            for (const paragraph of section.paragraphs || []) body.push(`<p>${escapeHtml(paragraph)}</p>`);
-            if (section.steps?.length) body.push(`<ol>${section.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>`);
-            if (section.links?.length) body.push(`<p>${section.links.map((l) => link(l.to, l.label)).join(' · ')}</p>`);
-        }
+        body.push(sectionsHtml(guide.sections));
         if (guide.faq?.length) {
             body.push(`<h2>${escapeHtml(t('guidesPage.faq'))}</h2>`);
             for (const item of guide.faq) body.push(`<h3>${escapeHtml(item.q)}</h3><p>${escapeHtml(item.a)}</p>`);
@@ -244,6 +251,13 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
             body.push(`<h2>${escapeHtml(t('guidesPage.more'))}</h2>`);
             body.push(list(others.map((g) => link(`/guides/${g.slug}`, (g[language] || g.en).title))));
         }
+    }
+
+    // About, How it works, Privacy, Terms: the full text, dated.
+    if (!notFound && sitePage) {
+        body.push(`<p>${escapeHtml(t('sitePages.updated', { date: dayLabel(sitePage.updated, language) }))}</p>`);
+        body.push(`<p>${escapeHtml(sitePage.lede)}</p>`);
+        body.push(sectionsHtml(sitePage.sections));
     }
 
     // Meta & usage: the default format's ranking, as the page opens on it, and
@@ -279,6 +293,7 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
     }
 
     parts.push(`<main>${body.join('')}</main>`);
-    parts.push(`<footer><a href="${href('/')}">${escapeHtml(t('seo.siteName'))}</a><nav aria-label="${escapeHtml(t('seo.snapshot.explore'))}">${list(NAV.map(([path, key]) => link(path, t(`seo.${key}.title`))))}</nav></footer>`);
+    const siteLinks = list(Object.entries(SITE_PAGE_PATHS).map(([path, key]) => link(path, t(`sitePages.links.${key}`))));
+    parts.push(`<footer><a href="${href('/')}">${escapeHtml(t('seo.siteName'))}</a><nav aria-label="${escapeHtml(t('seo.snapshot.explore'))}">${list(NAV.map(([path, key]) => link(path, t(`seo.${key}.title`))))}</nav><nav aria-label="${escapeHtml(t('sitePages.footerLabel'))}">${siteLinks}</nav></footer>`);
     return `<div class="seo-prerender">${parts.join('')}</div>`;
 }

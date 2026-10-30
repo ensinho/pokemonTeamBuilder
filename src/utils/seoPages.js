@@ -27,9 +27,21 @@ export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 export const SITE_LOGO = `${SITE_URL}/android-chrome-512x512.png`;
 export const SITE_FOUNDER = 'Enzo Esmeraldo';
 export const SITE_SAME_AS = ['https://github.com/ensinho/pokemonTeamBuilder'];
+/** Where people (and the About / Privacy pages) reach the site. */
+export const SITE_CONTACT_EMAIL = 'pokemonteambuilderadmin@gmail.com';
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 
+
+/** The site's own pages — About, How it works, Privacy, Terms — in the order
+ *  the footers list them. Their text is content/sitePages.js, kept out of
+ *  this file because this one rides the main bundle. */
+export const SITE_PAGE_PATHS = {
+    '/about': 'about',
+    '/methodology': 'methodology',
+    '/privacy': 'privacy',
+    '/terms': 'terms',
+};
 
 /** App path → copy key for every page that has fixed copy. */
 export const STATIC_PAGES = {
@@ -52,6 +64,7 @@ export const STATIC_PAGES = {
     '/types': 'types',
     '/best-teams': 'bestTeams',
     '/guides': 'guides',
+    ...SITE_PAGE_PATHS,
 };
 
 /** The pages that are a tool you use (WebApplication JSON-LD, with the
@@ -352,6 +365,7 @@ export function structuredData(meta, language, extras = {}) {
         description: copy.org,
         founder: { '@type': 'Person', name: SITE_FOUNDER },
         sameAs: SITE_SAME_AS,
+        contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: SITE_CONTACT_EMAIL, availableLanguage: ['en', 'pt'] },
     }];
     if (meta.key === 'home') {
         blocks.push({
@@ -386,6 +400,17 @@ export function structuredData(meta, language, extras = {}) {
             featureList: copy.features[meta.key] || [],
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
             publisher: { '@id': ORG_ID },
+        });
+    }
+    if (meta.key === 'about') {
+        blocks.push({
+            '@context': context,
+            '@type': 'AboutPage',
+            name: meta.title.replace(` | ${SITE_NAME}`, ''),
+            description: meta.description,
+            url: abs(meta.canonicalPath),
+            inLanguage,
+            mainEntity: { '@id': ORG_ID },
         });
     }
     if (meta.key === 'guide') {

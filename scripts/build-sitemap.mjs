@@ -3,6 +3,7 @@ import path from 'node:path';
 import { LANGUAGES, LOCALE_TAG, localizePath } from '../src/utils/localePath.js';
 import { TYPE_IDS } from '../src/utils/seoPages.js';
 import { GUIDE_INDEX } from '../src/content/guideIndex.js';
+import { SITE_PAGES, SITE_PAGE_PATHS } from '../src/content/sitePages.js';
 
 // Builds public/sitemap.xml so search engines can discover every Pokémon,
 // competitive-usage, and tournament-team page without relying on crawling
@@ -154,6 +155,10 @@ const main = async () => {
     }
     for (const guide of GUIDE_INDEX) {
         entries.push({ loc: `/guides/${guide.slug}`, changefreq: 'monthly', priority: '0.7', lastmod: guide.updated });
+    }
+    // About, How it works, Privacy, Terms: dated by their own `updated`.
+    for (const [loc, key] of Object.entries(SITE_PAGE_PATHS)) {
+        entries.push({ loc, changefreq: 'yearly', priority: '0.3', lastmod: SITE_PAGES[key].updated });
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
