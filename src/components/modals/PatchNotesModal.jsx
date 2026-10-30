@@ -12,6 +12,7 @@ import { getGameLogo } from '../../assets/gameLogos';
 import { typeIcons } from '../../constants/types';
 import { trainerSpriteUrl } from '../../utils/challengeView';
 import { BrandWordmark } from '../BrandWordmark';
+import { LogoMark } from '../LogoMark';
 import { POKEAPI_SPRITES_BASE } from '../../utils/assetHost';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
@@ -598,8 +599,8 @@ const ChallengeVisual = ({ language }) => {
 const BrandVisual = () => (
     <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-5 bg-bg p-5" aria-hidden="true">
         <div className="flex min-w-0 max-w-full items-center gap-3">
-            <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" className="h-12 w-12 shrink-0" />
-            <BrandWordmark className="block h-auto w-52 min-w-0 max-w-full" sizes="13rem" />
+            <LogoMark sizes="3rem" className="h-12 w-12 shrink-0" />
+            <BrandWordmark className="block h-auto w-52 min-w-0 max-w-full" />
         </div>
         <div className="flex items-center gap-3">
             {[6, 94, 445].map((id) => (

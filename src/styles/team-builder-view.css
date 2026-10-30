@@ -1115,6 +1115,18 @@
 
 .tb-identity .stat__value { font-size: var(--text-sm); }
 
+/* "How is this computed?" beside the Rating label → /methodology. */
+.tb-identity__how {
+    display: inline-flex;
+    vertical-align: -0.125em;
+    margin-left: var(--space-1);
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+.tb-identity__how:hover { color: var(--color-primary-text); }
+.tb-identity__how:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-focus); }
+.tb-identity__how svg { width: 0.75rem; height: 0.75rem; }
+
 .tb-identity__hint {
     margin: 0;
     font-size: var(--text-2xs);

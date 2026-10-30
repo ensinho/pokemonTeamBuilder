@@ -53,7 +53,7 @@ export const GUIDES = {
                     heading: 'Why does speed matter so much in doubles?',
                     paragraphs: [
                         "In doubles, moving first often decides the game, so most teams have a plan for speed: Tailwind doubles your side's Speed, Trick Room makes the slowest Pokémon move first, and moves like Icy Wind lower the opponents' Speed.",
-                        'Speed tiers compares the Speed of every Pokémon with EVs, natures, boosts, Tailwind and Trick Room. Use it to decide whether your team wants to be fast or slow, and which Pokémon your attackers need to outspeed.',
+                        'Speed tiers ranks the level 50 Speed of every Pokémon with no EVs, 252 EVs, a +Speed nature or a Choice Scarf. Use it to decide whether your team wants to be fast or slow, and which Pokémon your attackers need to outspeed; under Tailwind, double the number.',
                     ],
                     links: [{ to: '/speed-tiers', label: 'Open Speed tiers' }],
                 },
@@ -120,7 +120,7 @@ export const GUIDES = {
                     heading: 'Por que a velocidade importa tanto nas duplas?',
                     paragraphs: [
                         'Nas duplas, atacar primeiro muitas vezes decide a partida, então a maioria dos times tem um plano de velocidade: Tailwind dobra a velocidade do seu lado, Trick Room faz os Pokémon mais lentos agirem primeiro e golpes como Icy Wind reduzem a velocidade dos adversários.',
-                        'O Speed tiers compara a velocidade de todos os Pokémon com EVs, naturezas, boosts, Tailwind e Trick Room. Use para decidir se o seu time quer ser rápido ou lento, e quais Pokémon os seus atacantes precisam ultrapassar.',
+                        'O Speed tiers ordena a velocidade no nível 50 de todos os Pokémon, sem EVs, com 252 EVs, com natureza de Speed ou com Choice Scarf. Use para decidir se o seu time quer ser rápido ou lento, e quais Pokémon os seus atacantes precisam ultrapassar; com Tailwind, dobre o número.',
                     ],
                     links: [{ to: '/speed-tiers', label: 'Abrir o Speed tiers' }],
                 },

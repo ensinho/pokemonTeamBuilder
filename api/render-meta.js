@@ -7,6 +7,7 @@ import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLoc
 import { SITE_NAME, SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
 import { translate } from '../src/utils/translateCore.js';
 import { guideContent } from '../src/content/guides.js';
+import { sitePageContent } from '../src/content/sitePages.js';
 import { usageRows } from '../src/utils/metaFormats.js';
 import { tournamentPresence } from '../src/utils/tournamentPresence.js';
 import { bestTeamsSummary } from '../src/utils/bestTeams.js';
@@ -254,7 +255,7 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
         meta: { ...meta, title, description }, language, appPath,
         pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam,
         presence, bestTeams, build, pokemons: allPokemons,
-        entity, guide, usage: meta.key === 'meta' ? usage : null, notes, notFound: status === 404,
+        entity, guide, sitePage: sitePageContent(meta.key, language), usage: meta.key === 'meta' ? usage : null, notes, notFound: status === 404,
     });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
 

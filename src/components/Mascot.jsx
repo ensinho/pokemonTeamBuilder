@@ -1,10 +1,10 @@
 import React from 'react';
 import '../styles/mascot.css';
+import { LogoMark } from './LogoMark';
 
-// The app icon itself (the same file the splash uses, 7 KB, already cached
-// by the time anything here renders). Its plum tile is part of the drawing,
-// so it reads the same on all six themes.
-const MASCOT_SRC = `${import.meta.env.BASE_URL}logo-mark.webp`;
+// The app icon itself (LogoMark: the 128px file at these sizes). Its plum
+// tile is part of the drawing, so it reads the same on all six themes.
+const MASCOT_SIZES = { xs: '1.5rem', sm: '2.25rem', md: '3rem', lg: '4rem' };
 
 /**
  * The app's mascot — the Gengar of the favicon — as the voice of tips and of
@@ -17,12 +17,8 @@ const MASCOT_SRC = `${import.meta.env.BASE_URL}logo-mark.webp`;
  */
 export function Mascot({ size = 'md', cheer = false, className = '' }) {
     return (
-        <img
-            src={MASCOT_SRC}
-            alt=""
-            aria-hidden="true"
-            draggable="false"
-            decoding="async"
+        <LogoMark
+            sizes={MASCOT_SIZES[size] || MASCOT_SIZES.md}
             className={`mascot mascot--${size} ${cheer ? 'is-cheering' : ''} ${className}`}
         />
     );

@@ -252,6 +252,44 @@ only, never a list:** each GIF is 50–110 KB and loops. It falls back to the
 static pixel sprite for `still`, `prefers-reduced-motion`, Data Saver, and a
 GIF that fails to load; the still frame carries `data-still` for styling.
 
+## Trust pages, fonts, images (2026-10-30)
+
+From an SEO Site Checkup report (82/100, credibility 38%: no policies, no
+contact, no method). Shipped:
+
+- **`/about`, `/methodology`, `/privacy`, `/terms`** — `InfoPageView`, the
+  text in `src/content/sitePages.js` (both languages, same structure:
+  `sitePages.test.js`), drawn like a guide; the paths are `SITE_PAGE_PATHS` in
+  `seoPages.js` (kept out of the page text so the main bundle stays light).
+  Linked from the desktop footer, the phone drawer's About section and the
+  prerender's `<footer>` on every page; in the sitemap (`lastmod` = the page's
+  `updated`) and `llms.txt`. `/about` is an `AboutPage` in JSON-LD and the
+  Organization carries a `contactPoint` (the admin mailbox). The builder's
+  score links to `/methodology` (the ⓘ beside "Nota", the analysis sheet's
+  "Como é calculada?"). **The methodology quotes `teamAnalysis.js`,
+  `teamThreats.js`, `damageCalc.js` and `SpeedTiersView` — change it with
+  them.** Privacy lists exactly what is stored (USER_COLLECTIONS, public
+  profile fields, analytics) — a new collection or tracker updates it.
+- **Fonts are served from this site** (`src/styles/fonts.css`,
+  `src/assets/fonts/`): the Google Fonts stylesheet was the report's
+  render-blocking resource. Latin woff2 (+ latin-ext for the text faces), the
+  same families and ranges; `scripts/lib/fontPreload.mjs` preloads Unbounded
+  and Space Grotesk with their hashed names — registered **before**
+  `prerenderHome` so the shell keeps the links. The rare faces (italic,
+  latin-ext, DotGothic16) are out of the precache.
+- **Images:** every landing image has an alt (aria-hidden containers keep
+  screen readers from reading names twice; `TypeChip`'s icon alt names the
+  type). `<LogoMark>` serves `logo-mark-128.webp` up to 64px. PNGs carry no
+  metadata (the Cynthia sheet's sRGB ICC profile was 28% of the file).
+- **One H1:** on routes whose view draws its own H1 (`VIEWS_WITH_OWN_H1` in
+  AppLayout, plus the first-visit landing) the header title is a `<p>` with
+  the same face.
+
+Reported but not acted on: "no custom 404" (production answers 404 with a
+real page; the scan predates it), "no Google Analytics" (it loads after
+consent, never on the scanner's visit), ads.txt (no ads), SPF/DMARC (DNS —
+the owner's panel).
+
 ## What only the owner can do
 
 Verify the domain in **Google Search Console** and **Bing Webmaster Tools**,

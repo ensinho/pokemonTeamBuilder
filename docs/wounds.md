@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-30 — SEO and AI copy promised Tailwind and Trick Room in Speed tiers, which it does not have `docs`
+- **Symptom:** the guide `first-vgc-team`, `seo.speedTiers.description` (title tag and meta description), the JSON-LD `featureList` (`content/structuredCopy.js`) and `public/llms.txt` all said Speed tiers compares Speed "with EVs, natures, boosts, Tailwind and Trick Room". The page has none of the last three.
+- **Root cause:** the copy for search engines and answer engines (written the same day) described what the tool *should* do, not what `SpeedTiersView` does: level-50 Speed at four fixed spreads (0 EVs, 252 neutral, 252 with +Speed, and that one with Choice Scarf). Crawlers and AI assistants repeat such claims as fact, and a visitor who arrives looking for them leaves.
+- **Fix:** all four now say exactly the four spreads; the guide adds "under Tailwind, double the number". The new `/methodology` page (`content/sitePages.js`) quotes the formulas of the team score, threats, damage calculator and speed tiers from their code.
+- **Correct pattern:** open the component before describing a feature in SEO, JSON-LD, `llms.txt`, a guide or `/methodology`, and change that copy in the same commit as the code. `seo_and_landing.md` already said "keep feature claims to what the code does"; this is the second time it was broken (the calculator "loading your team" was the first).
+- **Files:** `src/content/guides.js`, `src/constants/translations.js`, `src/content/structuredCopy.js`, `public/llms.txt`, `src/content/sitePages.js`
+
 ### 2026-10-30 — The English home reached crawlers empty, and every made-up URL was an indexable page `bug`
 - **Symptom:** measured on production with GPTBot's user agent (Organicus AI-readiness report, Enzo, 2026-10-30): `/` — the root and the `x-default` of every hreflang set — had 0 words, no H1 and no JSON-LD, while `/does-not-exist` got the full home with JSON-LD. `/pokemon/notreal` answered 200 as "Notreal: weaknesses, stats & builds", canonical to itself; `/llms.txt` answered 200 with the app's HTML.
 - **Root cause:** two separate gaps. (1) Vercel serves a file that exists *before* it applies a rewrite, so `/` is `dist/index.html` itself and never reaches `api/render-meta.js` — only the root, which is why `/pt` was fine. (2) `render-meta` answered 200 for every path: an unknown route fell through to the home's meta, and an unknown Pokémon, team or type kept its slug as a name.

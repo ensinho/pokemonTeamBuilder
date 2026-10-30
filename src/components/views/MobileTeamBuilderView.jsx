@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
 import {
@@ -197,6 +198,7 @@ function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough,
             <div className="team-builder-mobile__analysis-sheet">
                 <div className="flex items-center justify-between gap-2">
                     <TeamRatingBadge score={score} grade={grade} />
+                    <Link to="/methodology" onClick={onClose} className="btn btn-ghost btn-sm">{t('builder.ratingHow')}</Link>
                 </div>
                 {!isPlaythrough && (
                     <div className="segmented segmented--block" role="group" aria-label={t('builder.analysisTitle')}>

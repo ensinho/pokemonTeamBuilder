@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import './styles/fonts.css' // self-hosted faces; preloaded by fontPreload (vite.config.js)
 import './index.css' // <-- ADICIONE ESTA LINHA
 import './styles/motion.css' // shared entrance/hover motion utilities
 import './styles/interactions.css' // design system v2: switch, check, loader, rolling figures, theme reveal

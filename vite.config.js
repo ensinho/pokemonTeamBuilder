@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { challengeDevApi } from './scripts/lib/challengeDevApi.mjs'
 import { prerenderHome } from './scripts/lib/prerenderHome.mjs'
+import { fontPreload } from './scripts/lib/fontPreload.mjs'
 
 // Unique id for this build, used to cache-bust static /data/*.json files on every
 // deploy (see src/services/pokemonDataCache.js). Overridable via VITE_BUILD_ID
@@ -23,6 +24,11 @@ export default defineConfig({
     challengeDevApi(),
     // `/` is served as the static index.html on Vercel, never through
     // api/render-meta.js — so the build writes the English home into it.
+    // The fonts are served from this site (src/styles/fonts.css); the heading
+    // and body faces are preloaded so the landing's H1 paints without waiting.
+    // Before prerenderHome: both are `post` transforms and run in this order,
+    // and prerenderHome keeps the html it receives as render-meta's shell.
+    fontPreload(),
     prerenderHome(),
     VitePWA({
       registerType: 'prompt',
@@ -47,6 +53,12 @@ export default defineConfig({
           '**/logoLogin*.png',
           // api/render-meta.js's template (scripts/lib/prerenderHome.mjs).
           '**/shell.html',
+          // Faces almost no visit uses (src/styles/fonts.css): mono italic,
+          // the latin-ext ranges, the Challenge's DotGothic16. Hashed and
+          // cached by the browser when a page does need them.
+          '**/*-latin-ext-*.woff2',
+          '**/*-italic-*.woff2',
+          '**/dotgothic16-*.woff2',
         ],
         // Web Push lives in the *generated* worker rather than a second
         // registration of its own — a second service worker is what caused the
@@ -93,19 +105,6 @@ export default defineConfig({
                 maxEntries: 300,
                 maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts-stylesheets' },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxAgeSeconds: 365 * 24 * 60 * 60 },
             },
           },
         ],

@@ -11,6 +11,9 @@ import { useTranslation } from '../hooks/useTranslation';
  * index.css, so one chip reads correctly on all six themes.
  *
  * `size`: 'md' (default) or 'sm' for dense rows.
+ *
+ * The icon is aria-hidden (the label beside it is what is read); its alt
+ * names the type anyway, for image search and audits.
  */
 export const TypeChip = ({ type, size = 'md', className = '' }) => {
     const { t } = useTranslation();
@@ -22,7 +25,7 @@ export const TypeChip = ({ type, size = 'md', className = '' }) => {
             className={`type-chip ${size === 'sm' ? 'type-chip--sm' : ''}  ${className}`}
             style={{ '--type-chip': typeColors[key] || 'var(--color-primary)' }}
         >
-            {typeIcons[key] && <img src={typeIcons[key]} alt="" aria-hidden="true" className="type-chip__icon" />}
+            {typeIcons[key] && <img src={typeIcons[key]} alt={t(`types.${key}`, { defaultValue: type })} aria-hidden="true" className="type-chip__icon" />}
             {t(`types.${key}`, { defaultValue: type })}
         </span>
     );

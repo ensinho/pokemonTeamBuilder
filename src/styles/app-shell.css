@@ -1499,6 +1499,9 @@
 
 .app-shell__header-title {
     margin: 0;
+    /* Its own face, not the h1 rule's: on pages whose view has the H1 this
+       is a <p> (VIEWS_WITH_OWN_H1, AppLayout) and must look the same. */
+    font-family: var(--font-heading);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     letter-spacing: -0.02em;
@@ -1643,6 +1646,16 @@
     align-items: center;
     gap: var(--space-2);
 }
+
+/* About · How it works · Privacy · Terms, between the credit and the icons. */
+.app-shell__footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+}
+.app-shell__footer-nav .app-shell__footer-link { text-decoration: none; }
 
 .app-shell__footer-link {
     color: var(--color-muted);

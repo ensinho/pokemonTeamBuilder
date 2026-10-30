@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { Info } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { rateTeam, RATING_TONE } from '../utils/teamAnalysis';
 
@@ -101,7 +103,13 @@ export function TeamIdentitySummary({ team, analysis }) {
     return (
         <dl className="stat-group stat-group--3 tb-identity" aria-label={t('builder.identityAria')}>
             <div className="stat stat--sm">
-                <dt className="stat__label">{t('builder.rating')}</dt>
+                <dt className="stat__label">
+                    {t('builder.rating')}
+                    {/* The formula, in words (/methodology). */}
+                    <Link to="/methodology" className="tb-identity__how" aria-label={t('builder.ratingHow')} title={t('builder.ratingHow')}>
+                        <Info aria-hidden="true" />
+                    </Link>
+                </dt>
                 <dd className="stat__value" style={{ color: `color-mix(in srgb, var(--color-${RATING_TONE[rating.grade]}) 70%, var(--color-fg))` }}>{rating.score}</dd>
                 <dd className="tb-identity__hint">{t(`builder.grade.${rating.grade}`)}</dd>
             </div>

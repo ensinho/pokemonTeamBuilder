@@ -38,8 +38,24 @@ measures first.
 
 Return visits, sessions and countries are GA4's own (no event needed).
 
-**Privacy:** GA sets cookies; under the LGPD a consent banner may be required
-before `initAnalytics()` — a product/legal decision, not taken here.
+**Consent (LGPD, 2026-10-30, Enzo).** GA sets cookies, so it loads only
+after the visitor accepts (`src/utils/analyticsConsent.js`, key
+`ptb:analyticsConsent`: `'granted'` / `'denied'` / unanswered).
+`ConsentBanner` (mounted in AppLayout, never for crawlers or without a
+measurement id) asks once; Refuse and Accept are the same button side by side.
+The Privacy page has a `<Switch>` to change the answer
+(`InfoPageView`'s `ConsentSwitch`, the section flagged `consent: true` in
+`content/sitePages.js`).
+- Unanswered: `track()` queues in memory (≤ 50), nothing is sent and
+  `firebase/analytics` is not even imported. Accept: the module loads and the
+  queue flushes. Refuse: the queue is dropped.
+- Withdrawn later: `setAnalyticsCollectionEnabled(false)` and the `_ga*`
+  cookies are deleted; Accept again turns collection back on.
+- Verified in Chrome on the build: 0 GA requests and no cookie before an
+  answer or after Refuse; `_ga` + `_ga_<id>` after Accept.
+- Everything else the site stores (preferences, the anonymous sign-in, the
+  data cache) is needed to work and is not behind the question — the privacy
+  policy says so. Never move a new third-party tracker outside this gate.
 
 ## The share loop
 

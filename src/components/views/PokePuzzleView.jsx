@@ -967,7 +967,7 @@ export default function PokePuzzleView() {
             });
 
             let logoImg;
-            const logoDomImg = document.querySelector('img[src*="logo-mark"]');
+            const logoDomImg = document.querySelector('img[src$="/logo-mark.webp"]');
             if (logoDomImg && logoDomImg.complete && logoDomImg.naturalWidth > 0) {
                 logoImg = logoDomImg;
             } else {
