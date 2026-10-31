@@ -1,0 +1,45 @@
+# PokemonBuilder
+
+> PokemonBuilder (pokemonbuilder.app) is a free Pokémon team builder for competitive play — VGC doubles and Smogon singles — in the browser, in English and Portuguese. It analyses a team while you build it (type coverage, shared weaknesses, threats from the current meta), and has a full Pokédex, a damage calculator, speed tiers, usage statistics and real tournament teams that import into the builder in one click. Made by Enzo Esmeraldo.
+
+Everything is free and works on a phone or a computer, with nothing to install; teams can be saved without an account. Every page exists in English at the root and in Portuguese under `/pt` (for example https://pokemonbuilder.app/pt/builder).
+
+Data sources: ladder usage from Smogon's monthly statistics of Pokémon Showdown battles, merged with Limitless tournament results for VGC regulations; tournament teams from the community-maintained VGCPastes repository; Pokémon, moves, abilities and items from PokéAPI and Pokémon Showdown. The datasets are refreshed every day.
+
+What it does not do: it does not connect to a game console, it has no battle ladder, and it does not import pasted Showdown teams yet. Teams export in Pokémon Showdown's text format.
+
+## Tools
+
+- [Pokémon Team Builder](https://pokemonbuilder.app/builder): build a team of six and see type coverage, shared weaknesses and resistances, meta threats, partner suggestions from tournament teams and Smogon sets; export to Showdown, share by link or image.
+- [Pokémon Damage Calculator](https://pokemonbuilder.app/damage-calculator): damage rolls and KO chances between any two Pokémon in VGC and Smogon formats, with items, abilities, natures, EVs and Tera.
+- [Pokémon Speed Tiers](https://pokemonbuilder.app/speed-tiers): the level 50 Speed of every Pokémon with no EVs, 252 EVs, a +Speed nature or a Choice Scarf.
+- [Pokémon Meta & Usage Stats](https://pokemonbuilder.app/meta): usage by format and rating band, with each Pokémon's top items, abilities, moves, spreads and teammates.
+- [Best Pokémon VGC Teams](https://pokemonbuilder.app/best-teams): the top tournament finishes of the current regulation, the Pokémon those teams use most and the pairs that keep coming back.
+- [Pokémon VGC Tournament Teams](https://pokemonbuilder.app/tournaments): real tournament teams with player, placing and full sets.
+
+## Reference
+
+- [Pokédex](https://pokemonbuilder.app/pokedex): every Pokémon; each page (e.g. https://pokemonbuilder.app/pokemon/garchomp) has types, weaknesses, base stats, the most used competitive build and its tournament teams.
+- [Pokémon Type Chart](https://pokemonbuilder.app/types): weaknesses, resistances and immunities of the 18 types, with a page per type.
+- [Pokémon Move List](https://pokemonbuilder.app/moves), [Abilities List](https://pokemonbuilder.app/abilities) and [Items List](https://pokemonbuilder.app/items): what each one does in battle.
+- [Gym Leaders](https://pokemonbuilder.app/gyms): every gym leader and their team, game by game.
+
+## Guides
+
+- [How to build a competitive Pokémon VGC team, step by step](https://pokemonbuilder.app/guides/first-vgc-team)
+- [How to choose a Pokémon team using tournament data](https://pokemonbuilder.app/guides/team-from-tournament-data)
+- [Pokémon team builders compared: PokemonBuilder, Showdown and Pikalytics](https://pokemonbuilder.app/guides/pokemon-team-builders-compared)
+
+## About the site
+
+- [About](https://pokemonbuilder.app/about): who makes PokemonBuilder, where its data comes from and how to get in touch (pokemonteambuilderadmin@gmail.com).
+- [How the team analysis works](https://pokemonbuilder.app/methodology): the weakness rules, the team score formula, how meta threats are ranked, and how the damage calculator and speed tiers compute their numbers.
+- [Privacy policy](https://pokemonbuilder.app/privacy) and [Terms of use](https://pokemonbuilder.app/terms).
+
+## Optional
+
+- [PokéPuzzle](https://pokemonbuilder.app/pokepuzzle): a daily Pokémon guessing game.
+- [Champion Challenge](https://pokemonbuilder.app/challenge): a daily DS-style battle against Cynthia.
+- [Pokémon Quiz](https://pokemonbuilder.app/quiz): name every Pokémon of a generation or of an official trait.
+- [Community](https://pokemonbuilder.app/feed): teams and posts shared by players.
+- [Sitemap](https://pokemonbuilder.app/sitemap.xml)
