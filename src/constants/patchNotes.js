@@ -1,4 +1,5 @@
 import { PATCH_NOTES_VERSION } from './theme';
+import { SUPPORT_URL } from './support';
 
 // The release ledger — every version that shipped a "what's new" entry, newest
 // first. The modal renders the first one in full (icon, illustration, CTA) and
@@ -18,9 +19,30 @@ import { PATCH_NOTES_VERSION } from './theme';
 // column on a phone, featured first). Keep it to one featured note and three
 // side notes — the right column divides its height evenly between them. A
 // release with no side notes gives the featured card the full width.
+//
+// `href` makes a note a link that leaves the site, drawn as a centred card with a
+// real button. `thanks: false` drops the thank-you band for a release with
+// nothing to thank anyone for.
 export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
+        month: '2026-11',
+        thanks: false,
+        notes: [
+            {
+                key: 'buy-me-a-coffee',
+                featured: true,
+                icon: 'coffee',
+                visual: 'support',
+                title: 'patchNotes.supportTitle',
+                description: 'patchNotes.supportBody',
+                cta: 'patchNotes.supportCta',
+                href: SUPPORT_URL,
+            },
+        ],
+    },
+    {
+        version: '1.19.0',
         month: '2026-10',
         // Both notes answer feedback sent through the footer: the default thanks.
         notes: [
