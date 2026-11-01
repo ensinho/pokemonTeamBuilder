@@ -23,6 +23,7 @@
  */
 
 import { SITE_CONTACT_EMAIL as CONTACT_EMAIL, SITE_PAGE_PATHS } from '../utils/seoPages.js';
+import { SUPPORT_URL } from '../constants/support.js';
 
 export { CONTACT_EMAIL, SITE_PAGE_PATHS };
 const MAILTO = `mailto:${CONTACT_EMAIL}`;
@@ -30,7 +31,7 @@ const GITHUB = 'https://github.com/ensinho/pokemonTeamBuilder';
 
 export const SITE_PAGES = {
     about: {
-        updated: '2026-10-30',
+        updated: '2026-11-01',
         en: {
             lede: 'PokemonBuilder is a free Pokémon team builder for competitive play, in English and Portuguese. It is an independent fan project, made and maintained by Enzo Esmeraldo.',
             sections: [
@@ -48,6 +49,13 @@ export const SITE_PAGES = {
                         'Enzo Esmeraldo, an independent developer, designs, writes and runs the site. There is no company or advertiser behind it, and the source code is public on GitHub under the MIT license.',
                     ],
                     links: [{ href: GITHUB, label: 'Source code on GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo on LinkedIn' }],
+                },
+                {
+                    heading: 'How is it funded?',
+                    paragraphs: [
+                        'PokemonBuilder is completely free: no ads, no paid plan and nothing locked. It is a fan project, made for the community and not for money. Anyone who wants to help can leave a voluntary contribution on Buy Me a Coffee, which is optional and unlocks nothing.',
+                    ],
+                    links: [{ href: SUPPORT_URL, label: 'Support on Buy Me a Coffee' }],
                 },
                 {
                     heading: 'Where does the data come from?',
@@ -89,6 +97,13 @@ export const SITE_PAGES = {
                         'Enzo Esmeraldo, um desenvolvedor independente, projeta, escreve e mantém o site. Não há empresa nem anunciante por trás dele, e o código-fonte é público no GitHub, sob a licença MIT.',
                     ],
                     links: [{ href: GITHUB, label: 'Código-fonte no GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo no LinkedIn' }],
+                },
+                {
+                    heading: 'Como o projeto se mantém?',
+                    paragraphs: [
+                        'O PokemonBuilder é totalmente gratuito: sem anúncios, sem plano pago e sem nada bloqueado. É um projeto de fã, feito para a comunidade e não por dinheiro. Quem quiser ajudar pode deixar uma contribuição voluntária no Buy Me a Coffee, que é opcional e não libera nada.',
+                    ],
+                    links: [{ href: SUPPORT_URL, label: 'Apoiar no Buy Me a Coffee' }],
                 },
                 {
                     heading: 'De onde vêm os dados?',
@@ -246,7 +261,7 @@ export const SITE_PAGES = {
     },
 
     privacy: {
-        updated: '2026-10-30',
+        updated: '2026-11-01',
         en: {
             lede: 'What PokemonBuilder stores about you, why, who else handles it, and how to delete it. In short: your teams and progress, the profile you choose to make public, and, only if you allow it, usage statistics. No ads, and your data is never sold.',
             sections: [
@@ -288,7 +303,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Who else handles your data?',
                     paragraphs: [
-                        'Google Firebase (authentication, database and analytics) and Google Cloud Storage (images), Vercel (hosting and the site\'s server functions), and Gmail (the email the site sends). Some Pokémon images load from GitHub, jsDelivr and Pokémon Showdown, which see your IP address like any website you load an image from. These providers may process data outside your country.',
+                        'Google Firebase (authentication, database and analytics) and Google Cloud Storage (images), Vercel (hosting and the site\'s server functions), and Gmail (the email the site sends). Some Pokémon images load from GitHub, jsDelivr and Pokémon Showdown, which see your IP address like any website you load an image from. These providers may process data outside your country. A voluntary contribution happens entirely on Buy Me a Coffee, under its own privacy policy; your payment details never reach this site.',
                     ],
                 },
                 {
@@ -349,7 +364,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Quem mais lida com os seus dados?',
                     paragraphs: [
-                        'O Google Firebase (autenticação, banco de dados e estatísticas) e o Google Cloud Storage (imagens), a Vercel (hospedagem e as funções de servidor do site) e o Gmail (os e-mails que o site envia). Algumas imagens de Pokémon carregam do GitHub, do jsDelivr e do Pokémon Showdown, que veem o seu endereço IP como qualquer site de onde você carrega uma imagem. Esses serviços podem tratar dados fora do seu país.',
+                        'O Google Firebase (autenticação, banco de dados e estatísticas) e o Google Cloud Storage (imagens), a Vercel (hospedagem e as funções de servidor do site) e o Gmail (os e-mails que o site envia). Algumas imagens de Pokémon carregam do GitHub, do jsDelivr e do Pokémon Showdown, que veem o seu endereço IP como qualquer site de onde você carrega uma imagem. Esses serviços podem tratar dados fora do seu país. Uma contribuição voluntária acontece inteiramente no Buy Me a Coffee, sob a política de privacidade dele; os seus dados de pagamento nunca chegam a este site.',
                     ],
                 },
                 {
