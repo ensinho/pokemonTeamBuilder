@@ -15,7 +15,8 @@ import { appId } from '../constants/firebase';
 import { HeartIcon, CloseIcon, InfoIcon, MessageIcon } from './icons';
 // Outline glyph for the drawer row: InfoIcon is filled, and it sat as the one solid
 // icon in a rail of outlines.
-import { Info } from 'lucide-react';
+import { Coffee, Info } from 'lucide-react';
+import { SUPPORT_URL } from '../constants/support';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { useTranslation } from '../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
@@ -161,6 +162,12 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                         <span className="app-shell__nav-icon" aria-hidden="true"><Info /></span>
                         <span className="app-shell__nav-text">{t('layout.fanDisclaimer')}</span>
                     </button>
+                </li>
+                <li>
+                    <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="app-shell__nav-link">
+                        <span className="app-shell__nav-icon" aria-hidden="true"><Coffee /></span>
+                        <span className="app-shell__nav-text">{t('nav.support')}</span>
+                    </a>
                 </li>
                 {dialogs}
             </>

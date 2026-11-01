@@ -18,6 +18,7 @@ import { useTeamCompareStore } from '../store/useTeamCompareStore';
 import { useNotifications } from '../hooks/useNotifications';
 
 import { PATCH_NOTES_VERSION, THEME_META } from '../constants/theme';
+import { SUPPORT_URL } from '../constants/support';
 import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { DrawerAboutSection } from './DrawerAboutSection';
@@ -67,7 +68,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -1490,6 +1491,17 @@ export default function AppLayout() {
                             {/* Bottom: Theme button, collapse button, account menu */}
                             <div className="app-shell__sidebar-bottom">
                                 <div className={`app-shell__account ${isRailCollapsed ? 'is-collapsed' : ''}`}>
+                                    <a
+                                        href={SUPPORT_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={t('nav.support')}
+                                        title={isRailCollapsed ? t('nav.support') : undefined}
+                                        className={`btn btn-primary app-shell__support ${isRailCollapsed ? 'btn-icon' : 'btn-block'}`}
+                                    >
+                                        <Coffee aria-hidden="true" />
+                                        {!isRailCollapsed && <span>{t('nav.support')}</span>}
+                                    </a>
                                     {isAnonymous ? (
                                         <>
                                             {/* A guest's preferences (language, notifications,
@@ -1997,6 +2009,11 @@ export default function AppLayout() {
                                         ("Perfil e preferências"), and in the account menu. */}
                                     <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
+                                    <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" aria-label={t('nav.support')} title={t('nav.support')} className="app-shell__footer-link app-shell__footer-support">
+                                        <Coffee aria-hidden="true" />
+                                        {/* The glyph alone below 1500px: the label pushed the row onto a second line. */}
+                                        <span>{t('nav.support')}</span>
+                                    </a>
                                 </div>
                             </div>
                         </footer>

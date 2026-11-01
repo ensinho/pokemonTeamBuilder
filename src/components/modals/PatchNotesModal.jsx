@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
+import { Coffee, Crown, KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
+import { SUPPORT_URL } from '../../constants/support';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIcon, MenuIcon, MessageIcon, PokeballIcon, SparklesIcon, SwordsIcon } from '../icons';
@@ -813,6 +814,21 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                             </div>
                         )}
                     </div>
+
+                    {/* Not a release note: it stays in the modal from one version
+                        to the next, and it never gates or hides anything. */}
+                    <section className="flex flex-col gap-3 rounded-xl bg-surface-raised p-4 sm:flex-row sm:items-center">
+                        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                            <Coffee className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-fg">{t('patchNotes.supportTitle')}</h3>
+                            <p className="mt-1 text-sm text-muted">{t('patchNotes.supportBody')}</p>
+                        </div>
+                        <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm shrink-0">
+                            {t('patchNotes.supportCta')}
+                        </a>
+                    </section>
 
                     {/* Past releases. Collapsed by default so the modal still leads
                         with what's new, but reachable whenever someone wants to
