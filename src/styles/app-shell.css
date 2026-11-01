@@ -1,13 +1,13 @@
 .app-shell {
-    /* 12.5rem (2026-10-09, Enzo: narrower, so the page gets the width; it
-       was 15.5rem). What sets the floor now is the wordmark, not a nav label:
+    /* 13.5rem (2026-11-01, Enzo: a larger wordmark; it was 12.5rem from
+       2026-10-09, and 15.5rem before that). What sets the floor now is the wordmark, not a nav label:
        "Calculadora de dano" / "Tiers de velocidade" became "Calculadora" /
        "Velocidades" in the rail (nav.*Short — the page titles keep the full
        names), and with that every label in pt and en fits down to 11rem.
        "PokemonBuilder" beside the logo (2026-10-26; it was "Pokémon Team Builder",
        two lines at 12.5rem) fits on one line — so a longer label, or a wider
        wordmark, means measuring this again. */
-    --app-shell-sidebar-width: 12.5rem;
+    --app-shell-sidebar-width: 13.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
     --app-shell-gutter: var(--space-3);
     /* Inline inset shared by a nav row and the section label above it. They must
@@ -185,6 +185,35 @@
     padding: var(--space-2);
 }
 
+/* Buy Me a Coffee: the primary button as its pill, in the heading voice. The
+   project's one standing ask, so it is the rail's one loud object. Compound
+   selector: app-shell.css loads before index.css, where .btn lives. */
+.app-shell__account .app-shell__support {
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.app-shell__support svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    transition: rotate var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__support:hover svg {
+    rotate: -12deg;
+}
+
+.app-shell__account.is-collapsed .app-shell__support {
+    display: flex;
+    margin-inline: auto;
+}
+
 /* No divider under the brand. The rail already has a border down its right edge;
    a second line across its top cut the column into two boxes to separate a logo
    from a list that no one was going to confuse anyway. Height matches the
@@ -275,7 +304,7 @@
 .app-shell__brand-wordmark {
     display: block;
     width: 100%;
-    max-width: 10.5rem;
+    max-width: 11.75rem;
     height: auto;
 }
 
@@ -1645,6 +1674,45 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+}
+
+.app-shell__footer-support {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--color-primary-text);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+}
+
+.app-shell__footer-support svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.app-shell__footer-support span {
+    display: none;
+}
+
+@media (min-width: 1500px) {
+    .app-shell__footer-support span {
+        display: inline;
+    }
+}
+
+/* One line down to 1280: the row misses by 16px at the default gaps. */
+@media (min-width: 1024px) and (max-width: 1499px) {
+    .app-shell__footer-row {
+        gap: var(--space-2);
+    }
+
+    .app-shell__footer-credit {
+        gap: var(--space-1);
+    }
+
+    .app-shell__footer-row .app-shell__footer-nav {
+        gap: var(--space-3);
+    }
 }
 
 /* About · How it works · Privacy · Terms, between the credit and the icons. */
