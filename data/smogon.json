@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T07:31:51.970Z",
+  "generatedAt": "2026-11-01T07:31:46.860Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -48935,9 +48935,58 @@
     },
     "887": {
       "name": "Dragapult",
-      "gen": "VGC 2025",
+      "gen": "Champions VGC",
       "overview": "This analysis is for the Regulation C format of Battle Stadium Singles, which lasts until June 30th, 2023. For more information on this format and its current events, check out the format page!\nIf you feel this analysis is missing anything important or needs an update, feel free to suggest any changes here.",
       "sets": [
+        {
+          "name": "Fast Attacker",
+          "item": "life-orb",
+          "itemAlts": [],
+          "ability": "infiltrator",
+          "nature": "timid",
+          "tera": [],
+          "moves": [
+            [
+              "draco-meteor"
+            ],
+            [
+              "shadow-ball"
+            ],
+            [
+              "will-o-wisp"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 32,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Dragapult is one of the naturally fastest Pokemon in the format, able to outspeed and OHKO huge threats like Mega Gengar and Mega Salamence while also having strong burst damage to help break through bulkier foes like Mega Golisopod and Archaludon.\nDraco Meteor and Shadow Ball give Dragapult insane burst damage…",
+          "source": "Champions VGC"
+        },
         {
           "name": "Glass Cannon",
           "item": "choice-band",
@@ -49059,54 +49108,6 @@
             "defense": 4,
             "special-attack": 0,
             "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "Doubles OU"
-        },
-        {
-          "name": "Special Attacker",
-          "item": "choice-specs",
-          "itemAlts": [
-            "life-orb"
-          ],
-          "ability": "infiltrator",
-          "nature": "timid",
-          "tera": [
-            "dragon",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "draco-meteor"
-            ],
-            [
-              "shadow-ball"
-            ],
-            [
-              "hydro-pump",
-              "fire-blast"
-            ],
-            [
-              "u-turn",
-              "protect"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
