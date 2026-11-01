@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Coffee, Crown, KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
-import { SUPPORT_URL } from '../../constants/support';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIcon, MenuIcon, MessageIcon, PokeballIcon, SparklesIcon, SwordsIcon } from '../icons';
@@ -649,6 +648,18 @@ const VersusVisual = ({ language }) => {
     );
 };
 
+// 1.20.0: the Buy Me a Coffee cover, in the reader's language (it carries a line of text).
+const SupportVisual = ({ language }) => (
+    <img
+        src={`${import.meta.env.BASE_URL}support-cover-${language === 'pt' ? 'pt' : 'en'}.webp`}
+        width={1600}
+        height={400}
+        alt=""
+        decoding="async"
+        className="block h-auto w-full"
+    />
+);
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -664,6 +675,7 @@ const NOTE_ICONS = {
     crown: Crown,
     trophy: Trophy,
     scale: Scale,
+    coffee: Coffee,
 };
 
 const NOTE_VISUALS = {
@@ -688,6 +700,7 @@ const NOTE_VISUALS = {
     versus: VersusVisual,
     regMc: RegMcVisual,
     compare: CompareVisual,
+    support: SupportVisual,
 };
 
 // One "what's new" card. The featured one carries its illustration and grows to
@@ -698,31 +711,51 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
     const { title, description, cta } = note;
     const NoteIcon = note.Icon;
     const NoteVisual = note.Visual;
+    // A note with `href` leaves the site: a real link, drawn as a centred card.
+    const Card = note.href ? 'a' : 'button';
+    const cardProps = note.href
+        ? { href: note.href, target: '_blank', rel: 'noopener noreferrer' }
+        : { type: 'button', onClick: onActivate, 'aria-expanded': expanded };
     return (
-        <button
-            type="button"
-            onClick={onActivate}
-            className="flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 text-left transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        <Card
+            {...cardProps}
+            className={`flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${note.href ? 'items-center text-center' : 'text-left'}`}
             aria-label={`${title} – ${cta}`}
-            aria-expanded={expanded}
         >
             {featured && NoteVisual && (
-                <div className="mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-surface">
+                <div className="mb-3 flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg bg-surface">
                     <NoteVisual colors={colors} t={t} language={language} />
                 </div>
             )}
-            <div className="mb-1 flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-                    <NoteIcon className="h-4 w-4" />
-                </span>
-                <h3 className={`font-bold text-primary${featured ? ' text-lg' : ''}`}>{title}</h3>
-            </div>
-            <p className="text-sm text-fg">{description}</p>
-            <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold text-primary">
-                {cta}
-                <span aria-hidden="true">→</span>
-            </span>
-        </button>
+            {note.href ? (
+                <>
+                    {/* The cup sits on the cover's bottom edge, a little tilted; below it on a phone, where it would hide the cover's line of text. */}
+                    <span className="relative mb-2 inline-flex sm:-mt-10 h-14 w-14 -rotate-6 items-center justify-center rounded-full bg-primary text-on-primary ring-4 ring-surface-raised" aria-hidden="true">
+                        <NoteIcon className="h-7 w-7" />
+                    </span>
+                    <h3 className="mb-1 text-xl font-bold text-fg">{title}</h3>
+                    <p className="max-w-xl text-sm text-muted">{description}</p>
+                    <span className="btn btn-primary mt-4">
+                        <HeartIcon className="h-4 w-4" />
+                        {cta}
+                    </span>
+                </>
+            ) : (
+                <>
+                    <div className="mb-1 flex items-center gap-2">
+                        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                            <NoteIcon className="h-4 w-4" />
+                        </span>
+                        <h3 className={`font-bold text-primary${featured ? ' text-lg' : ''}`}>{title}</h3>
+                    </div>
+                    <p className="text-sm text-fg">{description}</p>
+                    <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold text-primary">
+                        {cta}
+                        <span aria-hidden="true">→</span>
+                    </span>
+                </>
+            )}
+        </Card>
     );
 }
 
@@ -793,14 +826,16 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                     </p>
                 </div>
 
-                <div className="shrink-0 px-5 pt-4">
-                    <div className="flex items-start gap-3 rounded-xl bg-surface-raised p-3">
-                        <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-                            <HeartIcon className="w-4 h-4" />
-                        </span>
-                        <p className="text-sm text-fg">{t(CURRENT_RELEASE.thanks || 'patchNotes.thanksBody')}</p>
+                {CURRENT_RELEASE.thanks !== false && (
+                    <div className="shrink-0 px-5 pt-4">
+                        <div className="flex items-start gap-3 rounded-xl bg-surface-raised p-3">
+                            <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                                <HeartIcon className="w-4 h-4" />
+                            </span>
+                            <p className="text-sm text-fg">{t(CURRENT_RELEASE.thanks || 'patchNotes.thanksBody')}</p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div className="space-y-4 px-5 py-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
                     {/* Side by side from md up: the featured note on the left, the
@@ -814,21 +849,6 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                             </div>
                         )}
                     </div>
-
-                    {/* Not a release note: it stays in the modal from one version
-                        to the next, and it never gates or hides anything. */}
-                    <section className="flex flex-col gap-3 rounded-xl bg-surface-raised p-4 sm:flex-row sm:items-center">
-                        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-                            <Coffee className="h-4 w-4" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                            <h3 className="font-bold text-fg">{t('patchNotes.supportTitle')}</h3>
-                            <p className="mt-1 text-sm text-muted">{t('patchNotes.supportBody')}</p>
-                        </div>
-                        <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm shrink-0">
-                            {t('patchNotes.supportCta')}
-                        </a>
-                    </section>
 
                     {/* Past releases. Collapsed by default so the modal still leads
                         with what's new, but reachable whenever someone wants to
@@ -900,7 +920,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                         <button
                             type="button"
                             onClick={onClose}
-                            className="btn btn-primary btn-lg"
+                            className={`btn btn-lg ${featuredNote.href ? 'btn-secondary' : 'btn-primary'}`}
                         >
                             {t('patchNotes.gotIt')}
                         </button>

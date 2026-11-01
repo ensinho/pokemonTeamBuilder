@@ -1676,31 +1676,7 @@
     gap: var(--space-2);
 }
 
-.app-shell__footer-support {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: var(--color-primary-text);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-}
-
-.app-shell__footer-support svg {
-    width: 1.125rem;
-    height: 1.125rem;
-}
-
-.app-shell__footer-support span {
-    display: none;
-}
-
-@media (min-width: 1500px) {
-    .app-shell__footer-support span {
-        display: inline;
-    }
-}
-
-/* One line down to 1280: the row misses by 16px at the default gaps. */
+/* The chips fill this band, so the row keeps one line for as long as it can. */
 @media (min-width: 1024px) and (max-width: 1499px) {
     .app-shell__footer-row {
         gap: var(--space-2);

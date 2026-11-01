@@ -2009,11 +2009,6 @@ export default function AppLayout() {
                                         ("Perfil e preferências"), and in the account menu. */}
                                     <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
-                                    <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" aria-label={t('nav.support')} title={t('nav.support')} className="app-shell__footer-link app-shell__footer-support">
-                                        <Coffee aria-hidden="true" />
-                                        {/* The glyph alone below 1500px: the label pushed the row onto a second line. */}
-                                        <span>{t('nav.support')}</span>
-                                    </a>
                                 </div>
                             </div>
                         </footer>
