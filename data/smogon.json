@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T07:31:46.860Z",
+  "generatedAt": "2026-11-02T17:17:16.106Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -48279,10 +48279,65 @@
       ]
     },
     "876": {
-      "name": "Indeedee-F",
+      "name": "Indeedee",
       "gen": "Champions VGC",
       "overview": "Welcome to Battle Stadium Singles Regulation F! This Pokemon has been updated to reflect the new Pokemon that The Indigo Disk has brought!\nIf you feel that this analysis is missing important information, feel free to leave feedback here.",
       "sets": [
+        {
+          "name": "Spread Sweeper",
+          "item": "choice-scarf",
+          "itemAlts": [
+            "focus-sash"
+          ],
+          "ability": "psychic-surge",
+          "nature": "modest",
+          "tera": [],
+          "moves": [
+            [
+              "expanding-force"
+            ],
+            [
+              "mystical-fire",
+              "imprison"
+            ],
+            [
+              "trick",
+              "trick-room",
+              "helping-hand"
+            ],
+            [
+              "protect",
+              "imprison"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 6,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 2,
+            "special-attack": 32,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Indeedee-M provides fast and hard-hitting Psychic-type damage against foes like Mega Staraptor and Sneasler and blocks priority moves such as Sucker Punch from Kingambit with Psychic Surge. Additionally, it can threaten Trick Room as well as support its teammates with Helping Hand.\nExpanding Force is by far…",
+          "source": "Champions VGC"
+        },
         {
           "name": "Redirection Support",
           "item": "psychic-seed",
@@ -48437,54 +48492,6 @@
           },
           "level": null,
           "description": "Indeedee-F is a support Pokemon that mainly redirects attacks with Follow Me and sets up Trick Room. The Psychic Terrain that it sets up supports its teammates by protecting them from opposing priority moves like Sucker Punch and Fake Out.\nFollow Me provides redirection so that an allied Pokemon can safely set up…",
-          "source": "VGC 2025"
-        },
-        {
-          "name": "Trick Room Support",
-          "item": "safety-goggles",
-          "itemAlts": [
-            "rocky-helmet",
-            "psychic-seed"
-          ],
-          "ability": "psychic-surge",
-          "nature": "bold",
-          "tera": [
-            "water",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "psychic",
-              "alluring-voice"
-            ],
-            [
-              "follow-me"
-            ],
-            [
-              "helping-hand"
-            ],
-            [
-              "trick-room"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nIndeedee-F is a great support option for many teams, utilizing its Normal typing to take no damage from Calyrex-S's Astral Barrage and Lunala's Moongeist Beam while also setting Psychic Terrain to not only shut off Miraidon's Electric Terrain but also to guard its teammates from priority moves such as Fake…",
           "source": "VGC 2025"
         }
       ]
