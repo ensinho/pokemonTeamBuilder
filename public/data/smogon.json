@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T17:17:16.106Z",
+  "generatedAt": "2026-11-03T15:23:00.589Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -26,7 +26,7 @@
     "Nat Dex UU",
     "Nat Dex Mono"
   ],
-  "species": 471,
+  "species": 472,
   "byId": {
     "3": {
       "name": "Venusaur",
@@ -17648,6 +17648,55 @@
           "level": null,
           "description": "This is a sample set as we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
+        }
+      ]
+    },
+    "354": {
+      "name": "Banette",
+      "gen": "Nat Dex Mono",
+      "overview": "",
+      "sets": [
+        {
+          "name": "Swords Dance",
+          "item": "banettite",
+          "itemAlts": [],
+          "ability": "frisk",
+          "nature": "adamant",
+          "tera": [],
+          "moves": [
+            [
+              "swords-dance"
+            ],
+            [
+              "poltergeist"
+            ],
+            [
+              "gunk-shot",
+              "shadow-sneak"
+            ],
+            [
+              "destiny-bond"
+            ]
+          ],
+          "evs": {
+            "hp": 120,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 136
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Mega Banette's unique combination of Prankster, Destiny Bond, and a wickedly strong Poltergeist earns it a niche on hyper offense teams that need a wallbreaker and a sweep stopper in a single slot. Even its unboosted Poltergeist can punch holes in teams, taking out Volcarona and Sneasler while nearly always securing…",
+          "source": "Nat Dex Mono"
         }
       ]
     },
