@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T15:23:00.589Z",
+  "generatedAt": "2026-11-04T15:36:08.773Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -26,7 +26,7 @@
     "Nat Dex UU",
     "Nat Dex Mono"
   ],
-  "species": 472,
+  "species": 474,
   "byId": {
     "3": {
       "name": "Venusaur",
@@ -1991,6 +1991,50 @@
           "level": null,
           "description": "",
           "source": "PU"
+        },
+        {
+          "name": "Physical Wall",
+          "item": "rocky-helmet",
+          "itemAlts": [],
+          "ability": "effect-spore",
+          "nature": "bold",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "giga-drain"
+            ],
+            [
+              "sludge-bomb"
+            ],
+            [
+              "strength-sap"
+            ],
+            [
+              "leech-seed",
+              "stun-spore"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },
@@ -2920,7 +2964,7 @@
     "62": {
       "name": "Poliwrath",
       "gen": "PU",
-      "overview": "",
+      "overview": "Poliwrath has a solid typing, strong moves, and well-rounded stats for taking on Pokemon like Regirock, Lycanroc, Orthworm, and Sneasel. Poliwrath's access to Water Absorb makes it a key answer to Floatzel, one of the most dominant forces in the tier, and only Lanturn can replicate this type of defensive utility.…",
       "sets": [
         {
           "name": "Bulk Up",
@@ -2968,6 +3012,98 @@
           "level": null,
           "description": "96 Spe allows Poliwrath to outspeeds uninvested Milotic, Jolly Rhydon, and 252 Spe Hariyama.",
           "source": "PU"
+        },
+        {
+          "name": "Bulk Up",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "careful",
+          "tera": [
+            "dark",
+            "steel",
+            "ghost"
+          ],
+          "moves": [
+            [
+              "bulk-up"
+            ],
+            [
+              "substitute"
+            ],
+            [
+              "drain-punch"
+            ],
+            [
+              "knock-off",
+              "liquidation"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 4,
+            "special-attack": 0,
+            "special-defense": 252,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Bulk Up Poliwrath can take advantage of bulky Pokemon like Sandslash and Orthworm to set up and sweep; it's also enabled when Choice item Floatzel locks itself into a Water-type move. Substitute protects Poliwrath from annoying status effects inflicted by users like Thunder Wave Regirock, Toxic Hisuian Qwilfish, and…",
+          "source": "ZU"
+        },
+        {
+          "name": "Physical Wall",
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "leftovers"
+          ],
+          "ability": "",
+          "nature": "impish",
+          "tera": [
+            "steel",
+            "poison"
+          ],
+          "moves": [
+            [
+              "circle-throw"
+            ],
+            [
+              "knock-off"
+            ],
+            [
+              "rest"
+            ],
+            [
+              "sleep-talk"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 8,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },
@@ -4973,6 +5109,55 @@
           "level": null,
           "description": "",
           "source": "PU"
+        },
+        {
+          "name": "Unburden Sweeper",
+          "item": "psychic-seed",
+          "itemAlts": [
+            "electric-seed",
+            "white-herb"
+          ],
+          "ability": "unburden",
+          "nature": "adamant",
+          "tera": [
+            "dark",
+            "fire"
+          ],
+          "moves": [
+            [
+              "swords-dance"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "knock-off"
+            ],
+            [
+              "rapid-spin",
+              "blaze-kick",
+              "earthquake"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },
@@ -21138,6 +21323,55 @@
       "gen": "ZU",
       "overview": "",
       "sets": [
+        {
+          "name": "Unburden Sweeper",
+          "item": "psychic-seed",
+          "itemAlts": [
+            "electric-seed"
+          ],
+          "ability": "unburden",
+          "nature": "modest",
+          "tera": [
+            "fairy",
+            "electric",
+            "poison"
+          ],
+          "moves": [
+            [
+              "calm-mind"
+            ],
+            [
+              "shadow-ball"
+            ],
+            [
+              "strength-sap"
+            ],
+            [
+              "air-slash",
+              "thunderbolt",
+              "stored-power"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
+        },
         {
           "name": "Defog",
           "item": "heavy-duty-boots",
@@ -46471,6 +46705,59 @@
         }
       ]
     },
+    "820": {
+      "name": "Greedent",
+      "gen": "ZU",
+      "overview": "",
+      "sets": [
+        {
+          "name": "Swords Dance",
+          "item": "sitrus-berry",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "adamant",
+          "tera": [
+            "poison",
+            "ground",
+            "water"
+          ],
+          "moves": [
+            [
+              "swords-dance"
+            ],
+            [
+              "body-slam",
+              "facade"
+            ],
+            [
+              "earthquake"
+            ],
+            [
+              "knock-off"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
+        }
+      ]
+    },
     "823": {
       "name": "Corviknight",
       "gen": "Champions VGC",
@@ -46879,6 +47166,57 @@
           "level": null,
           "description": "Coalossal is a decent defensive wall that fits well on Rock teams due to it being able to tank physical hits from Scizor and Meowscarada, which greatly threaten Rock teams. Coalossal does well in the Steel matchup, as it threatens Gholdengo, Corviknight, and Skarmory. Flame Body allows it to fish for burns to weaken…",
           "source": "Monotype"
+        }
+      ]
+    },
+    "842": {
+      "name": "Appletun",
+      "gen": "ZU",
+      "overview": "",
+      "sets": [
+        {
+          "name": "Special Wall",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "thick-fat",
+          "nature": "sassy",
+          "tera": [
+            "steel"
+          ],
+          "moves": [
+            [
+              "apple-acid"
+            ],
+            [
+              "dragon-pulse"
+            ],
+            [
+              "dragon-tail",
+              "gyro-ball"
+            ],
+            [
+              "recover"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 8,
+            "special-attack": 0,
+            "special-defense": 252,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 0
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },
@@ -48145,6 +48483,51 @@
           "level": null,
           "description": "",
           "source": "NU"
+        },
+        {
+          "name": "Terrain Setter",
+          "item": "terrain-extender",
+          "itemAlts": [],
+          "ability": "electric-surge",
+          "nature": "bold",
+          "tera": [
+            "water"
+          ],
+          "moves": [
+            [
+              "discharge"
+            ],
+            [
+              "scald"
+            ],
+            [
+              "spikes",
+              "toxic-spikes"
+            ],
+            [
+              "memento",
+              "recover"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },
@@ -64697,7 +65080,7 @@
     "1018": {
       "name": "Archaludon",
       "gen": "Champions VGC",
-      "overview": "Archaludon can utilize its above-average bulk, solid Special Attack stat, and great Ability in Stamina to check and OHKO threats such as Urshifu-R, Incineroar, and Raging Bolt.\nArchaludon's access to Stamina and Body Press combined with its resistances and great physical bulk make it an amazing check to Pokemon such…",
+      "overview": "Archaludon is the main juggernaut of Regulation M-C, bolstering its monstrous bulk with Stamina and Leftovers and snowballing through teams with Electro Shot in rain. Archaludon's amazing typing lets it resist the STAB moves of Mega Golisopod, Mega Raichu X, Pelipper, and Rillaboom while granting an immunity to Mega…",
       "sets": [
         {
           "name": "Bulky Rain Sweeper",
@@ -64714,27 +65097,28 @@
               "dragon-pulse"
             ],
             [
-              "flash-cannon"
+              "flash-cannon",
+              "snarl"
             ],
             [
               "protect"
             ]
           ],
           "evs": {
-            "hp": 212,
+            "hp": 252,
             "attack": 0,
-            "defense": 36,
-            "special-attack": 36,
-            "special-defense": 204,
-            "speed": 20
+            "defense": 4,
+            "special-attack": 4,
+            "special-defense": 196,
+            "speed": 52
           },
           "sp": {
-            "hp": 27,
+            "hp": 32,
             "attack": 0,
-            "defense": 5,
-            "special-attack": 5,
-            "special-defense": 26,
-            "speed": 3
+            "defense": 1,
+            "special-attack": 1,
+            "special-defense": 25,
+            "speed": 7
           },
           "ivs": {
             "hp": 31,
@@ -64745,7 +65129,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Acting as rain's main powerhouse in Regulation M-B, Archaludon has the ability to easily snowball out of control if left alone, thanks to Electro Shot, Leftovers, Stamina, and its naturally high physical bulk. Archaludon has a good matchup against Mega Aerodactyl, Basculegion-M, and Toxapex thanks to Electro Shot and…",
+          "description": "This set allows Archaludon to function as a bulky rain sweeper, setting up offensively with Electro Shot and defensively with Stamina while remaining on the field as long as possible thanks to Leftovers.\nFlash Cannon is used as a secondary STAB move to threaten the Fairy-types. Snarl is a rather supportive move that…",
           "source": "Champions VGC"
         },
         {
