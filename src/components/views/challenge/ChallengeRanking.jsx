@@ -6,6 +6,8 @@ import { useModalA11y } from '../../../hooks/useModalA11y';
 import { useTrainerCosmetics } from '../../../hooks/useTrainerCosmetics';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { championArt } from '../../../utils/challengeArt';
+import { CHAMPION_NAMES } from '../../../utils/challengeChampions';
 import { AvatarSprite } from '../../AvatarSprite';
 import { CloseIcon, PokeballIcon } from '../../icons';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
@@ -83,6 +85,28 @@ function RankRow({ entry, place, onOpen }) {
     );
 }
 
+/**
+ * Whose board this is. Each champion keeps a ranking of their own, and the
+ * room switches between them as you walk — so the board names its champion,
+ * face first, before anything else.
+ */
+function ChampionHead({ championId, note, heading = true }) {
+    const name = CHAMPION_NAMES[championId] || CHAMPION_NAMES.cynthia;
+    return (
+        <div className="challenge-rank__head shrink-0">
+            <span className={`challenge-rank__champ is-${championId || 'cynthia'}`} aria-hidden="true">
+                <img src={championArt(championId).versus} alt="" width={80} height={80} decoding="async" />
+            </span>
+            <span className="flex min-w-0 flex-col">
+                {note && <span className="truncate text-2xs text-muted">{note}</span>}
+                {heading
+                    ? <h2 className="m-0 truncate text-sm font-semibold">{name}</h2>
+                    : <p className="m-0 truncate text-sm font-semibold">{name}</p>}
+            </span>
+        </div>
+    );
+}
+
 /** Tiles of one size: an attempt's four figures, or your record's three. */
 function Figures({ items, label }) {
     return (
@@ -141,7 +165,7 @@ function RankDetail({ entry, place, board, onBack }) {
  * Two homes: a desktop's side rail, where it also carries your record
  * (`stats`), and `ChallengeRankingSheet` where there is no room for a rail.
  */
-export function ChallengeRanking({ ranks, defaultBoard = 'daily', stats = null, showTitle = true }) {
+export function ChallengeRanking({ ranks, championId, defaultBoard = 'daily', stats = null, showTitle = true, note = null }) {
     const { t } = useTranslation();
     const [board, setBoard] = useState(BOARDS.includes(defaultBoard) ? defaultBoard : 'daily');
     const [open, setOpen] = useState(null);
@@ -159,7 +183,8 @@ export function ChallengeRanking({ ranks, defaultBoard = 'daily', stats = null, 
 
     return (
         <div className="challenge-rank">
-            {showTitle && <h2 className="m-0 shrink-0 truncate text-sm">{t('challenge.ranking.title')}</h2>}
+            {/* The rail's heading is the champion; a sheet has its own title, so it is a line there. */}
+            <ChampionHead championId={championId} note={showTitle ? t('challenge.ranking.title') : note} heading={showTitle} />
             <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('challenge.ranking.title')}>
                 {BOARDS.map((key) => (
                     <button
@@ -210,7 +235,7 @@ export function ChallengeRanking({ ranks, defaultBoard = 'daily', stats = null, 
  * its own: the sheet was as tall as the page, so nothing in it scrolled, and
  * the dock drew over its bottom (2026-10-29).
  */
-export function ChallengeRankingSheet({ ranks, defaultBoard, stats, onClose }) {
+export function ChallengeRankingSheet({ ranks, championId, note, defaultBoard, stats, onClose }) {
     const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     return createPortal(
@@ -230,7 +255,7 @@ export function ChallengeRankingSheet({ ranks, defaultBoard, stats, onClose }) {
                     </button>
                 </div>
                 <div className="modal-body">
-                    <ChallengeRanking ranks={ranks} defaultBoard={defaultBoard} stats={stats} showTitle={false} />
+                    <ChallengeRanking key={championId} ranks={ranks} championId={championId} note={note} defaultBoard={defaultBoard} stats={stats} showTitle={false} />
                 </div>
             </div>
         </div>,

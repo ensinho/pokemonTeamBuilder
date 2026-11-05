@@ -162,9 +162,27 @@
        the dock, so a battle never needs scrolling: on a short phone the height
        is the tighter bound. 6.75rem = the bar, the gaps and the dock's padding
        and air (measured at 375 × 667, 390 × 844 and 430 × 932). */
+    .ds-console {
+        --ds-phone-room: calc(100dvh - var(--app-shell-top-band-height) - var(--app-shell-tab-height) - env(safe-area-inset-bottom, 0px) - 6.75rem);
+        /* The screens' width: the column (100cqw of .challenge-view, whose
+           container this is) or the height's bound, whichever is smaller. */
+        --ds-phone-width: min(100cqw, var(--ds-phone-room) / 1.5);
+    }
+
     .ds-console__body {
-        width: min(100%, calc((100dvh - var(--app-shell-top-band-height) - var(--app-shell-tab-height) - env(safe-area-inset-bottom, 0px) - 6.75rem) / 1.5));
+        width: var(--ds-phone-width);
         margin-inline: auto;
+    }
+
+    /* A tall phone has room left under two 4:3 screens: the bottom one takes
+       it, down to the dock, like a handheld's lower half — the menus get the
+       height (a party sheet no longer clips its SEND IN capsule) and the page
+       still never scrolls. --ds-extra is that room (0 on a short phone, where
+       the screens stay 4:3); the touch menu spreads its pieces over it. */
+    .ds-screen.is-bottom {
+        --ds-extra: max(0px, var(--ds-phone-room) - 1.5 * var(--ds-phone-width));
+        aspect-ratio: auto;
+        height: calc(0.75 * var(--ds-phone-width) + var(--ds-extra));
     }
 
     /* One row: the countdown gives way before the bar wraps and pushes the screens down. */
@@ -1569,13 +1587,13 @@
 
 .bw-touch .bw-balls.is-foe {
     left: 50%;
-    top: calc(20 * var(--px));
+    top: calc(20 * var(--px) + 0.1 * var(--ds-extra, 0px));
     transform: translateX(-50%);
 }
 
 .bw-touch .bw-balls.is-mine {
     left: calc(16 * var(--px));
-    top: calc(112 * var(--px));
+    top: calc(112 * var(--px) + 0.6 * var(--ds-extra, 0px));
 }
 
 /* FIGHT: the wide capsule in the middle, white-rimmed, the screen's centre of gravity. */
@@ -1583,9 +1601,10 @@
     position: absolute;
     left: calc(30 * var(--px));
     right: calc(30 * var(--px));
-    top: calc(34 * var(--px));
-    height: calc(72 * var(--px));
-    border-radius: calc(36 * var(--px));
+    /* A taller bottom screen (--ds-extra, phones) grows the capsule and sets it lower. */
+    top: calc(34 * var(--px) + 0.2 * var(--ds-extra, 0px));
+    height: calc(72 * var(--px) + 0.4 * var(--ds-extra, 0px));
+    border-radius: calc(36 * var(--px) + 0.2 * var(--ds-extra, 0px));
     background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
     box-shadow:
         inset 0 0 0 calc(3 * var(--px)) var(--bw-white),
@@ -1615,12 +1634,12 @@
 }
 
 .bw-touch__row .bw-btn {
-    height: calc(40 * var(--px));
+    height: calc(40 * var(--px) + 0.15 * var(--ds-extra, 0px));
 }
 
 /* RUN sits lower and smaller between the other two, as in BW. */
 .bw-touch__row .bw-btn.is-run {
-    height: calc(30 * var(--px));
+    height: calc(30 * var(--px) + 0.1 * var(--ds-extra, 0px));
 }
 
 /* While the turn plays the menu stays, dimmed — the screen never jumps. */
@@ -3055,6 +3074,41 @@
 .challenge-rank__avatar svg {
     width: 50%;
     height: 50%;
+}
+
+/* Whose board: the champion's face and name, the heading of the rail. */
+.challenge-rank__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.challenge-rank__champ {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    box-shadow: var(--ring-primary);
+}
+
+/* An 80 × 80 trainer sprite, cropped to the head and shoulders. */
+.challenge-rank__champ img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: pixelated;
+    transform: scale(1.75);
+    transform-origin: 50% 18%;
+}
+
+/* Blue's sprite is drawn smaller in its canvas, his head lower and left. */
+.challenge-rank__champ.is-blue img {
+    transform: scale(2.4);
+    transform-origin: 41% 5%;
 }
 
 /* Figures: the attempt's four, or your record's three — tiles of one size. */
