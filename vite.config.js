@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { challengeDevApi } from './scripts/lib/challengeDevApi.mjs'
 import { prerenderHome } from './scripts/lib/prerenderHome.mjs'
 import { fontPreload } from './scripts/lib/fontPreload.mjs'
+import { i18nPreload } from './scripts/lib/i18nPreload.mjs'
 
 // Unique id for this build, used to cache-bust static /data/*.json files on every
 // deploy (see src/services/pokemonDataCache.js). Overridable via VITE_BUILD_ID
@@ -17,6 +18,15 @@ export default defineConfig({
   define: {
     __BUILD_ID__: JSON.stringify(buildId),
   },
+  resolve: {
+    // The browser gets translateClient.js wherever code imports translateCore:
+    // same API, but it reads only the language the visitor loaded instead of
+    // pulling both tables (~90 KB gz) into the entry chunk. Node (api/, the
+    // build's prerender) and Vitest keep translateCore with every language.
+    alias: process.env.VITEST ? [] : [
+      { find: /^(.*\/)translateCore(\.js)?$/, replacement: '$1translateClient.js' },
+    ],
+  },
   plugins: [
     react(),
     // `npm run dev` only: /api/challenge served in-process over an in-memory
@@ -29,6 +39,9 @@ export default defineConfig({
     // Before prerenderHome: both are `post` transforms and run in this order,
     // and prerenderHome keeps the html it receives as render-meta's shell.
     fontPreload(),
+    // The visitor's translation chunk starts downloading with the page
+    // (src/i18n/catalog.js). Also before prerenderHome, so the shell has it.
+    i18nPreload(),
     prerenderHome(),
     VitePWA({
       registerType: 'prompt',

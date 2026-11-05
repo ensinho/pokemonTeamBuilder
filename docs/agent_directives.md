@@ -23,7 +23,7 @@ Read `docs/modules/styles_and_aesthetics.md` without exception. The design bar i
 - Add the view to `src/components/views/index.js` barrel export.
 - Add a navigation link in the sidebar section of `AppLayout.jsx`.
 - Add page guide tips to `src/components/PageGuide.jsx`.
-- Add any new strings to `src/constants/translations.js`.
+- Add any new strings to both `src/constants/translations/en.js` and `pt.js`.
 
 ### When Adding a New Firestore Path
 - Add a matching rule in `firestore.rules`.

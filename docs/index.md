@@ -61,7 +61,7 @@ All routes are defined in `AppLayout.jsx`. The router is `LocaleRouter` (real pa
 Never call the PokéAPI directly from a component. Always go through `src/services/pokemonDataCache.js`. Never query Firestore for the Pokémon list — it comes from `public/data/pokemon-index.json`.
 
 ### 7. i18n
-All user-facing copy lives in `src/constants/translations.js`. Never hardcode UI strings in JSX.
+All user-facing copy lives in `src/constants/translations/en.js` and `pt.js` (one chunk per language, loaded by `src/i18n/catalog.js`). Never hardcode UI strings in JSX, and never import the tables statically from browser code.
 
 ### 8. State
 All app state lives in Zustand stores (`src/store/`), not React Context. Prefer the thin hook wrappers in `src/hooks/` over accessing stores directly in components.

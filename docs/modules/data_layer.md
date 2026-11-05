@@ -217,6 +217,6 @@ The type coverage engine in `useActiveTeamStore` uses `analyzeTeam` from `src/ut
 
 ## i18n
 
-**File:** `src/constants/translations.js`
+**Files:** `src/constants/translations/en.js`, `src/constants/translations/pt.js` (one table per language; `src/constants/translations.js` aggregates both for `api/` and tests)
 
-All user-facing strings in a flat key→locale→value map. `useTranslation()` (`src/hooks/useTranslation.js`) resolves keys using the active language from `useLanguageStore`. Never hardcode UI strings in JSX — always add to `translations.js` and resolve via the hook.
+All user-facing strings, one nested key→value table per language. The browser loads only the active one as its own chunk (`src/i18n/catalog.js`, preloaded by `scripts/lib/i18nPreload.mjs`); `translateCore.js` is aliased to `translateClient.js` in the browser build. Every key goes in both files (`src/i18n/catalog.guard.test.js`). `useTranslation()` (`src/hooks/useTranslation.js`) resolves keys using the active language from `useLanguageStore`. Never hardcode UI strings in JSX — always add to both `translations/en.js` and `translations/pt.js` and resolve via the hook.

@@ -6,7 +6,7 @@ import { appId } from '../constants/firebase';
 import { AnchoredPopover } from './AnchoredPopover';
 import { Mascot } from './Mascot';
 import { useTranslation } from '../hooks/useTranslation';
-import { TRANSLATIONS } from '../constants/translations';
+import { getTable } from '../i18n/catalog';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
@@ -20,7 +20,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
     const triggerRef = useRef(null);
     const popoverRef = useRef(null);
     
-    const guide = TRANSLATIONS[language]?.guide?.[pageKey] || TRANSLATIONS['en']?.guide?.[pageKey];
+    const guide = getTable(language)?.guide?.[pageKey] || getTable('en')?.guide?.[pageKey];
 
     useEffect(() => {
         if (!isOpen) return undefined;

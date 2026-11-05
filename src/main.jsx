@@ -8,6 +8,7 @@ import './styles/interactions.css' // design system v2: switch, check, loader, r
 import { applyTheme } from './constants/theme'
 import { LocaleRouter } from './components/LocaleRouter'
 import { useLanguageStore } from './store/useLanguageStore'
+import { loadLanguage } from './i18n/catalog'
 import { mirrorLanguageInUrl } from './services/localeHistory'
 import { initAnalytics } from './services/analytics'
 import { installAssetFallback } from './utils/assetHost'
@@ -34,13 +35,20 @@ mirrorLanguageInUrl(useLanguageStore.getState().language);
 // Installed before the first render so the first <img> is already covered.
 installAssetFallback();
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <LocaleRouter>
-      <App />
-    </LocaleRouter>
-  </React.StrictMode>,
-)
+// Copy is one chunk per language (i18n/catalog.js); the first render waits for
+// the visitor's, whose download index.html already started (i18nPreload). If it
+// fails the app still renders — every string falls back to its key.
+loadLanguage(useLanguageStore.getState().language)
+  .catch(() => {})
+  .then(() => {
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <React.StrictMode>
+        <LocaleRouter>
+          <App />
+        </LocaleRouter>
+      </React.StrictMode>,
+    )
 
-// After the first render, never before it: see services/analytics.js.
-initAnalytics()
+    // After the first render, never before it: see services/analytics.js.
+    initAnalytics()
+  })
