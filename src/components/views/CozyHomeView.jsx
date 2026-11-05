@@ -20,6 +20,7 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDis
 import { formatForumTime } from '../../utils/forumTime';
 import { timeUntil, trainerSpriteUrl } from '../../utils/challengeView';
 import { nextResetAt as challengeResetAt } from '../../utils/challengeDay';
+import blueBattleUrl from '../../assets/challenge/blue-battle.png';
 import {
     TEAM_SIZE,
     TYPE_COUNT,
@@ -561,6 +562,8 @@ export function CozyHomeView({
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--trainer" aria-hidden="true">
                             <span className="cozy-day__pad" />
+                            {/* Blue, a step behind her: the room has two champions, each with a ranking. */}
+                            <img src={blueBattleUrl} alt="" width={80} height={80} decoding="async" className="cozy-day__rival" />
                             <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" className="cozy-day__trainer" />
                         </span>
                     </span>

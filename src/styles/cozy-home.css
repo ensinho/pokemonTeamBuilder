@@ -698,6 +698,26 @@ button.cozy-chip:hover {
     image-rendering: pixelated;
 }
 
+/* Blue, the second champion. On a phone's small tile he is a face in its
+   corner — a second trainer, read at a glance; mirrored to face her. */
+.cozy-day__tile--trainer {
+    position: relative;
+}
+
+.cozy-day__rival {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    object-fit: cover;
+    object-position: 50% 0;
+    image-rendering: pixelated;
+    scale: -1 1;
+}
+
 .cozy-day__short {
     display: none;
 }
@@ -842,6 +862,20 @@ button.cozy-chip:hover {
         position: relative;
         width: 10rem;
         height: 10rem;
+    }
+
+    /* On the band, Blue stands a step behind her on the same pad — smaller,
+       in her shadow, facing her: two champions in the room, one card. */
+    .cozy-day__card--feature .cozy-day__rival {
+        left: calc(var(--space-10) * -1);
+        right: auto;
+        bottom: var(--space-6);
+        width: 6rem;
+        height: 6rem;
+        border-radius: 0;
+        background: none;
+        object-fit: contain;
+        filter: brightness(0.82) saturate(0.85);
     }
 
     .cozy-day__card--feature .cozy-day__eyebrow { grid-column: 1; grid-row: 1; }
