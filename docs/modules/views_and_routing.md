@@ -271,8 +271,8 @@ All modals are mounted in `AppLayout.jsx` and controlled by its local state. The
 | `SyncPromptModal` | On first significant action as anonymous | Nudge to save progress |
 | `PokemonDetailModal` | Clicking any Pokémon card | Full detail panel overlay |
 | `TeamPokemonEditorModal` | Clicking a team slot | Edit slot: moves, item, ability, EVs, nature |
-| `ShareSnippetModal` | Share button on a team | Canvas-based team image export |
-| `UserProfileModal` | Clicking a user's avatar in feed | Public trainer profile view |
+| `ShareSnippetModal` | Share button on a team | Canvas team image: the **team sheet** (trainer + "Time de X", six cards: art, item, ability, nature, moves — no stats since 2026-11-05) or the poster |
+| `TrainerCardDialog` (`components/trainerCard/`) | A forum author, a friend — `openTrainerCard(profile, extras)` (`useTrainerCardStore`), mounted lazily by AppLayout | The trainer card: pixel banner, persona bio, streak / level / wins, "since" (replaced `UserProfileModal` 2026-11-05) |
 | `ConfirmDialog` | Delete / destructive actions | Generic confirmation prompt |
 | `PatchNotesModal` | On version bump (`PATCH_NOTES_VERSION`) | What's new changelog |
 | `QuizCelebrationModal` | Quiz milestone streaks | Celebration overlay |

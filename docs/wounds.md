@@ -1,5 +1,7 @@
 # 🩹 Wounds Log
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./modules/creative_direction.md) before designing any new screen.
+
 > The project's memory of pain. Every fixed bug, root cause, dispattern, and the
 > improvement backlog live here. **Read this before non-trivial work** so you don't
 > re-open a healed wound. Append new entries with the `/log-wound` skill

@@ -26,6 +26,8 @@ measures first.
 |---|---|---|
 | `landing_view` | `HomeEntry`, when the first-visit landing shows | — |
 | `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `closing_build`, `demo_open_builder`, `feature_<key>`, `skip` |
+| `onboarding_complete` | `TrainerOnboarding` finished (the button or a pick) | `persona`, `interests` (comma list), `level`, `source`: `landing`, `auto`, `home`, `profile` |
+| `onboarding_skip` | `TrainerOnboarding` closed unanswered (Pular, Escape, drag) — only when there were no answers before | `step`, `source` |
 | `team_first_pokemon` | `useActiveTeamStore.handleAddPokemon` on an empty team | `pokemon_id` |
 | `team_saved` | `handleSaveTeam` success | `size` |
 | `team_shared` | `shareTeamByData` success | `size` |

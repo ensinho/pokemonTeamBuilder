@@ -29,6 +29,7 @@ import { disablePush } from '../services/pushNotifications';
 import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalizeStreak } from '../utils/dailyCheckin';
 import { useRewardsStore } from './useRewardsStore';
 import { isCrawler } from '../utils/crawler';
+import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -244,6 +245,27 @@ const writeJourneyMarks = (marks) => {
     } catch (_) { /* a convenience: the account copy still has them */ }
 };
 
+// The trainer profile (utils/trainerProfile.js): what the onboarding learned
+// the trainer came for. Same shape of storage as the marks — localStorage for
+// the first paint, the preferences doc to follow the account — but merged as
+// "the copy touched last wins", because answers are a set, not a union.
+const TRAINER_PROFILE_KEY = 'ptb:trainerProfile';
+
+const getInitialTrainerProfile = () => {
+    if (typeof window === 'undefined') return normalizeTrainerProfile(null);
+    try {
+        return normalizeTrainerProfile(JSON.parse(localStorage.getItem(TRAINER_PROFILE_KEY) || 'null'));
+    } catch (_) {
+        return normalizeTrainerProfile(null);
+    }
+};
+
+const writeTrainerProfile = (profile) => {
+    try {
+        localStorage.setItem(TRAINER_PROFILE_KEY, JSON.stringify(profile));
+    } catch (_) { /* the account copy still has it */ }
+};
+
 export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
     let syncNudgeTimer = null;
@@ -299,6 +321,7 @@ export const useAuthStore = create((set, get) => {
         activeDays: getInitialActiveDays(),
         checkin: getInitialCheckin(),
         journeyMarks: getInitialJourneyMarks(),
+        trainerProfile: getInitialTrainerProfile(),
         selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
         newlyUnlockedBadge: null,
         showSyncPrompt: false,
@@ -453,6 +476,11 @@ export const useAuthStore = create((set, get) => {
                             writeJourneyMarks(mergedMarks);
                             set({ journeyMarks: mergedMarks });
 
+                            // 5.25 Trainer profile: the copy touched last wins.
+                            const mergedProfile = mergeTrainerProfiles(get().trainerProfile, data.trainerProfile);
+                            writeTrainerProfile(mergedProfile);
+                            set({ trainerProfile: mergedProfile });
+
                             // 5.3 Rewards (useRewardsStore): XP never drops,
                             // unlocks are a union, the account's equip wins.
                             useRewardsStore.getState().hydrate(data.rewards);
@@ -562,7 +590,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, selectedBadgeId, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, trainerProfile, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -589,6 +617,7 @@ export const useAuthStore = create((set, get) => {
                 activeDays,
                 checkin,
                 journeyMarks,
+                trainerProfile,
                 rewards: useRewardsStore.getState().snapshot(),
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
@@ -608,6 +637,17 @@ export const useAuthStore = create((set, get) => {
             writeJourneyMarks(next);
             set({ journeyMarks: next });
             get().savePreferences({ journeyMarks: next });
+        },
+
+        // Record the onboarding's answers (or that it was turned down — pass
+        // `{ skippedAt }`). Normalised, stamped, and saved to both copies.
+        setTrainerProfile: (answers) => {
+            const next = normalizeTrainerProfile(answers);
+            writeTrainerProfile(next);
+            set({ trainerProfile: next });
+            get().savePreferences({ trainerProfile: next });
+            get().syncPublicProfile();
+            return next;
         },
 
         // Count today as a day active. Idempotent per local day.
@@ -636,6 +676,8 @@ export const useAuthStore = create((set, get) => {
             set({ checkin: next.checkin, streak: next.streak });
             get().savePreferences({ checkin: next.checkin, streak: next.streak });
             get().bumpActiveDay();
+            // Others see the streak on the trainer card: one write a day.
+            get().syncPublicProfile();
             const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });
             return { ...next.result, ...reward };
         },
@@ -689,21 +731,36 @@ export const useAuthStore = create((set, get) => {
                 selectedBadgeId: selectedBadgeId || null,
                 updatedAt: new Date().toISOString(),
             };
+            // What the profile card shows of the rewards (2026-10-17).
+            const withRewards = {
+                ...base,
+                frameId: rewards.equipped.frame || null,
+                titleId: rewards.equipped.title || null,
+                trainerLevel: rewards.level || 1,
+            };
+            // The trainer card (2026-11-05): the streak as stored (the reader
+            // judges whether it is still alive), the onboarding's persona and
+            // the month the account was made.
+            const { streak, trainerProfile } = get();
+            const created = auth?.currentUser?.metadata?.creationTime;
+            const createdAt = created ? new Date(created) : null;
+            const withCard = {
+                ...withRewards,
+                streak: { count: streak?.count || 0, lastVisit: streak?.lastVisit || null, shields: streak?.shields || 0 },
+                persona: derivePersona(trainerProfile)?.id || null,
+                memberSince: createdAt && !Number.isNaN(createdAt.getTime()) ? createdAt.toISOString().slice(0, 7) : null,
+            };
             try {
-                try {
-                    // What the profile card shows of the rewards (2026-10-17).
-                    await setDoc(profileRef, {
-                        ...base,
-                        frameId: rewards.equipped.frame || null,
-                        titleId: rewards.equipped.title || null,
-                        trainerLevel: rewards.level || 1,
-                    }, { merge: true });
-                } catch (e) {
-                    // Rules from before the rewards (`hasOnly`) refuse the new
-                    // fields: keep the directory entry current without them
-                    // until firestore.rules is deployed.
-                    if (e?.code !== 'permission-denied') throw e;
-                    await setDoc(profileRef, base, { merge: true });
+                // Rules from before a field (`hasOnly`) refuse the whole write:
+                // step down to the last shape they accept, so the directory
+                // entry stays current until firestore.rules is deployed.
+                for (const payload of [withCard, withRewards, base]) {
+                    try {
+                        await setDoc(profileRef, payload, { merge: true });
+                        break;
+                    } catch (e) {
+                        if (e?.code !== 'permission-denied' || payload === base) throw e;
+                    }
                 }
             } catch (e) {
                 // Non-critical: the private profile is already saved, and the

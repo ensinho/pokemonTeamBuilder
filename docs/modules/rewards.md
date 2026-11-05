@@ -18,7 +18,7 @@ no item ever gates a feature.
 | `src/store/useRewardsStore.js` | **The record.** `xp`, `level`, `unlocked` (id → day), `equipped` + `equippedAt`, `seen`. localStorage `ptb:rewards` + the preferences doc's `rewards`. `syncProgress` (records, never celebrates), `addXp` (the check-in), `equip`, `markSeen`, `isThemeUnlocked`. |
 | `src/store/useAuthStore.js` | `checkin` (`ptb:checkin`, doc `checkin`), the streak (now with `shields`), `checkIn()`. `bumpPokePuzzleStreak` *is* a check-in. Hydration merges both, then `useRewardsStore.hydrate(data.rewards)`. |
 | `src/hooks/useTrainerBadges.js` | Computes XP from the stats it already builds and hands it to `syncProgress`. |
-| `src/store/useTrainerCosmeticsStore.js` + `src/hooks/useTrainerCosmetics.js` | **Other trainers' frames.** Reads `publicProfiles` (`frameId`, `titleId`, `trainerLevel`), once per trainer per session, batched into `in` queries of 30. Your own come live from useRewardsStore. |
+| `src/store/useTrainerCosmeticsStore.js` + `src/hooks/useTrainerCosmetics.js` | **Other trainers' frames.** Reads `publicProfiles` through `publicCard()` (`frameId`, `titleId`, `trainerLevel`, and since 2026-11-05 the trainer card's `streak`, `persona`, `memberSince`, `battleRecord`), once per trainer per session, batched into `in` queries of 30. Your own come live from useRewardsStore. |
 | `src/components/rewards/` | `CheckinCard` (Home rail / under the hero on phones, and the head of the tab), `RewardsPanel` (`/journeys?tab=rewards`: collection + level track — the track opens on the last level reached and the next four, the rest behind "show more"), `FramedAvatar`, `TrainerTitle`. |
 | `src/styles/rewards.css` | The card, the collection, the track. The frame itself is global (`index.css`, `[data-frame]`). |
 

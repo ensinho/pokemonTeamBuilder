@@ -5,7 +5,9 @@ import '../../styles/journeys.css';
 import { THEME_META } from '../../constants/theme';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
-import { resolveAvatar } from '../../store/useAuthStore';
+import { resolveAvatar, useAuthStore } from '../../store/useAuthStore';
+import { useOnboardingStore } from '../../store/useOnboardingStore';
+import { PERSONAS, derivePersona, hasAnsweredProfile } from '../../utils/trainerProfile';
 import { Sprite } from '../Sprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { TrainerTitle } from '../rewards/TrainerTitle';
@@ -115,6 +117,41 @@ const SettingRow = ({ label, description, children, tone, leading }) => (
         {children ? <div className="profile-row__control">{children}</div> : null}
     </div>
 );
+
+/**
+ * What the onboarding learned (utils/trainerProfile.js), and the way back
+ * into it. First in Preferences: it decides the order of everything else.
+ */
+const TrainerProfileSection = () => {
+    const { t } = useTranslation();
+    const profile = useAuthStore((s) => s.trainerProfile);
+    const open = useOnboardingStore((s) => s.open);
+    const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
+    const tags = persona
+        ? [
+            ...persona.interests.map((interest) => t(`onboarding.interestShort.${interest}`)),
+            ...(profile.competitiveLevel ? [t(`onboarding.levelShort.${profile.competitiveLevel}`)] : []),
+            ...(profile.battleFormat ? [t(`onboarding.format.${profile.battleFormat}`)] : []),
+        ].join(' · ')
+        : null;
+    return (
+        <Section title={t('onboarding.profile.label')}>
+            <SettingRow
+                label={persona ? t(`onboarding.personas.${persona.id}.name`) : t('onboarding.profile.label')}
+                description={persona ? tags : t('onboarding.profile.none')}
+                leading={(
+                    <span className="profile-thumb profile-thumb--static" aria-hidden="true">
+                        <img src={getPokemonArtworkSpriteUrl((persona || PERSONAS.master).art)} alt="" width={40} height={40} decoding="async" />
+                    </span>
+                )}
+            >
+                <button type="button" className={`btn btn-sm ${persona ? 'btn-secondary' : 'btn-primary'}`} onClick={() => open('profile')}>
+                    {persona ? t('onboarding.profile.redo') : t('onboarding.profile.setup')}
+                </button>
+            </SettingRow>
+        </Section>
+    );
+};
 
 /**
  * Notifications live on the profile, not only on the battle list, because two
@@ -705,6 +742,7 @@ export function ProfileView({
 
                 {activeTab === 'preferences' && (
                     <>
+                        <TrainerProfileSection />
                         {/* The Tera switch is how the builder behaves, not how the
                             app looks — it sat under Appearance until 2026-10-22. */}
                         <Section title={t('profile.sectionGameplay')}>

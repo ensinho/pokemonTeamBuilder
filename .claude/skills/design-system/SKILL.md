@@ -5,6 +5,8 @@ description: Enforce the strict spacing grid, token vocabulary, restraint rules 
 
 # Design System — calm structure, living material
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](../../../docs/modules/creative_direction.md) before designing any new screen.
+
 ## This branch: "Neon Sticker" — calm data, loud moments (2026-10-26)
 
 Read this first; everything below still holds, with these overrides. The

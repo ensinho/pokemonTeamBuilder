@@ -80,6 +80,10 @@ import '../styles/eagerViewStyles';
 import { CozyHomeView } from './views/CozyHomeView';
 import { HomeEntry } from './views/HomeEntry';
 import { useLandingStore } from '../store/useLandingStore';
+import { useOnboardingStore } from '../store/useOnboardingStore';
+import { useTrainerCardStore } from '../store/useTrainerCardStore';
+import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
+import { isCrawler } from '../utils/crawler';
 import { BrandWordmark } from './BrandWordmark';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
@@ -116,6 +120,10 @@ const AuthModal = lazy(() => loadAuthModal().then((m) => ({ default: m.AuthModal
 const TeamCompareModal = lazy(() => import('./modals/TeamCompareModal').then((m) => ({ default: m.TeamCompareModal })));
 const BadgeUnlockModal = lazy(() => import('./modals/BadgeUnlockModal').then((m) => ({ default: m.BadgeUnlockModal })));
 const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) => ({ default: m.PatchNotesModal })));
+// The trainer-profile onboarding (2026-11-05): its own chunk, fetched only
+// when it opens — a trainer meets it once.
+const TrainerOnboarding = lazy(() => import('./onboarding/TrainerOnboarding').then((m) => ({ default: m.TrainerOnboarding })));
+const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
@@ -424,6 +432,11 @@ export default function AppLayout() {
     }, [savedTeams, activeTeamId]);
 
     const newlyUnlockedBadge = useAuthStore((s) => s.newlyUnlockedBadge);
+    // What the trainer told the onboarding (utils/trainerProfile.js): it
+    // orders the rail's sections and picks the dock's fourth tab.
+    const trainerProfile = useAuthStore((s) => s.trainerProfile);
+    const isOnboardingOpen = useOnboardingStore((s) => s.isOpen);
+    const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
         generations: s.generations, items: s.items, natures: s.natures, games: s.games,
@@ -590,6 +603,20 @@ export default function AppLayout() {
     const [contentScrollEl, setContentScrollEl] = useState(null);
     // The first-visit landing leads with its CTAs alone: no dock under it.
     const isLandingOpen = useLandingStore((s) => s.isOpen);
+    // The onboarding offers itself to a trainer with no profile, on Home only —
+    // never over a page someone came to read from a search result or a shared
+    // link, never over the landing (its CTAs open it on the way out, HomeEntry),
+    // never over the patch notes, and never to a crawler. Once per session at
+    // most; closing it records a skip (TrainerOnboarding).
+    const onboardingOffered = useRef(false);
+    useEffect(() => {
+        if (onboardingOffered.current || !isAuthReady || currentPage !== 'home') return;
+        if (isLandingOpen || showPatchNotes || isOnboardingOpen || isCrawler()) return;
+        if (!needsTrainerProfile(useAuthStore.getState().trainerProfile)) return;
+        onboardingOffered.current = true;
+        useOnboardingStore.getState().open('auto');
+    }, [isAuthReady, currentPage, isLandingOpen, showPatchNotes, isOnboardingOpen]);
+
     const isDockCompact = useDockCompact(contentScrollEl, {
         enabled: isMobile && !isMobileDetailsOpen,
         resetKey: location.pathname,
@@ -987,8 +1014,12 @@ export default function AppLayout() {
             },
         ];
 
+        // The trainer's interests pull their sections up (2026-11-05); with no
+        // profile the order is the one above.
+        const ordered = sortNavGroups(groups, trainerProfile);
+
         if (isAdmin) {
-            groups.push({
+            ordered.push({
                 key: 'management',
                 title: t('nav.management'),
                 items: [
@@ -997,21 +1028,32 @@ export default function AppLayout() {
             });
         }
 
-        return groups;
-    }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe]);
+        return ordered;
+    }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe, trainerProfile]);
 
     // The phone's bottom tab bar. One definition, read by the bar itself and by
     // the Mais sheet, which leaves out whatever the bar already shows.
-    const mobileTabs = useMemo(() => ([
-        { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
-        // A fifth of a 360px phone fits about six letters at the dock's size:
-        // "Construtor" was cut to "Constru…". The full name stays its accessible name.
-        { key: 'builder', label: t('nav.builder'), shortLabel: t('nav.builderShort'), icon: <SwordsIcon />, path: '/builder' },
-        { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
-        // The daily puzzle is the one thing on a phone that is new every day, so it
-        // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
-        { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
-    ]), [t]);
+    const mobileTabs = useMemo(() => {
+        // The tabs the dock's fourth slot can hold (personaDockSlot).
+        const slotTabs = {
+            pokepuzzle: { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
+            meta: { key: 'meta', label: t('nav.meta'), icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
+            types: { key: 'types', label: t('nav.typesShort'), icon: <Shapes className="w-5 h-5 shrink-0" />, path: '/types' },
+        };
+        return [
+            { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
+            // A fifth of a 360px phone fits about six letters at the dock's size:
+            // "Construtor" was cut to "Constru…". The full name stays its accessible name.
+            { key: 'builder', label: t('nav.builder'), shortLabel: t('nav.builderShort'), icon: <SwordsIcon />, path: '/builder' },
+            { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
+            // The daily puzzle is the one thing on a phone that is new every day, so it
+            // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
+            // Since 2026-11-05 the slot follows the trainer profile: anyone who plays
+            // (or has not said) keeps the puzzle; a competitive-only trainer gets
+            // Meta, a games-only one the type chart (personaDockSlot).
+            slotTabs[personaDockSlot(trainerProfile)] ?? slotTabs.pokepuzzle,
+        ];
+    }, [t, trainerProfile]);
 
     // What the Mais sheet lists — every destination the tab bar has no room for,
     // in exactly one place (2026-10-18, Enzo: "mais fácil, intuitivo e
@@ -1394,6 +1436,17 @@ export default function AppLayout() {
             {isSearchOpen && (
                 <Suspense fallback={null}>
                     <CommandPalette onClose={() => setIsSearchOpen(false)} destinations={searchDestinations} />
+                </Suspense>
+            )}
+
+            {isTrainerCardOpen && (
+                <Suspense fallback={null}>
+                    <TrainerCardDialog />
+                </Suspense>
+            )}
+            {isOnboardingOpen && (
+                <Suspense fallback={null}>
+                    <TrainerOnboarding />
                 </Suspense>
             )}
 

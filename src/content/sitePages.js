@@ -261,14 +261,14 @@ export const SITE_PAGES = {
     },
 
     privacy: {
-        updated: '2026-11-01',
+        updated: '2026-11-05',
         en: {
             lede: 'What PokemonBuilder stores about you, why, who else handles it, and how to delete it. In short: your teams and progress, the profile you choose to make public, and, only if you allow it, usage statistics. No ads, and your data is never sold.',
             sections: [
                 {
                     heading: 'What is stored when you use the site without an account?',
                     paragraphs: [
-                        'On your first visit the site creates an anonymous account for you: a random identifier, with no name or email. Under it, Firebase stores what you save: teams, favorites, quiz, PokéPuzzle and Champion Challenge results, and your progress.',
+                        'On your first visit the site creates an anonymous account for you: a random identifier, with no name or email. Under it, Firebase stores what you save: teams, favorites, quiz, PokéPuzzle and Champion Challenge results, your progress, and the answers you give the welcome questions (what you play, and how deep into competitive), which only arrange the site for you.',
                         'Your browser also keeps preferences (language, theme, text size) and a copy of public game data in its own storage, so pages open faster. Clearing the site\'s data in your browser removes them.',
                     ],
                 },
@@ -276,7 +276,7 @@ export const SITE_PAGES = {
                     heading: 'What is stored when you create an account?',
                     paragraphs: [
                         'Your email address and the display name you choose. Your password is handled by Firebase Authentication and is never visible to us.',
-                        'An account has a public profile, visible to other players: your display name, avatar Pokémon, trainer sprite, badge, frame, title, trainer level and battle record. Your email is never shown on it.',
+                        'An account has a public profile, visible to other players: your display name, avatar Pokémon, trainer sprite, badge, frame, title, trainer level, battle record, daily streak, trainer profile (Strategist, Traveler…) and the month the account was made — what the trainer card shows. Your email is never shown on it.',
                     ],
                 },
                 {
@@ -329,7 +329,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'O que é guardado quando você usa o site sem conta?',
                     paragraphs: [
-                        'Na primeira visita o site cria uma conta anônima para você: um identificador aleatório, sem nome nem e-mail. Nele, o Firebase guarda o que você salva: times, favoritos, resultados do quiz, do PokéPuzzle e do Desafio do Campeão, e o seu progresso.',
+                        'Na primeira visita o site cria uma conta anônima para você: um identificador aleatório, sem nome nem e-mail. Nele, o Firebase guarda o que você salva: times, favoritos, resultados do quiz, do PokéPuzzle e do Desafio do Campeão, o seu progresso e as respostas das perguntas de boas-vindas (o que você joga e o seu nível no competitivo), que servem só para organizar o site para você.',
                         'O seu navegador também guarda preferências (idioma, tema, tamanho do texto) e uma cópia de dados públicos do jogo no próprio armazenamento, para as páginas abrirem mais rápido. Apagar os dados do site no navegador os remove.',
                     ],
                 },
@@ -337,7 +337,7 @@ export const SITE_PAGES = {
                     heading: 'O que é guardado quando você cria uma conta?',
                     paragraphs: [
                         'O seu e-mail e o nome de exibição que você escolher. A senha fica com o Firebase Authentication e nunca fica visível para nós.',
-                        'Uma conta tem um perfil público, visível para outros jogadores: nome de exibição, Pokémon de avatar, sprite de treinador, insígnia, moldura, título, nível de treinador e histórico de batalhas. O seu e-mail nunca aparece nele.',
+                        'Uma conta tem um perfil público, visível para outros jogadores: nome de exibição, Pokémon de avatar, sprite de treinador, insígnia, moldura, título, nível de treinador, histórico de batalhas, sequência diária, perfil de treinador (Estrategista, Viajante…) e o mês em que a conta foi criada — o que o cartão de treinador mostra. O seu e-mail nunca aparece nele.',
                     ],
                 },
                 {

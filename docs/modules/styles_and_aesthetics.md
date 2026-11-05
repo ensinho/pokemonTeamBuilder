@@ -1,5 +1,7 @@
 # Styles & Aesthetics
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./creative_direction.md) before designing any new screen.
+
 > **Critical:** This app targets a premium, polished feel. Generic-looking UI is a failure. Read this module before any visual change.
 
 ---
