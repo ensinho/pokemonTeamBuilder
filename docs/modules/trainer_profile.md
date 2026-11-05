@@ -1,5 +1,7 @@
 # Trainer profile & onboarding (2026-11-05)
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./creative_direction.md) before designing any new screen.
+
 A few questions the first time a trainer arrives (what brings you here — any
 of **competitive**, **playing the games**, **minigames**; for the competitive,
 how deep and which format), saved as the trainer's profile. The profile then
@@ -52,3 +54,23 @@ tags and still get a pick in the first row of "Para você".
   `onboarding.picks.<key>`.
 - The privacy page lists the answers (`sitePages.js`, 2026-11-05); the funnel
   has `onboarding_complete` / `onboarding_skip` (analytics.md).
+
+## The trainer card (2026-11-05)
+
+What other trainers see of you: `components/trainerCard/TrainerCardDialog.jsx`
+(lazy, mounted by AppLayout while `useTrainerCardStore.profile` is set — call
+`openTrainerCard(profile, extras)`; the forum passes the teams shared in the
+open thread). Opened from forum authors and the friends list.
+
+- **Banner:** the trainer's uid drawn as pixels (`utils/trainerCardPattern.js`,
+  seeded, tested) in the persona's type colour (`--tc-tone`), gold accent
+  pixels, the partner's artwork standing in it.
+- **Bio:** the persona and a third-person line (`trainerCard.bio.*`).
+- **Numbers:** streak (`liveStreak` judges whether the stored one is still
+  alive), level, wins — "bold figure + muted word", only those that exist.
+- **Since:** the month the account was made.
+- **Data:** `syncPublicProfile` publishes `streak`, `persona`, `memberSince`
+  to `publicProfiles` (rules: `firestore.rules` `validPublicProfile`), and
+  steps down to the older shapes if the deployed rules refuse them. It runs
+  on profile changes, on finishing the onboarding and once per check-in.
+  Your own card reads the live stores instead.

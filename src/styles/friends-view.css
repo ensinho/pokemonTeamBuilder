@@ -234,6 +234,19 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
+    width: 100%;
+    padding: 0;
+    border-radius: var(--radius-md);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+/* The header opens the trainer card (2026-11-05). */
+.friend-card__header:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
 }
 
 .friend-card__avatar {

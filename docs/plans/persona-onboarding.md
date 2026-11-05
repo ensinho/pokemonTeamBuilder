@@ -1,5 +1,7 @@
 # Plan: persona onboarding, personalised surfaces and the UI/UX pass (2026-11-05)
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](../modules/creative_direction.md) before designing any new screen.
+
 Branch `claude/persona-onboarding`. Asked by Enzo with three references: a
 phone onboarding card (coloured illustration on top, a curve, an icon tile, a
 step pill, one big line, a round arrow, dots), "bad vs good shadow", and a
@@ -114,3 +116,20 @@ Worth adding (third-party — read each `SKILL.md` before installing):
   tokens directly.
 - For richer onboarding motion later: **Lottie** or **Rive** players, loaded
   lazily inside the onboarding chunk only (never on the boot path).
+
+## 5. Round 2 (2026-11-05, same branch)
+
+Enzo's verdict on round 1: "absurdamente incrível… quero ela pro futuro" —
+recorded in [creative_direction.md](../modules/creative_direction.md) and the
+banner on every main doc. Then four asks:
+
+| Ask | Built ✅ |
+|---|---|
+| "Para você": one row instead of 2 × 2, icons that move on hover "no próprio design do ícone" | Four vertical tiles in one row (a snapping sideways strip on phones); each icon animates its own SVG parts (`data-motion`, cozy-home.css): trend line redraws, gauge needle sweeps, swords clash, lens scans, puzzle piece turns, crown lifts… |
+| Visual inspirations from the "community boards" kit | Extracted into the inspiration bank in [creative_direction.md](../modules/creative_direction.md); used now on the trainer card's numbers and the tiles; the rest are mapped to places (ranking podium, quest pills, inverted chips…) as ☐ |
+| A clean profile card everywhere a trainer is shown, with the streak | `TrainerCardDialog` replaces `UserProfileModal` (forum + friends list) — see trainer_profile.md "The trainer card" |
+| The share card as a team sheet (no stats), per trainer | The share image's "Ficha": trainer face + "Time de X", six raked cards with art, item, ability, nature and type-signed moves, on the lead's type colour (or six fixed tones) |
+
+☐ Open from round 2: show the card from the Champion ranking (rows carry no
+uid yet), the Home's community posts and battle opponents; a "copy sheet as
+text" (Showdown paste) beside the image.

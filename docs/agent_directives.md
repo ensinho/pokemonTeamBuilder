@@ -1,5 +1,7 @@
 # Agent Directives & Auto-Learn Protocol
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./modules/creative_direction.md) before designing any new screen.
+
 > **Strict directive — failure recovery sequence:**
 > If Enzo disapproves of a change, or if your code causes a rendering or Firebase error:
 > 1. **Stop.** Revert immediately if the app is unbootable.

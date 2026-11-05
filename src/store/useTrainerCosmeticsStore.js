@@ -15,10 +15,27 @@ import { validEquip } from '../utils/rewards';
  *
  * `byUid[uid]` is `undefined` (not asked yet), `false` (no public profile — a
  * guest, or a lookup that failed: the post's stamped frame is used), or
- * `{ frameId, titleId, level }`.
+ * `publicCard(doc)` (`{ frameId, titleId, level, streak, persona, memberSince, battleRecord }`).
  */
 
 const BATCH = 30; // Firestore's limit for an `in` filter
+
+const PERSONA_IDS = new Set(['strategist', 'traveler', 'challenger', 'master']);
+
+/**
+ * What a public profile doc says, cleaned: the rewards, plus what the trainer
+ * card shows (2026-11-05) — the streak as stored (`liveStreak` judges it on
+ * render), the persona, the month they joined and the battle record.
+ */
+export const publicCard = (data = {}) => ({
+    frameId: validEquip(data.frameId, 'frame'),
+    titleId: validEquip(data.titleId, 'title'),
+    level: Number.isInteger(data.trainerLevel) ? data.trainerLevel : null,
+    streak: data.streak && typeof data.streak === 'object' ? data.streak : null,
+    persona: PERSONA_IDS.has(data.persona) ? data.persona : null,
+    memberSince: typeof data.memberSince === 'string' && /^\d{4}-\d{2}$/.test(data.memberSince) ? data.memberSince : null,
+    battleRecord: data.battleRecord && Number.isInteger(data.battleRecord.wins) ? data.battleRecord : null,
+});
 
 export const useTrainerCosmeticsStore = create((set, get) => {
     const queued = new Set();
@@ -40,11 +57,7 @@ export const useTrainerCosmeticsStore = create((set, get) => {
                 ));
                 snap.forEach((docSnap) => {
                     const data = docSnap.data();
-                    found[docSnap.id] = {
-                        frameId: validEquip(data.frameId, 'frame'),
-                        titleId: validEquip(data.titleId, 'title'),
-                        level: Number.isInteger(data.trainerLevel) ? data.trainerLevel : null,
-                    };
+                    found[docSnap.id] = publicCard(data);
                 });
             } catch (err) {
                 // Cosmetic: fall back to what each post carried, and do not retry this session.
@@ -74,11 +87,7 @@ export const useTrainerCosmeticsStore = create((set, get) => {
             set((state) => ({
                 byUid: {
                     ...state.byUid,
-                    [uid]: {
-                        frameId: validEquip(data.frameId, 'frame'),
-                        titleId: validEquip(data.titleId, 'title'),
-                        level: Number.isInteger(data.trainerLevel) ? data.trainerLevel : null,
-                    },
+                    [uid]: publicCard(data),
                 },
             }));
         },

@@ -1669,21 +1669,27 @@ button.cozy-journey__row:hover {
 
 .for-you {
     display: grid;
-    /* Two columns, never three: four picks make a square, not a row and an orphan. */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* One row (Enzo, 2026-11-05): four tiles side by side, the persona's
+       four doors at one glance. Phones scroll the row sideways instead of
+       stacking it (below). */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
+.for-you > li {
+    display: flex;
+}
+
 .for-you__item {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: var(--space-3);
     width: 100%;
-    min-height: var(--control-h-lg);
-    padding: var(--space-2_5) var(--space-3);
+    padding: var(--space-3);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-fg);
@@ -1701,25 +1707,31 @@ button.cozy-journey__row:hover {
     box-shadow: var(--ring-primary);
 }
 
+.for-you__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
 .for-you__icon {
     display: grid;
     flex-shrink: 0;
     place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--for-you-tone, var(--color-primary)) 20%, var(--color-surface));
     color: var(--color-fg);
 }
 
 .for-you__icon svg {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    overflow: visible;
 }
 
 .for-you__text {
     display: flex;
-    flex: 1 1 auto;
     flex-direction: column;
     gap: var(--space-0_5);
     min-width: 0;
@@ -1731,11 +1743,13 @@ button.cozy-journey__row:hover {
 }
 
 .for-you__desc {
+    display: -webkit-box;
     overflow: hidden;
     color: var(--color-muted);
     font-size: var(--text-xs);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .for-you__chevron {
@@ -1743,10 +1757,220 @@ button.cozy-journey__row:hover {
     width: 1rem;
     height: 1rem;
     color: var(--color-muted);
+    transition: transform var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
 
+.for-you__item:hover .for-you__chevron {
+    color: var(--color-fg);
+    transform: translate(0.125rem, -0.125rem);
+}
+
+/* Phones: still one row — it scrolls sideways and snaps, the next tile
+   peeking at the edge to say there is more. */
 @media (max-width: 639px) {
-    .for-you { grid-template-columns: minmax(0, 1fr); }
+    .for-you {
+        grid-template-columns: none;
+        /* Two tiles and a third peeking, whatever the text size. */
+        grid-auto-columns: calc((100% - var(--space-2) * 2) / 2.2);
+        grid-auto-flow: column;
+        margin-inline: calc(var(--space-4) * -1);
+        padding-inline: var(--space-4);
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-padding-inline: var(--space-4);
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .for-you::-webkit-scrollbar { display: none; }
+
+    .for-you > li { scroll-snap-align: start; }
+}
+
+/* ---- The icons move their own parts (Enzo, 2026-11-05) --------------------
+   Not the tile bouncing: each icon does what it draws. The trend line redraws
+   itself, the gauge's needle sweeps, the swords clash, the lens scans, the
+   puzzle piece turns into place, the crown is lifted… One play per hover
+   (no loop), under 600 ms, on the svg's own children (Lucide's element order,
+   noted per icon). Touch gets it on press via the build's hover gate.
+   Reduced motion: nothing moves; the tile's fill still answers. */
+.for-you__icon svg > * {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    /* meta — TrendingUp: [arrowhead, line]. The line draws, the head lands. */
+    .for-you__item:hover [data-motion='meta'] svg > :nth-child(2) {
+        stroke-dasharray: 32;
+        animation: fy-draw 520ms var(--ease-out-expo) both;
+    }
+    .for-you__item:hover [data-motion='meta'] svg > :nth-child(1) {
+        animation: fy-pop 520ms var(--ease-spring) both;
+    }
+
+    /* speedTiers — Gauge: [needle, dial]. The needle sweeps from slow to fast. */
+    .for-you__item:hover [data-motion='speedTiers'] svg > :nth-child(1) {
+        transform-box: view-box;
+        transform-origin: 12px 14px;
+        animation: fy-needle 600ms var(--ease-out-expo) both;
+    }
+
+    /* builder — Swords: [blade, guard, grip, pommel] × 2. They clash. */
+    .for-you__item:hover [data-motion='builder'] svg > :nth-child(-n+4) {
+        transform-box: view-box;
+        transform-origin: 12px 12px;
+        animation: fy-clash-a 480ms var(--ease-out-expo) both;
+    }
+    .for-you__item:hover [data-motion='builder'] svg > :nth-child(n+5) {
+        transform-box: view-box;
+        transform-origin: 12px 12px;
+        animation: fy-clash-b 480ms var(--ease-out-expo) both;
+    }
+
+    /* pokedex — Search: [handle, lens]. The lens scans a small circle. */
+    .for-you__item:hover [data-motion='pokedex'] svg {
+        animation: fy-scan 600ms var(--ease-smooth) both;
+    }
+
+    /* pokepuzzle — Puzzle: one piece turns a quarter and snaps in. */
+    .for-you__item:hover [data-motion='pokepuzzle'] svg > * {
+        animation: fy-snap 520ms var(--ease-out-expo) both;
+    }
+
+    /* challenge — Crown: [crown, base]. The crown is lifted off its base. */
+    .for-you__item:hover [data-motion='challenge'] svg > :nth-child(1) {
+        animation: fy-lift 560ms var(--ease-out-expo) both;
+    }
+
+    /* tournaments — Trophy: the cup hops on its base. */
+    .for-you__item:hover [data-motion='tournaments'] svg > :not(:nth-child(4)) {
+        animation: fy-hop 520ms var(--ease-out-expo) both;
+    }
+
+    /* bestTeams — Award: [ribbon, medal]. The medal swings on its ribbon. */
+    .for-you__item:hover [data-motion='bestTeams'] svg {
+        transform-origin: 50% 0;
+        animation: fy-swing 600ms var(--ease-smooth) both;
+    }
+
+    /* gyms — Medal: [ribbon…, disc, mark]. The disc swings under the ribbon. */
+    .for-you__item:hover [data-motion='gyms'] svg > :nth-child(n+5) {
+        transform-box: view-box;
+        transform-origin: 12px 12px;
+        animation: fy-swing 600ms var(--ease-smooth) both;
+    }
+
+    /* damageCalc — Calculator: [body, display, plus key, 7 keys]. The keys are
+       tapped one after another. */
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(n+3) {
+        animation: fy-key 420ms var(--ease-smooth) both;
+    }
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(4) { animation-delay: 40ms; }
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(5) { animation-delay: 80ms; }
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(6) { animation-delay: 120ms; }
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(7) { animation-delay: 160ms; }
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(8) { animation-delay: 200ms; }
+    .for-you__item:hover [data-motion='damageCalc'] svg > :nth-child(n+9) { animation-delay: 240ms; }
+
+    /* guides — BookOpen: [spine, pages]. The book opens wide. */
+    .for-you__item:hover [data-motion='guides'] svg > :nth-child(2) {
+        animation: fy-open 520ms var(--ease-out-expo) both;
+    }
+
+    /* types — Shapes: [triangle, square, circle]. Each does its own thing. */
+    .for-you__item:hover [data-motion='types'] svg > :nth-child(1) { animation: fy-turn 560ms var(--ease-out-expo) both; }
+    .for-you__item:hover [data-motion='types'] svg > :nth-child(2) { animation: fy-snap 560ms var(--ease-out-expo) 60ms both; }
+    .for-you__item:hover [data-motion='types'] svg > :nth-child(3) { animation: fy-hop 560ms var(--ease-out-expo) 120ms both; }
+
+    /* moves — ScrollText: [line, line, scroll…]. The text is written. */
+    .for-you__item:hover [data-motion='moves'] svg > :nth-child(-n+2) {
+        stroke-dasharray: 6;
+        animation: fy-write 480ms var(--ease-out-expo) both;
+    }
+    .for-you__item:hover [data-motion='moves'] svg > :nth-child(1) { animation-delay: 120ms; }
+
+    /* generationQuiz — CircleHelp: [ring, hook, dot]. The question wobbles. */
+    .for-you__item:hover [data-motion='generationQuiz'] svg > :nth-child(n+2) {
+        transform-box: view-box;
+        transform-origin: 12px 14px;
+        animation: fy-wobble 560ms var(--ease-smooth) both;
+    }
+
+    /* battles — ShieldHalf: the shield braces for a hit. */
+    .for-you__item:hover [data-motion='battles'] svg {
+        animation: fy-brace 480ms var(--ease-out-expo) both;
+    }
+}
+
+@keyframes fy-draw { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }
+@keyframes fy-write { from { stroke-dashoffset: 6; } to { stroke-dashoffset: 0; } }
+@keyframes fy-pop {
+    0%, 45% { opacity: 0; transform: translate(-0.125rem, 0.125rem) scale(0.4); }
+    100% { opacity: 1; transform: none; }
+}
+@keyframes fy-needle {
+    0% { transform: rotate(-135deg); }
+    70% { transform: rotate(12deg); }
+    100% { transform: rotate(0); }
+}
+@keyframes fy-clash-a {
+    0%, 100% { transform: none; }
+    45% { transform: rotate(-14deg); }
+}
+@keyframes fy-clash-b {
+    0%, 100% { transform: none; }
+    45% { transform: rotate(14deg); }
+}
+@keyframes fy-scan {
+    0%, 100% { transform: none; }
+    25% { transform: translate(-0.125rem, -0.0625rem); }
+    50% { transform: translate(0, -0.1875rem); }
+    75% { transform: translate(0.125rem, -0.0625rem); }
+}
+@keyframes fy-snap {
+    0% { transform: none; }
+    60% { transform: rotate(100deg) scale(0.9); }
+    100% { transform: rotate(90deg); }
+}
+@keyframes fy-turn {
+    from { transform: none; }
+    to { transform: rotate(120deg); }
+}
+@keyframes fy-lift {
+    0%, 100% { transform: none; }
+    45% { transform: translateY(-0.1875rem) rotate(-8deg); }
+}
+@keyframes fy-hop {
+    0%, 100% { transform: none; }
+    40% { transform: translateY(-0.1875rem); }
+    70% { transform: translateY(0.0625rem); }
+}
+@keyframes fy-swing {
+    0%, 100% { transform: none; }
+    25% { transform: rotate(12deg); }
+    60% { transform: rotate(-8deg); }
+    85% { transform: rotate(3deg); }
+}
+@keyframes fy-key {
+    0%, 100% { opacity: 1; }
+    40% { opacity: 0.2; }
+}
+@keyframes fy-open {
+    0% { transform: none; }
+    50% { transform: scaleX(1.18); }
+    100% { transform: none; }
+}
+@keyframes fy-wobble {
+    0%, 100% { transform: none; }
+    25% { transform: rotate(-14deg); }
+    55% { transform: rotate(10deg); }
+    80% { transform: rotate(-4deg); }
+}
+@keyframes fy-brace {
+    0%, 100% { transform: none; }
+    35% { transform: scale(0.86); }
+    65% { transform: scale(1.06); }
 }
 
 /* The invitation, for a trainer with no profile yet. */

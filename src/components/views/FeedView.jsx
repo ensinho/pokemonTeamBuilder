@@ -24,8 +24,7 @@ import {
 } from '../../utils/forumRanking';
 import { currentTopicUrl, shareLink } from '../../utils/forumShare';
 import { AnchoredPopover } from '../AnchoredPopover';
-import { FriendActionButton } from '../FriendActionButton';
-import { UserProfileModal } from '../modals/UserProfileModal';
+import { openTrainerCard } from '../../store/useTrainerCardStore';
 import {
     ThreadCard,
     ThreadDetail,
@@ -171,7 +170,6 @@ export function FeedView({ showToast, navigate }) {
     const [replyText, setReplyText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
-    const [selectedProfile, setSelectedProfile] = useState(null);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const popoverRef = useRef(null);
 
@@ -299,7 +297,7 @@ export function FeedView({ showToast, navigate }) {
             text: (topic.bodyPreview || '').slice(0, 120),
             url: currentTopicUrl(topic.id),
         })),
-        openProfile: (data) => setSelectedProfile(profileFromData(data)),
+        openProfile: (data) => openProfile(data),
     });
 
     const handleBackToFeed = () => {
@@ -409,6 +407,22 @@ export function FeedView({ showToast, navigate }) {
         if (loaded) navigate('/builder');
     };
 
+    // The trainer card (useTrainerCardStore, AppLayout). Inside a thread it
+    // lists the teams this trainer shared there, ready to import.
+    const openProfile = (data) => {
+        const profile = profileFromData(data);
+        if (!profile?.userId) return;
+        if (!currentTopicId) {
+            openTrainerCard(profile);
+            return;
+        }
+        const teams = new Map();
+        messages.forEach((msg) => {
+            if (msg.createdBy === profile.userId && msg.sharedTeam) teams.set(msg.sharedTeam.name, msg.sharedTeam);
+        });
+        openTrainerCard(profile, { sharedTeams: [...teams.values()], onImport: handleImportTeam });
+    };
+
     // Jump to a comment and flash it — the landing spot of a quote, a
     // permalink, or a comment of mine that just arrived.
     const scrollToMessage = (messageId) => {
@@ -461,7 +475,7 @@ export function FeedView({ showToast, navigate }) {
             if (await deleteMessage(currentTopicId, message.id)) showToast?.(t('forum.commentDeleted'), 'success');
         },
         importTeam: handleImportTeam,
-        openProfile: (data) => setSelectedProfile(profileFromData(data)),
+        openProfile: (data) => openProfile(data),
         hoverSlot: setHoveredSlot,
     });
 
@@ -554,7 +568,7 @@ export function FeedView({ showToast, navigate }) {
                             messages={messages}
                             isLoading={isInitialLoadingMessages}
                             onBack={handleBackToFeed}
-                            onOpenProfile={(data) => setSelectedProfile(profileFromData(data))}
+                            onOpenProfile={(data) => openProfile(data)}
                             onDeleteTopic={handleDeleteTopic}
                             canDeleteTopic={isAdmin || (!!userId && activeTopic.createdBy === userId)}
                             userId={userId}
@@ -714,19 +728,6 @@ export function FeedView({ showToast, navigate }) {
                 )}
             </AnchoredPopover>
 
-            <UserProfileModal
-                isOpen={!!selectedProfile}
-                profile={selectedProfile}
-                onClose={() => setSelectedProfile(null)}
-                messages={messages}
-                handleImportTeam={handleImportTeam}
-                language={language}
-                friendAction={
-                    selectedProfile && (
-                        <FriendActionButton targetUserId={selectedProfile.userId} className="w-full justify-center" />
-                    )
-                }
-            />
         </div>
     );
 }

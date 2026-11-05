@@ -1,5 +1,7 @@
 # Components
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./creative_direction.md) before designing any new screen.
+
 Shared UI building blocks live in `src/components/`. Views use these — components do not import views. Modals are a separate sub-directory (`src/components/modals/`).
 
 ---

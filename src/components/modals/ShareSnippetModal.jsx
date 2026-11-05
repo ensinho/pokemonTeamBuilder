@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BarChart3, Check, ChevronDown, Copy, Download, LayoutGrid, Link2, MessageSquare, Palette, Pencil, Share2, Swords } from 'lucide-react';
+import { Check, ChevronDown, Copy, Download, LayoutGrid, Link2, MessageSquare, Palette, Pencil, Share2 } from 'lucide-react';
 import '../../styles/share-snippet.css';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import {
@@ -20,6 +20,8 @@ import { typeColors, typeIcons } from '../../constants/types';
 import { loadStaticData } from '../../services/staticData';
 import { SITE_URL } from '../../utils/seoPages';
 import { POKEAPI_SPRITES_BASE, isAssetMirrorEnabled } from '../../utils/assetHost';
+import { SHEET_TONES, mixHex, sheetBase, sheetMember } from '../../utils/teamSheet';
+import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
 
 // The image's footer names the site, and the team's own page once it is
 // published (2026-10-24: it used to advertise the GitHub repository).
@@ -29,18 +31,6 @@ const BRAND_LOGO_URL = typeof window !== 'undefined'
     : '/LogoCuteGengarRounded.png';
 
 const moveId = (name = '') => String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
-
-const hexToRgba = (hex, alpha = 0.2) => {
-    if (!hex || typeof hex !== 'string') return `rgba(99, 102, 241, ${alpha})`;
-    let c = hex.replace('#', '');
-    if (c.length === 3) c = c.split('').map((x) => x + x).join('');
-    const num = parseInt(c, 16);
-    if (isNaN(num)) return `rgba(99, 102, 241, ${alpha})`;
-    const r = (num >> 16) & 255;
-    const g = (num >> 8) & 255;
-    const b = num & 255;
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
 
 // ---------------------------------------------------------------------------
 // Image & Canvas Helpers
@@ -186,15 +176,6 @@ const drawMegaStoneOrb = (ctx, x, y, size = 22) => {
     ctx.restore();
 };
 
-const drawItemFallbackBadge = (ctx, x, y, size = 22) => {
-    drawRoundedRect(ctx, x, y, size, size, 5, 'rgba(99, 102, 241, 0.3)', 'rgba(129, 140, 248, 0.6)', 1);
-    ctx.fillStyle = '#E0E7FF';
-    ctx.font = '700 9px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('ITEM', x + size / 2, y + size / 2);
-};
-
 const titleCase = (s = '') =>
     String(s)
         .split(/[\s-_]+/)
@@ -202,26 +183,19 @@ const titleCase = (s = '') =>
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ');
 
-const generateRandomTeamId = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let res = '';
-    for (let i = 0; i < 10; i++) {
-        res += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return res;
-};
-
 // ---------------------------------------------------------------------------
 // Parallel Asset Preloader (Prevents async race conditions on first render!)
 // ---------------------------------------------------------------------------
 
-const preloadSnippetAssets = async (pokemons = [], cardTab = 'moves', moveTypesMap = {}, bgUrl = null) => {
+const preloadSnippetAssets = async (pokemons = [], moveTypesMap = {}, bgUrl = null, avatar = null) => {
     const assetMap = {
         sprites: new Map(),
         items: new Map(),
         typeIcons: new Map(),
         bg: null,
         logo: null,
+        avatar: null,
+        avatarIsPixel: false,
     };
 
     const tasks = [];
@@ -233,6 +207,23 @@ const preloadSnippetAssets = async (pokemons = [], cardTab = 'moves', moveTypesM
                 .then((img) => { assetMap.bg = img; })
                 .catch(() => { })
         );
+    }
+
+    // The trainer's face for the sheet: their sprite (pixel art) or partner's artwork.
+    if (avatar?.src) {
+        tasks.push(
+            loadImage(avatar.src)
+                .then((img) => { assetMap.avatar = img; assetMap.avatarIsPixel = Boolean(avatar.pixel); })
+                .catch(() => { })
+        );
+    }
+
+    // The sheet's type: canvas draws with whatever is loaded *now*, so the
+    // heading face is asked for before the first frame (fonts.css families).
+    if (typeof document !== 'undefined' && document.fonts?.load) {
+        ['800 52px Unbounded', '700 20px "Space Grotesk"', '600 14px "Space Grotesk"'].forEach((font) => {
+            tasks.push(document.fonts.load(font).catch(() => { }));
+        });
     }
 
     // Logo
@@ -276,7 +267,7 @@ const preloadSnippetAssets = async (pokemons = [], cardTab = 'moves', moveTypesM
         }
 
         // Moves
-        if (cardTab !== 'stats') {
+        {
             const rawMoves = Array.isArray(customization.moves) ? customization.moves : [];
             rawMoves.slice(0, 4).forEach((mv) => {
                 const moveName = typeof mv === 'string' ? mv : mv?.name || '';
@@ -394,322 +385,204 @@ const renderPosterSnippetSync = ({ canvas, title, subtitle, pokemons, shareUrl, 
 };
 
 // ---------------------------------------------------------------------------
-// Synchronous VGC / Competitive Cards Canvas Renderer
+// The team sheet (2026-11-05) — after the regional-champion team posters Enzo
+// referenced: the trainer's face and "<name>'s team" as the headline, then
+// six slanted cards (art + item, name, ability, nature, four moves) on one
+// colour. No stats any more: the image says what the team is. Helpers and
+// the colour maths are utils/teamSheet.js.
 // ---------------------------------------------------------------------------
 
-const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamIdCode, cardTab, moveTypesMap, megaStones, shareUrl, assets }) => {
+const SHEET_INK = '#ffffff';
+const SHEET_CREAM = '#ffe08a';
+const HEADING_FONT = "'Unbounded', 'Space Grotesk', system-ui, sans-serif";
+const BODY_FONT = "'Space Grotesk', system-ui, sans-serif";
+
+/** Text that never overflows: shrinks to `min`, then ellipsises. */
+const fitText = (ctx, text, maxWidth, { weight = 700, size = 24, min = 12, family = BODY_FONT } = {}) => {
+    let s = size;
+    ctx.font = `${weight} ${s}px ${family}`;
+    while (s > min && ctx.measureText(text).width > maxWidth) {
+        s -= 1;
+        ctx.font = `${weight} ${s}px ${family}`;
+    }
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    let out = text;
+    while (out.length > 1 && ctx.measureText(`${out}…`).width > maxWidth) out = out.slice(0, -1);
+    return `${out}…`;
+};
+
+/** The card: square left side, the right edge raked like the poster's. */
+const slantedPath = (ctx, x, y, w, h, rake = 26, r = 14) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w - rake, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+};
+
+const renderTeamSheetSync = ({ canvas, pokemons, kicker, labels, tone, moveTypesMap, megaStones, shareUrl, assets }) => {
     const { width: W, height: H } = SNIPPET_DIMENSIONS; // 1200 x 675
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, W, H);
 
-    // Background Gradient (Deep Indigo & Slate)
-    const g = ctx.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, '#0B0F19');
-    g.addColorStop(0.4, '#111827');
-    g.addColorStop(1, '#1E1B4B');
-    ctx.fillStyle = g;
+    // Ground: the tone, lit from the top left, deepening to the bottom right.
+    const ground = ctx.createLinearGradient(0, 0, W, H);
+    ground.addColorStop(0, mixHex(tone, '#ffffff', 0.08));
+    ground.addColorStop(1, mixHex(tone, '#000000', 0.38));
+    ctx.fillStyle = ground;
     ctx.fillRect(0, 0, W, H);
 
-    // Soft glowing radial accents
-    const g1 = ctx.createRadialGradient(200, 120, 10, 200, 120, 480);
-    g1.addColorStop(0, 'rgba(99, 102, 241, 0.22)');
-    g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = g1;
-    ctx.fillRect(0, 0, W, H);
+    // The poster's sweeping rings, from a centre off the right edge.
+    ctx.save();
+    ctx.lineWidth = 26;
+    for (let i = 0; i < 7; i += 1) {
+        ctx.beginPath();
+        ctx.arc(W * 0.86, H * 0.38, 150 + i * 92, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,255,255,${0.045 - i * 0.004})`;
+        ctx.stroke();
+    }
+    ctx.restore();
 
-    const g2 = ctx.createRadialGradient(1000, 520, 10, 1000, 520, 480);
-    g2.addColorStop(0, 'rgba(168, 85, 247, 0.18)');
-    g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = g2;
-    ctx.fillRect(0, 0, W, H);
-
-    // ---------------------------------------------------------------------------
-    // Premium Marketing Brand Header Bar (Top Y: 14 to 66)
-    // ---------------------------------------------------------------------------
-    const headerY = 14;
-    const headerH = 52;
-    drawRoundedRect(ctx, 24, headerY, W - 48, headerH, 14, 'rgba(17, 24, 39, 0.88)', 'rgba(99, 102, 241, 0.35)', 1.5);
-
-    // Gengar Brand Logo on Left
-    const logoSize = 36;
-    const logoX = 36;
-    const logoY = headerY + (headerH - logoSize) / 2;
-    const logo = assets.logo;
-
-    if (logo) {
-        try {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-            ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
-            ctx.restore();
-        } catch {
-            /* ignore clip error */
-        }
+    // ---- Header: face, kicker, headline ----------------------------------
+    const M = 48;
+    const face = 86;
+    const faceY = 34;
+    drawRoundedRect(ctx, M, faceY, face, face, 16, 'rgba(0,0,0,0.22)', 'rgba(255,255,255,0.45)', 2);
+    // No face of their own (a guest): the lead stands in.
+    const faceImg = assets.avatar || assets.sprites.get(0);
+    if (faceImg) {
+        ctx.save();
+        slantedPath(ctx, M + 2, faceY + 2, face - 4, face - 4, 0, 14);
+        ctx.clip();
+        const pixel = Boolean(assets.avatar) && assets.avatarIsPixel;
+        ctx.imageSmoothingEnabled = !pixel;
+        const pad = pixel ? 0 : 6;
+        ctx.drawImage(faceImg, M + pad, faceY + pad, face - pad * 2, face - pad * 2);
+        ctx.imageSmoothingEnabled = true;
+        ctx.restore();
     }
 
-    // App Title & Subtitle Eyebrow
-    const titleX = logo ? logoX + logoSize + 12 : 36;
+    const headX = M + face + 22;
+    const headW = W - headX - 150;
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 17px system-ui, -apple-system, sans-serif';
-    ctx.fillText('POKEMONBUILDER', titleX, headerY + 10);
+    ctx.textBaseline = 'alphabetic';
+    if (kicker) {
+        ctx.fillStyle = SHEET_CREAM;
+        const k = fitText(ctx, kicker.toUpperCase(), headW, { weight: 700, size: 20, min: 14 });
+        ctx.fillText(k, headX, faceY + 26);
+    }
+    ctx.fillStyle = SHEET_INK;
+    const headline = fitText(ctx, labels.title.toUpperCase(), headW, { weight: 800, size: 52, min: 28, family: HEADING_FONT });
+    ctx.fillText(headline, headX, faceY + 80);
 
-    ctx.fillStyle = '#A5B4FC';
-    ctx.font = '700 9px system-ui, sans-serif';
-    ctx.fillText('COMPETITIVE ROSTER SHOWCASE', titleX, headerY + 31);
-
-    // Center Marketing Badge: Team Code Pill
-    const codeStr = teamIdCode || '7Q9H36N438';
-    drawRoundedRect(ctx, W / 2 - 80, headerY + 10, 160, 32, 8, 'rgba(30, 41, 59, 0.75)', 'rgba(129, 140, 248, 0.4)', 1);
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = '600 11px system-ui, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('ID:', W / 2 - 68, headerY + 26);
-    ctx.fillStyle = '#BEF264';
-    ctx.font = '700 14px system-ui, sans-serif';
-    ctx.fillText(codeStr, W / 2 - 44, headerY + 26);
-
-    // Right: Trainer Card Pill
-    const trainerDisplayName = trainerName || 'Trainer';
-    drawRoundedRect(ctx, W - 230, headerY + 10, 194, 32, 8, 'rgba(99, 102, 241, 0.2)', 'rgba(99, 102, 241, 0.4)', 1);
-    ctx.fillStyle = '#E0E7FF';
-    ctx.font = '700 13px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`Trainer: ${trainerDisplayName}`, W - 133, headerY + 26);
-
-    // ---------------------------------------------------------------------------
-    // Card Grid (2 Columns x 3 Rows)
-    // ---------------------------------------------------------------------------
-    const colW = 564;
-    const rowH = 160;
-    const gapX = 24;
-    const gapY = 14;
-    const startX = 24;
-    const startY = 76;
-    const FOOTER_H = 74;
-
-    const slots = pokemons.slice(0, 6);
-
-    for (let i = 0; i < 6; i++) {
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const cardX = startX + col * (colW + gapX);
-        const cardY = startY + row * (rowH + gapY);
-        const pokemon = slots[i];
-
-        // Card Container Glass Box
-        drawRoundedRect(
-            ctx,
-            cardX,
-            cardY,
-            colW,
-            rowH,
-            14,
-            'rgba(17, 24, 39, 0.82)',
-            pokemon ? 'rgba(99, 102, 241, 0.32)' : 'rgba(75, 85, 99, 0.25)',
-            1.5
-        );
-
-        // Card Slot Index Watermark
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.font = '900 84px system-ui, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(String(i + 1), cardX + colW - 14, cardY + rowH - 4);
-
-        if (!pokemon) {
-            ctx.fillStyle = 'rgba(156, 163, 175, 0.4)';
-            ctx.font = '600 16px system-ui, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('Empty Slot', cardX + colW / 2, cardY + rowH / 2);
-            continue;
-        }
-
-        const customization = pokemon.customization || {};
-        const types = Array.isArray(pokemon.types) && pokemon.types.length ? pokemon.types : ['normal'];
-        const ability = customization.ability || pokemon.abilities?.[0]?.name || 'Unknown';
-        const item = customization.item || '';
-
-        // --- Left Half: Artwork, Name, Types, Ability, Item ---
-        const spriteSize = 92;
-        const spriteX = cardX + 12;
-        const spriteY = cardY + (rowH - spriteSize) / 2;
-
-        // Aura circle behind sprite
+    // The mark, top right, on a white disc so the Gengar reads on any tone.
+    if (assets.logo) {
+        const s = 76;
+        const lx = W - M - s;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(spriteX + spriteSize / 2, spriteY + spriteSize / 2, spriteSize * 0.48, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.arc(lx + s / 2, faceY + s / 2 + 4, s / 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.14)';
         ctx.fill();
+        ctx.clip();
+        ctx.drawImage(assets.logo, lx + 4, faceY + 8, s - 8, s - 8);
         ctx.restore();
-
-        const pokeImg = assets.sprites.get(i);
-        if (pokeImg) {
-            ctx.drawImage(pokeImg, spriteX, spriteY, spriteSize, spriteSize);
-        }
-
-        // Pokémon Name (Strict bounds protection)
-        const infoX = spriteX + spriteSize + 10;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '700 18px system-ui, sans-serif';
-        const nameText = titleCase(pokemon.name);
-        const maxNameW = cardX + 270 - infoX;
-        ctx.fillText(nameText, infoX, cardY + 14, Math.max(50, maxNameW));
-
-        // Type Badges
-        let badgeX = infoX;
-        const badgeY = cardY + 40;
-        types.slice(0, 2).forEach((type) => {
-            const tColor = typeColors[String(type).toLowerCase()] || '#6B7280';
-            const tName = titleCase(type);
-            const badgeW = 56;
-            drawRoundedRect(ctx, badgeX, badgeY, badgeW, 18, 5, tColor, null);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '700 10px system-ui, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(tName, badgeX + badgeW / 2, badgeY + 9);
-            badgeX += badgeW + 6;
-        });
-
-        // Ability
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = '#9CA3AF';
-        ctx.font = '500 12px system-ui, sans-serif';
-        ctx.fillText(titleCase(ability), infoX, cardY + 65, Math.max(40, cardX + 270 - infoX));
-
-        // Held Item (Smart Loader + 3D Mega Stone Gem Orb Fallback)
-        if (item) {
-            const itemY = cardY + 86;
-            const isMegaStone = item.toLowerCase().includes('ite') || Boolean(megaStones && megaStones[item]);
-            const itemImg = assets.items.get(item);
-
-            if (itemImg) {
-                ctx.drawImage(itemImg, infoX, itemY, 22, 22);
-            } else if (isMegaStone) {
-                drawMegaStoneOrb(ctx, infoX, itemY, 22);
-            } else {
-                drawItemFallbackBadge(ctx, infoX, itemY, 22);
-            }
-
-            ctx.fillStyle = '#E5E7EB';
-            ctx.font = '600 12px system-ui, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            const maxItemTextW = cardX + 270 - (infoX + 28);
-            ctx.fillText(titleCase(item), infoX + 28, itemY + 11, Math.max(40, maxItemTextW));
-        }
-
-        // Vertical divider
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(cardX + 276, cardY + 12);
-        ctx.lineTo(cardX + 276, cardY + rowH - 12);
-        ctx.stroke();
-
-        // --- Right Half: Content ---
-        const rightX = cardX + 288;
-        const rightW = colW - 298;
-
-        if (cardTab === 'stats') {
-            const evs = customization.evs || {};
-            const nature = customization.nature || 'serious';
-
-            ctx.fillStyle = '#A5B4FC';
-            ctx.font = '700 13px system-ui, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.fillText(`Nature: ${titleCase(nature)}`, rightX, cardY + 14);
-
-            const statLabels = [
-                { key: 'hp', label: 'HP' },
-                { key: 'attack', label: 'Atk' },
-                { key: 'defense', label: 'Def' },
-                { key: 'special-attack', label: 'SpA' },
-                { key: 'special-defense', label: 'SpD' },
-                { key: 'speed', label: 'Spe' },
-            ];
-
-            let statY = cardY + 38;
-            statLabels.forEach((st, idx) => {
-                const val = Number(evs[st.key] || 0);
-                const rx = rightX + (idx % 2) * (rightW / 2);
-                const ry = statY + Math.floor(idx / 2) * 22;
-
-                ctx.fillStyle = '#9CA3AF';
-                ctx.font = '600 11px system-ui, sans-serif';
-                ctx.fillText(`${st.label}:`, rx, ry);
-
-                ctx.fillStyle = val > 0 ? '#6EE7B7' : '#D1D5DB';
-                ctx.font = val > 0 ? '700 11px system-ui, sans-serif' : '500 11px system-ui, sans-serif';
-                ctx.fillText(`${val} EV`, rx + 32, ry);
-            });
-        } else {
-            // Moves View (Type Icon Badge ONLY — NO text string!)
-            const rawMoves = Array.isArray(customization.moves) ? customization.moves : [];
-            const moves = rawMoves.slice(0, 4);
-
-            for (let mIdx = 0; mIdx < 4; mIdx++) {
-                const rawMove = moves[mIdx];
-                const moveName = typeof rawMove === 'string' ? rawMove : rawMove?.name || '';
-                const moveY = cardY + 12 + mIdx * 34;
-
-                const explicitType = typeof rawMove === 'object' ? rawMove?.type : null;
-                const mType = explicitType || (moveTypesMap && moveName ? moveTypesMap[moveId(moveName)] : null);
-
-                if (moveName) {
-                    const mainColor = mType && typeColors[mType] ? typeColors[mType] : '#6366F1';
-                    const softBg = hexToRgba(mainColor, 0.22);
-                    const softBorder = hexToRgba(mainColor, 0.48);
-
-                    drawRoundedRect(ctx, rightX, moveY, rightW - 12, 28, 6, softBg, softBorder, 1);
-
-                    const badgeSize = 22;
-                    const badgeX = rightX + 4;
-                    const badgeY = moveY + 3;
-                    drawRoundedRect(ctx, badgeX, badgeY, badgeSize, badgeSize, 5, mainColor, null);
-
-                    const typeIconImg = mType ? assets.typeIcons.get(String(mType).toLowerCase()) : null;
-                    if (typeIconImg) {
-                        ctx.drawImage(typeIconImg, badgeX + 3, badgeY + 3, 16, 16);
-                    } else {
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.beginPath();
-                        ctx.arc(badgeX + badgeSize / 2, badgeY + badgeSize / 2, 4, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = '600 13px system-ui, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(titleCase(moveName), rightX + badgeSize + 12, moveY + 14, rightW - badgeSize - 24);
-                } else {
-                    drawRoundedRect(ctx, rightX, moveY, rightW - 12, 28, 6, 'rgba(30, 41, 59, 0.35)', 'rgba(75, 85, 99, 0.2)', 1);
-                    ctx.fillStyle = 'rgba(156, 163, 175, 0.35)';
-                    ctx.font = '500 12px system-ui, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('- Empty Move -', rightX + 14, moveY + 14);
-                }
-            }
-        }
     }
 
-    drawFooterStripSync(ctx, W, H, FOOTER_H, shareUrl, assets.logo);
+    // ---- Six cards, 2 × 3 ------------------------------------------------
+    const gap = 30;
+    const colW = (W - M * 2 - gap) / 2;
+    const rowH = 140;
+    const rowGap = 14;
+    const top = 146;
+    const tile = rowH - 24;
+
+    for (let i = 0; i < 6; i += 1) {
+        const x = M + (i % 2) * (colW + gap);
+        const y = top + Math.floor(i / 2) * (rowH + rowGap);
+        const member = sheetMember(pokemons[i], moveTypesMap);
+
+        slantedPath(ctx, x, y, colW, rowH);
+        ctx.fillStyle = member ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.08)';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = member ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.12)';
+        if (!member) ctx.setLineDash([6, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (!member) continue;
+
+        // Art tile + the held item on its corner.
+        const tx = x + 12;
+        const ty = y + 12;
+        drawRoundedRect(ctx, tx, ty, tile, tile, 12, 'rgba(255,255,255,0.10)', 'rgba(255,255,255,0.32)', 2);
+        const art = assets.sprites.get(i);
+        if (art) ctx.drawImage(art, tx + 6, ty + 4, tile - 12, tile - 12);
+        if (member.item) {
+            const b = 34;
+            const bx = tx + tile - b + 8;
+            const by = ty + tile - b + 8;
+            drawRoundedRect(ctx, bx, by, b, b, 9, mixHex(tone, '#000000', 0.35), 'rgba(255,255,255,0.5)', 1.5);
+            const itemImg = assets.items.get(member.item);
+            const isMega = Boolean(megaStones && megaStones[member.item]) || /ite$/i.test(member.item);
+            if (itemImg) ctx.drawImage(itemImg, bx + 3, by + 3, b - 6, b - 6);
+            else if (isMega) drawMegaStoneOrb(ctx, bx + 7, by + 7, b - 14);
+        }
+
+        // Words.
+        const cx = tx + tile + 20;
+        const cw = x + colW - 34 - cx;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = SHEET_CREAM;
+        ctx.fillText(fitText(ctx, titleCase(member.name).toUpperCase(), cw, { weight: 800, size: 26, min: 15, family: HEADING_FONT }), cx, y + 40);
+
+        const half = cw / 2;
+        [[labels.ability, member.ability], [labels.nature, member.nature]].forEach(([label, value], k) => {
+            const lx = cx + k * half;
+            ctx.fillStyle = 'rgba(255,255,255,0.62)';
+            ctx.font = `700 11px ${BODY_FONT}`;
+            ctx.fillText(`${label.toUpperCase()}:`, lx, y + 60);
+            ctx.fillStyle = SHEET_INK;
+            ctx.fillText(fitText(ctx, value ? titleCase(value) : '—', half - 10, { weight: 600, size: 14, min: 11 }), lx, y + 77);
+        });
+
+        // Four move pills, 2 × 2, each signed with its type's colour.
+        const pillW = (cw - 10) / 2;
+        const pillH = 22;
+        member.moves.forEach((move, m) => {
+            const px = cx + (m % 2) * (pillW + 10);
+            const py = y + 88 + Math.floor(m / 2) * (pillH + 6);
+            drawRoundedRect(ctx, px, py, pillW, pillH, 6, move ? 'rgba(0,0,0,0.16)' : null, move ? 'rgba(255,255,255,0.42)' : 'rgba(255,255,255,0.16)', 1.2);
+            if (!move) return;
+            const dot = move.type && typeColors[move.type] ? typeColors[move.type] : 'rgba(255,255,255,0.5)';
+            ctx.beginPath();
+            ctx.arc(px + 11, py + pillH / 2, 4, 0, Math.PI * 2);
+            ctx.fillStyle = dot;
+            ctx.fill();
+            ctx.fillStyle = SHEET_INK;
+            ctx.textBaseline = 'middle';
+            ctx.fillText(fitText(ctx, titleCase(move.name), pillW - 26, { weight: 600, size: 12, min: 10 }), px + 21, py + pillH / 2 + 1);
+            ctx.textBaseline = 'alphabetic';
+        });
+    }
+
+    // ---- Footer: where the team lives ------------------------------------
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.font = `600 15px ${BODY_FONT}`;
+    ctx.textAlign = 'left';
+    ctx.fillText(shareUrl ? shareUrl.replace(/^https?:\/\//, '') : BRAND_LABEL, M, H - 22);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = SHEET_INK;
+    ctx.font = `800 15px ${HEADING_FONT}`;
+    ctx.fillText('POKEMONBUILDER', W - M, H - 22);
+    ctx.textAlign = 'left';
 };
 
 // ---------------------------------------------------------------------------
@@ -785,15 +658,23 @@ export const ShareSnippetModal = ({
     }, [isOpen]);
 
     const [mode, setMode] = useState('cards');
-    const [cardTab, setCardTab] = useState('moves');
+    const [sheetTone, setSheetTone] = useState('auto');
 
     const [title, setTitle] = useState(defaultTitle || '');
     const [subtitle, setSubtitle] = useState('');
     const [backgroundId, setBackgroundId] = useState(DEFAULT_BACKGROUND_ID);
 
     const authDisplayName = useAuthStore((s) => s.displayName);
-    const [trainerName, setTrainerName] = useState(authDisplayName || 'Trainer');
-    const [teamIdCode, setTeamIdCode] = useState('');
+    const [trainerName, setTrainerName] = useState(authDisplayName || '');
+    const [kicker, setKicker] = useState('');
+    // The sheet's face: the trainer's sprite, or their partner's artwork.
+    const avatarSource = useMemo(() => {
+        if (!isOpen) return null;
+        const a = useAuthStore.getState().publicAvatar();
+        if (a?.trainerSprite) return { src: trainerSpriteUrl(a.trainerSprite), pixel: true };
+        if (a?.pokemonId) return { src: getPokemonArtworkSpriteUrl(a.pokemonId, { shiny: Boolean(a.isShiny) }), pixel: false };
+        return null;
+    }, [isOpen]);
 
     const [isRendering, setIsRendering] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -817,15 +698,16 @@ export const ShareSnippetModal = ({
     const renderTitle = useDebounce(title, 180);
     const renderSubtitle = useDebounce(subtitle, 180);
     const renderTrainer = useDebounce(trainerName, 180);
-    const renderTeamId = useDebounce(teamIdCode, 180);
+    const renderKicker = useDebounce(kicker, 180);
 
     useEffect(() => {
         if (isOpen) {
             setTitle(defaultTitle || t('modals.shareModalDefaultTitle'));
             setSubtitle(t('modals.shareModalDefaultSubtitle', { count: pokemons.length }));
             setBackgroundId(DEFAULT_BACKGROUND_ID);
-            setTrainerName(useAuthStore.getState().displayName || 'Trainer');
-            setTeamIdCode(generateRandomTeamId());
+            setTrainerName(useAuthStore.getState().displayName || '');
+            setKicker(defaultTitle || t('modals.shareModalDefaultTitle'));
+            setSheetTone('auto');
             setPreviewUrl(null);
             setIsEditingText(false);
             useForumStore.getState().initTopicsListener();
@@ -840,18 +722,22 @@ export const ShareSnippetModal = ({
 
         const bgUrl = mode === 'poster' ? background.url : null;
 
-        preloadSnippetAssets(pokemons, cardTab, moveTypesMap, bgUrl)
+        preloadSnippetAssets(pokemons, moveTypesMap, bgUrl, mode === 'cards' ? avatarSource : null)
             .then((assets) => {
                 if (cancelled || !canvasRef.current) return;
                 const canvas = canvasRef.current;
 
                 if (mode === 'cards') {
-                    renderCompetitiveCardSnippetSync({
+                    renderTeamSheetSync({
                         canvas,
                         pokemons,
-                        trainerName: renderTrainer,
-                        teamIdCode: renderTeamId,
-                        cardTab,
+                        kicker: renderKicker,
+                        labels: {
+                            title: renderTrainer.trim() ? t('modals.shareSheetTitle', { name: renderTrainer.trim() }) : t('modals.shareSheetTitleAnon'),
+                            ability: t('modals.shareSheetAbility'),
+                            nature: t('modals.shareSheetNature'),
+                        },
+                        tone: sheetBase(sheetTone, pokemons, typeColors),
                         moveTypesMap,
                         megaStones,
                         shareUrl,
@@ -883,7 +769,7 @@ export const ShareSnippetModal = ({
         return () => {
             cancelled = true;
         };
-    }, [isOpen, mode, cardTab, background, renderTitle, renderSubtitle, pokemons, shareUrl, renderTrainer, renderTeamId, moveTypesMap, megaStones]);
+    }, [isOpen, mode, sheetTone, background, renderTitle, renderSubtitle, pokemons, shareUrl, renderTrainer, renderKicker, avatarSource, moveTypesMap, megaStones, t]);
 
     const exportBlob = useCallback(
         () =>
@@ -1094,8 +980,8 @@ export const ShareSnippetModal = ({
     const busy = isPosting || !previewUrl;
     const textFields = mode === 'cards'
         ? [
-            { id: 'trainer', label: t('modals.shareModalTrainerLabel'), value: trainerName, max: 30, placeholder: 'Trainer', onChange: setTrainerName },
-            { id: 'code', label: t('modals.shareModalTeamIdLabel'), value: teamIdCode, max: 14, placeholder: '7Q9H36N438', onChange: (v) => setTeamIdCode(v.toUpperCase()), mono: true },
+            { id: 'trainer', label: t('modals.shareModalTrainerLabel'), value: trainerName, max: 30, placeholder: t('modals.shareModalOptional'), onChange: setTrainerName },
+            { id: 'kicker', label: t('modals.shareSheetKickerLabel'), value: kicker, max: 48, placeholder: t('modals.shareModalOptional'), onChange: setKicker },
         ]
         : [
             { id: 'title', label: t('modals.shareModalTitleLabel'), value: title, max: 60, placeholder: t('modals.shareModalDefaultTitle'), onChange: setTitle },
@@ -1150,15 +1036,21 @@ export const ShareSnippetModal = ({
 
                     <div className="share-snip__options">
                         {mode === 'cards' ? (
-                            <div className="segmented segmented--sm" role="group" aria-label={t('modals.shareModalContentAria')}>
-                                <button type="button" className="segmented__item" aria-pressed={cardTab === 'moves'} onClick={() => setCardTab('moves')}>
-                                    <Swords aria-hidden="true" />
-                                    {t('modals.shareModalTabMoves')}
-                                </button>
-                                <button type="button" className="segmented__item" aria-pressed={cardTab === 'stats'} onClick={() => setCardTab('stats')}>
-                                    <BarChart3 aria-hidden="true" />
-                                    {t('modals.shareModalTabStats')}
-                                </button>
+                            <div className="share-snip__swatches share-snip__swatches--tones" role="group" aria-label={t('modals.shareSheetToneLabel')}>
+                                {SHEET_TONES.map((id) => (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        className="share-snip__swatch share-snip__tone"
+                                        aria-pressed={id === sheetTone}
+                                        aria-label={t(`modals.shareSheetTones.${id}`)}
+                                        title={t(`modals.shareSheetTones.${id}`)}
+                                        style={{ '--swatch': sheetBase(id, pokemons, typeColors) }}
+                                        onClick={() => setSheetTone(id)}
+                                    >
+                                        {id === 'auto' && <span className="share-snip__tone-auto">A</span>}
+                                    </button>
+                                ))}
                             </div>
                         ) : (
                             <div className="share-snip__swatches" role="group" aria-label={t('modals.shareModalBackgroundLabel')}>

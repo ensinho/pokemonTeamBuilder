@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FramedAvatar } from '../rewards/FramedAvatar';
+import { openTrainerCard } from '../../store/useTrainerCardStore';
 
 import { useFriends } from '../../hooks/useFriends';
 import { useBattlesStore } from '../../store/useBattlesStore';
@@ -219,7 +220,21 @@ export function FriendsView() {
                     <ul className="friends-grid">
                         {friends.map((friend) => (
                             <li key={friend.userId} className="friend-card">
-                                <div className="friend-card__header">
+                                <button
+                                    type="button"
+                                    className="friend-card__header"
+                                    aria-label={t('trainerCard.open', { name: friend.displayName || t('friends.unknownTrainer') })}
+                                    onClick={() => openTrainerCard({
+                                        userId: friend.userId,
+                                        name: friend.displayName || t('friends.unknownTrainer'),
+                                        avatar: friend.avatarPokemonId,
+                                        isShiny: friend.avatarIsShiny,
+                                        trainerSprite: friend.trainerSprite,
+                                        selectedBadgeId: friend.selectedBadgeId || null,
+                                        frameId: friend.frameId || null,
+                                        titleId: friend.titleId || null,
+                                    })}
+                                >
                                     <FramedAvatar uid={friend.userId} stampedFrameId={friend.frameId} className="friend-card__avatar">
                                         <AvatarSprite
                                             trainerSprite={friend.trainerSprite}
@@ -228,7 +243,7 @@ export function FriendsView() {
                                             fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
                                         />
                                     </FramedAvatar>
-                                    <div className="friend-card__identity">
+                                    <span className="friend-card__identity">
                                         <span className="friend-card__name">
                                             {friend.displayName || t('friends.unknownTrainer')}
                                         </span>
@@ -239,8 +254,8 @@ export function FriendsView() {
                                                 })}
                                             </span>
                                         )}
-                                    </div>
-                                </div>
+                                    </span>
+                                </button>
 
                                 <div className="friend-card__actions">
                                     {confirmingRemoval === friend.userId ? (

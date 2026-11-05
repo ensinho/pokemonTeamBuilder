@@ -64,6 +64,34 @@
 .share-snip__swatch[aria-pressed='true'] { opacity: 1; outline-color: var(--color-primary); }
 .share-snip__swatch img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
+/* The team sheet's colours (2026-11-05): round chips of the sheet's own base,
+   which is canvas paint (utils/teamSheet.js), not a theme colour. "A" = auto,
+   the lead Pokémon's type. */
+.share-snip__tone {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 1.75rem;
+    min-width: 0;
+    height: 1.75rem;
+    aspect-ratio: 1;
+    border-radius: var(--radius-full);
+    background: var(--swatch);
+    opacity: 1;
+}
+
+/* Seven chips and the edit button don't fit a phone's width: the chips wrap
+   under each other rather than run beneath the button. */
+.share-snip__swatches--tones {
+    flex-wrap: wrap;
+}
+
+.share-snip__tone-auto {
+    color: var(--color-on-primary);
+    font-size: var(--text-2xs);
+    font-weight: 700;
+}
+
 .share-snip__edit { flex-shrink: 0; margin-left: auto; gap: var(--space-1_5); }
 .share-snip__chevron { transition: transform var(--duration-fast) var(--ease-smooth); }
 .share-snip__edit[aria-expanded='true'] .share-snip__chevron { transform: rotate(180deg); }

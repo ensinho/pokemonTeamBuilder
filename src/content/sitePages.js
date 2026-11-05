@@ -276,7 +276,7 @@ export const SITE_PAGES = {
                     heading: 'What is stored when you create an account?',
                     paragraphs: [
                         'Your email address and the display name you choose. Your password is handled by Firebase Authentication and is never visible to us.',
-                        'An account has a public profile, visible to other players: your display name, avatar Pokémon, trainer sprite, badge, frame, title, trainer level and battle record. Your email is never shown on it.',
+                        'An account has a public profile, visible to other players: your display name, avatar Pokémon, trainer sprite, badge, frame, title, trainer level, battle record, daily streak, trainer profile (Strategist, Traveler…) and the month the account was made — what the trainer card shows. Your email is never shown on it.',
                     ],
                 },
                 {
@@ -337,7 +337,7 @@ export const SITE_PAGES = {
                     heading: 'O que é guardado quando você cria uma conta?',
                     paragraphs: [
                         'O seu e-mail e o nome de exibição que você escolher. A senha fica com o Firebase Authentication e nunca fica visível para nós.',
-                        'Uma conta tem um perfil público, visível para outros jogadores: nome de exibição, Pokémon de avatar, sprite de treinador, insígnia, moldura, título, nível de treinador e histórico de batalhas. O seu e-mail nunca aparece nele.',
+                        'Uma conta tem um perfil público, visível para outros jogadores: nome de exibição, Pokémon de avatar, sprite de treinador, insígnia, moldura, título, nível de treinador, histórico de batalhas, sequência diária, perfil de treinador (Estrategista, Viajante…) e o mês em que a conta foi criada — o que o cartão de treinador mostra. O seu e-mail nunca aparece nele.',
                     ],
                 },
                 {

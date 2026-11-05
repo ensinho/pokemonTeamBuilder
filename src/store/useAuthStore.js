@@ -29,7 +29,7 @@ import { disablePush } from '../services/pushNotifications';
 import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalizeStreak } from '../utils/dailyCheckin';
 import { useRewardsStore } from './useRewardsStore';
 import { isCrawler } from '../utils/crawler';
-import { mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
+import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -646,6 +646,7 @@ export const useAuthStore = create((set, get) => {
             writeTrainerProfile(next);
             set({ trainerProfile: next });
             get().savePreferences({ trainerProfile: next });
+            get().syncPublicProfile();
             return next;
         },
 
@@ -675,6 +676,8 @@ export const useAuthStore = create((set, get) => {
             set({ checkin: next.checkin, streak: next.streak });
             get().savePreferences({ checkin: next.checkin, streak: next.streak });
             get().bumpActiveDay();
+            // Others see the streak on the trainer card: one write a day.
+            get().syncPublicProfile();
             const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });
             return { ...next.result, ...reward };
         },
@@ -728,21 +731,36 @@ export const useAuthStore = create((set, get) => {
                 selectedBadgeId: selectedBadgeId || null,
                 updatedAt: new Date().toISOString(),
             };
+            // What the profile card shows of the rewards (2026-10-17).
+            const withRewards = {
+                ...base,
+                frameId: rewards.equipped.frame || null,
+                titleId: rewards.equipped.title || null,
+                trainerLevel: rewards.level || 1,
+            };
+            // The trainer card (2026-11-05): the streak as stored (the reader
+            // judges whether it is still alive), the onboarding's persona and
+            // the month the account was made.
+            const { streak, trainerProfile } = get();
+            const created = auth?.currentUser?.metadata?.creationTime;
+            const createdAt = created ? new Date(created) : null;
+            const withCard = {
+                ...withRewards,
+                streak: { count: streak?.count || 0, lastVisit: streak?.lastVisit || null, shields: streak?.shields || 0 },
+                persona: derivePersona(trainerProfile)?.id || null,
+                memberSince: createdAt && !Number.isNaN(createdAt.getTime()) ? createdAt.toISOString().slice(0, 7) : null,
+            };
             try {
-                try {
-                    // What the profile card shows of the rewards (2026-10-17).
-                    await setDoc(profileRef, {
-                        ...base,
-                        frameId: rewards.equipped.frame || null,
-                        titleId: rewards.equipped.title || null,
-                        trainerLevel: rewards.level || 1,
-                    }, { merge: true });
-                } catch (e) {
-                    // Rules from before the rewards (`hasOnly`) refuse the new
-                    // fields: keep the directory entry current without them
-                    // until firestore.rules is deployed.
-                    if (e?.code !== 'permission-denied') throw e;
-                    await setDoc(profileRef, base, { merge: true });
+                // Rules from before a field (`hasOnly`) refuse the whole write:
+                // step down to the last shape they accept, so the directory
+                // entry stays current until firestore.rules is deployed.
+                for (const payload of [withCard, withRewards, base]) {
+                    try {
+                        await setDoc(profileRef, payload, { merge: true });
+                        break;
+                    } catch (e) {
+                        if (e?.code !== 'permission-denied' || payload === base) throw e;
+                    }
                 }
             } catch (e) {
                 // Non-critical: the private profile is already saved, and the

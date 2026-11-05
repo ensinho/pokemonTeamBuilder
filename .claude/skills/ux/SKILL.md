@@ -5,6 +5,8 @@ description: Make every interaction fewer steps, answered instantly and honest a
 
 # UX — fewer steps, instant answers, honest waits
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](../../../docs/modules/creative_direction.md) before designing any new screen.
+
 **Scope.** `/design-system` owns tokens, spacing, colour, type, motion *curves*
 and the taste gate. `/mobile-native` owns the platform layer (tap highlight,
 `dvh`, input zoom, safe areas, `touch-action`). `/verify-ui` owns the gates and

@@ -81,6 +81,7 @@ import { CozyHomeView } from './views/CozyHomeView';
 import { HomeEntry } from './views/HomeEntry';
 import { useLandingStore } from '../store/useLandingStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
+import { useTrainerCardStore } from '../store/useTrainerCardStore';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { isCrawler } from '../utils/crawler';
 import { BrandWordmark } from './BrandWordmark';
@@ -122,6 +123,7 @@ const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) =
 // The trainer-profile onboarding (2026-11-05): its own chunk, fetched only
 // when it opens — a trainer meets it once.
 const TrainerOnboarding = lazy(() => import('./onboarding/TrainerOnboarding').then((m) => ({ default: m.TrainerOnboarding })));
+const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
@@ -434,6 +436,7 @@ export default function AppLayout() {
     // orders the rail's sections and picks the dock's fourth tab.
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const isOnboardingOpen = useOnboardingStore((s) => s.isOpen);
+    const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
         generations: s.generations, items: s.items, natures: s.natures, games: s.games,
@@ -1436,6 +1439,11 @@ export default function AppLayout() {
                 </Suspense>
             )}
 
+            {isTrainerCardOpen && (
+                <Suspense fallback={null}>
+                    <TrainerCardDialog />
+                </Suspense>
+            )}
             {isOnboardingOpen && (
                 <Suspense fallback={null}>
                     <TrainerOnboarding />

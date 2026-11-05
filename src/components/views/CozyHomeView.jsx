@@ -909,12 +909,15 @@ export function CozyHomeView({
                     return (
                         <li key={key}>
                             <button type="button" className="for-you__item" onClick={() => navigate(PICK_DESTINATIONS[key].path)}>
-                                <span className="for-you__icon" aria-hidden="true"><Icon /></span>
+                                <span className="for-you__head">
+                                    {/* data-motion: each icon moves its own parts on hover (cozy-home.css). */}
+                                    <span className="for-you__icon" data-motion={key} aria-hidden="true"><Icon /></span>
+                                    <ArrowUpRight className="for-you__chevron" aria-hidden="true" />
+                                </span>
                                 <span className="for-you__text">
                                     <span className="for-you__title">{t(PICK_DESTINATIONS[key].labelKey)}</span>
                                     <span className="for-you__desc">{t(`onboarding.picks.${key}`)}</span>
                                 </span>
-                                <ChevronRight className="for-you__chevron" aria-hidden="true" />
                             </button>
                         </li>
                     );

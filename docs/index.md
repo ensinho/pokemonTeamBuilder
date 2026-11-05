@@ -1,5 +1,7 @@
 # PokemonBuilder — Agent Knowledge Base
 
+> **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./modules/creative_direction.md) before designing any new screen.
+
 > **For all AI agents:** Read this document before making architectural changes, modifying UI components, or adding features. This is the entry map. For build commands and high-level architecture, read `CLAUDE.md` at the repo root first.
 
 ---
@@ -10,6 +12,7 @@
 |--------|-------------|
 | [Views & Routing](./modules/views_and_routing.md) | Adding routes, modifying views, wiring modals |
 | [Styles & Aesthetics](./modules/styles_and_aesthetics.md) | Any UI/visual change — **read first without exception** |
+| [Creative direction](./modules/creative_direction.md) | **Before designing any new screen, flow or component** — the "living scenes" standard Enzo set on 2026-11-05, the franchise devices, what is built that way, and the inspiration bank (reference 5's patterns mapped to places here) |
 | [Components](./modules/components.md) | Modifying or creating shared UI components |
 | [Firebase Architecture](./modules/firebase_architecture.md) | Auth, Firestore reads/writes, data model changes |
 | [Firebase Security](./modules/firebase_security.md) | Adding a new Firestore path, admin logic, auth rules |
@@ -21,7 +24,7 @@
 | [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
 | [Forum](./modules/forum.md) | The /feed forum: three-pane workspace, Hot/New/Top ranking, comment tree, topic likes, sharing and link previews |
 | [Journeys](./modules/journeys.md) | Onboarding missions, journey badges, the mission guide, the Home's journey card |
-| [Trainer profile & onboarding](./modules/trainer_profile.md) | The first-visit questions (competitive / games / minigames, level, format), the personas, and what they arrange: rail order, dock tab, Home "Para você", journey tags, the builder's first regulation |
+| [Trainer profile & onboarding](./modules/trainer_profile.md) | The first-visit questions (competitive / games / minigames, level, format), the personas, and what they arrange: rail order, dock tab, Home "Para você", journey tags, the builder's first regulation; the trainer card other trainers see |
 | [Rewards](./modules/rewards.md) | Trainer Level (computed XP), the daily check-in + streak shields, cosmetics (frames, titles, reward themes) and where they show |
 | [Friend battles](./modules/friend_battles.md) | PvP as built (2026-10-20): challenge-with-team → one-tap accept, `secret/state` + claimed rounds (no polling), the device log cache, the console screen, VS card, music |
 | [Champion Challenge](./modules/daily_challenge.md) | The daily battle vs the Cynthia AI as built: endpoint, engine, AI, the DS-console client, Home card, invariants, traps, calibration |
