@@ -101,6 +101,27 @@
     box-shadow: var(--ring-primary);
 }
 
+/* A button chip is ~22px tall — calm in the bar, too small for a thumb. On a
+   coarse pointer it reaches 44px+ through an invisible ::after (the
+   `.touch-target` arithmetic, with a full --space-3 of vertical reach because
+   the chip starts smaller than the controls that utility was sized for), and
+   the phone bar's ellipsis clip is lifted so the reach is not cut off. */
+@media (pointer: coarse) {
+    .ds-chip.is-button {
+        position: relative;
+    }
+
+    .ds-chip.is-button::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-3)) calc(-1 * var(--space-1));
+    }
+
+    .ds-console__bar .ds-chip.is-button {
+        overflow: visible;
+    }
+}
+
 .ds-console__body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

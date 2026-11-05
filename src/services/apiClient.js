@@ -23,7 +23,10 @@ import { auth } from './firebase';
  *
  * @returns {Promise<{ok: boolean, status: number, payload: object, error: string|null}>}
  */
-export const callAuthedApi = async (endpoint, body, { serverErrorMessage = 'Server error (500).', forceRefresh = false } = {}) => {
+// `error` is a code for the caller to translate — the server's own `error`, or
+// `server` / `httpError` when it sent none. Never English copy meant for a toast:
+// "HTTP 409 error" reached players verbatim until 2026-11-04.
+export const callAuthedApi = async (endpoint, body, { serverErrorMessage = 'server', forceRefresh = false } = {}) => {
     // On a return visit the app paints from the saved identity (useAuthStore's
     // boot snapshot: isAuthReady is true at once) before Firebase has restored
     // the session, so a call made on mount can find no currentUser yet. Wait
@@ -57,7 +60,7 @@ export const callAuthedApi = async (endpoint, body, { serverErrorMessage = 'Serv
             status: response.status,
             payload,
             error: payload.error
-                || (response.status === 500 ? serverErrorMessage : `HTTP ${response.status} error`),
+                || (response.status >= 500 ? serverErrorMessage : 'httpError'),
         };
     }
     return { ok: true, status: response.status, payload, error: null };

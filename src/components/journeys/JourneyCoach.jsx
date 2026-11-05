@@ -76,7 +76,7 @@ function CoachCard({ missionId }) {
                 {!isDone && (
                     <button
                         type="button"
-                        className="btn btn-ghost btn-sm btn-icon"
+                        className="btn btn-ghost btn-sm btn-icon touch-target touch-target--y"
                         onClick={() => setShowHint((v) => !v)}
                         aria-pressed={showHint}
                         aria-label={showHint ? t('journeys.coach.hideHint') : t('journeys.coach.showHint')}
@@ -97,7 +97,7 @@ function CoachCard({ missionId }) {
                 )}
                 <button
                     type="button"
-                    className="btn btn-ghost btn-sm btn-icon"
+                    className="btn btn-ghost btn-sm btn-icon touch-target touch-target--y"
                     onClick={stopMission}
                     aria-label={t('journeys.coach.stop')}
                     title={t('journeys.coach.stop')}

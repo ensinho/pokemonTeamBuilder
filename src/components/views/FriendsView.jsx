@@ -78,6 +78,25 @@ export function FriendsView() {
     const [confirmingRemoval, setConfirmingRemoval] = useState(null);
     const [challengingFriend, setChallengingFriend] = useState(null);
 
+    // Which friend actions are in flight ('accept:<uid>' …): that one button is
+    // disabled until the write answers, so a second tap cannot send it twice.
+    // Never disabled before the tap; a failure toasts Retry (useFriendsStore).
+    const [inFlight, setInFlight] = useState(() => new Set());
+    const runAction = async (key, action) => {
+        if (inFlight.has(key)) return;
+        setInFlight((prev) => new Set(prev).add(key));
+        try {
+            await action();
+        } finally {
+            setInFlight((prev) => {
+                const next = new Set(prev);
+                next.delete(key);
+                return next;
+            });
+        }
+    };
+    const busyProps = (key) => ({ disabled: inFlight.has(key), 'aria-busy': inFlight.has(key) || undefined });
+
     // An `?add=<uid>` invite link resolves to a trainer card in the Find tab.
     const inviteUid = searchParams.get('add');
     const [invitedProfile, setInvitedProfile] = useState(null);
@@ -136,13 +155,13 @@ export function FriendsView() {
         }
         if (incomingIds.has(profile.userId)) {
             return (
-                <button type="button" className="btn btn-primary friends-action" onClick={() => acceptRequest(profile.userId)}>
+                <button type="button" className="btn btn-primary friends-action" {...busyProps(`accept:${profile.userId}`)} onClick={() => runAction(`accept:${profile.userId}`, () => acceptRequest(profile.userId))}>
                     {t('friends.accept')}
                 </button>
             );
         }
         return (
-            <button type="button" className="btn btn-primary friends-action" onClick={() => sendRequest(profile.userId)}>
+            <button type="button" className="btn btn-primary friends-action" {...busyProps(`send:${profile.userId}`)} onClick={() => runAction(`send:${profile.userId}`, () => sendRequest(profile.userId))}>
                 {t('friends.addFriend')}
             </button>
         );
@@ -229,10 +248,11 @@ export function FriendsView() {
                                             <button
                                                 type="button"
                                                 className="btn btn-danger btn-sm flex-1"
-                                                onClick={() => {
-                                                    removeFriend(friend.userId);
+                                                {...busyProps(`remove:${friend.userId}`)}
+                                                onClick={() => runAction(`remove:${friend.userId}`, async () => {
+                                                    await removeFriend(friend.userId);
                                                     setConfirmingRemoval(null);
-                                                }}
+                                                })}
                                             >
                                                 {t('friends.confirmRemove')}
                                             </button>
@@ -286,10 +306,10 @@ export function FriendsView() {
                                         profile={row.profile}
                                         actions={(
                                             <>
-                                                <button type="button" className="btn btn-primary friends-action" onClick={() => acceptRequest(row.from)}>
+                                                <button type="button" className="btn btn-primary friends-action" {...busyProps(`accept:${row.from}`)} onClick={() => runAction(`accept:${row.from}`, () => acceptRequest(row.from))}>
                                                     {t('friends.accept')}
                                                 </button>
-                                                <button type="button" className="btn btn-outline friends-action" onClick={() => declineRequest(row.from)}>
+                                                <button type="button" className="btn btn-outline friends-action" {...busyProps(`decline:${row.from}`)} onClick={() => runAction(`decline:${row.from}`, () => declineRequest(row.from))}>
                                                     {t('friends.decline')}
                                                 </button>
                                             </>
@@ -312,7 +332,7 @@ export function FriendsView() {
                                         profile={row.profile}
                                         subtitle={t('friends.requestPending')}
                                         actions={(
-                                            <button type="button" className="btn btn-outline friends-action" onClick={() => removeRequest(row.from, row.to)}>
+                                            <button type="button" className="btn btn-outline friends-action" {...busyProps(`cancel:${row.to}`)} onClick={() => runAction(`cancel:${row.to}`, () => removeRequest(row.from, row.to))}>
                                                 {t('friends.cancelRequest')}
                                             </button>
                                         )}

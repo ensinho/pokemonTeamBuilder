@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 /** A password input with the eye: on a phone, typing blind is the error. */
-export function PasswordField({ label, value, onChange, autoComplete, enterKeyHint, autoFocus, minLength, describedBy }) {
+export function PasswordField({ label, value, onChange, autoComplete, enterKeyHint, autoFocus, minLength, describedBy, invalid = false, inputRef }) {
     const { t } = useTranslation();
     const [visible, setVisible] = useState(false);
     return (
@@ -11,6 +11,7 @@ export function PasswordField({ label, value, onChange, autoComplete, enterKeyHi
             <span className="field-label">{label}</span>
             <span className="auth-password">
                 <input
+                    ref={inputRef}
                     type={visible ? 'text' : 'password'}
                     autoComplete={autoComplete}
                     autoCapitalize="none"
@@ -23,6 +24,7 @@ export function PasswordField({ label, value, onChange, autoComplete, enterKeyHi
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     aria-describedby={describedBy}
+                    aria-invalid={invalid || undefined}
                     className="input-clean"
                     placeholder="••••••••"
                 />

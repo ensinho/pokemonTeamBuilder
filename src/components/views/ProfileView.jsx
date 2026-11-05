@@ -332,10 +332,16 @@ export function ProfileView({
         if (!editingName) setNameDraft(displayName || '');
     }, [displayName, editingName]);
 
-    const handleSaveName = () => {
+    // Closes at once (the store shows the new name optimistically); a failed
+    // save reopens the field with what was typed — the store toasts Retry.
+    const handleSaveName = async () => {
         const trimmed = nameDraft.trim().slice(0, 24);
-        onChangeDisplayName(trimmed);
         setEditingName(false);
+        const saved = await onChangeDisplayName(trimmed);
+        if (saved === false) {
+            setNameDraft(trimmed);
+            setEditingName(true);
+        }
     };
 
     const mainAvatar = useMemo(

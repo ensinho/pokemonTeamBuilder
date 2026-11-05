@@ -237,7 +237,10 @@ export const useFriendsStore = create((set, get) => ({
             console.error('Failed to send friend request:', err);
             // The deterministic id means a leftover declined request blocks a new
             // one; say so rather than failing silently.
-            toast.error(t('toast.friendRequestError'), { description: t('toast.friendRequestErrorDesc') });
+            toast.error(t('toast.friendRequestError'), {
+                description: t('toast.friendRequestErrorDesc'),
+                actions: [{ label: t('toast.retry'), onClick: () => get().sendRequest(toUserId) }],
+            });
             return false;
         }
     },
@@ -275,7 +278,7 @@ export const useFriendsStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error('Failed to accept friend request:', err);
-            toast.error(t('toast.friendAcceptError'));
+            toast.error(t('toast.friendAcceptError'), { actions: [{ label: t('toast.retry'), onClick: () => get().acceptRequest(fromUserId) }] });
             return false;
         }
     },
@@ -297,7 +300,7 @@ export const useFriendsStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error('Failed to decline friend request:', err);
-            toast.error(t('toast.friendDeclineError'));
+            toast.error(t('toast.friendDeclineError'), { actions: [{ label: t('toast.retry'), onClick: () => get().declineRequest(fromUserId) }] });
             return false;
         }
     },
@@ -310,7 +313,7 @@ export const useFriendsStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error('Failed to remove friend request:', err);
-            toast.error(t('toast.friendCancelError'));
+            toast.error(t('toast.friendCancelError'), { actions: [{ label: t('toast.retry'), onClick: () => get().removeRequest(fromUserId, toUserId) }] });
             return false;
         }
     },
@@ -331,7 +334,7 @@ export const useFriendsStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error('Failed to remove friend:', err);
-            toast.error(t('toast.friendRemoveError'));
+            toast.error(t('toast.friendRemoveError'), { actions: [{ label: t('toast.retry'), onClick: () => get().removeFriend(otherUserId) }] });
             return false;
         }
     },

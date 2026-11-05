@@ -56,7 +56,7 @@ import { GameHistoryDialog } from '../GameHistoryDialog';
 import { Loader } from '../Loader';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { toast } from '../../store/useToastStore';
-import { nudgeSupport } from '../../services/supportNudge';
+import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
 const MIN_AUTOCOMPLETE_CHARACTERS = 5;
@@ -181,6 +181,20 @@ export function CategoryGuesserView({ showDetails }) {
     const runDeletes = useDeferredDelete();
     const celebrateTimerRef = useRef(0);
     useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
+
+    // Never after "Play again" (the user is already in the next run); held in
+    // a ref so leaving the page cancels it.
+    const nudgeTimerRef = useRef(0);
+    useEffect(() => () => {
+        clearTimeout(nudgeTimerRef.current);
+        cancelSupportNudge();
+    }, []);
+    const closeCelebration = useCallback((options) => {
+        setIsCelebrationOpen(false);
+        clearTimeout(nudgeTimerRef.current);
+        if (options?.playAgain === true) return;
+        nudgeTimerRef.current = setTimeout(() => nudgeSupport('quiz_category'), 400);
+    }, []);
 
     const {
         quizRuns,
@@ -746,10 +760,7 @@ export function CategoryGuesserView({ showDetails }) {
             {isCelebrationOpen && (
                 <QuizCelebrationModal
                     isOpen={isCelebrationOpen}
-                    onClose={() => {
-                        setIsCelebrationOpen(false);
-                        nudgeSupport('quiz_category');
-                    }}
+                    onClose={closeCelebration}
                     onPlayAgain={() => handleRerollChallenge({ undoable: false })}
                     playAgainText={t('games.newChallenge')}
                     mode="category"

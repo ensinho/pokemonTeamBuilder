@@ -31,7 +31,7 @@ import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { Loader } from '../Loader';
 import { toast } from '../../store/useToastStore';
-import { nudgeSupport } from '../../services/supportNudge';
+import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -563,10 +563,20 @@ export function GenerationQuizView({ showDetails, showToast }) {
         });
     }, [activeRun, rerunRun, resumeRun, updateActiveRunProgress, language, t]);
 
-    const closeCelebration = useCallback(() => {
+    // Badge first; the nudge a beat later, so the badge dialog (if any) is up
+    // and the nudge waits for it (services/supportNudge). Never after
+    // "Play again": the user is already in the next run.
+    const nudgeTimerRef = useRef(0);
+    useEffect(() => () => {
+        window.clearTimeout(nudgeTimerRef.current);
+        cancelSupportNudge();
+    }, []);
+    const closeCelebration = useCallback((options) => {
         setIsCelebrationOpen(false);
         checkBadgeRef.current?.();
-        nudgeSupport('quiz_generation');
+        window.clearTimeout(nudgeTimerRef.current);
+        if (options?.playAgain === true) return;
+        nudgeTimerRef.current = window.setTimeout(() => nudgeSupport('quiz_generation'), 400);
     }, []);
 
     const commitFoundPokemon = useCallback((pokemonId) => {

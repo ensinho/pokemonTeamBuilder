@@ -60,6 +60,22 @@ const profileFromData = (data) => {
 // (Reddit does), instead of at the top of the list every time.
 let savedFeedScroll = 0;
 
+// A half-written reply survives switching topics and leaving the forum: one
+// draft per topic in sessionStorage (2026-11-04). Blocked storage just means
+// no draft is kept.
+const DRAFT_PREFIX = 'ptb:forumDraft:';
+const readDraft = (topicId) => {
+    if (!topicId) return '';
+    try { return window.sessionStorage.getItem(DRAFT_PREFIX + topicId) || ''; } catch { return ''; }
+};
+const writeDraft = (topicId, text) => {
+    if (!topicId) return;
+    try {
+        if (text) window.sessionStorage.setItem(DRAFT_PREFIX + topicId, text);
+        else window.sessionStorage.removeItem(DRAFT_PREFIX + topicId);
+    } catch { /* blocked storage */ }
+};
+
 // Feed filters live in the URL next to ?topic=, so Back, refresh and a shared
 // link all keep them. Defaults are left out of the URL.
 const PARAM_DEFAULTS = { sort: DEFAULT_FEED_SORT, cat: 'all', q: '' };
@@ -161,12 +177,17 @@ export function FeedView({ showToast, navigate }) {
 
     const { composerRef, focusComposer } = useComposerFocus();
 
-    // The URL drives the store; a different topic starts with a clean composer.
+    const [isSending, setIsSending] = useState(false);
+    const sendingRef = useRef(false);
+    const topicParamRef = useRef(topicParam);
+    topicParamRef.current = topicParam;
+
+    // The URL drives the store; a different topic opens with its own draft.
     useEffect(() => {
         if (topicParam !== (currentTopicId || null)) setCurrentTopicId(topicParam);
         setReplyingTo(null);
         setAttachedTeam(null);
-        setReplyText('');
+        setReplyText(readDraft(topicParam));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- the URL drives the store, not the reverse
     }, [topicParam]);
 
@@ -316,26 +337,53 @@ export function FeedView({ showToast, navigate }) {
     };
 
     // The store announces the new post (with an "open" action); here we just go there.
+    // A failure throws, so the dialog stays open with the draft and says so.
     const handleCreateTopicSubmit = async ({ title, category, text, attachedTeam: team }) => {
         const id = await createTopic(title, category, text, team);
-        if (id) {
-            openedHereRef.current = true;
-            setTopicInUrl(id);
-        }
+        if (!id) throw new Error('topic-create-failed');
+        openedHereRef.current = true;
+        setTopicInUrl(id);
     };
 
     // ── Thread actions ─────────────────────────────────────────────────────
     // No toast on success: the new comment appears in the thread and the view
     // scrolls to it — the change already has a place on screen.
-    const handleSendMessageSubmit = async (e) => {
-        if (e) e.preventDefault();
-        if (!replyText.trim() && !attachedTeam) return;
-        const success = await sendMessage(currentTopicId, replyText, attachedTeam, replyingTo);
-        if (success) {
+    //
+    // The composer empties on the tap and Send locks until the server answers
+    // (2026-11-04): the text used to stay put with Send live, and a second tap
+    // during a slow write posted the comment twice. A failure puts the draft
+    // back and offers Retry.
+    const sendDraft = async (draft) => {
+        if (sendingRef.current) return;
+        sendingRef.current = true;
+        setIsSending(true);
+        const here = topicParamRef.current === draft.topicId;
+        if (here) {
             setReplyText('');
             setAttachedTeam(null);
             setReplyingTo(null);
         }
+        writeDraft(draft.topicId, '');
+        const success = await sendMessage(draft.topicId, draft.text, draft.team, draft.replyTo, {}, { notifyError: false });
+        sendingRef.current = false;
+        setIsSending(false);
+        if (success) return;
+        writeDraft(draft.topicId, draft.text);
+        if (topicParamRef.current === draft.topicId) {
+            setReplyText((current) => current || draft.text);
+            setAttachedTeam((current) => current || draft.team);
+            setReplyingTo((current) => current || draft.replyTo);
+        }
+        showToast?.(t('toast.messageSendError'), 'error', {
+            actions: [{ label: t('toast.retry'), onClick: () => sendDraft(draft) }],
+        });
+    };
+
+    const handleSendMessageSubmit = (e) => {
+        if (e) e.preventDefault();
+        if (sendingRef.current) return;
+        if (!replyText.trim() && !attachedTeam) return;
+        sendDraft({ topicId: currentTopicId, text: replyText, team: attachedTeam, replyTo: replyingTo });
     };
 
     const handlePostBattleInvite = async (mode) => {
@@ -347,6 +395,7 @@ export function FeedView({ showToast, navigate }) {
         if (posted) {
             setReplyText('');
             setReplyingTo(null);
+            writeDraft(currentTopicId, '');
         }
     };
 
@@ -420,8 +469,12 @@ export function FeedView({ showToast, navigate }) {
 
     const composerProps = {
         replyText,
-        onReplyTextChange: (e) => setReplyText(e.target.value),
+        onReplyTextChange: (e) => {
+            setReplyText(e.target.value);
+            writeDraft(currentTopicId, e.target.value);
+        },
         onSubmit: handleSendMessageSubmit,
+        isSending,
         replyingTo,
         onCancelReply: () => setReplyingTo(null),
         attachedTeam,
