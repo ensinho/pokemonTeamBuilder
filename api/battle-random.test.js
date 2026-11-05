@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Dex } from '@pkmn/sim';
 
 /**
  * End-to-end cover for the random-battle roll, against the same in-memory
@@ -283,7 +284,13 @@ describe('a rolled battle, played through the turn resolver', () => {
         await roll(P2);
         await turn(P1, null);
 
-        const mine = requestFor(P1).side.pokemon.map((mon) => mon.details.split(',')[0]);
+        // A battle-only forme the sim switches to at the start (Zacian holding
+        // Rusted Sword walks in as Zacian-Crowned) is still the rolled species.
+        const rolledSpecies = (name) => {
+            const { battleOnly } = Dex.species.get(name);
+            return typeof battleOnly === 'string' ? battleOnly : name;
+        };
+        const mine = requestFor(P1).side.pokemon.map((mon) => rolledSpecies(mon.details.split(',')[0]));
         expect(mine).toEqual(teamDoc(P1).sprites.map((mon) => mon.name));
 
         // Everything of theirs except the lead, which walks onto the field in
