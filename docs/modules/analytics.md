@@ -33,6 +33,7 @@ measures first.
 | `shared_team_view` | `SharedTeamView` loaded a team | `team_id`, `size` |
 | `shared_team_import` / `shared_team_build_own` | its two buttons | `team_id` |
 | `reminder_offer_view` / `_accept` / `_dismiss` | the "remind me tomorrow" offer after a daily win (`useReminderOffer`) | `topic`: `puzzle` or `challenge` |
+| `support_nudge_view` / `_click` | the coffee toast after a Champion battle, a PokéPuzzle or a finished quiz (`services/supportNudge.js`; from the 2nd finish, at most weekly, never after a click) | `source`: `challenge`, `puzzle`, `quiz_generation`, `quiz_category` |
 | `team_of_week_open` | the forum's team of the week (`TeamOfTheWeek`) | `kind`: `community` or `tournament` |
 | `team_compare_open` | `openTeamCompare` (any shortcut to the team comparison) | `source`: `home`, `team_detail`, `saved_teams`, `builder_recent`, `builder_saved_sheet`, `builder_menu` |
 

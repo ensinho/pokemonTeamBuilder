@@ -56,6 +56,7 @@ import { GameHistoryDialog } from '../GameHistoryDialog';
 import { Loader } from '../Loader';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { toast } from '../../store/useToastStore';
+import { nudgeSupport } from '../../services/supportNudge';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
 const MIN_AUTOCOMPLETE_CHARACTERS = 5;
@@ -745,7 +746,10 @@ export function CategoryGuesserView({ showDetails }) {
             {isCelebrationOpen && (
                 <QuizCelebrationModal
                     isOpen={isCelebrationOpen}
-                    onClose={() => setIsCelebrationOpen(false)}
+                    onClose={() => {
+                        setIsCelebrationOpen(false);
+                        nudgeSupport('quiz_category');
+                    }}
                     onPlayAgain={() => handleRerollChallenge({ undoable: false })}
                     playAgainText={t('games.newChallenge')}
                     mode="category"
