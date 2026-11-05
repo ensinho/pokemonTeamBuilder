@@ -22,6 +22,9 @@ export function useChampionChallenge() {
         nextResetAt: s.nextResetAt,
         day: s.day,
         official: s.official,
+        officials: s.officials,
+        championId: s.championId,
+        champions: s.champions,
         stats: s.stats,
         ranks: s.ranks,
         run: s.run,
@@ -34,6 +37,7 @@ export function useChampionChallenge() {
     })));
     const actions = useChampionChallengeStore(useShallow((s) => ({
         load: s.load,
+        selectChampion: s.selectChampion,
         start: s.start,
         choose: s.choose,
         forfeit: s.forfeit,

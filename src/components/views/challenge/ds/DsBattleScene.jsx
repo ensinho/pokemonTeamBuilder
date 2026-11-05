@@ -199,7 +199,7 @@ function SceneFlare({ current, moveMeta, foeName }) {
  * The battle, DPPt style (top screen): sky, the teal ground, two platforms,
  * Gen 4 sprites (front for the opponent's side, back for yours), HP boxes and
  * the text box. The trainer standing on the far platform before the send-out
- * is Cynthia, or `foeSprite` (a friend's trainer). Everything is laid out in DS pixels (`--px`).
+ * is the champion's (`foeSprite`: Blue's, or a friend's trainer), else Cynthia. Everything is laid out in DS pixels (`--px`).
  *
  * The scene is the battle *as of the moment playing*: `field` is read from the
  * log up to the current event (`useBattlePlayback`), so an HP bar drains when

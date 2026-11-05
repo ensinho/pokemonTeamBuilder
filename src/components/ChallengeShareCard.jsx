@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { CHAMPION_NAMES, difficultyLabel } from '../utils/challengeChampions';
 import { readChallengeShare } from '../utils/challengeShare';
 
 /**
@@ -20,9 +21,10 @@ export function ChallengeShareCard({ share }) {
     const card = readChallengeShare(share);
     if (!card) return null;
 
-    const title = card.difficulty
-        ? t('forum.challengeTitleLevel', { level: t(`challenge.difficulty.${card.difficulty}`) })
-        : t('forum.challengeTitle');
+    // "Champion Challenge · Platinum", or "· Blue · Yellow" for another champion.
+    const level = difficultyLabel(t, card.champion, card.difficulty);
+    const named = card.champion === 'cynthia' ? level : [CHAMPION_NAMES[card.champion], level].filter(Boolean).join(' · ');
+    const title = named ? t('forum.challengeTitleLevel', { level: named }) : t('forum.challengeTitle');
 
     return (
         <div className="forum-team-share-card forum-team-share-card--puzzle">

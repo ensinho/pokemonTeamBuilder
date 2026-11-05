@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
-    CHAMPION_ROOM, TILE, championTile, encounterTile, faceToward, facesChampion, findPath, isEncounter, spawnTile, stepTo, tileFromPoint,
+    CHAMPION_ROOM, TILE, championTiles, encounterAt, encounterTile, faceToward, facesChampion, findPath, spawnTile, stepTo, tileFromPoint,
 } from '../../../../utils/arenaMap';
-import { ACTOR_CELL, CYNTHIA_SHEET, PLAYER_SHEET, sheetStyle } from '../../../../utils/challengeArt';
+import { ACTOR_CELL, PLAYER_SHEET, championArt, sheetStyle } from '../../../../utils/challengeArt';
+import { CHAMPION_NAMES } from '../../../../utils/challengeChampions';
+import { useTranslation } from '../../../../hooks/useTranslation';
 import { play } from '../../../../utils/challengeSfx';
 import { DsTextBox } from './DsTextBox';
 
 const MAP = CHAMPION_ROOM;
-const champion = championTile(MAP);
+const CHAMPIONS = championTiles(MAP);
 const STEP_MS = 160;
 const LAMPS = [];
 const BANNER = [];
@@ -41,22 +43,32 @@ const bodyBox = (x, y) => {
 };
 
 /**
- * The Champion's room (top screen). The player walks in a grid — arrows/WASD,
- * the D-pad, or a tap anywhere (shortest path, `findPath`) — and the encounter
- * starts on the tile in front of Cynthia. One React render per step; the glide
- * between tiles is a CSS transform transition.
+ * The Champions' room (top screen): Cynthia on the left, Blue on the right,
+ * each under a name plate (✓ once beaten today). The player walks in a grid —
+ * arrows/WASD, the D-pad, or a tap anywhere (shortest path, `findPath`) — and
+ * the encounter starts on the tile in front of whichever one they reach:
+ * `onArrive(championId)`. One React render per step; the glide between tiles
+ * is a CSS transform transition.
+ *
+ * `championId` is the one the screen is about: the speaker of `dialogue`, and
+ * who the player stands before with `startAtChampion`. `beaten` lists the ids
+ * won today.
  *
  * `inputRef` receives this screen's handlers so the console's single keyboard
- * and D-pad can drive whatever screen is active.
+ * and D-pad can drive whatever screen is active; `skip(id)` walks straight to
+ * one, `release()` lets the player walk again after an arrival that led nowhere.
  */
 export function DsArena({
     mode, dialogue = [], championName, inputRef, onArrive, onDialogueDone, reducedMotion, startAtChampion = false,
+    championId = CHAMPIONS[0].id, beaten = [],
 }) {
-    const startPos = startAtChampion ? encounterTile(MAP) : spawnTile(MAP);
+    const { t } = useTranslation();
+    const startPos = startAtChampion ? encounterTile(MAP, championId) : spawnTile(MAP);
     const [pos, setPos] = useState(startPos);
     const [facing, setFacing] = useState('up');
     const [frame, setFrame] = useState('stand');
-    const [bang, setBang] = useState(false);
+    // Who the "!" is over: the Champion just reached.
+    const [bang, setBang] = useState(null);
     const [line, setLine] = useState(0);
 
     const posRef = useRef(startPos);
@@ -77,17 +89,17 @@ export function DsArena({
         setFrame('stand');
     }, []);
 
-    const arrive = useCallback(() => {
-        if (arrivedRef.current) return;
+    const arrive = useCallback((id) => {
+        if (arrivedRef.current || !id) return;
         arrivedRef.current = true;
         stopWalking();
         facingRef.current = 'up';
         setFacing('up');
-        setBang(true);
+        setBang(id);
         play('encounter');
         setTimeout(() => {
-            setBang(false);
-            onArrive?.();
+            setBang(null);
+            onArrive?.(id);
         }, reducedMotion ? 150 : 650);
     }, [onArrive, reducedMotion, stopWalking]);
 
@@ -112,8 +124,9 @@ export function DsArena({
         play('step');
         setPos(result.pos);
         setFrame((f) => (f === 'stepA' ? 'stepB' : 'stepA'));
-        if (isEncounter(MAP, result.pos)) {
-            timerRef.current = setTimeout(arrive, STEP_MS);
+        const reached = encounterAt(MAP, result.pos);
+        if (reached) {
+            timerRef.current = setTimeout(() => arrive(reached), STEP_MS);
             return;
         }
         timerRef.current = setTimeout(loop, STEP_MS);
@@ -143,8 +156,8 @@ export function DsArena({
             heldRef.current = action;
             pathRef.current = [];
             walk();
-        } else if (action === 'a' && facesChampion(MAP, posRef.current, facingRef.current)) {
-            arrive();
+        } else if (action === 'a') {
+            arrive(facesChampion(MAP, posRef.current, facingRef.current));
         }
     }, [arrive, walk]);
 
@@ -152,16 +165,20 @@ export function DsArena({
         if (heldRef.current === action) heldRef.current = null;
     }, []);
 
-    const skip = useCallback(() => {
+    const skip = useCallback((id = championId) => {
         stopWalking();
-        posRef.current = encounterTile(MAP);
+        posRef.current = encounterTile(MAP, id);
         setPos(posRef.current);
-        arrive();
-    }, [arrive, stopWalking]);
+        arrive(id);
+    }, [arrive, championId, stopWalking]);
+
+    const release = useCallback(() => {
+        arrivedRef.current = false;
+    }, []);
 
     useEffect(() => {
-        if (inputRef) inputRef.current = { onAction, onRelease, skip };
-    }, [inputRef, onAction, onRelease, skip]);
+        if (inputRef) inputRef.current = { onAction, onRelease, skip, release };
+    }, [inputRef, onAction, onRelease, skip, release]);
 
     // Dialogue: one line per A/tap; after the last, hand over.
     useEffect(() => {
@@ -177,19 +194,30 @@ export function DsArena({
         const px = rect.width / 256;
         const dsX = (event.clientX - rect.left) / px;
         const dsY = (event.clientY - rect.top) / px;
-        // Her sprite rises a tile above her own (over the banner): a tap anywhere on her is a tap on her.
-        const her = bodyBox(champion.x, champion.y);
-        const onHer = dsX >= her.left && dsX <= her.right && dsY >= her.top && dsY <= her.bottom;
-        const target = onHer ? champion : tileFromPoint(dsX, dsY);
+        // A Champion's sprite rises a tile above their own (over the banner): a tap anywhere on one is a tap on them.
+        const onOne = CHAMPIONS.find((c) => {
+            const box = bodyBox(c.x, c.y);
+            return dsX >= box.left && dsX <= box.right && dsY >= box.top && dsY <= box.bottom;
+        });
+        walkTo(onOne || tileFromPoint(dsX, dsY));
+    };
+
+    function walkTo(target) {
         const path = findPath(MAP, posRef.current, target);
         if (!path) return;
         heldRef.current = null;
         pathRef.current = path;
-        if (!path.length && isEncounter(MAP, posRef.current)) arrive();
+        if (!path.length && encounterAt(MAP, posRef.current)) arrive(encounterAt(MAP, posRef.current));
         else walk();
+    }
+
+    // A plate is a button: the keyboard's and the screen reader's way to a Champion.
+    const goTo = (event, champion) => {
+        event.stopPropagation();
+        if (modeRef.current !== 'walk' || arrivedRef.current) return;
+        walkTo(champion);
     };
 
-    const championFacing = faceToward(champion, pos);
     const dialogueText = mode === 'dialogue' ? dialogue[Math.min(line, dialogue.length - 1)] : null;
 
     return (
@@ -216,10 +244,23 @@ export function DsArena({
             ))}
             <div className="ds-arena__door" aria-hidden="true" />
 
-            <div className="ds-actor ds-actor--champion" style={actorStyle(champion.x, champion.y)}>
-                <div className="ds-sheet" style={sheetStyle(CYNTHIA_SHEET, championFacing)} />
-                {bang && <span className="ds-actor__bang" aria-hidden="true">!</span>}
-            </div>
+            {CHAMPIONS.map((c) => (
+                <div key={c.id} className="ds-actor ds-actor--champion" style={actorStyle(c.x, c.y)}>
+                    <div className="ds-sheet" style={sheetStyle(championArt(c.id).sheet, faceToward(c, pos))} />
+                    {/* Who is who, before you walk: the choice is the walk. The "!" takes its place. */}
+                    {bang === c.id ? <span className="ds-actor__bang" aria-hidden="true">!</span> : (
+                        <button
+                            type="button"
+                            className={`ds-actor__plate ${beaten.includes(c.id) ? 'is-beaten' : ''}`}
+                            onClick={(event) => goTo(event, c)}
+                            disabled={mode !== 'walk'}
+                            aria-label={t(beaten.includes(c.id) ? 'challenge.arena.goToBeaten' : 'challenge.arena.skip', { name: CHAMPION_NAMES[c.id] })}
+                        >
+                            {CHAMPION_NAMES[c.id]}{beaten.includes(c.id) ? ' ✓' : ''}
+                        </button>
+                    )}
+                </div>
+            ))}
             <div
                 className={`ds-actor ds-actor--player ${frame !== 'stand' ? 'is-walking' : ''}`}
                 style={actorStyle(pos.x, pos.y)}

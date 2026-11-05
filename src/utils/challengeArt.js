@@ -1,5 +1,8 @@
+import blueBattleUrl from '../assets/challenge/blue-battle.png';
+import blueSheetUrl from '../assets/challenge/blue-overworld.png';
 import cynthiaSheetUrl from '../assets/challenge/cynthia-overworld.png';
 import protagonistSheetUrl from '../assets/challenge/protagonist-overworld.png';
+import { trainerSpriteUrl } from './challengeView';
 
 /**
  * Overworld art for the Champion Challenge's room: two 4 × 4 RPG-Maker sheets
@@ -14,6 +17,15 @@ import protagonistSheetUrl from '../assets/challenge/protagonist-overworld.png';
  *   2026-10-16 (`protagonist-overworld.png`, 64 px cells). One cell is
  *   32 × 32 DS px, set inside the shared cell by `offset` so his feet stand
  *   where Cynthia's do; the sheet has no ground shadow, so the room draws one.
+ *
+ * - **Blue**: his HeartGold & SoulSilver overworld frames and battle pose, from
+ *   the rip Enzo supplied on 2026-11-04 (`public/blueSprite.png`, "ripped by
+ *   ChrisX698"). The rip has three frames per row (down, up, right, left);
+ *   `blue-overworld.png` is them laid out as Cynthia's sheet — her rows, her
+ *   stand/step/stand/step columns, her ground shadow, drawn 2× — so it shares
+ *   `CYNTHIA_SHEET`'s geometry. `blue-battle.png` is his first battle pose
+ *   mirrored to face left on an 80 × 80 canvas, as Showdown's trainers are
+ *   (Showdown has no Gen 4 Blue).
  *
  * Credited in docs/modules/daily_challenge.md. The Pokémon and Cynthia's battle
  * sprite are Showdown's, as everywhere else in the app.
@@ -36,6 +48,20 @@ export const CYNTHIA_SHEET = {
     row: ROWS,
     col: FRAMES,
 };
+
+/** Blue, cut to Cynthia's layout: the same sheet, cell and offset. */
+export const BLUE_SHEET = { ...CYNTHIA_SHEET, url: blueSheetUrl };
+
+/**
+ * Each champion's art: the room's sheet, the trainer on the far platform before
+ * the send-out (`battle`), and the VS card's portrait (`versus`).
+ */
+export const CHAMPION_ART = {
+    cynthia: { sheet: CYNTHIA_SHEET, battle: trainerSpriteUrl('cynthia-gen4'), versus: trainerSpriteUrl('cynthia') },
+    blue: { sheet: BLUE_SHEET, battle: blueBattleUrl, versus: blueBattleUrl },
+};
+
+export const championArt = (championId) => CHAMPION_ART[championId] || CHAMPION_ART.cynthia;
 
 export const PLAYER_SHEET = {
     url: protagonistSheetUrl,
