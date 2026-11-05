@@ -296,8 +296,7 @@ export function TeamBuilderView({
     // playthrough mode. Read before the dataset hooks below so they can skip
     // their downloads entirely in that mode.
     const [selectedRegulation, setSelectedRegulation] = React.useState(() => {
-        if (typeof window === 'undefined') return null;
-        return window.localStorage.getItem('tb-regulation') || null;
+        try { return window.localStorage.getItem('tb-regulation') || null; } catch (_) { return null; }
     });
     // Playthrough mode: the user asked for a builder that doesn't push the meta at
     // them. Type coverage stays (a playthrough team still wants to know it has no

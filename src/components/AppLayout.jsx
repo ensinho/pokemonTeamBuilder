@@ -28,6 +28,7 @@ import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { ShellNavGroup } from './ShellNavGroup';
 import ToastStack from './ToastStack';
 import { ThemeToggle } from './ThemeToggle';
+import { readLocal, writeLocal, removeLocal } from '../utils/safeStorage';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { storedFormFields, withUniqueInstanceIds } from '../utils/teamSerialization';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
@@ -777,8 +778,8 @@ export default function AppLayout() {
     // for no gain, and unregistering the worker threw away a 13 MB precache and
     // left the next release with no worker to detect it with.
     useEffect(() => {
-        const seenVersion = localStorage.getItem('patchNotesVersion');
-        const showAfterReload = localStorage.getItem('showPatchNotesAfterReload') === '1';
+        const seenVersion = readLocal('patchNotesVersion');
+        const showAfterReload = readLocal('showPatchNotesAfterReload') === '1';
 
         if (versionBumpHandled) return;
 
@@ -845,8 +846,8 @@ export default function AppLayout() {
             } catch (_) { /* storage blocked: nothing to clear */ }
 
             // 3. Record the version we are now on, and show what changed.
-            localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
-            localStorage.removeItem('showPatchNotesAfterReload');
+            writeLocal('patchNotesVersion', PATCH_NOTES_VERSION);
+            removeLocal('showPatchNotesAfterReload');
             patchNotesOwed = true;
             setShowPatchNotes(true);
         } else {
@@ -856,10 +857,10 @@ export default function AppLayout() {
             if (showAfterReload || patchNotesOwed) {
                 patchNotesOwed = true;
                 setShowPatchNotes(true);
-                localStorage.removeItem('showPatchNotesAfterReload');
+                removeLocal('showPatchNotesAfterReload');
             }
             if (!seenVersion) {
-                localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
+                writeLocal('patchNotesVersion', PATCH_NOTES_VERSION);
             }
         }
     }, []);

@@ -5,6 +5,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons } from '../../constants/types';
+import { writeLocal } from '../../utils/safeStorage';
 
 // Sample Pokémon for the simulated demo grid. Megas appear in BASE FORM in grid
 // and MORPH into Mega form when added to the team roster.
@@ -115,9 +116,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
     // already ticked) taught the guide nothing and it reappeared on every single
     // visit to the builder.
     const handleDismiss = () => {
-        if (dontShowAgain && typeof window !== 'undefined') {
-            window.localStorage.setItem('tb-onboarding-seen', '1');
-        }
+        if (dontShowAgain) writeLocal('tb-onboarding-seen', '1');
         onClose();
     };
 
