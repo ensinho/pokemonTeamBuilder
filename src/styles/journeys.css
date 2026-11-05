@@ -222,7 +222,7 @@
 
 .mission {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
     align-items: center;
     gap: var(--space-3);
     width: 100%;
@@ -245,7 +245,7 @@ button.mission:hover { background: var(--color-surface-hover); }
 button.mission:active { background: var(--color-surface-active); }
 
 .mission.is-done {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
     background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface-raised));
 }
 
@@ -294,6 +294,20 @@ button.mission:active { background: var(--color-surface-active); }
 
 .mission.is-done .mission__title { color: var(--color-fg-secondary); }
 .mission.is-done .mission__sub { color: var(--color-success); }
+
+/* The reward, quest-list style (2026-11-05): earned is a gold pill, still
+   to do is the primary colour as plain text. */
+.mission__reward {
+    flex-shrink: 0;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.mission__reward.is-pending {
+    color: var(--color-primary);
+    font-weight: var(--weight-semibold);
+}
 
 .mission__go {
     width: 1rem;

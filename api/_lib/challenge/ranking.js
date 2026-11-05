@@ -97,8 +97,10 @@ export const placeOf = (ranks, board, uid) => {
 
 /**
  * What the screen gets: the top of each board, the counts, and where the
- * caller stands. Entries keep the uid only as `me: true` for the caller —
- * the page needs to find you, not to know everyone else's account id.
+ * caller stands. The uid travels only for an entry with a public profile
+ * (2026-11-05: the trainer card opens from the row) — that profile is
+ * already world-readable at `publicProfiles/{uid}`, so nothing new is learnt.
+ * A guest's win keeps it hidden; the caller is found by `me: true`.
  */
 export const publicRanks = (doc, uid, top = 10) => {
     const ranks = doc && doc.boards ? doc : null;
@@ -114,6 +116,7 @@ export const publicRanks = (doc, uid, top = 10) => {
             remaining: entry.remaining,
             at: entry.at || null,
             profile: entry.profile || null,
+            uid: entry.profile && entry.uid ? entry.uid : null,
             me: Boolean(uid) && entry.uid === uid,
         }));
         mine[board] = placeOf(ranks, board, uid);

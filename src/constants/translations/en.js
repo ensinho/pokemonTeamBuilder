@@ -788,6 +788,9 @@ export default {
         reset: 'Reset text size to 100%'
     },
     accountMenu: {
+        groupAccount: 'Account',
+        groupPreferences: 'Preferences',
+        groupNews: 'What’s new',
         profileLabel: 'Profile',
         profileNote: 'Open trainer settings and preferences',
         profileAndSettings: 'Profile & settings',
@@ -1073,6 +1076,14 @@ export default {
         nextPokemon: 'Next Pokémon'
     },
     builder: {
+        coach: {
+            dismiss: 'Hide the tips',
+            empty: { title: 'Start with one you like', body: 'Pick a Pokémon you enjoy — the team grows around it. Tap a card to add it.' },
+            start: { title: 'Read the analysis', body: 'Weaknesses are the types that hit several of your team hard. Your next pick should resist them.' },
+            grow: { title: 'Let the suggestions help', body: 'Cards marked as a fit cover what your team is missing. Two or three more and it is a team.' },
+            full: { title: 'Six! Now make it yours', body: 'Tap a member to choose its moves and item, then save the team or try it in a battle.' },
+        },
+        usageShort: '{{n}}% use',
         title: 'Team builder',
         subtitle: 'Build and tune your current roster',
         tournamentPartners: 'Tournament partners',
@@ -1251,6 +1262,7 @@ export default {
         },
     },
     profile: {
+        settingTheme: 'Theme',
         title: 'Trainer Card & preferences',
         trainerProfile: 'Trainer profile',
         guestPill: 'Guest',
@@ -2195,6 +2207,7 @@ export default {
             youTag: 'You',
             level: 'Lv. {{n}}',
             rowLabel: '#{{place}} {{name}}, {{score}} points — see the attempt',
+            podium: "Today's podium",
             back: 'Back to the ranking',
             attempt: '#{{place}} on the {{board}} board',
             score: 'Score',
@@ -2914,6 +2927,7 @@ export default {
         },
     },
     trainerCard: {
+        view: 'Trainer card',
         close: 'Close',
         unknown: 'Trainer',
         streak: 'day streak',
@@ -3023,6 +3037,7 @@ export default {
         forYou: 'For you',
     },
     journeys: {
+        xpReward: '+{{n}} XP',
         title: 'Journeys',
         subtitle: 'Learn the app by using it — every level you finish earns a badge.',
         tabsLabel: 'Journeys and badges',

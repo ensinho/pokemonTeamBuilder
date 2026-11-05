@@ -265,3 +265,31 @@ export function builderRegulationSeed(profile) {
 
 /** Whether the onboarding should ask the competitive question. */
 export const asksCompetitiveLevel = (interests = []) => interests.includes('competitive');
+
+// ── Home order ─────────────────────────────────────────────────────────────
+
+/**
+ * The Home's main blocks, in the order a persona reaches for them
+ * (2026-11-05, round 3): the Challenger's day (puzzle + Champion) comes
+ * first, the Strategist's teams first, the Traveler's places to go and then
+ * the teams of their run, the day's games last. Anyone else — no profile, the
+ * Master — keeps the shipped order. Block ids are CozyHomeView's.
+ */
+export const DEFAULT_HOME_ORDER = ['forYou', 'yourDay', 'teams'];
+
+const HOME_ORDER_BY_PERSONA = {
+    challenger: ['yourDay', 'forYou', 'teams'],
+    strategist: ['teams', 'forYou', 'yourDay'],
+    traveler: ['forYou', 'teams', 'yourDay'],
+};
+
+export function personaHomeOrder(profile) {
+    const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
+    return (persona && HOME_ORDER_BY_PERSONA[persona.id]) || DEFAULT_HOME_ORDER;
+}
+
+/** Whether the builder should coach (competitive, just starting). */
+export const isBeginnerTrainer = (profile) => hasAnsweredProfile(profile) && profile?.competitiveLevel === 'new';
+
+/** Whether the builder should lead with the meta (competitive, ranked). */
+export const isRankedTrainer = (profile) => hasAnsweredProfile(profile) && profile?.competitiveLevel === 'ranked';

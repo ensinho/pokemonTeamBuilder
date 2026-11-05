@@ -343,6 +343,66 @@
     color: var(--color-fg-secondary);
 }
 
+/* A setting that opens under its row (DisclosureRow, 2026-11-05): label on
+   the left, the current value and a chevron at the far edge. */
+.profile-row--disclosure {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+}
+
+.profile-row__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: 3.5rem;
+    padding: var(--space-3) 0;
+    border-radius: var(--radius-sm);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+.profile-row__summary:hover .profile-row__chevron {
+    color: var(--color-fg);
+    transform: translateX(var(--space-0_5));
+}
+
+.profile-row__summary:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.profile-row__summary .profile-row__label {
+    flex: 1 1 auto;
+}
+
+.profile-row__summary .profile-row__value {
+    flex: 0 1 auto;
+    min-width: 0;
+    text-align: right;
+}
+
+.profile-row__chevron {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+    transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-row--disclosure.is-open .profile-row__chevron {
+    transform: rotate(90deg);
+}
+
+.profile-row__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: 0 0 var(--space-3);
+}
+
 .profile-row__value--mono { font-family: var(--font-mono); }
 
 .profile-row__control {

@@ -11,6 +11,9 @@ import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
 import { PokemonDetailModal } from '../modals/PokemonDetailModal';
 import { TeamBuilderOnboardingModal } from '../modals/TeamBuilderOnboardingModal';
 import { PokemonCard } from '../PokemonCard';
+import { BuilderCoach } from '../builder/BuilderCoach';
+import { useAuthStore } from '../../store/useAuthStore';
+import { isRankedTrainer } from '../../utils/trainerProfile';
 import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
@@ -229,7 +232,9 @@ export function TeamBuilderView({
     // says what to do inline and links here ("Como funciona").
     const [isOnboardingOpen, setIsOnboardingOpen] = React.useState(false);
     // Analysis panel tab: type-coverage analysis vs meta threats (same card).
-    const [analysisTab, setAnalysisTab] = React.useState('analysis');
+    // A ranked trainer (trainer profile) opens on the meta threats.
+    const [analysisTab, setAnalysisTab] = React.useState(() => (isRankedTrainer(useAuthStore.getState().trainerProfile) ? 'threats' : 'analysis'));
+    const isRanked = useAuthStore((s) => isRankedTrainer(s.trainerProfile));
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
             return false;
@@ -619,6 +624,7 @@ export function TeamBuilderView({
         <>
             {!isDesktopLayout ? (
                 <MobileTeamBuilderView
+                    metaUsageById={isRanked && !isPlaythrough ? metaById : null}
                     currentTeam={currentTeam}
                     teamName={teamName}
                     setTeamName={setTeamName}
@@ -913,6 +919,7 @@ export function TeamBuilderView({
                         </div>}
                     </section>
 
+                    <BuilderCoach teamSize={currentTeam.length} />
                     <section className="card tb-analysis">
                         <div role="tablist" aria-label={t('builder.analysisTitle')} className="tabs">
                             {[
@@ -1138,6 +1145,7 @@ export function TeamBuilderView({
                                                             isSuggested={synergyReasonById.has(pokemon.id)}
                                                             isFavorite={favoritePokemons.has(pokemon.id)}
                                                             onToggleFavorite={onToggleFavoritePokemon}
+                                                            usage={isRanked && !isPlaythrough ? metaById?.[pokemon.id]?.usage : undefined}
                                                         />
                                                     ))}
                                                 </React.Fragment>
@@ -1156,6 +1164,7 @@ export function TeamBuilderView({
                                                         synergyReason={pokemon.primary}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
                                                         onToggleFavorite={onToggleFavoritePokemon}
+                                                        usage={isRanked && !isPlaythrough ? metaById?.[pokemon.id]?.usage : undefined}
                                                     />
                                                 ))}
                                                 {suggestionHeading && <h4 className="pokedex-section-title pokedex-section-title--national">{t('builder.allPokemonHeading')}</h4>}
@@ -1171,6 +1180,7 @@ export function TeamBuilderView({
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
                                                         onToggleFavorite={onToggleFavoritePokemon}
+                                                        usage={isRanked && !isPlaythrough ? metaById?.[pokemon.id]?.usage : undefined}
                                                     />
                                                 ))}
                                             </>

@@ -61,11 +61,11 @@ used already, ☐ = proposed.
 | Pattern | What makes it work | Where it fits here |
 |---|---|---|
 | **Figure + muted word** ("1,240 Followers · 48 Following", "350 XP") | The number carries, the label whispers; no boxes | ✅ trainer card stats · ☐ Profile hero, Journeys totals |
-| **Ranked rows** — avatar, name, a small sub-line, the rank in accent on the right (#13) | The rank is the one coloured thing in the row | ☐ Champion Challenge ranking, forum "top trainers" |
-| **Podium** — #2 · #1 · #3 with the centre raised and the winner's tile filled | Hierarchy without a table | ☐ Ranking top three, Team of the Week |
-| **Quest list** — round icon, title, sub, the reward as a pill on the right; a ready reward is an inverted pill ("Claim +100"), a pending one is coloured text ("+150 XP") | Ready vs not-yet is legible at a glance, and the ready one is the only button | ☐ Journeys missions, the daily check-in rewards |
+| **Ranked rows** — avatar, name, a small sub-line, the rank in accent on the right (#13) | The rank is the one coloured thing in the row | ✅ Champion Challenge ranking rows (place 4+) · ☐ forum "top trainers" |
+| **Podium** — #2 · #1 · #3 with the centre raised and the winner's tile filled | Hierarchy without a table | ✅ Champion Challenge ranking top three (`.challenge-podium`) · ☐ Team of the Week |
+| **Quest list** — round icon, title, sub, the reward as a pill on the right; a ready reward is an inverted pill ("Claim +100"), a pending one is coloured text ("+150 XP") | Ready vs not-yet is legible at a glance, and the ready one is the only button | ✅ Journeys missions (`.mission__reward`: gold pill when earned, primary text when pending — XP is automatic here, so nothing to "claim") · ☐ the daily check-in rewards |
 | **Multi-select avatar tiles** with a check badge in the corner | Selection is a mark, not a recolour of the whole tile | ☐ onboarding interests (now a ring), favourites/teams compare picker |
-| **Inverted chip for the selected value** in an amount row ($10 **$50** $100 Max) | The choice reads instantly on any theme | ☐ EV presets, level/regulation chips |
+| **Inverted chip for the selected value** in an amount row ($10 **$50** $100 Max) | The choice reads instantly on any theme | ☐ the builder has no EV presets yet — regulation chips first |
 | **Composer with entity chips** and a quiet quota ("2 free today") beside a round send button | The input shows what is attached and what is left | ☐ PokéPuzzle guess bar, forum composer with Pokémon chips |
 | **Split progress bar** (green / red ends) | A ratio in one line, no axis | ☐ meta usage win-rate, matchup previews |
 | **Action pills with a status dot** (Send ●, Swap ●) | State without a second control | ☐ filter pills with "active" dots |

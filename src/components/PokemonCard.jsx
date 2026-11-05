@@ -36,6 +36,8 @@ export const PokemonCard = React.memo(function PokemonCard({
     // bar under it) and details move to a small info button. The Pokédex keeps
     // the default — the card opens the entry.
     addOnClick = false,
+    // Builder, ranked trainers (trainer profile): the meta's usage share.
+    usage,
 }) {
     const shiny = useShinyBurst();
     const { t } = useTranslation();
@@ -141,6 +143,11 @@ export const PokemonCard = React.memo(function PokemonCard({
             </div>
 
             <div className="pokemon-card__media" data-hero-source={details.id}>
+                {Number.isFinite(usage) && usage > 0 && (
+                    <span className="pokemon-card__usage" title={t('builder.usageShort', { n: usage.toFixed(1) })}>
+                        {usage >= 10 ? Math.round(usage) : usage.toFixed(1)}%
+                    </span>
+                )}
                 <Sprite src={getPokemonDisplaySprite(details)} artworkSrc={getPokemonArtworkSpriteUrl(details.id)} alt={details.name} className="w-full h-full" />
             </div>
             <p className="pokemon-card__name">{details.name}</p>

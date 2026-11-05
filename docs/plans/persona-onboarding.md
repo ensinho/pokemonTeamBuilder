@@ -133,3 +133,19 @@ banner on every main doc. Then four asks:
 ☐ Open from round 2: show the card from the Champion ranking (rows carry no
 uid yet), the Home's community posts and battle opponents; a "copy sheet as
 text" (Showdown paste) beside the image.
+
+## 6. Round 3 (2026-11-05, branch `claude/persona-round3`)
+
+Enzo approved the whole follow-up list. Built ✅:
+
+| Item | What |
+|---|---|
+| Card everywhere | Champion ranking detail, battle opponents, Home community avatars (see trainer_profile.md "Round 3") |
+| Home by persona | `personaHomeOrder` |
+| Inspirations | Ranking podium (top three, the one gold), mission reward pills |
+| Builder by level | `BuilderCoach` for beginners; ranked: threats tab first + usage % on picker cards |
+| Grouped settings | Profile → Aparência: `DisclosureRow` (value at the row's end, control opens under it); account menu grouped Conta / Preferências / Novidades, sign out last |
+
+☐ Still open: the inverted chip (no EV presets exist to use it — regulation
+chips are the next candidate); persona journeys; ⌘K page ranking; push topic
+defaults; a Pokédex-progress block for the Viajante's Home.
