@@ -31,6 +31,7 @@ import { useRewardsStore } from './useRewardsStore';
 import { isCrawler } from '../utils/crawler';
 import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
+import { wipeBrowserUserStorage, LEFT_SESSION_KEY } from '../utils/sessionWipe';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -290,6 +291,12 @@ export const useAuthStore = create((set, get) => {
     let syncNudgeTimer = null;
     let detachActiveDayListener = null;
     let profileHydratedFromFirestore = false;
+    // True from the moment an account starts leaving until the page reloads.
+    // Firebase reports "no user" as soon as signOut/deleteUser lands; without
+    // this the null branch below would sign a guest in on top of the old
+    // trainer's in-memory state, and the preferences sync would copy that
+    // state (name, streak, check-ins…) into the guest's account.
+    let leavingSession = false;
 
     // Read once at store creation. If present, the app boots as "ready" with
     // the last-known identity instead of waiting on the network round-trips;
@@ -352,6 +359,16 @@ export const useAuthStore = create((set, get) => {
 
         initAuth: () => {
             if (authUnsubscribe) return;
+
+            // The page before this one was an account leaving (leaveSession):
+            // say so now, since its own toast died with the reload.
+            try {
+                const left = sessionStorage.getItem(LEFT_SESSION_KEY);
+                if (left) {
+                    sessionStorage.removeItem(LEFT_SESSION_KEY);
+                    setTimeout(() => toast.info(t(left === 'deleted' ? 'toast.accountDeleted' : 'toast.signedOut')), 0);
+                }
+            } catch (_) { /* storage blocked: no hand-off, no toast */ }
 
             authUnsubscribe = onAuthStateChanged(auth, async (user) => {
                 profileHydratedFromFirestore = false;
@@ -548,6 +565,9 @@ export const useAuthStore = create((set, get) => {
                         });
                     }
                 } else {
+                    // An account is leaving: the reload in leaveSession starts
+                    // the guest from a clean page instead.
+                    if (leavingSession) return;
                     // Sign in anonymously if no user. Before the first sign-in
                     // of this browser there is nothing to hydrate, so let the
                     // shell paint now (see isNewVisitor).
@@ -1022,26 +1042,41 @@ export const useAuthStore = create((set, get) => {
             await deleteUserData(user.uid);
             onStage('account');
             clearAuthSnapshot();
-            await deleteUser(user);
+            leavingSession = true;
             try {
-                localStorage.removeItem('ptbActiveTeamId');
-            } catch (_) { /* ignore */ }
+                await deleteUser(user);
+            } catch (e) {
+                leavingSession = false;
+                throw e;
+            }
             onStage('done');
             await get().leaveSession('deleted');
-            toast.info(t('toast.accountDeleted'));
         },
 
-        // Shows the transition, holds it long enough to be read, lands on Home.
+        // Shows the transition, holds it long enough to be read, then erases
+        // the trainer from this device (utils/sessionWipe.js) and reloads Home,
+        // so the guest that follows starts from nothing: every store re-reads
+        // the emptied storage, every listener of the old account is gone. The
+        // cover stays up through the reload; the toast is handed to the next
+        // page (LEFT_SESSION_KEY, read in initAuth).
         leaveSession: async (kind, work) => {
+            leavingSession = true;
             set({ sessionTransition: { kind } });
             const minimum = new Promise((resolve) => setTimeout(resolve, 900));
             try {
                 await Promise.all([work?.(), minimum]);
-                navigateTo('/');
-            } finally {
-                // One more beat so Home has painted under the cover before it lifts.
-                setTimeout(() => set({ sessionTransition: null }), 250);
+            } catch (e) {
+                leavingSession = false;
+                set({ sessionTransition: null });
+                throw e;
             }
+            // Home first, so a view with a beforeunload guard (a quiz mid-run)
+            // has unmounted before the reload asks it.
+            navigateTo('/');
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            wipeBrowserUserStorage();
+            try { sessionStorage.setItem(LEFT_SESSION_KEY, kind); } catch (_) { /* no toast then */ }
+            window.location.reload();
         },
 
         handleSignOut: async () => {
@@ -1050,8 +1085,12 @@ export const useAuthStore = create((set, get) => {
                 // can't briefly boot as the logged-in user. onAuthStateChanged
                 // will then write a fresh anonymous snapshot.
                 clearAuthSnapshot();
-                await get().leaveSession('signOut', () => signOut(auth));
-                toast.info(t('toast.signedOut'));
+                const { userId, isAnonymous } = get();
+                await get().leaveSession('signOut', async () => {
+                    // This device stops receiving the account's pushes.
+                    if (userId && !isAnonymous) await disablePush({ userId });
+                    await signOut(auth);
+                });
             } catch (e) {
                 toast.error(t('toast.signOutError'), {
                     actions: [{ label: t('toast.retry'), onClick: () => get().handleSignOut() }],

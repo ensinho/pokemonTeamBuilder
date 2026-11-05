@@ -88,7 +88,7 @@ All documents are namespaced under `artifacts/${appId}/` (`appId` from `VITE_APP
 - `users/{userId}/teams`, `users/{userId}/quizRuns` — per-user private data.
 - `public/data/teams`, `public/data/forumTopics/{topicId}/messages` — shared/forum content.
 
-Leaving a session (sign out, account deleted) goes through `leaveSession()` in `useAuthStore`: it shows the full-screen `SessionTransition`, waits for the work, and lands on Home — never sign out from a component with a bare `signOut(auth)`. The account dialogs (sign in, change password, delete) share `src/components/modals/auth/AuthDialogShell.jsx`, one accent token per dialog (`src/styles/auth-dialog.css`).
+Leaving a session (sign out, account deleted) goes through `leaveSession()` in `useAuthStore`: it shows the full-screen `SessionTransition`, waits for the work, **erases the trainer from Web Storage (`src/utils/sessionWipe.js` — everything but the device settings in `DEVICE_KEYS`) and reloads Home**, so the guest that follows inherits nothing (2026-11-05: it used to keep the streak and post under the old name). A new localStorage key is the trainer's by default; add it to `DEVICE_KEYS` only if it describes the device (look, language, sound, consent) — never sign out from a component with a bare `signOut(auth)`. The account dialogs (sign in, change password, delete) share `src/components/modals/auth/AuthDialogShell.jsx`, one accent token per dialog (`src/styles/auth-dialog.css`).
 
 Account deletion (Profile → Conta → Excluir conta) erases the user's data client-side via `src/services/accountDeletion.js`. **A new collection under `users/{uid}/` must be added to its `USER_COLLECTIONS`**, or deleting an account leaves it behind.
 

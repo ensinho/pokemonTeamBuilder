@@ -14,6 +14,19 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-05 — Signing out kept the trainer: streak, check-ins, forum name `bug`
+- **Symptom:** after "Sign out", Home still showed the 19-day streak, the check-ins and the trainer level, and a forum reply posted as the guest appeared as **@ensinho**.
+- **Root cause:** `signOut` made Firebase report "no user", and the null branch of `onAuthStateChanged` immediately signed a **new anonymous account** in — on top of the old trainer's in-memory store state and localStorage (`trainerStreak`, `ptb:checkin`, `ptb:rewards`, journeys, drafts, game runs…). The post-hydration `syncPreferencesToFirestore` then wrote that state, `displayName` included, into the guest's preferences doc. `leaveSession` only navigated to Home.
+- **Fix:** `leaveSession` sets a `leavingSession` latch (the null branch no longer signs a guest in mid-exit), then wipes Web Storage through `src/utils/sessionWipe.js` (all keys except `DEVICE_KEYS`: theme, language, scale, consent, sound, layout; plus the public PokéAPI cache) and reloads Home, so every store re-reads empty storage and every old listener dies. The "signed out" / "account deleted" toast is handed to the next page via `sessionStorage` `ptb:leftSession`. Sign-out also unsubscribes this device from the account's Web Push. Guests already polluted by an earlier sign-out keep what was copied into them; signing out again cleans the device.
+- **Correct pattern:** **leaving an account is a reload from clean storage, never an in-place reset** — there are a dozen stores reading localStorage at creation, and resetting each by hand is the list someone forgets to extend. New localStorage keys are the trainer's unless added to `DEVICE_KEYS`.
+- **Files:** `src/store/useAuthStore.js`, `src/utils/sessionWipe.js`
+
+### 2026-11-05 — Blocked storage could blank the app at boot `bug`
+- **Symptom (latent):** with Web Storage blocked or full, `main.jsx`'s theme read, the patch-notes effect in `AppLayout` and the builder guide's "don't show again" threw — a white screen at boot, a dialog that wouldn't close.
+- **Fix:** `src/utils/safeStorage.js` (`readLocal` / `writeLocal` / `removeLocal`, never throw), used at those sites.
+- **Correct pattern:** a read or write of a preference in a boot path, effect or click handler goes through `safeStorage` or its own try/catch.
+- **Files:** `src/utils/safeStorage.js`, `src/main.jsx`, `src/components/AppLayout.jsx`, `src/components/modals/TeamBuilderOnboardingModal.jsx`
+
 ### 2026-11-05 — The builder crashed with QuotaExceededError on 'tb-filters-expanded' `bug`
 - **Symptom:** opening `/builder` threw `Uncaught QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'tb-filters-expanded' exceeded the quota` from `TeamBuilderView`, and the view died. The value is one character.
 - **Root cause:** `pokemonDataCache.writeStored` put **raw PokéAPI responses** (moves, abilities, items, species — 50–200 KB each, 30-day TTL) and 190 KB static files (`items.json`, `games.json`) into localStorage. A few pages of the Moves/Abilities lists (one raw response cached per visible row) can fill the shared ~5 MB quota on their own (inferred from the code — the user's storage wasn't inspected), so the next unguarded `setItem` anywhere threw. Same shape as the 2026-06-18 PokePuzzle wound: the fix then removed one big file; the writer itself stayed uncapped.

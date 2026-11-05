@@ -12,9 +12,10 @@ import { loadLanguage } from './i18n/catalog'
 import { mirrorLanguageInUrl } from './services/localeHistory'
 import { initAnalytics } from './services/analytics'
 import { installAssetFallback } from './utils/assetHost'
+import { readLocal } from './utils/safeStorage'
 
 // Initialize theme from localStorage before first render so CSS vars are set.
-const savedTheme = localStorage.getItem('theme') || 'dark';
+const savedTheme = readLocal('theme') || 'dark';
 applyTheme(savedTheme);
 
 // Routing used to be hash-based (#/pokemon/25); real paths are what search
