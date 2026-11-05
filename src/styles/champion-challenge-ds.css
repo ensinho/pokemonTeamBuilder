@@ -3076,12 +3076,56 @@
     height: 50%;
 }
 
-/* Whose board: the champion's face and name, the heading of the rail. */
+/* Whose board: the champion's face and name, the heading of the rail — and
+   the switch to the other champion's board (the chip says who). */
 .challenge-rank__head {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    width: 100%;
     min-width: 0;
+}
+
+.challenge-rank__head.is-switch {
+    margin: calc(-1 * var(--space-1_5));
+    padding: var(--space-1_5);
+    width: calc(100% + 2 * var(--space-1_5));
+    border: none;
+    border-radius: var(--radius-md);
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.challenge-rank__head.is-switch:hover {
+    background: var(--color-surface-hover);
+}
+
+.challenge-rank__swap {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+    max-width: 50%;
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+}
+
+.challenge-rank__swap > svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--color-primary-text);
+}
+
+.challenge-rank__head.is-switch:hover .challenge-rank__swap {
+    background: var(--color-surface-active);
 }
 
 .challenge-rank__champ {
@@ -3092,6 +3136,13 @@
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     box-shadow: var(--ring-primary);
+}
+
+/* The chip's face: who a click brings up. */
+.challenge-rank__champ.is-xs {
+    width: 1.25rem;
+    height: 1.25rem;
+    box-shadow: none;
 }
 
 /* An 80 × 80 trainer sprite, cropped to the head and shoulders. */

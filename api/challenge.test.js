@@ -299,6 +299,13 @@ describe('POST /api/challenge', () => {
         await call({ action: 'forfeit', runId: blue.body.runId });
         expect(fake.store.get(`${BASE}/public/data/challengeRanks/2026-10-14_blue`).played).toEqual({ daily: 1, free: 0 });
         expect(fake.store.get(`${BASE}/public/data/challengeRanks/2026-10-14`).played).toEqual({ daily: 1, free: 1 });
+        // Either champion's state carries both rankings, each its own and without uids.
+        const both = (await call({ action: 'state', championId: 'cynthia' })).body;
+        expect(Object.keys(both.ranksByChampion)).toEqual(['cynthia', 'blue']);
+        expect(both.ranksByChampion.cynthia.played).toEqual({ daily: 1, free: 1 });
+        expect(both.ranksByChampion.blue.played).toEqual({ daily: 1, free: 0 });
+        expect(both.ranks).toEqual(both.ranksByChampion.cynthia);
+        expect(JSON.stringify(both.ranksByChampion)).not.toContain(UID);
         const stats = fake.store.get(`${BASE}/challengeStats/${UID}`);
         expect(stats.played).toBe(1);
         expect(stats.champions.blue).toMatchObject({ played: 1, losses: 1 });

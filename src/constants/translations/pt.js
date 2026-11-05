@@ -2142,6 +2142,7 @@ export default {
         ranking: {
             chip: 'Ranking',
             title: 'Ranking de hoje',
+            switchTo: 'Ver o ranking de {{name}}',
             daily: 'Time do dia',
             free: 'Times próprios',
             empty: 'Ninguém venceu hoje ainda — seja o primeiro.',
