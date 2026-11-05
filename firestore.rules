@@ -59,6 +59,21 @@ service cloud.firestore {
         // NOTE: optional fields are read via `.get(key, default)`. Reading an
         // absent key off `request.resource.data` directly raises an error (which
         // denies the write), so `x == null ||` would *not* be a safe shorthand.
+        // The trainer card's fields (2026-11-05): the streak as the check-in
+        // keeps it, the persona from the onboarding, the month they joined.
+        function validTrainerCard(d) {
+          let streak = d.get('streak', null);
+          let persona = d.get('persona', null);
+          let memberSince = d.get('memberSince', null);
+          return (streak == null || (streak is map
+                && streak.keys().hasOnly(['count', 'lastVisit', 'shields'])
+                && streak.get('count', 0) is int && streak.get('count', 0) >= 0 && streak.get('count', 0) <= 100000
+                && (streak.get('lastVisit', null) == null || (streak.get('lastVisit', '') is string && streak.get('lastVisit', '').size() == 10))
+                && streak.get('shields', 0) is int && streak.get('shields', 0) >= 0 && streak.get('shields', 0) <= 2))
+            && (persona == null || persona in ['strategist', 'traveler', 'challenger', 'master'])
+            && (memberSince == null || (memberSince is string && memberSince.size() <= 10));
+        }
+
         function validPublicProfile() {
           let d = request.resource.data;
           let avatarId = d.get('avatarPokemonId', null);
@@ -71,9 +86,6 @@ service cloud.firestore {
           let frameId = d.get('frameId', null);
           let titleId = d.get('titleId', null);
           let trainerLevel = d.get('trainerLevel', 1);
-          let streak = d.get('streak', null);
-          let persona = d.get('persona', null);
-          let memberSince = d.get('memberSince', null);
           let record = d.get('battleRecord', { 'wins': 0, 'losses': 0 });
           let priorRecord = resource == null
             ? { 'wins': 0, 'losses': 0 }
@@ -106,15 +118,9 @@ service cloud.firestore {
                 'title_elite', 'title_veteran', 'title_legend'
               ])
             && trainerLevel is int && trainerLevel >= 1 && trainerLevel <= 99
-            // The trainer card (2026-11-05): the streak as the check-in keeps
-            // it, the persona from the onboarding, and the month they joined.
-            && (streak == null || (streak is map
-                && streak.keys().hasOnly(['count', 'lastVisit', 'shields'])
-                && streak.get('count', 0) is int && streak.get('count', 0) >= 0 && streak.get('count', 0) <= 100000
-                && (streak.get('lastVisit', null) == null || (streak.get('lastVisit', '') is string && streak.get('lastVisit', '').size() == 10))
-                && streak.get('shields', 0) is int && streak.get('shields', 0) >= 0 && streak.get('shields', 0) <= 2))
-            && (persona == null || persona in ['strategist', 'traveler', 'challenger', 'master'])
-            && (memberSince == null || (memberSince is string && memberSince.size() <= 10))
+            // The trainer card (2026-11-05). Its own function: the rules
+            // language allows 10 variables per function, and this one has 9.
+            && validTrainerCard(d)
             && d.updatedAt is string
             // Win/loss is written by the battle resolver (admin SDK, which
             // bypasses these rules). A client may only ever leave it untouched,
