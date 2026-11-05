@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronsUp, Crown, Flame, Star, Swords, Trophy } from 'lucide-react';
 
 import { useTranslation } from '../../../../hooks/useTranslation';
@@ -217,7 +218,11 @@ export function DsVersus({ left, right, variant = 'rival', reducedMotion = false
         return () => window.removeEventListener('keydown', onKey, true);
     }, [leave]);
 
-    return (
+    // Drawn on <body>: it is mounted inside the console's screen, whose
+    // `contain: layout paint` makes that screen the containing block of a
+    // `position: fixed` card — the viewport-sized band then sat off-centre and
+    // clipped inside the screen (wound 2026-11-04).
+    return createPortal(
         <div
             className={`ds-vs is-${variant} ${reducedMotion ? 'is-reduced' : ''} ${leaving ? 'is-leaving' : ''}`}
             onPointerDown={leave}
@@ -250,6 +255,7 @@ export function DsVersus({ left, right, variant = 'rival', reducedMotion = false
             </div>
             <span className="ds-vs__flash" aria-hidden="true" />
             <span className="ds-vs__skip" aria-hidden="true">{t('battle.stage.versusSkip')}</span>
-        </div>
+        </div>,
+        document.body,
     );
 }
