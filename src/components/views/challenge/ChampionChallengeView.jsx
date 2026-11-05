@@ -35,6 +35,7 @@ import { ChallengeRanking, ChallengeRankingSheet } from './ChallengeRanking';
 import { ChallengeTeamsRail } from './ChallengeTeamsRail';
 import '../../../styles/champion-challenge-ds.css';
 import { ReminderOffer } from '../../ReminderOffer';
+import { nudgeSupport } from '../../../services/supportNudge';
 
 const WALKED_KEY = 'ptb:challenge:walked';
 
@@ -183,7 +184,11 @@ export function ChampionChallengeView() {
         badges: championBadges,
     }), [championName, difficultyLabel, championBadges, t]);
 
-    const handleFinished = useCallback(() => setStage('result'), []);
+    const handleFinished = useCallback(() => {
+        setStage('result');
+        // After the result has landed, so the coffee never covers the outcome.
+        window.setTimeout(() => nudgeSupport('challenge'), 2500);
+    }, []);
 
     // One keyboard for the console; each stage takes it in turn.
     useConsoleInput({

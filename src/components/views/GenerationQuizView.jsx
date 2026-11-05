@@ -31,6 +31,7 @@ import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { Loader } from '../Loader';
 import { toast } from '../../store/useToastStore';
+import { nudgeSupport } from '../../services/supportNudge';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -565,6 +566,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const closeCelebration = useCallback(() => {
         setIsCelebrationOpen(false);
         checkBadgeRef.current?.();
+        nudgeSupport('quiz_generation');
     }, []);
 
     const commitFoundPokemon = useCallback((pokemonId) => {

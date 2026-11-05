@@ -6,6 +6,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { useToastStore, toast } from '../../store/useToastStore';
+import { nudgeSupport } from '../../services/supportNudge';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { RefreshIcon, CloseIcon } from '../icons';
@@ -615,6 +616,10 @@ export default function PokePuzzleView() {
         } else if (nextCount >= MAX_ATTEMPTS) {
             setEndedNow(true);
             setStatus('LOST');
+        }
+        // Win or loss, once the result card has been read.
+        if (norm === targetNormalized || nextCount >= MAX_ATTEMPTS) {
+            window.setTimeout(() => nudgeSupport('puzzle'), 3000);
         }
     };
 

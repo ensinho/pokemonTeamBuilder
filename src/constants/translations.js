@@ -1,5 +1,10 @@
 export const TRANSLATIONS = {
     en: {
+        supportNudge: {
+            title: 'Enjoyed that one?',
+            description: 'PokemonBuilder is free and made by a fan. A coffee helps me come up with more ideas and keep building it.',
+            cta: 'Buy me a coffee',
+        },
         reminderOffer: {
             puzzle: 'Want a nudge when tomorrow\'s puzzle is out?',
             challenge: 'Want a nudge when Cynthia picks tomorrow\'s team?',
@@ -3013,6 +3018,11 @@ export const TRANSLATIONS = {
         }
     },
     pt: {
+        supportNudge: {
+            title: 'Curtiu essa?',
+            description: 'O PokemonBuilder é gratuito e feito por um fã. Um café me ajuda a criar mais ideias e continuar construindo.',
+            cta: 'Me pague um café',
+        },
         reminderOffer: {
             puzzle: 'Quer um aviso quando sair o puzzle de amanhã?',
             challenge: 'Quer um aviso quando a Cynthia montar o time de amanhã?',
