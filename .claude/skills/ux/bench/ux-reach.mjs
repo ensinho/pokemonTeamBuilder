@@ -3,19 +3,29 @@
 //   node ux-reach.mjs --port 4181 --out reach-base.json
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
+import path from 'node:path';
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i > -1 ? process.argv[i + 1] : d; };
 const PORT = arg('port', '4181');
 const OUT = arg('out', 'reach.json');
-const BASE = `http://localhost:${PORT}/pokemonTeamBuilder`;
+// The patch-notes dialog opens over everything until its current version is seen,
+// so read the version from the repo (--repo, default the cwd) instead of pinning one.
+const PATCH_NOTES = (() => {
+  try { return fs.readFileSync(path.resolve(arg('repo', '.'), 'src/constants/theme.js'), 'utf8').match(/PATCH_NOTES_VERSION = '([^']+)'/)[1]; }
+  catch { return '999.0.0'; }
+})();
+
+// The language is in the URL (LocaleRouter): Portuguese lives under /pt, the root is English.
+// localStorage "language" no longer decides it, and every label this script clicks is PT.
+const BASE = `http://localhost:${PORT}/pokemonTeamBuilder${arg('locale', 'pt') === 'en' ? '' : '/pt'}`;
 
 // Destination → URL fragment that proves we arrived.
 const DEST = {
   'Construtor': '/builder', 'Pokédex': '/pokedex', 'Meus times': '/favorites', 'Pokémon favoritos': 'tab=pokemon',
   'Fórum': '/feed', 'Meta': '/meta', 'Torneios': '/tournaments', 'Calculadora': '/damage-calculator',
   'Velocidades': '/speed-tiers', 'Movimentos': '/moves', 'Habilidades': '/abilities', 'Itens': '/items',
-  'Ginásios': '/gyms', 'PokéPuzzle': '/pokepuzzle', 'Quiz de gerações': '/quiz', 'PokéQuiz': '/guesser',
-  'PokéRoom': '/pokeroom', 'Amigos': '/friends', 'Batalhas': '/battles', 'Perfil': '/profile',
+  'Ginásios': '/gyms', 'PokéPuzzle': '/pokepuzzle', 'Quiz de gerações': '/quiz',
+  'Amigos': '/friends', 'Batalhas': '/battles', 'Perfil': '/profile',
 };
 
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
@@ -85,7 +95,7 @@ for (const vp of ['desktop', 'mobile']) {
   const ctx = await browser.newContext(vp === 'mobile'
     ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' }
     : { viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
-  await ctx.addInitScript(() => { localStorage.setItem('patchNotesVersion', '1.13.0'); localStorage.setItem('tb-onboarding-seen', '1'); localStorage.setItem('language', 'pt'); localStorage.setItem('syncPromptDismissed', '1'); localStorage.removeItem('ptb-sidebar-open-groups'); localStorage.removeItem('ptb-sidebar-collapse-pref'); });
+  await ctx.addInitScript((patchNotes) => { localStorage.setItem('patchNotesVersion', patchNotes); localStorage.setItem('tb-onboarding-seen', '1'); localStorage.setItem('language', 'pt'); localStorage.setItem('syncPromptDismissed', '1'); localStorage.setItem('ptb:landingSeen', '1'); localStorage.removeItem('ptb-sidebar-open-groups'); localStorage.removeItem('ptb-sidebar-collapse-pref'); }, PATCH_NOTES);
   await ctx.route(/firestore\.googleapis\.com.*(\/Write\/|:commit)/, (r) => (/public(%2F|\/)/i.test(r.request().postData() || '') ? r.abort() : r.continue()));
   const page = await ctx.newPage();
   await page.goto(BASE + '/'); await page.waitForSelector('.app-shell'); await page.waitForTimeout(3000);
