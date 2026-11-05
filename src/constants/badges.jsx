@@ -1,5 +1,6 @@
 import React from 'react';
 import { JOURNEYS_BY_ID } from '../utils/journeys';
+import { fewestWinsOverAChampion } from '../utils/challengeRecord';
 
 /**
  * High-fidelity Vector SVGs for Pokémon Trainer Badges (Gym Badges & Achievements)
@@ -613,6 +614,17 @@ const journeyBadge = (journeyId) => {
     };
 };
 
+// A Champion Challenge badge: `read` takes the record (`stats.challenge`, from
+// the trainer's official runs — utils/challengeRecord.js) to one count.
+const challengeBadge = (read, target) => ({
+    targetCount: target,
+    getProgress: (stats) => {
+        const current = stats.challenge ? read(stats.challenge) : 0;
+        return { current: Math.min(current, target), target, percent: Math.min(100, Math.round((current / target) * 100)) };
+    },
+    checkUnlocked: (stats) => Boolean(stats.challenge) && read(stats.challenge) >= target,
+});
+
 /**
  * Registry of all available Trainer Badges with requirements and criteria.
  * The journey badges come first: they are the path a new trainer is on, so
@@ -689,6 +701,119 @@ export const BADGES_LIST = [
         ...journeyBadge('league'),
         Icon: createEmblemSvg({ id: 'emJourney5', shape: 'hexagon', from: '#d8b4fe', to: '#7c3aed', rim: '#4c1d95', glyph: 'crown' }),
         accentColor: '#7c3aed',
+    },
+    {
+        id: 'badge_journey_champions',
+        key: 'journey_champions',
+        nameEn: 'Master of Champions',
+        namePt: 'Mestre dos Campeões',
+        descEn: 'Cynthia and Blue, the Daily team and both in one day. Earned by finishing The two Champions journey.',
+        descPt: 'Cynthia e Blue, o Time do dia e os dois num dia só. Conquistada ao concluir a jornada Os dois Campeões.',
+        reqEn: 'The two Champions journey',
+        reqPt: 'Jornada Os dois Campeões',
+        category: 'journey',
+        ...journeyBadge('champions'),
+        Icon: createEmblemSvg({ id: 'emJourney6', shape: 'hexagon', from: '#fde68a', to: '#d97706', rim: '#78350f', glyph: 'crown' }),
+        accentColor: '#d97706',
+    },
+    // ── Champion Challenge (the trainer's official runs — utils/challengeRecord.js)
+    {
+        id: 'badge_challenge_double',
+        key: 'challenge_double',
+        nameEn: 'Double Crown',
+        namePt: 'Coroa Dupla',
+        descEn: 'Two champions, one day, two wins. Earned by beating Cynthia and Blue on the same day.',
+        descPt: 'Dois campeões, um dia, duas vitórias. Conquistada ao vencer a Cynthia e o Blue no mesmo dia.',
+        reqEn: 'Beat both champions in one day',
+        reqPt: 'Vencer os dois campeões no mesmo dia',
+        category: 'challenge',
+        ...challengeBadge((c) => c.bothWonDays, 1),
+        Icon: createEmblemSvg({ id: 'emChDouble', shape: 'shield', from: '#fde68a', to: '#eab308', rim: '#713f12', glyph: 'crown' }),
+        accentColor: '#eab308',
+    },
+    {
+        id: 'badge_challenge_daily_double',
+        key: 'challenge_daily_double',
+        nameEn: 'Daily Crown',
+        namePt: 'Coroa do Dia',
+        descEn: 'Same six as everyone else, and both champions down. Earned by beating Cynthia and Blue with the Daily team on the same day.',
+        descPt: 'Os mesmos seis de todo mundo, e os dois campeões no chão. Conquistada ao vencer a Cynthia e o Blue com o Time do dia no mesmo dia.',
+        reqEn: 'Both champions with the Daily team, one day',
+        reqPt: 'Os dois campeões com o Time do dia, num dia',
+        category: 'challenge',
+        ...challengeBadge((c) => c.bothDailyWonDays, 1),
+        Icon: createEmblemSvg({ id: 'emChDailyDouble', shape: 'hexagon', from: '#c4b5fd', to: '#7c3aed', rim: '#3b0764', glyph: 'swords' }),
+        accentColor: '#7c3aed',
+    },
+    {
+        id: 'badge_challenge_daily_double_5',
+        key: 'challenge_daily_double_5',
+        nameEn: 'Master of the Room',
+        namePt: 'Dono da Sala',
+        descEn: 'They know your footsteps by now. Earned by beating both champions with the Daily team on 5 different days.',
+        descPt: 'Eles já reconhecem os seus passos. Conquistada ao vencer os dois campeões com o Time do dia em 5 dias diferentes.',
+        reqEn: '5 days beating both with the Daily team',
+        reqPt: '5 dias vencendo os dois com o Time do dia',
+        category: 'challenge',
+        ...challengeBadge((c) => c.bothDailyWonDays, 5),
+        Icon: createEmblemSvg({ id: 'emChDailyDouble5', shape: 'diamond', from: '#a5b4fc', to: '#4f46e5', rim: '#1e1b4b', glyph: 'crown' }),
+        accentColor: '#4f46e5',
+    },
+    {
+        id: 'badge_challenge_sweep',
+        key: 'challenge_sweep',
+        nameEn: 'Grand Slam',
+        namePt: 'Grand Slam',
+        descEn: 'Every board, every champion, one day. Earned by winning all four official battles of a day — both champions, with the Daily team and with your own team.',
+        descPt: 'Todos os rankings, todos os campeões, um dia. Conquistada ao vencer as quatro batalhas oficiais de um dia — os dois campeões, com o Time do dia e com um time seu.',
+        reqEn: 'All four officials won in one day',
+        reqPt: 'As quatro oficiais vencidas num dia',
+        category: 'challenge',
+        ...challengeBadge((c) => c.sweepDays, 1),
+        Icon: createEmblemSvg({ id: 'emChSweep', shape: 'diamond', from: '#fef08a', to: '#f59e0b', rim: '#78350f', glyph: 'star' }),
+        accentColor: '#f59e0b',
+    },
+    {
+        id: 'badge_challenge_daily_10',
+        key: 'challenge_daily_10',
+        nameEn: 'Daily Team Ace',
+        namePt: 'Ás do Time do Dia',
+        descEn: 'A new team every day, and you make it work. Earned by winning 10 official battles with the Daily team.',
+        descPt: 'Um time novo a cada dia, e você faz funcionar. Conquistada ao vencer 10 batalhas oficiais com o Time do dia.',
+        reqEn: '10 wins with the Daily team',
+        reqPt: '10 vitórias com o Time do dia',
+        category: 'challenge',
+        ...challengeBadge((c) => c.dailyTeamWins, 10),
+        Icon: createEmblemSvg({ id: 'emChDaily10', shape: 'circle', from: '#5eead4', to: '#0d9488', rim: '#134e4a', glyph: 'calendar' }),
+        accentColor: '#0d9488',
+    },
+    {
+        id: 'badge_challenge_rivals_5',
+        key: 'challenge_rivals_5',
+        nameEn: 'Worthy Rival',
+        namePt: 'Rival à Altura',
+        descEn: 'Neither of them is a fluke anymore. Earned by beating Cynthia 5 times and Blue 5 times.',
+        descPt: 'Nenhum dos dois é mais sorte. Conquistada ao vencer a Cynthia 5 vezes e o Blue 5 vezes.',
+        reqEn: '5 wins over each champion',
+        reqPt: '5 vitórias sobre cada campeão',
+        category: 'challenge',
+        ...challengeBadge(fewestWinsOverAChampion, 5),
+        Icon: createEmblemSvg({ id: 'emChRivals5', shape: 'shield', from: '#fca5a5', to: '#dc2626', rim: '#7f1d1d', glyph: 'swords' }),
+        accentColor: '#dc2626',
+    },
+    {
+        id: 'badge_challenge_flawless',
+        key: 'challenge_flawless',
+        nameEn: 'Not a Scratch',
+        namePt: 'Sem Arranhões',
+        descEn: 'All six walked out of the battle. Earned by beating a champion without losing a Pokémon.',
+        descPt: 'Os seis saíram da batalha de pé. Conquistada ao vencer um campeão sem perder nenhum Pokémon.',
+        reqEn: 'Win with all six standing',
+        reqPt: 'Vencer com os seis de pé',
+        category: 'challenge',
+        ...challengeBadge((c) => c.flawlessWins, 1),
+        Icon: createEmblemSvg({ id: 'emChFlawless', shape: 'circle', from: '#bae6fd', to: '#0284c7', rim: '#0c4a6e', glyph: 'heart' }),
+        accentColor: '#0284c7',
     },
     {
         id: 'badge_boulder',
@@ -1078,4 +1203,21 @@ export const isBadgeUnlocked = (badgeId, stats) => {
     const badge = getBadgeById(badgeId);
     if (!badge || !stats) return false;
     return badge.checkUnlocked(stats);
+};
+
+/**
+ * The Champion Challenge badges a battle just earned: locked with `before`,
+ * unlocked with `after` (both utils/challengeRecord.js records) — the
+ * challenge category and the journey that is all challenge. Most valuable
+ * first is not attempted; the list order is the gallery's.
+ */
+export const challengeBadgesEarned = (before, after) => {
+    if (!before || !after) return [];
+    const champions = JOURNEYS_BY_ID.champions;
+    const journeyDone = (record) => champions.missions.every((mission) => mission.done({ challenge: record }));
+    return BADGES_LIST.filter((badge) => {
+        if (badge.id === champions.badgeId) return !journeyDone(before) && journeyDone(after);
+        if (badge.category !== 'challenge') return false;
+        return !badge.checkUnlocked({ challenge: before }) && badge.checkUnlocked({ challenge: after });
+    }).map((badge) => badge.id);
 };

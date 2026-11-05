@@ -118,6 +118,20 @@ export const JOURNEYS = [
             { id: 'equipBadge', to: '/journeys?tab=badges', done: (f) => Boolean(f.selectedBadgeId) },
         ],
     },
+    {
+        // The two champions of the Champion Challenge (2026-11-05, Enzo): beat
+        // each, win with the Time do dia, then both in one day. Read from the
+        // trainer's own official runs (`facts.challenge`, utils/challengeRecord.js).
+        id: 'champions',
+        badgeId: 'badge_journey_champions',
+        missions: [
+            { id: 'beatCynthia', to: '/challenge?champion=cynthia', done: (f) => (f.challenge?.winsBy?.cynthia || 0) >= 1 },
+            { id: 'beatBlue', to: '/challenge?champion=blue', done: (f) => (f.challenge?.winsBy?.blue || 0) >= 1 },
+            { id: 'dailyTeamWin', to: '/challenge', done: (f) => (f.challenge?.dailyTeamWins || 0) >= 1 },
+            { id: 'bothSameDay', to: '/challenge', done: (f) => (f.challenge?.bothPlayedDays || 0) >= 1 },
+            { id: 'dailyDouble', to: '/challenge', done: (f) => (f.challenge?.bothDailyWonDays || 0) >= 1 },
+        ],
+    },
 ];
 
 export const JOURNEYS_BY_ID = Object.fromEntries(JOURNEYS.map((journey) => [journey.id, journey]));

@@ -13,6 +13,7 @@ import { BADGES_LIST, BADGES_BY_ID, getBadgeById } from '../constants/badges';
 import { evaluateJourneys } from '../utils/journeys';
 import { computeTrainerXp } from '../utils/trainerLevel';
 import { useRewardsStore } from '../store/useRewardsStore';
+import { useChallengeRecord } from '../services/challengeRecord';
 
 const CELEBRATED_BADGES_KEY = 'ptb:celebratedBadges';
 const JOURNEY_BADGE_IDS = BADGES_LIST.filter((badge) => badge.category === 'journey').map((badge) => badge.id);
@@ -33,6 +34,20 @@ const markBadgeCelebrated = (badgeId) => {
         set.add(badgeId);
         localStorage.setItem(CELEBRATED_BADGES_KEY, JSON.stringify(Array.from(set)));
     } catch (_) { /* ignore */ }
+};
+
+/**
+ * Celebrate one badge now — for something the trainer just did — once ever
+ * on this device. The hook's `celebrateBadge` is this; a view that only needs
+ * the celebration (the Champion Challenge's result) calls it without mounting
+ * the hook's listeners.
+ */
+export const celebrateBadgeOnce = (badgeId) => {
+    const badge = getBadgeById(badgeId);
+    if (!badge || getCelebratedBadges().has(badge.id)) return false;
+    markBadgeCelebrated(badge.id);
+    useAuthStore.getState().setNewlyUnlockedBadge(badge);
+    return true;
 };
 
 // The user's own forum messages, counted on the server (an aggregation is one
@@ -136,6 +151,8 @@ export function useTrainerBadges(extraStats = {}) {
     const currentTeam = useActiveTeamStore((s) => s.currentTeam);
     const friendsCount = useFriendsStore((s) => s.friends?.length || 0);
     const battlesCount = useBattlesStore((s) => s.battles?.length || 0);
+    // The Champion Challenge, from the trainer's own official runs (one read a session).
+    const challenge = useChallengeRecord(userId, isAnonymous);
 
     // Generation Quiz & Category Guesser stores
     const genQuizRuns = useQuizRunsStore((s) => s.quizRuns) || NO_RUNS;
@@ -230,8 +247,9 @@ export function useTrainerBadges(extraStats = {}) {
         teamsCount,
         favoritesCount,
         forumMessages,
+        challenge,
         ...extraStats,
-    }), [totalPokepuzzleWins, completedQuizzesCount, perfectQuizzesCount, streak, activeDays, teamsCount, favoritesCount, forumMessages, extraStats]);
+    }), [totalPokepuzzleWins, completedQuizzesCount, perfectQuizzesCount, streak, activeDays, teamsCount, favoritesCount, forumMessages, challenge, extraStats]);
 
     // The journeys, evaluated once here so the badges that reward them and the
     // views that list them read the same answer.
@@ -329,12 +347,7 @@ export function useTrainerBadges(extraStats = {}) {
     }, [stats, setNewlyUnlockedBadge]);
 
     /** Celebrate one badge now (a journey just finished), once ever. */
-    const celebrateBadge = useCallback((badgeId) => {
-        const badge = getBadgeById(badgeId);
-        if (!badge || getCelebratedBadges().has(badge.id)) return;
-        markBadgeCelebrated(badge.id);
-        setNewlyUnlockedBadge(badge);
-    }, [setNewlyUnlockedBadge]);
+    const celebrateBadge = useCallback((badgeId) => { celebrateBadgeOnce(badgeId); }, []);
 
     return {
         stats,

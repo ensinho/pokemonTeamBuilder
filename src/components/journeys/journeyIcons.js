@@ -1,4 +1,4 @@
-import { Crown, Footprints, Swords, Target, Users } from 'lucide-react';
+import { Crown, Footprints, Swords, Target, Trophy, Users } from 'lucide-react';
 
 /** One glyph per level — the same idea its badge's emblem draws. */
 export const JOURNEY_ICONS = {
@@ -7,4 +7,5 @@ export const JOURNEY_ICONS = {
     strategy: Target,
     community: Users,
     league: Crown,
+    champions: Trophy,
 };
