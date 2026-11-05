@@ -280,7 +280,8 @@ export const DEFAULT_HOME_ORDER = ['forYou', 'yourDay', 'teams'];
 const HOME_ORDER_BY_PERSONA = {
     challenger: ['yourDay', 'forYou', 'teams'],
     strategist: ['teams', 'forYou', 'yourDay'],
-    traveler: ['forYou', 'teams', 'yourDay'],
+    // The Traveler's own block leads: the Badge Case (components/home/BadgeCase.jsx).
+    traveler: ['badges', 'forYou', 'teams', 'yourDay'],
 };
 
 export function personaHomeOrder(profile) {
@@ -293,3 +294,21 @@ export const isBeginnerTrainer = (profile) => hasAnsweredProfile(profile) && pro
 
 /** Whether the builder should lead with the meta (competitive, ranked). */
 export const isRankedTrainer = (profile) => hasAnsweredProfile(profile) && profile?.competitiveLevel === 'ranked';
+
+/**
+ * The search's quick links with an empty query (⌘K, 2026-11-05): the
+ * persona's picks first, in their order, then every other destination as
+ * the shell listed it. `destinations` are `{ path, … }`; nothing is dropped.
+ */
+export function personaQuickLinks(destinations = [], profile) {
+    if (!hasAnsweredProfile(profile)) return destinations;
+    const paths = personaPicks(profile, 8).map((key) => PICK_DESTINATIONS[key]?.path).filter(Boolean);
+    const rank = (d) => {
+        const i = paths.indexOf(d.path);
+        return i === -1 ? paths.length : i;
+    };
+    return destinations
+        .map((d, index) => ({ d, index }))
+        .sort((a, b) => rank(a.d) - rank(b.d) || a.index - b.index)
+        .map(({ d }) => d);
+}

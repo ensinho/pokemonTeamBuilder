@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
@@ -49,6 +49,9 @@ import { FramedAvatar } from '../rewards/FramedAvatar';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { openTeamCompare } from '../../store/useTeamCompareStore';
 import { openTrainerCard } from '../../store/useTrainerCardStore';
+
+// The Traveler's Badge Case: its own chunk, only that persona's Home loads it.
+const BadgeCase = lazy(() => import('../home/BadgeCase').then((m) => ({ default: m.BadgeCase })));
 
 /**
  * The cozy Home (2026-10-06 proposal). One trainer card that says where the
@@ -981,7 +984,12 @@ export function CozyHomeView({
     // The persona orders the day's blocks (personaHomeOrder); phones carry no
     // teams block on this tab, so only "Para você" and "Seu dia" swap there.
     const homeOrder = personaHomeOrder(trainerProfile);
-    const homeBlocks = { forYou: forYouPanel, yourDay, teams: isPhone ? null : teamsPanel(3) };
+    const homeBlocks = {
+        forYou: forYouPanel,
+        yourDay,
+        teams: isPhone ? null : teamsPanel(3),
+        badges: homeOrder.includes('badges') ? <Suspense fallback={null}><BadgeCase /></Suspense> : null,
+    };
     const ordered = homeOrder.map((id) => <React.Fragment key={id}>{homeBlocks[id]}</React.Fragment>);
     if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{ordered}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{ordered}</>;
     else if (tab === 'journey') main = journeyTab;

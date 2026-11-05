@@ -464,10 +464,12 @@
     outline: none;
 }
 
+/* The chosen tier is the inverted chip (2026-11-05, the "community boards"
+   reference's amount row: $10 **$50** $100) — the page's ink as the fill, so
+   the pick reads at a glance on any theme, without a second accent. */
 .tier-chip.is-active {
-    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-raised));
-    box-shadow: var(--ring-primary);
-    color: var(--color-primary-text);
+    background: var(--color-fg);
+    color: var(--color-bg);
 }
 
 .tier-chip__label {

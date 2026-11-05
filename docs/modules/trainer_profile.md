@@ -91,3 +91,27 @@ open thread). Opened from forum authors and the friends list.
   ("Cartão de treinador" — `publicRanks` now sends the uid of entries with a
   public profile, never a guest's), from battle opponents (the id-card button)
   and from the author's avatar on Home's community posts.
+
+## Round 4 (2026-11-05)
+
+- **Persona journeys** (`utils/journeys.js` `PERSONA_JOURNEYS`,
+  `evaluatePersonaJourneys`, `personaJourneyFilter`): Sala de estratégia,
+  Rumo ao próximo ginásio, Desafio diário — four missions each, a diamond
+  badge each (`badge_persona_*`, `constants/badges.jsx`). They sit after the
+  six levels under their own heading (the Master sees all three) and never
+  change the current level, the level count or the Home's journey card.
+  `useTrainerBadges` evaluates both lists; badges and XP read both; the
+  floating coach guides their missions. New marks: page visits (bestTeams,
+  tournaments, gyms, types, moves) and `threatsViewed` / `playthroughTeam`
+  (the builder records them).
+- **⌘K quick links:** `personaQuickLinks(destinations, profile)` — the
+  persona's picks first with an empty query.
+- **Badge Case** (`components/home/BadgeCase.jsx`, lazy; `utils/badgeCase.js`):
+  the Traveler's Home leads with the eight gym leaders of the game they are
+  playing — silhouettes until the trainer taps the badge they won in their
+  game, the next leader called out, a gold rim when the case is full. Stored
+  as `badgeCase` (localStorage `ptb:badgeCase` + the preferences doc, the copy
+  touched last wins; privacy page updated).
+- **Notification defaults:** left as they are on purpose. The daily nudges
+  are already on for everyone (the Challenger case); turning them off for the
+  other personas would silence people who never asked for less.

@@ -604,6 +604,15 @@ export function TeamBuilderView({
     const saveLabel = isSavedClean ? t('builder.saved') : (editingTeamId ? t('builder.update') : t('builder.save'));
     const isTeamFull = currentTeam.length >= 6;
 
+    // The persona journeys' marks (utils/journeys.js): the Strategist looks at
+    // the threats with a team on it; the Traveler builds in playthrough mode.
+    const teamSize = currentTeam.length;
+    React.useEffect(() => {
+        if (teamSize === 0) return;
+        if (isPlaythrough) useAuthStore.getState().markJourney('playthroughTeam');
+        else if (analysisTab === 'threats' && isDesktopLayout) useAuthStore.getState().markJourney('threatsViewed');
+    }, [teamSize, isPlaythrough, analysisTab, isDesktopLayout]);
+
     // The meta the builder is paired with, as words (the phone never showed it).
     const formatLabel = isPlaythrough ? t('builder.playthroughBadge') : (activeFormat?.label || '');
 

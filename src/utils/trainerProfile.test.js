@@ -193,12 +193,13 @@ describe('personaHomeOrder', () => {
         const { personaHomeOrder } = await import('./trainerProfile');
         expect(personaHomeOrder(answered({ interests: ['minigames'] }))[0]).toBe('yourDay');
         expect(personaHomeOrder(answered({ interests: ['competitive'], competitiveLevel: 'ranked' }))[0]).toBe('teams');
-        expect(personaHomeOrder(answered({ interests: ['franchise'] }))).toEqual(['forYou', 'teams', 'yourDay']);
+        expect(personaHomeOrder(answered({ interests: ['franchise'] }))).toEqual(['badges', 'forYou', 'teams', 'yourDay']);
     });
     it('every order has the same blocks', async () => {
         const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
         for (const interests of [['minigames'], ['competitive'], ['franchise']]) {
-            expect([...personaHomeOrder(answered({ interests }))].sort()).toEqual([...DEFAULT_HOME_ORDER].sort());
+            // The Traveler adds the Badge Case; nobody loses a block.
+            expect(personaHomeOrder(answered({ interests })).filter((id) => id !== 'badges').sort()).toEqual([...DEFAULT_HOME_ORDER].sort());
         }
     });
 });
@@ -209,5 +210,23 @@ describe('builder level flags', () => {
         expect(isBeginnerTrainer(normalizeTrainerProfile({ interests: ['competitive'], competitiveLevel: 'new', answeredAt: 1 }))).toBe(true);
         expect(isBeginnerTrainer(normalizeTrainerProfile({ interests: ['competitive'], competitiveLevel: 'new' }))).toBe(false);
         expect(isRankedTrainer(normalizeTrainerProfile({ interests: ['competitive'], competitiveLevel: 'ranked', answeredAt: 1 }))).toBe(true);
+    });
+});
+
+describe('personaQuickLinks', () => {
+    const destinations = [
+        { key: 'home', path: '/' }, { key: 'builder', path: '/builder' }, { key: 'pokedex', path: '/pokedex' },
+        { key: 'meta', path: '/meta' }, { key: 'puzzle', path: '/pokepuzzle' }, { key: 'gyms', path: '/gyms' },
+    ];
+    it('keeps the shell order with no profile', async () => {
+        const { personaQuickLinks } = await import('./trainerProfile');
+        expect(personaQuickLinks(destinations, null)).toEqual(destinations);
+    });
+    it('puts the persona picks first and drops nothing', async () => {
+        const { personaQuickLinks } = await import('./trainerProfile');
+        const out = personaQuickLinks(destinations, normalizeTrainerProfile({ interests: ['franchise'], answeredAt: 1 }));
+        expect(out[0].path).toBe('/pokedex');
+        expect(out).toHaveLength(destinations.length);
+        expect(out.findIndex((d) => d.path === '/gyms')).toBeLessThan(out.findIndex((d) => d.path === '/'));
     });
 });
