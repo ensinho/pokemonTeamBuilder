@@ -664,6 +664,8 @@
     padding: var(--space-1) var(--app-shell-row-inset);
     color: var(--color-fg);
     text-align: left;
+    /* Rail items are links (Cmd-click, open in new tab), styled as rows. */
+    text-decoration: none;
 }
 
 .app-shell__nav-link:hover,

@@ -323,6 +323,8 @@ export const MobileTeamBuilderView = ({
     totalCount = 0,
     defaultName = '',
     isDirty = false,
+    isSaving = false,
+    nameError = null,
     generations,
     isInitialLoading,
     displayedPokemons,
@@ -542,6 +544,16 @@ export const MobileTeamBuilderView = ({
     const hasUnsaved = teamSize > 0 && !isSavedClean;
     const saveLabel = isSavedClean ? t('builder.saved') : (editingTeamId ? t('builder.update') : t('builder.save'));
     const SaveGlyph = isSavedClean ? Check : Save;
+    const saveGlyph = isSaving
+        ? <Loader size="xs" className="loader--inherit" />
+        : <SaveGlyph aria-hidden="true" />;
+
+    // A taken name is said under the field, which takes focus on every failed
+    // save (`at` changes each time).
+    const nameInputRef = useRef(null);
+    React.useEffect(() => {
+        if (nameError) nameInputRef.current?.focus();
+    }, [nameError]);
 
     const gameName = selectedGameObj ? selectedGameObj.label : t('builder.allFormats');
     const formatChipLabel = formatLabel ? `${gameName} · ${formatLabel}` : gameName;
@@ -559,15 +571,24 @@ export const MobileTeamBuilderView = ({
                             newline this single-line field cannot take. The
                             placeholder is the name a save would use. */}
                         <input
+                            ref={nameInputRef}
                             type="text"
                             enterKeyHint="done"
                             autoCapitalize="words"
                             autoCorrect="off"
                             value={teamName}
                             onChange={(event) => setTeamName(event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                                    event.preventDefault();
+                                    handleSaveTeam();
+                                }
+                            }}
                             placeholder={defaultName || t('builder.teamNamePlaceholder')}
                             className="team-builder-field min-w-0 flex-1"
                             aria-label={t('builder.teamNameAria')}
+                            aria-invalid={nameError ? true : undefined}
+                            aria-describedby={nameError ? 'team-builder-mobile-name-error' : undefined}
                         />
                         {editingTeamId && (
                             editingTeamId === activeTeamId ? (
@@ -587,14 +608,21 @@ export const MobileTeamBuilderView = ({
                                 type="button"
                                 onClick={handleSaveTeam}
                                 className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} btn-sm btn-icon team-builder-mobile__save-compact shrink-0`}
-                                aria-label={saveLabel}
+                                aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
+                                aria-busy={isSaving || undefined}
                                 title={saveLabel}
                             >
-                                <SaveGlyph aria-hidden="true" />
+                                {saveGlyph}
                                 {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                             </button>
                         )}
                     </div>
+
+                    {nameError && (
+                        <p id="team-builder-mobile-name-error" className="tb-team__name-error" role="alert">
+                            {t('builder.teamNameTakenInline')}
+                        </p>
+                    )}
 
                     {/* Row 2: team slots */}
                     <div className="team-builder-mobile__slots mt-2.5">
@@ -627,8 +655,9 @@ export const MobileTeamBuilderView = ({
                                 onClick={handleSaveTeam}
                                 className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} team-builder-mobile__save`}
                                 aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
+                                aria-busy={isSaving || undefined}
                             >
-                                <SaveGlyph aria-hidden="true" />
+                                {saveGlyph}
                                 <span>{saveLabel}</span>
                                 {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                             </button>

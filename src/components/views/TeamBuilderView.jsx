@@ -567,7 +567,34 @@ export function TeamBuilderView({
         [currentTeam, savedTeams, editingTeamId, language],
     );
     const isDirty = useActiveTeamStore(selectIsTeamDirty);
+    const isSaving = useActiveTeamStore((s) => s.isSaving);
+    const nameError = useActiveTeamStore((s) => s.nameError);
     const isSavedClean = Boolean(editingTeamId) && !isDirty;
+
+    // A name another saved team has is said under the field, which takes focus
+    // (every failed save, hence `at`). The phone view focuses its own field.
+    const nameInputRef = React.useRef(null);
+    React.useEffect(() => {
+        if (nameError && isDesktopLayout) nameInputRef.current?.focus();
+    }, [nameError, isDesktopLayout]);
+
+    // ⌘/Ctrl+S saves while the builder is open — the browser's "save page"
+    // is never what someone building a team means.
+    const saveRef = React.useRef(handleSaveTeam);
+    React.useEffect(() => { saveRef.current = handleSaveTeam; });
+    React.useEffect(() => {
+        const onKey = (event) => {
+            if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
+            if (event.key !== 's' && event.key !== 'S') return;
+            event.preventDefault();
+            // The member editor commits on close; saving under it would miss
+            // the edit in progress.
+            if (useActiveTeamStore.getState().editingTeamMember) return;
+            saveRef.current?.();
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, []);
     const hasUnsaved = currentTeam.length > 0 && !isSavedClean;
     const saveLabel = isSavedClean ? t('builder.saved') : (editingTeamId ? t('builder.update') : t('builder.save'));
     const isTeamFull = currentTeam.length >= 6;
@@ -626,6 +653,8 @@ export function TeamBuilderView({
                     totalCount={totalCount}
                     defaultName={defaultName}
                     isDirty={isDirty}
+                    isSaving={isSaving}
+                    nameError={nameError}
                     generations={generations}
                     isInitialLoading={isGridLoading}
                     displayedPokemons={displayedPokemons}
@@ -660,13 +689,22 @@ export function TeamBuilderView({
                     <section className="card tb-team" aria-label={t('builder.currentTeamAria')}>
                         <div className="tb-team__head">
                             <input
+                                ref={nameInputRef}
                                 id="team-builder-name"
                                 type="text"
                                 value={teamName}
                                 onChange={(e) => setTeamName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                                        e.preventDefault();
+                                        handleSaveTeam();
+                                    }
+                                }}
                                 placeholder={defaultName || t('builder.teamNamePlaceholder')}
                                 className="tb-team__name"
                                 aria-label={t('builder.teamNameAria')}
+                                aria-invalid={nameError ? true : undefined}
+                                aria-describedby={nameError ? 'team-builder-name-error' : undefined}
                             />
                             {editingTeamId && (
                                 editingTeamId === activeTeamId ? (
@@ -683,6 +721,11 @@ export function TeamBuilderView({
                             )}
                             <span className="badge badge--figure shrink-0" aria-label={`${currentTeam.length} / 6`}>{currentTeam.length}/6</span>
                         </div>
+                        {nameError && (
+                            <p id="team-builder-name-error" className="tb-team__name-error" role="alert">
+                                {t('builder.teamNameTakenInline')}
+                            </p>
+                        )}
 
                         <div className="team-builder-slots" aria-label={t('builder.teamSlotsAria')}>
                             {currentTeam.map((pokemon, idx) => {
@@ -795,8 +838,11 @@ export function TeamBuilderView({
                                 onClick={handleSaveTeam}
                                 className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} tb-team__save`}
                                 aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
+                                aria-busy={isSaving || undefined}
                             >
-                                {isSavedClean ? <Check aria-hidden="true" /> : <Save aria-hidden="true" />}
+                                {isSaving
+                                    ? <Loader size="xs" className="loader--inherit" />
+                                    : (isSavedClean ? <Check aria-hidden="true" /> : <Save aria-hidden="true" />)}
                                 {saveLabel}
                                 {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                             </button>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Image, Link2, MessageSquare } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
+import { Loader } from './Loader';
 
 /**
  * The builder's three ways to share the team being built, as equals under
@@ -15,11 +16,20 @@ export function TeamShareRow({ onImage, disabled = false, className = '' }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const copyTeamLink = useActiveTeamStore((s) => s.copyTeamLink);
+    // The publish behind Link takes a round-trip; the button keeps its label,
+    // shows the wait inside and ignores repeat taps (the store guards too).
+    const isSharingLink = useActiveTeamStore((s) => s.isSharingLink);
 
     return (
         <div className={`tb-share-row ${className}`} role="group" aria-label={t('builder.shareActions')}>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={copyTeamLink} disabled={disabled}>
-                <Link2 aria-hidden="true" />
+            <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={isSharingLink ? undefined : copyTeamLink}
+                disabled={disabled}
+                aria-busy={isSharingLink || undefined}
+            >
+                {isSharingLink ? <Loader size="xs" className="loader--inherit" /> : <Link2 aria-hidden="true" />}
                 <span>{t('builder.shareLink')}</span>
             </button>
             <button type="button" className="btn btn-secondary btn-sm" onClick={onImage} disabled={disabled}>

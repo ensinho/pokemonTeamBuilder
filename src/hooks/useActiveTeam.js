@@ -1,8 +1,10 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 
-export function useActiveTeam() {
-    const store = useActiveTeamStore();
-    return {
+// Exactly these fields, compared shallowly: a bare useActiveTeamStore()
+// re-rendered every holder (the whole AppLayout) on any store change —
+// isSaving, nameError, isSharingLink — that none of them reads from here.
+const selectActiveTeam = (store) => ({
         currentTeam: store.currentTeam,
         teamName: store.teamName,
         editingTeamId: store.editingTeamId,
@@ -31,5 +33,8 @@ export function useActiveTeam() {
         shareTeamByData: store.shareTeamByData,
         handleShareTeam: store.handleShareTeam,
         importTeam: store.importTeam,
-    };
+});
+
+export function useActiveTeam() {
+    return useActiveTeamStore(useShallow(selectActiveTeam));
 }

@@ -485,6 +485,19 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     placeholder={t('modals.editorModalSearchMoves')}
                                     value={moveSearch}
                                     onChange={(event) => setMoveSearch(event.target.value)}
+                                    onKeyDown={(event) => {
+                                        // Enter takes the top match the grid shows (the first
+                                        // one not already picked) and clears the search for
+                                        // the next move: type, Enter, type, Enter.
+                                        if (event.key !== 'Enter' || event.nativeEvent.isComposing || !moveSearch.trim()) return;
+                                        event.preventDefault();
+                                        if (customization.moves.length >= 4) return;
+                                        const top = visibleMoves.find((move) => !hasMove(customization.moves, move.name));
+                                        if (!top) return;
+                                        handleMoveToggle(top.name);
+                                        setMoveSearch('');
+                                    }}
+                                    enterKeyHint="done"
                                     className="input-clean mb-3 w-full"
                                     aria-label={t('modals.editorModalSearchMoves')}
                                 />
