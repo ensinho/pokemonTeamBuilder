@@ -50,9 +50,11 @@ export function QuizCelebrationModal({
     const pokemonName = pokemon ? pokemon.displayName : 'Pokémon';
     const artworkUrl = pokemon ? getPokemonArtworkSpriteUrl(pokemon.id, { shiny: isShiny }) : '';
 
+    // `playAgain: true` tells the caller the user is already in the next run,
+    // so nothing (the coffee nudge) should land on top of it.
     const handlePlayAgain = () => {
         (onPlayAgain || onTryAnother)?.();
-        onClose?.();
+        onClose?.({ playAgain: true });
     };
 
     const description = (() => {

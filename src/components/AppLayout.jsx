@@ -51,7 +51,6 @@ import { ariaKeyShortcuts, formatShortcut, matchesShortcut } from '../utils/sear
 // Direct imports, not the modals barrel: the barrel re-exports every dialog,
 // and the ones with side effects (stylesheets) would ride into the entry bundle
 // even though the lazy() loaders below are their only real users.
-import { ConfirmDialog } from './modals/ConfirmDialog';
 import { ConfirmHost } from './modals/ConfirmHost';
 import { SessionTransition } from './SessionTransition';
 import { GuestAccountCard } from './GuestAccountCard';
@@ -236,7 +235,9 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size 
     return <AccountIcon color={color} className={`shrink-0 ${className}`} />;
 };
 
-const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0, onIntent }) => {
+// A real link, not a button that calls navigate(): Cmd/Ctrl-click, middle-click
+// and long-press "open in new tab" all work, and the browser shows the URL.
+const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent }) => {
     const buttonRef = useRef(null);
     // Styled hover tooltip for the collapsed rail. Rendered via a portal with
     // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
@@ -250,9 +251,9 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0, on
     const hideTooltip = () => setTooltipPos(null);
 
     return (
-        <button
+        <Link
             ref={buttonRef}
-            type="button"
+            to={to}
             onClick={onClick}
             onMouseEnter={() => { showTooltip(); onIntent?.(); }}
             onMouseLeave={hideTooltip}
@@ -278,7 +279,7 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0, on
                 </span>,
                 document.body
             )}
-        </button>
+        </Link>
     );
 };
 
@@ -400,14 +401,14 @@ export default function AppLayout() {
         handleReorderTeam, handleSaveTeam, handleClearTeam, handleExportToShowdown,
         handleShareTeam, editingTeamMember, setEditingTeamMember, shareModal,
         closeShareModal, handleUpdateTeamMember, suggestedPokemonIds, teamAnalysis,
-        setCurrentTeam, shareTeamByData, handleAddPokemon, setEditingTeamId,
+        shareTeamByData, handleAddPokemon,
         handleRandomizeTeam, isRandomizing, importTeam
     } = useActiveTeam();
     const speciesClause = useActiveTeamStore((s) => s.speciesClause);
 
     const {
-        favoritePokemons, handleToggleFavoritePokemon, deleteConfirmation,
-        setDeleteConfirmation, handleDeleteTeam, handleToggleFavorite, handleDuplicateTeam,
+        favoritePokemons, handleToggleFavoritePokemon,
+        handleDeleteTeam, handleToggleFavorite, handleDuplicateTeam,
         savedTeams, activeTeamId, setActiveTeamId
     } = useFirestoreTeams();
 
@@ -678,7 +679,6 @@ export default function AppLayout() {
 
     // Caches for dynamic fetches
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
-    const [teamSearchTerm, setTeamSearchTerm] = useState('');
 
     // Initial Splash timer. On desktop this is the original 900 ms beat; on
     // mobile it stretches until boot settles (capped), so the app doesn't paint
@@ -1127,38 +1127,66 @@ export default function AppLayout() {
     }, [location.search, navigate]);
 
     // Saved team handlers
+    //
+    // Opening a saved team in the builder. Three things this guards against:
+    // a member whose detail failed to load used to be dropped silently, and the
+    // short team became the saved baseline — the next Update deleted that
+    // member from the saved team. So a partial load is refused (with a Retry),
+    // and the draft on screen stays as it was. A second tap while one load is
+    // in flight is ignored. And an unsaved draft it replaces can be brought
+    // back (the store's loadTeamForEditing offers the Undo).
+    const editLoadRef = useRef(null);
     const handleEditTeam = useCallback(async (team) => {
-        showToast(t('layout.loadingTeamName', { name: team.name }), 'info');
+        if (!team || editLoadRef.current) return;
+        editLoadRef.current = team.id;
+        showToast(t('layout.loadingTeamName', { name: team.name }), 'info', { key: 'team-load', duration: 0 });
 
-        const teamPokemonDetailsPromises = team.pokemons.map(p => fetchPokemonDetails(p.id));
-        const teamPokemonDetails = await Promise.all(teamPokemonDetailsPromises);
+        try {
+            const stored = Array.isArray(team.pokemons) ? team.pokemons.filter(Boolean) : [];
+            const details = await Promise.all(stored.map((p) => fetchPokemonDetails(p.id).catch(() => null)));
 
-        const customizedTeam = teamPokemonDetails.map((detail, i) => {
-            if (!detail) return null;
-            const savedPokemonData = team.pokemons[i];
-            const defaultCustomization = {
-                item: '', nature: 'serious', teraType: detail.types?.[0] || 'normal', isShiny: false,
-                ability: detail.abilities?.[0]?.name || 'unknown',
-                moves: [],
-                evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
-                ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
-            };
+            if (details.some((detail) => !detail)) {
+                showToast(t('layout.teamLoadFailed', { name: team.name }), 'error', {
+                    key: 'team-load',
+                    description: t('layout.teamLoadFailedDesc'),
+                    actions: [{ label: t('toast.retry'), onClick: () => handleEditTeam(team) }],
+                });
+                return;
+            }
 
-            return {
-                ...detail,
-                ...storedFormFields(savedPokemonData),
-                instanceId: savedPokemonData.instanceId,
-                customization: { ...defaultCustomization, ...savedPokemonData.customization }
-            };
-        }).filter(Boolean);
+            const members = details.map((detail, i) => {
+                const savedPokemonData = stored[i];
+                const defaultCustomization = {
+                    item: '', nature: 'serious', teraType: detail.types?.[0] || 'normal', isShiny: false,
+                    ability: detail.abilities?.[0]?.name || 'unknown',
+                    moves: [],
+                    evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
+                    ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
+                };
+                return {
+                    ...detail,
+                    ...storedFormFields(savedPokemonData),
+                    instanceId: savedPokemonData.instanceId,
+                    customization: { ...defaultCustomization, ...savedPokemonData.customization }
+                };
+            });
 
-        setCurrentTeam(withUniqueInstanceIds(customizedTeam));
-        setTeamName(team.name);
-        setEditingTeamId(team.id);
-        navigate('/builder');
-        setIsSidebarOpen(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId, t]);
+            useActiveTeamStore.getState().loadTeamForEditing({
+                members: withUniqueInstanceIds(members),
+                name: team.name,
+                id: team.id,
+            });
+            navigate('/builder');
+            setIsSidebarOpen(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } finally {
+            editLoadRef.current = null;
+        }
+    }, [fetchPokemonDetails, showToast, navigate, t]);
+
+    // Deleting a saved team is undoable (the store's toast), so it acts at
+    // once — no confirm dialog in front of it.
+    const requestDeleteTeam = useCallback((id) => handleDeleteTeam(id), [handleDeleteTeam]);
 
     // A tournament roster. It must not go through handleEditTeam: that path reads
     // `customization` and `instanceId` off each member, and a tournament set has
@@ -1353,19 +1381,6 @@ export default function AppLayout() {
                 </Suspense>
             )}
 
-            <ConfirmDialog
-                isOpen={deleteConfirmation.isOpen}
-                onClose={() => setDeleteConfirmation({ isOpen: false, teamId: null, teamName: '' })}
-                onConfirm={() => {
-                    handleDeleteTeam(deleteConfirmation.teamId);
-                    setDeleteConfirmation({ isOpen: false, teamId: null, teamName: '' });
-                }}
-                title={t('dialogs.deleteTeamTitle')}
-                message={t('dialogs.deleteTeamMsg', { teamName: deleteConfirmation.teamName })}
-                confirmText={t('dialogs.deleteTeamConfirm')}
-                colors={colors}
-            />
-
             {isSearchOpen && (
                 <Suspense fallback={null}>
                     <CommandPalette onClose={() => setIsSearchOpen(false)} destinations={searchDestinations} />
@@ -1450,10 +1465,8 @@ export default function AppLayout() {
                                                 icon={item.icon}
                                                 badge={item.badge || 0}
                                                 onIntent={() => prefetchRoute(item.key)}
-                                                onClick={() => {
-                                                    navigate(item.path);
-                                                    setIsSidebarOpen(false);
-                                                }}
+                                                to={item.path}
+                                                onClick={() => setIsSidebarOpen(false)}
                                             />
                                         </li>
                                     ))}
@@ -1477,10 +1490,8 @@ export default function AppLayout() {
                                                         icon={item.icon}
                                                         badge={item.badge || 0}
                                                         onIntent={() => prefetchRoute(item.key)}
-                                                        onClick={() => {
-                                                            navigate(item.path);
-                                                            setIsSidebarOpen(false);
-                                                        }}
+                                                        to={item.path}
+                                                        onClick={() => setIsSidebarOpen(false)}
                                                     />
                                                 </li>
                                             ))}
@@ -1514,7 +1525,7 @@ export default function AppLayout() {
                                                 label={t('nav.profile')}
                                                 icon={<SettingsGlyph />}
                                                 onIntent={() => prefetchRoute('profile')}
-                                                onClick={() => navigate('/profile')}
+                                                to="/profile"
                                             />
                                             {/* Expanded: the guest's trainer card, the same object as
                                                 the sign-in dialog it opens. Collapsed: just the icon. */}
@@ -1740,7 +1751,7 @@ export default function AppLayout() {
                                             onNavigateToTeams={() => navigate('/teams')}
                                             handleToggleFavorite={handleToggleFavorite}
                                             handleEditTeam={handleEditTeam}
-                                            requestDeleteTeam={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
+                                            requestDeleteTeam={requestDeleteTeam}
                                             handleShareTeam={handleShareTeam}
                                             handleExportToShowdown={handleExportToShowdown}
                                             teamAnalysis={teamAnalysis}
@@ -1870,11 +1881,9 @@ export default function AppLayout() {
                                                 onEdit: handleEditTeam,
                                                 onExport: handleExportSavedTeamToShowdown,
                                                 onShare: handleShareSavedTeam,
-                                                requestDelete: (id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name }),
+                                                requestDelete: requestDeleteTeam,
                                                 onToggleFavorite: handleToggleFavorite,
                                                 onDuplicate: handleDuplicateSavedTeam,
-                                                searchTerm: teamSearchTerm,
-                                                setSearchTerm: setTeamSearchTerm,
                                                 colors,
                                                 activeTeamId,
                                                 setActiveTeamId,
@@ -1905,7 +1914,7 @@ export default function AppLayout() {
                                             onEdit={handleEditTeam}
                                             onShare={handleShareSavedTeam}
                                             onExport={handleExportSavedTeamToShowdown}
-                                            requestDelete={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
+                                            requestDelete={requestDeleteTeam}
                                             onToggleFavorite={handleToggleFavorite}
                                             onDuplicate={handleDuplicateSavedTeam}
                                             activeTeamId={activeTeamId}

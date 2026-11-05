@@ -22,6 +22,7 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
     teamName = '',
     savedTeams = [],
     disabled = false,
+    isSending = false,
     language = 'pt',
     t,
 }, ref) {
@@ -50,7 +51,7 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
         const finePointer = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches;
         if ((e.metaKey || e.ctrlKey) || (finePointer && !e.shiftKey)) {
             e.preventDefault();
-            if (replyText.trim() || attachedTeam) {
+            if (!isSending && (replyText.trim() || attachedTeam)) {
                 onSubmit(e);
             }
         }
@@ -189,7 +190,8 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
 
                 <button
                     type="submit"
-                    disabled={!hasContent || disabled}
+                    disabled={!hasContent || disabled || isSending}
+                    aria-busy={isSending || undefined}
                     className="btn btn-primary comment-composer__send"
                     aria-label={t('forum.send')}
                 >

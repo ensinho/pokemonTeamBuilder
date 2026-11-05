@@ -201,19 +201,22 @@ const NewGamesVisual = ({ language }) => {
     );
 };
 
+// One build row in TeraVisual. Module scope, so it is one component type and
+// not a new one per render (which remounted it every time).
+const TeraRow = ({ fields, faded }) => (
+    <div className={`flex flex-col gap-1 rounded-lg bg-surface-raised p-2 ${faded ? 'opacity-60' : ''}`}>
+        {fields.map((f) => (
+            <span key={f.label} className="flex items-baseline justify-between gap-3 text-2xs">
+                <span className="font-semibold text-muted">{f.label}</span>
+                <span className="font-mono text-fg">{f.value}</span>
+            </span>
+        ))}
+    </div>
+);
+
 // Tera Type — shown as what the build row looks like with it and without it.
 const TeraVisual = ({ language }) => {
     const pt = language === 'pt';
-    const Row = ({ fields, faded }) => (
-        <div className={`flex flex-col gap-1 rounded-lg bg-surface-raised p-2 ${faded ? 'opacity-60' : ''}`}>
-            {fields.map((f) => (
-                <span key={f.label} className="flex items-baseline justify-between gap-3 text-2xs">
-                    <span className="font-semibold text-muted">{f.label}</span>
-                    <span className="font-mono text-fg">{f.value}</span>
-                </span>
-            ))}
-        </div>
-    );
     const base = [
         { label: pt ? 'Item' : 'Item', value: 'Life Orb' },
         { label: pt ? 'Natureza' : 'Nature', value: 'Jolly' },
@@ -221,9 +224,9 @@ const TeraVisual = ({ language }) => {
     const tera = { label: pt ? 'Tipo Tera' : 'Tera Type', value: 'Steel' };
     return (
         <div className="flex h-[9.5rem] items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
-            <div className="w-[8.5rem]"><Row fields={[...base, tera]} /></div>
+            <div className="w-[8.5rem]"><TeraRow fields={[...base, tera]} /></div>
             <span className="text-sm font-bold text-muted">→</span>
-            <div className="w-[8.5rem]"><Row fields={base} /></div>
+            <div className="w-[8.5rem]"><TeraRow fields={base} /></div>
         </div>
     );
 };

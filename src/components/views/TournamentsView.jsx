@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo } from 'react';
 import '../../styles/tools-views.css';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
@@ -14,6 +13,7 @@ import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
 import { Loader } from '../Loader';
+import { useUrlParam } from '../../hooks/useUrlParam';
 
 // Match a team against the search term across its Pokémon, title/player,
 // tournament name, placement, format and date — so any of those finds it.
@@ -34,10 +34,10 @@ export function TournamentsView({ onOpenTeam }) {
         description: 'Real teams from recent VGC tournaments with placements, full sets, and one-click import into the builder.',
         path: '/tournaments',
     });
-    const navigate = useNavigate();
     const { linkState } = useEntityNavigate();
     const { teams, status } = useTournamentData();
-    const [search, setSearch] = useState('');
+    // In the URL (?q=), so Back from a team keeps the search.
+    const [search, setSearch] = useUrlParam('q');
 
     const query = search.trim().toLowerCase();
     const { featured, tournament } = useMemo(() => {
@@ -93,13 +93,20 @@ export function TournamentsView({ onOpenTeam }) {
                 </div>
             </div>
 
-            {noMatches && <EmptyState compact title={t('tools.tournamentsNoMatch')} message={t('db.noMatchesDesc')} />}
+            {noMatches && (
+                <EmptyState
+                    compact
+                    title={t('tools.tournamentsNoMatch')}
+                    message={t('db.noMatchesDesc')}
+                    action={{ label: t('common.clearSearch'), onClick: () => setSearch('') }}
+                />
+            )}
 
             {featured.length > 0 && (
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>
                     <div className="trn-grid">
-                        {featured.slice(0, featuredReveal.limit).map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
+                        {featured.slice(0, featuredReveal.limit).map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                     {featuredReveal.hasMore && <ShowMoreButton remaining={featuredReveal.remaining} onClick={featuredReveal.showMore} />}
                 </section>
@@ -109,7 +116,7 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.tournamentTeams')}</h2>
                     <div className="trn-grid">
-                        {tournament.slice(0, tournamentReveal.limit).map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
+                        {tournament.slice(0, tournamentReveal.limit).map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                     {tournamentReveal.hasMore && <ShowMoreButton remaining={tournamentReveal.remaining} onClick={tournamentReveal.showMore} />}
                 </section>

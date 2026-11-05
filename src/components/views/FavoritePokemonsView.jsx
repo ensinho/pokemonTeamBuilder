@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import '../../styles/team-builder-view.css';
 import '../../styles/all-teams-view.css';
 import { typeColors, typeIcons } from '../../constants/types';
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { getPokemonArtworkSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { Loader } from '../Loader';
+import { useUrlParam } from '../../hooks/useUrlParam';
 
 const getGenerationLabelForRangeKey = (key) => {
     const romanMap = {
@@ -51,9 +52,11 @@ export function FavoritePokemonsView({
     const { t, language } = useTranslation();
     const isMobile = useMediaQuery(maxWidthBelow('lg'));
     const navigate = useNavigate();
-    const [searchInput, setSearchInput] = useState('');
-    const [selectedType, setSelectedType] = useState('all');
-    const [groupBy, setGroupBy] = useState('none');
+    // Search, type and grouping live in the URL (?q=&type=&group=), so Back
+    // from a Pokémon returns to the same filtered view.
+    const [searchInput, setSearchInput] = useUrlParam('q');
+    const [selectedType, setSelectedType] = useUrlParam('type', 'all');
+    const [groupBy, setGroupBy] = useUrlParam('group', 'none');
 
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);

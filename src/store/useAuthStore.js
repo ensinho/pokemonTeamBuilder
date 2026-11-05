@@ -542,9 +542,12 @@ export const useAuthStore = create((set, get) => {
             }
         },
 
+        // 'saved' | 'skipped' (no account yet, or the profile has not been read
+        // back — writing then would race hydration) | 'failed'. Most callers
+        // fire and forget; a change the user typed (the display name) checks it.
         savePreferences: async (updates) => {
             const { userId } = get();
-            if (!userId || !profileHydratedFromFirestore) return;
+            if (!userId || !profileHydratedFromFirestore) return 'skipped';
 
             try {
                 const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
@@ -552,8 +555,9 @@ export const useAuthStore = create((set, get) => {
                     ...updates,
                     updatedAt: Date.now()
                 }, { merge: true });
+                return 'saved';
             } catch (e) {
-                // Ignore silent failures
+                return 'failed';
             }
         },
 
@@ -722,10 +726,22 @@ export const useAuthStore = create((set, get) => {
         setNewlyUnlockedBadge: (badge) => set({ newlyUnlockedBadge: badge }),
         clearNewlyUnlockedBadge: () => set({ newlyUnlockedBadge: null }),
 
-        setDisplayName: (name) => {
+        // Resolves true once saved. A save that did not happen used to be
+        // silent: the new name showed until the next load, then the old one
+        // came back (2026-11-04). Now it reverts at once and offers Retry.
+        setDisplayName: async (name) => {
+            const previous = get().displayName;
             set({ displayName: name });
-            get().savePreferences({ displayName: name });
+            const status = await get().savePreferences({ displayName: name });
+            if (status !== 'saved') {
+                if (get().displayName === name) set({ displayName: previous });
+                toast.error(t('toast.displayNameSaveError'), {
+                    actions: [{ label: t('toast.retry'), onClick: () => get().setDisplayName(name) }],
+                });
+                return false;
+            }
             get().syncPublicProfile();
+            return true;
         },
 
         setTrainerSprite: (spriteId) => {

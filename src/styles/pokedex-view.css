@@ -1,0 +1,64 @@
+/* ============================================================
+   POKÉDEX GRID CELL
+
+   A card is a real link to its Pokémon (Cmd/middle-click, long-press), and a
+   link may not contain another control — so the favourite star is the link's
+   sibling, positioned over the spot it always occupied. The cell is the
+   positioning context; the card fills it exactly as before.
+
+   The offsets are the card's own geometry, so the star lands where it sat
+   inside the card:
+     phone  — pinned to the sprite box's corner: card padding (--space-1_5),
+              the 16px type row (--space-4), the media's --space-0_5 top margin,
+              then the overlay's own --space-1 inset;
+     desktop — over the placeholder slot that holds its place in the top bar:
+              1px card border + top padding (--space-2_5), less the star's
+              --space-1 negative margin; same on the right with --space-2.
+   ============================================================ */
+
+.pokedex-card-cell {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.pokedex-card-cell > a {
+    flex: 1;
+    min-width: 0;
+}
+
+.pokedex-card-cell--mobile > .team-builder-mobile-card {
+    display: block;
+}
+
+.pokedex-card-cell--mobile > .pokedex-card-cell__star {
+    top: calc(var(--space-1_5) + var(--space-4) + var(--space-0_5) + var(--space-1));
+    right: calc(var(--space-1_5) + var(--space-1));
+}
+
+.pokedex-card-cell--desktop > .pokedex-card-cell__star {
+    position: absolute;
+    z-index: 1;
+    top: calc(1px + var(--space-2_5) - var(--space-1));
+    right: calc(1px + var(--space-2) - var(--space-1));
+    margin: 0;
+}
+
+/* Holds the star's place in the top bar so the row keeps its height; the star
+   itself is drawn by the sibling above it. */
+.pokedex-card-cell__slot {
+    visibility: hidden;
+}
+
+/* The star is outside the link, so pointing at it would drop the card's hover.
+   The cell carries it instead: the card under the pointer stays the sticker
+   (pokemon-card.css) while the pointer is anywhere on it, star included. */
+.pokedex-card-cell--desktop:hover > .pokemon-card {
+    background: var(--color-surface-hover);
+    box-shadow: var(--sticker);
+}
+
+.pokedex-card-cell--desktop:hover > .pokemon-card .pokemon-card__media {
+    transform: scale(1.04);
+}

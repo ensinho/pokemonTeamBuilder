@@ -12,6 +12,41 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-04 — Editing a saved team could delete a member from it `bug`
+- **Symptom:** opening a saved team from /teams while one member's detail fetch failed (offline, a Firestore hiccup) loaded five of six members, and the builder said **Saved**. The next edit + Update wrote the five over the six. Opening any saved team also replaced unsaved builder work with no Undo, and that work was lost on any reload.
+- **Root cause:** `handleEditTeam` (AppLayout) mapped failed fetches to `null`, removed them with `.filter(Boolean)`, then `setEditingTeamId` took the truncated team as the saved baseline (`savedSignature`). The builder draft lived only in memory.
+- **Fix:** any failed detail aborts the load with a Retry toast and leaves the draft alone; a finished load goes through `useActiveTeamStore.loadTeamForEditing`, which offers Undo when it replaced unsaved work. The draft is mirrored to `ptbBuilderDraft` (`utils/builderDraft.js`, debounced + `pagehide`) and restored on boot; it ends with the session or a different account. No `beforeunload` guard: the draft survives a reload, and the guard would put a "leave page?" dialog in front of the update prompt's handover (useAppUpdate).
+- **Correct pattern:** **never `.filter(Boolean)` a list the user saved** — a hole is an error to surface, not an item to drop; and never set a "saved" baseline from anything but the stored document. Anything that replaces the user's work offers Undo.
+- **Files:** `src/components/AppLayout.jsx`, `src/store/useActiveTeamStore.js`, `src/utils/builderDraft.js` (+ test), `src/store/useActiveTeamStore.save.test.js`
+
+### 2026-11-04 — Both languages rode in the entry chunk (~90 KB gz) `perf`
+- **Symptom:** the UX bench measured boot JS at 423.5 KB gz (budget 365, baseline 359 on 2026-10-06); the entry chunk had grown 147 → 220 KB gz.
+- **Root cause:** `src/constants/translations.js` (both tables, ~6,000 lines) was statically imported by `translateCore.js`, which every store and `useTranslation` reach — so all copy, in both languages, was boot-path code. Every new feature's strings grew it.
+- **Fix:** one file per language (`translations/en.js`, `pt.js`), loaded by `src/i18n/catalog.js` before the first render (`main.jsx`) and before `setLanguage` switches. `vite.config.js` aliases `translateCore.js` → `translateClient.js` in the browser only, so `api/`, the prerender and Vitest keep the full tables untouched. `scripts/lib/i18nPreload.mjs` writes a modulepreload for the likely language into `index.html` (and render-meta's shell), so there is no extra round trip. Entry 219.7 → 138.1 KB gz; a visitor downloads one 41–44 KB language chunk instead of both.
+- **Correct pattern:** **data is not code** — a large table every visitor needs only a slice of loads lazily, with its download started from the HTML. Never import `constants/translations.js` or a language file from browser code; `src/i18n/catalog.guard.test.js` fails if you do, and also if Portuguese lacks a key (the browser no longer has English to fall back to).
+- **Files:** `src/constants/translations{.js,/en.js,/pt.js}`, `src/i18n/catalog.js` (+ guard test), `src/utils/{translateCore,translateClient,translateResolve}.js`, `src/main.jsx`, `src/store/useLanguageStore.js`, `src/components/PageGuide.jsx`, `scripts/lib/i18nPreload.mjs`, `vite.config.js`
+
+### 2026-11-04 — The UX bench had silently stopped measuring the app `dispattern`
+- **Symptom:** `ux-bench.mjs` timed out waiting for the phone tab bar's "Mais"; `ux-reach.mjs` reported every destination unreachable on desktop.
+- **Root cause:** three drifts nobody saw because the battery was not run between them. LocaleRouter (2026-10-21) put Portuguese under `/pt` and stopped reading `localStorage.language` on arrival, so the scripts got the English app and every PT label missed. The scripts pinned `patchNotesVersion` at 1.13.0, so the 1.20.0 dialog covered the page. A fresh session is a first visit, which gets the landing (no tab bar). Then, while measuring, `vite preview` processes from an earlier run kept serving an **old build** on the reused ports, and the new `--strictPort` preview failed quietly in the background — the "after" run would have measured the "before" build.
+- **Fix:** the scripts open `/pt`, read `PATCH_NOTES_VERSION` from the repo (`--repo <windows path>`; a `/c/...` path does not resolve in Node on Windows), mark saved sessions as returning visitors, and drop removed destinations (PokéRoom, `/guesser`).
+- **Correct pattern:** before measuring, **prove each port serves the build you think** (curl the page for a marker only that build has), use fresh ports, and kill previews when done. A change to routing, locale, first-visit or the patch-notes flow updates the bench in the same commit.
+- **Files:** `.claude/skills/ux/bench/ux-bench.mjs`, `.claude/skills/ux/bench/ux-reach.mjs`
+
+### 2026-11-04 — PokéPuzzle asked for notification permission on its own `bug`
+- **Symptom:** three seconds into the daily puzzle, a browser permission prompt landed over the first guess. The daily reminder then fired through `new Notification`, which iOS does not have, with its own tag, ignoring the notification switches.
+- **Root cause:** a mount effect in `PokePuzzleView` called `Notification.requestPermission()` after a "politeness delay" — predating the 2026-09-21 notification rules and never brought under them.
+- **Fix:** the effect is gone; the reminder shows through the service worker (`showDailyPuzzleNotification` in `services/pushNotifications.js`, tag `ptb-daily`, respects the master and daily switches). Opting in stays a click (`ReminderOffer`).
+- **Correct pattern:** permission only from a click, display only through the worker, one tag per kind — grep for `requestPermission` and `new Notification` when touching any view.
+- **Files:** `src/components/views/PokePuzzleView.jsx`, `src/services/pushNotifications.js`
+
+### 2026-11-04 — Forum replies posted twice and a failed topic threw away its draft `bug`
+- **Symptom:** after Send, the reply stayed in the composer and Send stayed enabled until the server acknowledged — people tapped again and posted twice (offline, the wait never ended). A failed "create topic" closed the modal and wiped title, body and attached team.
+- **Root cause:** `sendMessage` cleared the composer only after `setDoc` + `updateDoc` resolved; `createTopic` returned `null` on error instead of throwing, so the modal's submit treated failure as success and its reset effect ran.
+- **Fix:** the composer clears on tap with a sending guard and gets the draft back with Retry on failure; drafts are kept per topic in sessionStorage; topic creation throws on failure, so the modal stays open with an inline error.
+- **Correct pattern:** a store action that can fail **throws or returns an explicit status** — never a bare `null` the caller can mistake for done. Clear an input on the tap, restore it on failure.
+- **Files:** `src/components/views/FeedView.jsx`, `src/components/forum/{CommentComposer,TopicCreateModal}.jsx`, `src/store/useForumStore.js`
+
 ### 2026-10-30 — The vector wordmark drew at 0×0 in the rail on Firefox `bug`
 - **Symptom:** after #79, the rail showed an empty band where the wordmark goes, in Firefox only. Chrome and the landing's wordmark were fine. Firefox's inspector showed the `<img>` pointing at `logo-wordmark.svg`.
 - **Root cause:** the traced SVG had a `viewBox` and no `width`/`height`, so it has no intrinsic width. The rail sizes the wordmark `width: 100%` (max 10.5rem) inside the shrink-to-fit home button, a size that depends on the image itself. Chrome falls back to 300px for an SVG without intrinsic size, so the cycle resolves. Firefox resolves it to 0. The landing gives the wordmark a fixed width in `rem`, so it never depended on the intrinsic size. The webp it replaced was 480px wide by itself. Reproduced in Playwright's Firefox (0×0) before the fix.

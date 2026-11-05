@@ -35,22 +35,7 @@ import { ChallengeRanking, ChallengeRankingSheet } from './ChallengeRanking';
 import { ChallengeTeamsRail } from './ChallengeTeamsRail';
 import '../../../styles/champion-challenge-ds.css';
 import { ReminderOffer } from '../../ReminderOffer';
-import { nudgeSupport } from '../../../services/supportNudge';
-
-const WALKED_KEY = 'ptb:challenge:walked';
-
-const readFlag = (key) => {
-    try {
-        return localStorage.getItem(key) === '1';
-    } catch (_) {
-        return false;
-    }
-};
-const writeFlag = (key, on) => {
-    try {
-        localStorage.setItem(key, on ? '1' : '0');
-    } catch (_) { /* a convenience, best-effort */ }
-};
+import { nudgeSupport, cancelSupportNudge } from '../../../services/supportNudge';
 
 /**
  * `/challenge` — the daily battle against the Champion, in a DS console
@@ -84,7 +69,6 @@ export function ChampionChallengeView() {
     const [showRanks, setShowRanks] = useState(false);
     // Sound, music and speed — the bar's switches, unlocked by the first press.
     const { muted, toggleMuted, musicOn, toggleMusic, fast, toggleFast } = useBattleSound();
-    const [hasWalked] = useState(() => readFlag(WALKED_KEY));
     const [startedRunId, setStartedRunId] = useState(null);
     const arenaInput = useRef(null);
     const screenInput = useRef(null);
@@ -137,7 +121,6 @@ export function ChampionChallengeView() {
     }, [isAnonymous, officialDone, championName, t]);
 
     const handleArrive = useCallback(() => {
-        writeFlag(WALKED_KEY, true);
         setStage('dialogue');
     }, []);
     const handleDialogueDone = useCallback(() => setStage(isAnonymous ? 'gate' : 'pick'), [isAnonymous]);
@@ -184,10 +167,23 @@ export function ChampionChallengeView() {
         badges: championBadges,
     }), [championName, difficultyLabel, championBadges, t]);
 
+    // After the result has landed, so the coffee never covers the outcome. Held
+    // in a ref: leaving the result (or the page) cancels it.
+    const nudgeTimerRef = useRef(0);
     const handleFinished = useCallback(() => {
         setStage('result');
-        // After the result has landed, so the coffee never covers the outcome.
-        window.setTimeout(() => nudgeSupport('challenge'), 2500);
+        window.clearTimeout(nudgeTimerRef.current);
+        nudgeTimerRef.current = window.setTimeout(() => nudgeSupport('challenge'), 2500);
+    }, []);
+    useEffect(() => {
+        if (stage === 'result') return undefined;
+        window.clearTimeout(nudgeTimerRef.current);
+        cancelSupportNudge();
+        return undefined;
+    }, [stage]);
+    useEffect(() => () => {
+        window.clearTimeout(nudgeTimerRef.current);
+        cancelSupportNudge();
     }, []);
 
     // One keyboard for the console; each stage takes it in turn.
@@ -242,7 +238,9 @@ export function ChampionChallengeView() {
                     <span className="ds-chip__long">{t('challenge.ranking.chip')}</span>
                 </button>
             )}
-            {stage === 'arena' && hasWalked && (
+            {/* Always offered: the walk is a pointer/arrow-key game, and this is
+                the one-step path for a keyboard or screen-reader user. */}
+            {stage === 'arena' && (
                 <button
                     type="button"
                     className="ds-chip is-button"

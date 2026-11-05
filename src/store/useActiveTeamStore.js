@@ -27,6 +27,7 @@ import { localizePath } from '../utils/localePath';
 import { deployBase } from '../services/localeHistory';
 import { useLanguageStore } from './useLanguageStore';
 import { loadStaticData } from '../services/staticData';
+import { BUILDER_DRAFT_KEY, decodeDraft, encodeDraft, hasUnsavedDraft, withResolvedDetail } from '../utils/builderDraft';
 
 export const SHOWDOWN_TEAMBUILDER_URL = 'https://play.pokemonshowdown.com/teambuilder';
 
@@ -128,13 +129,27 @@ const getMegaStones = async () => {
     return {};
 };
 
+// The last page published for a team, by what the team is: tapping Link twice
+// (or Link, then Image) on an unchanged team hands out the same address
+// instead of writing a new public document each time.
+const publishedTeamUrls = new Map();
+const publishedKey = (teamMembers, safeName) =>
+    `${useLanguageStore.getState().language}|${teamSignature(safeName, teamMembers)}`;
+
+/** The page already published for this exact team, if any — synchronous, so a
+ *  caller can hand it to navigator.share inside the tap's user gesture. */
+const peekSharedTeamUrl = (teamMembers, safeName) => publishedTeamUrls.get(publishedKey(teamMembers, safeName)) || null;
+
 /**
  * Writes the team to `public/data/teams` and returns its page's URL (/t/:id,
  * SharedTeamView), in the sharer's language: it previews before anything is
  * imported and unfurls as this team (api/render-meta.js, api/og.js). Null,
- * with a toast, when the write fails.
+ * with a toast (carrying `onRetry` when given), when the write fails.
  */
-async function publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf) {
+async function publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf, { onRetry } = {}) {
+    const key = publishedKey(teamMembers, safeName);
+    const known = publishedTeamUrls.get(key);
+    if (known) return known;
     const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
     const teamData = {
         name: safeName,
@@ -145,15 +160,73 @@ async function publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf) {
         await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
         markJourney('shareLink');
         track('team_shared', { size: teamMembers.length });
-        return new URL(
+        const url = new URL(
             localizePath(`/t/${teamId}`, useLanguageStore.getState().language, deployBase()),
             window.location.origin,
         ).toString();
+        publishedTeamUrls.set(key, url);
+        return url;
     } catch {
-        toast.error(t('toast.shareLinkError'));
+        toast.error(t('toast.shareLinkError'), {
+            key: 'share-link-error',
+            actions: onRetry ? [{ label: t('toast.retry'), onClick: onRetry }] : [],
+        });
         return null;
     }
 }
+
+// Hand a team page's address over: the OS share sheet on a touch device, the
+// clipboard elsewhere. A share sheet refused for lack of a user gesture (the
+// tap's activation expired during the publish — iOS) becomes a toast whose
+// button is a fresh gesture.
+const deliverTeamLink = async (url, name) => {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches && navigator.share) {
+        try {
+            await navigator.share({ title: name, url });
+            return;
+        } catch (error) {
+            if (error?.name === 'AbortError') return;
+            if (error?.name === 'NotAllowedError') {
+                toast.success(t('builder.linkReady'), {
+                    key: 'team-link',
+                    description: url,
+                    actions: [{ label: t('builder.shareLinkAction'), onClick: () => { navigator.share({ title: name, url }).catch(() => {}); } }],
+                });
+                return;
+            }
+        }
+    }
+    if (await writeClipboard(url)) {
+        toast.success(t('builder.linkCopied'), { key: 'team-link', description: url });
+    } else {
+        toast.info(url, { key: 'team-link' });
+    }
+};
+
+// ── The unsaved draft, kept across a reload (utils/builderDraft.js) ────────
+const DRAFT_SAVE_DELAY_MS = 400;
+const readStoredDraft = () => {
+    try {
+        if (typeof localStorage === 'undefined') return null;
+        return decodeDraft(localStorage.getItem(BUILDER_DRAFT_KEY), useAuthStore.getState?.()?.userId || null);
+    } catch (_) {
+        return null;
+    }
+};
+const writeStoredDraft = (state) => {
+    try {
+        if (typeof localStorage === 'undefined') return;
+        const encoded = encodeDraft(state, useAuthStore.getState?.()?.userId || null);
+        if (encoded) localStorage.setItem(BUILDER_DRAFT_KEY, JSON.stringify(encoded));
+        else localStorage.removeItem(BUILDER_DRAFT_KEY);
+    } catch (_) { /* full or blocked storage: the draft just is not kept */ }
+};
+const removeStoredDraft = () => {
+    try {
+        if (typeof localStorage !== 'undefined') localStorage.removeItem(BUILDER_DRAFT_KEY);
+    } catch (_) { /* ignore */ }
+};
+const restoredDraft = readStoredDraft();
 
 // Pre-Fairy (Gen 2–5) analysis, for playthroughs of older games. Per device,
 // like the builder's other view settings.
@@ -172,11 +245,11 @@ const readSpeciesClause = () => {
 };
 
 export const useActiveTeamStore = create((set, get) => ({
-    currentTeam: [],
+    currentTeam: restoredDraft?.currentTeam || [],
     legacyTypes: readLegacyTypes(),
     speciesClause: readSpeciesClause(),
-    teamName: '',
-    editingTeamId: null,
+    teamName: restoredDraft?.teamName || '',
+    editingTeamId: restoredDraft?.editingTeamId || null,
     teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
     suggestedPokemonIds: new Set(),
     editingTeamMember: null,
@@ -184,12 +257,19 @@ export const useActiveTeamStore = create((set, get) => ({
     // teamSignature() of the team as it was last saved or loaded for editing.
     // The builder compares against it to say whether there is anything to
     // save ("Atualizar" used to be enabled with nothing changed).
-    savedSignature: null,
+    savedSignature: restoredDraft?.savedSignature || null,
+    // A save in flight: repeat taps are no-ops and the button shows progress.
+    isSaving: false,
+    // The name field's inline error ({ reason, at }); `at` lets the view refocus
+    // the field on every failed save, not only the first.
+    nameError: null,
+    // The Link button's publish in flight.
+    isSharingLink: false,
 
     // Share Modal state
     shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' },
 
-    setTeamName: (name) => set({ teamName: name }),
+    setTeamName: (name) => set({ teamName: name, nameError: null }),
     // Loading a saved team ends with this call (after the roster and the name),
     // so that is the moment its baseline is taken.
     setEditingTeamId: (id) => set((state) => ({
@@ -475,18 +555,32 @@ export const useActiveTeamStore = create((set, get) => ({
         return true;
     },
 
+    // One save at a time: a double tap on a new team used to write two
+    // documents (each tap minted its own id before the first had answered).
+    // The baseline moves on the tap — the button reads "Salvo" at once — and
+    // rolls back, with a Retry, if the write fails.
     handleSaveTeam: async (savedTeams) => {
+        if (get().isSaving) return false;
+        set({ isSaving: true });
+        try {
+            return await get().saveTeamNow(savedTeams);
+        } finally {
+            set({ isSaving: false });
+        }
+    },
+
+    saveTeamNow: async (savedTeams) => {
         if (pendingAdds.size) await Promise.allSettled([...pendingAdds]);
-        const { currentTeam, teamName: typedName, editingTeamId } = get();
+        const { currentTeam, teamName: typedName, editingTeamId, savedSignature: previousSignature } = get();
         const userId = useAuthStore.getState().userId;
 
         if (!db || !userId) {
             toast.error(t('toast.dbNotReady'), { description: t('toast.dbNotReadyDesc') });
-            return;
+            return false;
         }
         if (currentTeam.length === 0) {
             toast.warning(t('toast.teamEmpty'), { description: t('toast.teamEmptyDesc') });
-            return;
+            return false;
         }
 
         // An unnamed team gets a name instead of a warning: "Pikachu team",
@@ -499,23 +593,28 @@ export const useActiveTeamStore = create((set, get) => ({
         }
         const teamName = name;
 
+        // Said next to the field (which the view focuses), not in a toast.
         if (savedTeams && savedTeams.some(team => team.name === teamName && team.id !== editingTeamId)) {
-            toast.warning(t('toast.teamNameTaken'));
-            return;
+            set({ nameError: { reason: 'taken', at: Date.now() } });
+            return false;
         }
 
-        const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
-        const existingTeam = savedTeams?.find(t => t.id === editingTeamId);
-        const teamData = {
-            name: teamName,
-            pokemons: serializeTeam(currentTeam, megaStones, baseIdOf),
-            isFavorite: existingTeam?.isFavorite || false,
-            createdAt: existingTeam?.createdAt || new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+        const signature = teamSignature(teamName, currentTeam);
+        // Optimistic: edit mode for this team ("Atualizar"), with what is being
+        // written as the baseline for "unsaved changes".
+        set({ editingTeamId: teamId, savedSignature: signature, nameError: null });
 
         try {
+            const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
+            const existingTeam = savedTeams?.find(t => t.id === editingTeamId);
+            const teamData = {
+                name: teamName,
+                pokemons: serializeTeam(currentTeam, megaStones, baseIdOf),
+                isFavorite: existingTeam?.isFavorite || false,
+                createdAt: existingTeam?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
             track('team_saved', { size: currentTeam.length });
             toast.success(t('toast.teamSaved', { name: teamName }), {
@@ -523,18 +622,79 @@ export const useActiveTeamStore = create((set, get) => ({
                 actions: [{ label: t('toast.viewTeams'), onClick: () => navigateTo('/teams') }],
             });
             useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
-            // Keep the roster on screen so the save doesn't feel like the team vanished.
-            // Switch into edit mode for the just-saved team (button becomes "Update team"),
-            // with what was written as the new baseline for "unsaved changes".
-            set({ editingTeamId: teamId, savedSignature: teamSignature(teamName, currentTeam) });
             // A guest's first save is when losing the anonymous account starts
             // to cost something — the moment to suggest one (once per device).
             useAuthStore.getState().nudgeSyncAfterSave?.();
+            return true;
         } catch (e) {
+            // Roll the baseline back unless something else (a load) replaced it.
+            set((state) => (state.editingTeamId === teamId && state.savedSignature === signature
+                ? { editingTeamId, savedSignature: previousSignature }
+                : {}));
             toast.error(t('toast.teamSaveError'), {
                 actions: [{ label: t('toast.retry'), onClick: () => get().handleSaveTeam(savedTeams) }],
             });
+            return false;
         }
+    },
+
+    /**
+     * Put a saved team in the builder as the team being edited. `members` are
+     * complete (the caller refuses a partial load: a missing member would become
+     * the saved baseline, and the next Update would delete it). Replacing an
+     * unsaved draft offers an Undo, as an import does.
+     */
+    loadTeamForEditing: ({ members, name, id }) => {
+        const state = get();
+        const previous = {
+            currentTeam: state.currentTeam,
+            teamName: state.teamName,
+            editingTeamId: state.editingTeamId,
+            savedSignature: state.savedSignature,
+        };
+        const hadUnsaved = hasUnsavedDraft(state)
+            && teamSignature(name, members) !== teamSignature(state.teamName, state.currentTeam);
+        set({
+            currentTeam: members,
+            teamName: name,
+            editingTeamId: id,
+            savedSignature: teamSignature(name, members),
+            nameError: null,
+            editingTeamMember: null,
+        });
+        get().recalculateAnalysis();
+        toast.success(t('layout.teamLoaded', { name }), {
+            key: 'team-load',
+            description: hadUnsaved ? t('layout.teamLoadedReplacedDesc') : undefined,
+            actions: hadUnsaved ? [{
+                label: t('toast.undo'),
+                onClick: () => {
+                    set(previous);
+                    get().recalculateAnalysis();
+                },
+            }] : [],
+        });
+    },
+
+    /** Forget the draft, in memory and on disk — the session is ending. */
+    discardDraft: () => {
+        removeStoredDraft();
+        set({ currentTeam: [], teamName: '', editingTeamId: null, savedSignature: null, nameError: null, editingTeamMember: null });
+        get().recalculateAnalysis();
+    },
+
+    /** Layer the detail records under a draft restored from storage. */
+    hydrateRestoredDraft: async () => {
+        const light = get().currentTeam.filter((m) => !m.abilities?.length || !m.moves?.length);
+        if (light.length === 0) return;
+        const details = await Promise.all(light.map((m) => Promise.resolve(resolvePokemonDetail(m.id)).catch(() => null)));
+        const byInstance = new Map(light.map((m, i) => [m.instanceId, details[i]]));
+        set((state) => ({
+            currentTeam: state.currentTeam.map((m) => (byInstance.get(m.instanceId)
+                ? withResolvedDetail(m, byInstance.get(m.instanceId))
+                : m)),
+        }));
+        get().recalculateAnalysis();
     },
 
     buildShowdownExportText: (teamMembers) => buildShowdownText(teamMembers, {
@@ -687,25 +847,28 @@ export const useActiveTeamStore = create((set, get) => ({
             };
         });
 
-        set({ shareModal: { isOpen: true, shareUrl: '', pokemons: snippetPokemons, defaultTitle: safeName } });
-
-        const shareUrl = await publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf);
-        if (!shareUrl) {
-            set({ shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' } });
-            return;
-        }
-        set((state) => {
-            if (state.shareModal.isOpen) {
-                return { shareModal: { ...state.shareModal, shareUrl } };
-            }
-            return {};
-        });
+        // The image does not need the link: a failed publish leaves the dialog
+        // open (its Link button stays pending) and the toast offers a retry.
+        const attachLink = async () => {
+            const shareUrl = await publishSharedTeam(teamMembers, safeName, megaStones, baseIdOf, { onRetry: attachLink });
+            if (!shareUrl) return;
+            set((state) => {
+                if (state.shareModal.isOpen && state.shareModal.pokemons === snippetPokemons) {
+                    return { shareModal: { ...state.shareModal, shareUrl } };
+                }
+                return {};
+            });
+        };
+        const cached = peekSharedTeamUrl(teamMembers, safeName);
+        set({ shareModal: { isOpen: true, shareUrl: cached || '', pokemons: snippetPokemons, defaultTitle: safeName } });
+        if (!cached) await attachLink();
     },
 
     // The builder's "Link" button: publish the team and hand over its page's
     // address — the OS share sheet on a touch device, the clipboard elsewhere.
     // The "Image" button is shareTeamByData's snippet; "Forum" opens the feed.
     copyTeamLink: async () => {
+        if (get().isSharingLink) return;
         const { currentTeam, teamName } = get();
         if (!db || !useAuthStore.getState().isAuthReady) {
             toast.error(t('toast.dbNotReady'), { description: t('toast.dbNotReadyDesc') });
@@ -715,23 +878,23 @@ export const useActiveTeamStore = create((set, get) => ({
             toast.warning(t('toast.shareEmptyTeam'), { description: t('toast.teamEmptyDesc') });
             return;
         }
-        const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
         const name = teamName || 'Unnamed Team';
-        const url = await publishSharedTeam(currentTeam, name, megaStones, baseIdOf);
-        if (!url) return;
-        if (window.matchMedia?.('(pointer: coarse)').matches && navigator.share) {
-            try {
-                await navigator.share({ title: name, url });
-                return;
-            } catch (error) {
-                if (error?.name === 'AbortError') return;
-            }
+        // Unchanged since the last publish: the same page, handed over with no
+        // await in between, so the share sheet still has the tap's gesture.
+        const known = peekSharedTeamUrl(currentTeam, name);
+        if (known) {
+            await deliverTeamLink(known, name);
+            return;
         }
+        set({ isSharingLink: true });
         try {
-            await navigator.clipboard.writeText(url);
-            toast.success(t('builder.linkCopied'), { description: url });
-        } catch {
-            toast.info(url);
+            const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
+            const url = await publishSharedTeam(currentTeam, name, megaStones, baseIdOf, {
+                onRetry: () => get().copyTeamLink(),
+            });
+            if (url) await deliverTeamLink(url, name);
+        } finally {
+            set({ isSharingLink: false });
         }
     },
 
@@ -758,3 +921,49 @@ export function defaultTeamName(members = [], savedTeams = [], editingTeamId = n
 /** True when the team loaded for editing differs from what was last saved. */
 export const selectIsTeamDirty = (state) => Boolean(state.editingTeamId)
     && teamSignature(state.teamName, state.currentTeam) !== state.savedSignature;
+
+// Mirror the unsaved draft to storage (debounced), restore it on boot, and
+// forget it when the session ends. Browser only — tests run in node.
+if (typeof window !== 'undefined' && typeof localStorage !== 'undefined' && typeof window.addEventListener === 'function') {
+    let draftTimer = null;
+    const flushDraft = () => {
+        if (draftTimer) clearTimeout(draftTimer);
+        draftTimer = null;
+        writeStoredDraft(useActiveTeamStore.getState());
+    };
+    const dropPendingWrite = () => {
+        if (draftTimer) clearTimeout(draftTimer);
+        draftTimer = null;
+    };
+    useActiveTeamStore.subscribe((state, prev) => {
+        if (state.currentTeam === prev.currentTeam && state.teamName === prev.teamName
+            && state.editingTeamId === prev.editingTeamId && state.savedSignature === prev.savedSignature) return;
+        dropPendingWrite();
+        draftTimer = setTimeout(flushDraft, DRAFT_SAVE_DELAY_MS);
+    });
+    // A tab closed inside the debounce window still keeps its last edit.
+    window.addEventListener('pagehide', flushDraft);
+
+    if (restoredDraft) {
+        const hydrate = () => useActiveTeamStore.getState().hydrateRestoredDraft().catch(() => {});
+        if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(hydrate, { timeout: 2000 });
+        else setTimeout(hydrate, 0);
+    }
+
+    // Signing out or deleting the account (useAuthStore.leaveSession) ends the
+    // draft with the session. A restored draft whose account turns out not to
+    // be the one that signs in (the boot did not know the uid yet) goes too.
+    let ownerChecked = !restoredDraft?.owner;
+    useAuthStore.subscribe?.((auth, prevAuth) => {
+        const leaving = Boolean(auth.sessionTransition) && !prevAuth?.sessionTransition;
+        let otherAccount = false;
+        if (!ownerChecked && auth.userId) {
+            ownerChecked = true;
+            otherAccount = auth.userId !== restoredDraft.owner;
+        }
+        if (leaving || otherAccount) {
+            dropPendingWrite();
+            useActiveTeamStore.getState().discardDraft();
+        }
+    });
+}

@@ -50,6 +50,22 @@ const StatusIcon = () => (
     </svg>
 );
 
+// One sprite in the gallery: a real toggle button (it was a bare <img> with a
+// click handler — no keyboard, no pressed state for a screen reader).
+function SpriteChoice({ src, alt, selected, onSelect, sizeClass, title }) {
+    return (
+        <button
+            type="button"
+            onClick={() => onSelect(src)}
+            aria-pressed={selected}
+            title={title}
+            className={`${sizeClass} block cursor-pointer rounded-lg transition-transform hover:scale-110 active:scale-90 ${selected ? 'ring-2 ring-primary bg-primary/10' : ''}`}
+        >
+            <img src={src} alt={alt} className="h-full w-full image-pixelated" />
+        </button>
+    );
+}
+
 /**
  * The full Pokédex detail experience (Data / Locations / Moves / Sprites tabs),
  * self-contained: give it a `pokemonId` and it loads everything itself. This is
@@ -601,7 +617,7 @@ export function PokemonDetailPanel({
                                                             </button>
                                                         </td>
                                                         <td className="py-2.5 text-center"><span className="px-1.5 py-0.5 rounded text-2xs font-extrabold uppercase text-white tracking-[0.06em]" style={{ backgroundColor: typeColors[m.type] }}>{m.type.slice(0, 3)}</span></td>
-                                                        <td className="py-2 text-center"><span title={m.damageClass} className="inline-flex items-center justify-center">{m.damageClass === 'physical' ? <PhysicalIcon /> : m.damageClass === 'special' ? <SpecialIcon /> : <StatusIcon />}</span></td>
+                                                        <td className="py-2 text-center"><span title={m.damageClass} className="inline-flex items-center justify-center"><span aria-hidden="true" className="inline-flex">{m.damageClass === 'physical' ? <PhysicalIcon /> : m.damageClass === 'special' ? <SpecialIcon /> : <StatusIcon />}</span><span className="sr-only">{t(`db.${m.damageClass === 'physical' || m.damageClass === 'special' ? m.damageClass : 'status'}`)}</span></span></td>
                                                         <td className="py-2.5 text-center font-bold font-mono text-fg">{m.power ?? '—'}</td>
                                                         <td className="py-2.5 text-center font-bold font-mono text-fg">{m.accuracy ? `${m.accuracy}%` : '—'}</td>
                                                     </tr>
@@ -640,13 +656,13 @@ export function PokemonDetailPanel({
                                         <div className="flex items-center justify-center gap-3">
                                             {g.normal ? (
                                                 <div className="flex flex-col items-center">
-                                                    <img src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} onClick={() => setCustomSelectedSprite(g.normal)} className={`h-11 w-11 image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`} title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} />
+                                                    <SpriteChoice src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} selected={customSelectedSprite === g.normal} onSelect={setCustomSelectedSprite} sizeClass="h-11 w-11" title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} />
                                                     <span className="text-2xs text-muted font-bold mt-1">Normal</span>
                                                 </div>
                                             ) : <span className="text-muted text-2xs">—</span>}
                                             {g.shiny ? (
                                                 <div className="flex flex-col items-center">
-                                                    <img src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} onClick={() => setCustomSelectedSprite(g.shiny)} className={`h-11 w-11 image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`} title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} />
+                                                    <SpriteChoice src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} selected={customSelectedSprite === g.shiny} onSelect={setCustomSelectedSprite} sizeClass="h-11 w-11" title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} />
                                                     <span className="text-2xs text-muted font-bold mt-1">Shiny</span>
                                                 </div>
                                             ) : <span className="text-muted text-2xs">—</span>}
@@ -669,7 +685,7 @@ export function PokemonDetailPanel({
                                                 <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
                                                 {pokemonGenerationSprites.map((g) => (
                                                     <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
-                                                        {g.normal ? <img src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} onClick={() => setCustomSelectedSprite(g.normal)} className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`} title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} /> : <span className="text-muted text-2xs">➔</span>}
+                                                        {g.normal ? <SpriteChoice src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} selected={customSelectedSprite === g.normal} onSelect={setCustomSelectedSprite} sizeClass="h-12 w-12 mx-auto" title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} /> : <span className="text-muted text-2xs">➔</span>}
                                                     </td>
                                                 ))}
                                             </tr>
@@ -677,7 +693,7 @@ export function PokemonDetailPanel({
                                                 <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
                                                 {pokemonGenerationSprites.map((g) => (
                                                     <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
-                                                        {g.shiny ? <img src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} onClick={() => setCustomSelectedSprite(g.shiny)} className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`} title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} /> : <span className="text-muted text-2xs">—</span>}
+                                                        {g.shiny ? <SpriteChoice src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} selected={customSelectedSprite === g.shiny} onSelect={setCustomSelectedSprite} sizeClass="h-12 w-12 mx-auto" title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} /> : <span className="text-muted text-2xs">—</span>}
                                                     </td>
                                                 ))}
                                             </tr>

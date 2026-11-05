@@ -87,6 +87,35 @@ const unbindBattles = () => {
 const callBattleApi = callAuthedApi;
 
 /**
+ * A failed battle call, said in the player's language. The server's `error` is
+ * English prose for the logs ("This battle is not active (status: …)"), so the
+ * toast is chosen by status instead; a failure worth repeating as-is (the
+ * server or the network) carries Retry. Before 2026-11-04 players read
+ * "Server error (500) resolving turn." and "HTTP 409 error" verbatim.
+ */
+export const battleErrorText = (status) => {
+    if (status === 400 || status === 422) return t('toast.battleInvalidChoice');
+    if (status === 409) return t('toast.battleStateChanged');
+    if (status === 404) return t('toast.battleNotFound');
+    if (status === 403) return t('toast.battleNotAllowed');
+    return t('toast.battleServerError');
+};
+const isRetryable = (status) => !status || status >= 500 || status === 429;
+
+const reportBattleError = ({ status = 0, error = null } = {}, retry = null) => {
+    if (error === 'signedOut') {
+        toast.error(t('toast.sessionExpired'), {
+            description: t('toast.sessionExpiredDesc'),
+            actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signIn') }],
+        });
+        return;
+    }
+    toast.error(battleErrorText(status), {
+        actions: retry && isRetryable(status) ? [{ label: t('toast.retry'), onClick: retry }] : [],
+    });
+};
+
+/**
  * Ask the server to push the opponent about a change this client just wrote.
  *
  * Fire-and-forget on purpose: the battle transition is already committed, the
@@ -418,13 +447,12 @@ export const useBattlesStore = create((set, get) => ({
      */
     beginBattle: async (battleId) => {
         try {
-            const { ok, payload, error } = await callBattleApi(
+            const { ok, status, payload, error } = await callBattleApi(
                 BATTLE_TURN_ENDPOINT,
                 { battleId, action: 'begin' },
-                { serverErrorMessage: 'Server error (500) starting the battle.' },
             );
             if (!ok) {
-                toast.error(error === 'signedOut' ? t('toast.sessionExpired') : error);
+                reportBattleError({ status, error }, () => get().beginBattle(battleId));
                 return null;
             }
             if (payload.deltas?.length) get().mergeLogDeltas(battleId, payload.deltas);
@@ -432,7 +460,7 @@ export const useBattlesStore = create((set, get) => ({
             return payload;
         } catch (err) {
             console.error('Failed to start the battle:', err);
-            toast.error(t('toast.battleServerError'));
+            reportBattleError({}, () => get().beginBattle(battleId));
             return null;
         }
     },
@@ -440,16 +468,15 @@ export const useBattlesStore = create((set, get) => ({
     /** Give up a battle in progress: the opponent wins (`action: 'forfeit'`). */
     forfeitBattle: async (battleId) => {
         try {
-            const { ok, error } = await callBattleApi(
+            const { ok, status, error } = await callBattleApi(
                 BATTLE_TURN_ENDPOINT,
                 { battleId, action: 'forfeit' },
-                { serverErrorMessage: 'Server error (500) ending the battle.' },
             );
-            if (!ok) toast.error(error === 'signedOut' ? t('toast.sessionExpired') : error);
+            if (!ok) reportBattleError({ status, error }, () => get().forfeitBattle(battleId));
             return ok;
         } catch (err) {
             console.error('Failed to forfeit the battle:', err);
-            toast.error(t('toast.battleServerError'));
+            reportBattleError({}, () => get().forfeitBattle(battleId));
             return false;
         }
     },
@@ -582,20 +609,12 @@ export const useBattlesStore = create((set, get) => ({
 
         set({ isRollingTeams: true });
         try {
-            const { ok, payload, error } = await callBattleApi(
+            const { ok, status, payload, error } = await callBattleApi(
                 BATTLE_RANDOM_ENDPOINT,
                 { battleId },
-                { serverErrorMessage: 'Server error (500) dealing the random teams.' },
             );
             if (!ok) {
-                if (error === 'signedOut') {
-                    toast.error(t('toast.sessionExpired'), {
-                        description: t('toast.sessionExpiredDesc'),
-                        actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signIn') }],
-                    });
-                } else {
-                    toast.error(error);
-                }
+                reportBattleError({ status, error }, () => get().rollRandomTeams(battleId));
                 return null;
             }
             // The roll wrote this player's team; pull it in so the reveal doesn't
@@ -604,7 +623,7 @@ export const useBattlesStore = create((set, get) => ({
             return payload;
         } catch (err) {
             console.error('Failed to roll the random teams:', err);
-            toast.error(t('toast.battleServerError'));
+            reportBattleError({}, () => get().rollRandomTeams(battleId));
             return null;
         } finally {
             set({ isRollingTeams: false });
@@ -734,21 +753,15 @@ export const useBattlesStore = create((set, get) => ({
 
         if (!silent) set({ isResolvingTurn: true });
         try {
-            const { ok, payload, error } = await callBattleApi(
+            const { ok, status, payload, error } = await callBattleApi(
                 BATTLE_TURN_ENDPOINT,
                 { battleId, choice },
-                { serverErrorMessage: 'Server error (500) resolving turn.' },
             );
             if (!ok) {
                 if (silent) return null;
-                if (error === 'signedOut') {
-                    toast.error(t('toast.sessionExpired'), {
-                        description: t('toast.sessionExpiredDesc'),
-                        actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signIn') }],
-                    });
-                } else {
-                    toast.error(error);
-                }
+                // Retry resends the same choice (the server replays from the
+                // stored history, so a choice that did land is not doubled).
+                reportBattleError({ status, error }, () => get().submitChoice(battleId, choice));
                 return null;
             }
             // The turn's own lines: they play now, not when the listener catches up.
@@ -756,7 +769,7 @@ export const useBattlesStore = create((set, get) => ({
             return payload;
         } catch (err) {
             console.error('Failed to reach the battle resolver:', err);
-            if (!silent) toast.error(t('toast.battleServerError'));
+            if (!silent) reportBattleError({}, () => get().submitChoice(battleId, choice));
             return null;
         } finally {
             if (!silent) set({ isResolvingTurn: false });

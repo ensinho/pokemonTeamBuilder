@@ -178,7 +178,44 @@ const loadSessionState = () => {
     }
 };
 
-const NumberCounter = ({ value, onChange, min, max, step = 1, className = '' }) => {
+// A number box the user can type into. Clamping on every keystroke fought the
+// typing: clearing "100" to type 50 snapped to 1 at the empty box, then to 15,
+// then 100. The text is a draft while focused — a draft that already reads as an
+// in-range number applies at once, so the result follows the typing — and it is
+// clamped on blur or Enter (Escape drops it).
+const clampTo = (n, min, max) => Math.max(min, Math.min(max, n));
+function useNumberDraft(value, onChange, min, max) {
+    const [draft, setDraft] = useState(null);
+    const commit = () => {
+        if (draft === null) return;
+        const n = Number(draft);
+        setDraft(null);
+        if (draft.trim() === '' || Number.isNaN(n)) return; // empty: keep the last value
+        const next = clampTo(Math.round(n), min, max);
+        if (next !== value) onChange(next);
+    };
+    return {
+        value: draft ?? String(value),
+        onChange: (e) => {
+            const raw = e.target.value;
+            setDraft(raw);
+            const n = Number(raw);
+            if (raw.trim() !== '' && Number.isInteger(n) && n >= min && n <= max && n !== value) onChange(n);
+        },
+        onBlur: commit,
+        onKeyDown: (e) => {
+            if (e.key === 'Enter') commit();
+            else if (e.key === 'Escape') setDraft(null);
+        },
+    };
+}
+
+function NumberDraftInput({ value, onChange, min, max, ...rest }) {
+    const draft = useNumberDraft(value, onChange, min, max);
+    return <input type="number" inputMode="numeric" min={min} max={max} {...rest} {...draft} />;
+}
+
+const NumberCounter = ({ value, onChange, min, max, step = 1, className = '', id, label, decrementLabel, incrementLabel }) => {
     const handleDecrement = () => onChange(Math.max(min, value - step));
     const handleIncrement = () => onChange(Math.min(max, value + step));
 
@@ -189,19 +226,17 @@ const NumberCounter = ({ value, onChange, min, max, step = 1, className = '' }) 
                 onClick={handleDecrement}
                 className="px-2.5 h-full text-sm text-muted hover:text-fg hover:bg-surface-raised transition-colors focus:outline-none font-bold"
                 disabled={value <= min}
+                aria-label={decrementLabel}
             >
-                −
+                <span aria-hidden="true">−</span>
             </button>
-            <input
-                type="number"
+            <NumberDraftInput
+                id={id}
+                aria-label={label}
+                value={value}
+                onChange={onChange}
                 min={min}
                 max={max}
-                value={value}
-                onChange={(e) => {
-                    let val = Number(e.target.value);
-                    if (isNaN(val)) val = min;
-                    onChange(Math.max(min, Math.min(max, val)));
-                }}
                 className="w-10 text-center bg-transparent border-none text-xs font-bold font-mono text-fg focus:outline-none h-full p-0"
                 style={{ appearance: 'none', MozAppearance: 'textfield' }}
             />
@@ -210,8 +245,9 @@ const NumberCounter = ({ value, onChange, min, max, step = 1, className = '' }) 
                 onClick={handleIncrement}
                 className="px-2.5 h-full text-sm text-muted hover:text-fg hover:bg-surface-raised transition-colors focus:outline-none font-bold"
                 disabled={value >= max}
+                aria-label={incrementLabel}
             >
-                +
+                <span aria-hidden="true">+</span>
             </button>
         </div>
     );
@@ -529,7 +565,10 @@ export function DamageCalculatorView() {
         useToastStore.getState().showToast(t('damageCalc.swapped'), 'info');
     };
 
+    // Reversible, so no confirm: it clears at once and the toast offers Undo
+    // with the snapshot taken here (the session save effect re-persists it).
     const handleResetAll = () => {
+        const snapshot = { p1, p2, field };
         setP1(initialPokemonState(true));
         setP2(initialPokemonState(false));
         setField(initialFieldState);
@@ -538,7 +577,16 @@ export function DamageCalculatorView() {
         } catch {
             // ignore storage errors
         }
-        useToastStore.getState().showToast(t('damageCalc.reset'), 'info');
+        useToastStore.getState().showToast(t('damageCalc.reset'), 'info', {
+            actions: [{
+                label: t('toast.undo'),
+                onClick: () => {
+                    setP1(snapshot.p1);
+                    setP2(snapshot.p2);
+                    setField(snapshot.field);
+                },
+            }],
+        });
     };
 
     const copyRow = (atk, def, move, r, fieldObj) => {
@@ -605,13 +653,10 @@ export function DamageCalculatorView() {
             <div key={key} className="flex items-center gap-1.5">
                 <span className="w-7 shrink-0 text-2xs font-semibold" style={{ color: toneInk(statColor) }}>{STAT_LABELS[key]}</span>
                 <span className="w-6 shrink-0 text-center font-mono text-2xs text-muted" title={t('damageCalc.base')}>{pState.baseStats?.[key] || 0}</span>
-                <input
-                    type="number" min="0" max="31"
+                <NumberDraftInput
+                    min={0} max={31}
                     value={iv}
-                    onChange={(e) => {
-                        const val = Math.max(0, Math.min(31, Number(e.target.value) || 0));
-                        setP(prev => ({ ...prev, ivs: { ...prev.ivs, [key]: val } }));
-                    }}
+                    onChange={(val) => setP(prev => ({ ...prev, ivs: { ...prev.ivs, [key]: val } }))}
                     aria-label={`${key.replace(/-/g, ' ')} IV`}
                     className="w-8 shrink-0 text-center bg-bg border border-border rounded text-2xs py-0.5 font-mono focus:border-primary focus:outline-none"
                 />
@@ -623,10 +668,10 @@ export function DamageCalculatorView() {
                     style={{ background: `linear-gradient(to right, ${statColor} 0%, ${statColor} ${fillPct}%, var(--color-surface-raised) ${fillPct}%, var(--color-surface-raised) 100%)` }}
                     aria-label={`${key.replace(/-/g, ' ')} EV`}
                 />
-                <input
-                    type="number" min="0" max="252" step="4"
+                <NumberDraftInput
+                    min={0} max={252} step="4"
                     value={ev}
-                    onChange={(e) => setEv(e.target.value)}
+                    onChange={setEv}
                     aria-label={`${key.replace(/-/g, ' ')} EV value`}
                     className="w-10 shrink-0 text-center bg-bg border border-border rounded text-2xs py-0.5 font-mono focus:border-primary focus:outline-none"
                 />
@@ -667,12 +712,21 @@ export function DamageCalculatorView() {
                         <PokemonPicker pokemons={allPokemons} value={pState.pokemon} onSelect={(p) => handleSelectPokemon(side, p)} />
                         <div className="grid grid-cols-2 gap-2">
                             <div>
-                                <label className="dmg-field__label">{t('damageCalc.level')}</label>
-                                <NumberCounter value={pState.level} onChange={(v) => setP(prev => ({ ...prev, level: v }))} min={1} max={100} className="w-full" />
+                                <label className="dmg-field__label" htmlFor={`dmg-${side}-level`}>{t('damageCalc.level')}</label>
+                                <NumberCounter
+                                    id={`dmg-${side}-level`}
+                                    value={pState.level}
+                                    onChange={(v) => setP(prev => ({ ...prev, level: v }))}
+                                    min={1}
+                                    max={100}
+                                    className="w-full"
+                                    decrementLabel={t('damageCalc.decreaseLevel')}
+                                    incrementLabel={t('damageCalc.increaseLevel')}
+                                />
                             </div>
                             <div>
-                                <label className="dmg-field__label">{t('damageCalc.status')}</label>
-                                <select className="dmg-select text-xs" value={pState.status} onChange={(e) => setP(prev => ({ ...prev, status: e.target.value }))}>
+                                <label className="dmg-field__label" htmlFor={`dmg-${side}-status`}>{t('damageCalc.status')}</label>
+                                <select id={`dmg-${side}-status`} className="dmg-select text-xs" value={pState.status} onChange={(e) => setP(prev => ({ ...prev, status: e.target.value }))}>
                                     {STATUSES.map((st) => <option key={st} value={st}>{t(`damageCalc.statuses.${st}`)}</option>)}
                                 </select>
                             </div>
@@ -784,10 +838,12 @@ export function DamageCalculatorView() {
                 {/* Remaining HP (used as the target when the other Pokémon attacks it) */}
                 <div className="dmg-subpanel bg-bg/30 p-2.5 rounded-lg border border-border space-y-1.5">
                     <div className="flex items-center justify-between text-2xs font-semibold select-none">
-                        <span className="text-muted">{t('damageCalc.remainingHp')}</span>
-                        <span className="font-mono text-fg">{pState.currentHp}%</span>
+                        <label className="text-muted" htmlFor={`dmg-${side}-hp`}>{t('damageCalc.remainingHp')}</label>
+                        <span className="font-mono text-fg" aria-hidden="true">{pState.currentHp}%</span>
                     </div>
                     <input
+                        id={`dmg-${side}-hp`}
+                        aria-valuetext={`${pState.currentHp}%`}
                         type="range" min="1" max="100" value={pState.currentHp}
                         onChange={(e) => setP(prev => ({ ...prev, currentHp: Number(e.target.value) }))}
                         className="w-full accent-primary bg-bg rounded-lg appearance-none cursor-pointer h-2 border border-border"

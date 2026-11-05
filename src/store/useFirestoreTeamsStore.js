@@ -113,7 +113,6 @@ export const useFirestoreTeamsStore = create((set, get) => {
     return {
         savedTeams: [],
         favoritePokemons: new Set(),
-        deleteConfirmation: { isOpen: false, teamId: null, teamName: '' },
         activeTeamId: (() => {
             try {
                 return localStorage.getItem('ptbActiveTeamId') || null;
@@ -122,7 +121,6 @@ export const useFirestoreTeamsStore = create((set, get) => {
             }
         })(),
 
-        setDeleteConfirmation: (confirm) => set({ deleteConfirmation: confirm }),
         setActiveTeamId: (activeTeamId) => {
             try {
                 if (activeTeamId) {
@@ -159,6 +157,9 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const userId = useAuthStore.getState().userId;
             if (!db || !userId) return;
 
+            // No confirm in front of this (2026-11 UX audit): deleting is
+            // reversible through the toast's Undo, and a confirm before an
+            // undoable act is a wasted tap.
             // Snapshot the document before it goes, so the toast can offer to
             // put it back. Firestore has no undelete; restoring means writing
             // the same payload to the same id, which is only possible if we

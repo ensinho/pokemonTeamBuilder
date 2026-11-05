@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import '../../styles/entity-detail-view.css';
 import '../../styles/tools-views.css';
 import '../../styles/best-teams.css';
@@ -58,7 +58,6 @@ function PairRow({ pair, t }) {
 export function BestTeamsView({ onOpenTeam }) {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
-    const navigate = useNavigate();
     const { linkState } = useEntityNavigate();
     const { teams, status, generatedAt } = useTournamentData();
     const summary = useMemo(() => bestTeamsSummary(teams), [teams]);
@@ -91,7 +90,7 @@ export function BestTeamsView({ onOpenTeam }) {
                 <h2 id="bt-top" className="edv-section__title">{t('bestTeamsPage.top')}</h2>
                 <div className="trn-grid">
                     {summary.top.map((team, i) => (
-                        <TournamentTeamCard key={team.id || i} team={team} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />
+                        <TournamentTeamCard key={team.id || i} team={team} onOpen={onOpenTeam} linkState={linkState} t={t} pt={pt} />
                     ))}
                 </div>
             </section>

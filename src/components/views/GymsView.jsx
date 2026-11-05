@@ -63,19 +63,26 @@ function GameCard({ game, active, onClick }) {
     );
 }
 
+// One titled grid of covers in the picker. At module scope: defined inside the
+// modal it was a new component type on every render, so React remounted both
+// grids (and reloaded their covers) each time the modal re-rendered.
+function GameGroup({ title, items, selectedKey, onChoose }) {
+    if (!items.length) return null;
+    return (
+        <div className="space-y-2">
+            <p className="text-2xs font-semibold text-muted px-1">{title}</p>
+            <div className="game-picker__grid !p-1 !overflow-visible">
+                {items.map((g) => <GameCard key={g.key} game={g} active={g.key === selectedKey} onClick={() => onChoose(g.key)} />)}
+            </div>
+        </div>
+    );
+}
+
 // Logo game picker modal: official games + hack ROMs in cover-art grids.
 function GymGamePickerModal({ open, onClose, official, hacks, selectedKey, onSelect, pt }) {
     const dialogRef = useModalA11y(open ? onClose : undefined);
     if (!open) return null;
     const choose = (key) => { onSelect(key); onClose(); };
-    const Group = ({ title, items }) => (items.length ? (
-        <div className="space-y-2">
-            <p className="text-2xs font-semibold text-muted px-1">{title}</p>
-            <div className="game-picker__grid !p-1 !overflow-visible">
-                {items.map((g) => <GameCard key={g.key} game={g} active={g.key === selectedKey} onClick={() => choose(g.key)} />)}
-            </div>
-        </div>
-    ) : null);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm max-lg:backdrop-filter-none" onClick={onClose} role="presentation">
@@ -98,8 +105,8 @@ function GymGamePickerModal({ open, onClose, official, hacks, selectedKey, onSel
                     </button>
                 </div>
                 <div className="max-h-[70vh] space-y-6 overflow-y-auto p-5 custom-scrollbar">
-                    <Group title={pt ? 'Jogos oficiais' : 'Official games'} items={official} />
-                    <Group title={pt ? 'Hack ROMs' : 'Hack ROMs'} items={hacks} />
+                    <GameGroup title={pt ? 'Jogos oficiais' : 'Official games'} items={official} selectedKey={selectedKey} onChoose={choose} />
+                    <GameGroup title={pt ? 'Hack ROMs' : 'Hack ROMs'} items={hacks} selectedKey={selectedKey} onChoose={choose} />
                 </div>
             </div>
         </div>

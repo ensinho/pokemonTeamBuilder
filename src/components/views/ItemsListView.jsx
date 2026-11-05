@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
@@ -54,7 +54,17 @@ export function ItemsListView() {
         path: '/items',
     });
     const items = useReferenceStore((s) => s.items);
-    const [openName, setOpenName] = useState(null);
+    // The index ships with the reference data fetched at boot. Until that
+    // settles, `items` is [] for "not loaded" as much as for "none" — so the
+    // list reports loading, never a false "no matches" (cold visit, 2026-11).
+    const referenceStatus = useReferenceStore((s) => s.referenceStatus);
+    const fetchReferenceData = useReferenceStore((s) => s.fetchReferenceData);
+    const referenceSettled = referenceStatus === 'ready' || referenceStatus === 'error';
+    // Deep-link support: /items?q=<slug> pre-fills the search (the hook reads
+    // ?q=) and opens that item, so suggestions elsewhere (e.g. team detail) can
+    // link straight to its entry.
+    const [searchParams] = useSearchParams();
+    const [openName, setOpenName] = useState(() => searchParams.get('q'));
 
     // Items index already ships with the reference data — no extra request.
     const loadIndex = useCallback(
@@ -63,17 +73,7 @@ export function ItemsListView() {
     );
 
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
-        useReferenceList({ loadIndex, loadDetail });
-
-    // Deep-link support: /items?q=<slug> pre-fills the search and opens that item,
-    // so suggestions elsewhere (e.g. team detail) can link straight to its entry.
-    const [searchParams] = useSearchParams();
-    const queryItem = searchParams.get('q');
-    useEffect(() => {
-        if (!queryItem) return;
-        setSearch(queryItem);
-        setOpenName(queryItem);
-    }, [queryItem, setSearch]);
+        useReferenceList({ loadIndex, loadDetail, listKey: 'items', enabled: referenceSettled });
 
     const toggle = useCallback((name) => {
         setOpenName((prev) => (prev === name ? null : name));
@@ -106,8 +106,19 @@ export function ItemsListView() {
 
             {isLoadingIndex ? (
                 <Loader size="lg" block />
+            ) : total === 0 && referenceStatus === 'error' ? (
+                <EmptyState
+                    compact
+                    title={t('db.itemsLoadError')}
+                    action={{ label: t('toast.retry'), onClick: fetchReferenceData }}
+                />
             ) : total === 0 ? (
-                <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
+                <EmptyState
+                    compact
+                    title={t('db.noMatchesTitle')}
+                    message={t('db.noMatchesDesc')}
+                    action={search ? { label: t('common.clearSearch'), onClick: () => setSearch('') } : undefined}
+                />
             ) : (
                 <div className="ref-list">
                     <div className="ref-head ref-head--items">

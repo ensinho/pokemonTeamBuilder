@@ -301,7 +301,9 @@ export const useForumStore = create((set, get) => ({
     //     which by construction carries no answer.
     //   sharedChallenge — a Champion Challenge result (utils/challengeShare),
     //     with no team in it; read back through readChallengeShare.
-    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}) => {
+    // `notifyError: false` — the caller owns the failure (the composer puts the
+    // draft back and offers Retry itself).
+    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}, { notifyError = true } = {}) => {
         const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null } = attachments || {};
         if (!db) return false;
         const authState = useAuthStore.getState();
@@ -398,7 +400,7 @@ export const useForumStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error("Error sending message:", err);
-            toast.error(t('toast.messageSendError'));
+            if (notifyError) toast.error(t('toast.messageSendError'));
             return false;
         }
     },
@@ -428,7 +430,9 @@ export const useForumStore = create((set, get) => ({
             });
         } catch (err) {
             console.error("Error toggling message like:", err);
-            toast.error(t('toast.likeError'));
+            toast.error(t('toast.likeError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().toggleMessageLike(topicId, messageId) }],
+            });
         }
     },
 
@@ -470,7 +474,9 @@ export const useForumStore = create((set, get) => ({
             await Promise.all(writes);
         } catch (err) {
             console.error('Error toggling topic like:', err);
-            toast.error(t('toast.likeError'));
+            toast.error(t('toast.likeError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().toggleTopicLike(topicId, { opMessage }) }],
+            });
         }
     },
 

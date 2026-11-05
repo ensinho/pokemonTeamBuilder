@@ -28,13 +28,15 @@ const LABEL = arg('label', 'run');
 const OUT = arg('out', `results-${LABEL}.json`);
 const ONLY = new Set(String(arg('only', 'build,boot,routes,interactions')).split(','));
 const RUNS = Number(arg('runs', 3));
-const BASE = `http://localhost:${PORT}/pokemonTeamBuilder`;
+// The language is in the URL (LocaleRouter): Portuguese lives under /pt, the root is English.
+// localStorage "language" no longer decides it, and every label this script clicks is PT.
+const BASE = `http://localhost:${PORT}/pokemonTeamBuilder${arg('locale', 'pt') === 'en' ? '' : '/pt'}`;
 
 const ROUTES = (arg('routes', null)?.split(',')) || [
   '/', '/builder', '/favorites', '/pokedex', '/pokemon/25', '/pokemon/charizard',
   '/moves', '/moves/thunderbolt', '/abilities/intimidate', '/items/leftovers',
   '/meta', '/tournaments', '/damage-calculator', '/speed-tiers', '/gyms',
-  '/feed', '/friends', '/battles', '/pokepuzzle', '/quiz', '/guesser', '/pokeroom',
+  '/feed', '/friends', '/battles', '/pokepuzzle', '/quiz', '/quiz?tab=categories',
   '/profile', '/rota-inexistente',
 ];
 
@@ -47,8 +49,14 @@ const NET = { offline: false, latency: 150, downloadThroughput: 1.6e6 / 8 * 5, u
 const median = (xs) => { const s = xs.filter((x) => Number.isFinite(x)).sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : null; };
 const gz = (file) => zlib.gzipSync(fs.readFileSync(file)).length;
 
-const INIT = () => {
-  localStorage.setItem('patchNotesVersion', localStorage.getItem('patchNotesVersion') || '1.13.0');
+// The patch-notes dialog opens over everything until its current version is seen,
+// so read the version from the repo (--repo, default the cwd) instead of pinning one.
+const PATCH_NOTES = (() => {
+  try { return fs.readFileSync(path.resolve(arg('repo', '.'), 'src/constants/theme.js'), 'utf8').match(/PATCH_NOTES_VERSION = '([^']+)'/)[1]; }
+  catch { return '999.0.0'; }
+})();
+const INIT = (patchNotes) => {
+  localStorage.setItem('patchNotesVersion', patchNotes);
   localStorage.setItem('tb-onboarding-seen', '1');
   localStorage.setItem('language', 'pt');
   localStorage.setItem('theme', 'dark');
@@ -71,7 +79,7 @@ async function throttle(context, page) {
 
 async function newContext(browser, vp, storageState) {
   const ctx = await browser.newContext({ ...VIEWPORTS[vp], serviceWorkers: 'block', ...(storageState ? { storageState } : {}) });
-  await ctx.addInitScript(INIT);
+  await ctx.addInitScript(INIT, PATCH_NOTES);
   // Only shared data is off limits. The app's boot writes the visitor's own
   // preferences and waits for them (the old build never leaves the splash if
   // that write hangs), so private writes must go through to measure honestly.
@@ -204,6 +212,9 @@ async function makeSession(browser, vp) {
   await page.goto(BASE + '/');
   await page.waitForSelector('.app-shell', { timeout: 30000 });
   await page.waitForTimeout(4000);
+  // A fresh visit gets the landing (utils/landing.js), which has no tab bar; the
+  // saved session is a returning trainer, so routes and interactions see the app.
+  await page.evaluate(() => localStorage.setItem('ptb:landingSeen', '1'));
   const state = await ctx.storageState({ indexedDB: true });
   await ctx.close();
   return state;

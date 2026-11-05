@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { LANGUAGES, LOCALE_TAG, resolveArrivalLanguage, splitLocalePath } from '../utils/localePath';
 import { deployBase, mirrorLanguageInUrl } from '../services/localeHistory';
+import { loadLanguage } from '../i18n/catalog';
 
 /**
  * The visitor's language. Since 2026-10-21 it also lives in the URL — English
@@ -34,7 +35,9 @@ export const useLanguageStore = create((set) => {
 
     return {
         language: initialLang,
-        setLanguage: (lang) => {
+        // The other language's copy is its own chunk (i18n/catalog.js): load it
+        // first, so the switch never paints a frame of untranslated keys.
+        setLanguage: (lang) => loadLanguage(lang).then(() => {
             if (!LANGUAGES.includes(lang)) return;
             try {
                 localStorage.setItem('language', lang);
@@ -46,6 +49,6 @@ export const useLanguageStore = create((set) => {
             }
             set({ language: lang });
             mirrorLanguageInUrl(lang);
-        }
+        }, () => { /* chunk failed to load (offline): stay in the current language */ }),
     };
 });

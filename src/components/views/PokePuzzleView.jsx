@@ -6,7 +6,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { useToastStore, toast } from '../../store/useToastStore';
-import { nudgeSupport } from '../../services/supportNudge';
+import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
+import { showDailyPuzzleNotification } from '../../services/pushNotifications';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { RefreshIcon, CloseIcon } from '../icons';
@@ -220,6 +221,16 @@ export default function PokePuzzleView() {
     const trayRef = useRef(null);
     const activeRowRef = useRef(null);
     const resultRef = useRef(null);
+    // The coffee nudge waits for the result card to be read; a new board or
+    // leaving the page cancels it, so it never lands on the next game.
+    const nudgeTimerRef = useRef(0);
+    useEffect(() => {
+        window.clearTimeout(nudgeTimerRef.current);
+        return () => {
+            window.clearTimeout(nudgeTimerRef.current);
+            cancelSupportNudge();
+        };
+    }, [mode, targetPokemon?.id]);
 
     // A rejected guess is answered where the user is looking — a line above
     // the keyboard and a shake of the row they typed — not by a toast.
@@ -320,40 +331,14 @@ export default function PokePuzzleView() {
         startRandomOngoing();
     }, [startRandomOngoing]);
 
-    // Trigger local push notification when Daily challenge resets
+    // The day rolled over with the tab open: "the new puzzle is up", through
+    // the worker with the daily push's tag (services/pushNotifications). It
+    // never asks for permission — that is ReminderOffer's click.
     const triggerResetNotification = useCallback(() => {
-        if (typeof window === 'undefined' || !("Notification" in window)) return;
-
-        const showNotif = () => {
-            const title = t('pokepuzzle.notificationTitle');
-            const body = t('pokepuzzle.notificationBody');
-
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(title, {
-                        body: body,
-                        icon: '/pwa-192x192.png',
-                        vibrate: [200, 100, 200],
-                        tag: 'pokepuzzle-daily-reset'
-                    });
-                });
-            } else {
-                new Notification(title, {
-                    body: body,
-                    icon: '/pwa-192x192.png'
-                });
-            }
-        };
-
-        if (Notification.permission === "granted") {
-            showNotif();
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    showNotif();
-                }
-            });
-        }
+        showDailyPuzzleNotification({
+            title: t('pokepuzzle.notificationTitle'),
+            body: t('pokepuzzle.notificationBody'),
+        });
     }, [t]);
 
     // Handle Daily challenge transition when the day rolls over at midnight.
@@ -366,19 +351,6 @@ export default function PokePuzzleView() {
         setSelectedDate(dateString); // triggers the load effect
         triggerResetNotification();
     }, [allowedPool, triggerResetNotification]);
-
-    // Request notification permission on mount for daily mode
-    useEffect(() => {
-        if (mode === 'daily' && typeof window !== 'undefined' && "Notification" in window) {
-            if (Notification.permission === "default") {
-                // Politeness delay
-                const permTimer = setTimeout(() => {
-                    Notification.requestPermission();
-                }, 3000);
-                return () => clearTimeout(permTimer);
-            }
-        }
-    }, [mode]);
 
     // Daily countdown updater
     useEffect(() => {
@@ -619,7 +591,8 @@ export default function PokePuzzleView() {
         }
         // Win or loss, once the result card has been read.
         if (norm === targetNormalized || nextCount >= MAX_ATTEMPTS) {
-            window.setTimeout(() => nudgeSupport('puzzle'), 3000);
+            window.clearTimeout(nudgeTimerRef.current);
+            nudgeTimerRef.current = window.setTimeout(() => nudgeSupport('puzzle'), 3000);
         }
     };
 

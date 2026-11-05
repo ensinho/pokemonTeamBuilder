@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Cloud, Medal, Swords, MailCheck } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { prettifyAuthError } from '../../utils/authErrors';
+import { authErrorField, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
 import { Loader } from '../Loader';
 import { AuthDialogShell, AuthHero, AuthStage } from './auth/AuthDialogShell';
@@ -27,23 +27,41 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    // Which field the error is about ('email' | 'password' | null): marked
+    // aria-invalid, pointed at the message, and focused.
+    const [errorField, setErrorField] = useState(null);
+    const emailRef = useRef(null);
+    const passwordRef = useRef(null);
     const [busy, setBusy] = useState(false);
     const [resetSentTo, setResetSentTo] = useState('');
 
     const isSignUp = mode === 'signUp';
     const isReset = mode === 'reset';
 
+    const showError = (message, field = null) => {
+        setError(message);
+        setErrorField(field);
+    };
+    // Focus once the form is back (it unmounts while a request is in flight).
+    useEffect(() => {
+        if (busy || !error) return;
+        if (errorField === 'email') emailRef.current?.focus();
+        else if (errorField === 'password') passwordRef.current?.focus();
+    }, [busy, error, errorField]);
+
     const switchMode = (next) => {
         setError('');
+        setErrorField(null);
         setResetSentTo('');
         setMode(next);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!EMAIL_RE.test(email.trim())) { setError(t('modals.authValidationErrorEmail')); return; }
-        if (!isReset && password.length < MIN_PASSWORD_LENGTH) { setError(t('modals.authValidationErrorPassword')); return; }
+        if (!EMAIL_RE.test(email.trim())) { showError(t('modals.authValidationErrorEmail'), 'email'); return; }
+        if (!isReset && password.length < MIN_PASSWORD_LENGTH) { showError(t('modals.authValidationErrorPassword'), 'password'); return; }
         setError('');
+        setErrorField(null);
         setBusy(true);
         try {
             if (isReset) {
@@ -56,7 +74,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
             else await onSignIn(email.trim(), password);
             onClose?.();
         } catch (err) {
-            setError(prettifyAuthError(err, t));
+            showError(prettifyAuthError(err, t), authErrorField(err));
             setBusy(false);
         }
     };
@@ -119,6 +137,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                         <label className="field">
                             <span className="field-label">{t('modals.authEmailLabel')}</span>
                             <input
+                                ref={emailRef}
                                 type="email"
                                 autoComplete="email"
                                 autoCapitalize="none"
@@ -128,6 +147,8 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                aria-invalid={errorField === 'email' || undefined}
+                                aria-describedby={error && errorField === 'email' ? 'auth-modal-error' : undefined}
                                 className="input-clean"
                                 placeholder="trainer@pokemail.com"
                             />
@@ -141,11 +162,14 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
                                 enterKeyHint="go"
                                 minLength={MIN_PASSWORD_LENGTH}
+                                inputRef={passwordRef}
+                                invalid={errorField === 'password'}
+                                describedBy={error && errorField === 'password' ? 'auth-modal-error' : undefined}
                             />
                         )}
                         {isSignUp && <p className="auth-dialog__message auth-dialog__message--info">{t('modals.authPasswordHintNew')}</p>}
 
-                        {error && <p className="auth-dialog__message auth-dialog__message--error" role="alert">{error}</p>}
+                        {error && <p id="auth-modal-error" className="auth-dialog__message auth-dialog__message--error" role="alert">{error}</p>}
 
                         <div className="auth-dialog__actions">
                             <button type="submit" disabled={busy} className="btn btn-primary btn-lg btn-block">

@@ -239,6 +239,33 @@ export const hasPushSubscription = async () => {
     }
 };
 
+/**
+ * "The new PokéPuzzle is up", shown from an open tab when the day rolls over.
+ * Never asks for permission (that only happens from a click — ReminderOffer,
+ * Profile) and only goes through the worker: iOS has no `Notification`
+ * constructor, and the worker is what routes the tap. Shares the daily push's
+ * `ptb-daily` tag, and stays quiet on a subscribed device — the server's push
+ * already covers it, and both would buzz twice.
+ */
+export const showDailyPuzzleNotification = async ({ title, body, url = '/pokepuzzle' }) => {
+    try {
+        if (!getNotificationsEnabled() || !getDailyPuzzleEnabled()) return false;
+        if (getPermission() !== 'granted') return false;
+        if (await hasPushSubscription()) return false;
+        const registration = await getRegistration();
+        if (!registration?.showNotification) return false;
+        await registration.showNotification(title, {
+            body,
+            icon: '/pwa-192x192.png',
+            tag: 'ptb-daily',
+            data: { url, count: 1 },
+        });
+        return true;
+    } catch (_) {
+        return false;
+    }
+};
+
 /** Flip the daily-PokéPuzzle topic, on this device and on the server's copy. */
 export const setDailyPuzzleEnabled = async (enabled, { userId } = {}) => {
     writeFlag(DAILY_KEY, enabled);

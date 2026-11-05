@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Check, Circle, UserRound, UserPlus } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useAuthStore } from '../../../store/useAuthStore';
@@ -34,15 +34,30 @@ export function DeleteAccountDialog({ onClose }) {
     const [password, setPassword] = useState('');
     const [typed, setTyped] = useState('');
     const [error, setError] = useState('');
+    const [errorField, setErrorField] = useState(null); // 'password' | 'word' | null
+    const passwordRef = useRef(null);
+    const wordRef = useRef(null);
 
     const confirmWord = t('modals.delConfirmWord');
     const wordMatches = typed.trim().toUpperCase() === confirmWord.toUpperCase();
 
     const handleDelete = async (e) => {
         e.preventDefault();
-        if (!password) { setError(t('modals.accountCurrentPasswordRequired')); return; }
-        if (!wordMatches) { setError(t('modals.delTypeWordError', { word: confirmWord })); return; }
+        // Never pre-disabled: a mismatch is said next to the field instead.
+        if (!password) {
+            setError(t('modals.accountCurrentPasswordRequired'));
+            setErrorField('password');
+            passwordRef.current?.focus();
+            return;
+        }
+        if (!wordMatches) {
+            setError(t('modals.delTypeWordError', { word: confirmWord }));
+            setErrorField('word');
+            wordRef.current?.focus();
+            return;
+        }
         setError('');
+        setErrorField(null);
         setStep('working');
         try {
             await deleteAccount(password, setStage);
@@ -50,6 +65,7 @@ export function DeleteAccountDialog({ onClose }) {
             setStage(null);
             setStep('confirm');
             setError(prettifyAuthError(err, t));
+            setErrorField(null);
         }
     };
 
@@ -127,7 +143,7 @@ export function DeleteAccountDialog({ onClose }) {
                     </div>
                 </>
             ) : (
-                <form onSubmit={handleDelete} className="auth-dialog__form">
+                <form onSubmit={handleDelete} className="auth-dialog__form" noValidate>
                     <div className="auth-dialog__heading">
                         <h3>{t('modals.delConfirmHeading')}</h3>
                         <p>{t('modals.delConfirmHint')}</p>
@@ -139,12 +155,16 @@ export function DeleteAccountDialog({ onClose }) {
                         autoComplete="current-password"
                         enterKeyHint="next"
                         autoFocus
+                        inputRef={passwordRef}
+                        invalid={errorField === 'password'}
+                        describedBy={errorField === 'password' ? 'delete-account-error' : undefined}
                     />
                     <label className="field">
                         <span className="field-label">
                             {t('modals.delTypeWordLabel')} <span className="auth-confirm-word">{confirmWord}</span>
                         </span>
                         <input
+                            ref={wordRef}
                             type="text"
                             autoComplete="off"
                             autoCapitalize="characters"
@@ -152,14 +172,16 @@ export function DeleteAccountDialog({ onClose }) {
                             spellCheck={false}
                             enterKeyHint="go"
                             value={typed}
-                            onChange={(e) => setTyped(e.target.value)}
+                            onChange={(e) => { setTyped(e.target.value); if (errorField === 'word') setErrorField(null); }}
+                            aria-invalid={errorField === 'word' || undefined}
+                            aria-describedby={errorField === 'word' ? 'delete-account-error' : undefined}
                             className="input-clean"
                             placeholder={confirmWord}
                         />
                     </label>
-                    {error && <p className="auth-dialog__message auth-dialog__message--error" role="alert">{error}</p>}
+                    {error && <p id="delete-account-error" className="auth-dialog__message auth-dialog__message--error" role="alert">{error}</p>}
                     <div className="auth-dialog__actions">
-                        <button type="submit" disabled={!password || !wordMatches} className="btn btn-danger btn-lg btn-block">
+                        <button type="submit" className="btn btn-danger btn-lg btn-block">
                             {t('modals.accountDeleteBtn')}
                         </button>
                         <button type="button" onClick={() => { setError(''); setStep('review'); }} className="btn btn-ghost btn-block">

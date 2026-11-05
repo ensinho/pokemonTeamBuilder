@@ -147,6 +147,23 @@ export function CommandPalette({ onClose, destinations = [] }) {
                 label: t('search.quickLinks'),
                 options: destinations.slice(0, QUICK_LINKS).map((item) => toOption('pages', item)),
             }];
+        // Nothing matched: never a dead end. The Pokédex's own search also
+        // matches forms and partial numbers, so offer the query there — as a
+        // real option, so Enter takes it like any other result.
+        const trimmed = deferredQuery.trim();
+        if (isSearching && built.every((section) => section.options.length === 0)) {
+            built.push({
+                key: 'fallback',
+                label: t('search.quickLinks'),
+                options: [{
+                    key: 'pokedex-search',
+                    href: `/pokedex?q=${encodeURIComponent(trimmed)}`,
+                    title: t('search.searchPokedexFor', { query: trimmed }),
+                    meta: t('search.kindPage'),
+                    thumb: <Search />,
+                }],
+            });
+        }
         // One running index across every section: the arrows and
         // aria-activedescendant address options by it.
         let index = 0;
@@ -154,7 +171,7 @@ export function CommandPalette({ onClose, destinations = [] }) {
             ...section,
             options: section.options.map((option) => ({ ...option, index: index++ })),
         }));
-    }, [results, isSearching, destinations, t]);
+    }, [results, isSearching, destinations, deferredQuery, t]);
 
     const options = useMemo(() => sections.flatMap((section) => section.options), [sections]);
 
@@ -227,6 +244,9 @@ export function CommandPalette({ onClose, destinations = [] }) {
                 </div>
 
                 <div id={listboxId} role="listbox" aria-label={t('search.label')} className="command-palette__results">
+                    {sections.some((section) => section.key === 'fallback') && (
+                        <p className="command-palette__empty" role="presentation">{t('search.noResults', { query: deferredQuery.trim() })}</p>
+                    )}
                     {sections.map((section) => (
                         <div key={section.key} role="group" aria-label={section.label} className="command-palette__section">
                             <p className="command-palette__group" aria-hidden="true">{section.label}</p>
@@ -261,9 +281,6 @@ export function CommandPalette({ onClose, destinations = [] }) {
                         </div>
                     ))}
 
-                    {isSearching && options.length === 0 && (
-                        <p className="command-palette__empty">{t('search.noResults', { query: deferredQuery.trim() })}</p>
-                    )}
                 </div>
 
                 <div className="command-palette__hints" aria-hidden="true">

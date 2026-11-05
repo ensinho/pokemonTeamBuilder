@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useDeferredValue } from 'react';
 import { useLocation } from 'react-router-dom';
 import { usePokedexStore } from '../store/usePokedexStore';
 import { useDebounce } from './useDebounce';
@@ -43,9 +43,13 @@ export function usePokedex() {
     const fetchInitial = usePokedexStore(state => state.fetchInitial);
     const fetchMore = usePokedexStore(state => state.fetchMore);
 
-    // Setup debounces
+    // The Builder's search keeps its debounce (its grid lives in team-builder
+    // code with its own windowing). The Pokédex filters a static in-memory
+    // index, so a 300 ms wait only made it feel slow: its term follows the
+    // input as a deferred value — typing stays urgent, the refilter runs in the
+    // render after it — and PokedexView feeds its memoised grid a deferred list.
     const debouncedSearchTerm = useDebounce(searchInput, 300);
-    const debouncedPokedexSearchTerm = useDebounce(pokedexSearchInput, 300);
+    const debouncedPokedexSearchTerm = useDeferredValue(pokedexSearchInput);
 
     // Sync debounced search terms into the store
     useEffect(() => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/all-teams-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -142,11 +142,34 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, onD
     );
 };
 
-export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, activeTeamId, setActiveTeamId }) {
-    const [layoutMode, setLayoutMode] = React.useState('grid'); // 'grid' | 'list'
+// Grid or list is a per-device habit: kept across visits.
+const LAYOUT_KEY = 'ptbSavedTeamsLayout';
+const readLayout = () => {
+    try { return localStorage.getItem(LAYOUT_KEY) === 'list' ? 'list' : 'grid'; } catch (_) { return 'grid'; }
+};
+
+export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, requestDelete, onToggleFavorite, activeTeamId, setActiveTeamId }) {
+    const [layoutMode, setLayoutModeState] = React.useState(readLayout); // 'grid' | 'list'
+    const setLayoutMode = (mode) => {
+        setLayoutModeState(mode);
+        try { localStorage.setItem(LAYOUT_KEY, mode); } catch (_) { /* ignore */ }
+    };
     const { t, language } = useTranslation();
     const navigate = useNavigate();
     const viewTeam = (team) => navigate(`/teams/${team.id}`);
+
+    // The search lives in the URL (?q=), so a refresh or Back keeps it. Replace,
+    // not push: each keystroke is not a history entry.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const searchTerm = searchParams.get('q') || '';
+    const setSearchTerm = React.useCallback((value) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (value) next.set('q', value);
+            else next.delete('q');
+            return next;
+        }, { replace: true });
+    }, [setSearchParams]);
 
     const filteredTeams = React.useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -237,7 +260,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                     <div className="all-teams-view__card-head">
                                         <div className="min-w-0 flex-1">
                                             <div className="all-teams-view__card-heading">
-                                                <button type="button" onClick={() => viewTeam(team)} className="team-builder-recent-card__title all-teams-view__card-title text-left hover:text-primary transition-colors">{team.name}</button>
+                                                <Link to={`/teams/${team.id}`} className="team-builder-recent-card__title all-teams-view__card-title text-left hover:text-primary transition-colors">{team.name}</Link>
                                                 {team.isFavorite ? <span className="all-teams-view__status">{language === 'pt' ? 'Fixado' : 'Pinned'}</span> : null}
                                             </div>
 
@@ -315,7 +338,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                         <div className="all-teams-view__list-item-main">
                                             <div className="all-teams-view__list-item-info">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <button type="button" onClick={() => viewTeam(team)} className="all-teams-view__list-item-title text-left hover:text-primary transition-colors">{team.name}</button>
+                                                    <Link to={`/teams/${team.id}`} className="all-teams-view__list-item-title text-left hover:text-primary transition-colors">{team.name}</Link>
                                                     <span className={`badge badge-${statusType}`}>{statusText}</span>
                                                     {team.isFavorite && <span className="badge badge--accent">{language === 'pt' ? 'Fixado' : 'Pinned'}</span>}
                                                 </div>

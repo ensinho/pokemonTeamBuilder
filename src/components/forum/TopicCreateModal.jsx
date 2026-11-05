@@ -34,6 +34,7 @@ export function TopicCreateModal({
     const [isAttachOpen, setIsAttachOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [titleError, setTitleError] = useState(false);
+    const [submitError, setSubmitError] = useState(false);
     const attachButtonRef = useRef(null);
     const titleRef = useRef(null);
     const closeAttach = useCallback(() => setIsAttachOpen(false), []);
@@ -47,6 +48,7 @@ export function TopicCreateModal({
             setIsAttachOpen(false);
             setIsSubmitting(false);
             setTitleError(false);
+            setSubmitError(false);
         } else {
             if (initialTeam) setAttachedTeam(initialTeam);
             if (initialCategory) setCategory(initialCategory);
@@ -70,11 +72,14 @@ export function TopicCreateModal({
             return;
         }
         setIsSubmitting(true);
+        setSubmitError(false);
         try {
             await onSubmit({ title, category, text, attachedTeam });
             onClose();
         } catch (_) {
+            // The dialog stays open with everything typed; the error sits by Publish.
             setIsSubmitting(false);
+            setSubmitError(true);
         }
     };
 
@@ -223,6 +228,12 @@ export function TopicCreateModal({
                                 )}
                             </AttachMenuPopover>
                         </div>
+                    )}
+
+                    {submitError && (
+                        <p className="field-hint topic-create-error" role="alert">
+                            {t('forum.createPublishError')}
+                        </p>
                     )}
                 </form>
 

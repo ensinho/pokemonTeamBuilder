@@ -875,6 +875,20 @@
     box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
+/* A name another saved team has: the field says so in place (the save keeps
+   it focused), instead of a toast that left the field looking fine. */
+.tb-team__name[aria-invalid='true'],
+.team-builder-mobile__composer-top .team-builder-field[aria-invalid='true'] {
+    border-color: var(--color-danger);
+}
+
+.tb-team__name-error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: var(--text-xs);
+}
+.team-builder-mobile__composer .tb-team__name-error { margin-top: var(--space-1); }
+
 .tb-team__actions {
     display: flex;
     align-items: center;
@@ -2206,9 +2220,15 @@
 /* ── Condense-on-scroll: sticky composer shrinks to 2 rows ─────────────
    (name + compact Save, then slots); the actions row and analysis chip fold
    away. The compact Save mounts only while condensed. It sits in the name
-   row, whose height the 2.7rem field sets, so mounting it moves nothing. */
+   row, whose height the 2.7rem field sets, so mounting it moves nothing.
+   It fills that row's height (stretch, never taller — so still nothing moves)
+   rather than sitting at btn-sm's 28px: with the coarse-pointer hit area
+   below, the thumb gets a ≥44px target for the one action left in reach. */
 .team-builder-mobile__save-compact {
     position: relative;
+    align-self: stretch;
+    height: auto;
+    width: var(--control-h-md);
 }
 
 .team-builder-mobile__composer.is-condensed .team-builder-mobile__composer-fold {

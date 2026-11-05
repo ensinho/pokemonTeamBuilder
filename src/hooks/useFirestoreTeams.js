@@ -9,8 +9,6 @@ export function useFirestoreTeams() {
 
     const savedTeams = useFirestoreTeamsStore(state => state.savedTeams);
     const favoritePokemons = useFirestoreTeamsStore(state => state.favoritePokemons);
-    const deleteConfirmation = useFirestoreTeamsStore(state => state.deleteConfirmation);
-    const setDeleteConfirmation = useFirestoreTeamsStore(state => state.setDeleteConfirmation);
     const handleDeleteTeam = useFirestoreTeamsStore(state => state.handleDeleteTeam);
     const handleToggleFavorite = useFirestoreTeamsStore(state => state.handleToggleFavorite);
     const handleDuplicateTeam = useFirestoreTeamsStore(state => state.handleDuplicateTeam);
@@ -30,8 +28,6 @@ export function useFirestoreTeams() {
     return {
         savedTeams,
         favoritePokemons,
-        deleteConfirmation,
-        setDeleteConfirmation,
         handleDeleteTeam,
         handleToggleFavorite,
         handleDuplicateTeam,

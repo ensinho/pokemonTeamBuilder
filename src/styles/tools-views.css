@@ -245,6 +245,7 @@ input[type="number"] {
 .spd-tier .spd-row__speed { padding-top: var(--space-1); }
 
 .spd-tier__main-btn {
+    display: inline-block;
     padding: 0;
     border: none;
     background: none;
@@ -332,14 +333,22 @@ input[type="number"] {
     transition: border-color var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 .trn-card:hover { border-color: var(--color-primary); }
-.trn-card--clickable { cursor: pointer; }
-.trn-card--clickable:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+.trn-card--clickable { position: relative; cursor: pointer; }
+/* The card opens through its name, a real link whose hit area is stretched over
+   the whole card; the sprites and actions are lifted above that layer, so no
+   control sits inside another and Cmd/middle-click open a tab. */
+.trn-card__link { color: inherit; }
+.trn-card__link:focus-visible { outline: none; }
+.trn-card__link::after { content: ""; position: absolute; inset: 0; }
+.trn-card--clickable:has(.trn-card__link:focus-visible) { box-shadow: var(--ring-focus); }
+.trn-card--clickable .trn-card__mon-btn,
+.trn-card--clickable .trn-card__btn { position: relative; z-index: 1; }
 .trn-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
 .trn-card__name { font-weight: var(--weight-semibold); line-height: 1.2; }
 .trn-card__meta { font-size: var(--text-xs); color: var(--color-muted); margin-top: var(--space-0_5); font-variant-numeric: tabular-nums; }
 .trn-card__badge { flex-shrink: 0; font-size: var(--text-2xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-caps); text-transform: uppercase; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary-text); }
 .trn-card__roster { display: flex; gap: var(--space-1); flex-wrap: wrap; }
-.trn-card__mon-btn { padding: 0; border: none; background: none; cursor: pointer; border-radius: var(--radius-md); transition: transform var(--duration-fast) var(--ease-smooth); }
+.trn-card__mon-btn { display: inline-block; padding: 0; border: none; background: none; cursor: pointer; border-radius: var(--radius-md); transition: transform var(--duration-fast) var(--ease-smooth); }
 .trn-card__mon-btn:hover { transform: translateY(-2px); }
 .trn-card__mon { width: 2.75rem; height: 2.75rem; image-rendering: pixelated; background: var(--color-bg); border-radius: var(--radius-md); display: block; }
 .trn-card__actions { display: flex; gap: var(--space-1_5); margin-top: auto; }
