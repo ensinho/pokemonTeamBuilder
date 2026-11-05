@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../../styles/tools-views.css';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { ShowdownIcon, ShareIcon } from '../icons';
@@ -10,25 +11,33 @@ const isTopPlacement = (placement = '') => /^(champion|winner|1st|1º|campe)/i.t
  * One tournament team: name, event and placement, the six (each opens its
  * Meta page), and Import. Shared by the Tournaments list and the best-teams
  * page so the two never drift into two copies of the same card.
+ *
+ * The whole card opens the team, but through a real link — the name — whose
+ * hit area is stretched over the card (`.trn-card__link::after`), so Cmd- and
+ * middle-click work and no control is nested inside another. The sprites and
+ * actions sit above that layer.
  */
-export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt }) {
+export function TournamentTeamCard({ team, onOpen, linkState, t, pt }) {
     const roster = Array.isArray(team.pokemons) ? team.pokemons.slice(0, 6) : [];
-    const openDetail = () => { if (team.id) navigate(`/tournaments/team/${team.id}`, { state: linkState }); };
-    const stop = (e) => e.stopPropagation();
     const metaParts = [team.tournament, team.placement, team.date].filter(Boolean);
     const topPlacement = isTopPlacement(team.placement);
+    const name = team.title || team.player || 'Tournament Team';
     return (
-        <article
-            className="trn-card trn-card--clickable"
-            role={team.id ? 'button' : undefined}
-            tabIndex={team.id ? 0 : undefined}
-            onClick={team.id ? openDetail : undefined}
-            onKeyDown={team.id ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(); } } : undefined}
-            title={team.id ? (pt ? 'Ver detalhes do time' : 'View team details') : undefined}
-        >
+        <article className={`trn-card ${team.id ? 'trn-card--clickable' : ''}`}>
             <div className="trn-card__head">
                 <div>
-                    <div className="trn-card__name">{team.title || team.player || 'Tournament Team'}</div>
+                    <div className="trn-card__name">
+                        {team.id ? (
+                            <Link
+                                to={`/tournaments/team/${team.id}`}
+                                state={linkState}
+                                className="trn-card__link"
+                                title={pt ? 'Ver detalhes do time' : 'View team details'}
+                            >
+                                {name}
+                            </Link>
+                        ) : name}
+                    </div>
                     <div className="trn-card__meta">
                         {metaParts.map((part, i) => (
                             <React.Fragment key={`${i}-${part}`}>
@@ -45,12 +54,12 @@ export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt })
 
             <div className="trn-card__roster">
                 {roster.map((mon, i) => (
-                    <button
+                    <Link
                         key={mon.instanceId || `${mon.id}-${i}`}
-                        type="button"
+                        to={`/meta/${mon.id}`}
+                        state={linkState}
                         className="trn-card__mon-btn"
                         title={(mon.name || '').replace(/-/g, ' ')}
-                        onClick={(e) => { stop(e); navigate(`/meta/${mon.id}`, { state: linkState }); }}
                     >
                         <img
                             src={getPokemonFrontSpriteUrl(mon.id)}
@@ -59,7 +68,7 @@ export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt })
                             loading="lazy"
                             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                         />
-                    </button>
+                    </Link>
                 ))}
             </div>
 
@@ -67,7 +76,7 @@ export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt })
                 <button
                     type="button"
                     className="trn-card__btn trn-card__btn--primary"
-                    onClick={(e) => { stop(e); onOpen({ name: team.title || team.player || 'Tournament Team', pokemons: team.pokemons || [], evScale: team.evScale }); }}
+                    onClick={() => { onOpen({ name: team.title || team.player || 'Tournament Team', pokemons: team.pokemons || [], evScale: team.evScale }); }}
                 >
                     <ShowdownIcon /> {t('tools.importToBuilder')}
                 </button>
@@ -78,7 +87,7 @@ export function TournamentTeamCard({ team, onOpen, navigate, linkState, t, pt })
                         rel="noopener noreferrer"
                         className="trn-card__btn trn-card__btn--ghost"
                         title={team.pokepaste ? 'Poképaste' : 'Source'}
-                        onClick={stop}
+                        aria-label={team.pokepaste ? 'Poképaste' : 'Source'}
                     >
                         <ShareIcon className="w-4 h-4" />
                     </a>

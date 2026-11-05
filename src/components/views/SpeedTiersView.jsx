@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/tools-views.css';
 import { calcStat } from '../../utils/damageCalc';
@@ -11,6 +11,8 @@ import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
+import { useUrlParam } from '../../hooks/useUrlParam';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 
 const LEVEL = 50;
 const PAGE = 60;
@@ -36,13 +38,18 @@ export function SpeedTiersView({ generations = [] }) {
         description: 'Competitive Pokémon speed tiers by stat and common EV spreads, so you know what outspeeds what.',
         path: '/speed-tiers',
     });
-    const navigate = useNavigate();
+    // Rows are links carrying this list's URL, so a detail page's back button
+    // returns to the same spread, generation and search.
+    const { linkState } = useEntityNavigate();
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const isIndexLoading = useReferenceStore((s) => s.isIndexLoading);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
-    const [spreadKey, setSpreadKey] = useState('positive');
-    const [search, setSearch] = useState('');
-    const [gen, setGen] = useState('all');
+    // In the URL (?spread=&gen=&q=): Back from a Pokémon, a refresh and a
+    // shared link all land on the same list.
+    const [spreadParam, setSpreadKey] = useUrlParam('spread', 'positive');
+    const spreadKey = SPREADS[spreadParam] ? spreadParam : 'positive';
+    const [search, setSearch] = useUrlParam('q');
+    const [gen, setGen] = useUrlParam('gen', 'all');
     const [visibleCount, setVisibleCount] = useState(PAGE);
 
     useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
@@ -143,7 +150,14 @@ export function SpeedTiersView({ generations = [] }) {
                     <Loader />
                 </div>
             ) : ranked.length === 0 ? (
-                <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
+                <EmptyState
+                    compact
+                    title={t('db.noMatchesTitle')}
+                    message={t('db.noMatchesDesc')}
+                    action={search || gen !== 'all'
+                        ? { label: t('common.clearFilters'), onClick: () => { setSearch(''); setGen('all'); } }
+                        : undefined}
+                />
             ) : (
                 <div className="ref-list">
                     <div className="spd-list">
@@ -153,7 +167,16 @@ export function SpeedTiersView({ generations = [] }) {
                             return (
                                 <div key={main.speed} className="spd-tier">
                                     <span className="spd-row__rank">#{i + 1}</span>
-                                    <button type="button" className="spd-tier__main-btn" onClick={() => navigate(`/pokemon/${main.id}`)}>
+                                    {/* Same destination as the name beside it, so it is
+                                        out of the tab order — but named for a pointer
+                                        or screen-reader user who reaches it. */}
+                                    <Link
+                                        to={`/pokemon/${main.id}`}
+                                        state={linkState}
+                                        className="spd-tier__main-btn"
+                                        aria-label={main.name.replace(/-/g, ' ')}
+                                        tabIndex={-1}
+                                    >
                                         <img
                                             src={getPokemonFrontSpriteUrl(main.id)}
                                             alt=""
@@ -162,18 +185,18 @@ export function SpeedTiersView({ generations = [] }) {
                                             loading="lazy"
                                             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                         />
-                                    </button>
+                                    </Link>
                                     <div className="spd-tier__body">
-                                        <button type="button" className="spd-tier__name" onClick={() => navigate(`/pokemon/${main.id}`)}>
+                                        <Link to={`/pokemon/${main.id}`} state={linkState} className="spd-tier__name">
                                             {main.name.replace(/-/g, ' ')}
                                             <span className="spd-row__types">
                                                 {main.types?.map((type) => <TypeChip key={type} type={type} size="sm" />)}
                                             </span>
-                                        </button>
+                                        </Link>
                                         {rest.length > 0 && (
                                             <div className="spd-chips">
                                                 {rest.map((p) => (
-                                                    <button key={`${p.id}-${p.name}`} type="button" className="spd-chip" onClick={() => navigate(`/pokemon/${p.id}`)}>
+                                                    <Link key={`${p.id}-${p.name}`} to={`/pokemon/${p.id}`} state={linkState} className="spd-chip">
                                                         <img
                                                             src={getPokemonFrontSpriteUrl(p.id)}
                                                             alt=""
@@ -182,7 +205,7 @@ export function SpeedTiersView({ generations = [] }) {
                                                             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                                         />
                                                         {p.name.replace(/-/g, ' ')}
-                                                    </button>
+                                                    </Link>
                                                 ))}
                                             </div>
                                         )}

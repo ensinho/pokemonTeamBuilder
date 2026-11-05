@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { typeColors } from '../../constants/types';
@@ -9,11 +9,13 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
 import { TypeChip } from '../TypeChip';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
 import { useBattleDex, getBattleDex } from '../../hooks/useBattleDex';
+import { useUrlParam } from '../../hooks/useUrlParam';
 
 // Type, category, power, accuracy and PP for every move are already in
 // public/data/battle-dex.json (keyed by Showdown id: "thunder-punch" →
@@ -56,13 +58,14 @@ const CATEGORY_CLASS = {
 // hundred — once per arrival while the list was being scrolled. A row's props
 // are its entry, its own detail object (same reference until it changes), and
 // stable callbacks, so now only the row whose detail landed renders again.
-const MoveRow = React.memo(function MoveRow({ entry, d, onOpen, t }) {
+// A real link (Cmd/middle-click open a tab). `linkState` carries this list's
+// URL, search and filters included, so the detail page's back button returns
+// to the same filtered list.
+const MoveRow = React.memo(function MoveRow({ entry, linkState, d, t }) {
     return (
-        <div
-            role="link"
-            tabIndex={0}
-            onClick={() => onOpen(entry.name)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(entry.name); } }}
+        <Link
+            to={`/moves/${entry.name}`}
+            state={linkState}
             className="ref-row ref-row--moves"
         >
             <span className="ref-row__name">{prettify(entry.name)}</span>
@@ -80,7 +83,7 @@ const MoveRow = React.memo(function MoveRow({ entry, d, onOpen, t }) {
             <span className="ref-num">{d ? (d.power ?? '—') : <span className="ref-skeleton" />}</span>
             <span className="ref-num ref-num--muted ref-col-acc">{d ? (d.accuracy ?? '—') : ''}</span>
             <span className="ref-num ref-num--muted ref-col-pp">{d ? (d.pp ?? '—') : ''}</span>
-        </div>
+        </Link>
     );
 });
 
@@ -91,9 +94,11 @@ export function MovesListView() {
         description: 'Every Pokémon move with type, category, power, accuracy, and PP.',
         path: '/moves',
     });
-    const navigate = useNavigate();
-    const [typeFilter, setTypeFilter] = useState('all');
-    const [categoryFilter, setCategoryFilter] = useState('all');
+    const { linkState } = useEntityNavigate();
+    // Filters live in the URL (?type=&cat=, the search in ?q=) so Back from a
+    // move returns to the same filtered list.
+    const [typeFilter, setTypeFilter] = useUrlParam('type', 'all');
+    const [categoryFilter, setCategoryFilter] = useUrlParam('cat', 'all');
 
     // Lets a search for a Pokémon name surface the moves it can learn.
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
@@ -121,15 +126,18 @@ export function MovesListView() {
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
         useReferenceList({
             loadIndex: getMovesList, loadDetail, getRelatedNames,
-            filterEntry, filterKey: `${typeFilter}|${categoryFilter}|${dex ? 1 : 0}`,
+            // The dex landing is not a new list: the remembered depth and
+            // scroll offset must survive it, so it stays out of the key.
+            filterEntry, filterKey: `${typeFilter}|${categoryFilter}`,
+            listKey: 'moves',
         });
     const rows = visible;
-
-    // Each row is a link to that move's own page; the origin is stashed so the
-    // detail page's back button returns here.
-    const openDetail = useCallback((name) => {
-        navigate(`/moves/${name}`, { state: { from: '/moves' } });
-    }, [navigate]);
+    const hasFilters = Boolean(search) || typeFilter !== 'all' || categoryFilter !== 'all';
+    const clearFilters = () => {
+        setSearch('');
+        setTypeFilter('all');
+        setCategoryFilter('all');
+    };
 
     return (
         <div className="ref-view">
@@ -188,7 +196,12 @@ export function MovesListView() {
             {isLoadingIndex ? (
                 <Loader size="lg" block />
             ) : total === 0 ? (
-                <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
+                <EmptyState
+                    compact
+                    title={t('db.noMatchesTitle')}
+                    message={t('db.noMatchesDesc')}
+                    action={hasFilters ? { label: t('common.clearFilters'), onClick: clearFilters } : undefined}
+                />
             ) : (
                 <div className="ref-list">
                     <div className="ref-head ref-head--moves">
@@ -201,7 +214,7 @@ export function MovesListView() {
                     </div>
 
                     {rows.map((entry) => (
-                        <MoveRow key={entry.name} entry={entry} d={details[entry.name] || dexDetail(dex, entry.name)} onOpen={openDetail} t={t} />
+                        <MoveRow key={entry.name} entry={entry} linkState={linkState} d={details[entry.name] || dexDetail(dex, entry.name)} t={t} />
                     ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}

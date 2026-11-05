@@ -13,6 +13,10 @@ export const useReferenceStore = create((set, get) => ({
     // silently arrives undefined.
     games: [],
     isLoading: false,
+    // 'idle' | 'loading' | 'ready' | 'error'. `items: []` alone cannot tell
+    // "not fetched yet" from "fetched, none" — /items read the first as the
+    // second and showed "no matches" on a cold visit.
+    referenceStatus: 'idle',
 
     // Full, unfiltered Pokémon index (all generations + battle forms, with base
     // stats). Distinct from usePokedexStore.pokemons, which is filtered/paginated.
@@ -21,7 +25,7 @@ export const useReferenceStore = create((set, get) => ({
     isIndexLoading: false,
 
     fetchReferenceData: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, referenceStatus: get().referenceStatus === 'ready' ? 'ready' : 'loading' });
         try {
             const [data, games] = await Promise.all([
                 loadPokemonReferenceData(),
@@ -32,11 +36,12 @@ export const useReferenceStore = create((set, get) => ({
                 items: data.items || [],
                 natures: data.natures || [],
                 games: (games || []).map((g) => ({ key: g.key, label: g.label, generation: g.generation, count: g.count, formSuffixes: g.formSuffixes || [], closedRoster: Boolean(g.closedRoster) })),
-                isLoading: false
+                isLoading: false,
+                referenceStatus: 'ready',
             });
         } catch (error) {
             toast.error(t('toast.filterDataError'));
-            set({ isLoading: false });
+            set((state) => ({ isLoading: false, referenceStatus: state.referenceStatus === 'ready' ? 'ready' : 'error' }));
         }
     },
 

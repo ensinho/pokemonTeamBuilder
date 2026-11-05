@@ -1,13 +1,14 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useCallback, useDeferredValue, useEffect, useState, useMemo, useRef } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Search, Star, X, SlidersHorizontal } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
+import '../../styles/pokemon-card.css';
+import '../../styles/pokedex-view.css';
 import { typeColors, typeIcons } from '../../constants/types';
 import { EmptyState } from '../EmptyState';
 import { BottomSheet } from '../BottomSheet';
-import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { StarIcon } from '../icons';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
@@ -18,87 +19,244 @@ import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import { usePokedexStore } from '../../store/usePokedexStore';
 import { Loader } from '../Loader';
 import { navigateWithHero } from '../../utils/heroTransition';
+import { useReplaceSearchParams } from '../../hooks/useUrlParam';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
+import {
+    DEFAULT_POKEDEX_FILTERS,
+    filtersFromParams,
+    filtersFromStore,
+    hasPokedexFilterParams,
+    storePatchForFilters,
+    writeFilterParams,
+} from '../../utils/pokedexUrlFilters';
 
-const MobilePokedexPokemonCard = ({
+// ---------------------------------------------------------------------------
+// Cards. Each is a real link to the Pokémon's page (Cmd/middle-click open a tab,
+// long-press offers the link), and the favourite star is its own control beside
+// the link — positioned over the card's corner, never nested inside it
+// (pokedex-view.css). An unmodified primary click is intercepted so the sprite
+// can travel into the detail hero (utils/heroTransition.js).
+//
+// Both are memoised with stable props: before, every card re-rendered on every
+// reveal of the next page (an inline click handler per render), which is where
+// the long frames scrolling the desktop grid came from.
+// ---------------------------------------------------------------------------
+
+const DETAIL_STATE = { from: '/pokedex' };
+
+const isPlainClick = (event) => !event.defaultPrevented
+    && event.button === 0
+    && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+
+function PokedexStar({ pokemon, isFavorite, onToggle, className, iconClassName, burst = false, t }) {
+    const shiny = useShinyBurst();
+    const label = t(isFavorite ? 'pokedex.removeFavoriteAria' : 'pokedex.addFavoriteAria', { name: pokemon.name });
+    return (
+        <button
+            type="button"
+            onClick={() => {
+                // Starring earns the sparkle; un-starring does not.
+                if (burst && !isFavorite) shiny.fire();
+                onToggle(pokemon.id);
+            }}
+            className={`${className} pokedex-card-cell__star ${isFavorite ? 'is-active' : ''} ${shiny.isBursting ? 'is-bursting' : ''}`}
+            aria-label={label}
+            title={label}
+        >
+            <StarIcon className={iconClassName} isFavorite={isFavorite} color="currentColor" />
+            {burst && shiny.burst}
+        </button>
+    );
+}
+
+const MobilePokedexPokemonCard = React.memo(function MobilePokedexPokemonCard({
     pokemon,
-    onCardClick,
+    onOpen,
     isFavorite,
     onToggleFavorite,
     lastRef,
-}) => {
-    const { t, language } = useTranslation();
-    const handleCardClick = () => {
-        onCardClick?.(pokemon);
-    };
-
-    const handleKeyDown = (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onCardClick?.(pokemon);
-        }
-    };
-
-    const handleFavoriteClick = (event) => {
-        event.stopPropagation();
-        onToggleFavorite?.(pokemon.id);
-    };
-
+    t,
+}) {
     return (
-        <article
-            ref={lastRef}
-            role="button"
-            tabIndex={0}
-            aria-label={`View details for ${pokemon.name}`}
-            onClick={handleCardClick}
-            onKeyDown={handleKeyDown}
-            className="team-builder-mobile-card"
-        >
-            {/* Types only. Id, types and the favourite star on one row needed
-                98px of a 98px card at 390px wide — and more than a 360px phone
-                has — so something was always cut: first the second type icon,
-                then the id. The star lives on the sprite and the number beside
-                the name now (Enzo's call), so this row has nothing to fight. */}
-            <div className="flex items-center gap-1">
-                {(pokemon.types || []).map((type) => (
-                    <img
-                        key={type}
-                        src={typeIcons[type]}
-                        alt={type}
-                        className="h-4 w-4 rounded-full"
-                    />
-                ))}
-            </div>
-
-            <div className="team-builder-mobile-card__media" data-hero-source={pokemon.id}>
-                <button
-                    onClick={handleFavoriteClick}
-                    className={`team-builder-mobile-card__favorite team-builder-mobile-card__favorite--overlay ${isFavorite ? 'is-active' : ''}`}
-                    aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
-                    title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
-                >
-                    <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
-                </button>
-                <div className="mx-auto aspect-square w-full max-w-[84px]">
-                    <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
+        <div ref={lastRef} className="pokedex-card-cell pokedex-card-cell--mobile">
+            <Link
+                to={`/pokemon/${pokemon.id}`}
+                state={DETAIL_STATE}
+                onClick={(event) => onOpen(event, pokemon)}
+                aria-label={t('pokedex.viewDetailsAria', { name: pokemon.name })}
+                className="team-builder-mobile-card"
+            >
+                {/* Types only. Id, types and the favourite star on one row needed
+                    98px of a 98px card at 390px wide — and more than a 360px phone
+                    has — so something was always cut: first the second type icon,
+                    then the id. The star sits on the sprite's corner and the number
+                    beside the name now (Enzo's call), so this row has nothing to fight. */}
+                <div className="flex items-center gap-1">
+                    {(pokemon.types || []).map((type) => (
+                        <img
+                            key={type}
+                            src={typeIcons[type]}
+                            alt={type}
+                            className="h-4 w-4 rounded-full"
+                        />
+                    ))}
                 </div>
-            </div>
 
-            {/* Name left, number right. The name is what people read, so it
-                is the one that gives way when a long name meets a narrow card;
-                the number never truncates. No leading zeros here — right-aligned
-                numbers already line up at their edge, and "#0005" spent 18px a
-                name could use. */}
-            <div className="flex items-baseline justify-between gap-1">
-                <p className="team-builder-mobile-card__name min-w-0 font-bold capitalize">
-                    {pokemon.name}
-                </p>
-                <span className="shrink-0 font-mono text-2xs font-semibold tabular-nums text-muted select-none">
-                    #{pokemon.id}
-                </span>
-            </div>
-        </article>
+                <div className="team-builder-mobile-card__media" data-hero-source={pokemon.id}>
+                    <div className="mx-auto aspect-square w-full max-w-[84px]">
+                        <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
+                    </div>
+                </div>
+
+                {/* Name left, number right. The name is what people read, so it
+                    is the one that gives way when a long name meets a narrow card;
+                    the number never truncates. No leading zeros here — right-aligned
+                    numbers already line up at their edge, and "#0005" spent 18px a
+                    name could use. */}
+                <div className="flex items-baseline justify-between gap-1">
+                    <p className="team-builder-mobile-card__name min-w-0 font-bold capitalize">
+                        {pokemon.name}
+                    </p>
+                    <span className="shrink-0 font-mono text-2xs font-semibold tabular-nums text-muted select-none">
+                        #{pokemon.id}
+                    </span>
+                </div>
+            </Link>
+            <PokedexStar
+                pokemon={pokemon}
+                isFavorite={isFavorite}
+                onToggle={onToggleFavorite}
+                className="team-builder-mobile-card__favorite team-builder-mobile-card__favorite--overlay"
+                iconClassName="w-3.5 h-3.5"
+                t={t}
+            />
+        </div>
     );
+});
+
+// The desktop card: PokemonCard's look (pokemon-card.css), minus the Builder's
+// picker machinery and with the star moved out of the link.
+const PokedexDesktopCard = React.memo(function PokedexDesktopCard({
+    pokemon,
+    onOpen,
+    isFavorite,
+    onToggleFavorite,
+    lastRef,
+    t,
+}) {
+    return (
+        <div ref={lastRef} className="pokedex-card-cell pokedex-card-cell--desktop">
+            <Link
+                to={`/pokemon/${pokemon.id}`}
+                state={DETAIL_STATE}
+                onClick={(event) => onOpen(event, pokemon)}
+                aria-label={t('pokedex.viewDetailsAria', { name: pokemon.name })}
+                className="pokemon-card group"
+            >
+                <div className="pokemon-card__topbar">
+                    <div className="pokemon-card__types">
+                        <span className="pokemon-card__dex-number">
+                            #{String(pokemon.id).padStart(4, '0')}
+                        </span>
+                        {(pokemon.types || []).map((type) => (
+                            <img
+                                key={type}
+                                src={typeIcons[type]}
+                                alt={type}
+                                className="pokemon-card__type-icon"
+                            />
+                        ))}
+                    </div>
+                    {/* Holds the star's place in the row; the star itself is a
+                        sibling of the link, positioned over this slot. */}
+                    <span className="pokemon-card__favorite pokedex-card-cell__slot" aria-hidden="true" />
+                </div>
+                <div className="pokemon-card__media" data-hero-source={pokemon.id}>
+                    <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="w-full h-full" />
+                </div>
+                <p className="pokemon-card__name">{pokemon.name}</p>
+            </Link>
+            <PokedexStar
+                pokemon={pokemon}
+                isFavorite={isFavorite}
+                onToggle={onToggleFavorite}
+                className="pokemon-card__favorite"
+                iconClassName="w-4 h-4"
+                burst
+                t={t}
+            />
+        </div>
+    );
+});
+
+// The grid, memoised and fed a deferred list: typing in the search stays
+// instant (the input is urgent), and the grid catches up in an interruptible
+// render instead of blocking the next keystroke.
+const PokedexGrid = React.memo(function PokedexGrid({ pokemons, mobile, favoritePokemons, onOpen, onToggleFavorite, lastRef, t }) {
+    const Card = mobile ? MobilePokedexPokemonCard : PokedexDesktopCard;
+    return pokemons.map((pokemon, index) => (
+        <Card
+            key={pokemon.id}
+            pokemon={pokemon}
+            onOpen={onOpen}
+            isFavorite={favoritePokemons.has(pokemon.id)}
+            onToggleFavorite={onToggleFavorite}
+            lastRef={index === pokemons.length - 1 ? lastRef : null}
+            t={t}
+        />
+    ));
+});
+
+// ---------------------------------------------------------------------------
+// Filters <-> URL. The Pokédex filters live in its store (the Builder and the
+// detail screen read it), and are mirrored to `?q=&gen=&game=&types=&match=&fav=`
+// so Back, a refresh and a shared link all reopen the same list. The store's
+// list signature — and with it the remembered reveal depth and scroll offset —
+// is untouched by the mirror.
+// ---------------------------------------------------------------------------
+
+const KNOWN_TYPES = new Set(Object.keys(typeColors));
+
+const applyFiltersToStore = (filters) => {
+    const patch = storePatchForFilters(usePokedexStore.getState(), filters);
+    if (Object.keys(patch).length) usePokedexStore.setState(patch);
 };
+
+function usePokedexUrlSync(storeFilterDeps) {
+    const [searchParams] = useSearchParams();
+    const writeParams = useReplaceSearchParams();
+    const paramsKey = searchParams.toString();
+    // Queries this view wrote that the (transitioned) router has not echoed yet;
+    // an echo must not overwrite what the user changed since.
+    const pending = useRef([]);
+    const isFirstRun = useRef(true);
+
+    // URL -> store: on arrival, and on Back/Forward or a link while open.
+    useEffect(() => {
+        const firstRun = isFirstRun.current;
+        isFirstRun.current = false;
+        const index = pending.current.indexOf(paramsKey);
+        if (index !== -1) {
+            pending.current = pending.current.slice(index + 1);
+            return;
+        }
+        pending.current = [];
+        const params = new URLSearchParams(paramsKey);
+        // A bare /pokedex on arrival (the nav link, the detail page's back
+        // button) keeps the filters the session already has; the effect below
+        // then writes them into the URL.
+        if (firstRun && !hasPokedexFilterParams(params)) return;
+        applyFiltersToStore(filtersFromParams(params, KNOWN_TYPES));
+    }, [paramsKey]);
+
+    // Store -> URL, replacing the entry: filtering is not a step Back should walk.
+    useEffect(() => {
+        const filters = filtersFromStore(usePokedexStore.getState());
+        const written = writeParams((params) => writeFilterParams(params, filters));
+        if (written !== null) pending.current.push(written);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, storeFilterDeps);
+}
 
 export function PokedexView({
     pokemons,
@@ -118,7 +276,6 @@ export function PokedexView({
     setSelectedGame,
     isInitialLoading,
     listSignature = '',
-    colors,
     favoritePokemons,
     onToggleFavoritePokemon,
     showOnlyFavorites,
@@ -147,13 +304,17 @@ export function PokedexView({
             ? pokemons.filter((pokemon) => favoritePokemons.has(Number(pokemon.id)))
             : pokemons;
     }, [pokemons, showOnlyFavorites, favoritePokemons]);
+    // What the grid draws: one render behind while the user types (see PokedexGrid).
+    const gridPokemons = useDeferredValue(displayedPokemons);
+
+    usePokedexUrlSync([searchInput, selectedGeneration, selectedGame, selectedTypes, typeMatchMode, showOnlyFavorites]);
 
     // Opening a Pokémon leaves this page and comes back through a fresh render,
     // so the browser has nothing to restore — put the user back where they were
     // instead of at the top of 1025 Pokémon. Mobile scrolls the app shell;
     // desktop scrolls the results panel.
     useScrollRestoration(listSignature, {
-        ready: !isInitialLoading && displayedPokemons.length > 0,
+        ready: !isInitialLoading && gridPokemons.length > 0,
         containerRef: isMobile ? undefined : desktopResultsRef,
     });
 
@@ -182,26 +343,46 @@ export function PokedexView({
         }
     }, [pokemonQueryParam, navigate]);
 
-    // `?q=` pre-fills the search — the site search box Google may show under
-    // the result for this site (Home's WebSite/SearchAction JSON-LD, seoPages.js).
-    const searchQueryParam = searchParams.get('q');
-    useEffect(() => {
-        if (searchQueryParam) setSearchInput(searchQueryParam);
-        // Only on arrival with a query; typing afterwards owns the field.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchQueryParam]);
+    // `?q=` (and the other filters) are read by usePokedexUrlSync — `?q=` is
+    // also the site search box Google may show under the result for this site
+    // (Home's WebSite/SearchAction JSON-LD, seoPages.js).
 
     // Clicking a Pokémon opens its dedicated detail page (researchable, shareable
     // URL). The *filtered* order goes with it: on a phone the detail screen is a
     // carousel, and "next" has to mean the next card in the list the user is
-    // looking at — not the next national id.
-    const handleSelectPokemon = (pokemon) => {
-        if (!pokemon?.id) return;
+    // looking at — not the next national id. Only an unmodified primary click
+    // is taken over; Cmd/Ctrl/Shift/middle-click stay the browser's.
+    const handleOpenCard = useCallback((event, pokemon) => {
+        if (!isPlainClick(event) || !pokemon?.id) return;
+        event.preventDefault();
         setBrowseSequence(usePokedexStore.getState().filteredPokemons);
         // The card's sprite travels into the detail hero (utils/heroTransition.js).
         const source = document.querySelector(`[data-hero-source="${pokemon.id}"]`);
-        navigateWithHero(navigate, `/pokemon/${pokemon.id}`, { state: { from: '/pokedex' } }, source);
-    };
+        // The origin carries the filters, so the detail page's back button
+        // returns to this exact list.
+        const from = `/pokedex${window.location.search}`;
+        navigateWithHero(navigate, `/pokemon/${pokemon.id}`, { state: { from } }, source);
+    }, [navigate, setBrowseSequence]);
+
+    // AppLayout's toggle is not guaranteed stable; the memoised cards need one
+    // that is, or every card re-renders whenever the shell does.
+    const toggleFavoriteRef = useRef(onToggleFavoritePokemon);
+    useEffect(() => { toggleFavoriteRef.current = onToggleFavoritePokemon; }, [onToggleFavoritePokemon]);
+    const handleToggleFavorite = useCallback((id) => toggleFavoriteRef.current?.(id), []);
+
+    const hasActiveFilters = Boolean(searchInput) || showOnlyFavorites || activeFilterCount > 0;
+    const clearFilters = useCallback(() => {
+        applyFiltersToStore(DEFAULT_POKEDEX_FILTERS);
+    }, []);
+    // Says why the list is empty, and offers the one way out.
+    const emptyState = (
+        <EmptyState
+            compact
+            title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
+            message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('pokedex.noPokemonFoundDesc')}
+            action={hasActiveFilters ? { label: t('common.clearFilters'), onClick: clearFilters } : undefined}
+        />
+    );
 
     // --- MOBILE VIEW TEMPLATE ---
     if (isMobile) {
@@ -366,16 +547,15 @@ export function PokedexView({
                     ) : (
                         <>
                             <div className="pokedex-mobile-grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                                {displayedPokemons.map((pokemon, index) => (
-                                    <MobilePokedexPokemonCard
-                                        key={pokemon.id}
-                                        pokemon={pokemon}
-                                        onCardClick={handleSelectPokemon}
-                                        lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
-                                        isFavorite={favoritePokemons.has(pokemon.id)}
-                                        onToggleFavorite={onToggleFavoritePokemon}
-                                    />
-                                ))}
+                                <PokedexGrid
+                                    mobile
+                                    pokemons={gridPokemons}
+                                    favoritePokemons={favoritePokemons}
+                                    onOpen={handleOpenCard}
+                                    onToggleFavorite={handleToggleFavorite}
+                                    lastRef={lastPokemonElementRef}
+                                    t={t}
+                                />
                             </div>
 
                             {isFetchingMore && (
@@ -384,13 +564,9 @@ export function PokedexView({
                                 </div>
                             )}
 
-                            {displayedPokemons.length === 0 && (
+                            {gridPokemons.length === 0 && (
                                 <div className="py-12 text-center">
-                                    <EmptyState
-                                        compact
-                                        title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
-                                        message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
-                                    />
+                                    {emptyState}
                                 </div>
                             )}
                         </>
@@ -506,17 +682,14 @@ export function PokedexView({
                         ) : (
                             <div ref={desktopResultsRef} className="team-builder-results__scroll custom-scrollbar">
                                 <div className="team-builder-results__grid grid gap-4 p-1 py-4 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
-                                    {displayedPokemons.map((pokemon, index) => (
-                                        <PokemonCard
-                                            key={pokemon.id}
-                                            details={pokemon}
-                                            onCardClick={handleSelectPokemon}
-                                            lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
-                                            colors={colors}
-                                            isFavorite={favoritePokemons.has(pokemon.id)}
-                                            onToggleFavorite={onToggleFavoritePokemon}
-                                        />
-                                    ))}
+                                    <PokedexGrid
+                                        pokemons={gridPokemons}
+                                        favoritePokemons={favoritePokemons}
+                                        onOpen={handleOpenCard}
+                                        onToggleFavorite={handleToggleFavorite}
+                                        lastRef={lastPokemonElementRef}
+                                        t={t}
+                                    />
                                 </div>
 
                                 {isFetchingMore && (
@@ -525,13 +698,9 @@ export function PokedexView({
                                     </div>
                                 )}
 
-                                {displayedPokemons.length === 0 && !isInitialLoading && (
+                                {gridPokemons.length === 0 && !isInitialLoading && (
                                     <div className="px-2 pb-4">
-                                        <EmptyState
-                                            compact
-                                            title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
-                                            message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
-                                        />
+                                        {emptyState}
                                     </div>
                                 )}
                             </div>

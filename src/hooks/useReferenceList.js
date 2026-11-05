@@ -1,4 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useUrlParam } from './useUrlParam';
+import { useScrollRestoration } from './useScrollRestoration';
+
+// How deep each list was revealed, keyed by `listKey`, remembered with the
+// signature (search + filters) it was revealed for. Opening a row leaves the
+// page; coming Back used to start again at 40 rows, so the restored scroll
+// offset pointed past the end of the list. Session memory, like the Pokédex's.
+const revealMemory = new Map();
 
 /**
  * Drives the DATABASE list views (Moves / Abilities / Items).
@@ -16,17 +24,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
  *        so the count and the infinite scroll answer to it (a filter applied to
  *        the visible page only showed non-matching rows and a wrong total).
  * @param {string}   [opts.filterKey] changes when filterEntry's criteria change
+ * @param {string}   [opts.listKey] identity of the list ('moves', 'items'…). When
+ *        set, the reveal depth and the scroll offset survive leaving and coming
+ *        Back, per search + filter signature.
+ * @param {boolean}  [opts.enabled] false while the index's source is not loaded
+ *        yet — reported as loading, never as an empty list.
  * @param {Function} [opts.getRelatedNames] async (normalizedSearch) => string[] | null
  *        When the search term names a Pokémon, returns the index entry names
  *        related to it (e.g. that Pokémon's moves/abilities) so a search for
  *        "pikachu" surfaces "thunderbolt"/"static". Returns null when the term
  *        isn't a Pokémon, leaving the plain name filter in charge.
  */
-export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRelatedNames, filterEntry = null, filterKey = '' }) {
+export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRelatedNames, filterEntry = null, filterKey = '', listKey = '', enabled = true }) {
     const [index, setIndex] = useState([]);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
-    const [search, setSearch] = useState('');
-    const [visibleCount, setVisibleCount] = useState(pageSize);
+    // The search lives in the URL (?q=), so Back, refresh and a shared link keep it.
+    const [search, setSearch] = useUrlParam('q');
     const [details, setDetails] = useState({});
     const requested = useRef(new Set());
 
@@ -40,6 +53,7 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
 
     // Load the index once, retrying a couple of times on transient failures.
     useEffect(() => {
+        if (!enabled) { setIsLoadingIndex(true); return undefined; }
         let cancelled = false;
         let timer;
         const attempt = (retriesLeft) => {
@@ -62,7 +76,7 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
         setIsLoadingIndex(true);
         attempt(2);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [loadIndex]);
+    }, [loadIndex, enabled]);
 
     const normalized = search.trim().toLowerCase().replace(/\s+/g, '-');
 
@@ -101,8 +115,24 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
         [searched, filterEntry],
     );
 
-    // Reset the window whenever the filter changes.
-    useEffect(() => { setVisibleCount(pageSize); }, [normalized, filterKey, pageSize]);
+    // The revealed window belongs to one search + filter signature: a new
+    // signature starts from the first page, the remembered one (coming Back)
+    // starts as deep as it was left.
+    const signature = `${normalized}|${filterKey}`;
+    const [windowState, setWindowState] = useState(() => {
+        const remembered = listKey ? revealMemory.get(listKey) : null;
+        return {
+            signature,
+            count: remembered && remembered.signature === signature ? remembered.count : pageSize,
+        };
+    });
+    if (windowState.signature !== signature) {
+        setWindowState({ signature, count: pageSize });
+    }
+    const visibleCount = windowState.signature === signature ? windowState.count : pageSize;
+    useEffect(() => {
+        if (listKey) revealMemory.set(listKey, windowState);
+    }, [listKey, windowState]);
 
     const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
@@ -132,8 +162,15 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
     }, [visible, loadDetail]);
 
     const loadMore = useCallback(() => {
-        setVisibleCount((count) => Math.min(count + pageSize, filtered.length));
+        setWindowState((state) => ({
+            ...state,
+            count: Math.max(state.count, Math.min(state.count + pageSize, filtered.length)),
+        }));
     }, [filtered.length, pageSize]);
+
+    useScrollRestoration(listKey ? `${listKey}|${signature}` : '', {
+        ready: !isLoadingIndex && filtered.length > 0,
+    });
 
     const sentinelRef = useRef(null);
     const hasMore = visibleCount < filtered.length;

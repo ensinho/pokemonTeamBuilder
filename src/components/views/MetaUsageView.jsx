@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
@@ -22,6 +22,7 @@ import { ShowMoreButton } from '../ShowMoreButton';
 import { Loader } from '../Loader';
 import { DataNotes } from '../DataNotes';
 import { metaNotes } from '../../utils/dataNotes';
+import { useUrlParam } from '../../hooks/useUrlParam';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 // `unit` names what `count` counts — tournament teams, or weighted ladder games
@@ -101,7 +102,8 @@ export function MetaUsageView() {
         return map;
     }, [pokemonIndex]);
 
-    const [search, setSearch] = useState('');
+    // The search is in the URL too (?q=), with the format, tab, sort and cutoff.
+    const [search, setSearch] = useUrlParam('q');
     // Active tab lives in the URL (?tab=teams) so it's shareable and survives back-nav.
     // `tab` is resolved again below once we know whether the format is a tier:
     // the tournament-team dataset is VGC-only, so "Common teams" is not a view a
@@ -226,7 +228,11 @@ export function MetaUsageView() {
     if (params.get('cut')) monQuery.set('cut', params.get('cut'));
     const monSuffix = monQuery.toString() ? `?${monQuery}` : '';
     const openMon = (id) => navigate(`/meta/${id}${monSuffix}`, { state: linkState });
-    const openTeam = (teamId) => navigate(`/tournaments/team/${teamId}`, { state: linkState });
+    const hasFilters = Boolean(query) || typeFilter.length > 0;
+    const clearFilters = () => {
+        setSearch('');
+        setTypeFilter([]);
+    };
 
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
     if (loading && !ranked.length) {
@@ -397,10 +403,10 @@ export function MetaUsageView() {
                     ) : (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                             {teamCompositions.map((tm, i) => (
-                                <button
+                                <Link
                                     key={tm.ids.join('-')}
-                                    type="button"
-                                    onClick={() => openTeam(tm.teamId)}
+                                    to={`/tournaments/team/${tm.teamId}`}
+                                    state={linkState}
                                     className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none"
                                 >
                                     <div className="flex items-center justify-between gap-2">
@@ -419,7 +425,7 @@ export function MetaUsageView() {
                                         <span className="min-w-0 truncate text-2xs text-muted">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
                                         <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-primary" />
                                     </div>
-                                </button>
+                                </Link>
                             ))}
                         </div>
                     )}
@@ -432,7 +438,12 @@ export function MetaUsageView() {
                         {pt ? 'Pokémon mais usados' : 'Top Pokémon'}
                     </h2>
                     {visible.length === 0 ? (
-                        <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'} />
+                        <EmptyState
+                            compact
+                            title={pt ? 'Nenhum resultado' : 'No matches'}
+                            message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'}
+                            action={hasFilters ? { label: t('common.clearFilters'), onClick: clearFilters } : undefined}
+                        />
                     ) : (
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
                             {visible.slice(0, reveal.limit).map((mon) => {
@@ -441,10 +452,10 @@ export function MetaUsageView() {
                                 // renumbered 1..n would claim Pikachu is #1 in OU.
                                 const rank = rankById.get(mon.id) ?? (ranked.indexOf(mon) + 1);
                                 return (
-                                    <button
+                                    <Link
                                         key={mon.id}
-                                        type="button"
-                                        onClick={() => openMon(mon.id)}
+                                        to={`/meta/${mon.id}${monSuffix}`}
+                                        state={linkState}
                                         className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none"
                                     >
                                         <span className="figure absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs text-muted">{rank}</span>
@@ -461,7 +472,7 @@ export function MetaUsageView() {
                                                 <span className="figure">{mon.winRate}%</span> {pt ? 'vit' : 'WR'}
                                             </span>
                                         )}
-                                    </button>
+                                    </Link>
                                 );
                             })}
                         </div>

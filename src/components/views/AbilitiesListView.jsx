@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { getAbilitiesList, getAbilityDetails, resolvePokemonDetail } from '../../services/pokemonDataCache';
@@ -8,6 +8,7 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
@@ -17,13 +18,14 @@ const prettify = (name = '') => name.replace(/-/g, ' ');
 
 // Memoised row: only the row whose detail just landed re-renders, not every
 // revealed row once per arrival (see MoveRow in MovesListView).
-const AbilityRow = React.memo(function AbilityRow({ entry, d, onOpen }) {
+// A real link (Cmd/middle-click open a tab). `linkState` carries this list's
+// URL, search and filters included, so the detail page's back button returns
+// to the same filtered list.
+const AbilityRow = React.memo(function AbilityRow({ entry, linkState, d }) {
     return (
-        <div
-            role="link"
-            tabIndex={0}
-            onClick={() => onOpen(entry.name)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(entry.name); } }}
+        <Link
+            to={`/abilities/${entry.name}`}
+            state={linkState}
             className="ref-row ref-row--abilities"
         >
             <span className="ref-row__name">{prettify(entry.name)}</span>
@@ -33,7 +35,7 @@ const AbilityRow = React.memo(function AbilityRow({ entry, d, onOpen }) {
             <span className="ref-num ref-num--muted ref-col-holders">
                 {d ? d.pokemonCount : ''}
             </span>
-        </div>
+        </Link>
     );
 });
 
@@ -44,7 +46,7 @@ export function AbilitiesListView() {
         description: 'Every Pokémon ability explained, with its effect and which Pokémon can have it.',
         path: '/abilities',
     });
-    const navigate = useNavigate();
+    const { linkState } = useEntityNavigate();
 
     // Lets a search for a Pokémon name surface that Pokémon's abilities.
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
@@ -56,13 +58,7 @@ export function AbilitiesListView() {
     );
 
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
-        useReferenceList({ loadIndex: getAbilitiesList, loadDetail, getRelatedNames });
-
-    // Each row is a link to that ability's own page; the origin is stashed so
-    // the detail page's back button returns here.
-    const openDetail = useCallback((name) => {
-        navigate(`/abilities/${name}`, { state: { from: '/abilities' } });
-    }, [navigate]);
+        useReferenceList({ loadIndex: getAbilitiesList, loadDetail, getRelatedNames, listKey: 'abilities' });
 
     return (
         <div className="ref-view">
@@ -92,7 +88,12 @@ export function AbilitiesListView() {
             {isLoadingIndex ? (
                 <Loader size="lg" block />
             ) : total === 0 ? (
-                <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
+                <EmptyState
+                    compact
+                    title={t('db.noMatchesTitle')}
+                    message={t('db.noMatchesDesc')}
+                    action={search ? { label: t('common.clearSearch'), onClick: () => setSearch('') } : undefined}
+                />
             ) : (
                 <div className="ref-list">
                     <div className="ref-head ref-head--abilities">
@@ -102,7 +103,7 @@ export function AbilitiesListView() {
                     </div>
 
                     {visible.map((entry) => (
-                        <AbilityRow key={entry.name} entry={entry} d={details[entry.name]} onOpen={openDetail} />
+                        <AbilityRow key={entry.name} entry={entry} linkState={linkState} d={details[entry.name]} />
                     ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}
