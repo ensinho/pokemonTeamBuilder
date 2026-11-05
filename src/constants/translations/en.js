@@ -271,7 +271,7 @@ export default {
         abilities: { title: 'Pokémon Abilities List', description: 'Every Pokémon ability explained: what each one does in battle and which Pokémon can have it, with a link to the page of every one of them.' },
         items: { title: 'Pokémon Items List', description: 'Held items, berries, Mega Stones and other battle items for competitive Pokémon teams, each with what it does in battle and its full effect.' },
         gyms: { title: 'Pokémon Gym Leaders and their teams', description: 'Every Pokémon gym leader and their team, game by game and region by region: the city, the badge, the leader\'s type and every Pokémon they send out.' },
-        journeys: { title: 'Journeys: learn the Pokémon team builder', description: 'Learn PokemonBuilder step by step: five levels of short missions that teach the team builder, the Pokédex and the battle tools, each with a badge.' },
+        journeys: { title: 'Journeys: learn the Pokémon team builder', description: 'Learn PokemonBuilder step by step: six levels of short missions that teach the team builder, the Pokédex and the battle tools, each with a badge.' },
         quiz: { title: 'Pokémon Quiz: name every Pokémon', description: 'A free Pokémon quiz with two ways to play: name every Pokémon of one generation, or name every Pokémon that shares an official trait.' },
         pokepuzzle: { title: 'Daily PokePuzzle: guess the Pokémon of the day', description: 'PokePuzzle is a daily Pokémon guessing game: find the Pokémon of the day from its types, base stats, height and weight. A new puzzle every day.' },
         challenge: { title: 'Champion Challenge: battle Cynthia every day', description: 'Battle Cynthia once a day in a DS-style Pokémon battle in your browser: a new Champion team at midnight, a Team of the day to borrow, and a streak.' },
@@ -2960,9 +2960,10 @@ export default {
             quiz: 'Quiz',
             milestone: 'Milestones',
             master: 'Master',
+            challenge: 'Champion Challenge',
         },
         categorySubs: {
-            journey: 'The five levels, from the first step to the League.',
+            journey: 'The six levels, from the first step to the two Champions.',
             teams: 'From the first saved team to a whole box.',
             forum: 'Your voice in the community.',
             collection: 'The Pokémon you chose to keep.',
@@ -2972,6 +2973,7 @@ export default {
             quiz: 'Generations and categories by heart.',
             milestone: 'The big puzzle and quiz milestones.',
             master: 'The top of the League.',
+            challenge: 'Cynthia, Blue and the Daily team — ideally on the same day.',
         },
         list: {
             'first-steps': { title: 'First steps', sub: 'Get to know the app and pick who comes along.' },
@@ -2979,6 +2981,7 @@ export default {
             strategy: { title: 'Strategy', sub: 'Learn what makes a team strong before the battle.' },
             community: { title: 'Community', sub: 'Show your team and meet other trainers.' },
             league: { title: 'Road to the League', sub: 'Games and battles to test what you learned.' },
+            champions: { title: 'The two Champions', sub: 'Cynthia and Blue wait in the same room, each with a ranking of their own. Take on both.' },
         },
         missions: {
             partner: { title: 'Pick your partner', hint: 'It shows on your Home and your trainer card. Tap it on Home to swap whenever you like.' },
@@ -3003,6 +3006,11 @@ export default {
             challenge: { title: 'Face the Champion', hint: 'One battle a day against Cynthia, with any team you like.' },
             battle: { title: 'Challenge a friend', hint: 'In Battles, pick a friend and a team and send the invite.' },
             equipBadge: { title: 'Equip a badge', hint: 'Tap a badge you earned and equip it. It shows next to your name on the forum.' },
+            beatCynthia: { title: 'Beat Cynthia', hint: 'Your first battle of the day with the Daily team and your first with a team of your own both count — win either one.' },
+            beatBlue: { title: 'Beat Blue', hint: 'In the Challenge room, walk up to Blue. He brings a different team and a ranking of his own.' },
+            dailyTeamWin: { title: 'Win with the Daily team', hint: 'The Daily team is the same for everyone — the fairest ranking. Pick it when you challenge either champion.' },
+            bothSameDay: { title: 'Challenge both on the same day', hint: 'Finish an official battle against Cynthia and another against Blue before midnight.' },
+            dailyDouble: { title: 'Beat both with the Daily team', hint: 'On the same day, beat Cynthia and Blue with each one\'s Daily team. The Daily team\'s Double Crown.' },
         },
     },
     guide: {

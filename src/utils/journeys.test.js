@@ -58,7 +58,7 @@ describe('JOURNEYS', () => {
 describe('evaluateJourneys', () => {
     it('starts a new trainer at level 1 with nothing done', () => {
         const journeys = evaluateJourneys({});
-        expect(journeys.map((j) => j.level)).toEqual([1, 2, 3, 4, 5]);
+        expect(journeys.map((j) => j.level)).toEqual([1, 2, 3, 4, 5, 6]);
         expect(journeys.every((j) => j.doneCount === 0 && !j.isComplete)).toBe(true);
         expect(currentJourney(journeys).id).toBe('first-steps');
         expect(nextMission(currentJourney(journeys)).id).toBe('partner');
@@ -110,7 +110,18 @@ describe('evaluateJourneys', () => {
         expect(journeyTotals(journeys).missionsDone).toBe(0);
     });
 
-    it('returns no current journey once all five are done', () => {
+    it('reads the two Champions journey from the challenge record', () => {
+        const record = (over) => ({
+            winsBy: { cynthia: 1, blue: 1 }, dailyTeamWins: 1, bothPlayedDays: 1, bothDailyWonDays: 0, ...over,
+        });
+        const almost = evaluateJourneys({ challenge: record() });
+        expect(['beatCynthia', 'beatBlue', 'dailyTeamWin', 'bothSameDay'].every((id) => missionDone(almost, id))).toBe(true);
+        expect(missionDone(almost, 'dailyDouble')).toBe(false);
+        expect(evaluateJourneys({ challenge: record({ bothDailyWonDays: 1 }) }).find((j) => j.id === 'champions').isComplete).toBe(true);
+        expect(missionDone(evaluateJourneys({ challenge: record({ winsBy: { cynthia: 3 } }) }), 'beatBlue')).toBe(false);
+    });
+
+    it('returns no current journey once all six are done', () => {
         const journeys = evaluateJourneys({
             greetingPokemonId: 1,
             favoritesCount: 1,
@@ -123,10 +134,11 @@ describe('evaluateJourneys', () => {
             battlesCount: 1,
             selectedBadgeId: 'badge_teams_1',
             marks: Object.fromEntries(JOURNEY_MARKS.map((m) => [m, true])),
+            challenge: { winsBy: { cynthia: 1, blue: 1 }, dailyTeamWins: 2, bothPlayedDays: 1, bothDailyWonDays: 1 },
         });
         expect(journeys.every((j) => j.isComplete)).toBe(true);
         expect(currentJourney(journeys)).toBeNull();
-        expect(journeyTotals(journeys)).toMatchObject({ journeysDone: 5, journeysTotal: 5 });
+        expect(journeyTotals(journeys)).toMatchObject({ journeysDone: 6, journeysTotal: 6 });
     });
 });
 

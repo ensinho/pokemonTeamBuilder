@@ -251,7 +251,7 @@ export default {
         abilities: { title: 'Lista de habilidades Pokémon', description: 'Todas as habilidades Pokémon explicadas: o que cada uma faz em batalha e quais Pokémon podem tê-la, com o link para a página de cada um deles.' },
         items: { title: 'Lista de itens Pokémon', description: 'Itens de segurar, berries, Mega Stones e outros itens de batalha para times competitivos, cada um com o que faz em batalha e o efeito completo.' },
         gyms: { title: 'Líderes de ginásio Pokémon e seus times', description: 'Todos os líderes de ginásio Pokémon e seus times, jogo a jogo e região por região: a cidade, a insígnia, o tipo do líder e cada Pokémon que ele usa.' },
-        journeys: { title: 'Jornadas: aprenda a montar times Pokémon', description: 'Aprenda a usar o PokemonBuilder passo a passo: cinco níveis de missões curtas sobre o montador, a Pokédex e as batalhas, cada um com uma insígnia.' },
+        journeys: { title: 'Jornadas: aprenda a montar times Pokémon', description: 'Aprenda a usar o PokemonBuilder passo a passo: seis níveis de missões curtas sobre o montador, a Pokédex e as batalhas, cada um com uma insígnia.' },
         quiz: { title: 'Quiz Pokémon: diga todos os Pokémon', description: 'Um quiz Pokémon grátis com dois jeitos de jogar: diga todos os Pokémon de uma geração, ou todos os Pokémon que compartilham uma característica oficial.' },
         pokepuzzle: { title: 'PokéPuzzle diário: adivinhe o Pokémon do dia', description: 'PokéPuzzle é um jogo diário de adivinhar Pokémon: descubra o Pokémon do dia pelos tipos, status base, altura e peso. Um desafio novo a cada dia.' },
         challenge: { title: 'Desafio da Campeã: enfrente a Cynthia todo dia', description: 'Enfrente a Cynthia uma vez por dia numa batalha estilo DS no navegador: um time de Campeã novo à meia-noite, um Time do dia para usar e uma sequência.' },
@@ -2921,9 +2921,10 @@ export default {
             quiz: 'Quiz',
             milestone: 'Marcos',
             master: 'Mestre',
+            challenge: 'Desafio dos Campeões',
         },
         categorySubs: {
-            journey: 'Os cinco níveis, do primeiro passo à Liga.',
+            journey: 'Os seis níveis, do primeiro passo aos dois Campeões.',
             teams: 'Do primeiro time salvo a uma caixa inteira.',
             forum: 'Sua voz na comunidade.',
             collection: 'Os Pokémon que você escolheu guardar.',
@@ -2933,6 +2934,7 @@ export default {
             quiz: 'Gerações e categorias de cabeça.',
             milestone: 'Os grandes marcos de puzzles e quizzes.',
             master: 'O topo da Liga.',
+            challenge: 'Cynthia, Blue e o Time do dia — de preferência no mesmo dia.',
         },
         list: {
             'first-steps': { title: 'Primeiros passos', sub: 'Conheça o app e escolha quem vai com você.' },
@@ -2940,6 +2942,7 @@ export default {
             strategy: { title: 'Estratégia', sub: 'Entenda o que deixa um time forte antes da batalha.' },
             community: { title: 'Comunidade', sub: 'Mostre seu time e conheça outros treinadores.' },
             league: { title: 'Rumo à Liga', sub: 'Jogos e batalhas para testar o que você aprendeu.' },
+            champions: { title: 'Os dois Campeões', sub: 'Cynthia e Blue esperam na mesma sala, cada um com seu ranking. Desafie os dois.' },
         },
         missions: {
             partner: { title: 'Escolha seu parceiro', hint: 'Ele aparece na sua Home e no seu cartão de treinador. Toque nele na Home para trocar quando quiser.' },
@@ -2964,6 +2967,11 @@ export default {
             challenge: { title: 'Enfrente a Campeã', hint: 'Uma batalha por dia contra a Cynthia, com o time que você quiser.' },
             battle: { title: 'Desafie um amigo', hint: 'Em Batalhas, escolha um amigo e um time e mande o convite.' },
             equipBadge: { title: 'Equipe uma insígnia', hint: 'Toque numa insígnia conquistada e equipe. Ela aparece ao lado do seu nome no fórum.' },
+            beatCynthia: { title: 'Vença a Cynthia', hint: 'Sua primeira batalha do dia com o Time do dia e a primeira com um time seu valem — vença qualquer uma delas.' },
+            beatBlue: { title: 'Vença o Blue', hint: 'Na sala do Desafio, ande até o Blue. Ele tem um time diferente e um ranking só dele.' },
+            dailyTeamWin: { title: 'Vença com o Time do dia', hint: 'O Time do dia é o mesmo para todo mundo — é o ranking mais justo. Escolha ele ao desafiar qualquer campeão.' },
+            bothSameDay: { title: 'Desafie os dois no mesmo dia', hint: 'Termine uma batalha oficial contra a Cynthia e outra contra o Blue antes da meia-noite.' },
+            dailyDouble: { title: 'Vença os dois com o Time do dia', hint: 'No mesmo dia, vença a Cynthia e o Blue usando o Time do dia de cada um. É a Coroa Dupla do Time do dia.' },
         },
     },
     guide: {

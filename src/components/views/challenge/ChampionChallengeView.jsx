@@ -38,6 +38,9 @@ import { ChallengeTeamsRail } from './ChallengeTeamsRail';
 import '../../../styles/champion-challenge-ds.css';
 import { ReminderOffer } from '../../ReminderOffer';
 import { nudgeSupport, cancelSupportNudge } from '../../../services/supportNudge';
+import { refreshChallengeRecord, useChallengeRecord } from '../../../services/challengeRecord';
+import { challengeBadgesEarned } from '../../../constants/badges';
+import { celebrateBadgeOnce } from '../../../hooks/useTrainerBadges';
 
 /**
  * `/challenge` — the daily battle against the Champion, in a DS console
@@ -58,6 +61,8 @@ export function ChampionChallengeView() {
     const isAuthReady = useAuthStore((s) => s.isAuthReady);
     const trainerDisplayName = useAuthStore((s) => s.trainerDisplayName);
     const { savedTeams } = useFirestoreTeams();
+    // Read before the battle ends, so the result can tell what it just earned.
+    useChallengeRecord(userId, isAnonymous);
     const challenge = useChampionChallenge();
     const { load, reset, start, choose, forfeit, selectChampion } = challenge;
     const { championId } = challenge;
@@ -251,6 +256,18 @@ export function ChampionChallengeView() {
         setStage('result');
         window.clearTimeout(nudgeTimerRef.current);
         nudgeTimerRef.current = window.setTimeout(() => nudgeSupport('challenge'), 2500);
+        // An official result may have earned a challenge badge (Coroa Dupla, the
+        // champions' journey…): read the runs again and celebrate what this
+        // battle unlocked — the badge takes the coffee's moment.
+        const { run: ended } = useChampionChallengeStore.getState();
+        if (!ended || ended.practice) return;
+        refreshChallengeRecord(useAuthStore.getState().userId).then(({ before, after }) => {
+            const [earned] = challengeBadgesEarned(before, after);
+            if (earned && celebrateBadgeOnce(earned)) {
+                window.clearTimeout(nudgeTimerRef.current);
+                cancelSupportNudge();
+            }
+        });
     }, []);
     useEffect(() => {
         if (stage === 'result') return undefined;

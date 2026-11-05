@@ -1,6 +1,6 @@
 # Journeys — onboarding by doing (2026-10-17)
 
-Five levels of missions that teach the app by having the trainer use it, each
+Six levels of missions that teach the app by having the trainer use it, each
 rewarded with a badge. Modelled on a missions/medals screen (levels as an
 accordion, badges grouped by how they are earned, a detail sheet with one
 action). **No points** — the reward is the badge (Enzo's call). Since
@@ -13,13 +13,13 @@ action). **No points** — the reward is the badge (Enzo's call). Since
 |---|---|
 | `src/utils/journeys.js` | **The source of truth.** `JOURNEYS` (levels → missions, each a `done(facts)` predicate, a `to` route or an `action`), `evaluateJourneys`, `currentJourney`, `nextMission`, `PAGE_MARKS`, `JOURNEY_MARKS`. Pure, tested in `journeys.test.js`. |
 | `src/hooks/useTrainerBadges.js` | Builds the `facts` from the stores, evaluates the journeys **once**, and puts them in `stats.journeys` — so a journey badge and its missions can never disagree. Returns `journeys` and `celebrateBadge`. |
-| `src/constants/badges.jsx` | The five journey badges (`category: 'journey'`, hexagon emblems, `journeyBadge(journeyId)`), first in `BADGES_LIST`. |
+| `src/constants/badges.jsx` | The six journey badges (`category: 'journey'`, hexagon emblems, `journeyBadge(journeyId)`), first in `BADGES_LIST`. |
 | `src/store/useAuthStore.js` | `journeyMarks` + `markJourney(mark)`: things no collection records (a page opened, a Showdown export). localStorage `ptb:journeyMarks` + the preferences doc, merged as a union on hydration. |
 | `src/store/useJourneyCoachStore.js` | The mission being guided (id only, sessionStorage). |
 | `src/hooks/useJourneys.js` | `useJourneys()` and `useMissionLauncher()` — "Go": start the guide, then navigate or run the action (`partner` → `openPartnerPicker()`, `signUp` → `promptSignIn`). |
 | `src/components/journeys/` | `JourneyList` (+ `MissionRow`, `JourneyTile`, `JourneyBar`), `BadgeGallery` (+ detail dialog), `JourneyCoach` (the floating guide, mounted once in AppLayout). |
 | `src/components/views/JourneysView.jsx` | `/journeys` — Journeys / Badges / Rewards tabs (`?tab=`), each carrying its own figure as a `count-badge` (no separate stat boxes since 2026-10-22). Badges are equipped here (the badge dialog); the Profile shows only the earned ones and links back. |
-| `src/components/views/CozyHomeView.jsx` | The Home's journey card, sized by `journeyEmphasis()`: **focus** (new trainer — level ≤ 2, < 6 missions done, < 7 days active) is the full card (welcome, level, open missions); **compact** (active trainer) is a small "Próximo passo" card with the one mission up next; **none** once all five are done. Desktop: top of the right rail. Phone: focus under the hero, compact under "Seu dia". Plus the Home's **Jornada** tab (replaced Meta). |
+| `src/components/views/CozyHomeView.jsx` | The Home's journey card, sized by `journeyEmphasis()`: **focus** (new trainer — level ≤ 2, < 6 missions done, < 7 days active) is the full card (welcome, level, open missions); **compact** (active trainer) is a small "Próximo passo" card with the one mission up next; **none** once all six are done. Desktop: top of the right rail. Phone: focus under the hero, compact under "Seu dia". Plus the Home's **Jornada** tab (replaced Meta). |
 
 ## The mascot (`src/components/Mascot.jsx`)
 
@@ -30,6 +30,23 @@ PageGuide trigger and popover, the mission guide (with a check when done), the
 Home's welcome, the Journeys page lead and all-done state, and the badge modal
 when a journey finishes. `cheer` plays one hop — only for something the
 trainer just earned.
+
+## The Champion Challenge record (level 6, 2026-11-05)
+
+Level 6, **Os dois Campeões** (`champions`), and the `challenge` badge category
+read `facts.challenge` — not marks. `src/services/challengeRecord.js` reads the
+trainer's own `challengeRuns` (the owner query account deletion makes; server-
+written, so nothing here can be faked from the client) once per session, and
+`src/utils/challengeRecord.js` folds the officials into counts: wins per
+champion and per board, days both champions were faced / beaten / beaten with
+the Time do dia, four-of-four days, flawless wins. Retroactive by construction.
+
+When a battle ends, `ChampionChallengeView.handleFinished` calls
+`refreshChallengeRecord(uid)` → `{ before, after }` and celebrates the first of
+`challengeBadgesEarned(before, after)` (constants/badges.jsx) through
+`celebrateBadgeOnce`. `before` is null unless the record had already answered,
+so a first read is never mistaken for progress; the view mounts
+`useChallengeRecord` on arrival so it has.
 
 ## Where marks come from
 
