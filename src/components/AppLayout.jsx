@@ -941,6 +941,17 @@ export default function AppLayout() {
                 ]
             },
             {
+                // Games: the daily one first — it is the one that is new today.
+                // Above PokéData (2026-11-04, Enzo): played every day, looked up less.
+                key: 'guessing',
+                title: t('nav.guessing'),
+                items: [
+                    { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
+                    { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
+                    { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <CircleHelp className="w-5 h-5 shrink-0" /> },
+                ]
+            },
+            {
                 // PokéData: things you look up.
                 key: 'database',
                 title: t('nav.database'),
@@ -950,16 +961,6 @@ export default function AppLayout() {
                     { key: 'types', label: t('nav.types'), path: '/types', icon: <Shapes className="w-5 h-5 shrink-0" /> },
                     { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
                     { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
-                ]
-            },
-            {
-                // Games: the daily one first — it is the one that is new today.
-                key: 'guessing',
-                title: t('nav.guessing'),
-                items: [
-                    { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
-                    { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
-                    { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <CircleHelp className="w-5 h-5 shrink-0" /> },
                 ]
             },
             {
