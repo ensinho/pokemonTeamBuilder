@@ -20,13 +20,20 @@ copy in Cloud Storage for Firebase, on a Google host those filters don't block.
 - Server-side images (`api/_lib/ogImage.js`) still fetch the origin — servers
   aren't behind a school filter.
 
+Battle sprites (`src/utils/battleSprites.js`) come from `@pkmn/img`, which
+names Showdown's host itself — its URLs go through `toMirrorUrl` too. The
+script asks `@pkmn/img` for the paths (Showdown's file names are not a slug of
+the species), so group `battle` (gen-5 icons + gen-4 DS sprites, what the
+Champion Challenge draws) and `battle-ani` (friend battles) match the app exactly.
+
 ## Filling the bucket
 
 `npm run assets:mirror` (`scripts/mirror-assets.mjs`) downloads every sprite
 the baked data references (pokemon-index ids × front/shiny/artwork/showdown gif,
-items.json, trainer-sprites.json + gym leaders) and uploads with
+items.json, trainer-sprites.json + gym leaders, and every battle sprite
+`@pkmn/img` resolves for the sim's species list) and uploads with
 `Cache-Control: public, max-age=2592000`. Incremental — re-run after a data
-refresh. `--setup` sets CORS + public read, `--only=pokemon,artwork,animated,items,trainers`,
+refresh. `--setup` sets CORS + public read, `--only=pokemon,artwork,animated,items,trainers,battle,battle-ani`,
 `--dry-run`, `--force`.
 
 Credentials: `FIREBASE_CLIENT_EMAIL` + `FIREBASE_PRIVATE_KEY` (as `api/`), or

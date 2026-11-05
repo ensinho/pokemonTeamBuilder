@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-05 — The builder crashed with QuotaExceededError on 'tb-filters-expanded' `bug`
+- **Symptom:** opening `/builder` threw `Uncaught QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'tb-filters-expanded' exceeded the quota` from `TeamBuilderView`, and the view died. The value is one character.
+- **Root cause:** `pokemonDataCache.writeStored` put **raw PokéAPI responses** (moves, abilities, items, species — 50–200 KB each, 30-day TTL) and 190 KB static files (`items.json`, `games.json`) into localStorage. A few pages of the Moves/Abilities lists (one raw response cached per visible row) can fill the shared ~5 MB quota on their own (inferred from the code — the user's storage wasn't inspected), so the next unguarded `setItem` anywhere threw. Same shape as the 2026-06-18 PokePuzzle wound: the fix then removed one big file; the writer itself stayed uncapped.
+- **Fix:** `writeStored` skips entries over `MAX_STORED_ENTRY_CHARS` (48 KB, memory + HTTP/SW cache only) and, on a quota error, evicts its own `ptb:pokemon-data:` entries and retries once. The boot sweep also drops oversized entries already stored, so affected browsers recover on the next load. Both `TeamBuilderView` writes (`tb-filters-expanded`, `tb-regulation`) are now try/catch.
+- **Correct pattern:** **a cache never competes with settings for the 5 MB.** Cap every cache write by size, and make the cache the first thing evicted when storage is full. Any `setItem` in a render path or effect is wrapped — storage is best-effort.
+- **Files:** `src/services/pokemonDataCache.js`, `src/components/views/TeamBuilderView.jsx`
+
 ### 2026-11-05 — The VS card sat off-centre and clipped inside the console screen `bug`
 - **Symptom:** before a Champion Challenge battle, the VS card's band rode high, the Champion's portrait was cut at the top and the card covered only the game screen, with the team picker showing around it (desktop and phone).
 - **Root cause:** `DsVersus` (`.ds-vs`: `position: fixed; inset: 0`, band and glyph sized in `vh`/`vw`, `top: 50%`) is mounted inside `.ds-screen`, which has `contain: layout paint`. Containment makes the screen the containing block for `position: fixed` descendants, so a card designed for the viewport was laid out, and clipped, in a box a fraction of its size. **Third time this trap has bitten** (2026-10-29 ranking sheet, `AuthDialogShell`, `FooterFeedback`).

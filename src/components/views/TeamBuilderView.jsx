@@ -270,13 +270,11 @@ export function TeamBuilderView({
     // Collapsible picker header — keep type filter + search always visible, tuck
     // the rest (generation, game, favorites, tournament partners) behind a chevron.
     const [filtersExpanded, setFiltersExpanded] = React.useState(() => {
-        if (typeof window === 'undefined') return false;
-        return window.localStorage.getItem('tb-filters-expanded') === '1';
+        try { return window.localStorage.getItem('tb-filters-expanded') === '1'; } catch (_) { return false; }
     });
     React.useEffect(() => {
-        if (typeof window !== 'undefined') {
-            window.localStorage.setItem('tb-filters-expanded', filtersExpanded ? '1' : '0');
-        }
+        // Best-effort: a full or blocked storage must never crash the builder.
+        try { window.localStorage.setItem('tb-filters-expanded', filtersExpanded ? '1' : '0'); } catch (_) { /* this visit only */ }
     }, [filtersExpanded]);
 
     // Favorites filtering already happened upstream (usePokedexStore, over the
@@ -326,9 +324,10 @@ export function TeamBuilderView({
     const { byId: smogonById, status: smogonStatus } = useSmogonData(wantsMeta);
     const { byId: usageById, status: usageStatus } = useCompetitiveUsage(wantsMeta);
     React.useEffect(() => {
-        if (typeof window === 'undefined') return;
-        if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
-        else window.localStorage.removeItem('tb-regulation');
+        try {
+            if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
+            else window.localStorage.removeItem('tb-regulation');
+        } catch (_) { /* best-effort, as above */ }
     }, [selectedRegulation]);
     // The Species Clause is a competitive rule: on with a regulation, off in
     // playthrough mode (the store refuses a repeated species only while on).
