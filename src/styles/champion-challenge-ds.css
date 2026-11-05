@@ -515,7 +515,34 @@
     animation: ds-breathe 1.2s steps(2, jump-none) infinite;
 }
 
-/* Just above her head (the cell's first opaque row is 5). */
+/* Who is who in the room: a name plate over each Champion, gold once beaten today. */
+.ds-actor__plate {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 3 * var(--px));
+    translate: -50% 0;
+    padding: 0 calc(3 * var(--px));
+    border: none;
+    border-radius: calc(3 * var(--px));
+    background: var(--bw-dark);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--bw-rim);
+    color: var(--bw-white);
+    font-size: calc(7 * var(--px));
+    line-height: calc(10 * var(--px));
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.ds-actor__plate:disabled {
+    cursor: default;
+}
+
+.ds-actor__plate.is-beaten {
+    color: var(--ds-badge);
+}
+
+/* Just above the head (the cell's first opaque row is 5). */
 .ds-actor__bang {
     position: absolute;
     left: 50%;

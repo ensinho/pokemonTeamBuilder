@@ -10,8 +10,8 @@ const call = (body) => callAuthedApi(CHALLENGE_ENDPOINT, body, { serverErrorMess
 
 export const challengeApi = {
     /** The screen's data: the day, the run to show, the streak. Also wakes the function. */
-    state: () => call({ action: 'state' }),
-    start: ({ practice = false, team, trainerName }) => call({ action: 'start', practice, team, trainerName }),
+    state: ({ championId } = {}) => call({ action: 'state', championId }),
+    start: ({ championId, practice = false, team, trainerName }) => call({ action: 'start', championId, practice, team, trainerName }),
     choose: ({ runId, turn, choice }) => call({ action: 'choose', runId, turn, choice }),
     forfeit: ({ runId }) => call({ action: 'forfeit', runId }),
     /** Account deletion: off every day's ranking (the client may not write it). */

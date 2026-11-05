@@ -10,14 +10,19 @@ import { hashSeed } from './seed.js';
  * levelled to 50 like everything else in the challenge. It is the player's
  * team, so it is shown open — moves, item, ability — and it is the "fair"
  * board of the future daily ranking, since nobody can bring a stronger one.
+ *
+ * Each champion has their own: Cynthia's keeps the seed it launched with, and
+ * any other champion's mixes its id in, so Blue's Time do dia is another team.
  */
 
 const cache = new Map();
 
 /** @returns {{showdownText: string, members: Array<{species, dexNum, item, ability, moves: string[]}>}} */
-export const dailyTeamFor = (dayKey) => {
-    if (cache.has(dayKey)) return cache.get(dayKey);
-    const { showdownText } = generateRandomTeam({ seed: hashSeed('daily-team', dayKey) });
+export const dailyTeamFor = (dayKey, championId = 'cynthia') => {
+    const cacheKey = `${championId}:${dayKey}`;
+    if (cache.has(cacheKey)) return cache.get(cacheKey);
+    const seed = championId === 'cynthia' ? hashSeed('daily-team', dayKey) : hashSeed('daily-team', championId, dayKey);
+    const { showdownText } = generateRandomTeam({ seed });
     const sets = Teams.import(showdownText);
     for (const set of sets) set.level = LEVEL;
     const result = {
@@ -33,6 +38,6 @@ export const dailyTeamFor = (dayKey) => {
         })),
     };
     if (cache.size > 16) cache.clear();
-    cache.set(dayKey, result);
+    cache.set(cacheKey, result);
     return result;
 };

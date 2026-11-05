@@ -10,7 +10,12 @@ import { getTeamPokemonDisplaySprite } from '../../../../utils/pokemonSprites';
 import { DsTeamSheet } from './DsTeamSheet';
 
 /**
- * Bottom screen at the encounter: which team faces Cynthia.
+ * Bottom screen at the encounter: which team faces the Champion.
+ *
+ * `practice` is a boolean, or per board (`{daily, free}`) in the challenge:
+ * the first battle with the Time do dia and the first with a saved team each
+ * count for their own ranking, so the title and A follow the team shown, and
+ * `onStart(team, practice)` says which it was.
  *
  * The Time do dia comes first and is chosen by default — the same rental team
  * for everyone today, shown open, ready to go with one press of A. "My teams"
@@ -60,11 +65,15 @@ export function DsTeamPicker({
         setView('sheet');
     };
 
+    // Each board counts its first battle: `practice` is per board ({daily, free})
+    // in the challenge, so the team shown decides what A starts.
+    const board = view === 'mine' || (view === 'sheet' && sheetOf === 'mine') ? 'free' : 'daily';
+    const isPractice = practice && typeof practice === 'object' ? Boolean(practice[board]) : Boolean(practice);
     const start = () => {
         if (isStarting) return;
         play('confirm');
         if (view === 'daily' || (view === 'sheet' && sheetOf === 'daily')) {
-            onStart({ source: 'daily' });
+            onStart({ source: 'daily' }, isPractice);
             return;
         }
         if (!selected) return;
@@ -75,7 +84,7 @@ export function DsTeamPicker({
         setLocalErrors(null);
         onStart({
             source: 'saved', teamId: selected.team.id, name: selected.team.name || '', showdownText: selected.check.text, members: selected.members,
-        });
+        }, isPractice);
     };
 
     const fillIn = async () => {
@@ -110,13 +119,13 @@ export function DsTeamPicker({
         else onCancel?.();
     };
     const problems = teamErrors?.length ? teamErrors : localErrors;
-    const startLabel = startLabelProp || (practice ? t('challenge.picker.startPractice') : t('challenge.picker.start', { name: championName }));
+    const startLabel = startLabelProp || (isPractice ? t('challenge.picker.startPractice') : t('challenge.picker.start', { name: championName }));
 
     return (
         <div className="ds-picker">
             {/* The sheet needs the room; its tabs say whose team it is. */}
             {view !== 'sheet' && <div className="ds-picker__head">
-                <span className="ds-picker__title">{title || (practice ? t('challenge.picker.practiceTitle') : t('challenge.picker.title'))}</span>
+                <span className="ds-picker__title">{title || (isPractice ? t('challenge.picker.practiceTitle') : t('challenge.picker.title'))}</span>
                 {view === 'daily' && (
                     <button type="button" className="ds-link" onClick={() => setView('mine')}>{t('challenge.picker.moreTeams')}</button>
                 )}

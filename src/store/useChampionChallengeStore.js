@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { challengeApi } from '../services/challengeApi';
+import { DEFAULT_CHAMPION, isChampion } from '../utils/challengeChampions';
 import { promptSignIn } from '../utils/navigation';
 import { t } from '../utils/translate';
 import { toast } from './useToastStore';
@@ -33,12 +34,43 @@ export const challengeErrorText = (code) => t(`challenge.errors.${KNOWN_ERRORS.h
 /** Errors that mean "what you see is out of date" — answered by reloading. */
 const RELOAD_ERRORS = new Set(['staleTurn', 'dayClosed', 'runEnded', 'notYourTurn', 'officialAlreadyPlayed', 'practiceLocked']);
 
+/** The board a run counts on: its team decides (ranking.js `boardOf`). */
+const boardOfRun = (run) => (run?.teamSource === 'saved' ? 'free' : 'daily');
+
 const safely = async (request) => {
     try {
         return await request();
     } catch (_) {
         return { ok: false, status: 0, payload: {}, error: 'offline' };
     }
+};
+
+/** The champion picked last on this device: the screen opens on them. */
+const CHAMPION_KEY = 'ptb:challenge:champion';
+const savedChampion = () => {
+    try {
+        const id = localStorage.getItem(CHAMPION_KEY);
+        return isChampion(id) ? id : DEFAULT_CHAMPION;
+    } catch (_) {
+        return DEFAULT_CHAMPION;
+    }
+};
+
+/** Everything that belongs to one champion's day — cleared when the player picks another. */
+const CHAMPION_STATE = {
+    day: null,
+    official: null,
+    /** One official per board (server `officials`): `{daily, free}`, each `{runId, status, result}` or null. */
+    officials: null,
+    stats: null,
+    /** The day's ranking (server `publicRanks`): top of both boards, counts, your place. */
+    ranks: null,
+    run: null,
+    events: [],
+    // Line count before the action that produced `events`: an event's `at` is relative to it.
+    eventsBase: 0,
+    pending: null,
+    teamErrors: null,
 };
 
 const INITIAL = {
@@ -49,36 +81,73 @@ const INITIAL = {
     loadError: null,
     dayKey: null,
     nextResetAt: null,
-    day: null,
-    official: null,
-    stats: null,
-    /** The day's ranking (server `publicRanks`): top of both boards, counts, your place. */
-    ranks: null,
-    run: null,
-    events: [],
-    // Line count before the action that produced `events`: an event's `at` is relative to it.
-    eventsBase: 0,
-    pending: null,
+    ...CHAMPION_STATE,
+    /** Who the screen is about. */
+    championId: DEFAULT_CHAMPION,
+    /** Today, per champion: `[{id, name, played, won}]` — the selector and the "next champion" card. */
+    champions: null,
     isStarting: false,
     isForfeiting: false,
-    teamErrors: null,
 };
+
+/**
+ * Stats after an official finish, from the answer's `stats` (`choose`,
+ * `forfeit`). A server from before there were two officials a day sends only
+ * the result's streak: then the day is counted here, as it always was.
+ */
+const statsFrom = (payload, previous) => {
+    if (payload?.stats) return { ...previous, ...payload.stats };
+    const won = payload?.status === 'won';
+    return {
+        ...previous,
+        played: (previous?.played || 0) + 1,
+        wins: (previous?.wins || 0) + (won ? 1 : 0),
+        streak: payload?.result?.streak ?? 0,
+        bestStreak: payload?.result?.bestStreak ?? previous?.bestStreak ?? 0,
+    };
+};
+
+/** Today's summary of one champion after an official finishes on screen. */
+const withChampionResult = (champions, championId, status) => champions?.map((c) => (c.id === championId
+    ? { ...c, played: true, won: c.won || status === 'won' }
+    : c));
 
 export const useChampionChallengeStore = create((set, get) => ({
     ...INITIAL,
+    championId: savedChampion(),
 
     load: async () => {
         if (!get().hasLoaded) set({ status: 'loading' });
-        const res = await safely(() => challengeApi.state());
+        const { championId } = get();
+        const res = await safely(() => challengeApi.state({ championId }));
+        // The player picked another champion while this one was loading.
+        if (get().championId !== championId) return false;
         if (!res.ok) {
             // Data already on screen stays; only a first load becomes an error screen.
             set((s) => ({ status: s.hasLoaded ? 'ready' : 'error', loadError: res.error }));
             if (get().hasLoaded) toast.error(challengeErrorText(res.error));
             return false;
         }
-        const { dayKey, nextResetAt, day, official, run, stats, ranks = null } = res.payload;
-        set({ status: 'ready', hasLoaded: true, loadError: null, dayKey, nextResetAt, day, official, stats, run, ranks, pending: null });
+        const {
+            dayKey, nextResetAt, day, official, officials = null, run, stats, ranks = null, champions = null,
+        } = res.payload;
+        set({
+            status: 'ready', hasLoaded: true, loadError: null, dayKey, nextResetAt, day, official, officials, stats, run, ranks, champions, pending: null,
+        });
         return true;
+    },
+
+    /**
+     * Face another champion: their team, ranking and record. What the screen
+     * knew of the previous one goes at once; resolves with whether their day
+     * arrived (true at once for the champion already on screen).
+     */
+    selectChampion: async (championId) => {
+        if (!isChampion(championId) || get().pending || get().isStarting) return false;
+        if (championId === get().championId) return true;
+        try { localStorage.setItem(CHAMPION_KEY, championId); } catch (_) { /* private mode: this visit only */ }
+        set({ ...CHAMPION_STATE, championId });
+        return get().load();
     },
 
     /**
@@ -89,7 +158,7 @@ export const useChampionChallengeStore = create((set, get) => ({
         if (get().isStarting) return false;
         set({ isStarting: true, teamErrors: null });
         try {
-            const res = await safely(() => challengeApi.start({ practice, team, trainerName }));
+            const res = await safely(() => challengeApi.start({ championId: get().championId, practice, team, trainerName }));
             if (!res.ok) {
                 if (res.error === 'invalidTeam') {
                     set({ teamErrors: res.payload?.errors || [] });
@@ -167,14 +236,11 @@ export const useChampionChallengeStore = create((set, get) => ({
             };
             if (p.ranks) next.ranks = p.ranks;
             if (ended && !s.run.practice) {
-                next.official = { runId: s.run.runId, status: p.status, result: p.result };
-                next.stats = {
-                    ...s.stats,
-                    played: (s.stats?.played || 0) + 1,
-                    wins: (s.stats?.wins || 0) + (p.status === 'won' ? 1 : 0),
-                    streak: p.result?.streak ?? 0,
-                    bestStreak: p.result?.bestStreak ?? s.stats?.bestStreak ?? 0,
-                };
+                const official = { runId: s.run.runId, status: p.status, result: p.result };
+                next.official = official;
+                next.officials = { ...s.officials, [boardOfRun(s.run)]: official };
+                next.stats = statsFrom(p, s.stats);
+                next.champions = withChampionResult(s.champions, s.championId, p.status);
             }
             return next;
         });
@@ -200,7 +266,9 @@ export const useChampionChallengeStore = create((set, get) => ({
                     : s.run,
                 ...(run.practice ? {} : {
                     official: { runId: run.runId, status: 'lost', result },
-                    stats: { ...s.stats, played: (s.stats?.played || 0) + 1, streak: 0 },
+                    officials: { ...s.officials, [boardOfRun(run)]: { runId: run.runId, status: 'lost', result } },
+                    stats: statsFrom({ status: 'lost', ...res.payload }, s.stats),
+                    champions: withChampionResult(s.champions, s.championId, 'lost'),
                 }),
             }));
             return true;
@@ -211,6 +279,6 @@ export const useChampionChallengeStore = create((set, get) => ({
 
     clearTeamErrors: () => set({ teamErrors: null }),
 
-    /** A different account: nothing of the previous one may remain on screen. */
-    reset: () => set(INITIAL),
+    /** A different account: nothing of the previous one may remain on screen (the champion picked stays). */
+    reset: () => set((s) => ({ ...INITIAL, championId: s.championId })),
 }));

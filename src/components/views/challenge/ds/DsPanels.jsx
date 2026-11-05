@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { promptSignIn } from '../../../../utils/navigation';
 
@@ -20,11 +18,29 @@ export function DsSignInGate({ championName, onCancel }) {
 }
 
 /**
- * Bottom screen after the battle — the peak-end moment: the outcome, the
- * numbers, and the next step (a practice rematch, or home). The win-chance
- * chart joins here later (its curve already comes with the result).
+ * Another champion is waiting: shown in the room to a trainer who has beaten
+ * this one and hasn't faced the other today. One press goes; "later" hides it.
  */
-export function DsResult({ run, stats, onPractice, onShare, inputRef }) {
+export function DsChampionHint({ beatenName, nextName, onGo, onDismiss }) {
+    const { t } = useTranslation();
+    return (
+        <div className="ds-panel" role="status">
+            <p className="ds-panel__title">{t('challenge.hint.title', { name: nextName })}</p>
+            <p className="ds-panel__body">{t('challenge.hint.body', { beaten: beatenName, name: nextName })}</p>
+            <div className="ds-panel__actions">
+                <button type="button" className="ds-go" onClick={onGo}>{t('challenge.hint.go', { name: nextName })}</button>
+                <button type="button" className="ds-cmd is-plain" onClick={onDismiss}>{t('challenge.hint.later')}</button>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Bottom screen after the battle — the peak-end moment: the outcome, the
+ * numbers, and the next step: a rematch, sharing it to the forum, or back to
+ * the room, where another champion may be waiting (`onBack`).
+ */
+export function DsResult({ run, stats, onPractice, onShare, onBack, isSharing = false, inputRef }) {
     const { t } = useTranslation();
     const won = run.status === 'won';
     const headline = run.practice
@@ -38,7 +54,14 @@ export function DsResult({ run, stats, onPractice, onShare, inputRef }) {
         ...(!run.practice && stats ? [['streak', stats.streak], ['bestStreak', stats.bestStreak]] : []),
     ].filter(([, value]) => Number.isFinite(value));
 
-    if (inputRef) inputRef.current = { onAction: (action) => { if (action === 'a') onPractice(); } };
+    if (inputRef) {
+        inputRef.current = {
+            onAction: (action) => {
+                if (action === 'a') onPractice();
+                else if (action === 'b') onBack?.();
+            },
+        };
+    }
 
     return (
         <div className={`ds-panel ds-result ${won ? 'is-won' : 'is-lost'}`}>
@@ -57,8 +80,12 @@ export function DsResult({ run, stats, onPractice, onShare, inputRef }) {
             <p className="ds-panel__body">{run.practice ? t('challenge.result.practiceNote') : t('challenge.result.comeBack')}</p>
             <div className={`ds-panel__actions ${onShare ? 'is-three' : ''}`}>
                 <button type="button" className="ds-go" onClick={onPractice}>{t('challenge.result.practice')}</button>
-                {onShare && <button type="button" className="ds-cmd is-share" onClick={onShare}>{t('challenge.share.button')}</button>}
-                <Link className="ds-cmd is-plain" to="/">{t('challenge.result.home')}</Link>
+                {onShare && (
+                    <button type="button" className="ds-cmd is-share" onClick={onShare} disabled={isSharing}>
+                        {isSharing ? '…' : t('challenge.share.button')}
+                    </button>
+                )}
+                <button type="button" className="ds-cmd is-plain" onClick={onBack}>{t('challenge.result.back')}</button>
             </div>
         </div>
     );

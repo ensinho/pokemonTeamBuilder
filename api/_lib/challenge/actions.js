@@ -3,16 +3,18 @@ import { FEATURE_VERSION } from '../ai/features.js';
 import { trainingRow, winProbFull } from '../ai/observe.js';
 import WIN_MODEL from '../ai/models/winprob-v1.js';
 import {
-    CHAMPIONS, CHOICE_PATTERN, DEFAULT_CHAMPION, ENGINE_VERSION, FORMAT, MAX_NAME_LENGTH,
+    CHAMPION_IDS, CHAMPIONS, CHOICE_PATTERN, DEFAULT_CHAMPION, ENGINE_VERSION, FORMAT, MAX_NAME_LENGTH,
 } from './constants.js';
 import { dailyTeamFor } from './dailyTeam.js';
 import { dayKeyAt, isoWeekOf, nextResetAt } from './day.js';
 import { dialogueEvents } from './dialogue.js';
 import { apply, battleNames, createMatch, outcome, owes, replay, requestOf, snapshot } from './engine.js';
 import { fail } from './errors.js';
-import { effectiveStreak, emptyStats, nextStats, resultOf } from './outcome.js';
+import {
+    effectiveStreak, nextStats, resultOf, statsOf, withStats,
+} from './outcome.js';
 import { boardOf, forgetPlayer, nextRanks, placeOf, publicRanks } from './ranking.js';
-import { championTeamTextFor, difficultyFor } from './rotation.js';
+import { aceFor, championTeamTextFor, difficultyFor } from './rotation.js';
 import {
     buildDayDoc, officialRunId, paths, practiceRunId,
 } from './runs.js';
@@ -50,10 +52,30 @@ const cleanName = (value) => String(value || '').replace(/[|\n\r]/g, '').trim().
 
 const makeSeed = (randomInt) => [0, 1, 2, 3].map(() => randomInt(0x10000));
 
-/** The player's team for `start`: the Time do dia, or a validated saved team. */
-const resolveTeam = (team, dayKey) => {
+/** The champion a request names; none means Cynthia, as before there were two. */
+const championFrom = (value) => {
+    if (value === undefined || value === null || value === '') return DEFAULT_CHAMPION;
+    if (!CHAMPION_IDS.includes(value)) throw fail(400, 'badRequest', { detail: 'championId' });
+    return value;
+};
+
+/** A run's champion: runs from before there were two carry none. */
+const championOfRun = (run) => (CHAMPIONS[run?.championId] ? run.championId : DEFAULT_CHAMPION);
+
+/** The record the screen shows for one champion. */
+const statsView = (stats, dayKey) => ({
+    streak: effectiveStreak(stats, dayKey),
+    bestStreak: stats.bestStreak || 0,
+    wins: stats.wins || 0,
+    played: stats.played || 0,
+});
+
+const otherBoard = (board) => (board === 'daily' ? 'free' : 'daily');
+
+/** The player's team for `start`: the champion's Time do dia, or a validated saved team. */
+const resolveTeam = (team, dayKey, championId) => {
     if (team?.source === 'daily') {
-        return { text: dailyTeamFor(dayKey).showdownText, source: 'daily', name: 'daily', tier: 'daily' };
+        return { text: dailyTeamFor(dayKey, championId).showdownText, source: 'daily', name: 'daily', tier: 'daily' };
     }
     if (team?.source !== 'saved') throw fail(400, 'badRequest', { detail: 'team.source must be "saved" or "daily"' });
     const checked = validateTeam(team.showdownText);
@@ -67,10 +89,6 @@ const resolveTeam = (team, dayKey) => {
     };
 };
 
-/**
- * @param {{db: object, appId: string, now?: () => number, randomInt: (n: number) => number,
- *          championId?: string, model?: object|null}} deps
- */
 /**
  * The win-chance curve's first point (the player's chance, full information)
  * and its mark — the battle turn and the player's log length at that moment.
@@ -87,9 +105,12 @@ const curveFields = (curve = [], marks = []) => (curve?.length
     ? { winChanceCurve: curve, winChanceMarks: marks?.length === curve.length ? marks : null }
     : { winChanceCurve: null, winChanceMarks: null });
 
-export const createChallengeService = ({ db, appId, now = () => Date.now(), randomInt, championId = DEFAULT_CHAMPION, model = WIN_MODEL }) => {
+/**
+ * @param {{db: object, appId: string, now?: () => number, randomInt: (n: number) => number,
+ *          model?: object|null}} deps
+ */
+export const createChallengeService = ({ db, appId, now = () => Date.now(), randomInt, model = WIN_MODEL }) => {
     const p = paths(appId);
-    const champion = CHAMPIONS[championId];
     const ref = (path) => db.doc(path);
 
     const expire = async (run, runId, dayKey) => {
@@ -100,7 +121,9 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
             const stamp = new Date(now()).toISOString();
             tx.update(ref(p.run(runId)), { status: 'expired', updatedAt: stamp, endedAt: stamp });
             if (!run.practice) {
-                tx.set(ref(p.stats(run.uid)), nextStats(statsSnap.data() || emptyStats(run.uid), { dayKey: run.dayKey, status: 'expired' }));
+                const championId = championOfRun(run);
+                const next = nextStats(statsOf(statsSnap.data(), championId, run.uid), { dayKey: run.dayKey, status: 'expired' });
+                tx.set(ref(p.stats(run.uid)), withStats(statsSnap.data(), championId, next, run.uid));
             }
         });
         throw fail(410, 'dayClosed', { status: 'expired', dayKey });
@@ -119,16 +142,37 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
         return { run, secret: secretSnap.data() };
     };
 
-    const ensureDay = async () => {
+    const ensureDay = async (caller, body = {}) => {
+        const championId = championFrom(body?.championId);
         const dayKey = dayKeyAt(now());
         const created = await db.runTransaction(async (tx) => {
-            const snap = await tx.get(ref(p.day(dayKey)));
+            const snap = await tx.get(ref(p.day(dayKey, championId)));
             if (snap.exists) return false;
-            tx.set(ref(p.day(dayKey)), buildDayDoc({ dayKey, championId, aiVersion: AI_VERSION, nowMs: now() }));
+            tx.set(ref(p.day(dayKey, championId)), buildDayDoc({ dayKey, championId, aiVersion: AI_VERSION, nowMs: now() }));
             return true;
         });
         return { dayKey, created };
     };
+
+    /**
+     * Whether the caller finished and beat each champion today — the selector
+     * and the "another champion is waiting" card. `known` spares the reads of
+     * the champion already loaded.
+     */
+    const championsToday = async (uid, dayKey, known) => Promise.all(CHAMPION_IDS.map(async (id) => {
+        const officials = known[id] || (uid
+            ? await Promise.all(['daily', 'free'].map(async (board) => {
+                const snap = await ref(p.run(officialRunId(uid, dayKey, id, board))).get();
+                return snap.exists ? snap.data() : null;
+            }))
+            : []);
+        return {
+            id,
+            name: CHAMPIONS[id].name,
+            played: officials.some((run) => run && run.status !== 'active'),
+            won: officials.some((run) => run?.status === 'won'),
+        };
+    }));
 
     /** A run as the player may see it: no seed, no choices, no AI trace. */
     const publicRun = (runId, run, lines) => ({
@@ -154,17 +198,19 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
      * start), so this call is the warm-up, and it spares one read per round.
      * The Home card, which must never wake the function, reads Firestore.
      */
-    const state = async (caller) => {
+    const state = async (caller, body = {}) => {
+        const championId = championFrom(body?.championId);
         const nowMs = now();
         const dayKey = dayKeyAt(nowMs);
-        let daySnap = await ref(p.day(dayKey)).get();
+        let daySnap = await ref(p.day(dayKey, championId)).get();
         if (!daySnap.exists) {
-            await ensureDay();
-            daySnap = await ref(p.day(dayKey)).get();
+            await ensureDay(caller, { championId });
+            daySnap = await ref(p.day(dayKey, championId)).get();
         }
         const day = daySnap.data();
         const base = {
             dayKey,
+            championId,
             nextResetAt: nextResetAt(nowMs),
             day: {
                 difficulty: day.difficulty,
@@ -174,65 +220,87 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                 dailyTeam: { members: day.dailyTeam?.members || [] },
             },
         };
-        const ranksSnap = await ref(p.ranks(dayKey)).get();
+        const ranksSnap = await ref(p.ranks(dayKey, championId)).get();
         base.ranks = publicRanks(ranksSnap.exists ? ranksSnap.data() : null, caller.isAnonymous ? null : caller.uid);
-        if (caller.isAnonymous) return { ...base, official: null, run: null, stats: null };
-
-        const officialId = officialRunId(caller.uid, dayKey);
-        const [officialSnap, statsSnap] = await Promise.all([ref(p.run(officialId)).get(), ref(p.stats(caller.uid)).get()]);
-        const official = officialSnap.exists ? officialSnap.data() : null;
-        const stats = statsSnap.exists ? statsSnap.data() : null;
-
-        let shownId = official ? officialId : null;
-        if (official && official.status !== 'active' && official.activePracticeId) {
-            const practiceSnap = await ref(p.run(official.activePracticeId)).get();
-            if (practiceSnap.exists) shownId = official.activePracticeId;
+        if (caller.isAnonymous) {
+            return { ...base, official: null, officials: null, run: null, stats: null, champions: await championsToday(null, dayKey, {}) };
         }
+
+        // One official per board: the first battle with the Time do dia, and the first with your own team.
+        const ids = { daily: officialRunId(caller.uid, dayKey, championId, 'daily'), free: officialRunId(caller.uid, dayKey, championId, 'free') };
+        const [dailySnap, freeSnap, statsSnap] = await Promise.all([ref(p.run(ids.daily)).get(), ref(p.run(ids.free)).get(), ref(p.stats(caller.uid)).get()]);
+        const docs = { daily: dailySnap.exists ? dailySnap.data() : null, free: freeSnap.exists ? freeSnap.data() : null };
+        const stats = statsOf(statsSnap.exists ? statsSnap.data() : null, championId, caller.uid);
+
+        // Each board shows its latest practice once its official is over; the
+        // screen gets a battle in progress first, else whichever moved last.
+        const candidates = await Promise.all(['daily', 'free'].map(async (board) => {
+            const official = docs[board];
+            if (!official) return null;
+            if (official.status !== 'active' && official.activePracticeId) {
+                const practiceSnap = await ref(p.run(official.activePracticeId)).get();
+                if (practiceSnap.exists) return { board, runId: official.activePracticeId, run: practiceSnap.data() };
+            }
+            return { board, runId: ids[board], run: official };
+        }));
+        const shown = candidates.filter(Boolean).sort((a, b) => Number(b.run.status === 'active') - Number(a.run.status === 'active')
+            || String(b.run.updatedAt || '').localeCompare(String(a.run.updatedAt || '')))[0] || null;
 
         let run = null;
-        if (shownId) {
-            const [runSnap, secretSnap] = await Promise.all([ref(p.run(shownId)).get(), ref(p.secret(shownId)).get()]);
-            const secret = secretSnap.data();
+        if (shown) {
+            const secret = (await ref(p.secret(shown.runId)).get()).data();
             const match = replay({ format: secret.format, seed: secret.seed, teams: secret.teams, names: secret.names, choices: secret.choices });
-            run = publicRun(shownId, runSnap.data(), match.lines.p1);
+            run = publicRun(shown.runId, shown.run, match.lines.p1);
         }
 
+        const summaryOf = (board) => (docs[board] ? { runId: ids[board], status: docs[board].status, result: docs[board].result || null } : null);
+        const officials = { daily: summaryOf('daily'), free: summaryOf('free') };
         return {
             ...base,
-            official: official ? { runId: officialId, status: official.status, result: official.result || null } : null,
+            // The official of the board on screen — what the screen read before there were two.
+            official: shown ? officials[shown.board] : null,
+            officials,
             run,
-            stats: stats ? {
-                streak: effectiveStreak(stats, dayKey),
-                bestStreak: stats.bestStreak,
-                wins: stats.wins,
-                played: stats.played,
-            } : { streak: 0, bestStreak: 0, wins: 0, played: 0 },
+            stats: statsView(stats, dayKey),
+            champions: await championsToday(caller.uid, dayKey, { [championId]: [docs.daily, docs.free] }),
         };
     };
 
     const start = async (caller, body) => {
         requireRegistered(caller);
+        const championId = championFrom(body.championId);
+        const champion = CHAMPIONS[championId];
         const practice = Boolean(body.practice);
         const dayKey = dayKeyAt(now());
-        const team = resolveTeam(body.team, dayKey);
-        const officialId = officialRunId(caller.uid, dayKey);
+        const team = resolveTeam(body.team, dayKey, championId);
+        // The team decides the board, and each board has its own official run.
+        const board = boardOf(team.source);
+        const officialId = officialRunId(caller.uid, dayKey, championId, board);
+        const otherId = officialRunId(caller.uid, dayKey, championId, otherBoard(board));
 
         return db.runTransaction(async (tx) => {
-            const [daySnap, officialSnap] = await Promise.all([tx.get(ref(p.day(dayKey))), tx.get(ref(p.run(officialId)))]);
+            const [daySnap, officialSnap, otherSnap] = await Promise.all([
+                tx.get(ref(p.day(dayKey, championId))), tx.get(ref(p.run(officialId))), tx.get(ref(p.run(otherId))),
+            ]);
             const official = officialSnap.exists ? officialSnap.data() : null;
+            const other = otherSnap.exists ? otherSnap.data() : null;
+            // One battle at a time against a champion: one in progress is resumed, not doubled.
+            if (other?.status === 'active') throw fail(409, 'officialAlreadyPlayed', { runId: otherId, status: other.status });
             let runId = officialId;
             let practiceN = null;
-            let previousPractice = null;
             if (!practice) {
                 if (official) throw fail(409, 'officialAlreadyPlayed', { runId: officialId, status: official.status });
             } else {
                 if (!official || official.status === 'active') throw fail(403, 'practiceLocked');
                 practiceN = (official.practiceCount || 0) + 1;
-                runId = practiceRunId(caller.uid, dayKey, practiceN);
-                if (official.activePracticeId) {
-                    const prev = await tx.get(ref(p.run(official.activePracticeId)));
-                    if (prev.exists && prev.data().status === 'active') previousPractice = official.activePracticeId;
-                }
+                runId = practiceRunId(officialId, practiceN);
+            }
+            // A new battle closes a practice still open on either board.
+            const openPractices = [];
+            for (const parent of [official, other]) {
+                if (!parent?.activePracticeId) continue;
+                const prev = await tx.get(ref(p.run(parent.activePracticeId)));
+                if (prev.exists && prev.data().status === 'active') openPractices.push(parent.activePracticeId);
             }
 
             const seed = makeSeed(randomInt);
@@ -240,11 +308,13 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
             const teams = { p1: team.text, p2: championTeamTextFor(dayKey, championId) };
             const match = createMatch({ seed, teams, names });
             const lines = match.lines.p1;
-            const spoken = dialogueEvents([], lines, { said: [], aceSpecies: champion.aceSpecies, championName: champion.name });
+            const spoken = dialogueEvents([], lines, {
+                said: [], aceSpecies: aceFor(dayKey, championId), championName: champion.name, championId,
+            });
             const stamp = new Date(now()).toISOString();
             const difficulty = difficultyFor(dayKey);
 
-            if (!daySnap.exists) tx.set(ref(p.day(dayKey)), buildDayDoc({ dayKey, championId, aiVersion: AI_VERSION, nowMs: now() }));
+            if (!daySnap.exists) tx.set(ref(p.day(dayKey, championId)), buildDayDoc({ dayKey, championId, aiVersion: AI_VERSION, nowMs: now() }));
             tx.set(ref(p.run(runId)), {
                 uid: caller.uid,
                 dayKey,
@@ -252,6 +322,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                 practiceN,
                 championId,
                 challengeKey: difficulty,
+                board,
                 teamSource: team.source,
                 teamName: team.name,
                 teamTier: team.tier,
@@ -282,10 +353,8 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                 ...firstCurvePoint(match.battle, lines.length, model),
                 training: [],
             });
-            if (practice) {
-                tx.update(ref(p.run(officialId)), { practiceCount: practiceN, activePracticeId: runId, updatedAt: stamp });
-                if (previousPractice) tx.update(ref(p.run(previousPractice)), { status: 'lost', updatedAt: stamp, endedAt: stamp });
-            }
+            if (practice) tx.update(ref(p.run(officialId)), { practiceCount: practiceN, activePracticeId: runId, updatedAt: stamp });
+            for (const id of openPractices) tx.update(ref(p.run(id)), { status: 'lost', updatedAt: stamp, endedAt: stamp });
             return { runId, turn: 0, status: 'active', practice, lines, events: spoken.events };
         });
     };
@@ -298,6 +367,10 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
 
         const { run, secret } = await loadOwnRun(caller.uid, body.runId);
         if (body.turn !== run.turn) throw fail(409, 'staleTurn', { turn: run.turn });
+        const championId = championOfRun(run);
+        const champion = CHAMPIONS[championId];
+        // The day's ace: who the AI keeps for last, and who her "ace" line is about.
+        const aceSpecies = aceFor(run.dayKey, championId);
 
         const match = replay({ format: secret.format, seed: secret.seed, teams: secret.teams, names: secret.names, choices: secret.choices });
         const { battle } = match;
@@ -314,6 +387,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
             turn: `${run.turn}.${decisions.length}`,
             profileKey: secret.profileKey,
             championId,
+            aceSpecies,
             model,
         });
 
@@ -360,8 +434,9 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
         const lastWin = secret.winCurve?.length ? secret.winCurve[secret.winCurve.length - 1] : null;
         const spoken = dialogueEvents(match.lines.p1.slice(0, run.lineCount), newLines, {
             said: secret.said || [],
-            aceSpecies: champion.aceSpecies,
+            aceSpecies,
             championName: champion.name,
+            championId,
             // Her view of the swing: 1 − the player's chance.
             winProb: { before: lastWin === null ? null : 1 - lastWin, after: winNow === null ? null : 1 - winNow },
         });
@@ -372,7 +447,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
         const { stats, ranks } = await db.runTransaction(async (tx) => {
             const fresh = await tx.get(ref(p.run(body.runId)));
             const statsSnap = out.ended && !run.practice ? await tx.get(ref(p.stats(caller.uid))) : null;
-            const ranksSnap = statsSnap ? await tx.get(ref(p.ranks(run.dayKey))) : null;
+            const ranksSnap = statsSnap ? await tx.get(ref(p.ranks(run.dayKey, championId))) : null;
             // A win takes a place, and the row shows the trainer's public profile.
             const profileSnap = ranksSnap && status === 'won' ? await tx.get(ref(p.profile(caller.uid))) : null;
             if (fresh.data()?.turn !== run.turn || fresh.data()?.status !== 'active') {
@@ -401,8 +476,8 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
 
             let nextStatsDoc = null;
             if (statsSnap) {
-                nextStatsDoc = nextStats(statsSnap.data() || emptyStats(caller.uid), { dayKey: run.dayKey, status });
-                tx.set(ref(p.stats(caller.uid)), nextStatsDoc);
+                nextStatsDoc = nextStats(statsOf(statsSnap.data(), championId, caller.uid), { dayKey: run.dayKey, status });
+                tx.set(ref(p.stats(caller.uid)), withStats(statsSnap.data(), championId, nextStatsDoc, caller.uid));
             }
             // The day's ranking: every official finish counts, a win takes a place.
             let nextRanksDoc = null;
@@ -411,7 +486,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                     dayKey: run.dayKey, teamSource: run.teamSource, uid: caller.uid, name: secret.names?.p1 || 'Trainer', status, result, at: stamp,
                     profile: profileSnap?.exists ? profileSnap.data() : null,
                 });
-                tx.set(ref(p.ranks(run.dayKey)), nextRanksDoc);
+                tx.set(ref(p.ranks(run.dayKey, championId)), nextRanksDoc);
             }
             if (out.ended && trainingRows.length) {
                 // Anonymous by construction: no uid, run id, names, team text or time of day.
@@ -422,6 +497,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                     featureVersion: FEATURE_VERSION,
                     week: isoWeekOf(run.dayKey),
                     difficulty: secret.profileKey,
+                    championId,
                     teamSource: run.teamSource,
                     outcome: status === 'won' ? 0 : 1,
                     turns: trainingRows,
@@ -444,36 +520,45 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                 ...(ranks ? { board: boardOf(run.teamSource), place: placeOf(ranks, boardOf(run.teamSource), caller.uid) } : {}),
             } : null,
             ...(ranks ? { ranks: publicRanks(ranks, caller.uid) } : {}),
+            ...(stats ? { stats: statsView(stats, run.dayKey) } : {}),
         };
     };
 
     const forfeit = async (caller, body) => {
         requireRegistered(caller);
         const { run, secret } = await loadOwnRun(caller.uid, body.runId);
+        const championId = championOfRun(run);
         const match = replay({ format: secret.format, seed: secret.seed, teams: secret.teams, names: secret.names, choices: secret.choices });
         const result = resultOf(outcome(match.battle), 'lost');
         const stamp = new Date(now()).toISOString();
         const { stats, ranks } = await db.runTransaction(async (tx) => {
             const fresh = await tx.get(ref(p.run(body.runId)));
             const statsSnap = run.practice ? null : await tx.get(ref(p.stats(caller.uid)));
-            const ranksSnap = run.practice ? null : await tx.get(ref(p.ranks(run.dayKey)));
+            const ranksSnap = run.practice ? null : await tx.get(ref(p.ranks(run.dayKey, championId)));
             if (fresh.data()?.status !== 'active') throw fail(409, 'runEnded', { status: fresh.data()?.status });
             tx.update(ref(p.run(body.runId)), {
                 status: 'lost', result, updatedAt: stamp, endedAt: stamp, forfeited: true, ...curveFields(secret.winCurve, secret.winMarks),
             });
             if (!statsSnap) return { stats: null, ranks: null };
-            const next = nextStats(statsSnap.data() || emptyStats(caller.uid), { dayKey: run.dayKey, status: 'lost' });
-            tx.set(ref(p.stats(caller.uid)), next);
+            const next = nextStats(statsOf(statsSnap.data(), championId, caller.uid), { dayKey: run.dayKey, status: 'lost' });
+            tx.set(ref(p.stats(caller.uid)), withStats(statsSnap.data(), championId, next, caller.uid));
             const nextRanksDoc = nextRanks(ranksSnap.exists ? ranksSnap.data() : null, {
                 dayKey: run.dayKey, teamSource: run.teamSource, uid: caller.uid, name: secret.names?.p1 || 'Trainer', status: 'lost', result, at: stamp,
             });
-            tx.set(ref(p.ranks(run.dayKey)), nextRanksDoc);
+            tx.set(ref(p.ranks(run.dayKey, championId)), nextRanksDoc);
             return { stats: next, ranks: nextRanksDoc };
         });
         return {
             status: 'lost',
-            result: { ...result, streak: stats ? 0 : null, bestStreak: stats?.bestStreak ?? null, ...curveFields(secret.winCurve, secret.winMarks) },
+            // A forfeit on the day's second board keeps a streak the first one won.
+            result: {
+                ...result,
+                streak: stats ? effectiveStreak(stats, run.dayKey) : null,
+                bestStreak: stats?.bestStreak ?? null,
+                ...curveFields(secret.winCurve, secret.winMarks),
+            },
             ...(ranks ? { ranks: publicRanks(ranks, caller.uid) } : {}),
+            ...(stats ? { stats: statsView(stats, run.dayKey) } : {}),
         };
     };
 

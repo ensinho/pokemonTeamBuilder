@@ -23,15 +23,21 @@ export const DIALOGUE_KEYS = {
     lose: 'challenge.cynthia.lose',
 };
 
+/** Another champion's lines live under their own id: `challenge.blue.intro`. */
+const keysFor = (championId) => (!championId || championId === 'cynthia'
+    ? DIALOGUE_KEYS
+    : Object.fromEntries(Object.keys(DIALOGUE_KEYS).map((name) => [name, `challenge.${championId}.${name}`])));
+
 const speciesOf = (details) => String(details || '').split(',')[0];
 
 /**
  * @param {string[]} prevLines p1's lines already delivered
  * @param {string[]} newLines  p1's lines from this action
- * @param {{said: string[], aceSpecies: string, championName: string, winProb?: {before: ?number, after: ?number}}} ctx
+ * @param {{said: string[], aceSpecies: string, championName: string, championId?: string, winProb?: {before: ?number, after: ?number}}} ctx
  * @returns {{events: Array<{key: string, params?: object, at: number}>, said: string[]}}
  */
 export const dialogueEvents = (prevLines, newLines, ctx) => {
+    const keys = keysFor(ctx.championId);
     const said = new Set(ctx.said || []);
     const events = [];
     const all = [...prevLines, ...newLines];
@@ -41,7 +47,7 @@ export const dialogueEvents = (prevLines, newLines, ctx) => {
     const p2Species = new Map();
 
     const say = (name, index, params) => {
-        const key = DIALOGUE_KEYS[name];
+        const key = keys[name];
         if (said.has(key)) return;
         said.add(key);
         if (index >= offset) events.push({ key, ...(params ? { params } : {}), at: Math.max(0, index - offset) });

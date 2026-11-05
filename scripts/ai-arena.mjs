@@ -6,6 +6,7 @@
  *   npm run ai:arena -- --cynthia world --vs greedy --games 300
  *   npm run ai:arena -- --cynthia all --vs random --games 100
  *   npm run ai:bench                       # ms per decision, p50/p95, per profile
+ *   npm run ai:arena -- --champion blue --cynthia all --vs random,greedy --games 80
  *
  * The matchup is the real one: on each game a day is picked whose weekday plays
  * the profile under test, Cynthia brings that day's lineup with that profile's
@@ -21,7 +22,8 @@ import { robotChoice } from '../api/_lib/ai/testing/robots.js';
 import { dailyTeamFor } from '../api/_lib/challenge/dailyTeam.js';
 import { shiftDayKey } from '../api/_lib/challenge/day.js';
 import { apply, createMatch, outcome, owes, requestOf, snapshot } from '../api/_lib/challenge/engine.js';
-import { championTeamTextFor, difficultyFor } from '../api/_lib/challenge/rotation.js';
+import { CHAMPIONS } from '../api/_lib/challenge/constants.js';
+import { aceFor, championTeamTextFor, difficultyFor } from '../api/_lib/challenge/rotation.js';
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -29,6 +31,12 @@ const flag = (name, fallback) => {
     return i === -1 ? fallback : args[i + 1];
 };
 const bench = args.includes('--bench');
+// Which champion plays (`--cynthia` still names the profiles, for every champion).
+const championId = flag('champion', 'cynthia');
+if (!CHAMPIONS[championId]) {
+    console.error(`Unknown champion "${championId}" — use ${Object.keys(CHAMPIONS).join(', ')}.`);
+    process.exit(1);
+}
 const profiles = flag('cynthia', 'all') === 'all' ? Object.keys(PROFILES) : flag('cynthia').split(',');
 const unknown = profiles.filter((p) => !PROFILES[p]);
 if (unknown.length) {
@@ -73,7 +81,12 @@ const daysFor = (profile, count) => {
 const play = (profile, robot, day, n) => {
     const seed = [n + 1, 77, robot.length, profile.length];
     const prng = new PRNG([n + 3, 5, 8, 13]);
-    const match = createMatch({ seed, teams: { p1: dailyTeamFor(day).showdownText, p2: championTeamTextFor(day) }, names: { p1: 'Robot', p2: 'Cynthia' } });
+    const match = createMatch({
+        seed,
+        teams: { p1: dailyTeamFor(day, championId).showdownText, p2: championTeamTextFor(day, championId) },
+        names: { p1: 'Robot', p2: CHAMPIONS[championId].name },
+    });
+    const aceSpecies = aceFor(day, championId);
     const ms = [];
     let illegal = 0;
     let fallbacks = 0;
@@ -82,7 +95,7 @@ const play = (profile, robot, day, n) => {
         if (owes(match.battle, 'p2')) {
             const started = performance.now();
             const { choice, trace } = decide({
-                snapshot: snapshot(match.battle), request: requestOf(match.battle, 'p2'), p2Lines: match.lines.p2, seed, turn: step, profileKey: profile,
+                snapshot: snapshot(match.battle), request: requestOf(match.battle, 'p2'), p2Lines: match.lines.p2, seed, turn: step, profileKey: profile, championId, aceSpecies,
             });
             ms.push(performance.now() - started);
             fallbacks += trace?.estimateFallbacks || 0;
@@ -125,7 +138,7 @@ for (const profile of profiles) {
     }
 }
 
-console.log(`\n| Cynthia | vs | games | Cynthia wins | 95% CI | turns | ms p50 | ms p95 | illegal | unfinished | estimate fallbacks |`);
+console.log(`\n| ${CHAMPIONS[championId].name} | vs | games | wins | 95% CI | turns | ms p50 | ms p95 | illegal | unfinished | estimate fallbacks |`);
 console.log('|---|---|---|---|---|---|---|---|---|---|---|');
 for (const r of rows) {
     console.log(`| ${r.profile} | ${r.robot} | ${r.games} | ${pct(r.rate)} | ${pct(r.lo)}–${pct(r.hi)} | ${r.turns.toFixed(1)} | ${r.p50.toFixed(1)} | ${r.p95.toFixed(1)} | ${r.illegal} | ${r.unfinished} | ${r.fallbacks} |`);

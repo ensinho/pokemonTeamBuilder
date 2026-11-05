@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-05 — The VS card sat off-centre and clipped inside the console screen `bug`
+- **Symptom:** before a Champion Challenge battle, the VS card's band rode high, the Champion's portrait was cut at the top and the card covered only the game screen, with the team picker showing around it (desktop and phone).
+- **Root cause:** `DsVersus` (`.ds-vs`: `position: fixed; inset: 0`, band and glyph sized in `vh`/`vw`, `top: 50%`) is mounted inside `.ds-screen`, which has `contain: layout paint`. Containment makes the screen the containing block for `position: fixed` descendants, so a card designed for the viewport was laid out, and clipped, in a box a fraction of its size. **Third time this trap has bitten** (2026-10-29 ranking sheet, `AuthDialogShell`, `FooterFeedback`).
+- **Fix:** `DsVersus` renders through `createPortal(…, document.body)`, which fixes the friend battles' card too. Verified headless: `.ds-vs` is a child of `<body>` and measures 1440 × 900 / 390 × 844, band and VS glyph centred at x = 720 / 195.
+- **Correct pattern:** **an overlay that is `position: fixed` portals to `<body>` from the day it is written.** Never rely on where it happens to be mounted: any ancestor with `contain`, `transform`, `filter` or a container query traps it, and the console's screens have all of them. To check one, force `contain: layout` on its parent and look.
+- **Files:** `src/components/views/challenge/ds/DsVersus.jsx`
+
 ### 2026-11-04 — Editing a saved team could delete a member from it `bug`
 - **Symptom:** opening a saved team from /teams while one member's detail fetch failed (offline, a Firestore hiccup) loaded five of six members, and the builder said **Saved**. The next edit + Update wrote the five over the six. Opening any saved team also replaced unsaved builder work with no Undo, and that work was lost on any reload.
 - **Root cause:** `handleEditTeam` (AppLayout) mapped failed fetches to `null`, removed them with `.filter(Boolean)`, then `setEditingTeamId` took the truncated team as the saved baseline (`savedSignature`). The builder draft lived only in memory.

@@ -722,11 +722,13 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
     return (
         <Card
             {...cardProps}
-            className={`flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${note.href ? 'items-center text-center' : 'text-left'}`}
+            className={`flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${note.href ? 'items-center justify-center text-center' : 'text-left'}`}
             aria-label={`${title} – ${cta}`}
         >
+            {/* An illustration grows with the column beside it; a link card's cover
+                (a fixed 4:1 image) keeps its height and the card centres instead. */}
             {featured && NoteVisual && (
-                <div className="mb-3 flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg bg-surface">
+                <div className={`mb-3 flex min-h-0 w-full flex-col overflow-hidden rounded-lg bg-surface ${note.href ? '' : 'flex-1'}`}>
                     <NoteVisual colors={colors} t={t} language={language} />
                 </div>
             )}

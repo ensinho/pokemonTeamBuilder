@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-    CHAMPION_ROOM, encounterTile, faceToward, facesChampion, findPath, isEncounter, isSolid, spawnTile, stepTo, tileFromPoint,
+    CHAMPION_ROOM, championTiles, encounterAt, encounterTile, faceToward, facesChampion, findPath, isEncounter, isSolid, spawnTile, stepTo, tileFromPoint,
 } from './arenaMap';
 
 const map = CHAMPION_ROOM;
@@ -14,11 +14,13 @@ describe('the Champion room', () => {
         expect(map.rows.every((row) => row.length === 16)).toBe(true);
     });
 
-    it('blocks walls, lamps, the banner and Cynthia herself', () => {
+    it('blocks walls, lamps, the banner and both Champions', () => {
         expect(isSolid(map, 0, 5)).toBe(true);
         expect(isSolid(map, 1, 3)).toBe(true); // lamp
         expect(isSolid(map, 7, 1)).toBe(true); // banner
-        expect(isSolid(map, 7, 2)).toBe(true); // Cynthia
+        expect(isSolid(map, 4, 2)).toBe(true); // Cynthia
+        expect(isSolid(map, 11, 2)).toBe(true); // Blue
+        expect(isSolid(map, 7, 2)).toBe(false); // between them
         expect(isSolid(map, 7, 6)).toBe(false); // the ring is floor
         expect(isSolid(map, -1, 0)).toBe(true); // off the map
     });
@@ -40,13 +42,25 @@ describe('the Champion room', () => {
         expect(path.length).toBe(Math.abs(7 - 2) + Math.abs(10 - 3));
     });
 
-    it('turns a tap on Cynthia into a walk to the tile in front of her', () => {
+    it('stands Cynthia on the left and Blue on the right, the same walk from the door', () => {
+        expect(championTiles(map)).toEqual([{ id: 'cynthia', x: 4, y: 2 }, { id: 'blue', x: 11, y: 2 }]);
         const from = spawnTile(map);
-        const path = findPath(map, from, { x: 7, y: 2 });
-        const end = walk(from, path);
-        expect(end).toEqual(encounterTile(map));
-        expect(isEncounter(map, end)).toBe(true);
-        expect(facesChampion(map, end, path[path.length - 1])).toBe(true);
+        expect(findPath(map, from, encounterTile(map, 'cynthia')).length).toBe(findPath(map, { x: 8, y: 10 }, encounterTile(map, 'blue')).length);
+    });
+
+    it('turns a tap on either Champion into a walk to the tile in front of them', () => {
+        for (const champion of championTiles(map)) {
+            const from = spawnTile(map);
+            const path = findPath(map, from, champion);
+            const end = walk(from, path);
+            expect(end).toEqual(encounterTile(map, champion.id));
+            expect(encounterAt(map, end)).toBe(champion.id);
+            expect(isEncounter(map, end)).toBe(true);
+            // The walk may end from the side; arriving turns the player up (DsArena arrive).
+            expect(facesChampion(map, end, 'up')).toBe(champion.id);
+            expect(facesChampion(map, end, 'left')).toBe(null);
+        }
+        expect(encounterAt(map, { x: 7, y: 3 })).toBe(null);
     });
 
     it('converts DS pixels to tiles', () => {
@@ -56,8 +70,8 @@ describe('the Champion room', () => {
 
     it('turns Cynthia toward the player along the longer axis', () => {
         const her = { x: 7, y: 2 };
-        expect(faceToward(her, spawnTile(map))).toBe('down');
-        expect(faceToward(her, encounterTile(map))).toBe('down');
+        expect(faceToward(her, { x: 7, y: 10 })).toBe('down');
+        expect(faceToward(her, { x: 7, y: 3 })).toBe('down');
         expect(faceToward(her, { x: 2, y: 3 })).toBe('left');
         expect(faceToward(her, { x: 13, y: 2 })).toBe('right');
         expect(faceToward(her, { x: 4, y: 1 })).toBe('left');

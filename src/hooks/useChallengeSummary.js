@@ -43,15 +43,19 @@ export function useChallengeSummary(userId, isAnonymous) {
             const dayKey = dayKeyAt(now);
             const base = `artifacts/${appId}`;
             try {
-                const [day, run, stats] = await Promise.all([
+                const [day, run, freeRun, stats] = await Promise.all([
                     getDoc(doc(db, `${base}/public/data/challengeDays/${dayKey}`)),
                     // A run that doesn't exist yet is a denied read, not an empty one
                     // (its rule checks resource.data.uid): either way, not played today.
+                    // Cynthia's two officials: the Time do dia's, and your own team's (`_free`).
                     isAnonymous ? null : getDoc(doc(db, `${base}/challengeRuns/${userId}_${dayKey}`)).catch(() => null),
+                    isAnonymous ? null : getDoc(doc(db, `${base}/challengeRuns/${userId}_${dayKey}_free`)).catch(() => null),
                     isAnonymous ? null : getDoc(doc(db, `${base}/challengeStats/${userId}`)).catch(() => null),
                 ]);
                 const dayData = day.exists() ? day.data() : null;
-                const status = run?.exists() ? run.data().status : null;
+                const statuses = [run, freeRun].map((snap) => (snap?.exists() ? snap.data().status : null));
+                // A battle on either board in progress, else a win on either, else whichever was played.
+                const status = ['active', 'won'].find((s) => statuses.includes(s)) || statuses.find(Boolean) || null;
                 const lead = dayData?.lineup?.[0]?.wildcard ? null : dayData?.lineup?.[0] || null;
                 const state = challengeSummaryState({ hasDay: Boolean(dayData), runStatus: status, isGuest: isAnonymous });
                 const next = {

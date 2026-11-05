@@ -52,11 +52,12 @@ const useClock = () => {
  * opponent is (`foeSimName`, the name `|win|` uses; `foeSprite`), their team as
  * the log reveals it (`foeRoster`) instead of the day's lineup, the waiting line
  * and the labels. `music` names the loop that plays (`battleMusic`).
+ * `championSprite` is the champion on the far platform (`challengeArt.championArt`).
  */
 export function DsBattleStage({
     run, lineup, events, eventsBase, pending, championName, playIntro,
     fast, reducedMotion, bar, rails = null, onChoose, onForfeit, onFinished,
-    rival = null, music = 'champion', overlay = null,
+    rival = null, music = 'champion', overlay = null, championSprite = null,
 }) {
     const { t } = useTranslation();
     const dex = useBattleDex();
@@ -190,7 +191,7 @@ export function DsBattleStage({
             switchKeys={switchKeys}
             moveMeta={moveMeta}
             championName={championName}
-            foeSprite={rival?.foeSprite}
+            foeSprite={rival?.foeSprite || championSprite}
             foeName={foeName}
             reducedMotion={reducedMotion}
             messageMode={layout === 'single' ? 'none' : 'band'}

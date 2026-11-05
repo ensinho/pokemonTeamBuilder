@@ -28,6 +28,27 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // Blue joins the Champion Challenge; the donation card stays the featured one.
+        notes: [
+            {
+                key: 'buy-me-a-coffee',
+                featured: true,
+                icon: 'coffee',
+                visual: 'support',
+                title: 'patchNotes.supportTitle',
+                description: 'patchNotes.supportBody',
+                cta: 'patchNotes.supportCta',
+                href: SUPPORT_URL,
+            },
+            { key: 'champion-blue', icon: 'crown', title: 'patchNotes.blueTitle', description: 'patchNotes.blueDesc', cta: 'patchNotes.blueCta', path: '/challenge?champion=blue' },
+            { key: 'challenge-boards', icon: 'trophy', title: 'patchNotes.boardsTitle', description: 'patchNotes.boardsDesc', cta: 'patchNotes.boardsCta', path: '/challenge' },
+            { key: 'challenge-share', icon: 'sparkles', title: 'patchNotes.challengeShareTitle', description: 'patchNotes.challengeShareDesc', cta: 'patchNotes.challengeShareCta', path: '/feed' },
+        ],
+    },
+    {
+        version: '1.20.0',
+        month: '2026-11',
+        thanks: false,
         notes: [
             {
                 key: 'buy-me-a-coffee',

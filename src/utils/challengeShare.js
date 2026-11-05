@@ -4,6 +4,8 @@
  * The win-chance curve travels as a sparkline of block characters.
  */
 
+import { isChampion } from './challengeChampions';
+
 const BLOCKS = '▁▂▃▄▅▆▇█';
 const MAX_SPARK = 16;
 
@@ -52,9 +54,13 @@ const count = (value, max) => {
  * her team or yours. Self-reported, like a shared PokéPuzzle board: the
  * ranking (server-written) is where results are authoritative.
  */
-export const buildChallengeShare = ({ dayKey, difficulty, status, result = {}, streak = 0, place = null, board = null, curve = [] }) => ({
+export const buildChallengeShare = ({
+    dayKey, championId = null, difficulty, status, result = {}, streak = 0, place = null, board = null, curve = [],
+}) => ({
     v: 1,
     dayKey: String(dayKey || ''),
+    // Absent on posts from before there were two champions: those were Cynthia.
+    champion: isChampion(championId) ? championId : 'cynthia',
     difficulty: DIFFICULTIES.has(difficulty) ? difficulty : null,
     won: status === 'won',
     turns: count(result.turns, 999),
@@ -74,6 +80,7 @@ export const readChallengeShare = (payload) => {
     if (!payload || payload.v !== 1) return null;
     return {
         dayKey: /^\d{4}-\d{2}-\d{2}$/.test(payload.dayKey) ? payload.dayKey : null,
+        champion: isChampion(payload.champion) ? payload.champion : 'cynthia',
         difficulty: DIFFICULTIES.has(payload.difficulty) ? payload.difficulty : null,
         won: payload.won === true,
         turns: count(payload.turns, 999),

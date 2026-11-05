@@ -41,14 +41,19 @@ describe('the challenge share text', () => {
             dayKey: '2026-10-15', difficulty: 'platinum', status: 'won', result: { turns: 18, remaining: 3, score: 1420, hpPct: 70 },
             streak: 4, place: 2, board: 'daily', curve: [0.5, 0.9],
         });
-        expect(share).toEqual({ v: 1, dayKey: '2026-10-15', difficulty: 'platinum', won: true, turns: 18, remaining: 3, score: 1420, streak: 4, place: 2, board: 'daily', spark: '▅▇' });
-        expect(readChallengeShare(share)).toMatchObject({ won: true, place: 2, spark: '▅▇' });
+        expect(share).toEqual({
+            v: 1, dayKey: '2026-10-15', champion: 'cynthia', difficulty: 'platinum', won: true, turns: 18, remaining: 3, score: 1420, streak: 4, place: 2, board: 'daily', spark: '▅▇',
+        });
+        expect(readChallengeShare(share)).toMatchObject({ champion: 'cynthia', won: true, place: 2, spark: '▅▇' });
+        expect(readChallengeShare(buildChallengeShare({ dayKey: '2026-10-15', championId: 'blue', status: 'lost' })).champion).toBe('blue');
     });
 
     it('reads a forged card back clamped, and refuses what is not one', () => {
-        const forged = { v: 1, dayKey: '<script>', difficulty: 'godmode', won: 'yes', turns: -5, remaining: 99, score: 1e9, streak: 'x', place: 0, board: 'secret', spark: '<b>hi</b>' };
+        const forged = {
+            v: 1, dayKey: '<script>', champion: 'mewtwo', difficulty: 'godmode', won: 'yes', turns: -5, remaining: 99, score: 1e9, streak: 'x', place: 0, board: 'secret', spark: '<b>hi</b>',
+        };
         expect(readChallengeShare(forged)).toEqual({
-            dayKey: null, difficulty: null, won: false, turns: 0, remaining: 6, score: 99999, streak: 0, place: null, board: null, spark: '',
+            dayKey: null, champion: 'cynthia', difficulty: null, won: false, turns: 0, remaining: 6, score: 99999, streak: 0, place: null, board: null, spark: '',
         });
         expect(readChallengeShare(null)).toBe(null);
         expect(readChallengeShare({ v: 2 })).toBe(null);
