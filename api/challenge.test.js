@@ -259,6 +259,52 @@ describe('POST /api/challenge', () => {
         expect(fake.store.get(`${BASE}/public/data/challengeRanks/2026-10-14`).played.daily).toBe(1);
     });
 
+    it('counts the first battle on each board, and keeps each champion apart', async () => {
+        const saved = { source: 'saved', name: 'Rain', showdownText: 'Pelipper @ Damp Rock\nAbility: Drizzle\n- Hurricane\n- Scald\n- U-turn\n- Roost' };
+        const daily = await call({ action: 'start', team: { source: 'daily' } });
+        expect(daily.body.runId).toBe(`${UID}_2026-10-14`);
+        // One battle at a time: the other board waits for this one.
+        expect((await call({ action: 'start', team: saved })).body.error).toBe('officialAlreadyPlayed');
+        await call({ action: 'forfeit', runId: daily.body.runId });
+
+        // The first battle with your own team is official too: a place on the other board.
+        const free = await call({ action: 'start', team: saved });
+        expect(free.statusCode).toBe(200);
+        expect(free.body).toMatchObject({ runId: `${UID}_2026-10-14_free`, practice: false });
+        await call({ action: 'forfeit', runId: free.body.runId });
+        const ranks = fake.store.get(`${BASE}/public/data/challengeRanks/2026-10-14`);
+        expect(ranks.played).toEqual({ daily: 1, free: 1 });
+        // Two officials, one day in the record.
+        expect(fake.store.get(`${BASE}/challengeStats/${UID}`)).toMatchObject({ played: 1, losses: 1 });
+        // After both, a board's second battle is practice.
+        expect((await call({ action: 'start', team: saved })).body.error).toBe('officialAlreadyPlayed');
+        expect((await call({ action: 'start', practice: true, team: saved })).body.runId).toBe(`${UID}_2026-10-14_free_p1`);
+
+        // Blue: his own day, Time do dia, runs, ranking and record.
+        const state = await call({ action: 'state', championId: 'blue' });
+        expect(state.body).toMatchObject({ championId: 'blue', run: null, officials: { daily: null, free: null } });
+        expect(state.body.day.championName).toBe('Blue');
+        expect(state.body.day.lineup).toHaveLength(6);
+        expect(state.body.day.dailyTeam.members.map((m) => m.species))
+            .not.toEqual(fake.store.get(`${BASE}/public/data/challengeDays/2026-10-14`).dailyTeam.members.map((m) => m.species));
+        expect(state.body.champions).toEqual([
+            { id: 'cynthia', name: 'Cynthia', played: true, won: false },
+            { id: 'blue', name: 'Blue', played: false, won: false },
+        ]);
+        const blue = await call({ action: 'start', championId: 'blue', team: { source: 'daily' } });
+        expect(blue.body.runId).toBe(`${UID}_2026-10-14_blue`);
+        expect(runDoc(blue.body.runId).championId).toBe('blue');
+        expect(secretDoc(blue.body.runId).names.p2).toBe('Blue');
+        expect(blue.body.events.map((e) => e.key)).toContain('challenge.blue.intro');
+        await call({ action: 'forfeit', runId: blue.body.runId });
+        expect(fake.store.get(`${BASE}/public/data/challengeRanks/2026-10-14_blue`).played).toEqual({ daily: 1, free: 0 });
+        expect(fake.store.get(`${BASE}/public/data/challengeRanks/2026-10-14`).played).toEqual({ daily: 1, free: 1 });
+        const stats = fake.store.get(`${BASE}/challengeStats/${UID}`);
+        expect(stats.played).toBe(1);
+        expect(stats.champions.blue).toMatchObject({ played: 1, losses: 1 });
+        expect((await call({ action: 'state', championId: 'nobody' })).statusCode).toBe(400);
+    });
+
     it('validates saved teams', async () => {
         const res = await call({ action: 'start', team: { source: 'saved', name: 'Bad', showdownText: 'Onix\n- Fissure\n\nOnix\n- Tackle' } });
         expect(res.statusCode).toBe(400);

@@ -48,6 +48,15 @@ describe('validateTeam', () => {
 });
 
 describe('dailyTeamFor', () => {
+    it("gives Blue his own Time do dia, and keeps Cynthia's", () => {
+        const cynthia = dailyTeamFor('2026-10-14');
+        const blue = dailyTeamFor('2026-10-14', 'blue');
+        expect(dailyTeamFor('2026-10-14', 'cynthia')).toEqual(cynthia);
+        expect(blue.showdownText).not.toBe(cynthia.showdownText);
+        expect(blue.members).toHaveLength(6);
+        expect(validateTeam(blue.showdownText).ok).toBe(true);
+    });
+
     it('is the same six for everyone on a day, all at level 50 with moves', () => {
         const a = dailyTeamFor('2026-10-14');
         expect(dailyTeamFor('2026-10-14')).toEqual(a);

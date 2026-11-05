@@ -1,3 +1,5 @@
+import { BLUE } from './blue.js';
+
 /**
  * Cynthia's manners — the parts of her play that are character, not strength.
  * Another champion is another file with the same shape (premise A5).
@@ -12,6 +14,6 @@ export const CYNTHIA = {
     coldInaccuracyPenalty: 10,
 };
 
-export const PERSONALITIES = { cynthia: CYNTHIA };
+export const PERSONALITIES = { cynthia: CYNTHIA, blue: BLUE };
 
 export const personalityFor = (championId) => PERSONALITIES[championId] || CYNTHIA;

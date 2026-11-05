@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { Dex, Teams } from '@pkmn/sim';
 
 import { shiftDayKey } from './day.js';
-import { CYNTHIA_POOL } from './pool.js';
+import { BLUE_POOL, CYNTHIA_POOL } from './pool.js';
 import {
-    championLineupFor, championTeamTextFor, difficultyFor, publicLineup, coreFor,
+    aceFor, championLineupFor, championTeamTextFor, difficultyFor, publicLineup, coreFor,
 } from './rotation.js';
 
 const START = '2026-10-14';
@@ -90,5 +90,41 @@ describe('daily champion rotation', () => {
         expect(shown.filter((mon) => mon.wildcard)).toEqual([{ wildcard: true }]);
         expect(JSON.stringify(shown)).not.toMatch(/moves|item|ability/i);
         expect(tierOf.get(shown[0].species)).toBe('frequent');
+    });
+});
+
+describe("Blue's rotation", () => {
+    const tiers = new Map(BLUE_POOL.map((entry) => [entry.species, entry]));
+    const blue = DAYS.map((day) => ({ day, lineup: championLineupFor(day, 'blue') }));
+
+    it("has Cynthia's shape: 3 frequent + 1 occasional + 1 wildcard + a starter as the ace, last", () => {
+        for (const { day, lineup } of blue) {
+            const count = (tier) => lineup.filter((mon) => mon.tier === tier).length;
+            expect([count('frequent'), count('occasional'), count('wildcard'), count('core')]).toEqual([3, 1, 1, 1]);
+            expect(lineup[5].species).toBe(aceFor(day, 'blue'));
+            expect(['Charizard', 'Blastoise', 'Venusaur']).toContain(lineup[5].species);
+            expect(lineup[0].tier).toBe('frequent');
+            expect(new Set(lineup.map((mon) => mon.species)).size).toBe(6);
+            expect(tiers.has(lineup.find((mon) => mon.wildcard).species)).toBe(false);
+        }
+    });
+
+    it('brings every starter, and keeps each away from the member its team never has when it can', () => {
+        const aces = new Map();
+        for (const { lineup } of blue) {
+            const ace = lineup[5].species;
+            aces.set(ace, (aces.get(ace) || 0) + 1);
+            const species = lineup.map((mon) => mon.species);
+            const fits = BLUE_POOL.filter((entry) => entry.tier === 'core' && !species.includes(entry.excludes));
+            if (fits.length) expect(species).not.toContain(tiers.get(ace).excludes);
+        }
+        expect([...aces.keys()].sort()).toEqual(['Blastoise', 'Charizard', 'Venusaur']);
+        for (const n of aces.values()) expect(n).toBeGreaterThan(60);
+    });
+
+    it('leads with Pidgeot most often, and builds a team the sim imports', () => {
+        const leads = blue.filter(({ lineup }) => lineup[0].species === 'Pidgeot').length / blue.length;
+        expect(leads).toBeGreaterThan(0.2);
+        for (const { day } of blue.slice(0, 7)) expect(Teams.import(championTeamTextFor(day, 'blue'))).toHaveLength(6);
     });
 });

@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
 import { DIALOGUE_KEYS, dialogueEvents } from './dialogue.js';
-import { effectiveStreak, emptyStats, nextStats, resultOf, scoreOf } from './outcome.js';
+import {
+    effectiveStreak, emptyStats, nextStats, resultOf, scoreOf, statsOf, withStats,
+} from './outcome.js';
 
 describe('score', () => {
     it('rewards a quick, clean win and gives a loss nothing', () => {
@@ -37,6 +39,31 @@ describe('streak', () => {
         const s = play(emptyStats('u'), '2026-10-12', 'won');
         expect(play(s, '2026-10-12', 'lost', true)).toBe(s);
         expect(play(s, '2026-10-12', 'lost')).toBe(s);
+    });
+
+    it("lets the day's second official (the other board) turn a loss into a win, never the reverse", () => {
+        let s = play(emptyStats('u'), '2026-10-12', 'won');
+        s = play(s, '2026-10-13', 'won');
+        s = play(s, '2026-10-14', 'lost');
+        expect(s.streak).toBe(0);
+        expect(play(s, '2026-10-14', 'lost')).toBe(s);
+        s = play(s, '2026-10-14', 'won');
+        // The loss's zero is undone: the streak it broke carries on.
+        expect([s.streak, s.played, s.wins, s.losses]).toEqual([3, 3, 3, 0]);
+        expect(s.history['2026-10-14']).toBe('won');
+        expect(play(s, '2026-10-14', 'lost')).toBe(s);
+    });
+
+    it("keeps another champion's record beside Cynthia's, in the same document", () => {
+        const cynthia = play(emptyStats('u'), '2026-10-12', 'won');
+        const blue = play(statsOf(cynthia, 'blue', 'u'), '2026-10-12', 'lost');
+        const doc = withStats(cynthia, 'blue', blue, 'u');
+        expect(statsOf(doc, 'cynthia', 'u')).toMatchObject({ wins: 1, streak: 1 });
+        expect(statsOf(doc, 'blue', 'u')).toMatchObject({ wins: 0, losses: 1, played: 1 });
+        // Writing Cynthia's again keeps Blue's.
+        const again = withStats(doc, 'cynthia', play(statsOf(doc, 'cynthia', 'u'), '2026-10-13', 'won'), 'u');
+        expect(again.champions.blue).toEqual(blue);
+        expect(again.streak).toBe(2);
     });
 
     it('reads as broken once a day passes without a win', () => {
@@ -75,6 +102,11 @@ describe('dialogue', () => {
         ]);
         expect(dialogueEvents([...opening, ...turn], ['|faint|p2a: Garchomp', '|win|Enzo'], { ...ctx, said }).events.map((e) => e.key))
             .toEqual([DIALOGUE_KEYS.lose]);
+    });
+
+    it("speaks another champion's lines from that champion's keys", () => {
+        const { events } = dialogueEvents([], opening, { ...ctx, championId: 'blue' });
+        expect(events.map((e) => e.key)).toEqual(['challenge.blue.intro']);
     });
 
     it('notices the battle turning', () => {

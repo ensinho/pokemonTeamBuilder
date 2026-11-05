@@ -42,11 +42,18 @@ export const MAX_NAME_LENGTH = 20;
 export const CHOICE_PATTERN = /^(move [1-4]( mega)?|switch [1-6]|default)$/;
 
 /**
- * Champions the engine knows. Only Cynthia ships (premise A5): the engine is
- * generic by `championId` so another one is data, not code.
+ * Champions the engine knows (premise A5): the engine is generic by
+ * `championId`, so another one is data, not code. Cynthia's documents keep
+ * their original ids; every other champion's carry `_{id}` (runs.js).
+ *
+ * Each rotates the same way (rotation.js). The ace changes by day for a
+ * champion with several (`rotation.aceFor` — Blue's starters), so the ace is
+ * read from the day's lineup, not from here.
  */
 export const CHAMPIONS = {
-    cynthia: { name: 'Cynthia', trainerSprite: 'cynthia-gen4', aceSpecies: 'Garchomp' },
+    cynthia: { name: 'Cynthia', trainerSprite: 'cynthia-gen4' },
+    blue: { name: 'Blue', trainerSprite: 'blue' },
 };
 
 export const DEFAULT_CHAMPION = 'cynthia';
+export const CHAMPION_IDS = Object.keys(CHAMPIONS);

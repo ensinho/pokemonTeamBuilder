@@ -68,14 +68,18 @@ const defined = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) =
 
 /**
  * @param {{snapshot: object, request: object, p2Lines: string[], seed: number[], turn: number|string,
- *          profileKey: string, championId?: string, model?: object|null}} input
+ *          profileKey: string, championId?: string, aceSpecies?: string, model?: object|null}} input
+ *        `aceSpecies`: the day's ace, for a champion whose ace rotates (Blue's starters).
  * @returns {{choice: ?string, trace: ?object}}
  */
-export const decide = ({ snapshot, request, p2Lines = [], seed, turn, profileKey, championId = 'cynthia', model = WIN_MODEL }) => {
+export const decide = ({
+    snapshot, request, p2Lines = [], seed, turn, profileKey, championId = 'cynthia', aceSpecies = null, model = WIN_MODEL,
+}) => {
     if (!request || request.wait) return { choice: null, trace: null };
     const started = performance.now();
     const profile = profileFor(profileKey);
-    const personality = personalityFor(championId);
+    const base = personalityFor(championId);
+    const personality = aceSpecies ? { ...base, aceSpecies } : base;
     const options = legalOptions(request);
     // A distinct tag per decision: several can share a turn (a move, then a
     // replacement after a faint), and each needs its own roll.

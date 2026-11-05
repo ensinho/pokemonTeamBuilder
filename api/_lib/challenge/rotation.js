@@ -10,7 +10,8 @@ import { hashSeed } from './seed.js';
  * Today's champion team — a pure function of the day.
  *
  * Fixed shape (decided 2026-10-14): **1 ace + 3 frequent + 1 occasional + 1
- * wildcard**. The ace (Garchomp) always closes; the lead is one of the frequent
+ * wildcard**, for every champion. The ace (Garchomp; one of Blue's starters,
+ * `aceFor`) always closes; the lead is one of the frequent
  * three; the occasional and the wildcard fall somewhere in slots 2–5.
  *
  * ## Why cycles, not "reroll if it matches the last 7 days"
@@ -119,13 +120,17 @@ const isWildcardCandidate = (species, poolSpecies) => species.exists
     && !species.tags.includes('Restricted Legendary')
     && !species.tags.includes('Mythical');
 
-/** No type on three or more members, and the wildcard shares at most one type with the rest. */
+/**
+ * The wildcard brings no type that would be on three or more members, and
+ * shares at most one type with the rest. Only its own types are counted: Blue's
+ * regulars can already be three Flying-types (Pidgeot, Gyarados, Aerodactyl),
+ * which is his team, not the wildcard's doing. Cynthia's five never repeat a
+ * type three times, so for her this is the check it always was.
+ */
 const typesFit = (wildcardTypes, otherTypeLists) => {
-    const others = new Set(otherTypeLists.flat());
-    if (wildcardTypes.filter((type) => others.has(type)).length > 1) return false;
-    const counts = new Map();
-    for (const type of [...otherTypeLists.flat(), ...wildcardTypes]) counts.set(type, (counts.get(type) || 0) + 1);
-    return [...counts.values()].every((count) => count < 3);
+    const others = otherTypeLists.flat();
+    if (wildcardTypes.filter((type) => others.includes(type)).length > 1) return false;
+    return wildcardTypes.every((type) => others.filter((other) => other === type).length + 1 < 3);
 };
 
 const wildcardCache = new Map();
@@ -159,14 +164,29 @@ export const wildcardFor = (dayKey, championId, teamSpecies) => {
 };
 
 /**
+ * The day's ace, who always closes. Cynthia has one (Garchomp). Blue has the
+ * three starters and brings one a day, never beside the member its team never
+ * has in the games (`excludes`) — unless the day's trio holds all three of
+ * those, when any ace will do.
+ */
+export const aceFor = (dayKey, championId = 'cynthia') => {
+    const aces = poolFor(championId).filter((entry) => entry.tier === 'core');
+    if (aces.length === 1) return aces[0].species;
+    const { frequent, occasional } = coreFor(dayKey, championId);
+    const fits = aces.filter((entry) => !entry.excludes || ![...frequent, occasional].includes(entry.excludes));
+    const choices = fits.length ? fits : aces;
+    return choices[new PRNG(hashSeed('ace', championId, dayKey)).random(choices.length)].species;
+};
+
+/**
  * The six, in the order they are sent out.
  *
  * @returns {Array<{species: string, dexNum: number, tier: string, variantKey: string, wildcard?: true}>}
  */
 export const championLineupFor = (dayKey, championId = 'cynthia') => {
     const pool = poolFor(championId);
-    const byName = new Map(pool.map((entry) => [entry.species, entry]));
     const difficulty = difficultyFor(dayKey);
+    const byName = new Map(pool.map((entry) => [entry.species, entry]));
     const core = coreFor(dayKey, championId);
     const prng = new PRNG(hashSeed('champion', championId, dayKey));
 
@@ -179,7 +199,7 @@ export const championLineupFor = (dayKey, championId = 'cynthia') => {
         leadIndex += 1;
     }
     const lead = core.frequent[leadIndex];
-    const ace = pool.find((entry) => entry.tier === 'core').species;
+    const ace = aceFor(dayKey, championId);
 
     const fixed = [lead, ...core.frequent.filter((name) => name !== lead), core.occasional, ace];
     const wildcard = wildcardFor(dayKey, championId, fixed);
