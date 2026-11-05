@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeftRight, ChevronLeft } from 'lucide-react';
+import { ArrowLeftRight, ChevronLeft, IdCard } from 'lucide-react';
 
 import { useModalA11y } from '../../../hooks/useModalA11y';
 import { useTrainerCosmetics } from '../../../hooks/useTrainerCosmetics';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { openTrainerCard } from '../../../store/useTrainerCardStore';
 import { championArt } from '../../../utils/challengeArt';
 import { CHAMPION_IDS, CHAMPION_NAMES } from '../../../utils/challengeChampions';
 import { boardAfterSwitch, rankingStart } from '../../../utils/challengeView';
@@ -20,14 +21,14 @@ const TEAM_SIZE = 6;
 /**
  * The face a row shows: what the server stamped when they won
  * (`entry.profile`, api/_lib/challenge/ranking.js), and for your own row your
- * avatar and frame as they are now — rows never carry a uid, so `me` is the
- * only trainer whose live cosmetics the screen can ask for.
+ * avatar and frame as they are now. A row with a public profile carries its
+ * uid (2026-11-05), which also opens their trainer card from the detail.
  */
 function useRowFace(entry) {
     const ownUid = useAuthStore((s) => s.userId);
     const publicAvatar = useAuthStore((s) => s.publicAvatar);
     const stamped = entry.profile || {};
-    const uid = entry.me ? ownUid : null;
+    const uid = entry.me ? ownUid : (entry.uid || null);
     const cosmetics = useTrainerCosmetics(uid, { frameId: stamped.frameId, titleId: stamped.titleId });
     const own = entry.me && !entry.profile ? publicAvatar() : null;
     return {
@@ -82,6 +83,31 @@ function RankRow({ entry, place, onOpen }) {
                     <small className="mt-1 text-2xs font-normal text-muted">{t('challenge.ranking.points')}</small>
                 </span>
             </button>
+        </li>
+    );
+}
+
+/**
+ * The top three as a podium (2026-11-05, the "community boards" reference):
+ * second · first · third, the winner raised and the only gold on the board.
+ * Each step opens the same detail its row would.
+ */
+function PodiumStep({ entry, place, onOpen }) {
+    const { t } = useTranslation();
+    const face = useRowFace(entry);
+    return (
+        <li className={`challenge-podium__step is-${place}`}>
+            <button
+                type="button"
+                className={`challenge-podium__who ${entry.me ? 'is-me' : ''}`}
+                onClick={onOpen}
+                aria-label={t('challenge.ranking.rowLabel', { place, name: entry.name, score: entry.score })}
+            >
+                <RankAvatar face={face} name="" size={place === 1 ? 'md' : 'sm'} />
+                <span className="challenge-podium__name">{entry.name}</span>
+                <span className="challenge-podium__score">{entry.score}</span>
+            </button>
+            <span className="challenge-podium__block" aria-hidden="true">{place}</span>
         </li>
     );
 }
@@ -180,6 +206,24 @@ function RankDetail({ entry, place, board, onBack }) {
                     {t('challenge.ranking.attempt', { place, board: t(`challenge.ranking.${board}`) })}
                     {face.level ? ` · ${t('challenge.ranking.level', { n: face.level })}` : ''}
                 </p>
+                {face.uid && (
+                    <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => openTrainerCard({
+                            userId: face.uid,
+                            name: entry.name,
+                            avatar: face.pokemonId,
+                            isShiny: face.isShiny,
+                            trainerSprite: face.trainerSprite,
+                            frameId: face.frameId,
+                            titleId: face.titleId,
+                        })}
+                    >
+                        <IdCard aria-hidden="true" />
+                        {t('trainerCard.view')}
+                    </button>
+                )}
             </div>
             <Figures items={figures.map(([key, value]) => [t(`challenge.ranking.${key}`), value])} />
         </div>
@@ -254,10 +298,19 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
             </div>
             {list.length ? (
                 <ol className="challenge-rank__list custom-scrollbar m-0 list-none p-0">
-                    {list.map((entry, index) => (
+                    {list.length >= 3 && (
+                        <li>
+                            <ol className="challenge-podium" aria-label={t('challenge.ranking.podium')}>
+                                {[1, 0, 2].map((index) => (
+                                    <PodiumStep key={`${index}-${list[index].name}`} entry={list[index]} place={index + 1} onOpen={() => setOpen(index)} />
+                                ))}
+                            </ol>
+                        </li>
+                    )}
+                    {list.map((entry, index) => (list.length >= 3 && index < 3 ? null : (
                         // A board is replaced whole, never reordered in place.
                         <RankRow key={`${index}-${entry.name}`} entry={entry} place={index + 1} onOpen={() => setOpen(index)} />
-                    ))}
+                    )))}
                 </ol>
             ) : (
                 <p className="m-0 grid flex-1 place-items-center text-center text-sm text-muted">{t('challenge.ranking.empty')}</p>

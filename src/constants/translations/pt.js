@@ -753,6 +753,9 @@ export default {
         reset: 'Voltar o tamanho do texto para 100%'
     },
     accountMenu: {
+        groupAccount: 'Conta',
+        groupPreferences: 'Preferências',
+        groupNews: 'Novidades',
         profileLabel: 'Perfil',
         profileNote: 'Abrir configurações e preferências do treinador',
         profileAndSettings: 'Perfil e preferências',
@@ -1038,6 +1041,14 @@ export default {
         nextPokemon: 'Próximo Pokémon'
     },
     builder: {
+        coach: {
+            dismiss: 'Esconder as dicas',
+            empty: { title: 'Comece por um de que você goste', body: 'Escolha um Pokémon que você curte — o time cresce em volta dele. Toque num card para adicionar.' },
+            start: { title: 'Leia a análise', body: 'Fraquezas são os tipos que acertam vários do seu time com força. A próxima escolha deveria resistir a eles.' },
+            grow: { title: 'Deixe as sugestões ajudarem', body: 'Os cards marcados como bom encaixe cobrem o que falta no seu time. Mais dois ou três e ele está pronto.' },
+            full: { title: 'Seis! Agora deixe com a sua cara', body: 'Toque num membro para escolher golpes e item, depois salve o time ou teste numa batalha.' },
+        },
+        usageShort: '{{n}}% de uso',
         title: 'Montador de time',
         subtitle: 'Monte e ajuste a sua equipe atual',
         tournamentPartners: 'Parceiros de torneio',
@@ -1216,6 +1227,7 @@ export default {
         },
     },
     profile: {
+        settingTheme: 'Tema',
         title: 'Cartão de Treinador & preferências',
         trainerProfile: 'Perfil de treinador',
         guestPill: 'Convidado',
@@ -2158,6 +2170,7 @@ export default {
             youTag: 'Você',
             level: 'Nv. {{n}}',
             rowLabel: '{{place}}º {{name}}, {{score}} pontos — ver a tentativa',
+            podium: 'Pódio do dia',
             back: 'Voltar ao ranking',
             attempt: '{{place}}º no ranking {{board}}',
             score: 'Pontos',
@@ -2875,6 +2888,7 @@ export default {
         },
     },
     trainerCard: {
+        view: 'Cartão de treinador',
         close: 'Fechar',
         unknown: 'Treinador',
         streak: 'dias seguidos',
@@ -2984,6 +2998,7 @@ export default {
         forYou: 'Para você',
     },
     journeys: {
+        xpReward: '+{{n}} XP',
         title: 'Jornadas',
         subtitle: 'Aprenda a usar o app usando — cada nível concluído vale uma insígnia.',
         tabsLabel: 'Jornadas e insígnias',

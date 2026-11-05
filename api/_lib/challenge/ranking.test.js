@@ -45,13 +45,13 @@ describe('the daily ranking', () => {
         expect(ranks.boards.daily.some((e) => e.uid === 'p0')).toBe(false); // the lowest fell off
     });
 
-    it("shows the screen the top and the caller's place, without anyone else's uid", () => {
+    it("shows the screen the top and the caller's place, without a guest's uid", () => {
         let ranks = finish(null, 'ana', { score: 1500 });
         ranks = finish(ranks, 'me', { score: 1200 });
         const shown = publicRanks(ranks, 'me', 1);
-        expect(shown.boards.daily).toEqual([{ name: 'ANA', score: 1500, turns: 20, remaining: 2, at: '2026-10-15T15:00:00Z', profile: null, me: false }]);
+        expect(shown.boards.daily).toEqual([{ name: 'ANA', score: 1500, turns: 20, remaining: 2, at: '2026-10-15T15:00:00Z', profile: null, uid: null, me: false }]);
         expect(shown.mine).toEqual({ daily: 2, free: null });
-        expect(JSON.stringify(shown)).not.toMatch(/"uid"|"ana"/);
+        expect(JSON.stringify(shown)).not.toMatch(/"ana"/);
         expect(publicRanks(null, 'me')).toBe(null);
     });
 
@@ -67,13 +67,14 @@ describe('the daily ranking', () => {
         expect(forgotten.wins).toEqual(ranks.wins);
     });
 
-    it('stamps the public face of a win, shaped, and never the uid', () => {
+    it('stamps the public face of a win, shaped, with the uid its public profile already shows', () => {
         const ranks = finish(null, 'ana', {
             profile: { displayName: 'Ana', avatarPokemonId: 94, avatarIsShiny: true, trainerSprite: null, frameId: 'frame-ghost', titleId: 'x'.repeat(200), trainerLevel: 7, battleRecord: { wins: 3 } },
         });
         const [row] = publicRanks(ranks, null).boards.daily;
         expect(row.profile).toEqual({ avatarPokemonId: 94, avatarIsShiny: true, trainerSprite: null, frameId: 'frame-ghost', titleId: null, level: 7 });
-        expect(JSON.stringify(row)).not.toMatch(/"uid"|battleRecord/);
+        expect(row.uid).toBe('ana');
+        expect(JSON.stringify(row)).not.toMatch(/battleRecord/);
         expect(rankProfileOf(null)).toBe(null);
         expect(rankProfileOf({ avatarPokemonId: -1, trainerLevel: 'nine' })).toMatchObject({ avatarPokemonId: null, level: null });
     });

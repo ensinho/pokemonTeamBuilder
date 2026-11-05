@@ -312,6 +312,9 @@ export function SidebarAccountMenu({
                         </div>
                     </div>
 
+                    {/* Grouped like the reference's settings (2026-11-05): Conta,
+                        Preferências, Novidades — then sign out, alone, last. */}
+                    <p className="app-shell__account-group">{t('accountMenu.groupAccount')}</p>
                     <div className="app-shell__account-popover-section">
                         <button type="button" onClick={handleOpenProfile} className="app-shell__account-menu-item">
                             <span className="app-shell__account-menu-item-icon">
@@ -324,20 +327,7 @@ export function SidebarAccountMenu({
                         </button>
                     </div>
 
-                    {typeof onOpenPatchNotes === 'function' && (
-                        <div className="app-shell__account-popover-section">
-                            <button type="button" onClick={handleOpenPatchNotes} className="app-shell__account-menu-item">
-                                <span className="app-shell__account-menu-item-icon">
-                                    <FlowerIcon />
-                                </span>
-                                <span className="app-shell__account-menu-item-copy">
-                                    <span className="app-shell__account-menu-item-label">{t('accountMenu.patchNotesLabel')}</span>
-                                    <span className="app-shell__account-menu-item-note">{t('accountMenu.patchNotesNote')}</span>
-                                </span>
-                            </button>
-                        </div>
-                    )}
-
+                    <p className="app-shell__account-group">{t('accountMenu.groupPreferences')}</p>
                     <div className="app-shell__account-popover-section">
                         <p className="app-shell__account-popover-label">{t('accountMenu.themeLabel')}</p>
                         <div className="app-shell__account-theme-groups">
@@ -406,6 +396,23 @@ export function SidebarAccountMenu({
                         />
                         <p className="app-shell__account-popover-note">{t('accountMenu.teraTypeNote')}</p>
                     </div>
+
+                    {typeof onOpenPatchNotes === 'function' && (
+                        <>
+                        <p className="app-shell__account-group">{t('accountMenu.groupNews')}</p>
+                        <div className="app-shell__account-popover-section">
+                            <button type="button" onClick={handleOpenPatchNotes} className="app-shell__account-menu-item">
+                                <span className="app-shell__account-menu-item-icon">
+                                    <FlowerIcon />
+                                </span>
+                                <span className="app-shell__account-menu-item-copy">
+                                    <span className="app-shell__account-menu-item-label">{t('accountMenu.patchNotesLabel')}</span>
+                                    <span className="app-shell__account-menu-item-note">{t('accountMenu.patchNotesNote')}</span>
+                                </span>
+                            </button>
+                        </div>
+                        </>
+                    )}
 
                     <div className="app-shell__account-popover-section">
                         <button type="button" onClick={handleSignOut} className="app-shell__account-menu-item app-shell__account-menu-item--danger">

@@ -5,6 +5,7 @@ import { useMissionLauncher } from '../../hooks/useJourneys';
 import { getBadgeById } from '../../constants/badges';
 import { currentJourney } from '../../utils/journeys';
 import { recommendedJourneyIds } from '../../utils/trainerProfile';
+import { XP_RULES } from '../../utils/trainerLevel';
 import { useAuthStore } from '../../store/useAuthStore';
 import { JOURNEY_ICONS } from './journeyIcons';
 import '../../styles/journeys.css';
@@ -28,6 +29,8 @@ export function MissionRow({ mission }) {
                     <span className="mission__title">{title}</span>
                     <span className="mission__sub">{t('journeys.done')}</span>
                 </span>
+                {/* Earned: the reward as a gold pill (quest-list, 2026-11-05). */}
+                <span className="badge badge--gold mission__reward">{t('journeys.xpReward', { n: XP_RULES.mission })}</span>
             </li>
         );
     }
@@ -45,6 +48,8 @@ export function MissionRow({ mission }) {
                         {mission.progress.current}/{mission.progress.target}
                     </span>
                 )}
+                {/* Not yet: the reward as quiet coloured text, the row itself is the action. */}
+                <span className="mission__reward is-pending">{t('journeys.xpReward', { n: XP_RULES.mission })}</span>
                 <ChevronRight className="mission__go" aria-hidden="true" />
             </button>
         </li>

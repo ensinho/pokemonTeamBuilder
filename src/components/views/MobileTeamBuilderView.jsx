@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from 'react';
+import { BuilderCoach } from '../builder/BuilderCoach';
 import { Link } from 'react-router-dom';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
@@ -64,6 +65,7 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
     isFavorite,
     onToggleFavorite,
     lastRef,
+    usage,
 }) {
     const { t } = useTranslation();
     const handleCardClick = () => {
@@ -115,6 +117,11 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
                         className="h-4 w-4 rounded-full"
                     />
                 ))}
+                {Number.isFinite(usage) && usage > 0 && (
+                    <span className="pokemon-card__usage pokemon-card__usage--inline" title={t('builder.usageShort', { n: usage.toFixed(1) })}>
+                        {usage >= 10 ? Math.round(usage) : usage.toFixed(1)}%
+                    </span>
+                )}
                 {onShowDetails && (
                     <button
                         type="button"
@@ -318,6 +325,8 @@ export const MobileTeamBuilderView = ({
     tierCounts = null,
     selectedRegulation,
     isPlaythrough = false,
+    // Ranked trainers (trainer profile): the meta's usage share on each card.
+    metaUsageById = null,
     onSelectRegulation,
     formatLabel = '',
     totalCount = 0,
@@ -681,6 +690,7 @@ export const MobileTeamBuilderView = ({
                             </button>
                         </div>
                         <TeamShareRow onImage={handleShareTeam} disabled={teamSize === 0} className="mt-2" />
+                        <BuilderCoach teamSize={teamSize} className="mt-2" />
 
                         <div className="team-builder-mobile__composer-analysis">
                             {teamSize === 0 ? (
@@ -900,6 +910,7 @@ export const MobileTeamBuilderView = ({
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
                                                         onToggleFavorite={onToggleFavoritePokemon}
+                                                        usage={metaUsageById?.[pokemon.id]?.usage}
                                                     />
                                                 ))}
                                             </React.Fragment>
@@ -919,6 +930,7 @@ export const MobileTeamBuilderView = ({
                                                     synergyReason={pokemon.primary}
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
                                                     onToggleFavorite={onToggleFavoritePokemon}
+                                                    usage={metaUsageById?.[pokemon.id]?.usage}
                                                 />
                                             ))}
                                             {suggestionHeading && (
@@ -935,6 +947,7 @@ export const MobileTeamBuilderView = ({
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
                                                     onToggleFavorite={onToggleFavoritePokemon}
                                                     lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
+                                                    usage={metaUsageById?.[pokemon.id]?.usage}
                                                 />
                                             ))}
                                         </>

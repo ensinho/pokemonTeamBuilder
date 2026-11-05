@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { Trash2 } from 'lucide-react';
+import { IdCard, Trash2 } from 'lucide-react';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
 
 import { useBattles } from '../../../hooks/useBattles';
@@ -19,6 +19,7 @@ import '../../../styles/battle-view.css';
 import { Loader } from '../../Loader';
 import { promptSignIn } from '../../../utils/navigation';
 import { confirmAction } from '../../../store/useConfirmStore';
+import { openTrainerCard } from '../../../store/useTrainerCardStore';
 import { Switch } from '../../Switch';
 
 /**
@@ -200,6 +201,23 @@ export function BattleListView() {
                                 )}
                             </button>
 
+                            {view.opponentId && !view.isPublicInvite && (
+                                <button
+                                    type="button"
+                                    className="btn btn-ghost battle-card__dismiss"
+                                    onClick={() => openTrainerCard({
+                                        userId: view.opponentId,
+                                        name: view.opponentName || t('friends.unknownTrainer'),
+                                        avatar: view.opponentAvatar?.pokemonId,
+                                        isShiny: view.opponentAvatar?.isShiny,
+                                        trainerSprite: view.opponentAvatar?.trainerSprite,
+                                    })}
+                                    aria-label={t('trainerCard.open', { name: view.opponentName || t('friends.unknownTrainer') })}
+                                    title={t('trainerCard.view')}
+                                >
+                                    <IdCard className="w-4 h-4 shrink-0" aria-hidden="true" />
+                                </button>
+                            )}
                             {view.canDelete && (
                                 <button
                                     type="button"

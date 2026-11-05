@@ -1270,6 +1270,34 @@ button.cozy-journey__row:hover {
     background: var(--color-surface);
 }
 
+.cozy-post__avatar-slot {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+/* The author's avatar sits over its slot as its own button (a button can't
+   hold another): it opens the trainer card, the row opens the forum. */
+.cozy-post-item {
+    position: relative;
+}
+
+.cozy-post__who {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    padding: 0;
+    transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.cozy-post__who:hover {
+    transform: scale(1.06);
+}
+
+.cozy-post__who:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
 .cozy-post__sprite {
     width: 3rem;
     height: 3rem;

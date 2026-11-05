@@ -40,7 +40,7 @@ import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { JourneyBar, JourneyList, JourneyTile, MissionRow } from '../journeys/JourneyList';
 import { currentJourney, journeyEmphasis, nextMission } from '../../utils/journeys';
-import { PICK_DESTINATIONS, derivePersona, hasAnsweredProfile, personaPicks, suggestedJourney } from '../../utils/trainerProfile';
+import { PICK_DESTINATIONS, derivePersona, hasAnsweredProfile, personaHomeOrder, personaPicks, suggestedJourney } from '../../utils/trainerProfile';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
@@ -48,6 +48,7 @@ import '../../styles/cozy-home.css';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { openTeamCompare } from '../../store/useTeamCompareStore';
+import { openTrainerCard } from '../../store/useTrainerCardStore';
 
 /**
  * The cozy Home (2026-10-06 proposal). One trainer card that says where the
@@ -799,11 +800,10 @@ export function CozyHomeView({
                 ) : (
                     <ul className="cozy-posts">
                         {list.map((m) => (
-                            <li key={m.id}>
+                            <li key={m.id} className="cozy-post-item">
                                 <button type="button" className="card card--inset card--interactive card--compact cozy-post" onClick={() => navigate(teamsTopicId ? `/feed?topic=${encodeURIComponent(teamsTopicId)}` : '/feed')}>
-                                    <FramedAvatar uid={m.createdBy} stampedFrameId={m.creatorFrameId} className="cozy-post__avatar" aria-hidden="true">
-                                        <Sprite src={dexSprite(m.creatorAvatar || 25, Boolean(m.creatorAvatarIsShiny))} className="cozy-post__sprite" />
-                                    </FramedAvatar>
+                                    {/* Holds the avatar's place; the avatar itself is the sibling button below. */}
+                                    <span className="cozy-post__avatar-slot" aria-hidden="true" />
                                     <span className="cozy-post__body">
                                         <span className="cozy-post__meta">
                                             <strong>@{m.creatorName || 'Trainer'}</strong> · {formatForumTime(m.createdAt, language)}
@@ -813,6 +813,27 @@ export function CozyHomeView({
                                         </span>
                                     </span>
                                 </button>
+                                {/* The author opens their trainer card (2026-11-05). */}
+                                <FramedAvatar
+                                    as="button"
+                                    type="button"
+                                    uid={m.createdBy}
+                                    stampedFrameId={m.creatorFrameId}
+                                    className="cozy-post__avatar cozy-post__who"
+                                    aria-label={t('trainerCard.open', { name: m.creatorName || 'Trainer' })}
+                                    onClick={() => openTrainerCard({
+                                        userId: m.createdBy,
+                                        name: m.creatorName || 'Trainer',
+                                        avatar: m.creatorAvatar,
+                                        isShiny: m.creatorAvatarIsShiny,
+                                        trainerSprite: m.creatorTrainerSprite,
+                                        selectedBadgeId: m.creatorBadgeId || null,
+                                        frameId: m.creatorFrameId || null,
+                                        titleId: m.creatorTitleId || null,
+                                    })}
+                                >
+                                    <Sprite src={dexSprite(m.creatorAvatar || 25, Boolean(m.creatorAvatarIsShiny))} className="cozy-post__sprite" />
+                                </FramedAvatar>
                             </li>
                         ))}
                     </ul>
@@ -957,7 +978,12 @@ export function CozyHomeView({
     // happened (2026-10-17, Enzo). On a phone the full card comes right under
     // the hero — it is a new trainer's way in — and the small one waits under
     // the day's cards, after what an active trainer came for.
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{forYouPanel}{yourDay}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{forYouPanel}{yourDay}{teamsPanel(3)}</>;
+    // The persona orders the day's blocks (personaHomeOrder); phones carry no
+    // teams block on this tab, so only "Para você" and "Seu dia" swap there.
+    const homeOrder = personaHomeOrder(trainerProfile);
+    const homeBlocks = { forYou: forYouPanel, yourDay, teams: isPhone ? null : teamsPanel(3) };
+    const ordered = homeOrder.map((id) => <React.Fragment key={id}>{homeBlocks[id]}</React.Fragment>);
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{ordered}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{ordered}</>;
     else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
     else main = communityPanel(5);

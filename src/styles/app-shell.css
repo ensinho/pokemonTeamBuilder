@@ -1202,6 +1202,28 @@
     border-top: 1px solid var(--color-border);
 }
 
+/* Group headings (2026-11-05, the grouped-settings reference): Conta,
+   Preferências, Novidades. A group opens with its heading and a rule; the
+   rows inside it keep their own rules. The head above already draws one. */
+.app-shell__account-group {
+    margin: 0;
+    padding: var(--space-3) var(--space-3) 0;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.app-shell__account-popover-head + .app-shell__account-group {
+    border-top: none;
+}
+
+.app-shell__account-group + .app-shell__account-popover-section {
+    padding-top: var(--space-2);
+}
+
 /* A menu row, not a card. It lives inside a bordered popover, so its own border
    and fill were a box inside a box — and a list of them read as a stack of
    buttons rather than a menu. At rest it is plain; hover does the work. */

@@ -74,3 +74,20 @@ open thread). Opened from forum authors and the friends list.
   steps down to the older shapes if the deployed rules refuse them. It runs
   on profile changes, on finishing the onboarding and once per check-in.
   Your own card reads the live stores instead.
+
+## Round 3 (2026-11-05)
+
+- **Home order:** `personaHomeOrder(profile)` — Desafiante: Seu dia → Para
+  você → times; Estrategista: times → Para você → Seu dia; Viajante: Para
+  você → times → Seu dia; anyone else keeps `DEFAULT_HOME_ORDER`. Phones
+  carry no teams block on the Today tab, so only the first two swap there.
+- **Builder:** `isBeginnerTrainer` shows `BuilderCoach` (the mascot's next
+  step by team size: empty / start / grow / full; closing it is for good,
+  `ptb:builderCoachDismissed`). `isRankedTrainer` opens the analysis card on
+  the meta threats and shows the meta's usage % on every picker card
+  (desktop `PokemonCard`, phone `MobilePokemonPickerCard`), never in
+  playthrough.
+- **The trainer card also opens** from the Champion ranking's detail
+  ("Cartão de treinador" — `publicRanks` now sends the uid of entries with a
+  public profile, never a guest's), from battle opponents (the id-card button)
+  and from the author's avatar on Home's community posts.

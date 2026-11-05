@@ -181,3 +181,33 @@ describe('builderRegulationSeed', () => {
         expect(builderRegulationSeed(profile(['minigames']))).toBeNull();
     });
 });
+
+describe('personaHomeOrder', () => {
+    const answered = (p) => normalizeTrainerProfile({ ...p, answeredAt: 1 });
+    it('keeps the shipped order with no profile', async () => {
+        const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
+        expect(personaHomeOrder(null)).toEqual(DEFAULT_HOME_ORDER);
+        expect(personaHomeOrder(answered({ interests: ['competitive', 'franchise', 'minigames'] }))).toEqual(DEFAULT_HOME_ORDER);
+    });
+    it('leads with what each persona reaches for', async () => {
+        const { personaHomeOrder } = await import('./trainerProfile');
+        expect(personaHomeOrder(answered({ interests: ['minigames'] }))[0]).toBe('yourDay');
+        expect(personaHomeOrder(answered({ interests: ['competitive'], competitiveLevel: 'ranked' }))[0]).toBe('teams');
+        expect(personaHomeOrder(answered({ interests: ['franchise'] }))).toEqual(['forYou', 'teams', 'yourDay']);
+    });
+    it('every order has the same blocks', async () => {
+        const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
+        for (const interests of [['minigames'], ['competitive'], ['franchise']]) {
+            expect([...personaHomeOrder(answered({ interests }))].sort()).toEqual([...DEFAULT_HOME_ORDER].sort());
+        }
+    });
+});
+
+describe('builder level flags', () => {
+    it('reads the competitive level only once answered', async () => {
+        const { isBeginnerTrainer, isRankedTrainer } = await import('./trainerProfile');
+        expect(isBeginnerTrainer(normalizeTrainerProfile({ interests: ['competitive'], competitiveLevel: 'new', answeredAt: 1 }))).toBe(true);
+        expect(isBeginnerTrainer(normalizeTrainerProfile({ interests: ['competitive'], competitiveLevel: 'new' }))).toBe(false);
+        expect(isRankedTrainer(normalizeTrainerProfile({ interests: ['competitive'], competitiveLevel: 'ranked', answeredAt: 1 }))).toBe(true);
+    });
+});

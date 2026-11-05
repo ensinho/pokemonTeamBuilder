@@ -73,3 +73,52 @@
 
 /* Inside a card the bubble is the raised fill (no box in a box). */
 :where(.card, .modal-panel) .mascot-tip { --bubble-fill: var(--color-surface-raised); }
+
+/* The builder's coach (BuilderCoach.jsx, 2026-11-05): the mascot's tip for a
+   trainer just starting, with its own close. A fill, never a box in a box. */
+.builder-coach {
+    position: relative;
+    padding: var(--space-3) var(--space-8) var(--space-3) var(--space-3);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-raised));
+}
+
+.builder-coach__title {
+    display: block;
+    margin-bottom: var(--space-0_5);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.builder-coach__body {
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    line-height: 1.45;
+}
+
+.builder-coach__close {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    display: grid;
+    place-items: center;
+    width: var(--control-h-sm);
+    height: var(--control-h-sm);
+    border-radius: var(--radius-full);
+    color: var(--color-muted);
+}
+
+.builder-coach__close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.builder-coach__close:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.builder-coach__close svg {
+    width: 1rem;
+    height: 1rem;
+}

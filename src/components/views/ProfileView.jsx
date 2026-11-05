@@ -24,8 +24,9 @@ import { useToastStore } from '../../store/useToastStore';
 import {
     EditIcon, StarsIcon, SavedTeamsIcon, SunIcon, MoonIcon, RefreshIcon,
 } from '../icons';
-import { Flame, Lock, Check, ChevronRight, Type } from 'lucide-react';
+import { Flame, Languages, Lock, Check, ChevronRight, Type } from 'lucide-react';
 import { TextSizeControl } from '../TextSizeControl';
+import { useThemeStore } from '../../store/useThemeStore';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
@@ -104,6 +105,29 @@ const Section = ({ title, description, meta, children, className = '' }) => (
         </div>
         <div className="card profile-section__body">{children}</div>
     </section>
+);
+
+/**
+ * A setting chosen once (2026-11-05, the grouped-settings reference): the row
+ * says the current value at its end ("Tema · Escuro ›") and opens its control
+ * under it on a tap, so the page reads as a list of answers, not a wall of
+ * controls. One open at a time is the caller's choice (`open` / `onToggle`).
+ */
+const DisclosureRow = ({ id, icon, label, value, open, onToggle, children }) => (
+    <div className={`profile-row profile-row--disclosure ${open ? 'is-open' : ''}`}>
+        <button
+            type="button"
+            className="profile-row__summary"
+            aria-expanded={open}
+            aria-controls={`${id}-panel`}
+            onClick={onToggle}
+        >
+            <span className="profile-row__label profile-row__label--icon">{icon}{label}</span>
+            <span className="profile-row__value">{value}</span>
+            <ChevronRight className="profile-row__chevron" aria-hidden="true" />
+        </button>
+        {open && <div id={`${id}-panel`} className="profile-row__panel">{children}</div>}
+    </div>
 );
 
 /** One settings line: the words own the row, the control sits at its far edge (as `.switch--row`). */
@@ -336,6 +360,10 @@ export function ProfileView({
     const { t } = useTranslation();
     const navigate = useNavigate();
     useDocumentMeta({ title: t('nav.profile') });
+    // Appearance: one setting open at a time (DisclosureRow).
+    const [openSetting, setOpenSetting] = useState(null);
+    const toggleSetting = (key) => setOpenSetting((current) => (current === key ? null : key));
+    const uiScale = useThemeStore((s) => s.uiScale);
     const { badges, unlockedCount, totalBadgesCount, selectedBadgeId, toggleEquip } = useTrainerBadges();
     // Rewards (2026-10-17): the equipped frame and title, the level, and which
     // reward themes are open — all recorded, so the hero paints at once.
@@ -657,66 +685,82 @@ export function ProfileView({
                 {activeTab === 'appearance' && (
                     <>
                         <Section title={t('profile.sectionAppearance')} description={t('profile.sectionAppearanceDesc')}>
-                            {[
-                                { key: 'dark', label: t('profile.themesDark'), icon: <MoonIcon className="w-3.5 h-3.5" /> },
-                                { key: 'light', label: t('profile.themesLight'), icon: <SunIcon className="w-3.5 h-3.5" /> },
-                            ].map((group) => {
-                                const groupThemes = THEME_META.filter((entry) =>
-                                    group.key === 'dark' ? entry.mode === 'dark' : entry.mode !== 'dark'
-                                );
-                                return (
-                                    <div key={group.key} className="profile-row profile-row--stacked">
-                                        <span className="profile-row__label profile-row__label--icon">{group.icon}{group.label}</span>
-                                        <div className="profile-theme-grid">
-                                            {groupThemes.map((entry) => {
-                                                const selected = theme === entry.id;
-                                                // A reward theme still locked shows how to earn it,
-                                                // and a tap opens the Rewards tab (the next step).
-                                                const locked = !isThemeUnlocked(entry.id, unlocked);
-                                                return (
-                                                    <button
-                                                        key={entry.id}
-                                                        type="button"
-                                                        onClick={(event) => (locked
-                                                            ? navigate('/journeys?tab=rewards')
-                                                            : onChangeTheme(entry.id, originFromEvent(event)))}
-                                                        aria-pressed={locked ? undefined : selected}
-                                                        className={`profile-theme-card ${selected ? 'is-selected' : ''} ${locked ? 'is-locked' : ''}`}
-                                                        style={{ '--profile-theme-swatch': entry.swatch }}
-                                                    >
-                                                        <span className="profile-theme-card__swatch" aria-hidden="true" />
-                                                        <span className="profile-theme-card__text">
-                                                            <span className="profile-theme-card__label">{entry.label}</span>
-                                                            <span className="profile-theme-card__hint">
-                                                                {locked ? t('rewards.themeLocked', { n: themeReward(entry.id).unlock.level }) : entry.hint}
-                                                            </span>
-                                                        </span>
-                                                        <span className="profile-theme-card__icon" aria-hidden="true">
-                                                            {/* The group heading already says dark or light; a mark
-                                                                here only for what differs — chosen, or still locked. */}
-                                                            {locked ? <Lock className="w-3.5 h-3.5" /> : selected ? <Check className="w-3.5 h-3.5" /> : null}
-                                                        </span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            <DisclosureRow
+                                id="profile-theme"
+                                icon={theme && THEME_META.find((entry) => entry.id === theme)?.mode === 'dark' ? <MoonIcon className="w-3.5 h-3.5" /> : <SunIcon className="w-3.5 h-3.5" />}
+                                label={t('profile.settingTheme')}
+                                value={THEME_META.find((entry) => entry.id === theme)?.label || '—'}
+                                open={openSetting === 'theme'}
+                                onToggle={() => toggleSetting('theme')}
+                            >
+                                    {[
+                                        { key: 'dark', label: t('profile.themesDark'), icon: <MoonIcon className="w-3.5 h-3.5" /> },
+                                        { key: 'light', label: t('profile.themesLight'), icon: <SunIcon className="w-3.5 h-3.5" /> },
+                                    ].map((group) => {
+                                        const groupThemes = THEME_META.filter((entry) =>
+                                            group.key === 'dark' ? entry.mode === 'dark' : entry.mode !== 'dark'
+                                        );
+                                        return (
+                                            <div key={group.key} className="profile-row profile-row--stacked">
+                                                <span className="profile-row__label profile-row__label--icon">{group.icon}{group.label}</span>
+                                                <div className="profile-theme-grid">
+                                                    {groupThemes.map((entry) => {
+                                                        const selected = theme === entry.id;
+                                                        // A reward theme still locked shows how to earn it,
+                                                        // and a tap opens the Rewards tab (the next step).
+                                                        const locked = !isThemeUnlocked(entry.id, unlocked);
+                                                        return (
+                                                            <button
+                                                                key={entry.id}
+                                                                type="button"
+                                                                onClick={(event) => (locked
+                                                                    ? navigate('/journeys?tab=rewards')
+                                                                    : onChangeTheme(entry.id, originFromEvent(event)))}
+                                                                aria-pressed={locked ? undefined : selected}
+                                                                className={`profile-theme-card ${selected ? 'is-selected' : ''} ${locked ? 'is-locked' : ''}`}
+                                                                style={{ '--profile-theme-swatch': entry.swatch }}
+                                                            >
+                                                                <span className="profile-theme-card__swatch" aria-hidden="true" />
+                                                                <span className="profile-theme-card__text">
+                                                                    <span className="profile-theme-card__label">{entry.label}</span>
+                                                                    <span className="profile-theme-card__hint">
+                                                                        {locked ? t('rewards.themeLocked', { n: themeReward(entry.id).unlock.level }) : entry.hint}
+                                                                    </span>
+                                                                </span>
+                                                                <span className="profile-theme-card__icon" aria-hidden="true">
+                                                                    {/* The group heading already says dark or light; a mark
+                                                                        here only for what differs — chosen, or still locked. */}
+                                                                    {locked ? <Lock className="w-3.5 h-3.5" /> : selected ? <Check className="w-3.5 h-3.5" /> : null}
+                                                                </span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                            </DisclosureRow>
                             {/* Text size moved here from the phone's gear menu
                                 (2026-09-24): a setting chosen once belongs with
                                 the other appearance choices, not in a popover. */}
-                            <div className="profile-row profile-row--stacked profile-text-size">
-                                <span className="profile-row__label profile-row__label--icon">
-                                    <Type className="w-3.5 h-3.5" aria-hidden="true" />
-                                    {t('accountMenu.textSizeLabel')}
-                                </span>
+                            <DisclosureRow
+                                id="profile-text-size"
+                                icon={<Type className="w-3.5 h-3.5" aria-hidden="true" />}
+                                label={t('accountMenu.textSizeLabel')}
+                                value={`${Math.round((uiScale || 1) * 100)}%`}
+                                open={openSetting === 'textSize'}
+                                onToggle={() => toggleSetting('textSize')}
+                            >
                                 <TextSizeControl variant="menu" />
-                            </div>
-                        </Section>
-
-                        <Section title={t('profile.sectionLanguage')} description={t('profile.sectionLanguageDesc')}>
-                            <div className="profile-row">
+                            </DisclosureRow>
+                            <DisclosureRow
+                                id="profile-language"
+                                icon={<Languages className="w-3.5 h-3.5" aria-hidden="true" />}
+                                label={t('profile.sectionLanguage')}
+                                value={language === 'pt' ? 'Português (pt-BR)' : 'English'}
+                                open={openSetting === 'language'}
+                                onToggle={() => toggleSetting('language')}
+                            >
                                 <div className="segmented segmented--block" role="group" aria-label={t('profile.sectionLanguage')}>
                                     <button
                                         type="button"
@@ -735,7 +779,7 @@ export function ProfileView({
                                         Português (pt-BR)
                                     </button>
                                 </div>
-                            </div>
+                            </DisclosureRow>
                         </Section>
                     </>
                 )}
