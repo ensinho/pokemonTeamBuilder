@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ArrowLeftRight, ChevronLeft } from 'lucide-react';
 
 import { useModalA11y } from '../../../hooks/useModalA11y';
 import { useTrainerCosmetics } from '../../../hooks/useTrainerCosmetics';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { championArt } from '../../../utils/challengeArt';
-import { CHAMPION_NAMES } from '../../../utils/challengeChampions';
+import { CHAMPION_IDS, CHAMPION_NAMES } from '../../../utils/challengeChampions';
+import { boardAfterSwitch, rankingStart } from '../../../utils/challengeView';
 import { AvatarSprite } from '../../AvatarSprite';
 import { CloseIcon, PokeballIcon } from '../../icons';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
@@ -85,25 +86,55 @@ function RankRow({ entry, place, onOpen }) {
     );
 }
 
+const championName = (id) => CHAMPION_NAMES[id] || CHAMPION_NAMES.cynthia;
+
+/** A champion's face, cropped from their battle sprite. */
+const ChampionFace = ({ championId, size = 'md' }) => (
+    <span className={`challenge-rank__champ is-${championId || 'cynthia'} is-${size}`} aria-hidden="true">
+        <img src={championArt(championId).versus} alt="" width={80} height={80} decoding="async" />
+    </span>
+);
+
 /**
- * Whose board this is. Each champion keeps a ranking of their own, and the
- * room switches between them as you walk — so the board names its champion,
- * face first, before anything else.
+ * Whose board this is, and the way to the other one. Each champion keeps a
+ * ranking of their own; the head names the one on screen, face first, and is
+ * itself the switch — its chip shows who a click brings up.
  */
-function ChampionHead({ championId, note, heading = true }) {
-    const name = CHAMPION_NAMES[championId] || CHAMPION_NAMES.cynthia;
+function ChampionHead({ championId, nextId, note, heading = true, onSwitch }) {
+    const { t } = useTranslation();
+    const Tag = heading ? 'h2' : 'div';
+    const content = (
+        <>
+            <ChampionFace championId={championId} />
+            <span className="flex min-w-0 flex-1 flex-col text-left">
+                {note && <span className="truncate text-2xs font-normal text-muted">{note}</span>}
+                <span className="truncate text-sm font-semibold">{championName(championId)}</span>
+            </span>
+            {nextId && (
+                <span className="challenge-rank__swap">
+                    <ArrowLeftRight aria-hidden="true" />
+                    <ChampionFace championId={nextId} size="xs" />
+                    <span className="truncate">{championName(nextId)}</span>
+                </span>
+            )}
+        </>
+    );
     return (
-        <div className="challenge-rank__head shrink-0">
-            <span className={`challenge-rank__champ is-${championId || 'cynthia'}`} aria-hidden="true">
-                <img src={championArt(championId).versus} alt="" width={80} height={80} decoding="async" />
-            </span>
-            <span className="flex min-w-0 flex-col">
-                {note && <span className="truncate text-2xs text-muted">{note}</span>}
-                {heading
-                    ? <h2 className="m-0 truncate text-sm font-semibold">{name}</h2>
-                    : <p className="m-0 truncate text-sm font-semibold">{name}</p>}
-            </span>
-        </div>
+        <Tag className="m-0 shrink-0 text-sm">
+            {nextId ? (
+                <button
+                    type="button"
+                    className="challenge-rank__head is-switch"
+                    onClick={onSwitch}
+                    title={t('challenge.ranking.switchTo', { name: championName(nextId) })}
+                >
+                    {content}
+                    <span className="sr-only">{t('challenge.ranking.switchTo', { name: championName(nextId) })}</span>
+                </button>
+            ) : (
+                <span className="challenge-rank__head">{content}</span>
+            )}
+        </Tag>
     );
 }
 
@@ -165,13 +196,28 @@ function RankDetail({ entry, place, board, onBack }) {
  * Two homes: a desktop's side rail, where it also carries your record
  * (`stats`), and `ChallengeRankingSheet` where there is no room for a rail.
  */
-export function ChallengeRanking({ ranks, championId, defaultBoard = 'daily', stats = null, showTitle = true, note = null }) {
+export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = 'daily', stats = null, showTitle = true, note = null }) {
     const { t } = useTranslation();
-    const [board, setBoard] = useState(BOARDS.includes(defaultBoard) ? defaultBoard : 'daily');
+    const preferred = BOARDS.includes(defaultBoard) ? defaultBoard : 'daily';
+    // Until the trainer picks, the panel follows the data to a ranking with
+    // players in it (rankingStart); a pick is kept.
+    const [picked, setPicked] = useState(null);
     const [open, setOpen] = useState(null);
+    const view = picked || rankingStart(ranksByChampion, CHAMPION_IDS, championId, preferred);
+    const { board } = view;
+    const shownId = view.championId;
+    const ranks = ranksByChampion?.[shownId] || null;
     const list = ranks?.boards?.[board] || [];
     const mine = ranks?.mine?.[board] || null;
     const opened = open !== null ? list[open] : null;
+    // The next champion in the room's order: with two, simply the other one.
+    const nextId = CHAMPION_IDS.length > 1 ? CHAMPION_IDS[(CHAMPION_IDS.indexOf(shownId) + 1) % CHAMPION_IDS.length] : null;
+    const isRoomChampion = shownId === championId;
+    const switchChampion = () => {
+        setOpen(null);
+        setPicked({ championId: nextId, board: boardAfterSwitch(ranksByChampion, nextId, board) });
+    };
+    const pickBoard = (key) => setPicked({ championId: shownId, board: key });
 
     if (opened) {
         return (
@@ -184,7 +230,15 @@ export function ChallengeRanking({ ranks, championId, defaultBoard = 'daily', st
     return (
         <div className="challenge-rank">
             {/* The rail's heading is the champion; a sheet has its own title, so it is a line there. */}
-            <ChampionHead championId={championId} note={showTitle ? t('challenge.ranking.title') : note} heading={showTitle} />
+            <ChampionHead
+                championId={shownId}
+                nextId={nextId}
+                // The rail's line is its title; the sheet's (titled already) is the day's
+                // difficulty — the room champion's, so only on their board.
+                note={showTitle ? t('challenge.ranking.title') : (isRoomChampion ? note : null)}
+                heading={showTitle}
+                onSwitch={switchChampion}
+            />
             <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('challenge.ranking.title')}>
                 {BOARDS.map((key) => (
                     <button
@@ -192,7 +246,7 @@ export function ChallengeRanking({ ranks, championId, defaultBoard = 'daily', st
                         type="button"
                         className="segmented__item"
                         aria-pressed={board === key}
-                        onClick={() => setBoard(key)}
+                        onClick={() => pickBoard(key)}
                     >
                         {t(`challenge.ranking.${key}`)}
                     </button>
@@ -212,7 +266,8 @@ export function ChallengeRanking({ ranks, championId, defaultBoard = 'daily', st
                 {t('challenge.ranking.counts', { wins: ranks?.wins?.[board] || 0, played: ranks?.played?.[board] || 0 })}
                 {mine ? ` · ${t('challenge.ranking.you', { place: mine })}` : ''}
             </p>
-            {stats && (
+            {/* Your record is the room champion's: shown on their board only. */}
+            {stats && isRoomChampion && (
                 <Figures
                     label={t('challenge.rail.record')}
                     items={[
@@ -235,7 +290,7 @@ export function ChallengeRanking({ ranks, championId, defaultBoard = 'daily', st
  * its own: the sheet was as tall as the page, so nothing in it scrolled, and
  * the dock drew over its bottom (2026-10-29).
  */
-export function ChallengeRankingSheet({ ranks, championId, note, defaultBoard, stats, onClose }) {
+export function ChallengeRankingSheet({ ranksByChampion, championId, note, defaultBoard, stats, onClose }) {
     const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     return createPortal(
@@ -255,7 +310,7 @@ export function ChallengeRankingSheet({ ranks, championId, note, defaultBoard, s
                     </button>
                 </div>
                 <div className="modal-body">
-                    <ChallengeRanking key={championId} ranks={ranks} championId={championId} note={note} defaultBoard={defaultBoard} stats={stats} showTitle={false} />
+                    <ChallengeRanking key={championId} ranksByChampion={ranksByChampion} championId={championId} note={note} defaultBoard={defaultBoard} stats={stats} showTitle={false} />
                 </div>
             </div>
         </div>,

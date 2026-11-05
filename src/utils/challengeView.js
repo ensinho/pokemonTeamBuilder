@@ -208,3 +208,33 @@ export const railTeams = (lines = [], lineup = [], shown = lines, rosterOf = nul
     }));
     return { mine, foe };
 };
+
+const RANK_BOARDS = ['daily', 'free'];
+const hasRows = (all, championId, board) => (all?.[championId]?.boards?.[board]?.length || 0) > 0;
+
+/**
+ * Which ranking the panel opens on (2026-11-05, Enzo: "sempre exibir o rank
+ * que tiver gente"): the room's champion on the preferred board if anyone is
+ * on it, then that champion's other board, then the other champions the same
+ * way. Nobody anywhere: the room's champion and the preferred board.
+ *
+ * @param {object|null} all       `ranksByChampion` — `{ [championId]: publicRanks }`
+ * @param {string[]} championIds  every champion, in the room's order
+ * @param {string} roomId         the champion the room is about
+ * @param {'daily'|'free'} board  the board of today's official run
+ * @returns {{ championId: string, board: 'daily'|'free' }}
+ */
+export const rankingStart = (all, championIds, roomId, board = 'daily') => {
+    const boards = [board, ...RANK_BOARDS.filter((b) => b !== board)];
+    const champions = [roomId, ...championIds.filter((id) => id !== roomId)];
+    for (const championId of champions) {
+        for (const b of boards) if (hasRows(all, championId, b)) return { championId, board: b };
+    }
+    return { championId: roomId, board };
+};
+
+/** The board to show after switching to `championId`: the same one if it has players, else one that does. */
+export const boardAfterSwitch = (all, championId, board) => {
+    if (hasRows(all, championId, board)) return board;
+    return RANK_BOARDS.find((b) => hasRows(all, championId, b)) || board;
+};

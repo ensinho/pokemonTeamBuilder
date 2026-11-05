@@ -86,9 +86,18 @@ const INITIAL = {
     championId: DEFAULT_CHAMPION,
     /** Today, per champion: `[{id, name, played, won}]` — the selector and the "next champion" card. */
     champions: null,
+    /**
+     * Every champion's ranking (server `ranksByChampion`): the ranking panel
+     * shows either one without leaving the room. Kept when the room changes
+     * champion (the next answer replaces it), so the panel never goes blank.
+     */
+    ranksByChampion: null,
     isStarting: false,
     isForfeiting: false,
 };
+
+/** The rankings with one champion's replaced (a finish, or an older server's answer). */
+const withChampionRanks = (all, championId, ranks) => (ranks ? { ...(all || {}), [championId]: ranks } : (all || null));
 
 /**
  * Stats after an official finish, from the answer's `stats` (`choose`,
@@ -129,11 +138,13 @@ export const useChampionChallengeStore = create((set, get) => ({
             return false;
         }
         const {
-            dayKey, nextResetAt, day, official, officials = null, run, stats, ranks = null, champions = null,
+            dayKey, nextResetAt, day, official, officials = null, run, stats, ranks = null, champions = null, ranksByChampion = null,
         } = res.payload;
-        set({
+        set((s) => ({
             status: 'ready', hasLoaded: true, loadError: null, dayKey, nextResetAt, day, official, officials, stats, run, ranks, champions, pending: null,
-        });
+            // A server from before sends only this champion's.
+            ranksByChampion: ranksByChampion || withChampionRanks(s.ranksByChampion, championId, ranks),
+        }));
         return true;
     },
 
@@ -234,7 +245,10 @@ export const useChampionChallengeStore = create((set, get) => ({
                     winChanceMarks: p.result?.winChanceMarks ?? s.run.winChanceMarks,
                 },
             };
-            if (p.ranks) next.ranks = p.ranks;
+            if (p.ranks) {
+                next.ranks = p.ranks;
+                next.ranksByChampion = withChampionRanks(s.ranksByChampion, s.championId, p.ranks);
+            }
             if (ended && !s.run.practice) {
                 const official = { runId: s.run.runId, status: p.status, result: p.result };
                 next.official = official;
@@ -260,7 +274,7 @@ export const useChampionChallengeStore = create((set, get) => ({
             }
             const { result, ranks } = res.payload;
             set((s) => ({
-                ...(ranks ? { ranks } : {}),
+                ...(ranks ? { ranks, ranksByChampion: withChampionRanks(s.ranksByChampion, s.championId, ranks) } : {}),
                 run: s.run?.runId === run.runId
                     ? { ...s.run, status: 'lost', result, winChanceCurve: result?.winChanceCurve ?? null, winChanceMarks: result?.winChanceMarks ?? null }
                     : s.run,

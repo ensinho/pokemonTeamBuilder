@@ -383,7 +383,7 @@ export function ChampionChallengeView() {
     const recordStats = isAnonymous ? null : challenge.stats;
     const rankingSheet = showRanks && !railsOn && (
         <ChallengeRankingSheet
-            ranks={challenge.ranks}
+            ranksByChampion={challenge.ranksByChampion}
             championId={championId}
             note={difficultyLabel}
             defaultBoard={defaultBoard}
@@ -392,7 +392,7 @@ export function ChampionChallengeView() {
         />
     );
     const ranksRail = railsOn && (
-        <ChallengeRanking key={championId} ranks={challenge.ranks} championId={championId} defaultBoard={defaultBoard} stats={recordStats} />
+        <ChallengeRanking key={championId} ranksByChampion={challenge.ranksByChampion} championId={championId} defaultBoard={defaultBoard} stats={recordStats} />
     );
     const railsWith = (start) => (railsOn ? { mode: railMode, start, end: ranksRail } : null);
 

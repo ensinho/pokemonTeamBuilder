@@ -27,6 +27,7 @@ export function useChampionChallenge() {
         champions: s.champions,
         stats: s.stats,
         ranks: s.ranks,
+        ranksByChampion: s.ranksByChampion,
         run: s.run,
         events: s.events,
         eventsBase: s.eventsBase,

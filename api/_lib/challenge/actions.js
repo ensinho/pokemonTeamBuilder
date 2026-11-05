@@ -220,8 +220,16 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                 dailyTeam: { members: day.dailyTeam?.members || [] },
             },
         };
-        const ranksSnap = await ref(p.ranks(dayKey, championId)).get();
-        base.ranks = publicRanks(ranksSnap.exists ? ranksSnap.data() : null, caller.isAnonymous ? null : caller.uid);
+        // Every champion's ranking, so the screen can show either board without
+        // leaving the room (and fall back to one that has players). `ranks`
+        // stays the champion on screen's, for clients from before.
+        const viewer = caller.isAnonymous ? null : caller.uid;
+        const allRanks = await Promise.all(CHAMPION_IDS.map(async (id) => {
+            const snap = await ref(p.ranks(dayKey, id)).get();
+            return [id, publicRanks(snap.exists ? snap.data() : null, viewer)];
+        }));
+        base.ranksByChampion = Object.fromEntries(allRanks);
+        base.ranks = base.ranksByChampion[championId];
         if (caller.isAnonymous) {
             return { ...base, official: null, officials: null, run: null, stats: null, champions: await championsToday(null, dayKey, {}) };
         }

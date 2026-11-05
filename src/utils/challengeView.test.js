@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { challengePhase, championRoster, myRoster, railTeams, sideHp, timeUntil } from './challengeView';
+import { boardAfterSwitch, challengePhase, championRoster, myRoster, railTeams, rankingStart, sideHp, timeUntil } from './challengeView';
 
 const request = (pokemon) => `|request|${JSON.stringify({ active: [{ moves: [] }], side: { name: 'Enzo', id: 'p1', pokemon } })}`;
 
@@ -107,5 +107,38 @@ describe('railTeams', () => {
         ]);
         expect(foe.map((m) => [m.species, m.revealed, m.hpPct])).toEqual([['Spiritomb', true, 40], [null, false, 100]]);
         expect(railTeams(lines, [], lines).mine[0]).toEqual({ species: 'Jolteon', hpPct: 0, fainted: true });
+    });
+});
+
+describe('rankingStart', () => {
+    const IDS = ['cynthia', 'blue'];
+    const ranks = (daily, free) => ({ boards: { daily: Array(daily).fill({ name: 'x' }), free: Array(free).fill({ name: 'x' }) } });
+
+    it("opens on the room's champion and board when anyone is there", () => {
+        expect(rankingStart({ cynthia: ranks(2, 0), blue: ranks(5, 5) }, IDS, 'cynthia', 'daily')).toEqual({ championId: 'cynthia', board: 'daily' });
+    });
+
+    it("tries the room champion's other board before another champion", () => {
+        expect(rankingStart({ cynthia: ranks(0, 1), blue: ranks(5, 0) }, IDS, 'cynthia', 'daily')).toEqual({ championId: 'cynthia', board: 'free' });
+    });
+
+    it('falls back to the other champion when the room one is empty', () => {
+        expect(rankingStart({ cynthia: ranks(0, 0), blue: ranks(3, 0) }, IDS, 'cynthia', 'daily')).toEqual({ championId: 'blue', board: 'daily' });
+        expect(rankingStart({ cynthia: ranks(4, 0), blue: ranks(0, 0) }, IDS, 'blue', 'daily')).toEqual({ championId: 'cynthia', board: 'daily' });
+        expect(rankingStart({ cynthia: ranks(0, 0), blue: ranks(0, 2) }, IDS, 'cynthia', 'daily')).toEqual({ championId: 'blue', board: 'free' });
+    });
+
+    it('keeps the room and board when nobody played, or nothing has answered', () => {
+        expect(rankingStart({ cynthia: ranks(0, 0), blue: null }, IDS, 'blue', 'free')).toEqual({ championId: 'blue', board: 'free' });
+        expect(rankingStart(null, IDS, 'cynthia')).toEqual({ championId: 'cynthia', board: 'daily' });
+    });
+});
+
+describe('boardAfterSwitch', () => {
+    const all = { blue: { boards: { daily: [], free: [{ name: 'x' }] } } };
+    it('keeps the board if it has players, else moves to one that does', () => {
+        expect(boardAfterSwitch(all, 'blue', 'free')).toBe('free');
+        expect(boardAfterSwitch(all, 'blue', 'daily')).toBe('free');
+        expect(boardAfterSwitch(all, 'cynthia', 'daily')).toBe('daily');
     });
 });
