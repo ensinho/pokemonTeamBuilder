@@ -225,12 +225,13 @@ export function DsArena({
         <div className={`ds-arena ${reducedMotion ? 'is-reduced' : ''}`} onClick={tap}>
             <div className="ds-arena__walls" aria-hidden="true" />
             <div className="ds-arena__floor" aria-hidden="true" />
+            {/* On the room's axis (x 128): between the two Champions, over the door. */}
             <svg className="ds-arena__ring" viewBox="0 0 256 192" aria-hidden="true">
-                <circle cx="120" cy="108" r="58" className="ds-ring__glow" />
-                <circle cx="120" cy="108" r="54" className="ds-ring__disc" />
-                <rect x="66" y="105" width="108" height="6" className="ds-ring__band" />
-                <circle cx="120" cy="108" r="17" className="ds-ring__hub" />
-                <circle cx="120" cy="108" r="11" className="ds-ring__button" />
+                <circle cx="128" cy="108" r="58" className="ds-ring__glow" />
+                <circle cx="128" cy="108" r="54" className="ds-ring__disc" />
+                <rect x="74" y="105" width="108" height="6" className="ds-ring__band" />
+                <circle cx="128" cy="108" r="17" className="ds-ring__hub" />
+                <circle cx="128" cy="108" r="11" className="ds-ring__button" />
             </svg>
             {BANNER.length > 0 && (
                 <div
