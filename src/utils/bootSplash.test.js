@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
     splashHoldMs,
     splashProgress,
+    skipsBootSplash,
     SPLASH_REVEAL_MS,
     SPLASH_MIN_VISIBLE_MS,
     SPLASH_MOBILE_MAX_MS,
@@ -93,5 +94,21 @@ describe('splashProgress', () => {
     it('never moves the bar backwards when boot settles', () => {
         expect(splashProgress({ isMobile: true, isBootSettled: true }).width)
             .toBeGreaterThanOrEqual(splashProgress({ isMobile: true, isBootSettled: false }).width);
+    });
+});
+
+describe('skipsBootSplash', () => {
+    it('skips it for a first visit landing on Home (the landing)', () => {
+        expect(skipsBootSplash({ appPath: '/', isReturning: false })).toBe(true);
+    });
+
+    it('keeps it for a returning visitor, whose Home is their own data', () => {
+        expect(skipsBootSplash({ appPath: '/', isReturning: true })).toBe(false);
+    });
+
+    it('keeps it for a first visit on any other route', () => {
+        for (const appPath of ['/builder', '/pokemon/garchomp', '/profile', '']) {
+            expect(skipsBootSplash({ appPath, isReturning: false }), appPath).toBe(false);
+        }
     });
 });

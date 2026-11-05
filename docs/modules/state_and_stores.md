@@ -32,7 +32,7 @@ Key fields: `user`, `userId`, `displayName`, `isAnonymous`, `isAuthenticated`, `
 
 Key actions: `initAuth()`, `cleanupAuth()`, `signInWithEmail()`, `upgradeAnonymous()`, `signOut()`, `updateProfile()`, `updateStreak()`.
 
-**Two readiness flags, and they do not mean the same thing.** `isAuthReady` is seeded `true` straight from the `ptb:authSnapshot` localStorage cache, so the app can render immediately with the last-known identity while the real state reconciles behind it — it answers *"can we paint?"*. `isAuthReconciled` is never seeded from that cache: it flips only once `onAuthStateChanged` has actually answered, so it answers *"is this the real user?"*. Anything that must not paint against the cached identity (the mobile boot splash, via `src/utils/bootSplash.js`) waits on `isAuthReconciled`.
+**Two readiness flags, and they do not mean the same thing.** `isAuthReady` is seeded `true` straight from the `ptb:authSnapshot` localStorage cache, so the app can render immediately with the last-known identity while the real state reconciles behind it — it answers *"can we paint?"*. `isAuthReconciled` is never seeded from that cache: it flips only once `onAuthStateChanged` has actually answered, so it answers *"is this the real user?"*. Anything that must not paint against the cached identity (the mobile boot splash, via `src/utils/bootSplash.js`) waits on `isAuthReconciled`. A first visit arriving on `/` skips the splash altogether (`skipsBootSplash`): the landing shows nothing of an account and needs no reference data, and the splash was most of its LCP.
 
 Calls into: `useThemeStore` (apply theme on hydration), `useLanguageStore` (apply language), `useToastStore` (show feedback toasts).
 
