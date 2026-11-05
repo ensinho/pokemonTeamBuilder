@@ -9,8 +9,8 @@ import { useTrainerBadges } from './useTrainerBadges';
  * useTrainerBadges so badges and missions never disagree).
  */
 export function useJourneys() {
-    const { journeys, badges, unlockedCount, totalBadgesCount, toggleEquip, selectedBadgeId, celebrateBadge } = useTrainerBadges();
-    return { journeys, badges, unlockedCount, totalBadgesCount, toggleEquip, selectedBadgeId, celebrateBadge };
+    const { journeys, personaJourneys, badges, unlockedCount, totalBadgesCount, toggleEquip, selectedBadgeId, celebrateBadge } = useTrainerBadges();
+    return { journeys, personaJourneys, badges, unlockedCount, totalBadgesCount, toggleEquip, selectedBadgeId, celebrateBadge };
 }
 
 /**

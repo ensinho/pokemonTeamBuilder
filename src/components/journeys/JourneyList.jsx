@@ -3,8 +3,8 @@ import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useMissionLauncher } from '../../hooks/useJourneys';
 import { getBadgeById } from '../../constants/badges';
-import { currentJourney } from '../../utils/journeys';
-import { recommendedJourneyIds } from '../../utils/trainerProfile';
+import { currentJourney, personaJourneyFilter } from '../../utils/journeys';
+import { derivePersona, hasAnsweredProfile, recommendedJourneyIds } from '../../utils/trainerProfile';
 import { XP_RULES } from '../../utils/trainerLevel';
 import { useAuthStore } from '../../store/useAuthStore';
 import { JOURNEY_ICONS } from './journeyIcons';
@@ -78,6 +78,7 @@ export const JourneyBar = ({ percent }) => (
 );
 
 function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
+    // A persona journey (2026-11-05) wears its profile, not a level number.
     const { t, language } = useTranslation();
     const bodyId = useId();
     const badge = getBadgeById(journey.badgeId);
@@ -88,7 +89,7 @@ function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
                 <JourneyTile journey={journey} isCurrent={isCurrent} />
                 <span className="journey__text">
                     <span className="journey__level">
-                        {t('journeys.level', { n: journey.level })}
+                        {journey.persona ? t('journeys.personaTag') : t('journeys.level', { n: journey.level })}
                         {isRecommended && !journey.isComplete && (
                             <span className="badge badge--primary journey__for-you">{t('onboarding.forYou')}</span>
                         )}
@@ -124,12 +125,16 @@ function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
  * The five levels as an accordion, the current one open. Opening another
  * closes nothing — a trainer comparing two levels keeps both in view.
  */
-export function JourneyList({ journeys }) {
+export function JourneyList({ journeys, personaJourneys = [] }) {
+    const { t } = useTranslation();
     const current = currentJourney(journeys);
     // The journeys the trainer profile points at wear a "Para você" tag; the
     // order stays the levels' (an order, not a lock).
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const recommended = new Set(recommendedJourneyIds(trainerProfile));
+    // The trainer's own persona journey(s), after the levels.
+    const persona = hasAnsweredProfile(trainerProfile) ? derivePersona(trainerProfile) : null;
+    const mine = personaJourneys.filter(personaJourneyFilter(persona?.id));
     const [openIds, setOpenIds] = useState(() => new Set(current ? [current.id] : []));
     const toggle = (id) => setOpenIds((prev) => {
         const next = new Set(prev);
@@ -149,6 +154,25 @@ export function JourneyList({ journeys }) {
                     onToggle={() => toggle(journey.id)}
                 />
             ))}
+            {mine.length > 0 && (
+                <>
+                    <h2 className="journey-list__section">
+                        {persona.id === 'master'
+                            ? t('journeys.personaSectionMaster')
+                            : t('journeys.personaSection', { persona: t(`onboarding.personas.${persona.id}.name`) })}
+                    </h2>
+                    {mine.map((journey) => (
+                        <JourneyCard
+                            key={journey.id}
+                            journey={journey}
+                            isCurrent={false}
+                            isRecommended={false}
+                            isOpen={openIds.has(journey.id)}
+                            onToggle={() => toggle(journey.id)}
+                        />
+                    ))}
+                </>
+            )}
         </div>
     );
 }

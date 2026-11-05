@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from 'react';
+import { useAuthStore } from '../../store/useAuthStore';
 import { BuilderCoach } from '../builder/BuilderCoach';
 import { Link } from 'react-router-dom';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -195,6 +196,10 @@ function TypeList({ entries, empty, showCount = false }) {
 function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough, onClose, onOpenDetail }) {
     const { t } = useTranslation();
     const [tab, setTab] = React.useState('coverage');
+    // The Strategist journey's "check the threats" (utils/journeys.js).
+    React.useEffect(() => {
+        if (tab === 'threats' && teamSize > 0 && !isPlaythrough) useAuthStore.getState().markJourney('threatsViewed');
+    }, [tab, teamSize, isPlaythrough]);
     const { score, grade } = rateTeam(teamAnalysis, teamSize);
     const weaknesses = Object.entries(teamAnalysis?.weaknesses || {}).sort(([, a], [, b]) => b - a);
     const resists = Object.entries(teamAnalysis?.defensiveCoverage || {}).sort(([, a], [, b]) => b - a);

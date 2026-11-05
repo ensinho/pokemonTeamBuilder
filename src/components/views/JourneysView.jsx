@@ -25,7 +25,7 @@ const TABS = ['journeys', 'badges', 'rewards'];
 export function JourneysView() {
     const { t } = useTranslation();
     const [tab, setTab] = useUrlTab(TABS, 'journeys');
-    const { journeys, badges, unlockedCount, totalBadgesCount, toggleEquip, selectedBadgeId } = useJourneys();
+    const { journeys, personaJourneys, badges, unlockedCount, totalBadgesCount, toggleEquip, selectedBadgeId } = useJourneys();
     const totals = journeyTotals(journeys);
     const unseenRewards = useRewardsStore(selectUnseenCount);
 
@@ -67,7 +67,7 @@ export function JourneysView() {
                     <p className="journeys-view__progress">
                         {t('journeys.missionsProgress', { done: totals.missionsDone, total: totals.missionsTotal })}
                     </p>
-                    <JourneyList journeys={journeys} />
+                    <JourneyList journeys={journeys} personaJourneys={personaJourneys} />
                 </>
             ) : tab === 'badges' ? (
                 <BadgeGallery badges={badges} journeys={journeys} selectedBadgeId={selectedBadgeId} onToggleEquip={toggleEquip} />

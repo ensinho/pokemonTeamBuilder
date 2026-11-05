@@ -23,7 +23,9 @@ function CoachCard({ missionId }) {
     const navigate = useNavigate();
     const launch = useMissionLauncher();
     const stopMission = useJourneyCoachStore((s) => s.stopMission);
-    const { journeys, celebrateBadge } = useJourneys();
+    const { journeys: levels, personaJourneys, celebrateBadge } = useJourneys();
+    // A persona journey's mission is guided like a level's (2026-11-05).
+    const journeys = useMemo(() => [...levels, ...(personaJourneys || [])], [levels, personaJourneys]);
     const [showHint, setShowHint] = useState(true);
 
     const found = useMemo(() => findMission(journeys, missionId), [journeys, missionId]);
@@ -61,7 +63,7 @@ function CoachCard({ missionId }) {
                         ? (journeyDone
                             ? t('journeys.coach.journeyDone', { journey: t(`journeys.list.${journey.id}.title`) })
                             : t('journeys.coach.done'))
-                        : t('journeys.coach.eyebrow', { n: journey.level })}
+                        : journey.persona ? t('journeys.coach.personaEyebrow') : t('journeys.coach.eyebrow', { n: journey.level })}
                 </span>
                 <span className="journey-coach__title">{title}</span>
                 {!isDone && showHint && (

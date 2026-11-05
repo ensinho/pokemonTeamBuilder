@@ -30,6 +30,7 @@ import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalize
 import { useRewardsStore } from './useRewardsStore';
 import { isCrawler } from '../utils/crawler';
 import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
+import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -245,6 +246,24 @@ const writeJourneyMarks = (marks) => {
     } catch (_) { /* a convenience: the account copy still has them */ }
 };
 
+// The Badge Case (utils/badgeCase.js): gym badges the trainer won in the
+// game they are playing — the Traveler's Home. Stored like the profile: the
+// copy touched last wins, whole.
+const BADGE_CASE_KEY = 'ptb:badgeCase';
+
+const getInitialBadgeCase = () => {
+    if (typeof window === 'undefined') return normalizeBadgeCase(null);
+    try {
+        return normalizeBadgeCase(JSON.parse(localStorage.getItem(BADGE_CASE_KEY) || 'null'));
+    } catch (_) {
+        return normalizeBadgeCase(null);
+    }
+};
+
+const writeBadgeCase = (badgeCase) => {
+    try { localStorage.setItem(BADGE_CASE_KEY, JSON.stringify(badgeCase)); } catch (_) { /* ignore */ }
+};
+
 // The trainer profile (utils/trainerProfile.js): what the onboarding learned
 // the trainer came for. Same shape of storage as the marks — localStorage for
 // the first paint, the preferences doc to follow the account — but merged as
@@ -322,6 +341,7 @@ export const useAuthStore = create((set, get) => {
         checkin: getInitialCheckin(),
         journeyMarks: getInitialJourneyMarks(),
         trainerProfile: getInitialTrainerProfile(),
+        badgeCase: getInitialBadgeCase(),
         selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
         newlyUnlockedBadge: null,
         showSyncPrompt: false,
@@ -481,6 +501,11 @@ export const useAuthStore = create((set, get) => {
                             writeTrainerProfile(mergedProfile);
                             set({ trainerProfile: mergedProfile });
 
+                            // 5.26 Badge Case: the copy touched last wins.
+                            const mergedCase = mergeBadgeCases(get().badgeCase, data.badgeCase);
+                            writeBadgeCase(mergedCase);
+                            set({ badgeCase: mergedCase });
+
                             // 5.3 Rewards (useRewardsStore): XP never drops,
                             // unlocks are a union, the account's equip wins.
                             useRewardsStore.getState().hydrate(data.rewards);
@@ -590,7 +615,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, trainerProfile, selectedBadgeId, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, trainerProfile, badgeCase, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -618,6 +643,7 @@ export const useAuthStore = create((set, get) => {
                 checkin,
                 journeyMarks,
                 trainerProfile,
+                badgeCase,
                 rewards: useRewardsStore.getState().snapshot(),
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
@@ -648,6 +674,14 @@ export const useAuthStore = create((set, get) => {
             get().savePreferences({ trainerProfile: next });
             get().syncPublicProfile();
             return next;
+        },
+
+        /** The Badge Case: a new value (utils/badgeCase.js toggleBadge / chooseGame), saved to both copies. */
+        setBadgeCase: (next) => {
+            const clean = normalizeBadgeCase(next);
+            writeBadgeCase(clean);
+            set({ badgeCase: clean });
+            get().savePreferences({ badgeCase: clean });
         },
 
         // Count today as a day active. Idempotent per local day.

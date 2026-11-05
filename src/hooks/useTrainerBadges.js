@@ -10,7 +10,7 @@ import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFriendsStore } from '../store/useFriendsStore';
 import { useBattlesStore } from '../store/useBattlesStore';
 import { BADGES_LIST, BADGES_BY_ID, getBadgeById } from '../constants/badges';
-import { evaluateJourneys } from '../utils/journeys';
+import { evaluateJourneys, evaluatePersonaJourneys } from '../utils/journeys';
 import { computeTrainerXp } from '../utils/trainerLevel';
 import { useRewardsStore } from '../store/useRewardsStore';
 import { useChallengeRecord } from '../services/challengeRecord';
@@ -253,7 +253,7 @@ export function useTrainerBadges(extraStats = {}) {
 
     // The journeys, evaluated once here so the badges that reward them and the
     // views that list them read the same answer.
-    const journeys = useMemo(() => evaluateJourneys({
+    const journeyFacts = useMemo(() => ({
         ...baseStats,
         marks: journeyMarks,
         greetingPokemonId,
@@ -264,8 +264,12 @@ export function useTrainerBadges(extraStats = {}) {
         friendsCount,
         battlesCount,
     }), [baseStats, journeyMarks, greetingPokemonId, isAnonymous, selectedBadgeId, savedTeams, currentTeam, friendsCount, battlesCount]);
+    const journeys = useMemo(() => evaluateJourneys(journeyFacts), [journeyFacts]);
+    // The persona journeys (2026-11-05): beside the levels, never in them.
+    const personaJourneys = useMemo(() => evaluatePersonaJourneys(journeyFacts), [journeyFacts]);
 
-    const stats = useMemo(() => ({ ...baseStats, journeys }), [baseStats, journeys]);
+    // Badges read both lists: a persona journey's badge is earned like a level's.
+    const stats = useMemo(() => ({ ...baseStats, journeys: [...journeys, ...personaJourneys] }), [baseStats, journeys, personaJourneys]);
 
     // Badges mapped with current progress and unlock status
     const badges = useMemo(() => {
@@ -301,10 +305,10 @@ export function useTrainerBadges(extraStats = {}) {
         useRewardsStore.getState().syncProgress({
             xp: computeTrainerXp(stats, { badgeIds, journeyBadgeIds: JOURNEY_BADGE_IDS, checkinCount }),
             badgeIds,
-            journeysDone: journeys.filter((j) => j.isComplete).length,
+            journeysDone: stats.journeys.filter((j) => j.isComplete).length,
             checkins: checkinCount,
         });
-    }, [badges, stats, journeys, checkinCount]);
+    }, [badges, stats, checkinCount]);
 
     const totalBadgesCount = BADGES_LIST.length;
 
@@ -352,6 +356,7 @@ export function useTrainerBadges(extraStats = {}) {
     return {
         stats,
         journeys,
+        personaJourneys,
         badges,
         equippedBadge,
         selectedBadgeId,

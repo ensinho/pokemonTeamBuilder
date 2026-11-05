@@ -149,3 +149,12 @@ Enzo approved the whole follow-up list. Built ✅:
 ☐ Still open: the inverted chip (no EV presets exist to use it — regulation
 chips are the next candidate); persona journeys; ⌘K page ranking; push topic
 defaults; a Pokédex-progress block for the Viajante's Home.
+
+## 7. Round 4 (2026-11-05, branch `claude/persona-round4`)
+
+Everything left from round 3, built ✅: persona journeys with their badges,
+⌘K quick links by persona, the Badge Case on the Traveler's Home (the
+"Pokédex progress" idea became this — there is no seen/caught data, and a
+badge case is the franchise's own progress device), and the inverted chip on
+the builder's chosen tier. Notification defaults were reviewed and left
+unchanged (see trainer_profile.md "Round 4").

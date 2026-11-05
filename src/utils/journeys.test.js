@@ -197,3 +197,35 @@ describe('journeyEmphasis', () => {
         expect(journeyEmphasis([])).toBe('none');
     });
 });
+
+describe('persona journeys', () => {
+    it('stay out of the levels', async () => {
+        const { evaluatePersonaJourneys, PERSONA_JOURNEYS } = await import('./journeys');
+        expect(evaluateJourneys({}).some((j) => j.persona)).toBe(false);
+        expect(evaluatePersonaJourneys({}).map((j) => j.persona)).toEqual(['strategist', 'traveler', 'challenger']);
+        const ids = [...JOURNEYS, ...PERSONA_JOURNEYS].flatMap((j) => j.missions.map((m) => m.id));
+        expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('are shown to their persona, all three to the Master', async () => {
+        const { evaluatePersonaJourneys, personaJourneyFilter } = await import('./journeys');
+        const all = evaluatePersonaJourneys({});
+        expect(all.filter(personaJourneyFilter('traveler')).map((j) => j.id)).toEqual(['persona-traveler']);
+        expect(all.filter(personaJourneyFilter('master'))).toHaveLength(3);
+        expect(all.filter(personaJourneyFilter(null))).toHaveLength(0);
+    });
+
+    it('read what each persona does', async () => {
+        const { evaluatePersonaJourneys } = await import('./journeys');
+        const fullSets = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, customization: { moves: ['a', 'b', 'c', 'd'] } }));
+        const [strategist, traveler, challenger] = evaluatePersonaJourneys({
+            marks: { bestTeams: true, tournaments: true, threatsViewed: true, gyms: true, types: true, playthroughTeam: true, moves: true },
+            savedTeams: [{ pokemons: fullSets }],
+            pokepuzzleWins: 3, bestStreak: 4, perfectQuizzesCount: 1, challenge: { winsBy: { blue: 1 } },
+        });
+        expect(strategist.isComplete && traveler.isComplete && challenger.isComplete).toBe(true);
+        const partial = evaluatePersonaJourneys({ pokepuzzleWins: 1 })[2];
+        expect(partial.missions[0].progress).toEqual({ current: 1, target: 3 });
+        expect(partial.isComplete).toBe(false);
+    });
+});

@@ -24,6 +24,12 @@ export const PAGE_MARKS = {
     damageCalc: 'damageCalc',
     speedTiers: 'speedTiers',
     journeys: 'journeys',
+    // The persona journeys' pages (2026-11-05).
+    bestTeams: 'bestTeams',
+    tournaments: 'tournaments',
+    gyms: 'gyms',
+    types: 'types',
+    moves: 'moves',
 };
 
 /** Every mark the app can leave: page visits plus the actions it records. */
@@ -36,6 +42,8 @@ export const JOURNEY_MARKS = [
     'forumTeamShare',   // attached a team to a forum message
     'quizGuess',        // named a Pokémon right in the Quiz, either mode
     'challengePlayed',  // started a Champion Challenge run
+    'threatsViewed',    // opened the builder's meta threats with a team on it
+    'playthroughTeam',  // built in playthrough mode (no format), a run's team
 ];
 
 const has = (facts, mark) => Boolean(facts.marks?.[mark]);
@@ -134,15 +142,78 @@ export const JOURNEYS = [
     },
 ];
 
-export const JOURNEYS_BY_ID = Object.fromEntries(JOURNEYS.map((journey) => [journey.id, journey]));
+/** A team of six where every member has its four moves chosen. */
+const hasFinishedSets = (facts) =>
+    allTeams(facts).some((team) => {
+        const members = (team.pokemons || []).filter(Boolean);
+        return members.length >= TEAM_SIZE
+            && members.every((p) => (p.customization?.moves || []).filter(Boolean).length >= 4);
+    });
+
+const challengeWins = (facts) => Object.values(facts.challenge?.winsBy || {}).reduce((sum, n) => sum + (Number(n) || 0), 0);
+
+/**
+ * The persona journeys (2026-11-05): one per trainer profile, beside the six
+ * levels rather than in their order — they never change "the current level",
+ * the level count or the Home's journey card. Shown to the trainer whose
+ * persona they are (all three for a Pokémon Master); anyone may finish one,
+ * and its badge counts like any journey's. `persona` matches PERSONAS ids.
+ */
+export const PERSONA_JOURNEYS = [
+    {
+        id: 'persona-strategist',
+        persona: 'strategist',
+        badgeId: 'badge_persona_strategist',
+        missions: [
+            { id: 'pBestTeams', to: '/best-teams', done: (f) => has(f, 'bestTeams') },
+            { id: 'pTournaments', to: '/tournaments', done: (f) => has(f, 'tournaments') },
+            { id: 'pThreats', to: '/builder', done: (f) => has(f, 'threatsViewed') },
+            { id: 'pFinishedSets', to: '/builder', done: hasFinishedSets },
+        ],
+    },
+    {
+        id: 'persona-traveler',
+        persona: 'traveler',
+        badgeId: 'badge_persona_traveler',
+        missions: [
+            { id: 'pGyms', to: '/gyms', done: (f) => has(f, 'gyms') },
+            { id: 'pTypes', to: '/types', done: (f) => has(f, 'types') },
+            { id: 'pPlaythrough', to: '/builder', done: (f) => has(f, 'playthroughTeam') },
+            { id: 'pMoves', to: '/moves', done: (f) => has(f, 'moves') },
+        ],
+    },
+    {
+        id: 'persona-challenger',
+        persona: 'challenger',
+        badgeId: 'badge_persona_challenger',
+        missions: [
+            {
+                id: 'pPuzzles',
+                to: '/pokepuzzle',
+                done: (f) => (f.pokepuzzleWins || 0) >= 3,
+                progress: (f) => ({ current: Math.min(f.pokepuzzleWins || 0, 3), target: 3 }),
+            },
+            {
+                id: 'pStreak',
+                to: '/',
+                done: (f) => (f.bestStreak || 0) >= 3,
+                progress: (f) => ({ current: Math.min(f.bestStreak || 0, 3), target: 3 }),
+            },
+            { id: 'pPerfectQuiz', to: '/quiz', done: (f) => (f.perfectQuizzesCount || 0) >= 1 },
+            { id: 'pChampionWin', to: '/challenge', done: (f) => challengeWins(f) >= 1 },
+        ],
+    },
+];
+
+export const JOURNEYS_BY_ID = Object.fromEntries([...JOURNEYS, ...PERSONA_JOURNEYS].map((journey) => [journey.id, journey]));
 
 /**
  * Every journey with its missions resolved against `facts`: `done` per
  * mission, `doneCount`/`total`/`percent`/`isComplete` per journey, and the
  * 1-based `level` the UI shows ("Level 2").
  */
-export const evaluateJourneys = (facts = {}) =>
-    JOURNEYS.map((journey, index) => {
+const evaluate = (list, facts) =>
+    list.map((journey, index) => {
         const missions = journey.missions.map((mission) => ({
             id: mission.id,
             to: mission.to,
@@ -154,6 +225,7 @@ export const evaluateJourneys = (facts = {}) =>
         return {
             id: journey.id,
             badgeId: journey.badgeId,
+            persona: journey.persona || null,
             level: index + 1,
             missions,
             doneCount,
@@ -162,6 +234,15 @@ export const evaluateJourneys = (facts = {}) =>
             isComplete: doneCount === missions.length,
         };
     });
+
+export const evaluateJourneys = (facts = {}) => evaluate(JOURNEYS, facts);
+
+/** The persona journeys, resolved like the levels (their `level` is unused). */
+export const evaluatePersonaJourneys = (facts = {}) => evaluate(PERSONA_JOURNEYS, facts);
+
+/** Which persona journeys a trainer is shown: theirs, or all three for the Master. */
+export const personaJourneyFilter = (personaId) => (journey) =>
+    Boolean(personaId) && (personaId === 'master' || journey.persona === personaId);
 
 /**
  * The journey the trainer is on: the first one not finished. Levels are an

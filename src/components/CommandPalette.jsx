@@ -10,6 +10,8 @@ import { getPokemonDisplaySprite } from '../utils/pokemonSprites';
 import { itemSpriteUrl } from '../utils/itemSuggestions';
 import { typeIcons } from '../constants/types';
 import { prepareEntries, scoreDexNumber, searchGroups } from '../utils/globalSearch';
+import { useAuthStore } from '../store/useAuthStore';
+import { personaQuickLinks } from '../utils/trainerProfile';
 import '../styles/command-palette.css';
 
 const LIMITS = { pokemon: 6, pages: 4, moves: 4, abilities: 3, items: 3 };
@@ -75,6 +77,7 @@ export function CommandPalette({ onClose, destinations = [] }) {
     const deferredQuery = useDeferredValue(query);
 
     const pokemonIndex = useReferenceStore((state) => state.pokemonIndex);
+    const trainerProfile = useAuthStore((state) => state.trainerProfile);
     const items = useReferenceStore((state) => state.items);
     const moves = useCachedList('moves', getMovesList);
     const abilities = useCachedList('abilities', getAbilitiesList);
@@ -145,7 +148,8 @@ export function CommandPalette({ onClose, destinations = [] }) {
             : [{
                 key: 'quick',
                 label: t('search.quickLinks'),
-                options: destinations.slice(0, QUICK_LINKS).map((item) => toOption('pages', item)),
+                // The trainer profile's picks lead (personaQuickLinks).
+                options: personaQuickLinks(destinations, trainerProfile).slice(0, QUICK_LINKS).map((item) => toOption('pages', item)),
             }];
         // Nothing matched: never a dead end. The Pokédex's own search also
         // matches forms and partial numbers, so offer the query there — as a
@@ -171,7 +175,7 @@ export function CommandPalette({ onClose, destinations = [] }) {
             ...section,
             options: section.options.map((option) => ({ ...option, index: index++ })),
         }));
-    }, [results, isSearching, destinations, deferredQuery, t]);
+    }, [results, isSearching, destinations, trainerProfile, deferredQuery, t]);
 
     const options = useMemo(() => sections.flatMap((section) => section.options), [sections]);
 

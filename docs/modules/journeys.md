@@ -67,3 +67,9 @@ so a first read is never mistaken for progress; the view mounts
 - **The guide costs nothing until used.** `JourneyCoach` renders (and mounts `useTrainerBadges`' listeners) only while a mission id is set; it hides on `/challenge` and `/battles/:id`.
 - Levels are an order, not a lock: a veteran's earlier work counts the day it ships.
 - A new mark goes in `JOURNEY_MARKS` (≤ 40 chars; only `true` survives a read).
+
+## Persona journeys (2026-11-05)
+
+Three more journeys, one per trainer profile — `PERSONA_JOURNEYS` in
+`utils/journeys.js`, evaluated apart from the levels. Details and invariants
+in [trainer_profile.md](./trainer_profile.md) "Round 4".

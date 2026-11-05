@@ -50,6 +50,7 @@ built; this file says what they should *feel* like.
 | Trainer-profile onboarding | `components/onboarding/TrainerOnboarding.jsx`, `styles/onboarding.css` | Scene that answers; evolution line as a level; silhouette until picked; persona on the gold burst ([trainer_profile.md](./trainer_profile.md)) |
 | "Para você" tiles | `CozyHomeView.jsx`, `styles/cozy-home.css` (`data-motion`) | One row of four doors; each icon animates its own SVG parts on hover |
 | Trainer card | `components/trainerCard/TrainerCardDialog.jsx`, `styles/trainer-card.css`, `utils/trainerCardPattern.js` | Per-trainer pixel banner in the persona's type colour, partner standing in it, streak/level/wins as "bold figure + muted word", "Treinando desde" signed with one gold pixel |
+| Badge Case | `components/home/BadgeCase.jsx`, `styles/badge-case.css` | The games' badge case on the Traveler's Home: leaders as silhouettes until their badge is tapped, a gem of their type lights, the full case turns gold |
 | Team sheet (share image) | `modals/ShareSnippetModal.jsx` (`renderTeamSheetSync`), `utils/teamSheet.js` | The regional-champion poster: trainer's face + "Time de X", six raked cards (art + item, ability, nature, four type-signed move pills) on the lead's type colour, poster rings |
 
 ## Inspiration bank — the "community boards" kit (reference 5, 2026-11-05)
@@ -65,7 +66,7 @@ used already, ☐ = proposed.
 | **Podium** — #2 · #1 · #3 with the centre raised and the winner's tile filled | Hierarchy without a table | ✅ Champion Challenge ranking top three (`.challenge-podium`) · ☐ Team of the Week |
 | **Quest list** — round icon, title, sub, the reward as a pill on the right; a ready reward is an inverted pill ("Claim +100"), a pending one is coloured text ("+150 XP") | Ready vs not-yet is legible at a glance, and the ready one is the only button | ✅ Journeys missions (`.mission__reward`: gold pill when earned, primary text when pending — XP is automatic here, so nothing to "claim") · ☐ the daily check-in rewards |
 | **Multi-select avatar tiles** with a check badge in the corner | Selection is a mark, not a recolour of the whole tile | ☐ onboarding interests (now a ring), favourites/teams compare picker |
-| **Inverted chip for the selected value** in an amount row ($10 **$50** $100 Max) | The choice reads instantly on any theme | ☐ the builder has no EV presets yet — regulation chips first |
+| **Inverted chip for the selected value** in an amount row ($10 **$50** $100 Max) | The choice reads instantly on any theme | ✅ the builder's chosen Smogon tier (`.tier-chip.is-active`, `game-cover.css`) · ☐ EV presets when they exist |
 | **Composer with entity chips** and a quiet quota ("2 free today") beside a round send button | The input shows what is attached and what is left | ☐ PokéPuzzle guess bar, forum composer with Pokémon chips |
 | **Split progress bar** (green / red ends) | A ratio in one line, no axis | ☐ meta usage win-rate, matchup previews |
 | **Action pills with a status dot** (Send ●, Swap ●) | State without a second control | ☐ filter pills with "active" dots |
