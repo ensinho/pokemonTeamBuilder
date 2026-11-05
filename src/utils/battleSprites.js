@@ -1,4 +1,5 @@
 import { Sprites } from '@pkmn/img';
+import { toMirrorUrl } from './assetHost';
 
 /**
  * Animated battle sprites, resolved through `@pkmn/img`.
@@ -11,8 +12,11 @@ import { Sprites } from '@pkmn/img';
  * 1000+ species and forms. `@pkmn/img` is 42 KB gzipped inside the lazy battle
  * chunk and gets every one of them right, plus the frame dimensions.
  *
- * The images themselves are hotlinked and service-worker cached (see
- * vite.config.js). The host sends no CORS header, so they may only ever be used
+ * `@pkmn/img` names Showdown's host; every URL goes through `toMirrorUrl` so
+ * it reads from our bucket when VITE_ASSET_MIRROR_URL is set (filled by
+ * `npm run assets:mirror -- --only=battle,battle-ani`), and the document-wide
+ * fallback retries the origin for a file the bucket lacks. Service-worker
+ * cached (see vite.config.js). The host sends no CORS header, so they may only ever be used
  * as an `<img src>` — never fetched or drawn to a canvas.
  */
 
@@ -34,7 +38,7 @@ export const getBattleSprite = (species, { back = false, shiny = false, animated
             side: back ? 'p1' : 'p2',
             shiny,
         });
-        return { url: sprite.url, w: sprite.w || FALLBACK.w, h: sprite.h || FALLBACK.h };
+        return { url: toMirrorUrl(sprite.url), w: sprite.w || FALLBACK.w, h: sprite.h || FALLBACK.h };
     } catch (_) {
         // An unknown species must not take the battlefield down with it.
         return FALLBACK;
@@ -63,7 +67,7 @@ export const getDsSprite = (species, { back = false, shiny = false } = {}) => {
     if (!species) return FALLBACK;
     try {
         const sprite = Sprites.getPokemon(species, { gen: 'gen4', side: back ? 'p1' : 'p2', shiny });
-        return { url: sprite.url, w: sprite.w || FALLBACK.w, h: sprite.h || FALLBACK.h };
+        return { url: toMirrorUrl(sprite.url), w: sprite.w || FALLBACK.w, h: sprite.h || FALLBACK.h };
     } catch (_) {
         return FALLBACK;
     }
@@ -74,7 +78,7 @@ export const getBattleIcon = (species, { shiny = false } = {}) => {
     if (!species) return FALLBACK;
     try {
         const sprite = Sprites.getPokemon(species, { gen: 5, side: 'p2', shiny });
-        return { url: sprite.url, w: sprite.w || 96, h: sprite.h || 96 };
+        return { url: toMirrorUrl(sprite.url), w: sprite.w || 96, h: sprite.h || 96 };
     } catch (_) {
         return FALLBACK;
     }

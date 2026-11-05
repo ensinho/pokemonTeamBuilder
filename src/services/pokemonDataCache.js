@@ -21,6 +21,11 @@ const BUILD_ID = (typeof __BUILD_ID__ !== 'undefined' && __BUILD_ID__) ? String(
 const CACHE_PREFIX = `ptb:pokemon-data:${CACHE_VERSION}:${BUILD_ID}:`;
 const REFERENCE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+// Web Storage is one ~5 MB quota shared by the whole app. A raw PokéAPI move or
+// species response runs 50–200 KB, so a few dozen of them filled it and every
+// unrelated setItem threw (the builder's 'tb-filters-expanded' crash, 2026-11-05).
+// Anything bigger than this stays in memory; the HTTP/SW cache still has it.
+export const MAX_STORED_ENTRY_CHARS = 48 * 1024;
 
 const memoryCache = new Map();
 const pendingRequests = new Map();
@@ -42,7 +47,10 @@ const purgeStaleCacheVersions = () => {
                 // large index (now memory-only) that may still be hogging quota.
                 if (!key.startsWith(CACHE_PREFIX) || key.endsWith(':static:pokemon-index.json')) {
                     stale.push(key);
+                    continue;
                 }
+                // Oversized entries written before the size cap existed.
+                if ((storage.getItem(key)?.length || 0) > MAX_STORED_ENTRY_CHARS) stale.push(key);
             }
             stale.forEach((key) => storage.removeItem(key));
         } catch (_) {
@@ -100,14 +108,35 @@ const writeStored = (key, value, storageName, ttlMs) => {
     const storage = getStorage(storageName);
     if (!storage) return;
 
+    let serialized;
     try {
-        storage.setItem(CACHE_PREFIX + key, JSON.stringify({
-            value,
-            expiresAt: Date.now() + ttlMs,
-        }));
+        serialized = JSON.stringify({ value, expiresAt: Date.now() + ttlMs });
     } catch (_) {
-        // Storage can be full or unavailable. Memory cache still covers this session.
+        return;
     }
+    if (serialized.length > MAX_STORED_ENTRY_CHARS) return;
+
+    try {
+        storage.setItem(CACHE_PREFIX + key, serialized);
+    } catch (_) {
+        // Full: this cache is the one thing in storage that is safe to throw away,
+        // so drop it (never another feature's keys) and try once more.
+        try {
+            evictCacheEntries(storage);
+            storage.setItem(CACHE_PREFIX + key, serialized);
+        } catch (__) {
+            // Still full or unavailable. Memory cache covers this session.
+        }
+    }
+};
+
+const evictCacheEntries = (storage) => {
+    const ours = [];
+    for (let i = 0; i < storage.length; i += 1) {
+        const key = storage.key(i);
+        if (key && key.startsWith('ptb:pokemon-data:')) ours.push(key);
+    }
+    ours.forEach((key) => storage.removeItem(key));
 };
 
 const fetchJsonCached = async (url, {

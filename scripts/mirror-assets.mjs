@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { initializeApp, cert, applicationDefault } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
+import { Dex } from '@pkmn/sim';
+import { Sprites } from '@pkmn/img';
 
 // Copies the sprites the app hotlinks into our Cloud Storage bucket, laid out
 // the way src/utils/assetHost.js expects:
@@ -16,6 +18,7 @@ import { getStorage } from 'firebase-admin/storage';
 // Run:  npm run assets:mirror                 (everything)
 //       npm run assets:mirror -- --setup      (also: public read + CORS on the bucket)
 //       npm run assets:mirror -- --only=items,trainers --dry-run --force
+//       npm run assets:mirror -- --only=battle        (Champion Challenge sprites)
 //
 // Credentials: FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY (the same service
 // account api/ uses — `vercel env pull` brings them), or a key file via
@@ -43,6 +46,27 @@ const readData = async (file) => JSON.parse(await fs.readFile(path.join(DATA_DIR
 // Every group is a list of paths relative to its origin; the bucket key is the
 // prefix + that path. A path the origin 404s is skipped (not every form has a
 // shiny or a Showdown gif) — the app falls back to the origin for it anyway.
+// Battle sprites come from `@pkmn/img` (src/utils/battleSprites.js), whose file
+// names aren't a slug of the species — so ask it, for every species and forme
+// the sim knows, exactly as the app does. `battle` is what the Champion
+// Challenge draws (gen-5 icons, gen-4 DS sprites, which `@pkmn/img` drops to
+// gen 5 past #493); `battle-ani` is the friend battles' animated set.
+function battlePaths(variants) {
+    const species = Dex.species.all()
+        .filter((s) => s.exists && s.num > 0 && !['CAP', 'Custom'].includes(s.isNonstandard));
+    const paths = new Set();
+    for (const { name } of species) {
+        for (const [gen, side, shiny] of variants) {
+            try {
+                const { url } = Sprites.getPokemon(name, { gen, side, shiny });
+                if (url?.startsWith(`${SHOWDOWN_ORIGIN}/`)) paths.add(url.slice(SHOWDOWN_ORIGIN.length + 1));
+            } catch (_) { /* a name @pkmn/img can't place: the app falls back too */ }
+        }
+    }
+    return [...paths];
+}
+const BOTH_SIDES = (gen, shinies) => shinies.flatMap((shiny) => [[gen, 'p2', shiny], [gen, 'p1', shiny]]);
+
 async function collectGroups() {
     const { pokemons } = await readData('pokemon-index.json');
     const ids = [...new Set(pokemons.map((p) => p.id))].sort((a, b) => a - b);
@@ -70,6 +94,11 @@ async function collectGroups() {
             ...pokemonPaths('other/showdown/shiny/', 'gif'),
         ] },
         items: { prefix: 'pokeapi', origin: POKEAPI_ORIGIN, paths: items.map((i) => `items/${i.name}.png`) },
+        battle: { prefix: 'showdown', origin: SHOWDOWN_ORIGIN, paths: battlePaths([
+            ...BOTH_SIDES(5, [false]),
+            ...BOTH_SIDES('gen4', [false, true]),
+        ]) },
+        'battle-ani': { prefix: 'showdown', origin: SHOWDOWN_ORIGIN, paths: battlePaths(BOTH_SIDES('ani', [false, true])) },
         trainers: { prefix: 'showdown', origin: SHOWDOWN_ORIGIN, paths: [
             ...[...trainerIds].map((id) => `trainers/${id}.png`),
             ...LOGIN_POKEMON.map((name) => `ani/${name}.gif`),
