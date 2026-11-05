@@ -1,4 +1,4 @@
-# Champion Challenge (daily battle vs a Cynthia AI)
+# Champion Challenge (daily battle vs a Champion AI — Cynthia, Blue)
 
 > The system as built. The *why* and the full design are in the plans:
 > [product](../plans/daily-champion-challenge.md) ·
@@ -13,6 +13,22 @@
 > log-loss 0.501 (Enzo, 2026-10-15). F3 finished the same day: the win-chance
 > report, the Pokétch dossier, WebAudio sound. Next: F6 (ranking, share card, push).
 
+## Champions (2026-11-05)
+
+Two champions **in one room** (Enzo, 2026-11-05): Cynthia on the left, Blue on the right (`arenaMap` letters `C` / `U`, `CHAMPION_ROOM.champions`, mirrored around the door), each under a name plate — gold with ✓ once beaten today. **The choice is the walk:** arriving in front of one (`DsArena` `onArrive(id)`) loads that champion's day (`selectChampion` resolves with the load) and then plays their lines, or resumes their battle in progress. The plates are buttons ("Go to Blue"), the keyboard's and screen reader's path; the bar has no champion chips. The last one faced is remembered in `ptb:challenge:champion` and in `?champion=blue`, which also deep-links. **Cynthia's documents keep every id they launched with**; any other champion's carry `_{id}` (`runs.js` `championSuffix`), so nothing stored moved.
+
+- **Each has their own day:** lineup, Time do dia (`dailyTeamFor(day, championId)` — Cynthia's seed unchanged, Blue's mixes his id), ranking (`challengeRanks/{day}_blue`), day doc (`challengeDays/{day}_blue`) and record (`challengeStats/{uid}.champions.blue` — the same document, so rules and account deletion are unchanged; `outcome.js` `statsOf` / `withStats`).
+- **Blue rotates like Cynthia** (`BLUE_POOL`, sources in its comment; Wikidex checked 2026-11-04): 3 of the frequent six (Pidgeot, Alakazam, Rhydon, Exeggutor, Gyarados, Arcanine; Pidgeot leads most), 1 occasional (Tyranitar, Heracross, Machamp, Aerodactyl), the wildcard, and **an ace that changes by day**: one of his starters (Charizard, Blastoise, Venusaur — `rotation.aceFor`), kept away from the member that starter's team never has (`excludes`: Arcanine / Gyarados / Exeggutor), as in FRLG. The ace reaches the AI as `decide({ aceSpecies })` and the dialogue as `ctx.aceSpecies`. The difficulty keys are shared; Blue's labels are `challenge.champions.blue.difficulty.*` (Red & Blue, Yellow, Rematch, World). His `dp` sets start from gym-leaders.json; the rest is `design`.
+- **Blue's AI is Cynthia's engine** — same evaluators, lookahead, M1 model and weekday profiles; his personality (`personality/blue.js`) differs only in the ace, which rotates. Calibrated with `npm run ai:arena -- --champion blue` (80 games each, 2026-11-05) against the greedy robot: dp 37.5% (target 40–55; the game's own Red & Blue sets won 21%, so `dp` trades their filler for one strong move each), platinum 47.5% (50–65), rematch 70.0% (60–75), world 71.3% (≥ 70); vs random 89–100%. Zero illegal choices. Rematch shows 16–23 estimate fallbacks a run (the sim's `getDamage` threw for some set in some state; Cynthia's Rematch shows 0) — harmless, not yet traced.
+- **Lines** are `challenge.{championId}.*` (`dialogue.js` `keysFor`); Portuguese copy drops the article before a champion's name ("Desafiar Blue"), and the few gendered lines (greeting, VS tag) have a per-champion key.
+- **Wildcard types:** `typesFit` counts only the wildcard's own types — Blue's regulars can already be three Flying-types. Identical for Cynthia (her 400 days of teams diffed byte-for-byte).
+- **Art:** `challengeArt.js` `CHAMPION_ART`. Blue's overworld sheet and battle pose are cut from the rip Enzo supplied (`public/blueSprite.png`, "ripped by ChrisX698") into Cynthia's sheet layout and an 80 × 80 left-facing sprite (Showdown has no Gen 4 Blue).
+- **The "next champion" hint:** for a trainer who has beaten this champion (today or ever) and hasn't played the other today — the bottom screen on a phone (`DsChampionHint`), a toast on a desktop, where a card would cover the room; its button walks you there. The result's last button is **Back** to the room. Patch notes 1.21.0 announce it (the donation card stays featured).
+
+**One official per board:** the first battle of the day with the Time do dia (`{uid}_{day}`) and the first with your own team (`{uid}_{day}_free`) are both official — a trainer can stand on both boards, once each. Practice hangs off the board's official (`{officialId}_p{n}`). Only one battle at a time per champion (`officialAlreadyPlayed` while the other board's run is active). A day counts once in the record: a later official can only turn a lost day into a won one (`nextStats`, `brokenStreak`). `state` returns `officials: {daily, free}`, `champions: [{id, name, played, won}]` and `official` (the board on screen). The picker's `practice` is per board.
+
+**Share** posts the result to the forum in one press (the `sharedChallenge` card, now with `champion`); the clipboard / share-sheet text is no longer offered from the result.
+
 ## Map
 
 ```
@@ -22,7 +38,7 @@ api/_lib/challenge/
   constants.js   FORMAT, LEVEL, ENGINE_VERSION, BANNED_MOVES, CHOICE_PATTERN, CHAMPIONS
   seed.js        hashSeed(...parts) → 4×16-bit sim seed (cyrb128)
   day.js         Brasília day: dayKeyAt, nextResetAt, weekdayOf, isoWeekOf…
-  pool.js        Cynthia's species × {dp, platinum, rematch, world} sets, each with a source
+  pool.js        Cynthia's and Blue's species × {dp, platinum, rematch, world} sets, each with a source
   rotation.js    championLineupFor / championTeamTextFor / difficultyFor / publicLineup
   dailyTeam.js   the Time do dia (random-battle team at level 50, same for everyone)
   validateTeam.js saved team → packed text or a list of {slot, code}
