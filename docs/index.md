@@ -21,6 +21,7 @@
 | [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
 | [Forum](./modules/forum.md) | The /feed forum: three-pane workspace, Hot/New/Top ranking, comment tree, topic likes, sharing and link previews |
 | [Journeys](./modules/journeys.md) | Onboarding missions, journey badges, the mission guide, the Home's journey card |
+| [Trainer profile & onboarding](./modules/trainer_profile.md) | The first-visit questions (competitive / games / minigames, level, format), the personas, and what they arrange: rail order, dock tab, Home "Para você", journey tags, the builder's first regulation |
 | [Rewards](./modules/rewards.md) | Trainer Level (computed XP), the daily check-in + streak shields, cosmetics (frames, titles, reward themes) and where they show |
 | [Friend battles](./modules/friend_battles.md) | PvP as built (2026-10-20): challenge-with-team → one-tap accept, `secret/state` + claimed rounds (no polling), the device log cache, the console screen, VS card, music |
 | [Champion Challenge](./modules/daily_challenge.md) | The daily battle vs the Cynthia AI as built: endpoint, engine, AI, the DS-console client, Home card, invariants, traps, calibration |
@@ -31,6 +32,7 @@
 | [Handoff: Friends & battles](./plans/HANDOFF-friends-and-battles.md) | History of the feature's build (2026-07) — status, traps. **The current flow and server state are in [Friend battles](./modules/friend_battles.md)** |
 | [How friends & battles work](./plans/ARCHITECTURE-friends-and-battles.md) | The running system — data flow, turn loop, security model, invariants |
 | [Plan: Friends & async battles](./plans/friends-and-async-battles.md) | The decisions and the measured research behind them, phase by phase |
+| [Plan: Persona onboarding](./plans/persona-onboarding.md) | The 2026-11-05 onboarding + personalisation + UI/UX pass (shadows, grouped settings): built vs open proposals, skills to add |
 | [Plan: Daily champion challenge](./plans/daily-champion-challenge.md) | Daily single-player battle vs a Cynthia AI — product plan and decisions (§14). F1 (server + AI) built 2026-10-14 |
 | [Spec: Daily champion challenge](./plans/daily-champion-challenge-tech.md) | Files, API contract, Firestore model and rules, client store and state machine, tests and per-phase tasks |
 | [Spec: Cynthia battle AI](./plans/daily-champion-challenge-ai.md) | AI module layout, fairness (fog), evaluators, lookahead, difficulty profiles, self-play calibration |

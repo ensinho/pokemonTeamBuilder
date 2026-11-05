@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
-import { ArrowLeftRight, ArrowUpRight, Check, ChevronRight, Crown, Hourglass, MoreHorizontal, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, Award, BookOpen, Calculator, Check, ChevronRight, CircleHelp, Crown, Gauge, Hourglass, Medal, MoreHorizontal, Palette, Pencil, Plus, Puzzle, ScrollText, Search, Shapes, Shield, ShieldHalf, Sparkles, Swords, TrendingUp, Trophy } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GuestAccountCard } from '../GuestAccountCard';
 import { useForumStore } from '../../store/useForumStore';
@@ -40,6 +40,8 @@ import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { JourneyBar, JourneyList, JourneyTile, MissionRow } from '../journeys/JourneyList';
 import { currentJourney, journeyEmphasis, nextMission } from '../../utils/journeys';
+import { PICK_DESTINATIONS, derivePersona, hasAnsweredProfile, personaPicks, suggestedJourney } from '../../utils/trainerProfile';
+import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
@@ -164,6 +166,13 @@ const Panel = ({ title, meta, action, card = true, children }) => (
     </section>
 );
 
+/** The icon each "Para você" destination wears (utils/trainerProfile.js PICK_DESTINATIONS). */
+const PICK_ICONS = {
+    builder: Swords, pokedex: Search, meta: TrendingUp, bestTeams: Award, tournaments: Trophy,
+    damageCalc: Calculator, speedTiers: Gauge, guides: BookOpen, types: Shapes, gyms: Medal,
+    moves: ScrollText, pokepuzzle: Puzzle, challenge: Crown, generationQuiz: CircleHelp, battles: ShieldHalf,
+};
+
 /**
  * The party row from the battle HUD, with the team itself in it: a member
  * stands on its slot, an empty slot is a dashed Poké Ball (dashed means absent,
@@ -211,7 +220,8 @@ export function CozyHomeView({
     const now = useNow();
     const [tab, setTab] = useState('today');
 
-    const { userId, streak, isAnonymous } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous })));
+    const { userId, streak, isAnonymous, trainerProfile } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous, trainerProfile: s.trainerProfile })));
+    const openOnboarding = useOnboardingStore((s) => s.open);
     const { badges, equippedBadge, journeys, stats: trainerStats } = useTrainerBadges();
     const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
@@ -822,7 +832,10 @@ export function CozyHomeView({
     const level = currentJourney(journeys);
     const emphasis = journeyEmphasis(journeys, { activeDays: trainerStats.activeDays });
     const isBrandNew = level?.level === 1 && level.doneCount === 0;
-    const upNext = nextMission(level);
+    // An active trainer's next step follows what they came for (the trainer
+    // profile): a competitive one is pointed at Strategy before the League.
+    const suggested = suggestedJourney(journeys, trainerProfile) || level;
+    const upNext = nextMission(suggested);
     const seeJourneys = (
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/journeys')}>
             {t('journeys.home.seeAll')} <ChevronRight aria-hidden="true" />
@@ -853,17 +866,17 @@ export function CozyHomeView({
     const journeyCompact = emphasis === 'compact' && upNext && (
         <section className="card card--compact journey-mini" aria-label={t('journeys.home.nextStep')}>
             <div className="journey-mini__head">
-                <JourneyTile journey={level} isCurrent />
+                <JourneyTile journey={suggested} isCurrent />
                 <span className="journey__text">
-                    <span className="journey__level">{t('journeys.home.nextStep')} · {t('journeys.level', { n: level.level })}</span>
-                    <span className="journey-mini__title">{t(`journeys.list.${level.id}.title`)}</span>
+                    <span className="journey__level">{t('journeys.home.nextStep')} · {t('journeys.level', { n: suggested.level })}</span>
+                    <span className="journey-mini__title">{t(`journeys.list.${suggested.id}.title`)}</span>
                 </span>
                 <button type="button" className="btn btn-ghost btn-sm btn-icon" onClick={() => navigate('/journeys')}
                     aria-label={t('journeys.home.seeAll')} title={t('journeys.home.seeAll')}>
                     <ChevronRight aria-hidden="true" />
                 </button>
             </div>
-            <JourneyBar percent={level.percent} />
+            <JourneyBar percent={suggested.percent} />
             <ol className="journey__missions">
                 <MissionRow mission={upNext} />
             </ol>
@@ -873,6 +886,57 @@ export function CozyHomeView({
         <Panel card={false} title={t('journeys.title')} meta={t('journeys.subtitle')} action={seeJourneys}>
             <JourneyList journeys={journeys} />
         </Panel>
+    );
+
+    // "Para você" (2026-11-05): where this trainer's profile says to look
+    // first — a few destinations, each a line saying why. Without a profile
+    // it is an invitation to make one, small, in the rail.
+    const persona = derivePersona(trainerProfile);
+    const picks = personaPicks(trainerProfile, 4);
+    const forYouPanel = hasAnsweredProfile(trainerProfile) && persona && picks.length > 0 && (
+        <Panel
+            title={t('onboarding.home.title')}
+            meta={t(`onboarding.personas.${persona.id}.name`)}
+            action={(
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => openOnboarding('home')}>
+                    <Pencil aria-hidden="true" /> {t('onboarding.home.edit')}
+                </button>
+            )}
+        >
+            <ul className="for-you" style={{ '--for-you-tone': typeColors[persona.tone] }}>
+                {picks.map((key) => {
+                    const Icon = PICK_ICONS[key] || ChevronRight;
+                    return (
+                        <li key={key}>
+                            <button type="button" className="for-you__item" onClick={() => navigate(PICK_DESTINATIONS[key].path)}>
+                                <span className="for-you__icon" aria-hidden="true"><Icon /></span>
+                                <span className="for-you__text">
+                                    <span className="for-you__title">{t(PICK_DESTINATIONS[key].labelKey)}</span>
+                                    <span className="for-you__desc">{t(`onboarding.picks.${key}`)}</span>
+                                </span>
+                                <ChevronRight className="for-you__chevron" aria-hidden="true" />
+                            </button>
+                        </li>
+                    );
+                })}
+            </ul>
+        </Panel>
+    );
+    const forYouSetup = !hasAnsweredProfile(trainerProfile) && (
+        <section className="card card--compact for-you-setup" aria-label={t('onboarding.home.setupTitle')}>
+            <span className="for-you-setup__art" aria-hidden="true">
+                {[445, 25, 150].map((id) => (
+                    <img key={id} src={getPokemonArtworkSpriteUrl(id)} alt="" width={56} height={56} decoding="async" loading="lazy" />
+                ))}
+            </span>
+            <span className="for-you-setup__text">
+                <span className="for-you-setup__title">{t('onboarding.home.setupTitle')}</span>
+                <span className="for-you-setup__sub">{t('onboarding.home.setupSub')}</span>
+            </span>
+            <button type="button" className="btn btn-primary btn-sm" onClick={() => openOnboarding('home')}>
+                {t('onboarding.home.setupCta')}
+            </button>
+        </section>
     );
 
     // ── Layout ──────────────────────────────────────────────────────────────
@@ -890,7 +954,7 @@ export function CozyHomeView({
     // happened (2026-10-17, Enzo). On a phone the full card comes right under
     // the hero — it is a new trainer's way in — and the small one waits under
     // the day's cards, after what an active trainer came for.
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{forYouPanel}{yourDay}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{forYouPanel}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
     else main = communityPanel(5);
@@ -911,6 +975,7 @@ export function CozyHomeView({
                     <aside className="cozy-rail">
                         {guestCard}
                         {checkinCard}
+                        {forYouSetup}
                         {tab !== 'journey' && (journeyFocus || journeyCompact)}
                         {journeyPanel}
                         {tab !== 'community' && communityPanel(1)}

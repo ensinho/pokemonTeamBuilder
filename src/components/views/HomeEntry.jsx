@@ -3,6 +3,17 @@ import { LandingView } from './LandingView';
 import { isReturningVisitor, markLandingSeen, shouldShowLanding } from '../../utils/landing';
 import { useLandingStore } from '../../store/useLandingStore';
 import { track } from '../../services/analytics';
+import { useOnboardingStore } from '../../store/useOnboardingStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { needsTrainerProfile } from '../../utils/trainerProfile';
+
+// Every way off the landing leads through the onboarding first (2026-11-05):
+// it opens over wherever the CTA went, so the visitor's intent still wins.
+const offerOnboarding = () => {
+    if (needsTrainerProfile(useAuthStore.getState().trainerProfile)) {
+        useOnboardingStore.getState().open('landing');
+    }
+};
 
 const storage = () => {
     try {
@@ -25,11 +36,13 @@ export function HomeEntry({ hasTeams, isAnonymous, children }) {
     const leave = useCallback((cta) => {
         track('landing_cta', { cta: String(cta || 'unknown') });
         markLandingSeen(storage());
+        offerOnboarding();
     }, []);
     const skip = useCallback(() => {
         track('landing_cta', { cta: 'skip' });
         markLandingSeen(storage());
         setIsFirstVisit(false);
+        offerOnboarding();
     }, []);
 
     const showLanding = isFirstVisit && shouldShowLanding({ hasTeams, isAnonymous });

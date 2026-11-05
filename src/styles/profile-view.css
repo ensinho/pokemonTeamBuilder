@@ -393,6 +393,11 @@
 
 .profile-thumb:hover { background: var(--color-surface-hover); }
 
+/* The trainer profile's persona: the same disc, not a control. */
+.profile-thumb--static { cursor: default; }
+.profile-thumb--static:hover { background: var(--color-surface-raised); }
+.profile-thumb--static img { width: 2.25rem; height: 2.25rem; object-fit: contain; }
+
 .profile-thumb__sprite {
     width: 2.25rem;
     height: 2.25rem;

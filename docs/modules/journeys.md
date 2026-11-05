@@ -21,6 +21,10 @@ action). **No points** — the reward is the badge (Enzo's call). Since
 | `src/components/views/JourneysView.jsx` | `/journeys` — Journeys / Badges / Rewards tabs (`?tab=`), each carrying its own figure as a `count-badge` (no separate stat boxes since 2026-10-22). Badges are equipped here (the badge dialog); the Profile shows only the earned ones and links back. |
 | `src/components/views/CozyHomeView.jsx` | The Home's journey card, sized by `journeyEmphasis()`: **focus** (new trainer — level ≤ 2, < 6 missions done, < 7 days active) is the full card (welcome, level, open missions); **compact** (active trainer) is a small "Próximo passo" card with the one mission up next; **none** once all six are done. Desktop: top of the right rail. Phone: focus under the hero, compact under "Seu dia". Plus the Home's **Jornada** tab (replaced Meta). |
 
+## The trainer profile (2026-11-05)
+
+Journeys the trainer profile points at wear a "Para você" tag (`recommendedJourneyIds`), and the Home's compact "next step" follows `suggestedJourney` — the first unfinished recommended journey. The order of levels never changes. See [trainer_profile.md](./trainer_profile.md).
+
 ## The mascot (`src/components/Mascot.jsx`)
 
 The favicon's Gengar (`public/logo-mark.webp`) is the voice of tips and big

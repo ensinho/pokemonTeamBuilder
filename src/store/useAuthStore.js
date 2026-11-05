@@ -29,6 +29,7 @@ import { disablePush } from '../services/pushNotifications';
 import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalizeStreak } from '../utils/dailyCheckin';
 import { useRewardsStore } from './useRewardsStore';
 import { isCrawler } from '../utils/crawler';
+import { mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -244,6 +245,27 @@ const writeJourneyMarks = (marks) => {
     } catch (_) { /* a convenience: the account copy still has them */ }
 };
 
+// The trainer profile (utils/trainerProfile.js): what the onboarding learned
+// the trainer came for. Same shape of storage as the marks — localStorage for
+// the first paint, the preferences doc to follow the account — but merged as
+// "the copy touched last wins", because answers are a set, not a union.
+const TRAINER_PROFILE_KEY = 'ptb:trainerProfile';
+
+const getInitialTrainerProfile = () => {
+    if (typeof window === 'undefined') return normalizeTrainerProfile(null);
+    try {
+        return normalizeTrainerProfile(JSON.parse(localStorage.getItem(TRAINER_PROFILE_KEY) || 'null'));
+    } catch (_) {
+        return normalizeTrainerProfile(null);
+    }
+};
+
+const writeTrainerProfile = (profile) => {
+    try {
+        localStorage.setItem(TRAINER_PROFILE_KEY, JSON.stringify(profile));
+    } catch (_) { /* the account copy still has it */ }
+};
+
 export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
     let syncNudgeTimer = null;
@@ -299,6 +321,7 @@ export const useAuthStore = create((set, get) => {
         activeDays: getInitialActiveDays(),
         checkin: getInitialCheckin(),
         journeyMarks: getInitialJourneyMarks(),
+        trainerProfile: getInitialTrainerProfile(),
         selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
         newlyUnlockedBadge: null,
         showSyncPrompt: false,
@@ -453,6 +476,11 @@ export const useAuthStore = create((set, get) => {
                             writeJourneyMarks(mergedMarks);
                             set({ journeyMarks: mergedMarks });
 
+                            // 5.25 Trainer profile: the copy touched last wins.
+                            const mergedProfile = mergeTrainerProfiles(get().trainerProfile, data.trainerProfile);
+                            writeTrainerProfile(mergedProfile);
+                            set({ trainerProfile: mergedProfile });
+
                             // 5.3 Rewards (useRewardsStore): XP never drops,
                             // unlocks are a union, the account's equip wins.
                             useRewardsStore.getState().hydrate(data.rewards);
@@ -562,7 +590,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, selectedBadgeId, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, checkin, journeyMarks, trainerProfile, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -589,6 +617,7 @@ export const useAuthStore = create((set, get) => {
                 activeDays,
                 checkin,
                 journeyMarks,
+                trainerProfile,
                 rewards: useRewardsStore.getState().snapshot(),
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
@@ -608,6 +637,16 @@ export const useAuthStore = create((set, get) => {
             writeJourneyMarks(next);
             set({ journeyMarks: next });
             get().savePreferences({ journeyMarks: next });
+        },
+
+        // Record the onboarding's answers (or that it was turned down — pass
+        // `{ skippedAt }`). Normalised, stamped, and saved to both copies.
+        setTrainerProfile: (answers) => {
+            const next = normalizeTrainerProfile(answers);
+            writeTrainerProfile(next);
+            set({ trainerProfile: next });
+            get().savePreferences({ trainerProfile: next });
+            return next;
         },
 
         // Count today as a day active. Idempotent per local day.

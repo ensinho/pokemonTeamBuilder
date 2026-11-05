@@ -4,6 +4,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useMissionLauncher } from '../../hooks/useJourneys';
 import { getBadgeById } from '../../constants/badges';
 import { currentJourney } from '../../utils/journeys';
+import { recommendedJourneyIds } from '../../utils/trainerProfile';
+import { useAuthStore } from '../../store/useAuthStore';
 import { JOURNEY_ICONS } from './journeyIcons';
 import '../../styles/journeys.css';
 
@@ -70,7 +72,7 @@ export const JourneyBar = ({ percent }) => (
     </span>
 );
 
-function JourneyCard({ journey, isCurrent, isOpen, onToggle }) {
+function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
     const { t, language } = useTranslation();
     const bodyId = useId();
     const badge = getBadgeById(journey.badgeId);
@@ -80,7 +82,12 @@ function JourneyCard({ journey, isCurrent, isOpen, onToggle }) {
             <button type="button" className="journey__head" aria-expanded={isOpen} aria-controls={bodyId} onClick={onToggle}>
                 <JourneyTile journey={journey} isCurrent={isCurrent} />
                 <span className="journey__text">
-                    <span className="journey__level">{t('journeys.level', { n: journey.level })}</span>
+                    <span className="journey__level">
+                        {t('journeys.level', { n: journey.level })}
+                        {isRecommended && !journey.isComplete && (
+                            <span className="badge badge--primary journey__for-you">{t('onboarding.forYou')}</span>
+                        )}
+                    </span>
                     <span className="journey__title">{t(`journeys.list.${journey.id}.title`)}</span>
                     <span className="journey__sub">{t(`journeys.list.${journey.id}.sub`)}</span>
                 </span>
@@ -114,6 +121,10 @@ function JourneyCard({ journey, isCurrent, isOpen, onToggle }) {
  */
 export function JourneyList({ journeys }) {
     const current = currentJourney(journeys);
+    // The journeys the trainer profile points at wear a "Para você" tag; the
+    // order stays the levels' (an order, not a lock).
+    const trainerProfile = useAuthStore((s) => s.trainerProfile);
+    const recommended = new Set(recommendedJourneyIds(trainerProfile));
     const [openIds, setOpenIds] = useState(() => new Set(current ? [current.id] : []));
     const toggle = (id) => setOpenIds((prev) => {
         const next = new Set(prev);
@@ -128,6 +139,7 @@ export function JourneyList({ journeys }) {
                     key={journey.id}
                     journey={journey}
                     isCurrent={journey.id === current?.id}
+                    isRecommended={recommended.has(journey.id)}
                     isOpen={openIds.has(journey.id)}
                     onToggle={() => toggle(journey.id)}
                 />
