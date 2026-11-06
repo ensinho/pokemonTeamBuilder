@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T15:40:26.837Z",
+  "generatedAt": "2026-11-06T15:13:55.198Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -29368,9 +29368,9 @@
           "ability": "",
           "nature": "adamant",
           "tera": [
-            "ice",
             "fire",
-            "ghost"
+            "ghost",
+            "ice"
           ],
           "moves": [
             [
@@ -29383,9 +29383,9 @@
               "triple-axel"
             ],
             [
-              "healing-wish",
-              "weather-ball",
-              "protect"
+              "victory-dance",
+              "swords-dance",
+              "synthesis"
             ]
           ],
           "evs": {
@@ -29405,7 +29405,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Hisuian Lilligant has a niche on sun teams, thanks to its fantastic Speed tier under the sun and a good combination of moves that can let it sweep teams. Triple Axel is chosen as its coverage move, threatening Pokemon that resist its STAB moves like Hydrapple, Sinistcha, and Latios. Victory Dance increases Hisuian…",
           "source": "UU"
         },
         {
