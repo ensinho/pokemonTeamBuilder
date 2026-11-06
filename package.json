@@ -22,6 +22,8 @@
     "assets:mirror": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/mirror-assets.mjs",
     "data:sprite-feet": "node scripts/build-sprite-feet.mjs",
     "push:keys": "node scripts/generate-vapid-keys.mjs",
+    "mascot:icon": "node scripts/build-mascot-icon.mjs",
+    "mascot:export": "node scripts/export-mascot.mjs",
     "ai:arena": "node scripts/ai-arena.mjs",
     "ai:bench": "node scripts/ai-arena.mjs --bench",
     "ai:dataset": "node scripts/ai-dataset.mjs",

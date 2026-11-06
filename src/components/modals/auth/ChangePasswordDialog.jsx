@@ -125,7 +125,7 @@ export function ChangePasswordDialog({ onClose }) {
 
             {isBusy ? (
                 <div className="auth-dialog__status">
-                    <Loader size="lg" label={working === 'verifying' ? t('modals.pwVerifying') : t('modals.pwSaving')} />
+                    <Loader size="lg" scene="think" label={working === 'verifying' ? t('modals.pwVerifying') : t('modals.pwSaving')} />
                 </div>
             ) : isDone ? (
                 <div className="auth-dialog__status">
@@ -144,6 +144,7 @@ export function ChangePasswordDialog({ onClose }) {
                     {/* The account name for password managers. */}
                     <input type="email" autoComplete="username" value={userEmail || ''} readOnly hidden />
                     <PasswordField
+                        mascot
                         label={t('modals.accountCurrentPassword')}
                         value={currentPassword}
                         onChange={setCurrentPassword}

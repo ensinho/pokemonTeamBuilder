@@ -2409,12 +2409,6 @@
     pointer-events: none;
 }
 
-/* Same idea for a lazy route's loader: under ~200ms nobody needs to be told
-   something is loading, and a loader that flashes reads as a glitch. */
-.route-fallback {
-    animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 200ms both;
-}
-
 @keyframes boot-splash-in {
     from { opacity: 0; }
     to { opacity: 1; }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CloseIcon, RefreshIcon } from '../icons';
+import { Mascot } from '../Mascot';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
@@ -22,9 +23,7 @@ export function VersionUpdateModal({ onRefresh, onDismiss }) {
             >
                 <header className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-2.5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
-                            <RefreshIcon className="w-5 h-5 animate-spin-slow" />
-                        </div>
+                        <Mascot size="lg" framing="body" pose="segurandoPresente" mood="animado" play="sparks" />
                         <h2 id="version-update-title" className="text-lg font-extrabold text-fg">
                             {t('modals.versionTitle')}
                         </h2>

@@ -12,7 +12,7 @@
    Primitives here, all driven by index.css tokens:
      .switch          on/off control (role="switch") — <Switch>
      .check           checkbox with a spring tick
-     .loader          the Poké Ball capture wobble — <Loader>
+     .loader          the Poké Ball capture wobble, or a scene of the mascot — <Loader>
      .rolling-number  odometer digits — <RollingNumber>
      .shiny-burst     the one-shot sparkle — useShinyBurst()
      .theme-toggle    sun ⇄ moon glyph — <ThemeToggle>
@@ -255,6 +255,32 @@
     52%      { rotate: -7deg; }
     60%      { rotate: 2deg; }
     66%, 100% { rotate: 0deg; }
+}
+
+/* A region's wait (md, lg) is a scene of the mascot (Loader.jsx `scene`,
+   2026-11-06): the mascot peeks over the same rocking ball, charges a Shadow
+   Ball, reads the Pokédex… Its motion is the scene's own CSS loop (mascot.css).
+   It fades in after a beat, so a wait shorter than that shows nothing; a scene
+   taking over from one already on screen (`is-handoff`) appears at once. */
+.loader--scene {
+    gap: var(--space-3);
+    animation: loader-in var(--duration-slow) var(--ease-smooth) 200ms both;
+}
+
+.loader--scene.is-handoff { animation: none; }
+
+.loader--scene .loader__mascot {
+    width: 5.5rem;
+    height: 5.5rem;
+}
+
+.loader--scene.loader--lg .loader__mascot {
+    width: 7.5rem;
+    height: 7.5rem;
+}
+
+@keyframes loader-in {
+    from { opacity: 0; }
 }
 
 /* A centred block for a view that has nothing else to show yet. */

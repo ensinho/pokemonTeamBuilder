@@ -59,3 +59,6 @@ scratch/ai-data/
 # Service-account keys (scripts/mirror-assets.mjs) — never commit
 keys/
 *firebase-adminsdk*.json
+
+# npm run mascot:export output (docs/modules/mascot.md)
+mascot-export/

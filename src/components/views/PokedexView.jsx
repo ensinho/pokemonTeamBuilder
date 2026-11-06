@@ -376,7 +376,7 @@ export function PokedexView({
     }, []);
     // Says why the list is empty, and offers the one way out.
     const emptyState = (
-        <EmptyState
+        <EmptyState mascot="search"
             compact
             title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
             message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('pokedex.noPokemonFoundDesc')}
@@ -542,7 +542,7 @@ export function PokedexView({
                 <section>
                     {isInitialLoading ? (
                         <div className="flex items-center justify-center py-20">
-                            <Loader />
+                            <Loader scene="pokedex" />
                         </div>
                     ) : (
                         <>
@@ -677,7 +677,7 @@ export function PokedexView({
                     <div className="team-builder-results mt-4">
                         {isInitialLoading ? (
                             <div className="team-builder-spinner-wrap h-full">
-                                <Loader />
+                                <Loader scene="pokedex" />
                             </div>
                         ) : (
                             <div ref={desktopResultsRef} className="team-builder-results__scroll custom-scrollbar">

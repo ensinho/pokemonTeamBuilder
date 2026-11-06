@@ -109,7 +109,7 @@ export function TournamentTeamView({ onImport }) {
                 <button type="button" onClick={goBack} className="edv-back mb-4">
                     <ChevronLeft className="h-4 w-4" /> {backLabel}
                 </button>
-                <EmptyState title={pt ? 'Time não encontrado' : 'Team not found'} message={pt ? 'Este time pode não estar mais no conjunto de dados.' : 'This team may no longer be in the dataset.'} />
+                <EmptyState mascot="lost" title={pt ? 'Time não encontrado' : 'Team not found'} message={pt ? 'Este time pode não estar mais no conjunto de dados.' : 'This team may no longer be in the dataset.'} />
             </main>
         );
     }

@@ -61,7 +61,7 @@ export function GuideView() {
     if (!meta || !guide) {
         return (
             <div className="edv guide-view">
-                <EmptyState title={t('guidesPage.notFound')} />
+                <EmptyState mascot="lost" title={t('guidesPage.notFound')} />
                 <Link to="/guides" className="btn btn-outline self-center">{t('guidesPage.more')}</Link>
             </div>
         );

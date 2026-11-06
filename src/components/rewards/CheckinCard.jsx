@@ -11,6 +11,7 @@ import { nextLevelReward } from '../../utils/rewards';
 import { getCosmetic } from '../../constants/cosmetics';
 import { RollingNumber } from '../RollingNumber';
 import { JourneyBar } from '../journeys/JourneyList';
+import { Mascot } from '../Mascot';
 import '../../styles/rewards.css';
 
 /**
@@ -148,7 +149,13 @@ export function CheckinCard({ variant = 'full', onOpenRewards }) {
             <p className="sr-only" role="status" aria-live="polite">{resultLine}</p>
             {resultLine && (
                 <p className="checkin__result">
-                    <span>{resultLine}</span>
+                    <Mascot
+                        size="sm"
+                        mood={result.level > result.levelBefore ? 'empolgado' : 'animado'}
+                        pose={result.usedShield ? 'segurandoEscudo' : undefined}
+                        play={result.level > result.levelBefore ? 'evolve' : 'hop'}
+                    />
+                    <span className="checkin__result-text">{resultLine}</span>
                     {result.earned?.length > 0 && onOpenRewards && (
                         <button type="button" className="btn btn-ghost btn-sm" onClick={onOpenRewards}>{t('rewards.checkin.see')}</button>
                     )}

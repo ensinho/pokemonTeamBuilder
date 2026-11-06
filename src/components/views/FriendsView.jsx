@@ -209,7 +209,7 @@ export function FriendsView() {
 
             {activeTab === 'friends' && (
                 isLoadingFriends && friends.length === 0 ? (
-                    <div className="friends-loading"><Loader /></div>
+                    <div className="friends-loading"><Loader scene="search" /></div>
                 ) : friends.length === 0 ? (
                     <EmptyState
                         compact
@@ -382,7 +382,7 @@ export function FriendsView() {
                         )}
 
                         {isSearching ? (
-                            <div className="friends-loading"><Loader /></div>
+                            <div className="friends-loading"><Loader scene="search" /></div>
                         ) : searchTerm.trim().length >= 2 && searchResults.length === 0 ? (
                             <p className="friends-section-empty">{t('friends.noResults')}</p>
                         ) : (

@@ -551,6 +551,34 @@
        path. One per screen at most: behind the landing hero (its type
        colour) and behind a reward or level badge (gold). */
     --spark-burst: polygon(50% 0%, 56% 23.7%, 68.7% 11.3%, 66.8% 28.9%, 89.1% 18.8%, 74.3% 38.3%, 91.9% 40.4%, 77% 50%, 98.7% 61.1%, 74.3% 61.7%, 83.6% 76.8%, 66.8% 71.1%, 71.7% 95%, 56% 76.3%, 50% 93%, 44% 76.3%, 28.3% 95%, 33.2% 71.1%, 16.4% 76.8%, 25.7% 61.7%, 1.3% 61.1%, 23% 50%, 8.1% 40.4%, 25.7% 38.3%, 10.9% 18.8%, 33.2% 28.9%, 31.3% 11.3%, 44% 23.7%);
+
+    /* Signature 4 — the mascot (components/Mascot.jsx, 2026-11-06). The rig
+       paints with these through styles/mascot.css. The violet is the icon's
+       own line and stays in every theme; eyes are white on the dark themes
+       and ink on the light ones, like the two 404 drawings. Gold on the
+       mascot keeps its rule: only on what was earned (crown, trophy, badge,
+       streak flame, the shiny sparkle). */
+    --mascot-brand: #B860F8;
+    --mascot-white: #F8F4FF;
+    --mascot-shiny: #5CC8FF;   /* the easter egg's alternate colour, like a shiny's */
+    --mascot-tile: #200048;
+    --mascot-line: var(--mascot-brand);
+    --mascot-eye: var(--mascot-white);
+    --mascot-fang: var(--mascot-white);
+    --mascot-fang-edge: transparent;
+    --mascot-glint: #FFFFFF;
+    --mascot-heart: #F95587;
+    --mascot-tear: color-mix(in srgb, #6390F0 45%, var(--mascot-glint));
+    --mascot-anger: color-mix(in srgb, #C22E28 70%, var(--mascot-glint));
+    --mascot-gold-ink: color-mix(in srgb, var(--brand-gold) 45%, var(--brand-ink));
+    --mascot-shadow: color-mix(in srgb, var(--brand-black) 35%, transparent);
+    --mascot-smoke: color-mix(in srgb, var(--color-muted) 70%, transparent);
+    --mascot-hat: color-mix(in srgb, var(--mascot-line) 22%, var(--color-surface));
+    --mascot-orb: color-mix(in srgb, var(--brand-ink) 78%, var(--mascot-line));
+    --mascot-sil: var(--mascot-glint);
+    --mascot-cape: color-mix(in srgb, var(--mascot-line) 30%, var(--color-surface));
+    --mascot-ledge: var(--color-surface-raised);
+    --mascot-tongue: color-mix(in srgb, #F95587 55%, var(--mascot-glint));
 }
 
 /* Light themes: the sticker's edge is the ink, its drop a softer ink, and
@@ -563,6 +591,13 @@
     --sticker-edge: var(--brand-ink);
     --sticker-drop: color-mix(in srgb, var(--brand-ink) 32%, transparent);
     --brand-live-text: #D6246F;
+    /* the mascot on a light surface: a deeper violet, ink eyes, outlined fangs */
+    --mascot-line: #A64CF0;
+    --mascot-eye: #3B1478;
+    --mascot-fang: var(--mascot-glint);
+    --mascot-fang-edge: var(--mascot-line);
+    --mascot-shadow: color-mix(in srgb, var(--brand-ink) 14%, transparent);
+    --mascot-sil: color-mix(in srgb, var(--mascot-line) 28%, var(--mascot-glint));
 }
 
 /* The sticker, as a class for the few objects that are not styled in their

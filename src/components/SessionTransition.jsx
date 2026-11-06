@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/auth-dialog.css';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from '../hooks/useTranslation';
-import { Loader } from './Loader';
+import { Mascot } from './Mascot';
 
 /**
  * The cover between two sessions (sign out, account deleted). It hides the
@@ -17,7 +17,8 @@ export function SessionTransition() {
     return (
         <div className="session-transition" role="alert" aria-live="assertive">
             <div className="session-transition__card">
-                <Loader size="lg" />
+                {/* Goodbye without guilt: he waves and vanishes, the ghost's exit. */}
+                <Mascot size="xl" framing="body" pose="acenando" mood={deleted ? 'aliviado' : undefined} play="vanish" />
                 <h2 className="session-transition__title">
                     {deleted ? t('modals.sessionDeletedTitle') : t('modals.sessionSignOutTitle')}
                 </h2>

@@ -172,9 +172,9 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, currentPokemon
                     </p>
 
                     {!pokemons ? (
-                        <Loader size="md" block label={t('modals.greetingSelectorLoadingHint')} />
+                        <Loader scene="pokedex" block label={t('modals.greetingSelectorLoadingHint')} />
                     ) : filtered.length === 0 ? (
-                        <EmptyState
+                        <EmptyState mascot="search"
                             compact
                             title={t('modals.greetingSelectorNoMatches')}
                             message={term ? t('modals.greetingSelectorNothingFound', { term: searchTerm.trim() }) : t('modals.greetingSelectorClearFilterHint')}

@@ -245,7 +245,7 @@ export function TypeDetailView() {
 
     if (!isType) {
         return (
-            <EmptyState
+            <EmptyState mascot="search"
                 title={t('db.noMatchesTitle')}
                 message={t('typesPage.notFound', { type: param })}
                 action={{ label: backLabel, onClick: goBack }}

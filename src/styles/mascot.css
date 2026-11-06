@@ -4,30 +4,183 @@
    surface, on the page the plain one — the parent owns any edge. Its tail is
    a small rotated square of the same fill, pointing at the mascot. */
 
+/* The drawing (components/Mascot.jsx, utils/mascot/rig.js, 2026-11-06). The
+   rig paints with --m-* only; they come from the --mascot-* tokens in
+   index.css' brand layer, so the mascot follows all ten themes, and a type
+   tone is one inline --m-line. Loops here are transform/opacity only and stop
+   under reduced motion; anything else that moves is a one-shot in JS. */
 .mascot {
-    display: block;
+    position: relative;
+    display: inline-block;
     flex-shrink: 0;
-    object-fit: contain;
+    width: 3rem;
+    height: 3rem;
+    line-height: 0;
     user-select: none;
-    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .mascot--xs { width: 1.5rem; height: 1.5rem; }
 .mascot--sm { width: 2.25rem; height: 2.25rem; }
 .mascot--md { width: 3rem; height: 3rem; }
 .mascot--lg { width: 4rem; height: 4rem; }
+.mascot--xl { width: 7.5rem; height: 7.5rem; }
+.mascot--hero { width: 11rem; height: 11rem; }
+.mascot--fill { width: 100%; height: auto; max-width: 100%; aspect-ratio: 1; }
 
-/* One hop for a moment the trainer earned — a reward, so it may spring. */
-.mascot.is-cheering { animation: mascot-cheer var(--duration-pop, 320ms) var(--ease-spring, ease-out) 1; }
-
-@keyframes mascot-cheer {
-    0%   { translate: 0 0; scale: 1; }
-    40%  { translate: 0 calc(var(--space-2) * -1); scale: 1.06; }
-    100% { translate: 0 0; scale: 1; }
+.mascot__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    --m-line: var(--mascot-line);
+    --m-eye: var(--mascot-eye);
+    --m-fang: var(--mascot-fang);
+    --m-fang-edge: var(--mascot-fang-edge);
+    --m-mouth: var(--m-line);
+    --m-blush: var(--m-line);
+    --m-fill: transparent;
+    --m-bg: var(--mascot-bg, var(--color-surface));
+    --m-glint: var(--mascot-glint);
+    --m-heart: var(--mascot-heart);
+    --m-tear: var(--mascot-tear);
+    --m-anger: var(--mascot-anger);
+    --m-gold: var(--brand-gold);
+    --m-gold-ink: var(--mascot-gold-ink);
+    --m-live: var(--brand-live);
+    --m-shadow: var(--mascot-shadow);
+    --m-smoke: var(--mascot-smoke);
+    --m-hat: var(--mascot-hat);
+    --m-shade: var(--brand-ink);
+    --m-orb: var(--mascot-orb);
+    --m-sil: var(--mascot-sil);
+    --m-cape: var(--mascot-cape);
+    --m-ledge: var(--mascot-ledge);
+    --m-tongue: var(--mascot-tongue);
+    --m-tone-mix: var(--color-fg);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .mascot.is-cheering { animation: none; }
+.mascot.is-interactive { cursor: pointer; touch-action: manipulation; }
+.mascot.is-playground { cursor: grab; touch-action: none; }
+.mascot.is-playground:active { cursor: grabbing; }
+.mascot.is-playground:focus-visible { outline: none; border-radius: var(--radius-lg); box-shadow: var(--ring-logo); }
+
+/* What the playground says (decorative; the page around it carries meaning). */
+.mascot__bubble {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    z-index: 1;
+    margin-bottom: var(--space-1);
+    padding: var(--space-1_5) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--color-fg);
+    color: var(--color-bg);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    translate: -50% 0;
+    opacity: 0;
+    scale: 0.9;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-smooth), scale var(--duration-pop) var(--ease-pop);
+}
+.mascot__bubble.is-on { opacity: 1; scale: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .mascot.is-breathe .mascot__svg,
+    .mascot[data-mode='sleep'] .mascot__svg { transform-origin: 50% 85%; animation: mascot-breathe 3.2s var(--ease-smooth) infinite; }
+    .mascot[data-mode='sleep'] .mascot__svg { animation-duration: 2.6s; }
+    .mascot.is-float .mascot__svg { animation: mascot-float 2.4s var(--ease-smooth) infinite; }
+
+    /* The effects the rig draws at rest (`m-loop`): Zzz, thinking dots, sparkles, hearts, the loader's ball. */
+    .mascot .m-loop {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation-duration: var(--m-dur);
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        animation-fill-mode: both;
+        animation-delay: calc(var(--i, 0) * var(--m-stagger, 0s));
+    }
+    .mascot .m-z { --m-dur: 2.6s; --m-stagger: -0.866s; animation-name: mascot-z; }
+    .mascot .m-dot { --m-dur: 1.2s; --m-stagger: 0.2s; animation-name: mascot-dot; }
+    .mascot .m-spark { --m-dur: 1.4s; --m-stagger: -0.28s; animation-name: mascot-spark; }
+    .mascot .m-heart { --m-dur: 1.8s; --m-stagger: -0.6s; animation-name: mascot-heart; }
+    .mascot .m-wobble { --m-dur: 2.8s; transform-origin: 50% 100%; animation-name: mascot-wobble; animation-timing-function: var(--ease-smooth); }
+
+    /* The loader scenes (Loader.jsx): a Shadow Ball still charging, a Pokédex
+       page turning while the eyes read it, a lens sweeping with the eyes on it.
+       A scene's prop and its eyes share one duration, so they stay in step. */
+    .mascot .m-orb-glow { --m-dur: 1.4s; animation-name: mascot-orb-glow; animation-timing-function: var(--ease-smooth); }
+    .mascot .m-orb-swirl { --m-dur: 1.6s; animation-name: mascot-spin; }
+    .mascot .m-page { --m-dur: 3s; transform-origin: 0% 50%; animation-name: mascot-page; animation-timing-function: var(--ease-smooth); }
+    .mascot .m-gaze-read { --m-dur: 3s; animation-name: mascot-gaze-read; }
+    .mascot .m-sweep { --m-dur: 2.4s; animation-name: mascot-sweep; animation-timing-function: var(--ease-smooth); }
+    .mascot .m-gaze-follow { --m-dur: 2.4s; animation-name: mascot-gaze-follow; animation-timing-function: var(--ease-smooth); }
+
+    /* The boot splash: the icon pops in, its sparks a beat later, then one blink. */
+    .mascot-icon .mascot__svg { animation: mascot-pop var(--duration-pop) var(--ease-pop) both, mascot-fade-in var(--duration-fast) var(--ease-smooth) both; animation-delay: var(--mascot-delay, 0ms); }
+    .mascot-icon .m-sparks { transform-box: fill-box; transform-origin: 0% 100%; animation: mascot-pop var(--duration-pop) var(--ease-pop) both, mascot-fade-in var(--duration-fast) var(--ease-smooth) both; animation-delay: calc(var(--mascot-delay, 0ms) + 260ms); }
+    .mascot-icon .m-eyes { transform-box: fill-box; transform-origin: center; animation: mascot-blink 220ms var(--ease-smooth) both; animation-delay: calc(var(--mascot-delay, 0ms) + 1100ms); }
+}
+
+@keyframes mascot-breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-1.2%) scale(0.99, 1.02); } }
+@keyframes mascot-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+@keyframes mascot-z { 0% { opacity: 0; transform: translate(0, 0) scale(0.8); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(90px, -190px) scale(1.5); } }
+@keyframes mascot-dot { 0%, 100% { opacity: 0.25; } 30%, 60% { opacity: 1; } }
+@keyframes mascot-spark { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+@keyframes mascot-heart { 0% { opacity: 0; transform: translate(0, 40px) scale(0.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(0, -150px) scale(1.15); } }
+/* Three wobbles with pauses — the rhythm of a throw — like the Poké Ball Loader. */
+@keyframes mascot-wobble {
+    0%, 7% { transform: rotate(0deg); } 11% { transform: rotate(-16deg); } 17% { transform: rotate(14deg); } 21%, 36% { transform: rotate(0deg); }
+    40% { transform: rotate(-16deg); } 46% { transform: rotate(14deg); } 50%, 64% { transform: rotate(0deg); }
+    68% { transform: rotate(-16deg); } 74% { transform: rotate(14deg); } 79%, 100% { transform: rotate(0deg); }
+}
+@keyframes mascot-orb-glow { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+@keyframes mascot-spin { to { transform: rotate(360deg); } }
+/* Turns over the spine, then fades into the left page; back on the right one it
+   matches the page under it exactly, so the reset is invisible. */
+@keyframes mascot-page {
+    0%, 54% { opacity: 1; transform: scaleX(1); }
+    74% { opacity: 1; transform: scaleX(-1); }
+    88% { opacity: 0; transform: scaleX(-1); }
+    89% { opacity: 0; transform: scaleX(1); }
+    100% { opacity: 1; transform: scaleX(1); }
+}
+/* Two lines read, then back to the top of the new page as it turns. */
+@keyframes mascot-gaze-read {
+    0% { transform: translateX(-20px); } 24% { transform: translateX(20px); } 28% { transform: translateX(-20px); }
+    52% { transform: translateX(20px); } 62%, 100% { transform: translateX(-20px); }
+}
+@keyframes mascot-sweep { 0%, 100% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(-92px) rotate(-10deg); } }
+@keyframes mascot-gaze-follow { 0%, 100% { transform: translateX(6px); } 50% { transform: translateX(-24px); } }
+@keyframes mascot-pop { from { transform: scale(0.55); } to { transform: scale(1); } }
+@keyframes mascot-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mascot-blink { 0%, 100% { transform: scaleY(1); } 40%, 55% { transform: scaleY(0.12); } }
+
+/* The icon's own room: the plum tile, dark in every theme (like the app icon). */
+.mascot-stage {
+    --mascot-line: var(--mascot-brand);
+    --mascot-eye: var(--mascot-white);
+    --mascot-fang: var(--mascot-white);
+    --mascot-fang-edge: transparent;
+    --mascot-bg: var(--mascot-tile);
+    --mascot-hat: color-mix(in srgb, var(--mascot-brand) 24%, var(--mascot-tile));
+    --mascot-ledge: color-mix(in srgb, var(--mascot-brand) 12%, var(--mascot-tile));
+    --mascot-shadow: color-mix(in srgb, var(--brand-black) 40%, transparent);
+    --mascot-sil: var(--mascot-glint);
+    --color-fg: var(--mascot-white);
+    --color-bg: var(--mascot-tile);
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-xl);
+    background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--mascot-brand) 18%, var(--mascot-tile)) 0, var(--mascot-tile) 66%);
+    color: var(--mascot-white);
 }
 
 .mascot-tip {
@@ -122,3 +275,25 @@
     width: 1rem;
     height: 1rem;
 }
+
+/* The 404 (views/NotFoundView.jsx): 4, the mascot as the 0, 4 — in his own violet. */
+.mascot-404 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+}
+.mascot-404__digit {
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 17vw, 8.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--mascot-line);
+}
+.mascot-404 .mascot { width: clamp(8rem, 36vw, 11rem); height: clamp(8rem, 36vw, 11rem); }
+
+/* The boot splash's icon: as large as the raster mark was, popping in with
+   the splash itself (which fades in after 300 ms, app-shell.css). */
+.mascot.boot-splash__mascot { width: 7rem; height: 7rem; --mascot-delay: 300ms; }

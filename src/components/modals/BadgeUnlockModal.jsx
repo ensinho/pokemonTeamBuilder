@@ -72,7 +72,7 @@ export function BadgeUnlockModal() {
                     <p id="badge-unlock-desc" className="modal-subtitle">{badgeDesc}</p>
                     {/* A finished journey is the big moment: the mascot says what is next. */}
                     {newlyUnlockedBadge.category === 'journey' && (
-                        <MascotTip cheer className="badge-unlock__tip">
+                        <MascotTip pose="segurandoInsignia" mood="empolgado" play="jump" className="badge-unlock__tip">
                             {newlyUnlockedBadge.journeyId === 'league' ? t('journeys.allDoneSub') : t('journeys.unlockTip')}
                         </MascotTip>
                     )}

@@ -748,7 +748,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
                     {isLoadingIndex ? (
                         <div className="generation-quiz__loading-state">
-                            <Loader />
+                            <Loader scene="think" />
                         </div>
                     ) : (
                         <div className="generation-quiz__start-card">

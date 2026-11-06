@@ -735,7 +735,7 @@ export function CategoryGuesserView({ showDetails }) {
                     <div className="category-guesser__grid-wrapper">
                         {isLoadingIndex ? (
                             <div className="category-guesser__loading-state">
-                                <Loader />
+                                <Loader scene="think" />
                             </div>
                         ) : (
                             <div className="category-guesser__grid">

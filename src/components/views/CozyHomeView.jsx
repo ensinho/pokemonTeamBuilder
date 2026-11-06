@@ -868,7 +868,7 @@ export function CozyHomeView({
     const journeyFocus = emphasis === 'focus' && (
         <Panel title={t('journeys.home.title')} action={seeJourneys}>
             <div className="journey-home">
-                {isBrandNew && <MascotTip>{t('journeys.home.welcome')}</MascotTip>}
+                {isBrandNew && <MascotTip pose="acenando" play="wave">{t('journeys.home.welcome')}</MascotTip>}
                 <div className="journey-home__head">
                     <JourneyTile journey={level} isCurrent />
                     <span className="journey__text">

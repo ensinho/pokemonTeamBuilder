@@ -59,7 +59,7 @@ export function TournamentsView({ onOpenTeam }) {
 
     if (status === 'loading') {
         return (
-            <Loader size="lg" block />
+            <Loader size="lg" scene="pokedex" block />
         );
     }
 

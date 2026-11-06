@@ -113,7 +113,7 @@ export function TrainerSpriteSelectorModal({ onClose, onSelect, currentSpriteId,
                 )}
 
                 {visibleTrainers.length === 0 ? (
-                    <EmptyState
+                    <EmptyState mascot="search"
                         compact
                         title={t('modals.trainerSelectorNoMatches')}
                         message={trainers.length === 0

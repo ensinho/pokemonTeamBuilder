@@ -30,6 +30,10 @@ import { useThemeStore } from '../../store/useThemeStore';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
+import { Mascot } from '../Mascot';
+import { useMascotStore } from '../../store/useMascotStore';
+import { TONES as MASCOT_TONES } from '../../utils/mascot/constants';
+import { typeColors } from '../../constants/typeChart';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { AccountSecurityModal } from '../modals/AccountSecurityModal';
 import {
@@ -173,6 +177,67 @@ const TrainerProfileSection = () => {
                     {persona ? t('onboarding.profile.redo') : t('onboarding.profile.setup')}
                 </button>
             </SettingRow>
+        </Section>
+    );
+};
+
+// The faces offered beside the playground: one tap shows each mood on the big one.
+const MASCOT_MOODS = ['feliz', 'animado', 'travesso', 'apaixonado', 'pensando', 'surpreso', 'determinado', 'sonolento'];
+
+/**
+ * The mascot's room (2026-11-06): the full playground — pet it, hold it for a
+ * Shadow Ball, drag it, tap the sparks three times — plus what this device
+ * keeps: his colour (the icon's violet, the persona's type, any of the 18
+ * types, or shiny once found) and whether he reacts and celebrates on his own.
+ */
+const MascotSection = () => {
+    const { t } = useTranslation();
+    const prefs = useMascotStore((s) => s.prefs);
+    const setPrefs = useMascotStore((s) => s.setPrefs);
+    const trainerProfile = useAuthStore((s) => s.trainerProfile);
+    const personaTone = derivePersona(trainerProfile)?.tone || null;
+    const [mood, setMood] = useState('feliz');
+    const tones = ['brand', ...(personaTone ? ['persona'] : []), ...MASCOT_TONES, ...(prefs.shinyFound ? ['shiny'] : [])];
+    const toneLabel = (k) => (k === 'brand' ? t('profile.mascotToneBrand')
+        : k === 'persona' ? t('profile.mascotTonePersona', { type: t(`types.${personaTone}`, { defaultValue: personaTone }) })
+            : k === 'shiny' ? t('profile.mascotToneShiny') : t(`types.${k}`, { defaultValue: k }));
+    const toneSwatch = (k) => (k === 'brand' ? 'var(--mascot-brand)' : k === 'persona' ? typeColors[personaTone] : k === 'shiny' ? 'var(--mascot-shiny)' : typeColors[k]);
+
+    return (
+        <Section title={t('profile.sectionMascot')} description={t('profile.sectionMascotDesc')}>
+            <div className="profile-mascot">
+                <div className="mascot-stage profile-mascot__stage">
+                    <Mascot size="fill" mood={mood} playground stage loop="breathe" label={t('mascot.label')} />
+                </div>
+                <div className="profile-mascot__side">
+                    <p className="profile-mascot__try">{t('profile.mascotTry')}</p>
+                    <div className="profile-mascot__moods" role="group" aria-label={t('profile.mascotMoods')}>
+                        {MASCOT_MOODS.map((m) => (
+                            <button key={m} type="button" className="profile-mascot__mood" aria-pressed={mood === m} onClick={() => setMood(m)} title={t(`mascot.moods.${m}`)}>
+                                <Mascot size="sm" mood={m} seasonal={false} />
+                                <span className="sr-only">{t(`mascot.moods.${m}`)}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="profile-row profile-row--stacked">
+                <span className="profile-row__label">{t('profile.mascotTone')}</span>
+                <div className="profile-mascot__tones" role="group" aria-label={t('profile.mascotTone')}>
+                    {tones.map((k) => (
+                        <button key={k} type="button" className="mascot-tone" style={{ '--tone': toneSwatch(k) }} aria-pressed={prefs.tone === k} onClick={() => setPrefs({ tone: k })}>
+                            {toneLabel(k)}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <Switch
+                variant="row"
+                checked={prefs.reactions}
+                onChange={(next) => setPrefs({ reactions: next })}
+                label={t('profile.mascotReactions')}
+                description={t('profile.mascotReactionsDesc')}
+            />
         </Section>
     );
 };
@@ -781,6 +846,7 @@ export function ProfileView({
                                 </div>
                             </DisclosureRow>
                         </Section>
+                        <MascotSection />
                     </>
                 )}
 

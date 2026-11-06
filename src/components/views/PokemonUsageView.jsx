@@ -142,7 +142,7 @@ export function PokemonUsageView() {
                     <span className="hidden sm:inline">{backLabel}</span>
                     <span className="sm:hidden">{pt ? 'Voltar' : 'Back'}</span>
                 </button>
-                <EmptyState title={pt ? 'Pokémon não encontrado' : 'Pokémon not found'} message={pt ? 'Verifique o endereço.' : 'Check the URL.'} />
+                <EmptyState mascot="lost" title={pt ? 'Pokémon não encontrado' : 'Pokémon not found'} message={pt ? 'Verifique o endereço.' : 'Check the URL.'} />
             </main>
         );
     }

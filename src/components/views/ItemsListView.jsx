@@ -105,7 +105,7 @@ export function ItemsListView() {
             </div>
 
             {isLoadingIndex ? (
-                <Loader size="lg" block />
+                <Loader size="lg" scene="pokedex" block />
             ) : total === 0 && referenceStatus === 'error' ? (
                 <EmptyState
                     compact

@@ -2,6 +2,40 @@
 // a visitor downloads only the language they read, never both. The server and
 // the tests read both tables through src/constants/translations.js.
 export default {
+    mascot: {
+        label: 'Mascote do PokemonBuilder. Enter para um pulinho.',
+        online: 'Conectado de novo.',
+        offline: {
+            title: 'Sem sinal.',
+            body: 'Seus times salvos continuam aqui.',
+        },
+        bubble: {
+            wake: 'Hã?! Tô acordado!',
+            charge: 'Shadow Ball…',
+            shadowBall: 'Shadow Ball!',
+            again: 'Eba, de novo!',
+            bite: 'Ei! Essas presas mordem.',
+            shiny: 'Shiny!',
+            unshiny: 'De volta ao normal.',
+            angry: 'Ei! Calma aí!',
+            back: 'Tá bom, voltei.',
+            tired: 'Chega de carinho por hoje!',
+            pet1: 'Hehe',
+            pet2: 'Mais!',
+            pet3: 'Aí sim',
+            pet4: 'Que bom…',
+        },
+        moods: {
+            feliz: 'Feliz',
+            animado: 'Animado',
+            travesso: 'Travesso',
+            apaixonado: 'Apaixonado',
+            pensando: 'Pensando',
+            surpreso: 'Surpreso',
+            determinado: 'Determinado',
+            sonolento: 'Sonolento',
+        },
+    },
     supportNudge: {
         title: 'Curtiu essa?',
         description: 'O PokemonBuilder é gratuito e feito por um fã. Um café me ajuda a criar mais ideias e continuar construindo.',
@@ -1227,6 +1261,16 @@ export default {
         },
     },
     profile: {
+        sectionMascot: 'Mascote',
+        sectionMascotDesc: 'O fantasminha do ícone. A cor e as reações valem para este aparelho.',
+        mascotTry: 'Experimente: clique, dê dois cliques, segure para uma Shadow Ball, esfregue o topo da cabeça, arraste, ou toque três vezes nas faíscas.',
+        mascotMoods: 'Humores do mascote',
+        mascotTone: 'Cor do mascote',
+        mascotToneBrand: 'Roxo do ícone',
+        mascotTonePersona: 'Da sua persona ({{type}})',
+        mascotToneShiny: 'Shiny',
+        mascotReactions: 'Reações e comemorações',
+        mascotReactionsDesc: 'Ele pula quando você salva, comemora o time completo e respira enquanto espera. Desligado, fica parado até você tocar nele.',
         settingTheme: 'Tema',
         title: 'Cartão de Treinador & preferências',
         trainerProfile: 'Perfil de treinador',

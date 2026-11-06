@@ -27,13 +27,14 @@ Journeys the trainer profile points at wear a "Para você" tag (`recommendedJour
 
 ## The mascot (`src/components/Mascot.jsx`)
 
-The favicon's Gengar (`public/logo-mark.webp`) is the voice of tips and big
-moments: `<Mascot size>` alone, or `<MascotTip>` (mascot + speech bubble — a
-fill, never a box; inside a card it takes the raised surface). Used by the
-PageGuide trigger and popover, the mission guide (with a check when done), the
-Home's welcome, the Journeys page lead and all-done state, and the badge modal
-when a journey finishes. `cheer` plays one hop — only for something the
-trainer just earned.
+The icon's ghost, drawn live since 2026-11-06 ([mascot.md](./mascot.md)), is
+the voice of tips and big moments: `<Mascot>` alone, or `<MascotTip>` (mascot
++ speech bubble — a fill, never a box; inside a card it takes the raised
+surface). Used by the PageGuide trigger and popover, the mission guide (it
+jumps when a guided mission is done), the Home's welcome (it waves), the
+Journeys page lead (crowned, and still, when every journey is done — one
+mascot per screen, so the lead says it) and the badge modal (it holds the
+badge). `cheer` / `play` are only for something the trainer just did.
 
 ## The Champion Challenge record (level 6, 2026-11-05)
 

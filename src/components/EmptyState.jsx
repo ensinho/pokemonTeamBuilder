@@ -1,6 +1,16 @@
 import React from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
-import { GengarPresence } from './GengarPresence';
+import { Mascot } from './Mascot';
+
+// The mascot's face for each kind of nothing (2026-11-06; before, the official
+// Gengar sprite). `empty` peeks over the edge; `search` shrugs; `lost` is the
+// 404's face; `error` worries. The words below still carry the message.
+const FACES = {
+    empty: { pose: 'espiando' },
+    search: { pose: 'dandoDeOmbros', mood: 'desconfiado', loop: 'float' },
+    lost: { pose: 'pataNoQueixo', mood: 'perdido', loop: 'float' },
+    error: { mood: 'preocupado', loop: 'float' },
+};
 
 /**
  * EmptyState — friendly empty/error placeholder.
@@ -10,14 +20,15 @@ import { GengarPresence } from './GengarPresence';
  *   title     — required short headline
  *   message   — secondary copy
  *   action    — optional { label, onClick, icon } primary CTA (icon renders after the label)
- *   spriteSrc — optional context sprite; when omitted, shows the signature
- *               floating Gengar (the app's default "nothing here" mascot)
+ *   spriteSrc — optional context sprite; when omitted, shows the mascot
+ *   mascot    — which face it makes: 'empty' (default) | 'search' | 'lost' | 'error'
  *   compact   — smaller variant for inline empty grids
  *
  * Box-free at every width (v3): the page is the canvas, so an empty view is the
- * page speaking — the Gengar, a heading, a line, one action.
+ * page speaking — the mascot, a heading, a line, one action.
  */
-export function EmptyState({ title, message, action, spriteSrc, compact = false }) {
+export function EmptyState({ title, message, action, spriteSrc, compact = false, mascot = 'empty' }) {
+    const face = FACES[mascot] || FACES.empty;
     const sizeImg = compact ? 'w-16 h-16' : 'w-24 h-24 md:w-32 md:h-32';
 
     return (
@@ -32,7 +43,7 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false 
                         onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                     />
                 ) : (
-                    <GengarPresence variant="idle" size={compact ? 72 : 116} />
+                    <Mascot size={compact ? 'lg' : 'xl'} framing="body" mood={face.mood} pose={face.pose} loop={face.loop} interactive stage />
                 )}
             </div>
             <h3 className="empty-state__title">{title}</h3>

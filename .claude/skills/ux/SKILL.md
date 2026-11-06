@@ -102,9 +102,10 @@ Answer each line in the PR/report. "N/A" is a valid answer; silence is not.
 ### 5. Loading
 - [ ] **< 1 s: no indicator.** A loader that flashes for 200 ms reads as a glitch.
       Delay showing it **150–300 ms**; once shown keep it **≥ 300–500 ms** (Vercel
-      WIG). The boot splash (`.boot-splash`) and the route fallback
-      (`.route-fallback`) already fade in late; for any other loader use the
-      same `animation-delay` pattern from `app-shell.css`.
+      WIG). The boot splash (`.boot-splash`) and every `<Loader>` scene (`md`/
+      `lg`, the route fallback included) already fade in late, and a scene that
+      takes over from one on screen shows at once (`is-handoff`); for any other
+      loader use the same `animation-delay` pattern (`.loader--scene`).
 - [ ] **1–10 s:** full view → skeleton that **mirrors the final layout exactly**
       (same boxes, same heights, so CLS = 0); one module → `<Loader>`.
       **> 10 s:** determinate progress + cancel (NN/g).

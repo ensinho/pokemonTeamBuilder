@@ -1197,7 +1197,7 @@ export function TeamBuilderView({
                                     {!isGameFilterActive && !isTierFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><Loader size="sm" /></div>}
                                     {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isGridLoading && (
                                         <div className="px-2 pb-4">
-                                            <EmptyState
+                                            <EmptyState mascot="search"
                                                 compact
                                                 title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
                                                 message={t('favorites.noMatchesDesc')}

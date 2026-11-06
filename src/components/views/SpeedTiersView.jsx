@@ -147,7 +147,7 @@ export function SpeedTiersView({ generations = [] }) {
 
             {isIndexLoading && pokemonIndex.length === 0 ? (
                 <div className="team-builder-spinner-wrap" style={{ minHeight: '40vh' }}>
-                    <Loader />
+                    <Loader scene="pokedex" />
                 </div>
             ) : ranked.length === 0 ? (
                 <EmptyState
