@@ -3,7 +3,7 @@ import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useMissionLauncher } from '../../hooks/useJourneys';
 import { getBadgeById } from '../../constants/badges';
-import { currentJourney, personaJourneyFilter } from '../../utils/journeys';
+import { currentJourney, isChapterOpen, personaJourneyFilter } from '../../utils/journeys';
 import { derivePersona, hasAnsweredProfile, recommendedJourneyIds } from '../../utils/trainerProfile';
 import { XP_RULES } from '../../utils/trainerLevel';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -89,7 +89,7 @@ function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
                 <JourneyTile journey={journey} isCurrent={isCurrent} />
                 <span className="journey__text">
                     <span className="journey__level">
-                        {journey.persona ? t('journeys.personaTag') : t('journeys.level', { n: journey.level })}
+                        {journey.persona ? (journey.chapter === 2 ? t('journeys.chapterTwo') : t('journeys.personaTag')) : t('journeys.level', { n: journey.level })}
                         {isRecommended && !journey.isComplete && (
                             <span className="badge badge--primary journey__for-you">{t('onboarding.forYou')}</span>
                         )}
@@ -161,7 +161,7 @@ export function JourneyList({ journeys, personaJourneys = [] }) {
                             ? t('journeys.personaSectionMaster')
                             : t('journeys.personaSection', { persona: t(`onboarding.personas.${persona.id}.name`) })}
                     </h2>
-                    {mine.map((journey) => (
+                    {mine.map((journey) => (isChapterOpen(journey, personaJourneys) ? (
                         <JourneyCard
                             key={journey.id}
                             journey={journey}
@@ -170,7 +170,19 @@ export function JourneyList({ journeys, personaJourneys = [] }) {
                             isOpen={openIds.has(journey.id)}
                             onToggle={() => toggle(journey.id)}
                         />
-                    ))}
+                    ) : (
+                        // The next stage of the line, as a silhouette until it evolves.
+                        <div key={journey.id} className="card card--flush journey is-locked">
+                            <div className="journey__head">
+                                <JourneyTile journey={journey} isCurrent={false} />
+                                <span className="journey__text">
+                                    <span className="journey__level">{t('journeys.chapterTwo')}</span>
+                                    <span className="journey__title">{t(`journeys.list.${journey.id}.title`)}</span>
+                                    <span className="journey__sub">{t('journeys.chapterLocked')}</span>
+                                </span>
+                            </div>
+                        </div>
+                    )))}
                 </>
             )}
         </div>

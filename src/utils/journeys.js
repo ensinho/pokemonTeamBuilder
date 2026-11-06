@@ -44,6 +44,20 @@ export const JOURNEY_MARKS = [
     'challengePlayed',  // started a Champion Challenge run
     'threatsViewed',    // opened the builder's meta threats with a team on it
     'playthroughTeam',  // built in playthrough mode (no format), a run's team
+    // The social chapter (2026-11-06, docs/plans/social-heart.md E)
+    'weeklyEntry',      // entered a team in the Torneio da semana
+    'teamRated',        // gave a verdict on someone's shared team
+    'questionAsked',    // opened a question in Pergunte ao Professor
+    'acceptedAnswer',   // an answer of yours was accepted (read by socialRecord)
+    'badgeCaseShared',  // shared the Badge Case on the forum
+    'adventureReply',   // answered someone's adventure
+    'diaryShare',       // shared a result in the Diário do dia
+    'diaryReact',       // reacted to something in the Diário do dia
+    'beatFriend',       // above a friend on a Champion board (Sua liga)
+    'quizDuelWon',      // beat the mark of a quiz duel
+    'podium',           // a Champion podium (top 3) of the day
+    'weeklyChampion',   // won a week's tournament (socialRecord)
+    'seasonPodium',     // top 3 of a Champion week (socialRecord)
 ];
 
 const has = (facts, mark) => Boolean(facts.marks?.[mark]);
@@ -203,6 +217,57 @@ export const PERSONA_JOURNEYS = [
             { id: 'pChampionWin', to: '/challenge', done: (f) => challengeWins(f) >= 1 },
         ],
     },
+    // ── Chapter 2: the social one (2026-11-06, docs/plans/social-heart.md E).
+    // The next stage of the evolution line: it opens once chapter 1 is done
+    // (JourneyList), and walks each persona into the Centro Pokémon.
+    {
+        id: 'persona-strategist-2',
+        persona: 'strategist',
+        chapter: 2,
+        badgeId: 'badge_persona_strategist_2',
+        missions: [
+            { id: 'p2WeeklyEntry', to: '/feed?cat=teams', done: (f) => has(f, 'weeklyEntry') },
+            { id: 'p2QuestionAsked', to: '/feed?cat=questions', done: (f) => has(f, 'questionAsked') },
+            { id: 'p2TeamRated', to: '/feed?cat=teams', done: (f) => has(f, 'teamRated') },
+            { id: 'p2AcceptedAnswer', to: '/feed?cat=questions', done: (f) => has(f, 'acceptedAnswer') },
+        ],
+    },
+    {
+        id: 'persona-traveler-2',
+        persona: 'traveler',
+        chapter: 2,
+        badgeId: 'badge_persona_traveler_2',
+        missions: [
+            { id: 'p2CaseShared', to: '/', done: (f) => has(f, 'badgeCaseShared') },
+            { id: 'p2AdventureReply', to: '/feed?cat=adventures', done: (f) => has(f, 'adventureReply') },
+            { id: 'p2DiaryReact', to: '/feed?cat=diary', done: (f) => has(f, 'diaryReact') },
+            { id: 'p2CaseComplete', to: '/', done: (f) => Boolean(f.badgeCaseFull) },
+        ],
+    },
+    {
+        id: 'persona-challenger-2',
+        persona: 'challenger',
+        chapter: 2,
+        badgeId: 'badge_persona_challenger_2',
+        missions: [
+            { id: 'p2DiaryShare', to: '/pokepuzzle', done: (f) => has(f, 'diaryShare') },
+            { id: 'p2QuizDuelWon', to: '/quiz', done: (f) => has(f, 'quizDuelWon') },
+            { id: 'p2BeatFriend', to: '/challenge', done: (f) => has(f, 'beatFriend') },
+            { id: 'p2Podium', to: '/challenge', done: (f) => has(f, 'podium') },
+        ],
+    },
+    {
+        id: 'persona-master-2',
+        persona: 'master',
+        chapter: 2,
+        badgeId: 'badge_persona_master_2',
+        missions: [
+            { id: 'p2mWeekly', to: '/feed?cat=teams', done: (f) => has(f, 'weeklyEntry') },
+            { id: 'p2mCase', to: '/', done: (f) => has(f, 'badgeCaseShared') },
+            { id: 'p2mFriend', to: '/challenge', done: (f) => has(f, 'beatFriend') },
+            { id: 'p2mDiary', to: '/feed?cat=diary', done: (f) => has(f, 'diaryShare') },
+        ],
+    },
 ];
 
 export const JOURNEYS_BY_ID = Object.fromEntries([...JOURNEYS, ...PERSONA_JOURNEYS].map((journey) => [journey.id, journey]));
@@ -226,6 +291,7 @@ const evaluate = (list, facts) =>
             id: journey.id,
             badgeId: journey.badgeId,
             persona: journey.persona || null,
+            chapter: journey.chapter || 1,
             level: index + 1,
             missions,
             doneCount,
@@ -241,8 +307,20 @@ export const evaluateJourneys = (facts = {}) => evaluate(JOURNEYS, facts);
 export const evaluatePersonaJourneys = (facts = {}) => evaluate(PERSONA_JOURNEYS, facts);
 
 /** Which persona journeys a trainer is shown: theirs, or all three for the Master. */
-export const personaJourneyFilter = (personaId) => (journey) =>
-    Boolean(personaId) && (personaId === 'master' || journey.persona === personaId);
+export const personaJourneyFilter = (personaId) => (journey) => {
+    if (!personaId) return false;
+    if (journey.chapter === 2) return journey.persona === personaId;
+    return personaId === 'master' || journey.persona === personaId;
+};
+
+/** A chapter 2 opens when its chapter 1 is done (the Master's, when any one is). */
+export const isChapterOpen = (journey, journeys = []) => {
+    if (journey.chapter !== 2) return true;
+    const firsts = journeys.filter((j) => j.chapter !== 2);
+    return journey.persona === 'master'
+        ? firsts.some((j) => j.isComplete)
+        : firsts.some((j) => j.persona === journey.persona && j.isComplete);
+};
 
 /**
  * The journey the trainer is on: the first one not finished. Levels are an

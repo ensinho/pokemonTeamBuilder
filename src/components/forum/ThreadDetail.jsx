@@ -8,6 +8,15 @@ import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, HeartIcon, MessageIcon, ShareIcon, SparklesIcon } from '../icons';
+import { ReactionBar } from './ReactionBar';
+import { useFriendsStore } from '../../store/useFriendsStore';
+import { DiaryBanner } from './DiaryBanner';
+import { WeeklyBanner } from './WeeklyBanner';
+import { RatingVerdict } from './RatingVerdict';
+import { BadgeCaseCard } from './BadgeCaseCard';
+import { isCurrentWeekly, isWeeklyTopic } from '../../utils/forumWeekly';
+import { isDiaryTopic, isSilhouetteDay, isTodayDiary, namesAnswer, silhouetteOfDay } from '../../utils/forumDiary';
+import { useReferenceStore } from '../../store/useReferenceStore';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
 import { ChallengeShareCard } from '../ChallengeShareCard';
@@ -53,12 +62,39 @@ export function ThreadDetail({
     hasOlder = false,
     onLoadOlder,
     onLikeTopic,
+    onReactTopic,
     onShareTopic,
     focusCommentId = null,
 }) {
-    const isChat = isPinnedTopic(topic);
-    const opMessage = messages.length > 0 ? messages[0] : null;
-    const comments = useMemo(() => (messages.length > 1 ? messages.slice(1) : []), [messages]);
+    // The day's and the week's rooms are opened by the system with no first
+    // message: every message there is a comment, in a thread — not a chat
+    // that follows the newest line (2026-11-06).
+    const isRoom = isDiaryTopic(topic) || isWeeklyTopic(topic);
+    const isChat = isPinnedTopic(topic) && !isRoom;
+    const opMessage = !isRoom && messages.length > 0 ? messages[0] : null;
+    // Quem é esse Pokémon? on the diary's Sundays (social-heart D4): revealed
+    // once you named it yourself, or once the day is over.
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const isSilhouetteThread = isDiaryTopic(topic) && isSilhouetteDay(topic.dayKey);
+    useEffect(() => {
+        if (isSilhouetteThread) useReferenceStore.getState().fetchPokemonIndex();
+    }, [isSilhouetteThread]);
+    const silhouette = useMemo(() => {
+        if (!isDiaryTopic(topic) || !isSilhouetteDay(topic.dayKey)) return null;
+        const id = silhouetteOfDay(topic.dayKey);
+        const name = (pokemonIndex || []).find((p) => p.id === id)?.name || null;
+        if (!name) return null;
+        const answered = messages.some((m) => m.createdBy === userId && namesAnswer(m.text, name));
+        return { id, name: name.replace(/-/g, ' '), raw: name, revealed: answered || !isTodayDiary(topic) };
+    }, [topic, pokemonIndex, messages, userId]);
+    // Who can be @mentioned: the thread's voices, then friends (no network).
+    const friends = useFriendsStore((s) => s.friends);
+    const mentionCandidates = useMemo(() => [
+        ...[...messages].reverse().map((m) => m.creatorName),
+        topic.creatorName,
+        ...(friends || []).map((f) => f.displayName),
+    ].filter((name) => name && name !== 'Professor Oak'), [messages, topic.creatorName, friends]);
+    const comments = useMemo(() => (isRoom ? messages : (messages.length > 1 ? messages.slice(1) : [])), [messages, isRoom]);
     const [commentSort, setCommentSort] = useState('old');
 
     // The post's vote: the topic's likes plus, for posts from before
@@ -194,7 +230,11 @@ export function ThreadDetail({
 
                     <h1 ref={titleRef} className="thread-post__title">{topic.title}</h1>
 
-                    {bodyText && <p className="thread-post__text">{bodyText}</p>}
+                    {isDiaryTopic(topic)
+                        ? <DiaryBanner messages={messages} isToday={isTodayDiary(topic)} t={t} silhouette={silhouette} />
+                        : isWeeklyTopic(topic)
+                            ? <WeeklyBanner topic={topic} messages={messages} isCurrent={isCurrentWeekly(topic)} onEnter={() => composerRef?.current?.focus()} t={t} />
+                            : bodyText && <p className="thread-post__text">{bodyText}</p>}
 
                     {opTeam && (
                         <ForumTeamCard
@@ -206,8 +246,11 @@ export function ThreadDetail({
                         />
                     )}
                     {opMessage?.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={opMessage.sharedPuzzle} />}
+                    {opMessage?.sharedBadgeCase && <BadgeCaseCard share={opMessage.sharedBadgeCase} t={t} />}
                     {opMessage?.sharedChallenge && <ChallengeShareCard share={opMessage.sharedChallenge} />}
                     {opMessage?.battleInvite?.battleId && <BattleInviteCard invite={opMessage.battleInvite} />}
+
+                    {(topic.sharedTeam || opMessage?.sharedTeam) && <RatingVerdict messages={comments} t={t} />}
 
                     <div className="thread-post__actions">
                         <button
@@ -233,7 +276,9 @@ export function ThreadDetail({
                             <ShareIcon className="w-4 h-4" />
                             <span>{t('forum.share')}</span>
                         </button>
+                        <ReactionBar reactions={topic.reactions} userId={userId} onReact={(kind) => onReactTopic?.(topic.id, kind)} t={t} inline />
                     </div>
+
                 </article>
 
                 <section className="thread-comments" aria-label={isChat ? t('forum.chatTitle') : t('forum.commentsTitle')}>
@@ -271,6 +316,9 @@ export function ThreadDetail({
                         language={language}
                         t={t}
                         actions={messageActions}
+                        acceptedId={topic.acceptedMessageId || null}
+                        secret={silhouette ? { name: silhouette.raw, revealed: silhouette.revealed } : null}
+                        canAccept={topic.category === 'questions' && !!userId && topic.createdBy === userId}
                     />
 
                     {!olderOnTop && loadOlderButton}
@@ -281,6 +329,8 @@ export function ThreadDetail({
                 <CommentComposer
                     ref={composerRef}
                     {...composerProps}
+                    mentionCandidates={mentionCandidates}
+                    ratingEnabled={Boolean((topic.sharedTeam || opMessage?.sharedTeam) && userId && topic.createdBy !== userId)}
                     language={language}
                     t={t}
                 />

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Clock, Crown, FastForward, Flame, Music, Trophy, Volume2, VolumeX,
 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useChampionChallenge } from '../../../hooks/useChampionChallenge';
@@ -19,6 +19,7 @@ import { useChampionChallengeStore } from '../../../store/useChampionChallengeSt
 import { toast } from '../../../store/useToastStore';
 import { buildChallengeShare } from '../../../utils/challengeShare';
 import { useForumStore } from '../../../store/useForumStore';
+import { track } from '../../../services/analytics';
 import { championArt } from '../../../utils/challengeArt';
 import { CHAMPION_IDS, CHAMPION_NAMES, difficultyLabel as championDifficulty, isChampion } from '../../../utils/challengeChampions';
 import { championRoster, railTeams, timeUntil } from '../../../utils/challengeView';
@@ -321,6 +322,10 @@ export function ChampionChallengeView() {
             <span className="ds-console__spacer" />
             {/* After today's win: the moment tomorrow's team is worth a nudge. */}
             <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />
+            {/* From the daily duel to a friend's (2026-11-06, social-heart C5). */}
+            {stage === 'result' && !isAnonymous && (
+                <Link to="/battles?new=1" className="ds-chip is-button">{t('challenge.result.challengeFriend')}</Link>
+            )}
             {stage !== 'battle' && stage !== 'transition' && !railsOn && (
                 <button
                     type="button"
@@ -421,10 +426,8 @@ export function ChampionChallengeView() {
                 const outcome = run.result || {};
                 setIsSharing(true);
                 try {
-                    const forum = useForumStore.getState();
-                    const general = forum.topics.find((topic) => topic.category === 'general')
-                        || forum.topics.find((topic) => /general/i.test(topic.title || ''));
-                    const ok = await forum.sendMessage(general ? general.id : 'general', '', null, null, {
+                    // Into the Diário do dia, where the day's results meet (2026-11-06).
+                    const ok = await useForumStore.getState().postToDiary({
                         sharedChallenge: buildChallengeShare({
                             dayKey: challenge.dayKey,
                             championId,
@@ -437,7 +440,10 @@ export function ChampionChallengeView() {
                             curve: run.winChanceCurve || outcome.winChanceCurve || [],
                         }),
                     });
-                    if (ok) toast.success(t('challenge.share.posted'));
+                    if (ok) {
+                        toast.success(t('challenge.share.posted'));
+                        track('challenge_share', { champion: championId, board: outcome.board || 'daily' });
+                    }
                 } finally {
                     setIsSharing(false);
                 }

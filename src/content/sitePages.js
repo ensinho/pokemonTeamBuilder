@@ -261,7 +261,7 @@ export const SITE_PAGES = {
     },
 
     privacy: {
-        updated: '2026-11-05',
+        updated: '2026-11-06',
         en: {
             lede: 'What PokemonBuilder stores about you, why, who else handles it, and how to delete it. In short: your teams and progress, the profile you choose to make public, and, only if you allow it, usage statistics. No ads, and your data is never sold.',
             sections: [
@@ -277,6 +277,7 @@ export const SITE_PAGES = {
                     paragraphs: [
                         'Your email address and the display name you choose. Your password is handled by Firebase Authentication and is never visible to us.',
                         'An account has a public profile, visible to other players: your display name, avatar Pokémon, trainer sprite, badge, frame, title, trainer level, battle record, daily streak, trainer profile (Strategist, Traveler…) and the month the account was made — what the trainer card shows. Your email is never shown on it.',
+                        'The community features keep a little more: your reactions on forum posts (visible to everyone, like a like), your daily PokéPuzzle result as colours only — never letters — with your name, for signed-in players, and the day\'s counts without names; your place on the Champion Challenge weekly board; and your Pokégear inbox (replies, mentions, reactions, friend requests), which only you can read. A report you send goes to the admins with your account id.',
                     ],
                 },
                 {
@@ -338,6 +339,7 @@ export const SITE_PAGES = {
                     paragraphs: [
                         'O seu e-mail e o nome de exibição que você escolher. A senha fica com o Firebase Authentication e nunca fica visível para nós.',
                         'Uma conta tem um perfil público, visível para outros jogadores: nome de exibição, Pokémon de avatar, sprite de treinador, insígnia, moldura, título, nível de treinador, histórico de batalhas, sequência diária, perfil de treinador (Estrategista, Viajante…) e o mês em que a conta foi criada — o que o cartão de treinador mostra. O seu e-mail nunca aparece nele.',
+                        'Os recursos da comunidade guardam um pouco mais: suas reações nos posts do fórum (visíveis para todos, como uma curtida), seu resultado diário do PokéPuzzle só em cores — nunca letras — com seu nome, para jogadores logados, e as contagens do dia sem nomes; sua posição no ranking semanal do Desafio do Campeão; e a caixa de entrada do Pokégear (respostas, menções, reações, pedidos de amizade), que só você lê. Uma denúncia que você envia chega aos administradores com o id da sua conta.',
                     ],
                 },
                 {

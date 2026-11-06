@@ -14,8 +14,14 @@ import {
     arrayRemove,
     getDoc,
     limit,
-    limitToLast
+    limitToLast,
+    deleteField
 } from 'firebase/firestore';
+import { diaryDateLabel, diaryTopicDoc, diaryTopicId, isDiaryTopic, todayDiaryKey } from '../utils/forumDiary';
+import { currentWeekKey, isWeeklyTopic, weeklyTopicDoc, weeklyTopicId } from '../utils/forumWeekly';
+import { useLanguageStore } from './useLanguageStore';
+import { track } from '../services/analytics';
+import { notifySocial } from '../services/socialNotify';
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
 import { useRewardsStore } from './useRewardsStore';
@@ -85,7 +91,14 @@ export const useForumStore = create((set, get) => ({
         const q = query(topicsRef, orderBy('lastActivityAt', 'desc'));
 
         topicsUnsubscribe = onSnapshot(q, (snapshot) => {
-            const topicsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // A diary's title is the day, in the reader's language (forumDiary.js).
+            const language = useLanguageStore.getState().language;
+            const topicsList = snapshot.docs.map((d) => {
+                const data = { id: d.id, ...d.data() };
+                if (isDiaryTopic(data)) return { ...data, title: t('forum.diary.title', { date: diaryDateLabel(data.dayKey, language) }) };
+                if (isWeeklyTopic(data)) return { ...data, title: t('forum.weekly.title', { theme: t(`forum.weekly.themes.${data.theme}.name`) }) };
+                return data;
+            });
             set({ topics: topicsList, isInitialLoadingTopics: false });
 
             // Seed any canonical topic that isn't present yet (general chat + teams feed)
@@ -191,7 +204,7 @@ export const useForumStore = create((set, get) => ({
         }
     },
 
-    createTopic: async (title, category, firstMessageText, attachedTeam = null) => {
+    createTopic: async (title, category, firstMessageText, attachedTeam = null, { sharedBadgeCase = null } = {}) => {
         if (!db) return null;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -270,11 +283,15 @@ export const useForumStore = create((set, get) => ({
                 // The author's equipped rewards, stamped like the badge (2026-10-17).
                 creatorFrameId: useRewardsStore.getState().equipped.frame || null,
                 creatorTitleId: useRewardsStore.getState().equipped.title || null,
-                sharedTeam: serializedAttachedTeam
+                sharedTeam: serializedAttachedTeam,
+                // The Traveler's Badge Case card (2026-11-06, social-heart B5).
+                ...(sharedBadgeCase ? { sharedBadgeCase } : {}),
             };
             await setDoc(firstMsgRef, firstMsgData);
             markJourney('forumPost');
             if (serializedAttachedTeam) markJourney('forumTeamShare');
+            if (topicData.category === 'questions') markJourney('questionAsked');
+            if (sharedBadgeCase) markJourney('badgeCaseShared');
 
             toast.success(t('toast.topicCreated'), {
                 description: cleanTitle,
@@ -304,7 +321,7 @@ export const useForumStore = create((set, get) => ({
     // `notifyError: false` — the caller owns the failure (the composer puts the
     // draft back and offers Retry itself).
     sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}, { notifyError = true } = {}) => {
-        const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null } = attachments || {};
+        const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null, rating = null } = attachments || {};
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -316,7 +333,7 @@ export const useForumStore = create((set, get) => ({
         }
 
         const cleanText = text.trim();
-        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge) {
+        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge && !rating) {
             return false;
         }
 
@@ -377,6 +394,8 @@ export const useForumStore = create((set, get) => ({
                     ? sharedPuzzle
                     : null,
                 sharedChallenge: sharedChallenge?.v === 1 ? sharedChallenge : null,
+                // "Avalie meu time" (2026-11-06, social-heart B4).
+                ...(['ready', 'almost', 'train'].includes(rating) ? { rating } : {}),
                 replyTo: replyRef
             };
 
@@ -385,6 +404,11 @@ export const useForumStore = create((set, get) => ({
             // is what lets the journey see this post right away.
             markJourney('forumPost');
             if (serializedAttachedTeam) markJourney('forumTeamShare');
+            // The social chapter's marks (persona journeys, 2026-11-06).
+            const postedIn = get().topics.find((tp) => tp.id === topicId);
+            if (serializedAttachedTeam && String(topicId).startsWith('weekly-')) markJourney('weeklyEntry');
+            if (attachments?.rating) markJourney('teamRated');
+            if (postedIn?.category === 'adventures' && postedIn.createdBy !== authState.userId) markJourney('adventureReply');
 
             const topicDocRef = doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
             await updateDoc(topicDocRef, {
@@ -397,10 +421,146 @@ export const useForumStore = create((set, get) => ({
                         : (sharedPuzzle ? 'PokéPuzzle result' : (sharedChallenge ? 'Champion Challenge result' : 'Battle invite')))
             });
 
-            return true;
+            // The Pokégear: a reply, a mention or a comment on someone's post
+            // tells them (the server decides who; ids only).
+            const topic = get().topics.find((tp) => tp.id === topicId);
+            if (replyRef || cleanText.includes('@') || (topic && topic.createdBy !== authState.userId && topic.createdBy !== 'system')) {
+                notifySocial({ kind: 'forumMessage', topicId, messageId: messageRef.id });
+            }
+            track(replyRef ? 'forum_reply' : 'forum_post', {
+                kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : battleInvite ? 'invite' : 'text',
+            });
+            // The id is truthy, so callers that read a boolean keep working.
+            return messageRef.id;
         } catch (err) {
             console.error("Error sending message:", err);
             if (notifyError) toast.error(t('toast.messageSendError'));
+            return false;
+        }
+    },
+
+    /**
+     * The Diário do dia (utils/forumDiary.js): today's topic id, created by
+     * the first trainer who needs it (the rules accept only that exact doc).
+     * Resolves null when it cannot be opened (offline, signed out).
+     */
+    ensureDiary: async (dayKey = todayDiaryKey()) => {
+        if (!db) return null;
+        const id = diaryTopicId(dayKey);
+        const ref = doc(db, `artifacts/${appId}/public/data/forumTopics`, id);
+        try {
+            const snap = await getDoc(ref);
+            if (!snap.exists()) await setDoc(ref, diaryTopicDoc(dayKey));
+            return id;
+        } catch (err) {
+            // A second trainer racing the first loses the create: it exists now.
+            try {
+                const again = await getDoc(ref);
+                return again.exists() ? id : null;
+            } catch {
+                console.error('Diary unavailable:', err);
+                return null;
+            }
+        }
+    },
+
+    /** The week's tournament topic, created by the first trainer who needs it. */
+    ensureWeekly: async (weekKey = currentWeekKey()) => {
+        if (!db) return null;
+        const id = weeklyTopicId(weekKey);
+        const ref = doc(db, `artifacts/${appId}/public/data/forumTopics`, id);
+        try {
+            const snap = await getDoc(ref);
+            if (!snap.exists()) await setDoc(ref, weeklyTopicDoc(weekKey));
+            return id;
+        } catch {
+            try {
+                return (await getDoc(ref)).exists() ? id : null;
+            } catch {
+                return null;
+            }
+        }
+    },
+
+    /**
+     * A day's result into today's diary (the challenge and the puzzle share
+     * here since 2026-11-06), falling back to the general chat if the diary
+     * cannot be opened. Returns the message id, or false.
+     */
+    postToDiary: async (attachments) => {
+        const diaryId = await get().ensureDiary();
+        const ok = await get().sendMessage(diaryId || 'general', '', null, null, attachments);
+        if (ok) markJourney('diaryShare');
+        return ok;
+    },
+
+    /**
+     * A battle-text reaction (2026-11-06): one per trainer per post, `kind`
+     * one of super · crit · weak · confused, or null to take it back. The
+     * snapshot answers on the tap (Firestore's local write).
+     */
+    setReaction: async (topicId, messageId, kind) => {
+        if (!db || !topicId) return;
+        const uid = useAuthStore.getState().userId;
+        if (!uid) {
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForLikes'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
+            return;
+        }
+        const path = messageId
+            ? doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, messageId)
+            : doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
+        try {
+            await updateDoc(path, { [`reactions.${uid}`]: kind || deleteField() });
+            if (kind) {
+                if (String(topicId).startsWith('diary-')) markJourney('diaryReact');
+                track('forum_react', { kind, target: messageId ? 'comment' : 'post' });
+                notifySocial({ kind: 'reaction', topicId, messageId: messageId || null });
+            }
+        } catch (err) {
+            console.error('Error reacting:', err);
+            toast.error(t('toast.likeError'));
+        }
+    },
+
+    /**
+     * Pergunte ao Professor (2026-11-06): the question's author accepts one
+     * answer. The topic's own author may update it (firestore.rules), and the
+     * answer's author is stamped so their accepted answers can be counted.
+     */
+    acceptAnswer: async (topicId, message) => {
+        if (!db || !topicId || !message?.id) return;
+        try {
+            await updateDoc(doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId), {
+                acceptedMessageId: message.id,
+                acceptedAuthorId: message.createdBy || null,
+            });
+            track('forum_answer_accepted');
+            toast.success(t('forum.qa.acceptedToast', { name: message.creatorName || 'Trainer' }));
+        } catch (err) {
+            console.error('Error accepting answer:', err);
+            toast.error(t('toast.likeError'));
+        }
+    },
+
+    /** Report a post or comment (three hide it until an admin looks). */
+    reportPost: async (topicId, messageId, reason) => {
+        if (!db || !topicId) return false;
+        const uid = useAuthStore.getState().userId;
+        if (!uid) return false;
+        const target = messageId
+            ? doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, messageId)
+            : doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
+        try {
+            await setDoc(doc(collection(db, `artifacts/${appId}/public/data/reports`)), {
+                createdBy: uid, topicId, messageId: messageId || null, reason, createdAt: new Date().toISOString(),
+            });
+            await updateDoc(target, { reportedBy: arrayUnion(uid) });
+            return true;
+        } catch (err) {
+            console.error('Error reporting:', err);
             return false;
         }
     },

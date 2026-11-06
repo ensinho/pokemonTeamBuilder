@@ -14,6 +14,8 @@ import {
     isPushSupported,
     needsIosInstall,
     setDailyChallengeEnabled,
+    getSocialEnabled,
+    setSocialEnabled,
     setDailyPuzzleEnabled,
 } from '../services/pushNotifications';
 
@@ -101,6 +103,12 @@ export function useNotificationSettings() {
         await setDailyPuzzleEnabled(next, { userId });
     }, [userId]);
 
+    const [socialEnabled, setSocial] = useState(getSocialEnabled);
+    const toggleSocial = useCallback(async (next) => {
+        setSocial(next);
+        await setSocialEnabled(next, { userId });
+    }, [userId]);
+
     const toggleDailyChallenge = useCallback(async (next) => {
         setChallenge(next);
         await setDailyChallengeEnabled(next, { userId });
@@ -117,5 +125,7 @@ export function useNotificationSettings() {
         toggle,
         toggleDailyPuzzle,
         toggleDailyChallenge,
+        socialEnabled,
+        toggleSocial,
     };
 }

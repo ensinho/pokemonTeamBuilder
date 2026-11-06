@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { track } from '../services/analytics';
 import { auth, db } from '../services/firebase';
 import {
     signInAnonymously,
@@ -730,6 +731,7 @@ export const useAuthStore = create((set, get) => {
             set({ checkin: next.checkin, streak: next.streak });
             get().savePreferences({ checkin: next.checkin, streak: next.streak });
             get().bumpActiveDay();
+            track('checkin', { streak: next.streak?.count || 0 });
             // Others see the streak on the trainer card: one write a day.
             get().syncPublicProfile();
             const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });

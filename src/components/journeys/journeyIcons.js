@@ -12,4 +12,9 @@ export const JOURNEY_ICONS = {
     'persona-strategist': Brain,
     'persona-traveler': MapIcon,
     'persona-challenger': Puzzle,
+    // Chapter 2, the social one (2026-11-06).
+    'persona-strategist-2': Brain,
+    'persona-traveler-2': MapIcon,
+    'persona-challenger-2': Swords,
+    'persona-master-2': Crown,
 };

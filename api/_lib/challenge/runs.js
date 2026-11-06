@@ -32,6 +32,8 @@ export const paths = (appId) => {
         secret: (runId) => `${base}/challengeRuns/${runId}/secret/state`,
         stats: (uid) => `${base}/challengeStats/${uid}`,
         ranks: (dayKey, championId) => `${base}/public/data/challengeRanks/${dayKey}${championSuffix(championId)}`,
+        // The weekly season (2026-11-06): beside the days, `week-2026-W45[_blue]`.
+        week: (weekKey, championId) => `${base}/public/data/challengeRanks/week-${weekKey}${championSuffix(championId)}`,
         profile: (uid) => `${base}/publicProfiles/${uid}`,
         training: (id) => `${base}/aiTraining/${id}`,
     };

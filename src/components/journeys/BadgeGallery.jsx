@@ -10,7 +10,7 @@ import { CloseIcon, StarsIcon } from '../icons';
 import '../../styles/journeys.css';
 
 /** The order the gallery reads in: the path first, then what you collect. */
-const CATEGORY_ORDER = ['journey', 'challenge', 'teams', 'forum', 'collection', 'pokepuzzle', 'quiz', 'milestone', 'master', 'activity', 'streak'];
+const CATEGORY_ORDER = ['journey', 'social', 'challenge', 'teams', 'forum', 'collection', 'pokepuzzle', 'quiz', 'milestone', 'master', 'activity', 'streak'];
 
 /** Where "Go after it" leads for a badge that is not a journey's. */
 const CATEGORY_TARGET = {

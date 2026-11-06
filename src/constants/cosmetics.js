@@ -53,6 +53,8 @@ export const COSMETICS = [
     { id: 'frame_master', kind: 'frame', colors: [BALL.violet, BALL.pink], unlock: { type: 'level', level: 25 } },
     { id: 'frame_daily', kind: 'frame', colors: [BALL.yellow, BALL.red], unlock: { type: 'checkins', count: 30 } },
     { id: 'frame_shiny', kind: 'frame', colors: [BALL.gold, BALL.white], premium: true, unlock: { type: 'badge', badgeId: 'badge_streak_30' } },
+    // The season podium (2026-11-06): gold and white, like a trophy shelf.
+    { id: 'frame_season', kind: 'frame', colors: [BALL.gold, BALL.white], premium: true, unlock: { type: 'badge', badgeId: 'badge_season_podium' } },
     { id: 'frame_champion', kind: 'frame', colors: [BALL.gold, BALL.violet], premium: true, unlock: { type: 'journeys', count: 5 } },
 
     // ── Titles ─────────────────────────────────────────────────────────────
@@ -69,6 +71,9 @@ export const COSMETICS = [
     { id: 'title_elite', kind: 'title', unlock: { type: 'level', level: 18 } },
     { id: 'title_veteran', kind: 'title', unlock: { type: 'badge', badgeId: 'badge_days_100' } },
     { id: 'title_legend', kind: 'title', unlock: { type: 'level', level: 30 } },
+    // The social heart's (2026-11-06): granted by the community.
+    { id: 'title_weekly', kind: 'title', unlock: { type: 'badge', badgeId: 'badge_weekly_champion' } },
+    { id: 'title_professor', kind: 'title', unlock: { type: 'badge', badgeId: 'badge_professor' } },
 
     // ── Themes ─────────────────────────────────────────────────────────────
     { id: 'theme_ember', kind: 'theme', themeId: 'ember', unlock: { type: 'level', level: 6 } },

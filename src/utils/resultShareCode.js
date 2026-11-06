@@ -95,3 +95,35 @@ export function decodeChallengeResult(code) {
         curve: [...curve].map((digit) => Number(digit) / 7),
     };
 }
+
+// ── Quiz duel (2026-11-06, docs/plans/social-heart.md D3) ───────────────────
+// `{mask}.{found}.{total}`: the generations as a bitmask (I = 1 … IX = 256),
+// how many the sharer found and out of how many. The link opens the same quiz
+// with that mark to beat. Never names, never free text.
+
+export const QUIZ_GENERATIONS = [
+    'generation-i', 'generation-ii', 'generation-iii', 'generation-iv', 'generation-v',
+    'generation-vi', 'generation-vii', 'generation-viii', 'generation-ix',
+];
+
+/** @param {{ generations: string[], found: number, total: number }} duel */
+export function encodeQuizDuel(duel) {
+    const mask = (duel?.generations || []).reduce((m, key) => {
+        const i = QUIZ_GENERATIONS.indexOf(key);
+        return i >= 0 ? m | (1 << i) : m;
+    }, 0);
+    if (!mask || !Number.isInteger(duel.total) || duel.total < 1) return '';
+    const found = Math.max(0, Math.min(duel.total, Math.floor(duel.found || 0)));
+    return [mask.toString(36), found, duel.total].join('.');
+}
+
+export function decodeQuizDuel(code) {
+    const parts = typeof code === 'string' ? code.split('.') : [];
+    if (parts.length !== 3 || !/^[0-9a-z]{1,3}$/.test(parts[0]) || !/^\d{1,4}$/.test(parts[1]) || !/^\d{1,4}$/.test(parts[2])) return null;
+    const mask = parseInt(parts[0], 36);
+    const found = Number(parts[1]);
+    const total = Number(parts[2]);
+    if (!mask || mask >= (1 << QUIZ_GENERATIONS.length) || total < 1 || found > total) return null;
+    const generations = QUIZ_GENERATIONS.filter((_, i) => mask & (1 << i));
+    return { generations, found, total };
+}

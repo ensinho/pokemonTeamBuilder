@@ -86,6 +86,8 @@ import { HomeEntry } from './views/HomeEntry';
 import { useLandingStore } from '../store/useLandingStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useTrainerCardStore } from '../store/useTrainerCardStore';
+import { useInboxStore } from '../store/useInboxStore';
+import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { isCrawler } from '../utils/crawler';
 import { BrandWordmark } from './BrandWordmark';
@@ -127,6 +129,7 @@ const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) =
 // The trainer-profile onboarding (2026-11-05): its own chunk, fetched only
 // when it opens — a trainer meets it once.
 const TrainerOnboarding = lazy(() => import('./onboarding/TrainerOnboarding').then((m) => ({ default: m.TrainerOnboarding })));
+const PokegearDialog = lazy(() => import('./pokegear/PokegearDialog').then((m) => ({ default: m.PokegearDialog })));
 const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
@@ -447,6 +450,7 @@ export default function AppLayout() {
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const isOnboardingOpen = useOnboardingStore((s) => s.isOpen);
     const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
+    const isPokegearOpen = useInboxStore((s) => s.isOpen);
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
         generations: s.generations, items: s.items, natures: s.natures, games: s.games,
@@ -514,6 +518,21 @@ export default function AppLayout() {
         const mark = PAGE_MARKS[currentPage];
         if (mark) useAuthStore.getState().markJourney(mark);
     }, [currentPage]);
+
+    // The Pokégear's one listener per session, for whoever is signed in.
+    useEffect(() => {
+        if (userId) useInboxStore.getState().start(userId);
+        else useInboxStore.getState().stop();
+    }, [userId]);
+
+    // What the community granted (weekly winner, season podium, accepted
+    // answer), once a session, when the browser is idle — never on the boot path.
+    useEffect(() => {
+        if (!userId || isAnonymous) return undefined;
+        const run = () => import('../services/socialRecord').then((m) => m.checkSocialRecord(userId)).catch(() => {});
+        const id = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(run, { timeout: 8000 }) : window.setTimeout(run, 4000);
+        return () => (typeof window.cancelIdleCallback === 'function' ? window.cancelIdleCallback(id) : window.clearTimeout(id));
+    }, [userId, isAnonymous]);
     const [showTrainerSpriteSelector, setShowTrainerSpriteSelector] = useState(false);
 
     // Bound here (not only in FriendsView) so the sidebar badge stays live on every
@@ -1450,6 +1469,11 @@ export default function AppLayout() {
                 </Suspense>
             )}
 
+            {isPokegearOpen && (
+                <Suspense fallback={null}>
+                    <PokegearDialog />
+                </Suspense>
+            )}
             {isTrainerCardOpen && (
                 <Suspense fallback={null}>
                     <TrainerCardDialog />
@@ -1756,6 +1780,10 @@ export default function AppLayout() {
                                     >
                                         <Search className="w-5 h-5" aria-hidden="true" />
                                     </button>
+                                )}
+                                {/* The Pokégear: what happened while you were away (2026-11-06). */}
+                                {userId && (
+                                    <PokegearButton className="app-shell__icon-button" />
                                 )}
                                 {/* Desktop keeps the quick theme toggle; guests keep it on mobile too. */}
                                 {(!isMobile || isAnonymous) && (

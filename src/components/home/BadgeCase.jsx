@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Check, MessageSquare } from 'lucide-react';
 import '../../styles/badge-case.css';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useGymLeaders } from '../../hooks/useGymLeaders';
@@ -9,6 +9,7 @@ import { caseLeaders, chooseGame, nextLeader, toggleBadge } from '../../utils/ba
 import { typeColors } from '../../constants/types';
 import { SHOWDOWN_SPRITES_BASE } from '../../utils/assetHost';
 import { Loader } from '../Loader';
+import { useForumStore } from '../../store/useForumStore';
 
 const TRAINER_SPRITE_BASE = `${SHOWDOWN_SPRITES_BASE}/trainers/`;
 const DEFAULT_GAME = 'scarlet-violet';
@@ -26,6 +27,8 @@ export function BadgeCase() {
     const { games, status } = useGymLeaders();
     const badgeCase = useAuthStore((s) => s.badgeCase);
     const setBadgeCase = useAuthStore((s) => s.setBadgeCase);
+    const navigate = useNavigate();
+    const [isSharing, setIsSharing] = useState(false);
 
     const official = useMemo(() => games.filter((g) => g.kind === 'official'), [games]);
     const hacks = useMemo(() => games.filter((g) => g.kind !== 'official'), [games]);
@@ -36,6 +39,29 @@ export function BadgeCase() {
     }
 
     const leaders = caseLeaders(game);
+    // Into the forum's Aventuras, as a card others can answer with gym tips (social-heart B5).
+    const share = async () => {
+        if (isSharing) return;
+        setIsSharing(true);
+        const won = badgeCase?.earned?.[game.key] || [];
+        const nextUp = nextLeader(leaders, won);
+        const id = await useForumStore.getState().createTopic(
+            t('badgeCase.shareTitle', { game: game.label, n: won.length, total: leaders.length }),
+            'adventures',
+            nextUp ? t('badgeCase.shareText', { leader: nextUp.name }) : t('badgeCase.shareDone'),
+            null,
+            {
+                sharedBadgeCase: {
+                    game: game.key,
+                    label: game.label,
+                    slots: leaders.map((l) => ({ type: l.type || null, won: won.includes(l.order) })),
+                    next: nextUp ? nextUp.name : null,
+                },
+            },
+        );
+        setIsSharing(false);
+        if (id) navigate(`/feed?topic=${encodeURIComponent(id)}`);
+    };
     const earned = badgeCase?.earned?.[game.key] || [];
     const next = nextLeader(leaders, earned);
     const isFull = leaders.length > 0 && !next;
@@ -110,7 +136,14 @@ export function BadgeCase() {
                     </>
                 ) : null}
             </p>
-            <p className="badge-case__hint">{t('badgeCase.hint')}</p>
+            <div className="badge-case__foot">
+                <p className="badge-case__hint">{t('badgeCase.hint')}</p>
+                {earned.length > 0 && (
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={share} disabled={isSharing}>
+                        <MessageSquare aria-hidden="true" /> {t('badgeCase.share')}
+                    </button>
+                )}
+            </div>
         </section>
     );
 }

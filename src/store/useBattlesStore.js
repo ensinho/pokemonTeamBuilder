@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { track } from '../services/analytics';
 import {
     collection,
     doc,
@@ -272,6 +273,7 @@ export const useBattlesStore = create((set, get) => ({
                 description: t('toast.challengeSentDesc'),
                 actions: [{ label: t('toast.openBattle'), onClick: () => navigateTo(`/battles/${battleRef.id}`) }],
             });
+            track('battle_created', { mode, kind: 'friend' });
             return battleRef.id;
         } catch (err) {
             console.error('Failed to send the challenge:', err);

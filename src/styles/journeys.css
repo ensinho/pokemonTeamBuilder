@@ -628,3 +628,14 @@ button.mission:active { background: var(--color-surface-active); }
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
+
+/* A chapter 2 not open yet (2026-11-06): its tile in silhouette, like the
+   onboarding's unchosen Pokémon — it evolves when chapter 1 is done. */
+.journey.is-locked {
+    opacity: 0.7;
+}
+
+.journey.is-locked .journey__tile {
+    filter: brightness(0);
+    opacity: 0.35;
+}

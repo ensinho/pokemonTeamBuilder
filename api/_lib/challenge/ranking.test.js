@@ -79,3 +79,39 @@ describe('the daily ranking', () => {
         expect(rankProfileOf({ avatarPokemonId: -1, trainerLevel: 'nine' })).toMatchObject({ avatarPokemonId: null, level: null });
     });
 });
+
+describe('Sua liga (2026-11-06)', () => {
+    it('returns the circle with real places', async () => {
+        const { friendBoards } = await import('./ranking.js');
+        let ranks = finish(null, 'ana', { score: 1500 });
+        ranks = finish(ranks, 'x', { score: 1400 });
+        ranks = finish(ranks, 'me', { score: 1200 });
+        const f = friendBoards(ranks, 'me', ['ana']);
+        expect(f.daily.map((r) => [r.name, r.place, r.me])).toEqual([['ANA', 1, false], ['ME', 3, true]]);
+    });
+
+    it('names the friends a finish passed', async () => {
+        const { passedFriends } = await import('./ranking.js');
+        let before = finish(null, 'ana', { score: 1500 });
+        before = finish(before, 'bia', { score: 1300 });
+        const after = finish(before, 'me', { score: 1400 });
+        expect(passedFriends(before, after, 'daily', 'me', ['ana', 'bia'])).toEqual(['bia']);
+        expect(passedFriends(before, before, 'daily', 'me', ['bia'])).toEqual([]);
+    });
+});
+
+describe('weekly season (2026-11-06)', () => {
+    it('sums each day’s best and ranks by the total', async () => {
+        const { nextWeekRanks, publicWeekRanks, forgetPlayer } = await import('./ranking.js');
+        let w = nextWeekRanks(null, { weekKey: '2026-W45', dayKey: '2026-11-02', uid: 'ana', name: 'Ana', score: 1500, at: 'a' });
+        w = nextWeekRanks(w, { weekKey: '2026-W45', dayKey: '2026-11-02', uid: 'ana', name: 'Ana', score: 1200, at: 'b' });
+        w = nextWeekRanks(w, { weekKey: '2026-W45', dayKey: '2026-11-03', uid: 'bia', name: 'Bia', score: 1300, at: 'c' });
+        w = nextWeekRanks(w, { weekKey: '2026-W45', dayKey: '2026-11-04', uid: 'bia', name: 'Bia', score: 1300, at: 'd' });
+        expect(w.entries.map((e) => [e.uid, e.score])).toEqual([['bia', 2600], ['ana', 1500]]);
+        const shown = publicWeekRanks(w, 'ana', 10, ['bia']);
+        expect(shown.mine).toBe(2);
+        expect(shown.list[0]).toMatchObject({ name: 'Bia', days: 2, place: 1 });
+        expect(shown.podium).toEqual(['bia', 'ana']);
+        expect(forgetPlayer(w, 'bia').entries.map((e) => e.uid)).toEqual(['ana']);
+    });
+});

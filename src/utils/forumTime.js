@@ -53,6 +53,26 @@ export const getCategoryMeta = (cat, language = 'pt') => {
             colorClass: 'category-badge--strategy',
             dotClass: 'forum-category-dot--strategy'
         },
+        // 2026-11-06 (docs/plans/social-heart.md): the day's room, the
+        // Professor's Q&A and the Traveler's adventures.
+        diary: {
+            id: 'diary',
+            label: language === 'pt' ? 'Diário do dia' : 'Daily log',
+            colorClass: 'category-badge--diary',
+            dotClass: 'forum-category-dot--diary'
+        },
+        questions: {
+            id: 'questions',
+            label: language === 'pt' ? 'Pergunte ao Professor' : 'Ask the Professor',
+            colorClass: 'category-badge--questions',
+            dotClass: 'forum-category-dot--questions'
+        },
+        adventures: {
+            id: 'adventures',
+            label: language === 'pt' ? 'Aventuras' : 'Adventures',
+            colorClass: 'category-badge--adventures',
+            dotClass: 'forum-category-dot--adventures'
+        },
         announcements: {
             id: 'announcements',
             label: language === 'pt' ? 'Anúncios Oficiais' : 'Announcements',

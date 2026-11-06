@@ -93,6 +93,7 @@ const handle = async (req, res) => {
         case 'choose': return res.status(200).json(await service.choose(caller, body));
         case 'forfeit': return res.status(200).json(await service.forfeit(caller, body));
         case 'forget': return res.status(200).json(await service.forget(caller, body));
+        case 'report': return res.status(200).json(await service.report(caller, body));
         default: return res.status(400).json({ error: 'badRequest', detail: 'unknown action' });
     }
 };

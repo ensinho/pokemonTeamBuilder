@@ -10,6 +10,9 @@ import {
     SparklesIcon,
     TrophyIcon,
     HeartIcon,
+    ClockIcon,
+    InfoCircleIcon,
+    MapPinIcon,
 } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
 import { topicLikes, topicReplies } from '../../utils/forumRanking';
@@ -22,9 +25,12 @@ const SORTS = [
 
 const CATEGORIES = [
     { id: 'all', key: 'forum.catAll', icon: PokeballIcon },
+    { id: 'diary', key: 'forum.catDiary', icon: ClockIcon },
     { id: 'general', key: 'forum.catGeneral', icon: MessageIcon },
     { id: 'teams', key: 'forum.catTeams', icon: SwordsIcon },
     { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
+    { id: 'questions', key: 'forum.catQuestions', icon: InfoCircleIcon },
+    { id: 'adventures', key: 'forum.catAdventures', icon: MapPinIcon },
     { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
 ];
 

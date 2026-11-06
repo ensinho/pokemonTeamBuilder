@@ -100,3 +100,12 @@ describe('computeTrainerXp', () => {
         expect(computeTrainerXp({})).toBe(0);
     });
 });
+
+describe('Champion Challenge XP (2026-11-06)', () => {
+    it('pays official wins, a little more with the Time do dia', async () => {
+        const { computeTrainerXp, XP_RULES } = await import('./trainerLevel');
+        const base = computeTrainerXp({});
+        const xp = computeTrainerXp({ challenge: { wins: 3, dailyTeamWins: 2 } });
+        expect(xp - base).toBe(3 * XP_RULES.challengeWin + 2 * XP_RULES.dailyTeamWinBonus);
+    });
+});

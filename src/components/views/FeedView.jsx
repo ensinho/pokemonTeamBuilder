@@ -170,6 +170,8 @@ export function FeedView({ showToast, navigate }) {
     const [replyText, setReplyText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
+    // "Avalie meu time" (2026-11-06): the verdict this comment carries.
+    const [rating, setRating] = useState(null);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const popoverRef = useRef(null);
 
@@ -188,6 +190,14 @@ export function FeedView({ showToast, navigate }) {
         setReplyText(readDraft(topicParam));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- the URL drives the store, not the reverse
     }, [topicParam]);
+
+    // Today's Diário do dia exists once anyone signed in opens the forum, so
+    // it heads the feed before the first result is shared.
+    useEffect(() => {
+        if (!userId) return;
+        useForumStore.getState().ensureDiary();
+        useForumStore.getState().ensureWeekly();
+    }, [userId]);
 
     useEffect(() => {
         initTopicsListener();
@@ -362,7 +372,8 @@ export function FeedView({ showToast, navigate }) {
             setReplyingTo(null);
         }
         writeDraft(draft.topicId, '');
-        const success = await sendMessage(draft.topicId, draft.text, draft.team, draft.replyTo, {}, { notifyError: false });
+        const success = await sendMessage(draft.topicId, draft.text, draft.team, draft.replyTo, draft.rating ? { rating: draft.rating } : {}, { notifyError: false });
+        if (success && draft.rating) setRating(null);
         sendingRef.current = false;
         setIsSending(false);
         if (success) return;
@@ -380,8 +391,8 @@ export function FeedView({ showToast, navigate }) {
     const handleSendMessageSubmit = (e) => {
         if (e) e.preventDefault();
         if (sendingRef.current) return;
-        if (!replyText.trim() && !attachedTeam) return;
-        sendDraft({ topicId: currentTopicId, text: replyText, team: attachedTeam, replyTo: replyingTo });
+        if (!replyText.trim() && !attachedTeam && !rating) return;
+        sendDraft({ topicId: currentTopicId, text: replyText, team: attachedTeam, replyTo: replyingTo, rating });
     };
 
     const handlePostBattleInvite = async (mode) => {
@@ -477,6 +488,18 @@ export function FeedView({ showToast, navigate }) {
         importTeam: handleImportTeam,
         openProfile: (data) => openProfile(data),
         hoverSlot: setHoveredSlot,
+        react: (messageId, kind) => useForumStore.getState().setReaction(currentTopicId, messageId, kind),
+        accept: (message) => useForumStore.getState().acceptAnswer(currentTopicId, message),
+        report: async (message) => {
+            const ok = await confirmAction({
+                title: t('forum.report.title'),
+                message: t('forum.report.message'),
+                confirmText: t('forum.report.confirm'),
+            });
+            if (!ok) return;
+            const done = await useForumStore.getState().reportPost(currentTopicId, message.id, 'other');
+            showToast?.(t(done ? 'forum.report.done' : 'forum.report.failed'), done ? 'success' : 'error');
+        },
     });
 
     const popoverAnchor = useMemo(() => ({ current: hoveredSlot?.ref || null }), [hoveredSlot]);
@@ -499,6 +522,8 @@ export function FeedView({ showToast, navigate }) {
         teamName,
         savedTeams,
         disabled: !userId,
+        rating,
+        onRating: setRating,
     };
 
     const sidebar = (
@@ -581,6 +606,7 @@ export function FeedView({ showToast, navigate }) {
                             hasOlder={hasOlderMessages}
                             onLoadOlder={loadOlderMessages}
                             onLikeTopic={(id, opMessage) => toggleTopicLike(id, { opMessage })}
+                            onReactTopic={(id, kind) => useForumStore.getState().setReaction(id, null, kind)}
                             onShareTopic={rowActions.share}
                             focusCommentId={commentParam}
                         />

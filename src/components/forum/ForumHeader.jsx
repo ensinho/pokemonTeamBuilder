@@ -10,14 +10,20 @@ import {
     PlusIcon,
     SparklesIcon,
     TrophyIcon,
+    ClockIcon,
+    InfoCircleIcon,
+    MapPinIcon,
 } from '../icons';
 
 // Same ids, same order as FORUM_CATEGORY_IDS (utils/forumRanking).
 const FORUM_CATEGORIES = [
     { id: 'all', key: 'forum.catAll', icon: PokeballIcon },
+    { id: 'diary', key: 'forum.catDiary', icon: ClockIcon },
     { id: 'general', key: 'forum.catGeneral', icon: MessageIcon },
     { id: 'teams', key: 'forum.catTeams', icon: SwordsIcon },
     { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
+    { id: 'questions', key: 'forum.catQuestions', icon: InfoCircleIcon },
+    { id: 'adventures', key: 'forum.catAdventures', icon: MapPinIcon },
     { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
 ];
 

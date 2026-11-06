@@ -19,6 +19,11 @@ export const XP_RULES = {
     quiz: 20,             // per quiz completed
     team: { each: 15, cap: 20 },
     forumMessage: { each: 5, cap: 100 },
+    // The Champion Challenge (2026-11-06): official wins only (practice is
+    // never in the record); the Time do dia pays a little more — everyone had
+    // the same six.
+    challengeWin: 30,
+    dailyTeamWinBonus: 20,
 };
 
 /**
@@ -65,6 +70,8 @@ export const computeTrainerXp = (stats = {}, { badgeIds = [], journeyBadgeIds = 
         + (stats.completedQuizzesCount || 0) * XP_RULES.quiz
         + capped(stats.teamsCount, XP_RULES.team)
         + capped(stats.forumMessages, XP_RULES.forumMessage)
+        + (stats.challenge?.wins || 0) * XP_RULES.challengeWin
+        + (stats.challenge?.dailyTeamWins || 0) * XP_RULES.dailyTeamWinBonus
         + checkinXpTotal(checkinCount);
 };
 

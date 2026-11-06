@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { IdCard, Trash2 } from 'lucide-react';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
@@ -78,7 +78,12 @@ export function BattleListView() {
     const challengeFriend = useBattlesStore((state) => state.challengeFriend);
     const deleteBattle = useBattlesStore((state) => state.deleteBattle);
 
-    const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    // `?new=1` (from the Champion Challenge's result) opens the challenge sheet.
+    const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(() => searchParams.get('new') === '1');
+    React.useEffect(() => {
+        if (searchParams.get('new') === '1') setSearchParams((p) => { p.delete('new'); return p; }, { replace: true });
+    }, [searchParams, setSearchParams]);
 
     if (isAnonymous) {
         return (

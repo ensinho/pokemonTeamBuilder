@@ -16,4 +16,6 @@ export const challengeApi = {
     forfeit: ({ runId }) => call({ action: 'forfeit', runId }),
     /** Account deletion: off every day's ranking (the client may not write it). */
     forget: () => call({ action: 'forget' }),
+    /** "Como venceu": a podium run's win-chance curve (numbers only). */
+    report: ({ championId, board, uid, dayKey }) => call({ action: 'report', championId, board, uid, dayKey }),
 };

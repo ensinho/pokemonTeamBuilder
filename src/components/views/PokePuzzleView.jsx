@@ -24,6 +24,8 @@ import { encodePuzzleResult } from '../../utils/resultShareCode';
 import { localizePath } from '../../utils/localePath';
 import { deployBase } from '../../services/localeHistory';
 import { useForumStore } from '../../store/useForumStore';
+import { track } from '../../services/analytics';
+import { PuzzleDayPanel } from '../pokepuzzle/PuzzleDayPanel';
 import { Loader } from '../Loader';
 import { DecryptText } from '../DecryptText';
 import { TypeChip } from '../TypeChip';
@@ -585,9 +587,11 @@ export default function PokePuzzleView() {
             setSolvedNow(true);
             setEndedNow(true);
             setStatus('WON');
+            track('puzzle_finish', { mode, won: true, guesses: nextCount });
         } else if (nextCount >= MAX_ATTEMPTS) {
             setEndedNow(true);
             setStatus('LOST');
+            track('puzzle_finish', { mode, won: false, guesses: nextCount });
         }
         // Win or loss, once the result card has been read.
         if (norm === targetNormalized || nextCount >= MAX_ATTEMPTS) {
@@ -868,15 +872,10 @@ export default function PokePuzzleView() {
         // The card already names the puzzle and shows the score, so the message
         // carries no text: a body repeating its own attachment word for word was
         // the ugliest thing about the first version of this.
-        // Same topic resolution the team share uses: aim at the general thread,
-        // fall back to the well-known id rather than guessing.
-        const topics = useForumStore.getState().topics;
-        const generalTopic = topics.find((topic) => topic.category === 'general')
-            || topics.find((topic) => /general/i.test(topic.title || ''));
-        const topicId = generalTopic ? generalTopic.id : 'general';
-
-        const ok = await useForumStore.getState().sendMessage(topicId, '', null, null, { sharedPuzzle: share });
+        // Into the Diário do dia, where the day's results meet (2026-11-06).
+        const ok = await useForumStore.getState().postToDiary({ sharedPuzzle: share });
         if (ok) {
+            track('puzzle_share', { channel: 'forum' });
             showToast(t('toast.puzzleShared'), 'success');
         } else {
             showToast(t('toast.puzzleShareError'), 'error');
@@ -1086,6 +1085,10 @@ export default function PokePuzzleView() {
 
     const isArchive = selectedDate !== getTodayDateString();
     const isWon = gameStatus === 'WON';
+    // The finished board as colour codes only (never letters), for the day's panel.
+    const dayShareRows = useMemo(() => (gameStatus === 'WON' || gameStatus === 'LOST')
+        ? (buildPuzzleShare({ guesses, target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [])
+        : [], [gameStatus, guesses, targetNormalized]);
     const targetTypes = targetDetails.types || [];
     const tipTabs = [
         { id: 'types', label: t('pokepuzzle.tipTypes'), locked: false },
@@ -1466,6 +1469,11 @@ export default function PokePuzzleView() {
                                                 })}
                                             </div>
                                         </div>
+                                    )}
+
+                                    {/* The day, together: the crowd's distribution and friends' grids (2026-11-06). */}
+                                    {mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0 && (
+                                        <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} />
                                     )}
 
                                     {/* After a daily win: the one moment "come back tomorrow" is worth asking. */}
