@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { markJourney } from './useAuthStore';
 import { track } from '../services/analytics';
 
 import { challengeApi } from '../services/challengeApi';
@@ -253,11 +252,15 @@ export const useChampionChallengeStore = create((set, get) => ({
             }
             if (ended) track('challenge_finish', { champion: s.championId, board: boardOfRun(s.run), result: p.status, practice: Boolean(s.run.practice) });
             // The Rival chapter's marks (2026-11-06): a podium, a friend passed.
+            // Imported on demand: this store must not pull Firebase Auth in
+            // with it (its test runs with no Firebase config).
             if (ended && !s.run.practice && p.status === 'won') {
-                if (p.result?.place && p.result.place <= 3) markJourney('podium');
+                const marks = [];
+                if (p.result?.place && p.result.place <= 3) marks.push('podium');
                 const league = p.ranks?.friends?.[boardOfRun(s.run)] || [];
                 const me = league.find((row) => row.me);
-                if (me && league.some((row) => !row.me && row.place > me.place)) markJourney('beatFriend');
+                if (me && league.some((row) => !row.me && row.place > me.place)) marks.push('beatFriend');
+                if (marks.length) import('./useAuthStore').then((m) => marks.forEach((mark) => m.markJourney(mark))).catch(() => {});
             }
             if (ended && !s.run.practice) {
                 const official = { runId: s.run.runId, status: p.status, result: p.result };
