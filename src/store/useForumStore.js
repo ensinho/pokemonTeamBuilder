@@ -20,6 +20,7 @@ import {
 import { diaryDateLabel, diaryTopicDoc, diaryTopicId, isDiaryTopic, todayDiaryKey } from '../utils/forumDiary';
 import { useLanguageStore } from './useLanguageStore';
 import { track } from '../services/analytics';
+import { notifySocial } from '../services/socialNotify';
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
 import { useRewardsStore } from './useRewardsStore';
@@ -408,6 +409,12 @@ export const useForumStore = create((set, get) => ({
                         : (sharedPuzzle ? 'PokéPuzzle result' : (sharedChallenge ? 'Champion Challenge result' : 'Battle invite')))
             });
 
+            // The Pokégear: a reply, a mention or a comment on someone's post
+            // tells them (the server decides who; ids only).
+            const topic = get().topics.find((tp) => tp.id === topicId);
+            if (replyRef || cleanText.includes('@') || (topic && topic.createdBy !== authState.userId && topic.createdBy !== 'system')) {
+                notifySocial({ kind: 'forumMessage', topicId, messageId: messageRef.id });
+            }
             track(replyRef ? 'forum_reply' : 'forum_post', {
                 kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : battleInvite ? 'invite' : 'text',
             });
@@ -475,7 +482,10 @@ export const useForumStore = create((set, get) => ({
             : doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
         try {
             await updateDoc(path, { [`reactions.${uid}`]: kind || deleteField() });
-            if (kind) track('forum_react', { kind, target: messageId ? 'comment' : 'post' });
+            if (kind) {
+                track('forum_react', { kind, target: messageId ? 'comment' : 'post' });
+                notifySocial({ kind: 'reaction', topicId, messageId: messageId || null });
+            }
         } catch (err) {
             console.error('Error reacting:', err);
             toast.error(t('toast.likeError'));

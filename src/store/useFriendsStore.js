@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { notifySocial } from '../services/socialNotify';
 import { track } from '../services/analytics';
 import {
     collection,
@@ -231,6 +232,7 @@ export const useFriendsStore = create((set, get) => ({
                 createdAt: new Date().toISOString(),
             });
             track('friend_request');
+            notifySocial({ kind: 'friendRequest', to: toUserId });
             toast.success(t('toast.friendRequestSent'), {
                 actions: [{ label: t('toast.viewFriends'), onClick: () => navigateTo('/friends') }],
             });

@@ -251,7 +251,12 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
     const { board } = view;
     const shownId = view.championId;
     const ranks = ranksByChampion?.[shownId] || null;
-    const list = ranks?.boards?.[board] || [];
+    // Sua liga (2026-11-06): the same board, only you and your friends, each
+    // at their real place. Offered only when the server sent a friends list.
+    const [scope, setScope] = useState('all');
+    const hasFriends = Boolean(ranks?.friends);
+    const inLeague = scope === 'friends' && hasFriends;
+    const list = (inLeague ? ranks.friends[board] : ranks?.boards?.[board]) || [];
     const mine = ranks?.mine?.[board] || null;
     const opened = open !== null ? list[open] : null;
     // The next champion in the room's order: with two, simply the other one.
@@ -266,7 +271,7 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
     if (opened) {
         return (
             <div className="challenge-rank">
-                <RankDetail entry={opened} place={open + 1} board={board} onBack={() => setOpen(null)} />
+                <RankDetail entry={opened} place={opened.place || open + 1} board={board} onBack={() => setOpen(null)} />
             </div>
         );
     }
@@ -296,9 +301,20 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
                     </button>
                 ))}
             </div>
-            {list.length ? (
+            {hasFriends && (
+                <div className="challenge-rank__scope" role="group" aria-label={t('challenge.ranking.scopeLabel')}>
+                    {['all', 'friends'].map((key) => (
+                        <button key={key} type="button" className="challenge-rank__scope-item" aria-pressed={scope === key} onClick={() => { setScope(key); setOpen(null); }}>
+                            {t(`challenge.ranking.scope.${key}`)}
+                        </button>
+                    ))}
+                </div>
+            )}
+            {inLeague && list.length <= 1 ? (
+                <p className="m-0 grid flex-1 place-items-center text-center text-sm text-muted">{t('challenge.ranking.leagueEmpty')}</p>
+            ) : list.length ? (
                 <ol className="challenge-rank__list custom-scrollbar m-0 list-none p-0">
-                    {list.length >= 3 && (
+                    {!inLeague && list.length >= 3 && (
                         <li>
                             <ol className="challenge-podium" aria-label={t('challenge.ranking.podium')}>
                                 {[1, 0, 2].map((index) => (
@@ -307,9 +323,9 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
                             </ol>
                         </li>
                     )}
-                    {list.map((entry, index) => (list.length >= 3 && index < 3 ? null : (
+                    {list.map((entry, index) => (!inLeague && list.length >= 3 && index < 3 ? null : (
                         // A board is replaced whole, never reordered in place.
-                        <RankRow key={`${index}-${entry.name}`} entry={entry} place={index + 1} onOpen={() => setOpen(index)} />
+                        <RankRow key={`${index}-${entry.name}`} entry={entry} place={entry.place || index + 1} onOpen={() => setOpen(index)} />
                     )))}
                 </ol>
             ) : (

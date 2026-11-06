@@ -3900,3 +3900,48 @@
     width: 1rem;
     height: 1rem;
 }
+
+/* @mention suggestions (2026-11-06): above the field, one row of names. */
+.comment-composer__row {
+    position: relative;
+}
+
+.mention-suggest {
+    position: absolute;
+    bottom: calc(100% + var(--space-2));
+    left: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    max-width: 100%;
+    padding: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-2);
+}
+
+.mention-suggest__item {
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2_5);
+    border-radius: var(--radius-sm);
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.mention-suggest__item:hover,
+.mention-suggest__item:first-child {
+    background: var(--color-surface-hover);
+}
+
+.mention-suggest__item:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.cmt__mention {
+    color: var(--color-primary);
+    font-weight: 600;
+}

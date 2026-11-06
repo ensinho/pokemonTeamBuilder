@@ -70,6 +70,16 @@ const TEMPLATES = {
         en: { title: 'A new PokéPuzzle is up!', body: () => "Today's Pokémon is waiting — keep your streak alive." },
         pt: { title: 'Novo PokéPuzzle no ar!', body: () => 'O Pokémon de hoje já está esperando — mantenha sua ofensiva.' },
     },
+    // The Pokégear (2026-11-06, docs/plans/social-heart.md A3): someone
+    // answered or named you. Opt-in topic `social`.
+    socialReply: {
+        en: { title: 'New reply', body: ({ name }) => `${name} answered you on the forum.` },
+        pt: { title: 'Nova resposta', body: ({ name }) => `${name} te respondeu no fórum.` },
+    },
+    socialMention: {
+        en: { title: 'You were mentioned', body: ({ name }) => `${name} mentioned you on the forum.` },
+        pt: { title: 'Você foi mencionado', body: ({ name }) => `${name} te mencionou no fórum.` },
+    },
     dailyChallenge: {
         en: { title: 'Cynthia has a new team!', body: () => "Today's Champion team is in — walk up to her and battle." },
         pt: { title: 'A Cynthia tem um time novo!', body: () => 'O time da Campeã de hoje chegou — vá até ela e batalhe.' },
@@ -77,6 +87,12 @@ const TEMPLATES = {
 };
 
 const GROUPS = {
+    social: {
+        group: 'ptb-social',
+        groupUrl: '/feed',
+        en: { title: '{{count}} new on the forum', body: 'Tap to see who answered.' },
+        pt: { title: '{{count}} novidades no fórum', body: 'Toque para ver quem respondeu.' },
+    },
     battle: {
         group: 'ptb-battles',
         groupUrl: '/battles',
@@ -98,7 +114,10 @@ const GROUPS = {
 };
 
 /** Which tray entry each kind collapses into; anything else is battle-shaped. */
-const GROUP_OF = { dailyPuzzle: 'puzzle', dailyChallenge: 'challenge' };
+const GROUP_OF = { dailyPuzzle: 'puzzle', dailyChallenge: 'challenge', socialReply: 'social', socialMention: 'social' };
+
+/** Topics a device must have turned on (absent = off), unlike the battle ones. */
+const OPT_IN_TOPICS = new Set(['social']);
 
 const FALLBACK_NAME = { en: 'your opponent', pt: 'seu oponente' };
 
@@ -144,6 +163,7 @@ export const listSubscriptions = async ({ db, appId, uid }) => {
  */
 export const shouldSendTo = (data, topic = null) => {
     if (!data?.endpoint || !data?.keys?.p256dh || !data?.keys?.auth) return false;
+    if (topic && OPT_IN_TOPICS.has(topic)) return data.topics?.[topic] === true;
     if (topic && data.topics && data.topics[topic] === false) return false;
     return true;
 };

@@ -28,15 +28,17 @@ let depsPromise = null;
 const loadDeps = () => {
     if (!depsPromise) {
         depsPromise = (async () => {
-            const [serverAuth, notify] = await Promise.all([
+            const [serverAuth, notify, social] = await Promise.all([
                 import('./_lib/serverAuth.js'),
                 import('./_lib/battleNotify.js'),
+                import('./_lib/socialNotify.js'),
             ]);
             return {
                 verifyCaller: serverAuth.verifyCaller,
                 getAdminFirestore: serverAuth.getAdminFirestore,
                 getAppId: serverAuth.getAppId,
                 notifyBattleEvent: notify.notifyBattleEvent,
+                social,
             };
         })().catch((err) => {
             depsPromise = null;
@@ -66,6 +68,35 @@ export default async function handler(req, res) {
         const { uid } = await deps.verifyCaller(req);
 
         const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+
+        // The Pokégear (2026-11-06, api/_lib/socialNotify.js): the same
+        // endpoint carries the forum's notices, so no new function is spent
+        // (12 per deployment). Ids only; recipients are re-derived.
+        const kind = String(body.kind || 'battle');
+        if (kind !== 'battle') {
+            const db = deps.getAdminFirestore();
+            const appId = deps.getAppId();
+            const id = (value) => {
+                const text = String(value || '').trim();
+                if (text && !/^[A-Za-z0-9_-]{1,128}$/.test(text)) throw new HttpError(400, 'Bad id.');
+                return text || null;
+            };
+            if (kind !== 'friendRequest' && !id(body.topicId)) throw new HttpError(400, 'topicId is required.');
+            if (kind === 'friendRequest' && !id(body.to)) throw new HttpError(400, 'to is required.');
+            let result;
+            if (kind === 'forumMessage') {
+                result = await deps.social.notifyForumMessage({ db, appId, callerUid: uid, topicId: id(body.topicId), messageId: id(body.messageId) });
+            } else if (kind === 'reaction') {
+                result = await deps.social.notifyReaction({ db, appId, callerUid: uid, topicId: id(body.topicId), messageId: id(body.messageId) });
+            } else if (kind === 'friendRequest') {
+                result = await deps.social.notifyFriendRequest({ db, appId, callerUid: uid, to: id(body.to) });
+            } else {
+                throw new HttpError(400, 'Unknown kind.');
+            }
+            res.status(200).json({ ok: true, ...result });
+            return;
+        }
+
         const battleId = String(body.battleId || '').trim();
         if (!battleId) throw new HttpError(400, 'battleId is required.');
 

@@ -455,6 +455,18 @@ service cloud.firestore {
           && before.removeAll(after).size() == 0;
       }
 
+      // The PokéPuzzle's day, together (2026-11-06): the distribution is
+      // anyone's to read; a player's colour grid (never letters) is for
+      // signed-in trainers — friends compare. Written by api/daily-puzzle.js.
+      match /public/data/puzzleDays/{day} {
+        allow read: if true;
+        allow write: if false;
+        match /players/{playerId} {
+          allow read: if isSignedIn();
+          allow write: if false;
+        }
+      }
+
       match /public/data/reports/{reportId} {
         allow create: if isSignedIn()
           && request.resource.data.createdBy == request.auth.uid

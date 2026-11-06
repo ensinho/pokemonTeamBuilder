@@ -1,4 +1,4 @@
-import { HttpError } from './_lib/httpBasics.js';
+import { HttpError, setCorsHeaders } from './_lib/httpBasics.js';
 import { installRuntimeGuards } from './_lib/runtimeGuards.js';
 
 installRuntimeGuards();
@@ -29,11 +29,14 @@ let depsPromise = null;
 const loadDeps = () => {
     if (!depsPromise) {
         depsPromise = (async () => {
-            const [serverAuth, webPush] = await Promise.all([
+            const [serverAuth, webPush, puzzleDay] = await Promise.all([
                 import('./_lib/serverAuth.js'),
                 import('./_lib/webPush.js'),
+                import('./_lib/puzzleDay.js'),
             ]);
             return {
+                verifyCaller: serverAuth.verifyCaller,
+                puzzleDay,
                 getAdminFirestore: serverAuth.getAdminFirestore,
                 getAppId: serverAuth.getAppId,
                 isPushConfigured: webPush.isPushConfigured,
@@ -64,7 +67,47 @@ export const selectDailyTargets = (docs, { appId, topic = 'dailyPuzzle', limit =
     .filter((docSnap) => docSnap.data()?.topics?.[topic] !== false)
     .slice(0, limit);
 
+/**
+ * POST /api/daily-puzzle — a trainer's result for the day (2026-11-06,
+ * docs/plans/social-heart.md D1/D2): counts it once into the day's
+ * distribution and keeps the colour grid for their friends. Answers with the
+ * distribution, so the result card draws it at once. Rides this function so
+ * no new endpoint is spent (12 per deployment).
+ */
+async function submitResult(req, res) {
+    const originAllowed = setCorsHeaders(req, res);
+    if (!originAllowed) {
+        res.status(403).json({ error: 'Origin not allowed.' });
+        return;
+    }
+    try {
+        const deps = await loadDeps();
+        const { uid } = await deps.verifyCaller(req);
+        const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+        const submission = deps.puzzleDay.cleanSubmission(body);
+        if (!submission) throw new HttpError(400, 'Not a result for today.');
+        const db = deps.getAdminFirestore();
+        const appId = deps.getAppId();
+        const profileSnap = await db.doc(`artifacts/${appId}/publicProfiles/${uid}`).get();
+        const out = await deps.puzzleDay.submitPuzzleDay({ db, appId, uid, submission, profile: profileSnap.exists ? profileSnap.data() : null });
+        res.status(200).json({ ok: true, recorded: out.recorded, distribution: deps.puzzleDay.distribution(out.day) });
+    } catch (err) {
+        const status = err instanceof HttpError ? err.status : (err?.status || 500);
+        if (status === 500) console.error('puzzle submit failed:', err);
+        res.status(status).json({ error: err.message || 'Unexpected error.' });
+    }
+}
+
 export default async function handler(req, res) {
+    if (req.method === 'OPTIONS') {
+        setCorsHeaders(req, res);
+        res.status(204).end();
+        return;
+    }
+    if (req.method === 'POST') {
+        await submitResult(req, res);
+        return;
+    }
     const secret = process.env.CRON_SECRET;
     if (secret) {
         const auth = req.headers.authorization || '';

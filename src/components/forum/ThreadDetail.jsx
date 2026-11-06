@@ -9,6 +9,7 @@ import { TrainerBadge } from '../TrainerBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, HeartIcon, MessageIcon, ShareIcon, SparklesIcon } from '../icons';
 import { ReactionBar } from './ReactionBar';
+import { useFriendsStore } from '../../store/useFriendsStore';
 import { DiaryBanner } from './DiaryBanner';
 import { isDiaryTopic, isTodayDiary } from '../../utils/forumDiary';
 import { BattleInviteCard } from '../BattleInviteCard';
@@ -62,6 +63,13 @@ export function ThreadDetail({
 }) {
     const isChat = isPinnedTopic(topic);
     const opMessage = messages.length > 0 ? messages[0] : null;
+    // Who can be @mentioned: the thread's voices, then friends (no network).
+    const friends = useFriendsStore((s) => s.friends);
+    const mentionCandidates = useMemo(() => [
+        ...[...messages].reverse().map((m) => m.creatorName),
+        topic.creatorName,
+        ...(friends || []).map((f) => f.displayName),
+    ].filter((name) => name && name !== 'Professor Oak'), [messages, topic.creatorName, friends]);
     const comments = useMemo(() => (messages.length > 1 ? messages.slice(1) : []), [messages]);
     const [commentSort, setCommentSort] = useState('old');
 
@@ -288,6 +296,7 @@ export function ThreadDetail({
                 <CommentComposer
                     ref={composerRef}
                     {...composerProps}
+                    mentionCandidates={mentionCandidates}
                     language={language}
                     t={t}
                 />

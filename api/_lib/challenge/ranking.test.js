@@ -79,3 +79,23 @@ describe('the daily ranking', () => {
         expect(rankProfileOf({ avatarPokemonId: -1, trainerLevel: 'nine' })).toMatchObject({ avatarPokemonId: null, level: null });
     });
 });
+
+describe('Sua liga (2026-11-06)', () => {
+    it('returns the circle with real places', async () => {
+        const { friendBoards } = await import('./ranking.js');
+        let ranks = finish(null, 'ana', { score: 1500 });
+        ranks = finish(ranks, 'x', { score: 1400 });
+        ranks = finish(ranks, 'me', { score: 1200 });
+        const f = friendBoards(ranks, 'me', ['ana']);
+        expect(f.daily.map((r) => [r.name, r.place, r.me])).toEqual([['ANA', 1, false], ['ME', 3, true]]);
+    });
+
+    it('names the friends a finish passed', async () => {
+        const { passedFriends } = await import('./ranking.js');
+        let before = finish(null, 'ana', { score: 1500 });
+        before = finish(before, 'bia', { score: 1300 });
+        const after = finish(before, 'me', { score: 1400 });
+        expect(passedFriends(before, after, 'daily', 'me', ['ana', 'bia'])).toEqual(['bia']);
+        expect(passedFriends(before, before, 'daily', 'me', ['bia'])).toEqual([]);
+    });
+});

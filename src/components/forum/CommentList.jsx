@@ -7,6 +7,7 @@ import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../ico
 import { Flag as FlagIcon } from 'lucide-react';
 import { ReactionBar } from './ReactionBar';
 import { isHiddenByReports } from '../../utils/forumRanking';
+import { splitMentions } from '../../utils/forumMentions';
 import { formatForumTime } from '../../utils/forumTime';
 import { buildCommentTree, displayAncestors } from '../../utils/forumTree';
 import { BattleInviteCard } from '../BattleInviteCard';
@@ -129,7 +130,9 @@ const CommentNode = memo(function CommentNode({
 
                 {comment.text && (isHiddenByReports(comment) && !isAdmin
                     ? <p className="cmt__text cmt__text--hidden">{t('forum.report.hidden')}</p>
-                    : <p className="cmt__text">{comment.text}</p>)}
+                    : <p className="cmt__text">{splitMentions(comment.text).map((part, i) => (part.mention
+                        ? <span key={i} className="cmt__mention">@{part.mention}</span>
+                        : <React.Fragment key={i}>{part.text}</React.Fragment>))}</p>)}
 
                 {comment.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={comment.sharedPuzzle} />}
                 {comment.sharedChallenge && <ChallengeShareCard share={comment.sharedChallenge} />}

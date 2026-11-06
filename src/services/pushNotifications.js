@@ -29,6 +29,9 @@ import { appId, VAPID_PUBLIC_KEY } from '../constants/firebase';
 const MASTER_KEY = 'ptb:browserNotifications';
 const DAILY_KEY = 'ptb:notify:dailyPuzzle';
 const CHALLENGE_KEY = 'ptb:notify:dailyChallenge';
+// The Pokégear's push (2026-11-06): replies and mentions. Opt-in, unlike the
+// daily ones — the server sends it only to `topics.social === true`.
+const SOCIAL_KEY = 'ptb:notify:social';
 const LOCAL_ENDPOINT_KEY = 'ptb:push:endpoint';
 
 const readFlag = (key, fallback) => {
@@ -55,6 +58,8 @@ export const setNotificationsEnabled = (enabled) => writeFlag(MASTER_KEY, enable
 export const getDailyPuzzleEnabled = () => readFlag(DAILY_KEY, true);
 /** The Champion Challenge's "new team" push — on unless turned off, like the puzzle's. */
 export const getDailyChallengeEnabled = () => readFlag(CHALLENGE_KEY, true);
+/** Replies and mentions on the forum — off unless the trainer asks. */
+export const getSocialEnabled = () => readFlag(SOCIAL_KEY, false);
 
 export const isPushSupported = () => (
     typeof window !== 'undefined'
@@ -126,7 +131,7 @@ export const describeSubscription = (subscription, { lang = 'en' } = {}) => {
         endpoint: json.endpoint,
         keys: { p256dh: json.keys?.p256dh || '', auth: json.keys?.auth || '' },
         lang: lang === 'pt' ? 'pt' : 'en',
-        topics: { battles: true, dailyPuzzle: getDailyPuzzleEnabled(), dailyChallenge: getDailyChallengeEnabled() },
+        topics: { battles: true, dailyPuzzle: getDailyPuzzleEnabled(), dailyChallenge: getDailyChallengeEnabled(), social: getSocialEnabled() },
         userAgent: typeof navigator !== 'undefined' ? String(navigator.userAgent).slice(0, 180) : '',
         updatedAt: Date.now(),
     };
@@ -282,6 +287,21 @@ export const setDailyPuzzleEnabled = async (enabled, { userId } = {}) => {
         );
     } catch (err) {
         console.error('Could not update the daily puzzle notification setting:', err);
+    }
+};
+
+/** Flip the Pokégear's push (replies, mentions), on this device and on the server's copy. */
+export const setSocialEnabled = async (enabled, { userId } = {}) => {
+    writeFlag(SOCIAL_KEY, enabled);
+    if (!db || !userId) return;
+    try {
+        const registration = await getRegistration();
+        const subscription = await registration?.pushManager?.getSubscription();
+        const endpoint = subscription?.toJSON()?.endpoint;
+        if (!endpoint) return;
+        await setDoc(subscriptionDoc(userId, endpoint), { topics: { social: enabled }, updatedAt: Date.now() }, { merge: true });
+    } catch (err) {
+        console.error('Could not update the social notification setting:', err);
     }
 };
 

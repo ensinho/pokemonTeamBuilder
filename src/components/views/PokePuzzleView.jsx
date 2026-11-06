@@ -25,6 +25,7 @@ import { localizePath } from '../../utils/localePath';
 import { deployBase } from '../../services/localeHistory';
 import { useForumStore } from '../../store/useForumStore';
 import { track } from '../../services/analytics';
+import { PuzzleDayPanel } from '../pokepuzzle/PuzzleDayPanel';
 import { Loader } from '../Loader';
 import { DecryptText } from '../DecryptText';
 import { TypeChip } from '../TypeChip';
@@ -1084,6 +1085,10 @@ export default function PokePuzzleView() {
 
     const isArchive = selectedDate !== getTodayDateString();
     const isWon = gameStatus === 'WON';
+    // The finished board as colour codes only (never letters), for the day's panel.
+    const dayShareRows = useMemo(() => (gameStatus === 'WON' || gameStatus === 'LOST')
+        ? (buildPuzzleShare({ guesses, target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [])
+        : [], [gameStatus, guesses, targetNormalized]);
     const targetTypes = targetDetails.types || [];
     const tipTabs = [
         { id: 'types', label: t('pokepuzzle.tipTypes'), locked: false },
@@ -1464,6 +1469,11 @@ export default function PokePuzzleView() {
                                                 })}
                                             </div>
                                         </div>
+                                    )}
+
+                                    {/* The day, together: the crowd's distribution and friends' grids (2026-11-06). */}
+                                    {mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0 && (
+                                        <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} />
                                     )}
 
                                     {/* After a daily win: the one moment "come back tomorrow" is worth asking. */}

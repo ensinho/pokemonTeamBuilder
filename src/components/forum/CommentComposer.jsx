@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { activeMention, insertMention, mentionSuggestions } from '../../utils/forumMentions';
 import { SendHorizontal } from 'lucide-react';
 import { CloseIcon, SwordsIcon, ClipIcon, StarIcon, ReplyIcon } from '../icons';
 import { AttachMenuPopover } from './AttachMenuPopover';
@@ -24,15 +25,32 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
     disabled = false,
     isSending = false,
     language = 'pt',
+    mentionCandidates = [],
     t,
 }, ref) {
     const [isAttachOpen, setIsAttachOpen] = useState(false);
+    // @mentions (2026-11-06): the partial before the caret, and who matches it.
+    const [mention, setMention] = useState(null);
+    const suggestions = mention ? mentionSuggestions(mentionCandidates, mention.query) : [];
+    const pickMention = (name) => {
+        const field = ref?.current;
+        if (!mention) return;
+        const next = insertMention(replyText, mention, name);
+        onReplyTextChange({ target: { value: next.text } });
+        setMention(null);
+        requestAnimationFrame(() => {
+            if (!field) return;
+            field.focus();
+            field.setSelectionRange(next.caret, next.caret);
+        });
+    };
     const attachButtonRef = useRef(null);
     const closeAttach = React.useCallback(() => setIsAttachOpen(false), []);
 
     // Auto-grow the field up to ~7 lines, then it scrolls.
     const handleTextChange = (e) => {
         onReplyTextChange(e);
+        setMention(activeMention(e.target.value, e.target.selectionStart ?? e.target.value.length));
         e.target.style.height = 'auto';
         e.target.style.height = `${Math.min(e.target.scrollHeight, 168)}px`;
     };
@@ -47,6 +65,15 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
     // Return key is the only way to start a new line, so it must not send
     // (the send button is right there). Ctrl/⌘+Enter sends everywhere.
     const handleKeyDown = (e) => {
+        if (suggestions.length && (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey))) {
+            e.preventDefault();
+            pickMention(suggestions[0]);
+            return;
+        }
+        if (e.key === 'Escape' && mention) {
+            setMention(null);
+            return;
+        }
         if (e.key !== 'Enter' || e.nativeEvent?.isComposing) return;
         const finePointer = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches;
         if ((e.metaKey || e.ctrlKey) || (finePointer && !e.shiftKey)) {
@@ -174,6 +201,23 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                     )}
                 </AttachMenuPopover>
 
+                {suggestions.length > 0 && (
+                    <div className="mention-suggest" role="listbox" aria-label={t('forum.mentionLabel')}>
+                        {suggestions.map((name) => (
+                            <button
+                                key={name}
+                                type="button"
+                                role="option"
+                                aria-selected={false}
+                                className="mention-suggest__item"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => pickMention(name)}
+                            >
+                                @{name}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 <textarea
                     ref={ref}
                     rows={1}
