@@ -61,7 +61,7 @@ export function TopicCreateModal({
 
     if (!isOpen) return null;
 
-    const categories = ['general', 'teams', 'strategy', ...(isAdmin ? ['announcements'] : [])];
+    const categories = ['general', 'teams', 'strategy', 'questions', 'adventures', ...(isAdmin ? ['announcements'] : [])];
 
     // Publish is never pre-disabled: an empty title is said next to the field.
     const handleSubmit = async (e) => {

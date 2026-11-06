@@ -8,6 +8,9 @@ import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, HeartIcon, MessageIcon, ShareIcon, SparklesIcon } from '../icons';
+import { ReactionBar } from './ReactionBar';
+import { DiaryBanner } from './DiaryBanner';
+import { isDiaryTopic, isTodayDiary } from '../../utils/forumDiary';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
 import { ChallengeShareCard } from '../ChallengeShareCard';
@@ -53,6 +56,7 @@ export function ThreadDetail({
     hasOlder = false,
     onLoadOlder,
     onLikeTopic,
+    onReactTopic,
     onShareTopic,
     focusCommentId = null,
 }) {
@@ -194,7 +198,9 @@ export function ThreadDetail({
 
                     <h1 ref={titleRef} className="thread-post__title">{topic.title}</h1>
 
-                    {bodyText && <p className="thread-post__text">{bodyText}</p>}
+                    {isDiaryTopic(topic)
+                        ? <DiaryBanner messages={messages} isToday={isTodayDiary(topic)} t={t} />
+                        : bodyText && <p className="thread-post__text">{bodyText}</p>}
 
                     {opTeam && (
                         <ForumTeamCard
@@ -234,6 +240,7 @@ export function ThreadDetail({
                             <span>{t('forum.share')}</span>
                         </button>
                     </div>
+                    <ReactionBar reactions={topic.reactions} userId={userId} onReact={(kind) => onReactTopic?.(topic.id, kind)} t={t} />
                 </article>
 
                 <section className="thread-comments" aria-label={isChat ? t('forum.chatTitle') : t('forum.commentsTitle')}>

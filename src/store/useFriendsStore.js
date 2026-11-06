@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { track } from '../services/analytics';
 import {
     collection,
     doc,
@@ -229,6 +230,7 @@ export const useFriendsStore = create((set, get) => ({
                 status: 'pending',
                 createdAt: new Date().toISOString(),
             });
+            track('friend_request');
             toast.success(t('toast.friendRequestSent'), {
                 actions: [{ label: t('toast.viewFriends'), onClick: () => navigateTo('/friends') }],
             });

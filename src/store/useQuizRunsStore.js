@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { track } from '../services/analytics';
 import { db } from '../services/firebase';
 import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
@@ -243,6 +244,7 @@ export const useQuizRunsStore = create((set, get) => {
             // A right answer, not an opened page, is what the journey counts.
             if (foundCount > 0) markJourney('quizGuess');
             const isComplete = foundCount === currentRun.totalCount;
+            if (isComplete && !currentRun.isComplete) track('quiz_finish', { mode: 'generation', total: currentRun.totalCount });
 
             const accuracyPercent = foundCount + invalidGuesses > 0
                 ? Math.round((foundCount / (foundCount + invalidGuesses)) * 100)

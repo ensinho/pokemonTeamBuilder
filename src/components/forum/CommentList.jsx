@@ -4,6 +4,9 @@ import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../icons';
+import { Flag as FlagIcon } from 'lucide-react';
+import { ReactionBar } from './ReactionBar';
+import { isHiddenByReports } from '../../utils/forumRanking';
 import { formatForumTime } from '../../utils/forumTime';
 import { buildCommentTree, displayAncestors } from '../../utils/forumTree';
 import { BattleInviteCard } from '../BattleInviteCard';
@@ -124,7 +127,9 @@ const CommentNode = memo(function CommentNode({
                     </button>
                 )}
 
-                {comment.text && <p className="cmt__text">{comment.text}</p>}
+                {comment.text && (isHiddenByReports(comment) && !isAdmin
+                    ? <p className="cmt__text cmt__text--hidden">{t('forum.report.hidden')}</p>
+                    : <p className="cmt__text">{comment.text}</p>)}
 
                 {comment.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={comment.sharedPuzzle} />}
                 {comment.sharedChallenge && <ChallengeShareCard share={comment.sharedChallenge} />}
@@ -163,6 +168,17 @@ const CommentNode = memo(function CommentNode({
                         <ShareIcon className="cmt-action__icon" />
                         <span className="cmt-action__label">{t('forum.share')}</span>
                     </button>
+                    {!canDelete && userId && (
+                        <button
+                            type="button"
+                            onClick={() => actions.report(comment)}
+                            className="cmt-action cmt-action--quiet"
+                            aria-label={t('forum.report.action')}
+                            title={t('forum.report.action')}
+                        >
+                            <FlagIcon className="cmt-action__icon" />
+                        </button>
+                    )}
                     {canDelete && (
                         <button
                             type="button"
@@ -175,6 +191,7 @@ const CommentNode = memo(function CommentNode({
                         </button>
                     )}
                 </div>
+                <ReactionBar reactions={comment.reactions} userId={userId} onReact={(kind) => actions.react(id, kind)} t={t} compact />
             </div>
 
             {hasChildren && (

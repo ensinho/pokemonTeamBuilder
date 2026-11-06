@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { track } from '../services/analytics';
 
 import { challengeApi } from '../services/challengeApi';
 import { DEFAULT_CHAMPION, isChampion } from '../utils/challengeChampions';
@@ -249,6 +250,7 @@ export const useChampionChallengeStore = create((set, get) => ({
                 next.ranks = p.ranks;
                 next.ranksByChampion = withChampionRanks(s.ranksByChampion, s.championId, p.ranks);
             }
+            if (ended) track('challenge_finish', { champion: s.championId, board: boardOfRun(s.run), result: p.status, practice: Boolean(s.run.practice) });
             if (ended && !s.run.practice) {
                 const official = { runId: s.run.runId, status: p.status, result: p.result };
                 next.official = official;

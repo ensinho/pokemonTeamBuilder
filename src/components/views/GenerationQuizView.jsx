@@ -1,5 +1,5 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { CheckCircle2, HelpCircle, LayoutGrid } from 'lucide-react';
+import { CheckCircle2, HelpCircle, LayoutGrid, Swords } from 'lucide-react';
 
 import '../../styles/generation-quiz-view.css';
 
@@ -31,6 +31,11 @@ import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { Loader } from '../Loader';
 import { toast } from '../../store/useToastStore';
+import { track } from '../../services/analytics';
+import { useSearchParams } from 'react-router-dom';
+import { decodeQuizDuel, encodeQuizDuel } from '../../utils/resultShareCode';
+import { shareLink } from '../../utils/forumShare';
+import { QuizDuelBanner } from '../QuizDuelBanner';
 import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
@@ -130,7 +135,11 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
     const [celebrationPokemon, setCelebrationPokemon] = useState(null);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
-    const [selectedGenerationKeys, setSelectedGenerationKeys] = useState(() => new Set(['generation-i']));
+    // A duel link (`?duel=`, social-heart D3) picks the same generations and
+    // carries the mark to beat.
+    const [searchParams] = useSearchParams();
+    const duel = useMemo(() => decodeQuizDuel(searchParams.get('duel')), [searchParams]);
+    const [selectedGenerationKeys, setSelectedGenerationKeys] = useState(() => new Set(duel ? duel.generations : ['generation-i']));
     const [answerInput, setAnswerInput] = useState('');
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [currentTip, setCurrentTip] = useState('');
@@ -733,8 +742,19 @@ export function GenerationQuizView({ showDetails, showToast }) {
         });
     };
 
+    // Challenge a friend to this exact quiz, with my mark to beat.
+    const shareDuel = async () => {
+        const code = encodeQuizDuel({ generations: activeRun?.generationKeys || [...selectedGenerationKeys], found: foundCount, total: totalCount });
+        if (!code) return;
+        const url = `${window.location.origin}${window.location.pathname}?duel=${code}`;
+        const outcome = await shareLink({ title: t('quiz.duel.shareTitle'), text: t('quiz.duel.shareText', { found: foundCount, total: totalCount }), url });
+        if (outcome === 'copied') toast.success(t('quiz.duel.copied'));
+        if (outcome === 'shared' || outcome === 'copied') track('quiz_duel_share', { found: foundCount, total: totalCount });
+    };
+
     return (
         <main className={`generation-quiz ${quizStarted ? 'generation-quiz--running' : ''}`}>
+            {duel && <QuizDuelBanner duel={duel} found={quizStarted ? foundCount : null} t={t} />}
             {!quizStarted ? (
                 <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel" aria-labelledby="generation-quiz-title">
                     {/* The shell's header already names the page; the panel says
@@ -934,6 +954,11 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                     <button type="button" onClick={restartRun} className="generation-quiz__compact-reset-btn">
                                         <RefreshIcon /> {t('games.restart')}
                                     </button>
+                                    {foundCount > 0 && (
+                                        <button type="button" onClick={shareDuel} className="generation-quiz__compact-reset-btn">
+                                            <Swords aria-hidden="true" /> {t('quiz.duel.share')}
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={handleExitQuizClick}

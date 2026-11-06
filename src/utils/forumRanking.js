@@ -1,3 +1,4 @@
+import { isDiaryTopic, isTodayDiary } from './forumDiary.js';
 // Feed ranking for the forum: the Reddit vocabulary (Hot / New / Top, pinned
 // megathreads, a "trending" list) computed from the topic documents the feed
 // already streams. Pure — the feed, the rail and the tests share it.
@@ -11,23 +12,35 @@ export const TRENDING_LIMIT = 5;
 
 export const FEED_SORTS = ['hot', 'new', 'top'];
 export const DEFAULT_FEED_SORT = 'hot';
-export const FORUM_CATEGORY_IDS = ['all', 'general', 'teams', 'strategy', 'announcements'];
+export const FORUM_CATEGORY_IDS = ['all', 'diary', 'general', 'teams', 'strategy', 'questions', 'adventures', 'announcements'];
 
 const timeOf = (iso) => {
     const ms = iso ? Date.parse(iso) : NaN;
     return Number.isFinite(ms) ? ms : 0;
 };
 
-/** Seeded by the app (Professor Oak): the community's standing megathreads. */
-export const isPinnedTopic = (topic) => topic?.createdBy === 'system';
+/**
+ * Seeded by the app (Professor Oak): the community's standing megathreads —
+ * and today's Diário do dia (utils/forumDiary.js); a past day's diary reads
+ * like any topic.
+ */
+export const isPinnedTopic = (topic, now = Date.now()) => topic?.createdBy === 'system'
+    && (!isDiaryTopic(topic) || isTodayDiary(topic, now));
+
+/** Battle-text reactions (2026-11-06) count with likes: one per trainer. */
+export const reactionCount = (item) => Object.keys(item?.reactions || {}).length;
+
+/** Hidden once three trainers reported it, until an admin looks. */
+export const REPORT_HIDE_AT = 3;
+export const isHiddenByReports = (item) => (Array.isArray(item?.reportedBy) ? item.reportedBy.length : 0) >= REPORT_HIDE_AT;
 
 /** The opening post is message one, so it is not a reply. */
 export const topicReplies = (topic) => Math.max(0, (Number(topic?.messageCount) || 0) - 1);
 
 /** The likedBy array is the truth when present; the counter can drift. */
 export const topicLikes = (topic) => {
-    if (Array.isArray(topic?.likedBy)) return topic.likedBy.length;
-    return Math.max(0, Number(topic?.likeCount) || 0);
+    if (Array.isArray(topic?.likedBy)) return topic.likedBy.length + reactionCount(topic);
+    return Math.max(0, Number(topic?.likeCount) || 0) + reactionCount(topic);
 };
 
 export const isTopicLikedBy = (topic, userId) =>
@@ -83,9 +96,11 @@ export function rankTopics(topics, sort = DEFAULT_FEED_SORT, now = Date.now()) {
             rows: list.sort((a, b) => topicEngagement(b) - topicEngagement(a) || byActivity(a, b)),
         };
     }
-    const pinned = list.filter(isPinnedTopic).sort(byActivity);
+    // Today's diary first among the pinned: it is the day's room.
+    const pinned = list.filter((t) => isPinnedTopic(t, now))
+        .sort((a, b) => Number(isDiaryTopic(b)) - Number(isDiaryTopic(a)) || byActivity(a, b));
     const rows = list
-        .filter((t) => !isPinnedTopic(t))
+        .filter((t) => !isPinnedTopic(t, now) && !isHiddenByReports(t))
         .map((t) => ({ t, s: hotScore(t, now) }))
         .sort((a, b) => b.s - a.s || byActivity(a.t, b.t))
         .map(({ t }) => t);

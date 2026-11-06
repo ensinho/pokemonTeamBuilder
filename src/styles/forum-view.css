@@ -253,6 +253,9 @@
 .forum-category-dot--teams { background-color: var(--color-success); }
 .forum-category-dot--strategy { background-color: var(--color-warning); }
 .forum-category-dot--announcements { background-color: var(--color-danger); }
+.forum-category-dot--diary { background-color: var(--brand-gold); }
+.forum-category-dot--questions { background-color: var(--color-primary); }
+.forum-category-dot--adventures { background-color: var(--color-success); }
 
 /* The category as a pill, for the thread header. It used to be written in the
    markup with no rule behind it at all, so it rendered as loose text in the
@@ -3726,4 +3729,174 @@
     .totw { margin-inline: 0; padding: var(--space-3); }
     .totw__roster { width: 100%; justify-content: space-between; }
     .totw__slot { width: auto; flex: 1 1 0; aspect-ratio: 1; height: auto; }
+}
+
+/* ── Battle-text reactions (2026-11-06, ReactionBar.jsx) ──────────────────
+   The games' battle box: a small text panel with a type-coloured edge
+   (`--react`, the reaction's canon colour mixed into tokens). At rest only
+   the kinds someone used; the four open in place, in one row. */
+.reactions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+    margin-top: var(--space-2);
+}
+
+.reaction-chip,
+.reaction-option {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2_5);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--react) 10%, var(--color-surface-raised));
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--react) 75%, var(--color-fg));
+    color: var(--color-fg);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    transition: background-color var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
+}
+
+.reaction-chip:hover,
+.reaction-option:hover {
+    background: color-mix(in srgb, var(--react) 18%, var(--color-surface-raised));
+}
+
+.reaction-chip:active,
+.reaction-option:active {
+    scale: 0.96;
+}
+
+.reaction-chip.is-mine,
+.reaction-option.is-mine {
+    background: color-mix(in srgb, var(--react) 24%, var(--color-surface-raised));
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--react) 75%, var(--color-fg)), inset 0 0 0 1px color-mix(in srgb, var(--react) 55%, transparent);
+}
+
+.reaction-chip__count {
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.reaction-trigger {
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-full);
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+}
+
+.reaction-trigger:hover,
+.reaction-trigger.is-open {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.reaction-chip:focus-visible,
+.reaction-option:focus-visible,
+.reaction-trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.reaction-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+    flex-basis: 100%;
+    animation: reaction-picker-in var(--duration-pop) var(--ease-out-expo) both;
+}
+
+@keyframes reaction-picker-in {
+    from { opacity: 0; transform: translateY(calc(var(--space-1) * -1)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reaction-picker { animation: none; }
+}
+
+.cmt__text--hidden {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+.cmt-action--quiet {
+    opacity: 0.6;
+}
+
+/* ── The Diário do dia (2026-11-06, DiaryBanner.jsx) ─────────────────────
+   The day's room: the mascot at the counter, the count of results that
+   arrived, and the day's two doors. A fill, not a box in a box. */
+.diary-banner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--brand-gold) 9%, var(--color-surface-raised));
+}
+
+.diary-banner__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.diary-banner__lead {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.diary-banner__count {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.diary-banner__doors {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    gap: var(--space-2);
+}
+
+.diary-door {
+    display: inline-flex;
+    flex: 1 1 10rem;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--control-h-md);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.diary-door:hover {
+    background: var(--color-surface-hover);
+}
+
+.diary-door:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.diary-door svg {
+    width: 1rem;
+    height: 1rem;
 }

@@ -1180,3 +1180,53 @@
         display: none;
     }
 }
+
+/* ── The quiz duel (2026-11-06, QuizDuelBanner.jsx) ─────────────────────
+   One line above the quiz: the mascot squaring up, the mark to beat, and
+   both figures once the run starts. Passing the mark is the one moment. */
+.quiz-duel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface-raised));
+}
+
+.quiz-duel.is-passed {
+    background: color-mix(in srgb, var(--brand-gold) 14%, var(--color-surface-raised));
+}
+
+.quiz-duel__text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.quiz-duel__title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.quiz-duel__sub {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.quiz-duel__score {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: baseline;
+    gap: var(--space-1_5);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
+}
+
+.quiz-duel__vs {
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+}

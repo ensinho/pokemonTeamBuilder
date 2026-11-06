@@ -189,6 +189,12 @@ export function FeedView({ showToast, navigate }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- the URL drives the store, not the reverse
     }, [topicParam]);
 
+    // Today's Diário do dia exists once anyone signed in opens the forum, so
+    // it heads the feed before the first result is shared.
+    useEffect(() => {
+        if (userId) useForumStore.getState().ensureDiary();
+    }, [userId]);
+
     useEffect(() => {
         initTopicsListener();
         return () => {
@@ -477,6 +483,17 @@ export function FeedView({ showToast, navigate }) {
         importTeam: handleImportTeam,
         openProfile: (data) => openProfile(data),
         hoverSlot: setHoveredSlot,
+        react: (messageId, kind) => useForumStore.getState().setReaction(currentTopicId, messageId, kind),
+        report: async (message) => {
+            const ok = await confirmAction({
+                title: t('forum.report.title'),
+                message: t('forum.report.message'),
+                confirmText: t('forum.report.confirm'),
+            });
+            if (!ok) return;
+            const done = await useForumStore.getState().reportPost(currentTopicId, message.id, 'other');
+            showToast?.(t(done ? 'forum.report.done' : 'forum.report.failed'), done ? 'success' : 'error');
+        },
     });
 
     const popoverAnchor = useMemo(() => ({ current: hoveredSlot?.ref || null }), [hoveredSlot]);
@@ -581,6 +598,7 @@ export function FeedView({ showToast, navigate }) {
                             hasOlder={hasOlderMessages}
                             onLoadOlder={loadOlderMessages}
                             onLikeTopic={(id, opMessage) => toggleTopicLike(id, { opMessage })}
+                            onReactTopic={(id, kind) => useForumStore.getState().setReaction(id, null, kind)}
                             onShareTopic={rowActions.share}
                             focusCommentId={commentParam}
                         />

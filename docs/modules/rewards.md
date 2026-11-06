@@ -11,7 +11,7 @@ no item ever gates a feature.
 
 | File | Role |
 |---|---|
-| `src/utils/trainerLevel.js` | **XP and levels, pure.** `XP_RULES` (missions, journeys, badges, active days, puzzle wins, quizzes, teams ≤ 20, forum posts ≤ 100), `CHECKIN_CYCLE_XP` (10·10·15·15·20·20·50), `computeTrainerXp(stats, { badgeIds, journeyBadgeIds, checkinCount })`, `xpForLevel` (each step costs 25 more: L10 = 1800, L20 = 6175), `levelForXp`. |
+| `src/utils/trainerLevel.js` | **XP and levels, pure.** `XP_RULES` (missions, journeys, badges, active days, puzzle wins, quizzes, teams ≤ 20, forum posts ≤ 100, and since 2026-11-06 official Champion wins: 30, +20 with the Time do dia), `CHECKIN_CYCLE_XP` (10·10·15·15·20·20·50), `computeTrainerXp(stats, { badgeIds, journeyBadgeIds, checkinCount })`, `xpForLevel` (each step costs 25 more: L10 = 1800, L20 = 6175), `levelForXp`. |
 | `src/utils/dailyCheckin.js` | **The check-in, pure.** `applyCheckin({ checkin, streak }, today)` → next state + result (XP, cycle day, shield used/earned); `liveStreak`, `checkinCalendar`, local `YYYY-MM-DD` days, `dayDiff` in UTC so DST never makes a day 23 h. |
 | `src/constants/cosmetics.js` | **The catalogue.** `COSMETICS` — id, kind (`frame` / `title` / `theme`), unlock (`level`, `badge`, `journeys`, `checkins`), frame ring colours (canon type / Poké Ball colours). Names in `translations.js` → `rewards.items.<id>.name`. |
 | `src/utils/rewards.js` | **Rewards logic, pure.** `isRewardEarned`, `newlyEarnedRewards`, `levelTrack`, `nextLevelReward`, `unlockLabel`, `frameProps(frameId)` (the `data-frame` attribute + ring colours), `validEquip`, and the recorded copy: `normalizeRewards` / `mergeRewards`. |

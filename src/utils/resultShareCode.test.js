@@ -57,3 +57,18 @@ describe('Champion Challenge result code', () => {
         ]) expect(decodeChallengeResult(bad), bad).toBeNull();
     });
 });
+
+describe('quiz duel code', () => {
+    it('round-trips the generations and the mark', async () => {
+        const { encodeQuizDuel, decodeQuizDuel } = await import('./resultShareCode');
+        const code = encodeQuizDuel({ generations: ['generation-i', 'generation-iv'], found: 87, total: 258 });
+        expect(decodeQuizDuel(code)).toEqual({ generations: ['generation-i', 'generation-iv'], found: 87, total: 258 });
+    });
+    it('refuses anything malformed', async () => {
+        const { encodeQuizDuel, decodeQuizDuel } = await import('./resultShareCode');
+        expect(encodeQuizDuel({ generations: [], found: 1, total: 2 })).toBe('');
+        expect(decodeQuizDuel('zz.1.2')).toBeNull();
+        expect(decodeQuizDuel('1.9.2')).toBeNull();
+        expect(decodeQuizDuel('<script>')).toBeNull();
+    });
+});
