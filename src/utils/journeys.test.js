@@ -202,7 +202,8 @@ describe('persona journeys', () => {
     it('stay out of the levels', async () => {
         const { evaluatePersonaJourneys, PERSONA_JOURNEYS } = await import('./journeys');
         expect(evaluateJourneys({}).some((j) => j.persona)).toBe(false);
-        expect(evaluatePersonaJourneys({}).map((j) => j.persona)).toEqual(['strategist', 'traveler', 'challenger']);
+        expect(evaluatePersonaJourneys({}).filter((j) => j.chapter === 1).map((j) => j.persona)).toEqual(['strategist', 'traveler', 'challenger']);
+        expect(evaluatePersonaJourneys({}).filter((j) => j.chapter === 2).map((j) => j.persona)).toEqual(['strategist', 'traveler', 'challenger', 'master']);
         const ids = [...JOURNEYS, ...PERSONA_JOURNEYS].flatMap((j) => j.missions.map((m) => m.id));
         expect(new Set(ids).size).toBe(ids.length);
     });
@@ -210,8 +211,8 @@ describe('persona journeys', () => {
     it('are shown to their persona, all three to the Master', async () => {
         const { evaluatePersonaJourneys, personaJourneyFilter } = await import('./journeys');
         const all = evaluatePersonaJourneys({});
-        expect(all.filter(personaJourneyFilter('traveler')).map((j) => j.id)).toEqual(['persona-traveler']);
-        expect(all.filter(personaJourneyFilter('master'))).toHaveLength(3);
+        expect(all.filter(personaJourneyFilter('traveler')).map((j) => j.id)).toEqual(['persona-traveler', 'persona-traveler-2']);
+        expect(all.filter(personaJourneyFilter('master')).map((j) => j.id)).toEqual(['persona-strategist', 'persona-traveler', 'persona-challenger', 'persona-master-2']);
         expect(all.filter(personaJourneyFilter(null))).toHaveLength(0);
     });
 
@@ -227,5 +228,24 @@ describe('persona journeys', () => {
         const partial = evaluatePersonaJourneys({ pokepuzzleWins: 1 })[2];
         expect(partial.missions[0].progress).toEqual({ current: 1, target: 3 });
         expect(partial.isComplete).toBe(false);
+    });
+});
+
+describe('persona chapter 2 (2026-11-06)', () => {
+    it('opens after chapter 1, the Master after any one', async () => {
+        const { evaluatePersonaJourneys, isChapterOpen } = await import('./journeys');
+        const fresh = evaluatePersonaJourneys({});
+        const ch2 = fresh.find((j) => j.id === 'persona-challenger-2');
+        expect(isChapterOpen(ch2, fresh)).toBe(false);
+        const done = evaluatePersonaJourneys({ pokepuzzleWins: 3, bestStreak: 3, perfectQuizzesCount: 1, challenge: { winsBy: { cynthia: 1 } } });
+        expect(isChapterOpen(done.find((j) => j.id === 'persona-challenger-2'), done)).toBe(true);
+        expect(isChapterOpen(done.find((j) => j.id === 'persona-master-2'), done)).toBe(true);
+        expect(isChapterOpen(done.find((j) => j.id === 'persona-traveler-2'), done)).toBe(false);
+    });
+
+    it('reads the social marks', async () => {
+        const { evaluatePersonaJourneys } = await import('./journeys');
+        const j = evaluatePersonaJourneys({ marks: { diaryShare: true, quizDuelWon: true, beatFriend: true, podium: true } });
+        expect(j.find((x) => x.id === 'persona-challenger-2').isComplete).toBe(true);
     });
 });

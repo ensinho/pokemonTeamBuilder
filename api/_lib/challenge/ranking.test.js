@@ -99,3 +99,19 @@ describe('Sua liga (2026-11-06)', () => {
         expect(passedFriends(before, before, 'daily', 'me', ['bia'])).toEqual([]);
     });
 });
+
+describe('weekly season (2026-11-06)', () => {
+    it('sums each day’s best and ranks by the total', async () => {
+        const { nextWeekRanks, publicWeekRanks, forgetPlayer } = await import('./ranking.js');
+        let w = nextWeekRanks(null, { weekKey: '2026-W45', dayKey: '2026-11-02', uid: 'ana', name: 'Ana', score: 1500, at: 'a' });
+        w = nextWeekRanks(w, { weekKey: '2026-W45', dayKey: '2026-11-02', uid: 'ana', name: 'Ana', score: 1200, at: 'b' });
+        w = nextWeekRanks(w, { weekKey: '2026-W45', dayKey: '2026-11-03', uid: 'bia', name: 'Bia', score: 1300, at: 'c' });
+        w = nextWeekRanks(w, { weekKey: '2026-W45', dayKey: '2026-11-04', uid: 'bia', name: 'Bia', score: 1300, at: 'd' });
+        expect(w.entries.map((e) => [e.uid, e.score])).toEqual([['bia', 2600], ['ana', 1500]]);
+        const shown = publicWeekRanks(w, 'ana', 10, ['bia']);
+        expect(shown.mine).toBe(2);
+        expect(shown.list[0]).toMatchObject({ name: 'Bia', days: 2, place: 1 });
+        expect(shown.podium).toEqual(['bia', 'ana']);
+        expect(forgetPlayer(w, 'bia').entries.map((e) => e.uid)).toEqual(['ana']);
+    });
+});

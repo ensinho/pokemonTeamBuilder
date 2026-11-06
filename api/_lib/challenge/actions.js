@@ -13,7 +13,7 @@ import { fail } from './errors.js';
 import {
     effectiveStreak, nextStats, resultOf, statsOf, withStats,
 } from './outcome.js';
-import { boardOf, forgetPlayer, nextRanks, passedFriends, placeOf, publicRanks } from './ranking.js';
+import { boardOf, forgetPlayer, nextRanks, nextWeekRanks, passedFriends, placeOf, publicRanks, publicWeekRanks } from './ranking.js';
 import { aceFor, championTeamTextFor, difficultyFor } from './rotation.js';
 import {
     buildDayDoc, officialRunId, paths, practiceRunId,
@@ -253,8 +253,10 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
         const viewer = caller.isAnonymous ? null : caller.uid;
         const friendUids = viewer ? await friendUidsOf(viewer) : [];
         const allRanks = await Promise.all(CHAMPION_IDS.map(async (id) => {
-            const snap = await ref(p.ranks(dayKey, id)).get();
-            return [id, publicRanks(snap.exists ? snap.data() : null, viewer, 10, friendUids)];
+            const [snap, weekSnap] = await Promise.all([ref(p.ranks(dayKey, id)).get(), ref(p.week(isoWeekOf(dayKey), id)).get()]);
+            const day = publicRanks(snap.exists ? snap.data() : null, viewer, 10, friendUids);
+            const week = publicWeekRanks(weekSnap.exists ? weekSnap.data() : null, viewer, 10, friendUids);
+            return [id, day || week ? { ...(day || { boards: {}, mine: {} }), week } : null];
         }));
         base.ranksByChampion = Object.fromEntries(allRanks);
         base.ranks = base.ranksByChampion[championId];
@@ -488,6 +490,7 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
             const ranksSnap = statsSnap ? await tx.get(ref(p.ranks(run.dayKey, championId))) : null;
             // A win takes a place, and the row shows the trainer's public profile.
             const profileSnap = ranksSnap && status === 'won' ? await tx.get(ref(p.profile(caller.uid))) : null;
+            const weekSnap = ranksSnap && status === 'won' ? await tx.get(ref(p.week(isoWeekOf(run.dayKey), championId))) : null;
             if (fresh.data()?.turn !== run.turn || fresh.data()?.status !== 'active') {
                 throw fail(409, 'staleTurn', { turn: fresh.data()?.turn ?? run.turn });
             }
@@ -527,6 +530,13 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
                     profile: profileSnap?.exists ? profileSnap.data() : null,
                 });
                 tx.set(ref(p.ranks(run.dayKey, championId)), nextRanksDoc);
+            }
+            // The week's season: this day's best for this trainer, summed.
+            if (weekSnap) {
+                tx.set(ref(p.week(isoWeekOf(run.dayKey), championId)), nextWeekRanks(weekSnap.exists ? weekSnap.data() : null, {
+                    weekKey: isoWeekOf(run.dayKey), dayKey: run.dayKey, uid: caller.uid, name: secret.names?.p1 || 'Trainer',
+                    score: result?.score ?? 0, at: stamp, profile: profileSnap?.exists ? profileSnap.data() : null,
+                }));
             }
             if (out.ended && trainingRows.length) {
                 // Anonymous by construction: no uid, run id, names, team text or time of day.
@@ -629,5 +639,26 @@ export const createChallengeService = ({ db, appId, now = () => Date.now(), rand
         return { removed };
     };
 
-    return { ensureDay, state, start, choose, forfeit, forget };
+    /**
+     * "Como venceu" (2026-11-06, social-heart C2): the win-chance curve of a
+     * podium run — only for a trainer on today's top three of that board,
+     * who has a public profile (the row already carries their uid). The
+     * curve is a list of numbers: no team, no choices, no log.
+     */
+    const report = async (caller, body) => {
+        const championId = CHAMPION_IDS.includes(body.championId) ? body.championId : CHAMPION_IDS[0];
+        const board = body.board === 'free' ? 'free' : 'daily';
+        const uid = String(body.uid || '');
+        const dayKey = String(body.dayKey || '');
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(uid) || !/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) throw fail(400, 'badRequest');
+        const ranksSnap = await ref(p.ranks(dayKey, championId)).get();
+        const top = (ranksSnap.exists ? ranksSnap.data().boards?.[board] || [] : []).slice(0, 3);
+        const row = top.find((entry) => entry.uid === uid && entry.profile);
+        if (!row) throw fail(404, 'notOnPodium');
+        const run = await ref(p.run(officialRunId(uid, dayKey, championId, board))).get();
+        const data = run.exists ? run.data() : {};
+        return { curve: data.winChanceCurve || null, marks: data.winChanceMarks || null, turns: row.turns, remaining: row.remaining };
+    };
+
+    return { ensureDay, state, start, choose, forfeit, forget, report };
 };

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { markJourney } from '../store/useAuthStore';
 import { Mascot } from './Mascot';
 
 /**
@@ -10,6 +11,10 @@ import { Mascot } from './Mascot';
 export function QuizDuelBanner({ duel, found = null, t }) {
     const playing = Number.isInteger(found);
     const passed = playing && found > duel.found;
+    // The Rival chapter: a duel's mark beaten (persona journeys, 2026-11-06).
+    useEffect(() => {
+        if (passed) markJourney('quizDuelWon');
+    }, [passed]);
     const gens = duel.generations.map((key) => key.replace('generation-', '').toUpperCase()).join(' · ');
     return (
         <div className={`quiz-duel ${passed ? 'is-passed' : ''}`} role="status" aria-live="polite">

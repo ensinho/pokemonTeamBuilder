@@ -84,9 +84,60 @@ const playersOf = (boards) => [...new Set(BOARDS.flatMap((board) => (boards[boar
  * counts stay (they are totals, nobody's in particular).
  */
 export const forgetPlayer = (doc, uid) => {
+    // A week's season doc (nextWeekRanks) keeps its rows in `entries`.
+    if (Array.isArray(doc?.entries)) {
+        const entries = doc.entries.filter((entry) => entry.uid !== uid);
+        return { ...doc, entries, players: entries.map((e) => e.uid) };
+    }
     if (!doc?.boards) return doc;
     const boards = Object.fromEntries(BOARDS.map((board) => [board, (doc.boards[board] || []).filter((entry) => entry.uid !== uid)]));
     return { ...doc, boards, players: playersOf(boards) };
+};
+
+// ── The weekly season (2026-11-06, docs/plans/social-heart.md C3) ─────────
+// One doc per ISO week per champion: each trainer's best official score of
+// each day (either board), summed. Seven good days beat one great one.
+
+const byTotal = (a, b) => b.score - a.score || String(a.at).localeCompare(String(b.at));
+
+/** The season after one official win. */
+export const nextWeekRanks = (doc, { weekKey, dayKey, uid, name, score, at, profile = null }) => {
+    const entries = Array.isArray(doc?.entries) ? doc.entries.map((e) => ({ ...e, days: { ...e.days } })) : [];
+    let row = entries.find((e) => e.uid === uid);
+    if (!row) {
+        row = { uid, name, days: {}, score: 0, at, profile: rankProfileOf(profile) };
+        entries.push(row);
+    }
+    row.name = name || row.name;
+    if (profile) row.profile = rankProfileOf(profile);
+    row.days[dayKey] = Math.max(row.days[dayKey] || 0, Number(score) || 0);
+    row.score = Object.values(row.days).reduce((sum, n) => sum + n, 0);
+    row.at = at;
+    const sorted = entries.sort(byTotal).slice(0, RANK_LIMIT);
+    return { weekKey, entries: sorted, players: sorted.map((e) => e.uid), updatedAt: at };
+};
+
+/** What the screen gets of a season: the top, the caller's place, friends. */
+export const publicWeekRanks = (doc, uid, top = 10, friendUids = []) => {
+    if (!Array.isArray(doc?.entries)) return null;
+    const shape = (e, index) => ({
+        name: e.name,
+        score: e.score,
+        days: Object.keys(e.days || {}).length,
+        profile: e.profile || null,
+        uid: e.profile && e.uid ? e.uid : null,
+        me: Boolean(uid) && e.uid === uid,
+        place: index + 1,
+    });
+    const circle = new Set([uid, ...friendUids]);
+    const myIndex = uid ? doc.entries.findIndex((e) => e.uid === uid) : -1;
+    return {
+        weekKey: doc.weekKey,
+        list: doc.entries.slice(0, top).map(shape),
+        mine: myIndex === -1 ? null : myIndex + 1,
+        friends: friendUids.length ? doc.entries.map(shape).filter((r, i) => circle.has(doc.entries[i].uid)) : null,
+        podium: doc.entries.slice(0, 3).map((e) => e.uid),
+    };
 };
 
 /** A player's 1-based place on a board, or null (didn't win, or outside the top). */

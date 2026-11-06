@@ -1,4 +1,5 @@
 import { isDiaryTopic, isTodayDiary } from './forumDiary.js';
+import { isCurrentWeekly, isWeeklyTopic } from './forumWeekly.js';
 // Feed ranking for the forum: the Reddit vocabulary (Hot / New / Top, pinned
 // megathreads, a "trending" list) computed from the topic documents the feed
 // already streams. Pure — the feed, the rail and the tests share it.
@@ -25,7 +26,8 @@ const timeOf = (iso) => {
  * like any topic.
  */
 export const isPinnedTopic = (topic, now = Date.now()) => topic?.createdBy === 'system'
-    && (!isDiaryTopic(topic) || isTodayDiary(topic, now));
+    && (!isDiaryTopic(topic) || isTodayDiary(topic, now))
+    && (!isWeeklyTopic(topic) || isCurrentWeekly(topic, now));
 
 /** Battle-text reactions (2026-11-06) count with likes: one per trainer. */
 export const reactionCount = (item) => Object.keys(item?.reactions || {}).length;
@@ -35,7 +37,9 @@ export const REPORT_HIDE_AT = 3;
 export const isHiddenByReports = (item) => (Array.isArray(item?.reportedBy) ? item.reportedBy.length : 0) >= REPORT_HIDE_AT;
 
 /** The opening post is message one, so it is not a reply. */
-export const topicReplies = (topic) => Math.max(0, (Number(topic?.messageCount) || 0) - 1);
+export const topicReplies = (topic) => Math.max(0, (Number(topic?.messageCount) || 0)
+    // The day's and the week's rooms have no opening message (2026-11-06).
+    - (isDiaryTopic(topic) || isWeeklyTopic(topic) ? 0 : 1));
 
 /** The likedBy array is the truth when present; the counter can drift. */
 export const topicLikes = (topic) => {

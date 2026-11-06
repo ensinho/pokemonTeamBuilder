@@ -3945,3 +3945,376 @@
     color: var(--color-primary);
     font-weight: 600;
 }
+
+/* A champion's line on the day (2026-11-06, ChampionNote.jsx). */
+.champion-note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.champion-note__art {
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.champion-note__text {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+/* ── The Torneio da semana (2026-11-06, WeeklyBanner.jsx) ───────────────── */
+.weekly-banner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-raised));
+}
+
+.weekly-banner__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.weekly-banner__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.weekly-banner__theme {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: 600;
+}
+
+.weekly-banner__how {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+}
+
+.weekly-banner__podium {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.weekly-banner__place {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, auto) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    font-size: var(--text-sm);
+}
+
+.weekly-banner__rank {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+.weekly-banner__place.is-1 .weekly-banner__rank {
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+}
+
+.weekly-banner__rank svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.weekly-banner__name {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.weekly-banner__team {
+    overflow: hidden;
+    color: var(--color-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.weekly-banner__votes {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.weekly-banner__cta {
+    align-self: flex-start;
+}
+
+/* Pergunte ao Professor (2026-11-06): the accepted answer wears gold. */
+.cmt__accepted {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-bottom: var(--space-1);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    font-size: var(--text-2xs);
+    font-weight: 700;
+}
+
+.cmt__accepted svg {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+/* "Avalie meu time" (2026-11-06): the composer's three verdicts and the
+   thread's evolution-line tally. */
+.rating-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.rating-chips__label {
+    margin-right: var(--space-1);
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.rating-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2) 0 var(--space-1);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: var(--text-xs);
+    font-weight: 600;
+}
+
+.rating-chip img {
+    width: 1.5rem;
+    height: 1.5rem;
+    image-rendering: pixelated;
+}
+
+.rating-chip[aria-pressed='true'] {
+    background: var(--color-fg);
+    color: var(--color-bg);
+}
+
+.rating-chip:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.rating-verdict {
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.rating-verdict__line {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rating-verdict__stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-0_5);
+    opacity: 0.5;
+    transition: opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.rating-verdict__stage img {
+    width: 2.75rem;
+    height: 2.75rem;
+    object-fit: contain;
+    filter: grayscale(0.6);
+    transition: transform var(--duration-slow) var(--ease-spring);
+}
+
+.rating-verdict__stage.is-top {
+    opacity: 1;
+}
+
+.rating-verdict__stage.is-top img {
+    width: 4rem;
+    height: 4rem;
+    filter: none;
+    transform: translateY(calc(var(--space-1) * -1));
+}
+
+.rating-verdict__name {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-align: center;
+}
+
+.rating-verdict__count {
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+}
+
+.rating-verdict__caption {
+    margin: var(--space-2) 0 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    text-align: center;
+}
+
+/* A shared Badge Case (2026-11-06, BadgeCaseCard.jsx) and a comment's verdict. */
+.badge-case-card {
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.badge-case-card__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+}
+
+.badge-case-card__head span {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.badge-case-card__gems {
+    display: flex;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.badge-case-card__gem {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--gem) 14%, var(--color-surface));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gem) 35%, var(--color-border));
+}
+
+.badge-case-card__gem.is-won {
+    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--gem) 45%, var(--color-fg)) 0%, var(--gem) 60%);
+    box-shadow: none;
+}
+
+.badge-case-card__next {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-sm);
+}
+
+.cmt__rating {
+    display: inline-block;
+    margin-top: var(--space-1);
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+/* Quem é esse Pokémon? (2026-11-06): a silhouette until you name it. */
+.diary-whos {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.diary-whos__art {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: contain;
+    filter: brightness(0);
+    transition: filter var(--duration-slow) var(--ease-out-expo);
+}
+
+.diary-whos.is-revealed .diary-whos__art {
+    filter: none;
+}
+
+.diary-whos__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    font-size: var(--text-sm);
+}
+
+.diary-whos__text span {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.cmt__text--secret {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+/* In the action row: no line of its own; the open picker wraps below. */
+.reactions--inline {
+    display: contents;
+}
+
+.reactions--inline .reaction-picker {
+    order: 99;
+    padding-top: var(--space-1);
+}
+
+.cmt__actions,
+.thread-post__actions {
+    flex-wrap: wrap;
+}
+
+/* Phones: the verdict row stays one line — the evolution stage alone says
+   it, the chosen one names itself. */
+@media (max-width: 639px) {
+    .rating-chip:not([aria-pressed='true']) span {
+        display: none;
+    }
+
+    .rating-chip:not([aria-pressed='true']) {
+        padding-right: var(--space-1);
+    }
+}

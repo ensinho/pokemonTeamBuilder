@@ -25,3 +25,17 @@ describe('forum diary', () => {
         expect(diaryDateLabel('bad')).toBe('');
     });
 });
+
+describe('Quem é esse Pokémon?', () => {
+    it('runs on Sundays with a stable, guessable Pokémon', async () => {
+        const { isSilhouetteDay, silhouetteOfDay, namesAnswer } = await import('./forumDiary');
+        expect(isSilhouetteDay('2026-11-08')).toBe(true);
+        expect(isSilhouetteDay('2026-11-06')).toBe(false);
+        const id = silhouetteOfDay('2026-11-08');
+        expect(id).toBe(silhouetteOfDay('2026-11-08'));
+        expect(id).toBeGreaterThanOrEqual(1);
+        expect(id).toBeLessThanOrEqual(493);
+        expect(namesAnswer('É o Mr. Mime!', 'mr-mime')).toBe(true);
+        expect(namesAnswer('Pikachu?', 'raichu')).toBe(false);
+    });
+});

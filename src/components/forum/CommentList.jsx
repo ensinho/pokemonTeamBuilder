@@ -4,10 +4,12 @@ import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../icons';
-import { Flag as FlagIcon } from 'lucide-react';
+import { Check, Flag as FlagIcon } from 'lucide-react';
 import { ReactionBar } from './ReactionBar';
+import { ChampionNote } from './ChampionNote';
 import { isHiddenByReports } from '../../utils/forumRanking';
 import { splitMentions } from '../../utils/forumMentions';
+import { namesAnswer } from '../../utils/forumDiary';
 import { formatForumTime } from '../../utils/forumTime';
 import { buildCommentTree, displayAncestors } from '../../utils/forumTree';
 import { BattleInviteCard } from '../BattleInviteCard';
@@ -23,6 +25,13 @@ const isStaff = (c) => c.createdBy === 'system' || c.creatorName === 'Professor 
  * line back to this avatar. The line (and the ⊖ on it) collapses the branch;
  * a collapsed comment is one line that says how much it hides.
  */
+/**
+ * Pergunte ao Professor (2026-11-06, social-heart B3): which comment the
+ * question's author accepted, and whether this reader may accept one. A
+ * context, so the memoised tree re-renders when it changes.
+ */
+const QaContext = React.createContext(null);
+
 const CommentNode = memo(function CommentNode({
     node,
     collapsedIds,
@@ -35,6 +44,8 @@ const CommentNode = memo(function CommentNode({
 }) {
     const { comment, children, showQuote, descendants } = node;
     const id = comment.id;
+    const qa = React.useContext(QaContext);
+    const isAccepted = qa?.acceptedId === id;
     const isCollapsed = collapsedIds.has(id);
     const hasChildren = children.length > 0;
     const likeCount = Array.isArray(comment.likedBy) ? comment.likedBy.length : (comment.likeCount || 0);
@@ -128,14 +139,21 @@ const CommentNode = memo(function CommentNode({
                     </button>
                 )}
 
+                {isAccepted && (
+                    <span className="cmt__accepted"><Check aria-hidden="true" />{t('forum.qa.accepted')}</span>
+                )}
                 {comment.text && (isHiddenByReports(comment) && !isAdmin
                     ? <p className="cmt__text cmt__text--hidden">{t('forum.report.hidden')}</p>
+                    : qa?.secret && namesAnswer(comment.text, qa.secret.name) && comment.createdBy !== userId && !qa.secret.revealed
+                        ? <p className="cmt__text cmt__text--secret">{t('forum.whos.hidden')}</p>
                     : <p className="cmt__text">{splitMentions(comment.text).map((part, i) => (part.mention
                         ? <span key={i} className="cmt__mention">@{part.mention}</span>
                         : <React.Fragment key={i}>{part.text}</React.Fragment>))}</p>)}
 
                 {comment.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={comment.sharedPuzzle} />}
                 {comment.sharedChallenge && <ChallengeShareCard share={comment.sharedChallenge} />}
+                {comment.championNote && <ChampionNote note={comment.championNote} t={t} />}
+                {comment.rating && <span className="cmt__rating">{t('forum.rating.label')} {t(`forum.rating.${comment.rating}`)}</span>}
                 {comment.battleInvite?.battleId && <BattleInviteCard invite={comment.battleInvite} />}
                 {comment.sharedTeam && (
                     <ForumTeamCard
@@ -171,6 +189,13 @@ const CommentNode = memo(function CommentNode({
                         <ShareIcon className="cmt-action__icon" />
                         <span className="cmt-action__label">{t('forum.share')}</span>
                     </button>
+                    <ReactionBar reactions={comment.reactions} userId={userId} onReact={(kind) => actions.react(id, kind)} t={t} inline />
+                    {qa?.canAccept && !isAccepted && comment.createdBy !== userId && (
+                        <button type="button" onClick={() => actions.accept(comment)} className="cmt-action">
+                            <Check className="cmt-action__icon" />
+                            <span>{t('forum.qa.accept')}</span>
+                        </button>
+                    )}
                     {!canDelete && userId && (
                         <button
                             type="button"
@@ -194,7 +219,6 @@ const CommentNode = memo(function CommentNode({
                         </button>
                     )}
                 </div>
-                <ReactionBar reactions={comment.reactions} userId={userId} onReact={(kind) => actions.react(id, kind)} t={t} compact />
             </div>
 
             {hasChildren && (
@@ -236,7 +260,11 @@ export const CommentList = memo(function CommentList({
     language = 'pt',
     t,
     actions,
+    acceptedId = null,
+    canAccept = false,
+    secret = null,
 }) {
+    const qa = useMemo(() => ({ acceptedId, canAccept, secret }), [acceptedId, canAccept, secret]);
     const { roots, parentOf } = useMemo(() => buildCommentTree(comments, { sort, nest }), [comments, sort, nest]);
     // Everything starts open (Reddit): a reply is part of the conversation,
     // not something to dig for. The user folds what they are done with.
@@ -278,6 +306,7 @@ export const CommentList = memo(function CommentList({
     }
 
     return (
+        <QaContext.Provider value={qa}>
         <div className={`comment-list ${nest ? '' : 'comment-list--flat'}`}>
             {roots.map((node) => (
                 <CommentNode
@@ -293,5 +322,6 @@ export const CommentList = memo(function CommentList({
                 />
             ))}
         </div>
+        </QaContext.Provider>
     );
 });

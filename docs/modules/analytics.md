@@ -28,6 +28,18 @@ measures first.
 | `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `closing_build`, `demo_open_builder`, `feature_<key>`, `skip` |
 | `onboarding_complete` | `TrainerOnboarding` finished (the button or a pick) | `persona`, `interests` (comma list), `level`, `source`: `landing`, `auto`, `home`, `profile` |
 | `onboarding_skip` | `TrainerOnboarding` closed unanswered (Pular, Escape, drag) — only when there were no answers before | `step`, `source` |
+| `forum_post` / `forum_reply` | `useForumStore.sendMessage` (2026-11-06) | `kind` (text · team · puzzle · challenge · invite) |
+| `forum_react` | a battle-text reaction set | `kind` (super · crit · weak · confused), `target` (post · comment) |
+| `forum_answer_accepted` | Pergunte ao Professor: an answer accepted | — |
+| `challenge_finish` | any Champion run ends | `champion`, `board`, `result`, `practice` |
+| `challenge_share` | a Champion result posted to the Diário do dia | `champion`, `board` |
+| `puzzle_finish` | a PokéPuzzle ends | `mode`, `won`, `guesses` |
+| `puzzle_share` | a puzzle result posted to the Diário do dia | `channel` |
+| `quiz_finish` | a quiz run completed | `mode` (generation · category), `total` |
+| `quiz_duel_share` | a quiz duel link shared or copied | `found`, `total` |
+| `friend_request` | a friend request sent | — |
+| `battle_created` | a friend challenge sent | `mode`, `kind` |
+| `checkin` | the daily check-in | `streak` |
 | `team_first_pokemon` | `useActiveTeamStore.handleAddPokemon` on an empty team | `pokemon_id` |
 | `team_saved` | `handleSaveTeam` success | `size` |
 | `team_shared` | `shareTeamByData` success | `size` |

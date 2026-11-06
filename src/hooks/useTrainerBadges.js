@@ -148,6 +148,7 @@ export function useTrainerBadges(extraStats = {}) {
     const greetingPokemonId = useAuthStore((s) => s.greetingPokemonId);
     const isAnonymous = useAuthStore((s) => s.isAnonymous);
     const journeyMarks = useAuthStore((s) => s.journeyMarks);
+    const badgeCase = useAuthStore((s) => s.badgeCase);
     const currentTeam = useActiveTeamStore((s) => s.currentTeam);
     const friendsCount = useFriendsStore((s) => s.friends?.length || 0);
     const battlesCount = useBattlesStore((s) => s.battles?.length || 0);
@@ -263,13 +264,16 @@ export function useTrainerBadges(extraStats = {}) {
         currentTeam,
         friendsCount,
         battlesCount,
-    }), [baseStats, journeyMarks, greetingPokemonId, isAnonymous, selectedBadgeId, savedTeams, currentTeam, friendsCount, battlesCount]);
+        // The Traveler's chapter 2: one game's case complete (utils/badgeCase.js).
+        badgeCaseFull: Object.values(badgeCase?.earned || {}).some((orders) => orders.length >= 8),
+    }), [baseStats, journeyMarks, greetingPokemonId, isAnonymous, selectedBadgeId, savedTeams, currentTeam, friendsCount, battlesCount, badgeCase]);
     const journeys = useMemo(() => evaluateJourneys(journeyFacts), [journeyFacts]);
     // The persona journeys (2026-11-05): beside the levels, never in them.
     const personaJourneys = useMemo(() => evaluatePersonaJourneys(journeyFacts), [journeyFacts]);
 
     // Badges read both lists: a persona journey's badge is earned like a level's.
-    const stats = useMemo(() => ({ ...baseStats, journeys: [...journeys, ...personaJourneys] }), [baseStats, journeys, personaJourneys]);
+    // The community's badges read the marks (constants/badges.jsx markBadge).
+    const stats = useMemo(() => ({ ...baseStats, journeys: [...journeys, ...personaJourneys], marks: journeyMarks }), [baseStats, journeys, personaJourneys, journeyMarks]);
 
     // Badges mapped with current progress and unlock status
     const badges = useMemo(() => {

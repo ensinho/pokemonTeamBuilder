@@ -29,12 +29,14 @@ let depsPromise = null;
 const loadDeps = () => {
     if (!depsPromise) {
         depsPromise = (async () => {
-            const [serverAuth, webPush, puzzleDay] = await Promise.all([
+            const [serverAuth, webPush, puzzleDay, championNotes] = await Promise.all([
                 import('./_lib/serverAuth.js'),
                 import('./_lib/webPush.js'),
                 import('./_lib/puzzleDay.js'),
+                import('./_lib/championNotes.js'),
             ]);
             return {
+                runDiaryCron: championNotes.runDiaryCron,
                 verifyCaller: serverAuth.verifyCaller,
                 puzzleDay,
                 getAdminFirestore: serverAuth.getAdminFirestore,
@@ -119,8 +121,12 @@ export default async function handler(req, res) {
 
     try {
         const deps = await loadDeps();
+        // The day's room and yesterday's champion notes (2026-11-06), before
+        // and apart from the pushes: a failure here never stops a send.
+        const diary = await deps.runDiaryCron({ db: deps.getAdminFirestore(), appId: deps.getAppId() })
+            .catch((err) => ({ error: err.message }));
         if (!deps.isPushConfigured()) {
-            res.status(200).json({ ok: true, skipped: 'VAPID keys are not configured.' });
+            res.status(200).json({ ok: true, diary, skipped: 'VAPID keys are not configured.' });
             return;
         }
 
@@ -158,7 +164,7 @@ export default async function handler(req, res) {
             failed: acc.failed + t.failed,
         }), { sent: 0, removed: 0, failed: 0 });
 
-        res.status(200).json({ ok: true, candidates, ...total, byTopic });
+        res.status(200).json({ ok: true, diary, candidates, ...total, byTopic });
     } catch (err) {
         console.error('daily-puzzle push failed:', err);
         res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message || 'Unexpected error.' });

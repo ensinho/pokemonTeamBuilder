@@ -614,6 +614,18 @@ const journeyBadge = (journeyId) => {
     };
 };
 
+// A badge the community grants (2026-11-06): a journey mark recorded when the
+// app saw it happen (socialRecord reads the weekly tournament, the season and
+// accepted answers). `stats.marks` is the trainer's marks.
+const markBadge = (mark) => ({
+    targetCount: 1,
+    getProgress: (stats) => {
+        const current = stats.marks?.[mark] ? 1 : 0;
+        return { current, target: 1, percent: current * 100 };
+    },
+    checkUnlocked: (stats) => Boolean(stats.marks?.[mark]),
+});
+
 // A Champion Challenge badge: `read` takes the record (`stats.challenge`, from
 // the trainer's official runs — utils/challengeRecord.js) to one count.
 const challengeBadge = (read, target) => ({
@@ -759,6 +771,106 @@ export const BADGES_LIST = [
         ...journeyBadge('persona-challenger'),
         Icon: createEmblemSvg({ id: 'emPersona3', shape: 'diamond', from: '#f9a8d4', to: '#db2777', rim: '#831843', glyph: 'star' }),
         accentColor: '#db2777',
+    },
+    // ── Persona chapter 2 (2026-11-06, docs/plans/social-heart.md E)
+    {
+        id: 'badge_persona_strategist_2',
+        key: 'persona_strategist_2',
+        nameEn: "Strategy Professor",
+        namePt: 'Professor de Estratégia',
+        descEn: "Your teams in the tournament, your answers accepted. Earned by finishing the Strategist chapter 2.",
+        descPt: 'Seus times no torneio, suas respostas aceitas. Conquistada ao concluir o capítulo 2 do Estrategista.',
+        reqEn: 'Strategist chapter 2',
+        reqPt: 'Capítulo 2 do Estrategista',
+        category: 'journey',
+        ...journeyBadge('persona-strategist-2'),
+        Icon: createEmblemSvg({ id: 'emPersona4', shape: 'diamond', from: '#c4b5fd', to: '#5b21b6', rim: '#2e1065', glyph: 'people' }),
+        accentColor: '#5b21b6',
+    },
+    {
+        id: 'badge_persona_traveler_2',
+        key: 'persona_traveler_2',
+        nameEn: "Travel Log",
+        namePt: 'Diário de Viagem',
+        descEn: "Your case shared, a fellow traveler helped. Earned by finishing the Traveler chapter 2.",
+        descPt: 'Seu estojo compartilhado, um colega de viagem ajudado. Conquistada ao concluir o capítulo 2 do Viajante.',
+        reqEn: 'Traveler chapter 2',
+        reqPt: 'Capítulo 2 do Viajante',
+        category: 'journey',
+        ...journeyBadge('persona-traveler-2'),
+        Icon: createEmblemSvg({ id: 'emPersona5', shape: 'diamond', from: '#fef08a', to: '#a16207', rim: '#713f12', glyph: 'people' }),
+        accentColor: '#a16207',
+    },
+    {
+        id: 'badge_persona_challenger_2',
+        key: 'persona_challenger_2',
+        nameEn: "Rival",
+        namePt: 'Rival',
+        descEn: "A friend passed, a duel won, a podium reached. Earned by finishing the Challenger chapter 2.",
+        descPt: 'Um amigo ultrapassado, um duelo vencido, um pódio. Conquistada ao concluir o capítulo 2 do Desafiante.',
+        reqEn: 'Challenger chapter 2',
+        reqPt: 'Capítulo 2 do Desafiante',
+        category: 'journey',
+        ...journeyBadge('persona-challenger-2'),
+        Icon: createEmblemSvg({ id: 'emPersona6', shape: 'diamond', from: '#fbcfe8', to: '#be185d', rim: '#831843', glyph: 'people' }),
+        accentColor: '#be185d',
+    },
+    {
+        id: 'badge_persona_master_2',
+        key: 'persona_master_2',
+        nameEn: "Center Legend",
+        namePt: 'Lenda do Centro',
+        descEn: "A bit of every corner of the Pokémon Center. Earned by finishing the Master chapter 2.",
+        descPt: 'Um pouco de cada canto do Centro Pokémon. Conquistada ao concluir o capítulo 2 do Mestre.',
+        reqEn: 'Master chapter 2',
+        reqPt: 'Capítulo 2 do Mestre',
+        category: 'journey',
+        ...journeyBadge('persona-master-2'),
+        Icon: createEmblemSvg({ id: 'emPersona7', shape: 'diamond', from: '#e9d5ff', to: '#6d28d9', rim: '#2e1065', glyph: 'crown' }),
+        accentColor: '#6d28d9',
+    },
+    // ── The social heart's own (2026-11-06): earned by the community, read by socialRecord
+    {
+        id: 'badge_weekly_champion',
+        key: 'weekly_champion',
+        nameEn: "Weekly Champion",
+        namePt: 'Campeão da Semana',
+        descEn: "The most voted team of a week. Earned by winning a Weekly tournament.",
+        descPt: 'O time mais votado da semana. Conquistada ao vencer um Torneio da semana.',
+        reqEn: "Win a Weekly tournament",
+        reqPt: 'Vencer um Torneio da semana',
+        category: 'social',
+        ...markBadge('weeklyChampion'),
+        Icon: createEmblemSvg({ id: 'emSocial1', shape: 'shield', from: '#fde68a', to: '#b45309', rim: '#78350f', glyph: 'crown' }),
+        accentColor: '#b45309',
+    },
+    {
+        id: 'badge_season_podium',
+        key: 'season_podium',
+        nameEn: "Season Podium",
+        namePt: 'Pódio da Temporada',
+        descEn: "Seven days of steady wins. Earned by finishing a Champion week in the top three.",
+        descPt: 'Sete dias de vitórias firmes. Conquistada ao fechar uma semana do Campeão entre os três primeiros.',
+        reqEn: "Top three of a Champion week",
+        reqPt: 'Top 3 de uma semana do Campeão',
+        category: 'social',
+        ...markBadge('seasonPodium'),
+        Icon: createEmblemSvg({ id: 'emSocial2', shape: 'shield', from: '#e5e7eb', to: '#6b7280', rim: '#1f2937', glyph: 'star' }),
+        accentColor: '#6b7280',
+    },
+    {
+        id: 'badge_professor',
+        key: 'professor',
+        nameEn: "Professor's Pick",
+        namePt: 'Resposta do Professor',
+        descEn: "Someone asked, you knew. Earned when an answer of yours is accepted.",
+        descPt: 'Alguém perguntou, você sabia. Conquistada quando uma resposta sua é aceita.',
+        reqEn: "An accepted answer",
+        reqPt: 'Uma resposta aceita',
+        category: 'social',
+        ...markBadge('acceptedAnswer'),
+        Icon: createEmblemSvg({ id: 'emSocial3', shape: 'circle', from: '#bae6fd', to: '#0369a1', rim: '#0c4a6e', glyph: 'speech' }),
+        accentColor: '#0369a1',
     },
     // ── Champion Challenge (the trainer's official runs — utils/challengeRecord.js)
     {

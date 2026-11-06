@@ -47,3 +47,23 @@ export function diaryDateLabel(dayKey, language = 'pt') {
 
 /** Only today's diary is pinned; older ones read like any topic. */
 export const isTodayDiary = (topic, now = Date.now()) => isDiaryTopic(topic) && topic.dayKey === todayDiaryKey(now);
+
+// ── Quem é esse Pokémon? (2026-11-06, social-heart D4) ─────────────────────
+// Sundays, the diary shows a silhouette everyone answers in the comments.
+// The id comes from the day, so every client agrees without storing it.
+
+/** True on the Diário's Sundays. */
+export const isSilhouetteDay = (dayKey) => DAY_RE.test(dayKey || '') && new Date(`${dayKey}T12:00:00Z`).getUTCDay() === 0;
+
+/** The day's Pokémon: from the first four generations, so it can be guessed. */
+export function silhouetteOfDay(dayKey) {
+    let h = 2166136261;
+    for (const ch of String(dayKey)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+    return (h % 493) + 1;
+}
+
+/** Lower-case, no accents or punctuation: how answers are compared. */
+export const normalizeAnswer = (text) => String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+/** Whether a comment names the answer. */
+export const namesAnswer = (text, name) => Boolean(name) && normalizeAnswer(text).includes(normalizeAnswer(name));

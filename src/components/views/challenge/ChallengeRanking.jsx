@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeftRight, ChevronLeft, IdCard } from 'lucide-react';
 
@@ -7,6 +7,7 @@ import { useTrainerCosmetics } from '../../../hooks/useTrainerCosmetics';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { openTrainerCard } from '../../../store/useTrainerCardStore';
+import { challengeApi } from '../../../services/challengeApi';
 import { championArt } from '../../../utils/challengeArt';
 import { CHAMPION_IDS, CHAMPION_NAMES } from '../../../utils/challengeChampions';
 import { boardAfterSwitch, rankingStart } from '../../../utils/challengeView';
@@ -75,7 +76,9 @@ function RankRow({ entry, place, onOpen }) {
                         {entry.me && <span className="shrink-0 rounded-full bg-primary-soft px-1.5 text-2xs text-primary">{t('challenge.ranking.youTag')}</span>}
                     </span>
                     <span className="truncate text-2xs text-muted">
-                        {t('challenge.ranking.turns', { n: entry.turns })} · {t('challenge.ranking.left', { n: entry.remaining ?? 0 })}
+                        {entry.days != null
+                            ? t('challenge.ranking.days', { n: entry.days })
+                            : `${t('challenge.ranking.turns', { n: entry.turns })} · ${t('challenge.ranking.left', { n: entry.remaining ?? 0 })}`}
                     </span>
                 </span>
                 <span className="flex flex-col items-end font-display text-base font-semibold leading-none tabular-nums">
@@ -178,8 +181,40 @@ function Figures({ items, label }) {
     );
 }
 
+/**
+ * "Como venceu" (2026-11-06, social-heart C2): a podium run's win chance,
+ * turn by turn, as one line — where it dipped, where it was decided. Asked
+ * of the server only when the detail opens (api/_lib/challenge/actions.js
+ * `report`).
+ */
+function WinStory({ championId, board, uid, dayKey, t }) {
+    const [curve, setCurve] = useState(null);
+    useEffect(() => {
+        let alive = true;
+        challengeApi.report({ championId, board, uid, dayKey })
+            .then((res) => { if (alive && res?.ok && Array.isArray(res.payload?.curve) && res.payload.curve.length > 1) setCurve(res.payload.curve); })
+            .catch(() => {});
+        return () => { alive = false; };
+    }, [championId, board, uid, dayKey]);
+    if (!curve) return null;
+    const w = 100;
+    const h = 36;
+    const points = curve.map((v, i) => `${(i / (curve.length - 1)) * w},${h - Math.max(0, Math.min(1, v)) * h}`).join(' ');
+    const low = curve.reduce((m, v, i) => (v < curve[m] ? i : m), 0);
+    return (
+        <figure className="win-story">
+            <figcaption className="win-story__title">{t('challenge.ranking.story', { turn: low + 1, low: Math.round(curve[low] * 100) })}</figcaption>
+            <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="win-story__chart" aria-hidden="true">
+                <line x1="0" x2={w} y1={h / 2} y2={h / 2} className="win-story__mid" />
+                <polyline points={points} className="win-story__line" />
+                <circle cx={(low / (curve.length - 1)) * w} cy={h - curve[low] * h} r="1.6" className="win-story__low" />
+            </svg>
+        </figure>
+    );
+}
+
 /** One attempt, opened from its row: who it was, and how the battle went. */
-function RankDetail({ entry, place, board, onBack }) {
+function RankDetail({ entry, place, board, onBack, championId, dayKey }) {
     const { t, language } = useTranslation();
     const face = useRowFace(entry);
     const at = entry.at ? new Date(entry.at) : null;
@@ -226,6 +261,7 @@ function RankDetail({ entry, place, board, onBack }) {
                 )}
             </div>
             <Figures items={figures.map(([key, value]) => [t(`challenge.ranking.${key}`), value])} />
+            {place <= 3 && entry.uid && dayKey && <WinStory championId={championId} board={board} uid={entry.uid} dayKey={dayKey} t={t} />}
         </div>
     );
 }
@@ -254,9 +290,13 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
     // Sua liga (2026-11-06): the same board, only you and your friends, each
     // at their real place. Offered only when the server sent a friends list.
     const [scope, setScope] = useState('all');
-    const hasFriends = Boolean(ranks?.friends);
+    const hasFriends = Boolean(ranks?.friends || ranks?.week?.friends);
     const inLeague = scope === 'friends' && hasFriends;
-    const list = (inLeague ? ranks.friends[board] : ranks?.boards?.[board]) || [];
+    // The weekly season (2026-11-06): a third board, sums of each day's best.
+    const isWeek = board === 'week';
+    const list = (isWeek
+        ? (inLeague ? ranks?.week?.friends : ranks?.week?.list)
+        : (inLeague ? ranks.friends?.[board] : ranks?.boards?.[board])) || [];
     const mine = ranks?.mine?.[board] || null;
     const opened = open !== null ? list[open] : null;
     // The next champion in the room's order: with two, simply the other one.
@@ -267,11 +307,24 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
         setPicked({ championId: nextId, board: boardAfterSwitch(ranksByChampion, nextId, board) });
     };
     const pickBoard = (key) => setPicked({ championId: shownId, board: key });
+    // A season row has no single attempt to open: it is the trainer.
+    const openWeekCard = (entry) => {
+        if (!entry.uid) return;
+        openTrainerCard({
+            userId: entry.uid,
+            name: entry.name,
+            avatar: entry.profile?.avatarPokemonId,
+            isShiny: entry.profile?.avatarIsShiny,
+            trainerSprite: entry.profile?.trainerSprite,
+            frameId: entry.profile?.frameId,
+            titleId: entry.profile?.titleId,
+        });
+    };
 
     if (opened) {
         return (
             <div className="challenge-rank">
-                <RankDetail entry={opened} place={opened.place || open + 1} board={board} onBack={() => setOpen(null)} />
+                <RankDetail entry={opened} place={opened.place || open + 1} board={board} onBack={() => setOpen(null)} championId={shownId} dayKey={ranks?.dayKey} />
             </div>
         );
     }
@@ -289,7 +342,7 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
                 onSwitch={switchChampion}
             />
             <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('challenge.ranking.title')}>
-                {BOARDS.map((key) => (
+                {[...BOARDS, ...(ranks?.week ? ['week'] : [])].map((key) => (
                     <button
                         key={key}
                         type="button"
@@ -318,23 +371,23 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
                         <li>
                             <ol className="challenge-podium" aria-label={t('challenge.ranking.podium')}>
                                 {[1, 0, 2].map((index) => (
-                                    <PodiumStep key={`${index}-${list[index].name}`} entry={list[index]} place={index + 1} onOpen={() => setOpen(index)} />
+                                    <PodiumStep key={`${index}-${list[index].name}`} entry={list[index]} place={index + 1} onOpen={() => (isWeek ? openWeekCard(list[index]) : setOpen(index))} />
                                 ))}
                             </ol>
                         </li>
                     )}
                     {list.map((entry, index) => (!inLeague && list.length >= 3 && index < 3 ? null : (
                         // A board is replaced whole, never reordered in place.
-                        <RankRow key={`${index}-${entry.name}`} entry={entry} place={entry.place || index + 1} onOpen={() => setOpen(index)} />
+                        <RankRow key={`${index}-${entry.name}`} entry={entry} place={entry.place || index + 1} onOpen={() => (isWeek ? openWeekCard(entry) : setOpen(index))} />
                     )))}
                 </ol>
             ) : (
                 <p className="m-0 grid flex-1 place-items-center text-center text-sm text-muted">{t('challenge.ranking.empty')}</p>
             )}
-            <p className="m-0 shrink-0 text-center text-xs text-muted">
+            {!isWeek && <p className="m-0 shrink-0 text-center text-xs text-muted">
                 {t('challenge.ranking.counts', { wins: ranks?.wins?.[board] || 0, played: ranks?.played?.[board] || 0 })}
                 {mine ? ` · ${t('challenge.ranking.you', { place: mine })}` : ''}
-            </p>
+            </p>}
             {/* Your record is the room champion's: shown on their board only. */}
             {stats && isRoomChampion && (
                 <Figures

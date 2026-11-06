@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { RATINGS } from '../../utils/teamRating';
+import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { activeMention, insertMention, mentionSuggestions } from '../../utils/forumMentions';
 import { SendHorizontal } from 'lucide-react';
 import { CloseIcon, SwordsIcon, ClipIcon, StarIcon, ReplyIcon } from '../icons';
@@ -26,6 +28,10 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
     isSending = false,
     language = 'pt',
     mentionCandidates = [],
+    // "Avalie meu time" (2026-11-06): offered under a shared team only.
+    ratingEnabled = false,
+    rating = null,
+    onRating,
     t,
 }, ref) {
     const [isAttachOpen, setIsAttachOpen] = useState(false);
@@ -84,10 +90,29 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
         }
     };
 
-    const hasContent = !!replyText.trim() || !!attachedTeam;
+    const hasContent = !!replyText.trim() || !!attachedTeam || !!rating;
 
     return (
         <form onSubmit={onSubmit} className="comment-composer">
+            {ratingEnabled && (
+                <div className="rating-chips" role="group" aria-label={t('forum.rating.label')}>
+                    <span className="rating-chips__label">{t('forum.rating.label')}</span>
+                    {RATINGS.map((r) => (
+                        <button
+                            key={r.id}
+                            type="button"
+                            className="rating-chip"
+                            aria-pressed={rating === r.id}
+                            aria-label={t(`forum.rating.${r.id}`)}
+                            title={t(`forum.rating.${r.id}`)}
+                            onClick={() => onRating?.(rating === r.id ? null : r.id)}
+                        >
+                            <img src={getPokemonFrontSpriteUrl(r.art)} alt="" width={28} height={28} loading="lazy" decoding="async" />
+                            <span>{t(`forum.rating.${r.id}`)}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
             {replyingTo && (
                 <div className="comment-composer__banner">
                     <ReplyIcon className="w-3.5 h-3.5 text-primary shrink-0" />

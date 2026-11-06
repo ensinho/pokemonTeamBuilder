@@ -7,9 +7,10 @@ import { REACTION_KINDS, myReaction, nextReaction, summarizeReactions } from '..
  * kinds someone used, as small battle boxes with their count, and one
  * "Reagir" trigger — nothing at all when there are none but the trigger.
  * Open: the four lines in a row, in place (no popover over the thread).
- * Tapping your own takes it back.
+ * Tapping your own takes it back. `inline`: it lives in the action row (a
+ * comment's Like · Reply · Share), so a post with no reactions costs no line.
  */
-export function ReactionBar({ reactions, userId, onReact, t, compact = false }) {
+export function ReactionBar({ reactions, userId, onReact, t, inline = false }) {
     const [open, setOpen] = useState(false);
     const summary = summarizeReactions(reactions, userId);
     const mine = myReaction(reactions, userId);
@@ -19,7 +20,7 @@ export function ReactionBar({ reactions, userId, onReact, t, compact = false }) 
     };
 
     return (
-        <div className={`reactions ${compact ? 'reactions--compact' : ''}`}>
+        <div className={`reactions ${inline ? 'reactions--inline' : ''}`}>
             {summary.map((k) => (
                 <button
                     key={k.id}

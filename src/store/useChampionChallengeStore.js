@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { markJourney } from './useAuthStore';
 import { track } from '../services/analytics';
 
 import { challengeApi } from '../services/challengeApi';
@@ -251,6 +252,13 @@ export const useChampionChallengeStore = create((set, get) => ({
                 next.ranksByChampion = withChampionRanks(s.ranksByChampion, s.championId, p.ranks);
             }
             if (ended) track('challenge_finish', { champion: s.championId, board: boardOfRun(s.run), result: p.status, practice: Boolean(s.run.practice) });
+            // The Rival chapter's marks (2026-11-06): a podium, a friend passed.
+            if (ended && !s.run.practice && p.status === 'won') {
+                if (p.result?.place && p.result.place <= 3) markJourney('podium');
+                const league = p.ranks?.friends?.[boardOfRun(s.run)] || [];
+                const me = league.find((row) => row.me);
+                if (me && league.some((row) => !row.me && row.place > me.place)) markJourney('beatFriend');
+            }
             if (ended && !s.run.practice) {
                 const official = { runId: s.run.runId, status: p.status, result: p.result };
                 next.official = official;

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Crown, Puzzle } from 'lucide-react';
 import { Mascot } from '../Mascot';
+import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 
 /**
  * The Diário do dia's header (2026-11-06, docs/plans/social-heart.md B1):
@@ -9,7 +10,7 @@ import { Mascot } from '../Mascot';
  * results already arrived, and the two doors the day has — the puzzle and the
  * champions. Every "share to forum" from either lands in this thread.
  */
-export function DiaryBanner({ messages = [], isToday, t }) {
+export function DiaryBanner({ messages = [], isToday, t, silhouette = null }) {
     const counts = useMemo(() => ({
         puzzle: messages.filter((m) => m.sharedPuzzle).length,
         challenge: messages.filter((m) => m.sharedChallenge).length,
@@ -27,6 +28,15 @@ export function DiaryBanner({ messages = [], isToday, t }) {
                         : t(isToday ? 'forum.diary.empty' : 'forum.diary.emptyPast')}
                 </p>
             </div>
+            {silhouette && (
+                <div className={`diary-whos ${silhouette.revealed ? 'is-revealed' : ''}`}>
+                    <img src={getPokemonArtworkSpriteUrl(silhouette.id)} alt="" width={96} height={96} decoding="async" className="diary-whos__art" />
+                    <div className="diary-whos__text">
+                        <strong>{t('forum.whos.title')}</strong>
+                        <span>{silhouette.revealed ? t('forum.whos.revealed', { name: silhouette.name }) : t('forum.whos.how')}</span>
+                    </div>
+                </div>
+            )}
             {isToday && (
                 <div className="diary-banner__doors">
                     <Link to="/pokepuzzle" className="diary-door">

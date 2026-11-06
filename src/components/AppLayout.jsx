@@ -524,6 +524,15 @@ export default function AppLayout() {
         if (userId) useInboxStore.getState().start(userId);
         else useInboxStore.getState().stop();
     }, [userId]);
+
+    // What the community granted (weekly winner, season podium, accepted
+    // answer), once a session, when the browser is idle — never on the boot path.
+    useEffect(() => {
+        if (!userId || isAnonymous) return undefined;
+        const run = () => import('../services/socialRecord').then((m) => m.checkSocialRecord(userId)).catch(() => {});
+        const id = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(run, { timeout: 8000 }) : window.setTimeout(run, 4000);
+        return () => (typeof window.cancelIdleCallback === 'function' ? window.cancelIdleCallback(id) : window.clearTimeout(id));
+    }, [userId, isAnonymous]);
     const [showTrainerSpriteSelector, setShowTrainerSpriteSelector] = useState(false);
 
     // Bound here (not only in FriendsView) so the sidebar badge stays live on every
