@@ -37,6 +37,7 @@ export function JourneysView() {
 
     // Each tab carries its own figure (2026-10-22): three boxed stats above the
     // tabs said the same thing a second time, a screen before the content.
+    const allDone = totals.journeysDone === totals.journeysTotal;
     const tabCounts = {
         journeys: `${totals.journeysDone}/${totals.journeysTotal}`,
         badges: `${unlockedCount}/${totalBadgesCount}`,
@@ -44,7 +45,11 @@ export function JourneysView() {
 
     return (
         <main className="journeys-view">
-            <MascotTip size="lg" className="journeys-view__lead">{t('journeys.subtitle')}</MascotTip>
+            {/* One mascot per screen: when every journey is done, the lead itself says so,
+                crowned (gold: earned) but still — it never celebrates data that merely loaded. */}
+            <MascotTip size="lg" className="journeys-view__lead" mood={allDone ? 'radiante' : undefined} pose={allDone ? 'campeao' : undefined}>
+                {allDone ? <><strong>{t('journeys.allDoneTitle')}</strong>{t('journeys.allDoneSub')}</> : t('journeys.subtitle')}
+            </MascotTip>
 
             <div className="segmented segmented--block journeys-view__tabs" role="tablist" aria-label={t('journeys.tabsLabel')}>
                 {TABS.map((key) => (
@@ -58,12 +63,6 @@ export function JourneysView() {
 
             {tab === 'journeys' ? (
                 <>
-                    {totals.journeysDone === totals.journeysTotal && (
-                        <MascotTip size="lg" cheer>
-                            <strong>{t('journeys.allDoneTitle')}</strong>
-                            {t('journeys.allDoneSub')}
-                        </MascotTip>
-                    )}
                     <p className="journeys-view__progress">
                         {t('journeys.missionsProgress', { done: totals.missionsDone, total: totals.missionsTotal })}
                     </p>

@@ -149,6 +149,7 @@ export function DeleteAccountDialog({ onClose }) {
                         <p>{t('modals.delConfirmHint')}</p>
                     </div>
                     <PasswordField
+                        mascot
                         label={t('modals.accountCurrentPassword')}
                         value={password}
                         onChange={setPassword}

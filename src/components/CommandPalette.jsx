@@ -12,6 +12,7 @@ import { typeIcons } from '../constants/types';
 import { prepareEntries, scoreDexNumber, searchGroups } from '../utils/globalSearch';
 import { useAuthStore } from '../store/useAuthStore';
 import { personaQuickLinks } from '../utils/trainerProfile';
+import { Mascot } from './Mascot';
 import '../styles/command-palette.css';
 
 const LIMITS = { pokemon: 6, pages: 4, moves: 4, abilities: 3, items: 3 };
@@ -249,7 +250,10 @@ export function CommandPalette({ onClose, destinations = [] }) {
 
                 <div id={listboxId} role="listbox" aria-label={t('search.label')} className="command-palette__results">
                     {sections.some((section) => section.key === 'fallback') && (
-                        <p className="command-palette__empty" role="presentation">{t('search.noResults', { query: deferredQuery.trim() })}</p>
+                        <div className="command-palette__empty" role="presentation">
+                            <Mascot size="lg" framing="body" pose="dandoDeOmbros" mood="desconfiado" play="shake" playKey={deferredQuery.trim()} />
+                            <p>{t('search.noResults', { query: deferredQuery.trim() })}</p>
+                        </div>
                     )}
                     {sections.map((section) => (
                         <div key={section.key} role="group" aria-label={section.label} className="command-palette__section">

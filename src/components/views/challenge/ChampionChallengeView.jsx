@@ -365,7 +365,7 @@ export function ChampionChallengeView() {
         return (
             <div className="challenge-view">
                 {challenge.status === 'error' ? (
-                    <EmptyState
+                    <EmptyState mascot="error"
                         title={t('challenge.loadErrorTitle')}
                         message={t(`challenge.errors.${challenge.loadError === 'offline' ? 'offline' : 'server'}`)}
                         action={{ label: t('challenge.retry'), onClick: load }}

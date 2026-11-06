@@ -2,6 +2,40 @@
 // a visitor downloads only the language they read, never both. The server and
 // the tests read both tables through src/constants/translations.js.
 export default {
+    mascot: {
+        label: 'The PokemonBuilder mascot. Press Enter for a hop.',
+        online: 'Back online.',
+        offline: {
+            title: 'No signal.',
+            body: 'Your saved teams are still here.',
+        },
+        bubble: {
+            wake: 'Huh?! I’m awake!',
+            charge: 'Shadow Ball…',
+            shadowBall: 'Shadow Ball!',
+            again: 'Wheee, again!',
+            bite: 'Hey! These fangs bite.',
+            shiny: 'Shiny!',
+            unshiny: 'Back to normal.',
+            angry: 'Hey! Easy there!',
+            back: 'Okay, I’m back.',
+            tired: 'That’s enough petting for today!',
+            pet1: 'Hehe',
+            pet2: 'More!',
+            pet3: 'That’s the spot',
+            pet4: 'So nice…',
+        },
+        moods: {
+            feliz: 'Happy',
+            animado: 'Excited',
+            travesso: 'Mischievous',
+            apaixonado: 'In love',
+            pensando: 'Thinking',
+            surpreso: 'Surprised',
+            determinado: 'Determined',
+            sonolento: 'Sleepy',
+        },
+    },
     supportNudge: {
         title: 'Enjoyed that one?',
         description: 'PokemonBuilder is free and made by a fan. A coffee helps me come up with more ideas and keep building it.',
@@ -1262,6 +1296,16 @@ export default {
         },
     },
     profile: {
+        sectionMascot: 'Mascot',
+        sectionMascotDesc: 'The little ghost from the icon. Its colour and reactions apply to this device.',
+        mascotTry: 'Try it: click, double-click, hold for a Shadow Ball, rub the top of its head, drag it, or tap the sparks three times.',
+        mascotMoods: 'Mascot moods',
+        mascotTone: 'Mascot colour',
+        mascotToneBrand: 'Icon violet',
+        mascotTonePersona: 'Your persona’s ({{type}})',
+        mascotToneShiny: 'Shiny',
+        mascotReactions: 'Reactions and celebrations',
+        mascotReactionsDesc: 'It hops when you save, celebrates a full team and breathes while it waits. Off, it stays still until you touch it.',
         settingTheme: 'Theme',
         title: 'Trainer Card & preferences',
         trainerProfile: 'Trainer profile',

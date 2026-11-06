@@ -144,6 +144,7 @@ export function ChangePasswordDialog({ onClose }) {
                     {/* The account name for password managers. */}
                     <input type="email" autoComplete="username" value={userEmail || ''} readOnly hidden />
                     <PasswordField
+                        mascot
                         label={t('modals.accountCurrentPassword')}
                         value={currentPassword}
                         onChange={setCurrentPassword}

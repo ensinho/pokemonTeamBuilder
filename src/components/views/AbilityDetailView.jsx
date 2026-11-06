@@ -55,7 +55,7 @@ export function AbilityDetailView() {
 
     if (status === 'missing') {
         return (
-            <EmptyState
+            <EmptyState mascot="lost"
                 title={t('db.noMatchesTitle')}
                 message={t('db.detailNotFoundDesc')}
                 action={{ label: backLabel, onClick: handleBack }}

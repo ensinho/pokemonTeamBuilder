@@ -643,3 +643,73 @@
        the swatch and the lock say enough. */
     .profile-theme-card__hint { display: none; }
 }
+
+/* The mascot's room (ProfileView MascotSection, 2026-11-06): the playground
+   on the icon's tile, the moods beside it, then his colour and the switch. */
+.profile-mascot {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+}
+.profile-mascot__stage {
+    aspect-ratio: 1;
+    padding: var(--space-4);
+}
+.profile-mascot__side {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+}
+.profile-mascot__try {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+.profile-mascot__moods {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+.profile-mascot__mood {
+    display: grid;
+    place-items: center;
+    min-height: var(--control-h-lg);
+    padding: var(--space-1_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+    --mascot-bg: var(--color-surface-raised);
+}
+.profile-mascot__mood:hover { background: var(--color-surface-hover); --mascot-bg: var(--color-surface-hover); }
+.profile-mascot__mood[aria-pressed='true'] { box-shadow: var(--ring-primary); }
+.profile-mascot__mood:focus-visible { outline: none; box-shadow: var(--ring-logo); }
+.profile-mascot__tones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+}
+/* A type chip's own mixes (index.css .type-chip), without the border: it sits inside a card. */
+.mascot-tone {
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--tone) 14%, transparent);
+    color: color-mix(in srgb, var(--tone) 45%, var(--color-fg));
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+.mascot-tone:hover { background: color-mix(in srgb, var(--tone) 24%, transparent); }
+.mascot-tone[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--tone) 30%, transparent);
+    color: var(--color-fg);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 70%, var(--color-fg));
+}
+.mascot-tone:focus-visible { outline: none; box-shadow: var(--ring-logo); }
+
+@media (max-width: 639px) {
+    .profile-mascot { grid-template-columns: minmax(0, 1fr); }
+    .profile-mascot__stage { width: min(100%, 16rem); margin-inline: auto; }
+}

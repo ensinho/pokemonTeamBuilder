@@ -254,6 +254,15 @@
     position: relative;
 }
 
+/* The mascot sits on the field's top edge, left of the eye: he covers his
+   eyes while a password is typed and peeks when it is shown. */
+.auth-password__mascot {
+    position: absolute;
+    right: var(--space-10);
+    bottom: calc(100% - var(--space-2));
+    pointer-events: none;
+}
+
 .auth-password .input-clean {
     padding-right: var(--space-10);
 }

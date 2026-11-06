@@ -180,7 +180,7 @@
 }
 
 /* What the check-in just paid out: the reward line, as a gold sticker. */
-.checkin__result > span:first-child {
+.checkin__result > .checkin__result-text {
     padding: var(--space-1) var(--space-2_5);
     border-radius: var(--radius-md);
     background: var(--brand-gold);

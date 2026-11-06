@@ -51,6 +51,7 @@ built; this file says what they should *feel* like.
 | "Para você" tiles | `CozyHomeView.jsx`, `styles/cozy-home.css` (`data-motion`) | One row of four doors; each icon animates its own SVG parts on hover |
 | Trainer card | `components/trainerCard/TrainerCardDialog.jsx`, `styles/trainer-card.css`, `utils/trainerCardPattern.js` | Per-trainer pixel banner in the persona's type colour, partner standing in it, streak/level/wins as "bold figure + muted word", "Treinando desde" signed with one gold pixel |
 | Badge Case | `components/home/BadgeCase.jsx`, `styles/badge-case.css` | The games' badge case on the Traveler's Home: leaders as silhouettes until their badge is tapped, a gem of their type lights, the full case turns gold |
+| The mascot | `components/Mascot.jsx`, `utils/mascot/*`, `styles/mascot.css` ([mascot.md](./mascot.md)) | The icon's ghost as a rig that answers: moods by name, the games' evolution silhouette on a level up, a Poké Ball that rocks three times while loading, Pokémon Refresh petting with its ceiling, a type tone per trainer, shiny as an easter egg |
 | Team sheet (share image) | `modals/ShareSnippetModal.jsx` (`renderTeamSheetSync`), `utils/teamSheet.js` | The regional-champion poster: trainer's face + "Time de X", six raked cards (art + item, ability, nature, four type-signed move pills) on the lead's type colour, poster rings |
 
 ## Inspiration bank — the "community boards" kit (reference 5, 2026-11-05)

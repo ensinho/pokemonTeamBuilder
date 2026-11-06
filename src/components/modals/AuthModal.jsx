@@ -156,6 +156,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
 
                         {!isReset && (
                             <PasswordField
+                                mascot
                                 label={t('modals.authPasswordLabel')}
                                 value={password}
                                 onChange={setPassword}

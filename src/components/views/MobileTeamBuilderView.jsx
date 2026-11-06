@@ -968,7 +968,7 @@ export const MobileTeamBuilderView = ({
 
                                 {((isGameFilterActive && gameVisibleCount === 0 && fullIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && (
                                     <div className="pt-6">
-                                        <EmptyState
+                                        <EmptyState mascot="search"
                                             compact
                                             title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
                                             message={t('favorites.noMatchesDesc')}

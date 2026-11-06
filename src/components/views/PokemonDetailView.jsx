@@ -75,7 +75,7 @@ export function PokemonDetailView({
 
     if (!validId) {
         return (
-            <EmptyState
+            <EmptyState mascot="lost"
                 title={t('pdetail.notFound')}
                 message={t('pdetail.notFoundDesc')}
                 action={{ label: pt ? 'Voltar' : 'Back', onClick: handleBack }}

@@ -3,11 +3,10 @@ import { Search } from 'lucide-react';
 import { HomeIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { themeModeOf } from '../../constants/theme';
+import { Mascot } from '../Mascot';
 
-export function NotFoundView({ navigate, theme, onOpenSearch }) {
+export function NotFoundView({ navigate, onOpenSearch }) {
     const { t } = useTranslation();
-    const isLightTheme = themeModeOf(theme) === 'light';
 
     useDocumentMeta({ title: t('layout.notFoundPageTitle') });
 
@@ -26,12 +25,14 @@ export function NotFoundView({ navigate, theme, onOpenSearch }) {
         <div
             className="flex flex-col items-center justify-center text-center px-6 py-16 w-full"
         >
-            <img
-                src={import.meta.env.BASE_URL + (isLightTheme ? 'logo404light.png' : 'gengarcute404.png')}
-                alt="Gengar looking confused"
-                className="w-56 h-auto max-w-full mb-6 select-none"
-                draggable="false"
-            />
+            {/* 4, the mascot as the 0, 4 — the two 404 drawings, now one live one
+                (2026-11-06). Like GitHub's Octocat it answers the cursor, and it
+                takes the whole playground: pet it, hold it, drag it, leave it be. */}
+            <div className="mascot-404">
+                <span className="mascot-404__digit" aria-hidden="true">4</span>
+                <Mascot size="hero" framing="body" mood="perdido" pose="pataNoQueixo" loop="float" playground stage label={t('mascot.label')} />
+                <span className="mascot-404__digit" aria-hidden="true">4</span>
+            </div>
             <h1 className="text-2xl font-bold mb-2 text-fg">
                 {t('layout.notFoundTitle')}
             </h1>

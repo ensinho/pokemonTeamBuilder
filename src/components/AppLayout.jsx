@@ -32,7 +32,9 @@ import { readLocal, writeLocal, removeLocal } from '../utils/safeStorage';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { storedFormFields, withUniqueInstanceIds } from '../utils/teamSerialization';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
-import { GengarPresence } from './GengarPresence';
+import { Mascot, MascotIcon } from './Mascot';
+import { loadMascotEngine } from './mascot/useMascotEngine';
+import { useMascotReactions } from '../hooks/useMascotReactions';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -128,7 +130,8 @@ const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').t
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
-const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
+// The mascot's drawing goes first: it is small and almost every screen has one.
+const MOBILE_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
 // Desktop had no warm-up at all, so the first click on Construtor downloaded a
 // 107 KB chunk behind the route fallback. Same idea, the rail's main entries.
 // Hovering or focusing a rail entry fetches its chunk: the half second between
@@ -163,7 +166,7 @@ const readLocalStorage = () => {
 // else the header title is the page's only H1. The first-visit landing is
 // added at the render site (it lives under 'home', whose dashboard has none).
 const VIEWS_WITH_OWN_H1 = new Set(['guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
-const DESKTOP_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
+const DESKTOP_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
 
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
 
@@ -214,11 +217,17 @@ import '../styles/toast.css';
 
 // Fades in after a beat (.route-fallback, app-shell.css): a chunk that lands
 // in under ~200ms swaps straight to the view instead of flashing the loader.
-const RouteFallback = () => (
-    <div className="route-fallback flex items-center justify-center w-full py-16">
-        <GengarPresence variant="loading" size={96} />
-    </div>
-);
+// The mascot peeks over a Poké Ball that rocks three times, the rhythm of a
+// throw (mascot.css `m-wobble`) — CSS only, so a slow chunk costs no JS frames.
+const RouteFallback = () => {
+    const { t } = useTranslation();
+    return (
+        <div className="route-fallback flex items-center justify-center w-full py-16" role="status">
+            <Mascot size="xl" framing="body" pose="capturando" mood="surpreso" extra={{ sparks: 'none', crest: 0 }} />
+            <span className="sr-only">{t('common.loading')}</span>
+        </div>
+    );
+};
 
 const SettingsGlyph = () => <Settings className="w-5 h-5 shrink-0" />;
 
@@ -340,6 +349,8 @@ const AUTH_SPLASH_MESSAGES = [
 
 export default function AppLayout() {
     const { t, language } = useTranslation();
+    // Toasts and the connection, turned into the mascot's reactions.
+    useMascotReactions();
     const navigate = useNavigate();
 
     // Hand the router to code outside the tree (see utils/navigation.js). The
@@ -1301,7 +1312,8 @@ export default function AppLayout() {
         return (
             <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
                 <div className="boot-splash w-full max-w-xs text-center">
-                    <LogoMark sizes="7rem" className="mx-auto w-28 h-auto" />
+                    {/* The icon at rest, drawn without waiting for the mascot chunk; it pops in with the splash. */}
+                    <MascotIcon className="boot-splash__mascot mx-auto" />
                     <BrandWordmark className="mx-auto mt-4 block w-48 h-auto" />
                     <div
                         className="mt-5 h-1 w-full overflow-hidden rounded-full"
@@ -2044,7 +2056,7 @@ export default function AppLayout() {
                                             />
                                         } />
                                     )}
-                                    <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} theme={theme} onOpenSearch={() => setIsSearchOpen(true)} />} />
+                                    <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} onOpenSearch={() => setIsSearchOpen(true)} />} />
                                 </Routes>
                             </Suspense>
                         </div>

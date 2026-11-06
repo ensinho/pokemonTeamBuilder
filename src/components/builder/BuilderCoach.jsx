@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -19,13 +19,29 @@ const readDismissed = () => {
 
 const coachStage = (size) => (size === 0 ? 'empty' : size < 3 ? 'start' : size < 6 ? 'grow' : 'full');
 
+// The coach's face follows the team: pointing at where to start, glad, set on
+// finishing, radiant at six. Only the step to six celebrates — opening the
+// builder on a full team is data that loaded, not something just done.
+const COACH_FACE = {
+    empty: { pose: 'apontando' },
+    start: { mood: 'animado' },
+    grow: { mood: 'determinado' },
+    full: { mood: 'radiante', pose: 'comemorando' },
+};
+
 export function BuilderCoach({ teamSize = 0, className = '' }) {
     const { t } = useTranslation();
     const isBeginner = useAuthStore((s) => isBeginnerTrainer(s.trainerProfile));
     const [dismissed, setDismissed] = useState(readDismissed);
+    const stage = coachStage(teamSize);
+    const previous = useRef(stage);
+    const [celebrate, setCelebrate] = useState(0);
+    useEffect(() => {
+        if (stage === 'full' && previous.current !== 'full') setCelebrate((n) => n + 1);
+        previous.current = stage;
+    }, [stage]);
     if (!isBeginner || dismissed) return null;
 
-    const stage = coachStage(teamSize);
     const dismiss = () => {
         setDismissed(true);
         try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* the tip just comes back next visit */ }
@@ -33,7 +49,7 @@ export function BuilderCoach({ teamSize = 0, className = '' }) {
 
     return (
         <div className={`builder-coach ${className}`} role="note" aria-live="polite">
-            <MascotTip size="sm" cheer={stage === 'full'}>
+            <MascotTip size="sm" {...COACH_FACE[stage]} play={celebrate ? 'celebrate' : undefined} playKey={celebrate}>
                 <strong className="builder-coach__title">{t(`builder.coach.${stage}.title`)}</strong>
                 <span className="builder-coach__body">{t(`builder.coach.${stage}.body`)}</span>
             </MascotTip>

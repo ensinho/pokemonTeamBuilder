@@ -438,7 +438,7 @@ export function MetaUsageView() {
                         {pt ? 'Pokémon mais usados' : 'Top Pokémon'}
                     </h2>
                     {visible.length === 0 ? (
-                        <EmptyState
+                        <EmptyState mascot="search"
                             compact
                             title={pt ? 'Nenhum resultado' : 'No matches'}
                             message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'}

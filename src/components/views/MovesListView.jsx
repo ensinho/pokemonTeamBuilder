@@ -196,7 +196,7 @@ export function MovesListView() {
             {isLoadingIndex ? (
                 <Loader size="lg" block />
             ) : total === 0 ? (
-                <EmptyState
+                <EmptyState mascot="search"
                     compact
                     title={t('db.noMatchesTitle')}
                     message={t('db.noMatchesDesc')}

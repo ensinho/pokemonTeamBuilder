@@ -53,7 +53,8 @@ function CoachCard({ missionId }) {
         <aside className={`journey-coach ${isDone ? 'is-done' : ''}`} aria-label={t('journeys.coach.label')}>
             {/* The mascot is the one talking; a done mission adds its check. */}
             <span className="journey-coach__mark" aria-hidden="true">
-                <Mascot size="sm" cheer={isDone} />
+                {/* Done while being guided is the trainer's own act, so it may jump. */}
+                <Mascot size="sm" mood={isDone ? 'animado' : undefined} play={isDone ? 'jump' : undefined} interactive stage />
                 {isDone && <span className="journey-coach__check"><Check /></span>}
             </span>
 
