@@ -36,6 +36,7 @@
 | [Handoff: Friends & battles](./plans/HANDOFF-friends-and-battles.md) | History of the feature's build (2026-07) — status, traps. **The current flow and server state are in [Friend battles](./modules/friend_battles.md)** |
 | [How friends & battles work](./plans/ARCHITECTURE-friends-and-battles.md) | The running system — data flow, turn loop, security model, invariants |
 | [Plan: Friends & async battles](./plans/friends-and-async-battles.md) | The decisions and the measured research behind them, phase by phase |
+| [Plan: The social heart](./plans/social-heart.md) | 2026-11-06 proposals (not built): forum as the Centro Pokémon (Diário do dia, battle-text reactions, Pokégear inbox, mentions, weekly tournament), the Champion Challenge social (friends board, replays, seasons, XP), social minigames (puzzle distribution, quiz duel by link), persona journeys chapter 2 |
 | [Plan: Persona onboarding](./plans/persona-onboarding.md) | The 2026-11-05 onboarding + personalisation + UI/UX pass (shadows, grouped settings): built vs open proposals, skills to add |
 | [Plan: Daily champion challenge](./plans/daily-champion-challenge.md) | Daily single-player battle vs a Cynthia AI — product plan and decisions (§14). F1 (server + AI) built 2026-10-14 |
 | [Spec: Daily champion challenge](./plans/daily-champion-challenge-tech.md) | Files, API contract, Firestore model and rules, client store and state machine, tests and per-phase tasks |
