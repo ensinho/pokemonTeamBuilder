@@ -419,7 +419,7 @@ export function BattleDetailView() {
                         action={{ label: t('battle.backToList'), onClick: () => navigate('/battles') }}
                     />
                 ) : (
-                    <div className="challenge-loading"><Loader size="lg" block label={t('battle.stage.loading')} /></div>
+                    <div className="challenge-loading"><Loader size="lg" scene="battle" block label={t('battle.stage.loading')} /></div>
                 )}
             </div>
         );
@@ -523,7 +523,8 @@ export function BattleDetailView() {
         );
     } else {
         headline = t('battle.stage.loading');
-        panel = <div className="ds-panel pvp-lobby is-loading"><Loader size="md" block label={t('battle.stage.loading')} /></div>;
+        // inside the DS screen: the game's own look, so the Poké Ball alone
+        panel = <div className="ds-panel pvp-lobby is-loading"><Loader size="md" scene="ball" block label={t('battle.stage.loading')} /></div>;
     }
     const lowerScreen = chatOpen ? chatPanel(false) : panel;
 

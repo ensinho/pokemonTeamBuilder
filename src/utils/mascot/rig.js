@@ -129,6 +129,8 @@ export const EYES = {
     none: '',
 };
 const EYE_C = [115.5, 30];
+/** Where the eyes go while a loader loops (mascot.css): reading lines, or following the lens. */
+export const GAZES = { none: 1, read: 1, follow: 1 };
 function eyesSVG(spec) {
     const l = typeof spec === 'string' ? spec : spec?.l || 'happy';
     const r = typeof spec === 'string' ? spec : spec?.r || l;
@@ -216,11 +218,15 @@ export const PAWS = {
 };
 
 /* ---------- props & hats ---------- */
+// At rest (no `t`) a part may loop in CSS: wrapped in its own group, because a
+// CSS transform would replace the positioning `transform` attribute it sits in.
+const atRest = (p, name, inner) => (p.t == null ? `<g class="m-loop m-${name}">${inner}</g>` : inner);
 const LN = (d, w = 16, c = 'var(--m-line)', fill = 'none') => `<path d="${d}" fill="${fill}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
 function pokeball(x, y, r = 62, a = 0, cls = '') {
     return `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(a)})"${cls ? ` class="${cls}"` : ''}><circle r="${r}" fill="var(--m-bg)"/><path d="M${-r} 0A${r} ${r} 0 0 1 ${r} 0Z" fill="var(--m-line)"/><circle r="${r}" fill="none" stroke="var(--m-line)" stroke-width="13"/><path d="M${-r} 0H${r}" stroke="var(--m-line)" stroke-width="13"/><circle r="${f(r * 0.3)}" fill="var(--m-bg)" stroke="var(--m-line)" stroke-width="11"/><circle r="${f(r * 0.11)}" fill="var(--m-eye)"/></g>`;
 }
 const DOTS3 = [T.fire, T.water, T.grass];
+const BOOK_LINES = '<path d="M24 -36H82M24 -8H82M24 20H66" stroke="var(--m-line)" stroke-width="9" stroke-linecap="round" opacity=".7"/>';
 const goldInk = 'var(--m-gold-ink)';
 const shadeMix = (c, pct = 55) => mix(c, 'var(--m-shade)', pct);
 export const PROPS = {
@@ -231,12 +237,15 @@ export const PROPS = {
         ? `<g transform="translate(0 440)"><g class="m-loop m-wobble">${pokeball(0, -186, 186)}</g></g>`
         : `<g transform="translate(0 440) rotate(${f(p.propA || 0)})">${pokeball(0, -186, 186)}</g>`),
     pokeballThrow: (p) => pokeball(392, -60, 52, p.propA || 0),
-    magnifier: (p) => `<g transform="translate(250 230) rotate(${f(p.propA || 0)})">${LN('M48 52L104 108', 26)}<circle r="70" fill="var(--m-eye)" fill-opacity=".14" stroke="var(--m-line)" stroke-width="16"/><path d="M-36 -30Q-30 -46 -12 -52" stroke="var(--m-glint)" stroke-width="9" stroke-linecap="round" fill="none" opacity=".8"/></g>`,
+    // at rest (the search loader) the lens sweeps the ground; gaze 'follow' keeps the eyes on it
+    magnifier: (p) => `<g transform="translate(250 230) rotate(${f(p.propA || 0)})">${atRest(p, 'sweep', `${LN('M48 52L104 108', 26)}<circle r="70" fill="var(--m-eye)" fill-opacity=".14" stroke="var(--m-line)" stroke-width="16"/><path d="M-36 -30Q-30 -46 -12 -52" stroke="var(--m-glint)" stroke-width="9" stroke-linecap="round" fill="none" opacity=".8"/>`)}</g>`,
     clipboard: () => `<g transform="translate(0 356) rotate(-4)"><rect x="-92" y="-96" width="184" height="190" rx="18" fill="var(--m-bg)" stroke="var(--m-line)" stroke-width="14"/><rect x="-40" y="-112" width="80" height="34" rx="10" fill="var(--m-line)"/>${DOTS3.map((c, i) => `<circle cx="-50" cy="${-38 + i * 44}" r="12" fill="${c}"/><path d="M-26 ${-38 + i * 44}H58" stroke="var(--m-line)" stroke-width="10" stroke-linecap="round" opacity=".7"/>`).join('')}</g>`,
     laptop: () => `<g transform="translate(0 348)"><path d="M-160 -112H160L146 26H-146Z" fill="var(--m-bg)" stroke="var(--m-line)" stroke-width="14" stroke-linejoin="round"/>${pokeball(0, -44, 34)}<path d="M-196 26H196L180 60H-180Z" fill="var(--m-line)"/></g>`,
     trophy: () => `<g transform="translate(0 340)"><path d="M-70 -110H70C70 -30 44 6 0 10C-44 6-70 -30-70 -110Z" fill="var(--m-gold)" stroke="${goldInk}" stroke-width="10" stroke-linejoin="round"/>${LN('M-70 -90C-118 -90-112 -30-62 -40M70 -90C118 -90 112 -30 62 -40', 12, goldInk)}<path d="M-18 10H18V44H-18Z" fill="var(--m-gold)"/><rect x="-60" y="44" width="120" height="30" rx="8" fill="var(--m-gold)" stroke="${goldInk}" stroke-width="10"/><path d="M-24 -84L-6 -84" stroke="var(--m-glint)" stroke-width="10" stroke-linecap="round" opacity=".7"/></g>`,
     sign: (p) => `<g transform="translate(0 346) rotate(-3)"><rect x="-150" y="-82" width="300" height="150" rx="20" fill="var(--m-bg)" stroke="var(--m-line)" stroke-width="14"/><text x="0" y="18" text-anchor="middle" font-family="Unbounded, 'Space Grotesk', system-ui, sans-serif" font-weight="700" font-size="${clamp(Number(p.signSize) || 62, 20, 110)}" fill="var(--m-line)">${esc(String(p.signText ?? '?').slice(0, 12))}</text></g>`,
-    book: () => `<g transform="translate(0 350) rotate(-6)"><rect x="-120" y="-96" width="240" height="184" rx="16" fill="var(--m-line)"/><rect x="-104" y="-80" width="208" height="152" rx="10" fill="var(--m-bg)"/><path d="M0 -80V72" stroke="var(--m-line)" stroke-width="10"/>${pokeball(-52, -8, 26)}<path d="M24 -36H82M24 -8H82M24 20H66" stroke="var(--m-line)" stroke-width="9" stroke-linecap="round" opacity=".7"/></g>`,
+    // at rest (the Pokédex loader) the right page turns over the spine: lying on
+    // the page it copies, it is invisible between turns, so the loop has no seam
+    book: (p) => `<g transform="translate(0 350) rotate(-6)"><rect x="-120" y="-96" width="240" height="184" rx="16" fill="var(--m-line)"/><rect x="-104" y="-80" width="208" height="152" rx="10" fill="var(--m-bg)"/><path d="M0 -80V72" stroke="var(--m-line)" stroke-width="10"/>${pokeball(-52, -8, 26)}${BOOK_LINES}${p.t == null ? `<g class="m-loop m-page"><path d="M0 -80H94Q104 -80 104 -70V62Q104 72 94 72H0Z" fill="var(--m-bg)"/>${BOOK_LINES}</g>` : ''}</g>`,
     flask: () => `<g transform="translate(260 250) rotate(14)"><path d="M-26 -96V-30L-84 70Q-92 96-62 96H62Q92 96 84 70L26 -30V-96" fill="var(--m-bg)" stroke="var(--m-line)" stroke-width="14" stroke-linejoin="round"/><path d="M-62 46L62 46L78 74Q84 88 66 88H-66Q-84 88-78 74Z" fill="${T.psychic}" fill-opacity=".85"/><path d="M-40 -96H40" stroke="var(--m-line)" stroke-width="14" stroke-linecap="round"/><circle cx="-10" cy="22" r="9" fill="${T.psychic}" fill-opacity=".7"/><circle cx="14" cy="-2" r="6" fill="${T.psychic}" fill-opacity=".6"/></g>`,
     controller: () => `<g transform="translate(0 352)"><path d="M-130 -40Q-120 -80-80 -78H80Q120 -80 130 -40L150 40Q156 84 118 84Q92 84 74 52H-74Q-92 84-118 84Q-156 84-150 40Z" fill="var(--m-bg)" stroke="var(--m-line)" stroke-width="14" stroke-linejoin="round"/><path d="M-92 -14V26M-112 6H-72" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/><circle cx="84" cy="-8" r="11" fill="${T.psychic}"/><circle cx="110" cy="18" r="11" fill="var(--m-line)"/></g>`,
     mic: () => `<g transform="translate(300 196) rotate(-22)"><rect x="-26" y="-70" width="52" height="84" rx="26" fill="var(--m-line)"/><path d="M-16 -46H16M-16 -26H16" stroke="var(--m-bg)" stroke-width="6" stroke-linecap="round"/>${LN('M0 14V96', 16)}</g>`,
@@ -253,7 +262,8 @@ export const PROPS = {
     // Shadow Ball: concentric glow instead of a gradient, so no <defs> are needed
     orb: (p) => {
         const s = p.propS ?? 1, g = 0.55 + 0.45 * (p.propG ?? 0.5);
-        return `<g transform="translate(${f(p.propX || 0)} ${f(330 + (p.propY || 0))}) scale(${f3(s)})"><circle r="128" fill="var(--m-line)" opacity="${f3(0.12 * g)}"/><circle r="100" fill="var(--m-line)" opacity="${f3(0.2 * g)}"/><circle r="70" fill="var(--m-orb)" stroke="var(--m-line)" stroke-width="8"/><path d="M-30 -14Q-10 -40 22 -26M-22 22Q8 36 30 10" stroke="var(--m-line)" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="-18" cy="-20" r="9" fill="var(--m-glint)" opacity=".55"/></g>`;
+        // at rest (the battle loader) the glow breathes and the swirl turns: a ball still charging
+        return `<g transform="translate(${f(p.propX || 0)} ${f(330 + (p.propY || 0))}) scale(${f3(s)})">${atRest(p, 'orb-glow', `<circle r="128" fill="var(--m-line)" opacity="${f3(0.12 * g)}"/><circle r="100" fill="var(--m-line)" opacity="${f3(0.2 * g)}"/>`)}<circle r="70" fill="var(--m-orb)" stroke="var(--m-line)" stroke-width="8"/>${atRest(p, 'orb-swirl', '<path d="M-30 -14Q-10 -40 22 -26M-22 22Q8 36 30 10" stroke="var(--m-line)" stroke-width="8" fill="none" stroke-linecap="round"/>')}<circle cx="-18" cy="-20" r="9" fill="var(--m-glint)" opacity=".55"/></g>`;
     },
     pumpkin: () => `<g transform="translate(0 352)"><path d="M0 -72C-40 -92-130 -78-130 0C-130 70-60 92 0 82C60 92 130 70 130 0C130 -78 40 -92 0 -72Z" fill="${T.fire}" stroke="${shadeMix(T.fire)}" stroke-width="10"/><path d="M0 -72C-26 -40-26 50 0 82M0 -72C26 -40 26 50 0 82" fill="none" stroke="${shadeMix(T.fire)}" stroke-width="8" opacity=".55"/><path d="M-8 -74Q-4 -104 18 -112" stroke="${T.grass}" stroke-width="14" stroke-linecap="round" fill="none"/><path d="M-70 -12L-40 -40L-14 -12ZM70 -12L40 -40L14 -12Z" fill="var(--m-shade)"/><path d="M-74 20Q0 64 74 20Q40 48 18 40L0 56L-18 40Q-40 48-74 20Z" fill="var(--m-shade)"/></g>`,
     cape: () => '<path d="M-200 -40Q-330 160-300 420Q-150 380 0 420Q150 380 300 420Q330 160 200 -40Q100 40 0 40Q-100 40-200 -40Z" fill="var(--m-cape)" stroke="var(--m-line)" stroke-width="12" stroke-linejoin="round"/>',
@@ -395,7 +405,7 @@ export const DEFAULT_POSE = Object.freeze({
     x: 0, y: 0, rot: 0, scale: 1, sx: 1, sy: 1, tilt: 8, faceX: 0, faceY: 0, eyes: 'happy', eyeSY: 1, mouth: 'grin', fangs: true,
     blush: 'normal', blushO: 1, earL: 0, earR: 0, earS: 1, crest: 0, sparks: 'default', sparkS: 1, sparkO: 1, paws: 'none', pawA: 0,
     pawX: 0, pawY: 0, pawO: 1, prop: 'none', propA: 0, propS: 1, propG: 0.5, propX: 0, propY: 0, hat: 'none', behind: 'none',
-    fx: [], fxHead: [], t: undefined, opacity: 1, silhouette: 0, shadow: false, strokeK: 1, signText: '?', signSize: 62,
+    fx: [], fxHead: [], t: undefined, opacity: 1, silhouette: 0, shadow: false, strokeK: 1, signText: '?', signSize: 62, gaze: 'none',
 });
 const NUM_KEYS = Object.keys(DEFAULT_POSE).filter((k) => typeof DEFAULT_POSE[k] === 'number');
 
@@ -411,6 +421,7 @@ export function sanitizePose(pose) {
     p.behind = pick(p.behind, PROPS, 'none');
     p.hat = pick(p.hat, HATS, 'none');
     p.sparks = pick(p.sparks, SPARKS, 'default');
+    p.gaze = pick(p.gaze, GAZES, 'none');
     if (typeof p.eyes === 'string') p.eyes = pick(p.eyes, EYES, 'happy');
     else if (p.eyes && typeof p.eyes === 'object') p.eyes = { l: pick(p.eyes.l, EYES, 'happy'), r: pick(p.eyes.r, EYES, pick(p.eyes.l, EYES, 'happy')) };
     else p.eyes = 'happy';
@@ -456,7 +467,7 @@ export function mascotInner(pose) {
         + `<path d="${BARBS}" fill="var(--m-line)"/>`
         + `<g transform="translate(${f(p.faceX)} ${f(p.faceY)})">`
         + `<g opacity="${f3(p.blushO)}">${blushSVG(p.blush)}</g>`
-        + `<g transform="${eyesT}" class="m-eyes">${scaleStroke(eyesSVG(p.eyes), K)}</g>`
+        + `<g transform="${eyesT}" class="m-eyes">${p.gaze === 'none' ? scaleStroke(eyesSVG(p.eyes), K) : atRest(p, `gaze-${p.gaze}`, scaleStroke(eyesSVG(p.eyes), K))}</g>`
         + `<g>${scaleStroke(mouthSVG(p.mouth, p.fangs), K)}</g>`
         + '</g>'
         + `<g opacity="${f3(p.sparkO)}" class="m-sparks">${SPARKS[p.sparks](p.sparkS)}</g>`

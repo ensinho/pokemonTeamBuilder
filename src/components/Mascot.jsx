@@ -21,7 +21,8 @@ import { useMascotEngine } from './mascot/useMascotEngine';
  *
  * - `size` xs 24 · sm 36 · md 48 · lg 64 · xl 120 · hero 176 px, or `fill`.
  * - `mood` / `pose`: names from `utils/mascot/catalog.js`; `hat`, `extra` add to them.
- * - `loop`: breathe | float | capture | think — CSS, transform/opacity only.
+ * - `loop`: breathe | float — CSS, transform/opacity only. A prop's own loop (the
+ *   capture ball, the Shadow Ball, a page, the lens) comes with its pose, at rest.
  * - `play` (+ `playKey` to replay): a sequence once; `cheer` = a hop (the old API).
  * - `interactive`: looks at the pointer, answers taps. `stage`: also plays the
  *   app's reactions (`useMascotStore.react`). `playground`: petting, a long

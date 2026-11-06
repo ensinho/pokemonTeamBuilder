@@ -36,7 +36,7 @@ export function QuizView({ showDetails, showToast }) {
                 })}
             </div>
 
-            <Suspense fallback={<Loader block />}>
+            <Suspense fallback={<Loader scene="think" block />}>
                 {mode === 'categories'
                     ? <CategoryGuesserView showDetails={showDetails} showToast={showToast} />
                     : <GenerationQuizView showDetails={showDetails} showToast={showToast} />}

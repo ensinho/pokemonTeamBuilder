@@ -102,7 +102,7 @@ export function DeleteAccountDialog({ onClose }) {
 
             {step === 'working' ? (
                 <div className="auth-dialog__status">
-                    <Loader size="lg" label={t('modals.delWorking')} />
+                    <Loader size="lg" scene="ball" label={t('modals.delWorking')} />
                     <ul className="auth-progress">
                         {STAGES.map((id, i) => {
                             const done = stage === 'done' || i < stageIndex;

@@ -139,7 +139,7 @@ export function BattleListView() {
 
             {isLoadingBattles && battles.length === 0 ? (
                 <div className="battle-loading">
-                    <Loader />
+                    <Loader scene="battle" />
                 </div>
             ) : battles.length === 0 ? (
                 <EmptyState

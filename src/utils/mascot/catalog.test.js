@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { easter, seasonalHat, isNight, personaTone, sizeTraits, resolvePose, MOODS, POSES } from './catalog.js';
 import { ICON_INNER, ICON_INNER_SMALL } from './icon.js';
 import { mascotInner } from './rig.js';
+import { LOADER_SCENES } from './constants.js';
 
 const at = (y, m, d, h = 12) => new Date(y, m - 1, d, h);
 
@@ -46,8 +47,21 @@ describe('vocabulary', () => {
 
     it('lets the mood win over the pose for the face', () => {
         expect(resolvePose({ mood: 'triste', pose: 'parado' }).eyes).toBe('teary');
-        expect(Object.keys(MOODS)).toHaveLength(29);
+        expect(Object.keys(MOODS)).toHaveLength(32);
         expect(Object.keys(POSES).length).toBeGreaterThanOrEqual(20);
+    });
+});
+
+describe('loader scenes', () => {
+    it('name real moods and poses, and each one moves by itself (a CSS loop at rest)', () => {
+        expect(Object.keys(LOADER_SCENES)).toEqual(['capture', 'battle', 'pokedex', 'think', 'search']);
+        for (const [name, { mood, pose }] of Object.entries(LOADER_SCENES)) {
+            expect(MOODS[mood], `${name}: mood ${mood}`).toBeDefined();
+            expect(POSES[pose], `${name}: pose ${pose}`).toBeDefined();
+            const markup = mascotInner({ ...resolvePose({ mood, pose }), ...sizeTraits(120) });
+            expect(markup, name).toContain('m-loop');
+            expect(/NaN|undefined|Infinity/.test(markup), name).toBe(false);
+        }
     });
 });
 

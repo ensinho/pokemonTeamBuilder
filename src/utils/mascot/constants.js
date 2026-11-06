@@ -14,3 +14,17 @@ export const VIEWS = {
 
 /** Named sizes, in CSS px at the default UI scale (the wrapper is sized in rem). */
 export const MASCOT_SIZES = { xs: 24, sm: 36, md: 48, lg: 64, xl: 120, hero: 176 };
+
+/**
+ * The loader's scenes (Loader.jsx `scene`): what the mascot does while a region
+ * waits, chosen by what it waits for. Names from catalog.js (`catalog.test.js`
+ * checks them); the motion is the props' own CSS loop (mascot.css), so a wait
+ * costs no JavaScript frames.
+ */
+export const LOADER_SCENES = {
+    capture: { mood: 'expectante', pose: 'capturando' },    // a Pokémon, a team, a page: will the ball hold?
+    battle: { mood: 'desafiador', pose: 'shadowBall' },     // a battle being set up: a Shadow Ball charging
+    pokedex: { mood: 'concentrado', pose: 'lendoPokedex' }, // reference data: reading, a page of the Pokédex turns
+    think: { mood: 'pensando', pose: 'matutando' },         // a quiz, a calculation: the thought bubble's dots
+    search: { mood: 'curioso', pose: 'investigando' },      // trainers, places: the lens sweeps, the eyes follow it
+};

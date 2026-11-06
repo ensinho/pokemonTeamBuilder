@@ -64,7 +64,7 @@ export function BestTeamsView({ onOpenTeam }) {
     const sharePage = useSharePage();
     useDocumentMeta({ path: '/best-teams' });
 
-    if (status === 'loading') return <Loader size="lg" block />;
+    if (status === 'loading') return <Loader size="lg" scene="pokedex" block />;
     if (!summary) return <EmptyState title={t('bestTeamsPage.empty')} />;
 
     const format = summary.format || 'VGC';

@@ -33,9 +33,9 @@
     min-width: 0;
 }
 
+/* The battle scene's room (<Loader scene="battle">, which fades itself in). */
 .challenge-loading {
     padding: var(--space-12) 0;
-    animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 250ms both;
 }
 
 /* ── The frame (app UI) ──────────────────────────────────────────────── */

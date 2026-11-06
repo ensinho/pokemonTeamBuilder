@@ -47,6 +47,16 @@ describe('mascotInner', () => {
         expect(mascotInner({ fx: ['zzz'], t: 300 })).not.toContain('m-loop');
         expect(mascotInner({ prop: 'bigball' })).toContain('m-wobble');
         expect(mascotInner({ fx: ['confetti'] })).not.toContain('<rect'); // never a loop
+        // the loader scenes' props and eyes (mascot.css), only at rest
+        expect(mascotInner({ prop: 'orb' })).toContain('m-loop m-orb-glow');
+        expect(mascotInner({ prop: 'orb' })).toContain('m-loop m-orb-swirl');
+        expect(mascotInner({ prop: 'book' })).toContain('m-loop m-page');
+        expect(mascotInner({ prop: 'magnifier' })).toContain('m-loop m-sweep');
+        expect(mascotInner({ gaze: 'read' })).toContain('m-loop m-gaze-read');
+        expect(mascotInner({ gaze: 'follow' })).toContain('m-loop m-gaze-follow');
+        for (const pose of [{ prop: 'orb' }, { prop: 'book' }, { prop: 'magnifier' }, { gaze: 'read' }]) {
+            expect(mascotInner({ ...pose, t: 300 }), JSON.stringify(pose)).not.toContain('m-loop');
+        }
     });
 
     it('thickens the stroke for small sizes', () => {
@@ -59,6 +69,7 @@ describe('sanitizePose', () => {
         const p = sanitizePose({ x: NaN, y: 'a', tilt: Infinity, eyes: 'nope', mouth: '<script>', hat: 'x', fx: 'zzz' });
         expect(p.x).toBe(0); expect(p.y).toBe(0); expect(p.tilt).toBe(DEFAULT_POSE.tilt);
         expect(p.eyes).toBe('happy'); expect(p.mouth).toBe('grin'); expect(p.hat).toBe('none'); expect(p.fx).toEqual([]);
+        expect(sanitizePose({ gaze: 'up; x' }).gaze).toBe('none');
     });
 
     it('accepts per-eye shapes', () => {

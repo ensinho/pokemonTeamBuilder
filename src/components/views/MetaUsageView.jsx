@@ -237,7 +237,7 @@ export function MetaUsageView() {
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
     if (loading && !ranked.length) {
         return (
-            <Loader size="lg" block />
+            <Loader size="lg" scene="pokedex" block />
         );
     }
 

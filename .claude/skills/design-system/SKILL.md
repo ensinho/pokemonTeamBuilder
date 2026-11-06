@@ -565,7 +565,7 @@ eight segmented controls before this list existed (2026-09-22).
 | a menu | `.menu-surface` > `.menu-item` |
 | **v2** a yes/no setting | `<Switch checked onChange label description variant="row" size="sm" tone>` — never two buttons that each mean half of a boolean |
 | **v2** a checkbox | native `<input type="checkbox" className="check">` inside a `<label>` |
-| **v2** anything loading | `<Loader size="xs\|sm\|md\|lg" label block />` — never a CSS ring, never `animate-spin` on a Poké Ball |
+| **v2** anything loading | `<Loader size="xs\|sm\|md\|lg" label block scene />` — never a CSS ring, never `animate-spin` on a Poké Ball. `md`/`lg` (a region waiting) draw a scene of the mascot picked by what is loading (`scene`: capture · battle · pokedex · think · search; `ball` inside a `.ds-screen` or a solemn moment); `xs`/`sm` (controls, rows) stay the rocking ball |
 | **v2** a figure the user is changing | `<RollingNumber value format />` — on change only |
 | **v2** a reward for the user's own tap | `const shiny = useShinyBurst()` → `shiny.fire()` in the click, `{shiny.burst}` inside a `position: relative` control, `is-bursting` on it while `shiny.isBursting` |
 | **v2** a question before destruction | `if (await confirmAction({ title, message, confirmText }))` — never `window.confirm` |

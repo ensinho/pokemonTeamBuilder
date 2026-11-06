@@ -41,6 +41,12 @@ export const MOODS = {
     concentrado: { eyes: 'flat', mouth: 'tongue', tilt: 4 },
     // the 404's face: moon eyes, a question mark (the two 404 drawings, unified without pupils)
     perdido: { eyes: 'moon', mouth: 'wavy', fx: ['question'], earL: 14, earR: 14, sparks: 'none' },
+    // the capture loader's face: wide eyes on the rocking ball — will it hold? (surprised, without the jolt)
+    expectante: { eyes: 'wide', mouth: 'o', earL: -8, earR: -8, sparks: 'none' },
+    // the search loader's face: open eyes after the lens
+    curioso: { eyes: 'open', mouth: 'smallO', tilt: -6 },
+    // the battle loader's face: Gengar's own grin under sharp eyes — the challenge accepted
+    desafiador: { eyes: 'angry', mouth: 'grin', crest: 1, earL: -10, earR: -10 },
 };
 
 /** Bodies: paws and what they hold. Faces come from the mood, unless a pose needs its own. */
@@ -48,7 +54,7 @@ export const POSES = {
     parado: {},
     acenando: { paws: 'wave', fx: ['heartPop'], tilt: 10 },
     pulando: { y: -60, sy: 1.06, sx: 0.95, paws: 'up', fx: ['motion'] },
-    investigando: { prop: 'magnifier', tilt: -4 },
+    investigando: { prop: 'magnifier', tilt: -4, gaze: 'follow' },
     analisando: { prop: 'clipboard', paws: 'hold' },
     trabalhando: { prop: 'laptop', paws: 'type', tilt: 4 },
     comemorando: { paws: 'up', sparks: 'triple' },
@@ -59,11 +65,12 @@ export const POSES = {
     espiandoSenha: { paws: 'peek' },
     apontando: { paws: 'point', tilt: -6 },
     segurandoPlaca: { prop: 'sign', paws: 'hold', signText: '0', signSize: 96 },
-    shadowBall: { prop: 'orb', paws: 'charge', crest: 1, propS: 1.4 },
+    shadowBall: { prop: 'orb', paws: 'charge', crest: 1, propS: 1.6, propY: 40, y: -70 }, // held low under the grin; the body rises so the glow stays in the frame
     lancandoPokebola: { prop: 'pokeballThrow', paws: 'raise', tilt: -8 },
-    lendoPokedex: { prop: 'book', paws: 'hold' },
+    lendoPokedex: { prop: 'book', paws: 'hold', gaze: 'read' },
     dandoDeOmbros: { paws: 'shrug', tilt: -10 },
     pataNoQueixo: { paws: 'chin', tilt: -8 },
+    matutando: { paws: 'chin', tilt: -8, fx: ['dots'] }, // paw on the chin and a thought bubble: working something out
     capturando: { prop: 'bigball', paws: 'edge', pawY: -150, y: 30 },
     olhandoNuvem: { prop: 'cloud', faceY: -14, tilt: 0 },
     segurandoPresente: { prop: 'gift', paws: 'hold' },

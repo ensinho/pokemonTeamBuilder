@@ -1182,7 +1182,7 @@ export default function PokePuzzleView() {
                 )}
 
                 {/* Load State Indicator */}
-                {isLoadingIndex && <Loader block />}
+                {isLoadingIndex && <Loader scene="think" block />}
 
                 {!isLoadingIndex && targetPokemon && (
                     <div className={`pokepuzzle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>

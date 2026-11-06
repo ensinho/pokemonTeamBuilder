@@ -32,7 +32,8 @@ import { readLocal, writeLocal, removeLocal } from '../utils/safeStorage';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { storedFormFields, withUniqueInstanceIds } from '../utils/teamSerialization';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
-import { Mascot, MascotIcon } from './Mascot';
+import { MascotIcon } from './Mascot';
+import { Loader } from './Loader';
 import { loadMascotEngine } from './mascot/useMascotEngine';
 import { useMascotReactions } from '../hooks/useMascotReactions';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
@@ -215,19 +216,16 @@ const NotFoundView = lazy(() => import('./views/NotFoundView').then((m) => ({ de
 import '../styles/app-shell.css';
 import '../styles/toast.css';
 
-// Fades in after a beat (.route-fallback, app-shell.css): a chunk that lands
-// in under ~200ms swaps straight to the view instead of flashing the loader.
-// The mascot peeks over a Poké Ball that rocks three times, the rhythm of a
-// throw (mascot.css `m-wobble`) — CSS only, so a slow chunk costs no JS frames.
-const RouteFallback = () => {
-    const { t } = useTranslation();
-    return (
-        <div className="route-fallback flex items-center justify-center w-full py-16" role="status">
-            <Mascot size="xl" framing="body" pose="capturando" mood="surpreso" extra={{ sparks: 'none', crest: 0 }} />
-            <span className="sr-only">{t('common.loading')}</span>
-        </div>
-    );
-};
+// The capture scene (<Loader scene>): the mascot peeks over a Poké Ball that
+// rocks three times, the rhythm of a throw — CSS only, so a slow chunk costs no
+// JS frames. It fades in after a beat, so a chunk that lands in under ~200ms
+// swaps straight to the view; a view that then waits for its data hands over
+// to its own scene without a blank beat between them.
+const RouteFallback = () => (
+    <div className="route-fallback flex items-center justify-center w-full py-16">
+        <Loader size="lg" />
+    </div>
+);
 
 const SettingsGlyph = () => <Settings className="w-5 h-5 shrink-0" />;
 

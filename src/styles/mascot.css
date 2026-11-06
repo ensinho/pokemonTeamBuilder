@@ -112,6 +112,16 @@
     .mascot .m-heart { --m-dur: 1.8s; --m-stagger: -0.6s; animation-name: mascot-heart; }
     .mascot .m-wobble { --m-dur: 2.8s; transform-origin: 50% 100%; animation-name: mascot-wobble; animation-timing-function: var(--ease-smooth); }
 
+    /* The loader scenes (Loader.jsx): a Shadow Ball still charging, a Pokédex
+       page turning while the eyes read it, a lens sweeping with the eyes on it.
+       A scene's prop and its eyes share one duration, so they stay in step. */
+    .mascot .m-orb-glow { --m-dur: 1.4s; animation-name: mascot-orb-glow; animation-timing-function: var(--ease-smooth); }
+    .mascot .m-orb-swirl { --m-dur: 1.6s; animation-name: mascot-spin; }
+    .mascot .m-page { --m-dur: 3s; transform-origin: 0% 50%; animation-name: mascot-page; animation-timing-function: var(--ease-smooth); }
+    .mascot .m-gaze-read { --m-dur: 3s; animation-name: mascot-gaze-read; }
+    .mascot .m-sweep { --m-dur: 2.4s; animation-name: mascot-sweep; animation-timing-function: var(--ease-smooth); }
+    .mascot .m-gaze-follow { --m-dur: 2.4s; animation-name: mascot-gaze-follow; animation-timing-function: var(--ease-smooth); }
+
     /* The boot splash: the icon pops in, its sparks a beat later, then one blink. */
     .mascot-icon .mascot__svg { animation: mascot-pop var(--duration-pop) var(--ease-pop) both, mascot-fade-in var(--duration-fast) var(--ease-smooth) both; animation-delay: var(--mascot-delay, 0ms); }
     .mascot-icon .m-sparks { transform-box: fill-box; transform-origin: 0% 100%; animation: mascot-pop var(--duration-pop) var(--ease-pop) both, mascot-fade-in var(--duration-fast) var(--ease-smooth) both; animation-delay: calc(var(--mascot-delay, 0ms) + 260ms); }
@@ -130,6 +140,24 @@
     40% { transform: rotate(-16deg); } 46% { transform: rotate(14deg); } 50%, 64% { transform: rotate(0deg); }
     68% { transform: rotate(-16deg); } 74% { transform: rotate(14deg); } 79%, 100% { transform: rotate(0deg); }
 }
+@keyframes mascot-orb-glow { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+@keyframes mascot-spin { to { transform: rotate(360deg); } }
+/* Turns over the spine, then fades into the left page; back on the right one it
+   matches the page under it exactly, so the reset is invisible. */
+@keyframes mascot-page {
+    0%, 54% { opacity: 1; transform: scaleX(1); }
+    74% { opacity: 1; transform: scaleX(-1); }
+    88% { opacity: 0; transform: scaleX(-1); }
+    89% { opacity: 0; transform: scaleX(1); }
+    100% { opacity: 1; transform: scaleX(1); }
+}
+/* Two lines read, then back to the top of the new page as it turns. */
+@keyframes mascot-gaze-read {
+    0% { transform: translateX(-20px); } 24% { transform: translateX(20px); } 28% { transform: translateX(-20px); }
+    52% { transform: translateX(20px); } 62%, 100% { transform: translateX(-20px); }
+}
+@keyframes mascot-sweep { 0%, 100% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(-92px) rotate(-10deg); } }
+@keyframes mascot-gaze-follow { 0%, 100% { transform: translateX(6px); } 50% { transform: translateX(-24px); } }
 @keyframes mascot-pop { from { transform: scale(0.55); } to { transform: scale(1); } }
 @keyframes mascot-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes mascot-blink { 0%, 100% { transform: scaleY(1); } 40%, 55% { transform: scaleY(0.12); } }

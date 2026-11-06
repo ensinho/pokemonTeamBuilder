@@ -173,7 +173,7 @@ export function TeamCompareModal() {
             />
         );
     } else if (!result) {
-        body = <Loader label={t('teamCompare.loading')} block />;
+        body = <Loader scene="think" label={t('teamCompare.loading')} block />;
     } else if (result.a.length === 0 || result.b.length === 0) {
         body = <p className="team-compare__note">{t('teamCompare.emptySide', { name: result.a.length === 0 ? nameA : nameB })}</p>;
     } else {

@@ -371,7 +371,7 @@ export function ChampionChallengeView() {
                         action={{ label: t('challenge.retry'), onClick: load }}
                     />
                 ) : (
-                    <div className="challenge-loading"><Loader size="lg" block label={t('challenge.loading', { name: championName })} /></div>
+                    <div className="challenge-loading"><Loader size="lg" scene="battle" block label={t('challenge.loading', { name: championName })} /></div>
                 )}
             </div>
         );

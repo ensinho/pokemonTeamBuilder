@@ -509,7 +509,7 @@ export function PokemonDetailPanel({
                     )}
 
                     {isEncountersLoading ? (
-                        <div className="flex-1 flex items-center justify-center py-16"><Loader /></div>
+                        <div className="flex-1 flex items-center justify-center py-16"><Loader scene="search" /></div>
                     ) : filteredGroupedEncounters.length > 0 ? (
                         <div className="custom-scrollbar overflow-y-auto pr-1 flex-1 space-y-3">
                             {filteredGroupedEncounters.map((group) => (
@@ -583,7 +583,7 @@ export function PokemonDetailPanel({
                     </div>
 
                     {isMovesLoading ? (
-                        <div className="flex-1 flex items-center justify-center py-20"><Loader /></div>
+                        <div className="flex-1 flex items-center justify-center py-20"><Loader scene="pokedex" /></div>
                     ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0 || (resolvedMoves.other?.length > 0)) ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                             {[{ key: 'levelUp', title: t('pokedex.movesLevelUp'), col: t('pokedex.movesHeaderLevel'), rows: resolvedMoves.levelUp },
