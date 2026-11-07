@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T15:13:55.198Z",
+  "generatedAt": "2026-11-07T14:15:09.080Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -18089,42 +18089,41 @@
           "source": "Nat Dex Doubles"
         },
         {
-          "name": "Specsmence Returns",
-          "item": "choice-specs",
-          "itemAlts": [
-            "choice-scarf"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "fairy",
-            "steel",
-            "flying"
-          ],
+          "name": "Bulky Dragon Dance",
+          "item": "salamencite",
+          "itemAlts": [],
+          "ability": "intimidate",
+          "nature": "adamant",
+          "tera": [],
           "moves": [
             [
-              "draco-meteor"
+              "dragon-dance"
             ],
             [
-              "hurricane",
-              "air-slash"
+              "double-edge"
             ],
             [
-              "flamethrower",
-              "fire-blast"
+              "earthquake"
             ],
             [
-              "tera-blast",
-              "hydro-pump"
+              "roost"
             ]
           ],
           "evs": {
-            "hp": 4,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
+            "hp": 140,
+            "attack": 116,
+            "defense": 18,
+            "special-attack": 0,
             "special-defense": 0,
-            "speed": 252
+            "speed": 236
+          },
+          "sp": {
+            "hp": 18,
+            "attack": 15,
+            "defense": 3,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 30
           },
           "ivs": {
             "hp": 31,
@@ -18135,8 +18134,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Salamence finds a niche for itself among other special attacking Dragon-types due to an incredible ability in Intimidate and a useful typing that provides a handy Fissure immunity.\nHurricane versus Air Slash: Hurricane's accuracy may not be very reliable, but the sheer damage output makes it worth it. Air Slash is…",
-          "source": "Battle Stadium"
+          "description": "Mega Salamence is a standout pick in the current metagame as a setup sweeper. Salamence's access to Intimidate allows it to easily set up a Dragon Dance in front of most physical attackers, which, combined with Aerilate, can make it immensely powerful. Good physical and special coverage makes Mega Salamence…",
+          "source": "Champions BSS"
         }
       ]
     },
@@ -40275,28 +40274,31 @@
           "source": "VGC 2025"
         },
         {
-          "name": "Offensive Utility",
+          "name": "Calm Mind",
           "item": "sitrus-berry",
           "itemAlts": [
-            "mystic-water",
-            "leftovers"
+            "leftovers",
+            "lum-berry",
+            "chesto-berry"
           ],
           "ability": "",
           "nature": "modest",
           "tera": [],
           "moves": [
             [
+              "calm-mind"
+            ],
+            [
               "moonblast"
             ],
             [
-              "sparkling-aria"
+              "sparkling-aria",
+              "surf"
             ],
             [
-              "aqua-jet"
-            ],
-            [
-              "flip-turn",
-              "encore"
+              "encore",
+              "rest",
+              "psychic"
             ]
           ],
           "evs": {
@@ -40324,7 +40326,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "With excellent natural bulk and a stellar typing combination, Primarina is a premier balance attacker that can provide both excellent offensive trading and strong support options.\nAqua Jet: While somewhat weak on Primarina, Aqua Jet is still an excellent move for picking off weakened foes and finishing off Focus Sash…",
+          "description": "With an impressive 126 base Special Attack stat and decent bulk, Primarina threatens a significant portion of the metagame. It can use those advantages to create opportunities to set up with Calm Mind, even threatening Pokemon that would otherwise check it.\nEncore versus Rest: Encore punishes passive Pokemon and other…",
           "source": "Champions BSS"
         },
         {
@@ -46456,9 +46458,112 @@
     },
     "815": {
       "name": "Cinderace",
-      "gen": "Champions OU",
+      "gen": "Champions BSS",
       "overview": "",
       "sets": [
+        {
+          "name": "All-out Attacker",
+          "item": "wide-lens",
+          "itemAlts": [
+            "focus-sash",
+            "life-orb"
+          ],
+          "ability": "libero",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "pyro-ball"
+            ],
+            [
+              "gunk-shot"
+            ],
+            [
+              "high-jump-kick"
+            ],
+            [
+              "sucker-punch",
+              "u-turn",
+              "will-o-wisp"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Cinderace's high-Base Power moves, great STAB-boosted coverage, and solid Speed make it a menacing, powerful attacker whenever it safely enters the field.\nGunk Shot: Gunk Shot OHKOes most Primarina, which can switch into Cinderace's other attacks, and it deals with other Fairy-types like Mega Floette.\nHigh Jump Kick:…",
+          "source": "Champions BSS"
+        },
+        {
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
+          "itemAlts": [],
+          "ability": "libero",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "pyro-ball"
+            ],
+            [
+              "gunk-shot"
+            ],
+            [
+              "high-jump-kick"
+            ],
+            [
+              "u-turn"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Although it's a bit unreliable, Cinderace's very strong attacks and nice coverage give it an advantage over Pokemon like Meowscarada as a Choice Scarf user and revenge killer.\nPyro Ball: One of the main draws to Choice Scarf Cinderace is its ability to outspeed and OHKO Mega Lucario Z with Pyro Ball, which bypasses…",
+          "source": "Champions BSS"
+        },
         {
           "name": "Air Balloon",
           "item": "air-balloon",
@@ -46482,55 +46587,6 @@
             [
               "court-change",
               "will-o-wisp"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 6,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "sp": {
-            "hp": 0,
-            "attack": 32,
-            "defense": 2,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 32
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "Champions OU"
-        },
-        {
-          "name": "Choice Scarf",
-          "item": "choice-scarf",
-          "itemAlts": [],
-          "ability": "libero",
-          "nature": "jolly",
-          "tera": [],
-          "moves": [
-            [
-              "pyro-ball"
-            ],
-            [
-              "gunk-shot"
-            ],
-            [
-              "high-jump-kick"
-            ],
-            [
-              "u-turn"
             ]
           ],
           "evs": {
@@ -46604,51 +46660,6 @@
           },
           "level": null,
           "description": "With its good Speed tier and high-powered moves complemented by Libero, Cinderace can leverage its offensive moveset to function as an effective pivot and attacker. U-Turn allows Cinderace to pivot out of disadvantageous matchups and deal chip damage, breaking Dragonite’s Multiscale and helping against some…",
-          "source": "OU"
-        },
-        {
-          "name": "Bulky Pivot",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "jolly",
-          "tera": [
-            "fire",
-            "flying",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "pyro-ball"
-            ],
-            [
-              "u-turn"
-            ],
-            [
-              "court-change"
-            ],
-            [
-              "will-o-wisp"
-            ]
-          ],
-          "evs": {
-            "hp": 224,
-            "attack": 32,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "When combining its good Speed with HP investment, Cinderace becomes one of OU's better pivots, able to check threats such as Gholdengo, Scizor, and Kingambit. U-turn allows Cinderace to chip foes and capitalize on switch-ins to bring in its teammates safely as well as greatly damage foes Cinderace might lose to in…",
           "source": "OU"
         }
       ]
@@ -50347,8 +50358,7 @@
           "nature": "jolly",
           "tera": [
             "poison",
-            "fire",
-            "ghost"
+            "fire"
           ],
           "moves": [
             [
@@ -50381,7 +50391,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Combining its great bulk, Swords Dance, excellent utility with Knock Off, and longevity from Synthesis, Zarude becomes an excellent wallbreaker that can repeatedly come in to destroy common defensive staples such as Ting-Lu and Dondozo. Swords Dance gives Zarude the breaking power to overcome usual checks, enabling it…",
           "source": "OU"
         },
         {
@@ -56074,9 +56084,61 @@
     },
     "956": {
       "name": "Espathra",
-      "gen": "Champions OU",
+      "gen": "Champions BSS",
       "overview": "This analysis is for the Regulation C format of Battle Stadium Singles, which lasts until June 30th, 2023. For more information on this format and its current events, check out the format page!\nIf you feel this analysis is missing anything important or needs an update, feel free to suggest any changes here.",
       "sets": [
+        {
+          "name": "Baton Pass",
+          "item": "sitrus-berry",
+          "itemAlts": [
+            "mental-herb",
+            "kasib-berry"
+          ],
+          "ability": "speed-boost",
+          "nature": "timid",
+          "tera": [],
+          "moves": [
+            [
+              "lumina-crash"
+            ],
+            [
+              "calm-mind"
+            ],
+            [
+              "protect"
+            ],
+            [
+              "baton-pass"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 212,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 46
+          },
+          "sp": {
+            "hp": 32,
+            "attack": 0,
+            "defense": 27,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 7
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Espathra is one of the most efficient Baton Pass users for special attackers. Speed Boost allows it to passively accumulate boosts while using Calm Mind or Protect. Espathra is an excellent support for teammates like Archaludon, which lack Speed and Special Defense as well as appreciate the Special Attack boost.…",
+          "source": "Champions BSS"
+        },
         {
           "name": "Calm Mind",
           "item": "colbur-berry",
@@ -56229,56 +56291,6 @@
           },
           "level": null,
           "description": "Espathra is the only option for the coveted Speed Boost + Baton Pass combination, which can be extremely deadly for setting up sweeps!\nLumina Crash: Lumina Crash ensures that Espathra isn't totally shut down by Taunt, and the guaranteed -2 Special Defense drop helps against Unaware walls.\nReflect: Reflect can stop…",
-          "source": "Battle Stadium"
-        },
-        {
-          "name": "Offensive",
-          "item": "focus-sash",
-          "itemAlts": [],
-          "ability": "speed-boost",
-          "nature": "timid",
-          "tera": [
-            "fighting",
-            "fire",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "lumina-crash"
-            ],
-            [
-              "dazzling-gleam"
-            ],
-            [
-              "tera-blast",
-              "protect",
-              "calm-mind"
-            ],
-            [
-              "shadow-ball",
-              "protect",
-              "hypnosis",
-              "calm-mind"
-            ]
-          ],
-          "evs": {
-            "hp": 4,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "This set does not have a full write-up yet. If you'd like to finish this, feel free to reserve it here!",
           "source": "Battle Stadium"
         }
       ]
