@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-07T14:15:09.080Z",
+  "generatedAt": "2026-11-08T14:24:15.771Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -16257,10 +16257,62 @@
       ]
     },
     "308": {
-      "name": "Medicham",
-      "gen": "ZU",
+      "name": "Medicham-Mega",
+      "gen": "Champions OU",
       "overview": "",
       "sets": [
+        {
+          "name": "Wallbreaker",
+          "item": "medichamite",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "close-combat"
+            ],
+            [
+              "fake-out"
+            ],
+            [
+              "fire-punch",
+              "zen-headbutt"
+            ],
+            [
+              "zen-headbutt",
+              "bullet-punch",
+              "ice-punch"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
         {
           "name": "Choice Scarf",
           "item": "choice-scarf",
@@ -16390,49 +16442,6 @@
           "level": null,
           "description": "",
           "source": "ZU"
-        },
-        {
-          "name": "All-Out Attacker",
-          "item": "medichamite",
-          "itemAlts": [],
-          "ability": "telepathy",
-          "nature": "jolly",
-          "tera": [],
-          "moves": [
-            [
-              "fake-out"
-            ],
-            [
-              "close-combat"
-            ],
-            [
-              "zen-headbutt"
-            ],
-            [
-              "ice-punch",
-              "bullet-punch",
-              "fire-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 4,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Mega Medicham is a destructive wallbreaker that is hugely threatening to several common defensive staples like Ferrothorn, Toxapex, Great Tusk, and Melmetal. Its immense power even allows it to 2HKO bulky neutral targets like Corviknight and Alomomola. Fake Out allows Mega Medicham to pressure faster and more…",
-          "source": "Nat Dex"
         }
       ]
     },
@@ -21525,7 +21534,7 @@
           "source": "Champions BSS"
         },
         {
-          "name": "All-Out Attacker",
+          "name": "All-out Attacker",
           "item": "lopunnite",
           "itemAlts": [],
           "ability": "limber",
@@ -21626,7 +21635,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "With Mega Lopunny's combination of Swords Dance and Mach Punch, it is now exceedingly threatening as a powerful wallbreaker. Mach Punch is capable of picking off threats such as Mega Absol Z, as well as OHKOing Choice Scarf Hydreigon and Meowscarada at +2. Triple Axel enables Mega Lopunny to OHKO Garchomp and…",
           "source": "Champions OU"
         }
       ]
@@ -37940,9 +37949,58 @@
     },
     "701": {
       "name": "Hawlucha",
-      "gen": "OU",
+      "gen": "Champions OU",
       "overview": "",
       "sets": [
+        {
+          "name": "Unburden Sweeper",
+          "item": "grassy-seed",
+          "itemAlts": [],
+          "ability": "unburden",
+          "nature": "adamant",
+          "tera": [],
+          "moves": [
+            [
+              "swords-dance"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "acrobatics"
+            ],
+            [
+              "substitute"
+            ]
+          ],
+          "evs": {
+            "hp": 212,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 46
+          },
+          "sp": {
+            "hp": 27,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 7
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
         {
           "name": "Unburden Sweeper",
           "item": "grassy-seed",
@@ -38074,50 +38132,6 @@
           "level": null,
           "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
-        },
-        {
-          "name": "Unburden Sweeper",
-          "item": "electric-seed",
-          "itemAlts": [
-            "psychic-seed",
-            "grassy-seed"
-          ],
-          "ability": "unburden",
-          "nature": "adamant",
-          "tera": [],
-          "moves": [
-            [
-              "swords-dance"
-            ],
-            [
-              "acrobatics"
-            ],
-            [
-              "close-combat"
-            ],
-            [
-              "substitute"
-            ]
-          ],
-          "evs": {
-            "hp": 28,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 228
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Hawlucha acts as a threatening setup sweeper, being able to use its combination of Unburden and Swords Dance to clean up games. Substitute is used in order to find setup opportunities against foes such as Alomomola and Ferrothorn as well as Ground-types like Landorus-T and Gliscor, allowing Hawlucha to take advantage…",
-          "source": "Nat Dex"
         }
       ]
     },
@@ -53111,9 +53125,59 @@
     },
     "914": {
       "name": "Quaquaval",
-      "gen": "Battle Stadium",
+      "gen": "Champions OU",
       "overview": "",
       "sets": [
+        {
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
+          "itemAlts": [],
+          "ability": "moxie",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "wave-crash"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "triple-axel",
+              "knock-off"
+            ],
+            [
+              "flip-turn"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
         {
           "name": "(Regulation C) Moxie Sweeper",
           "item": "focus-sash",
@@ -53238,51 +53302,6 @@
             ],
             [
               "rapid-spin"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 4,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "OU"
-        },
-        {
-          "name": "Swords Dance",
-          "item": "lum-berry",
-          "itemAlts": [
-            "life-orb"
-          ],
-          "ability": "moxie",
-          "nature": "jolly",
-          "tera": [
-            "steel"
-          ],
-          "moves": [
-            [
-              "swords-dance"
-            ],
-            [
-              "aqua-step"
-            ],
-            [
-              "close-combat"
-            ],
-            [
-              "triple-axel"
             ]
           ],
           "evs": {
