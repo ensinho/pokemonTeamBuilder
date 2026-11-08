@@ -50,6 +50,69 @@ export const normalizeStreak = (raw) => {
     };
 };
 
+/** Two copies of the check-in counter: it only grows, so the larger count and the later day. */
+export const mergeCheckins = (aRaw, bRaw) => {
+    const a = normalizeCheckin(aRaw);
+    const b = normalizeCheckin(bRaw);
+    return {
+        count: Math.max(a.count, b.count),
+        lastDay: [a.lastDay, b.lastDay].filter(Boolean).sort().pop() || null,
+    };
+};
+
+/**
+ * Two copies of the streak (this device's and the account's). The copy that
+ * saw the later day is live — unless it was counted from a stale base: a
+ * device that had not heard of the other's days started a new run of 1 while
+ * the account's run was still alive (2026-11-08, a 23-day streak shown as 1).
+ * When the newer run begins no later than the day after the older one ended
+ * (two days, with a shield), they are one run, and the counts join.
+ */
+export const mergeStreaks = (aRaw, bRaw) => {
+    const a = normalizeStreak(aRaw);
+    const b = normalizeStreak(bRaw);
+    const [older, newer] = (b.lastVisit || '') > (a.lastVisit || '') ? [a, b] : [b, a];
+    const gap = dayDiff(older.lastVisit, newer.lastVisit);
+
+    let count = newer.count;
+    let shields = newer.shields;
+    if (gap === 0) {
+        // The same day seen twice: the higher count was counted from more history.
+        const best = a.count >= b.count ? a : b;
+        count = best.count;
+        shields = best.shields;
+    } else if (gap !== null && older.count > 0 && newer.count > 0) {
+        // Days between the older run's last day and the newer run's first.
+        const between = gap - newer.count + 1;
+        if (between <= 1 || (between === 2 && older.shields > 0)) {
+            count = Math.max(newer.count, older.count + Math.min(newer.count, gap));
+        }
+    }
+    return {
+        count,
+        longest: Math.max(a.longest, b.longest, count),
+        lastVisit: newer.lastVisit,
+        shields,
+    };
+};
+
+/**
+ * Settle a check-in made on this device against the account's copy: merge the
+ * state the check-in was counted from (`base`) with the account's, then count
+ * `day` on top — or keep the merge when the account already counted that day.
+ * Run before every write, so a device that missed days elsewhere (a PWA left
+ * open, a second phone, a check-in tapped before the profile loaded) adds a
+ * day to the account's streak instead of overwriting it with its own.
+ */
+export const settleCheckin = ({ base = {}, day } = {}, remote = {}) => {
+    const merged = {
+        checkin: mergeCheckins(base.checkin, remote?.checkin),
+        streak: mergeStreaks(base.streak, remote?.streak),
+    };
+    const next = DAY_RE.test(day || '') ? applyCheckin(merged, day) : null;
+    return next ? { checkin: next.checkin, streak: next.streak } : merged;
+};
+
 /**
  * The streak as it stands today: still the stored count if the last day was
  * today or yesterday — or the day before, with a shield to cover the gap — and

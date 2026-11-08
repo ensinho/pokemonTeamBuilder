@@ -15,7 +15,7 @@ import {
     sendPasswordResetEmail,
     deleteUser,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, runTransaction, setDoc } from 'firebase/firestore';
 import { appId, ADMIN_EMAILS } from '../constants/firebase';
 import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useThemeStore } from './useThemeStore';
@@ -27,7 +27,7 @@ import { resolveAvatar } from '../utils/avatar';
 import { promptSignIn, navigateTo } from '../utils/navigation';
 import { deleteUserData } from '../services/accountDeletion';
 import { disablePush } from '../services/pushNotifications';
-import { applyCheckin, localDayKey as checkinDayKey, normalizeCheckin, normalizeStreak } from '../utils/dailyCheckin';
+import { applyCheckin, localDayKey as checkinDayKey, mergeCheckins, mergeStreaks, normalizeCheckin, normalizeStreak, settleCheckin } from '../utils/dailyCheckin';
 import { useRewardsStore } from './useRewardsStore';
 import { isCrawler } from '../utils/crawler';
 import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
@@ -159,17 +159,28 @@ const writeCheckin = (checkin) => {
     } catch (_) { /* ignore */ }
 };
 
-/** Two copies of the streak: the one that saw the later day is live (its shields with it). */
-const mergeStreaks = (localRaw, remoteRaw) => {
-    const local = normalizeStreak(localRaw);
-    const remote = normalizeStreak(remoteRaw);
-    const latest = (remote.lastVisit || '') > (local.lastVisit || '') ? remote : local;
-    return {
-        count: latest.count,
-        longest: Math.max(local.longest, remote.longest),
-        lastVisit: latest.lastVisit,
-        shields: latest.shields,
-    };
+// A check-in this device counted but the account has not confirmed yet:
+// `base` is the state it was counted from, `day` the day it counts. Settled
+// against the account's copy before anything is written (settleCheckin), so
+// a stale device adds today to the account's streak instead of replacing it.
+// Kept in storage so a page closed before the write still settles next boot.
+const PENDING_CHECKIN_KEY = 'ptb:checkin-pending';
+
+const readPendingCheckin = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+        const parsed = JSON.parse(localStorage.getItem(PENDING_CHECKIN_KEY) || 'null');
+        return parsed && typeof parsed.day === 'string' && parsed.base ? parsed : null;
+    } catch (_) {
+        return null;
+    }
+};
+
+const writePendingCheckin = (pending) => {
+    try {
+        if (pending) localStorage.setItem(PENDING_CHECKIN_KEY, JSON.stringify(pending));
+        else localStorage.removeItem(PENDING_CHECKIN_KEY);
+    } catch (_) { /* in memory it still settles this session */ }
 };
 
 const getInitialGreeting = () => {
@@ -298,6 +309,9 @@ export const useAuthStore = create((set, get) => {
     // trainer's in-memory state, and the preferences sync would copy that
     // state (name, streak, check-ins…) into the guest's account.
     let leavingSession = false;
+    let pendingCheckin = readPendingCheckin();
+    // Set when the profile read failed: retries it when the app is back.
+    let detachHydrationRetry = null;
 
     // Read once at store creation. If present, the app boots as "ready" with
     // the last-known identity instead of waiting on the network round-trips;
@@ -312,6 +326,186 @@ export const useAuthStore = create((set, get) => {
     const startSyncNudgeTimer = () => {
         if (syncNudgeTimer) clearTimeout(syncNudgeTimer);
         syncNudgeTimer = null;
+    };
+
+    // Read the account's preferences doc and merge it into this device's
+    // state. True once the read answered (the doc may not exist yet); false
+    // when it failed — then nothing may be written back, or this device's
+    // copy (a streak from last week) would overwrite the account's.
+    const hydrateFromAccount = async (user) => {
+        if (get().userId !== user.uid) return false;
+        const prefRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'preferences');
+        const snap = await getDoc(prefRef);
+        if (!snap.exists()) return true;
+        const data = snap.data();
+
+        // 1. Theme sync
+        if (data.theme) {
+            useThemeStore.getState().changeTheme(data.theme);
+        }
+
+        // 1.1 Language sync
+        if (data.language) {
+            useLanguageStore.getState().setLanguage(data.language);
+        }
+
+        // 1.2 Interface scale. Only applied when the profile
+        // actually carries one, so signing in on a device the
+        // user already tuned doesn't silently reset it.
+        if (data.uiScale !== undefined && data.uiScale !== null) {
+            useThemeStore.getState().setUiScale(data.uiScale);
+        }
+
+        // 1.3 Tera Type visibility — same rule.
+        if (typeof data.showTeraType === 'boolean') {
+            useThemeStore.getState().setShowTeraType(data.showTeraType);
+        }
+
+        // 1.4 Global search shortcut — same rule.
+        if (typeof data.searchShortcut === 'string') {
+            useThemeStore.getState().setSearchShortcut(data.searchShortcut);
+        }
+
+        // 2. Display Name
+        if (typeof data.displayName === 'string') {
+            set({ displayName: data.displayName });
+        }
+
+        // 2.1 Trainer sprite + which avatar the user picked
+        if (typeof data.trainerSprite === 'string' || data.trainerSprite === null) {
+            set({ trainerSprite: data.trainerSprite || null });
+        }
+        if (data.avatarPreference === 'trainer' || data.avatarPreference === 'pokemon') {
+            set({ avatarPreference: data.avatarPreference });
+        }
+
+        // 2.2 Selected Badge
+        if (typeof data.selectedBadgeId === 'string' || data.selectedBadgeId === null) {
+            const bId = data.selectedBadgeId || null;
+            set({ selectedBadgeId: bId });
+            try {
+                if (bId) localStorage.setItem('selectedBadgeId', bId);
+                else localStorage.removeItem('selectedBadgeId');
+            } catch (_) { /* ignore */ }
+        }
+
+        // 3. Greeting Pokemon
+        let nextGreeting = { id: null, isShiny: false };
+        if (Number.isInteger(data.greetingPokemon?.id)) {
+            nextGreeting = {
+                id: data.greetingPokemon.id,
+                isShiny: Boolean(data.greetingPokemon.isShiny),
+            };
+        } else if (Number.isInteger(data.greetingPokemonId)) {
+            nextGreeting = {
+                id: data.greetingPokemonId,
+                isShiny: Boolean(data.greetingPokemonIsShiny),
+            };
+        }
+        if (nextGreeting.id) {
+            set({
+                greetingPokemonId: nextGreeting.id,
+                greetingPokemonIsShiny: nextGreeting.isShiny,
+            });
+            try {
+                localStorage.setItem('greetingPokemon', JSON.stringify(nextGreeting));
+            } catch (_) { /* ignore */ }
+        }
+
+        // 4. Wallpaper
+        if (data.homeWallpaperId) {
+            useThemeStore.getState().setHomeWallpaperPreference(data.homeWallpaperId);
+        }
+
+        // 5. Streak merging. The streak counts consecutive
+        // check-ins (checkIn — the daily PokéPuzzle checks in
+        // too), never a bare app open. The copy that saw the
+        // later day is the live one.
+        // 5.0 Check-ins only grow: the larger count, the
+        // later day. A check-in made before this read (the
+        // card renders from the boot snapshot) was counted
+        // from this device's copy — settle it on the
+        // account's instead (2026-11-08).
+        const settled = pendingCheckin
+            ? settleCheckin(pendingCheckin, data)
+            : { checkin: mergeCheckins(get().checkin, data.checkin), streak: mergeStreaks(get().streak, data.streak) };
+        const mergedStreak = settled.streak;
+        writeStreak(mergedStreak);
+        writeCheckin(settled.checkin);
+        set({ streak: mergedStreak, checkin: settled.checkin });
+
+        // 5.1 Days active: the larger count wins, and it is
+        // never below the longest streak — every streak day
+        // was a day active, so a veteran doesn't start at 0.
+        const localDays = get().activeDays || getInitialActiveDays();
+        const remoteDays = data.activeDays && typeof data.activeDays === 'object' ? data.activeDays : {};
+        const remoteLastDay = typeof remoteDays.lastDay === 'string' ? remoteDays.lastDay : null;
+        const mergedDays = {
+            count: Math.max(localDays.count || 0, remoteDays.count || 0, mergedStreak.longest || 0),
+            lastDay: [localDays.lastDay, remoteLastDay].filter(Boolean).sort().pop() || null,
+        };
+        writeActiveDays(mergedDays);
+        set({ activeDays: mergedDays });
+
+        // 5.2 Journey marks: a mark is never taken back, so
+        // the union of both copies is the truth.
+        const mergedMarks = { ...cleanJourneyMarks(data.journeyMarks), ...get().journeyMarks };
+        writeJourneyMarks(mergedMarks);
+        set({ journeyMarks: mergedMarks });
+
+        // 5.25 Trainer profile: the copy touched last wins.
+        const mergedProfile = mergeTrainerProfiles(get().trainerProfile, data.trainerProfile);
+        writeTrainerProfile(mergedProfile);
+        set({ trainerProfile: mergedProfile });
+
+        // 5.26 Badge Case: the copy touched last wins.
+        const mergedCase = mergeBadgeCases(get().badgeCase, data.badgeCase);
+        writeBadgeCase(mergedCase);
+        set({ badgeCase: mergedCase });
+
+        // 5.3 Rewards (useRewardsStore): XP never drops,
+        // unlocks are a union, the account's equip wins.
+        useRewardsStore.getState().hydrate(data.rewards);
+        return true;
+    };
+
+    // After a successful read: push this device's merged state back, then the
+    // public directory entry (not awaited — boot must not wait on it).
+    const afterAccountRead = async () => {
+        const settling = pendingCheckin;
+        const status = await get().syncPreferencesToFirestore();
+        if (status === 'saved' && settling && pendingCheckin === settling) {
+            pendingCheckin = null;
+            writePendingCheckin(null);
+        }
+        get().syncPublicProfile();
+    };
+
+    // The read failed (offline, a flaky network): try again when the app is
+    // back in view or online, instead of writing a stale copy over the account.
+    const retryHydrationLater = (user) => {
+        if (detachHydrationRetry || typeof window === 'undefined') return;
+        let running = false;
+        const retry = async () => {
+            if (running || (typeof document !== 'undefined' && document.visibilityState !== 'visible')) return;
+            if (get().userId !== user.uid || leavingSession) { detach(); return; }
+            running = true;
+            let ok = false;
+            try { ok = await hydrateFromAccount(user); } catch (_) { ok = false; }
+            running = false;
+            if (!ok || get().userId !== user.uid) return;
+            detach();
+            profileHydratedFromFirestore = true;
+            await afterAccountRead();
+        };
+        const detach = () => {
+            window.removeEventListener('online', retry);
+            document.removeEventListener('visibilitychange', retry);
+            detachHydrationRetry = null;
+        };
+        window.addEventListener('online', retry);
+        document.addEventListener('visibilitychange', retry);
+        detachHydrationRetry = detach;
     };
 
     return {
@@ -393,147 +587,13 @@ export const useAuthStore = create((set, get) => {
                     }
 
                     // Hydrate preferences from Firestore
+                    let readOk = false;
                     try {
-                        const prefRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'preferences');
-                        const snap = await getDoc(prefRef);
-                        if (snap.exists()) {
-                            const data = snap.data();
-                            
-                            // 1. Theme sync
-                            if (data.theme) {
-                                useThemeStore.getState().changeTheme(data.theme);
-                            }
-
-                            // 1.1 Language sync
-                            if (data.language) {
-                                useLanguageStore.getState().setLanguage(data.language);
-                            }
-
-                            // 1.2 Interface scale. Only applied when the profile
-                            // actually carries one, so signing in on a device the
-                            // user already tuned doesn't silently reset it.
-                            if (data.uiScale !== undefined && data.uiScale !== null) {
-                                useThemeStore.getState().setUiScale(data.uiScale);
-                            }
-
-                            // 1.3 Tera Type visibility — same rule.
-                            if (typeof data.showTeraType === 'boolean') {
-                                useThemeStore.getState().setShowTeraType(data.showTeraType);
-                            }
-
-                            // 1.4 Global search shortcut — same rule.
-                            if (typeof data.searchShortcut === 'string') {
-                                useThemeStore.getState().setSearchShortcut(data.searchShortcut);
-                            }
-                            
-                            // 2. Display Name
-                            if (typeof data.displayName === 'string') {
-                                set({ displayName: data.displayName });
-                            }
-
-                            // 2.1 Trainer sprite + which avatar the user picked
-                            if (typeof data.trainerSprite === 'string' || data.trainerSprite === null) {
-                                set({ trainerSprite: data.trainerSprite || null });
-                            }
-                            if (data.avatarPreference === 'trainer' || data.avatarPreference === 'pokemon') {
-                                set({ avatarPreference: data.avatarPreference });
-                            }
-
-                            // 2.2 Selected Badge
-                            if (typeof data.selectedBadgeId === 'string' || data.selectedBadgeId === null) {
-                                const bId = data.selectedBadgeId || null;
-                                set({ selectedBadgeId: bId });
-                                try {
-                                    if (bId) localStorage.setItem('selectedBadgeId', bId);
-                                    else localStorage.removeItem('selectedBadgeId');
-                                } catch (_) { /* ignore */ }
-                            }
-
-                            // 3. Greeting Pokemon
-                            let nextGreeting = { id: null, isShiny: false };
-                            if (Number.isInteger(data.greetingPokemon?.id)) {
-                                nextGreeting = {
-                                    id: data.greetingPokemon.id,
-                                    isShiny: Boolean(data.greetingPokemon.isShiny),
-                                };
-                            } else if (Number.isInteger(data.greetingPokemonId)) {
-                                nextGreeting = {
-                                    id: data.greetingPokemonId,
-                                    isShiny: Boolean(data.greetingPokemonIsShiny),
-                                };
-                            }
-                            if (nextGreeting.id) {
-                                set({
-                                    greetingPokemonId: nextGreeting.id,
-                                    greetingPokemonIsShiny: nextGreeting.isShiny,
-                                });
-                                try {
-                                    localStorage.setItem('greetingPokemon', JSON.stringify(nextGreeting));
-                                } catch (_) { /* ignore */ }
-                            }
-
-                            // 4. Wallpaper
-                            if (data.homeWallpaperId) {
-                                useThemeStore.getState().setHomeWallpaperPreference(data.homeWallpaperId);
-                            }
-
-                            // 5. Streak merging. The streak counts consecutive
-                            // check-ins (checkIn — the daily PokéPuzzle checks in
-                            // too), never a bare app open. The copy that saw the
-                            // later day is the live one.
-                            const mergedStreak = mergeStreaks(get().streak, data.streak);
-                            writeStreak(mergedStreak);
-                            set({ streak: mergedStreak });
-
-                            // 5.0 Check-ins only grow: the larger count, the later day.
-                            const localCheckin = normalizeCheckin(get().checkin);
-                            const remoteCheckin = normalizeCheckin(data.checkin);
-                            const mergedCheckin = {
-                                count: Math.max(localCheckin.count, remoteCheckin.count),
-                                lastDay: [localCheckin.lastDay, remoteCheckin.lastDay].filter(Boolean).sort().pop() || null,
-                            };
-                            writeCheckin(mergedCheckin);
-                            set({ checkin: mergedCheckin });
-
-                            // 5.1 Days active: the larger count wins, and it is
-                            // never below the longest streak — every streak day
-                            // was a day active, so a veteran doesn't start at 0.
-                            const localDays = get().activeDays || getInitialActiveDays();
-                            const remoteDays = data.activeDays && typeof data.activeDays === 'object' ? data.activeDays : {};
-                            const remoteLastDay = typeof remoteDays.lastDay === 'string' ? remoteDays.lastDay : null;
-                            const mergedDays = {
-                                count: Math.max(localDays.count || 0, remoteDays.count || 0, mergedStreak.longest || 0),
-                                lastDay: [localDays.lastDay, remoteLastDay].filter(Boolean).sort().pop() || null,
-                            };
-                            writeActiveDays(mergedDays);
-                            set({ activeDays: mergedDays });
-
-                            // 5.2 Journey marks: a mark is never taken back, so
-                            // the union of both copies is the truth.
-                            const mergedMarks = { ...cleanJourneyMarks(data.journeyMarks), ...get().journeyMarks };
-                            writeJourneyMarks(mergedMarks);
-                            set({ journeyMarks: mergedMarks });
-
-                            // 5.25 Trainer profile: the copy touched last wins.
-                            const mergedProfile = mergeTrainerProfiles(get().trainerProfile, data.trainerProfile);
-                            writeTrainerProfile(mergedProfile);
-                            set({ trainerProfile: mergedProfile });
-
-                            // 5.26 Badge Case: the copy touched last wins.
-                            const mergedCase = mergeBadgeCases(get().badgeCase, data.badgeCase);
-                            writeBadgeCase(mergedCase);
-                            set({ badgeCase: mergedCase });
-
-                            // 5.3 Rewards (useRewardsStore): XP never drops,
-                            // unlocks are a union, the account's equip wins.
-                            useRewardsStore.getState().hydrate(data.rewards);
-                        } else {
-                            set({ streak: getInitialStreak() });
-                        }
+                        readOk = await hydrateFromAccount(user);
                     } catch (e) {
-                        set({ streak: getInitialStreak() });
+                        readOk = false;
                     } finally {
-                        profileHydratedFromFirestore = true;
+                        profileHydratedFromFirestore = readOk;
 
                         // Count today, then keep counting while the app stays
                         // open across midnight (an installed PWA rarely reloads).
@@ -546,13 +606,10 @@ export const useAuthStore = create((set, get) => {
                             detachActiveDayListener = () => document.removeEventListener('visibilitychange', onVisible);
                         }
 
-                        // Push preferences state to Firestore to ensure sync
-                        await get().syncPreferencesToFirestore();
-
-                        // Keep the public directory entry current (no-op for
-                        // anonymous accounts). Not awaited — boot must not wait
-                        // on a social nicety.
-                        get().syncPublicProfile();
+                        // Push the merged state back (and the public
+                        // directory entry) — only after a read that answered.
+                        if (readOk) await afterAccountRead();
+                        else retryHydrationLater(user);
 
                         // Set isAuthReady: true now that hydration is complete!
                         set({ isAuthReady: true, isAuthReconciled: true });
@@ -614,6 +671,7 @@ export const useAuthStore = create((set, get) => {
                 detachActiveDayListener();
                 detachActiveDayListener = null;
             }
+            if (detachHydrationRetry) detachHydrationRetry();
         },
 
         // 'saved' | 'skipped' (no account yet, or the profile has not been read
@@ -672,7 +730,7 @@ export const useAuthStore = create((set, get) => {
                 updatedAt: Date.now()
             };
 
-            await get().savePreferences(updates);
+            return get().savePreferences(updates);
         },
 
         // Record a journey mark (utils/journeys.js JOURNEY_MARKS). Idempotent:
@@ -721,21 +779,57 @@ export const useAuthStore = create((set, get) => {
          * the cycle's XP into useRewardsStore and advances the streak, spending
          * a shield on a single missed day. Returns what happened, for the card
          * to show — null when today was already counted. Optimistic: the state
-         * changes in this frame and the account copy is written behind it.
+         * changes in this frame and the account copy is settled behind it
+         * (commitCheckin) — never written straight from this device's copy,
+         * which may be days behind the account's (2026-11-08).
          */
         checkIn: () => {
-            const next = applyCheckin({ checkin: get().checkin, streak: get().streak }, checkinDayKey());
+            const base = { checkin: get().checkin, streak: get().streak };
+            const day = checkinDayKey();
+            const next = applyCheckin(base, day);
             if (!next) return null;
+            pendingCheckin = { base, day };
+            writePendingCheckin(pendingCheckin);
             writeCheckin(next.checkin);
             writeStreak(next.streak);
             set({ checkin: next.checkin, streak: next.streak });
-            get().savePreferences({ checkin: next.checkin, streak: next.streak });
             get().bumpActiveDay();
             track('checkin', { streak: next.streak?.count || 0 });
+            const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });
+            get().commitCheckin();
+            return { ...next.result, ...reward };
+        },
+
+        /**
+         * Write a pending check-in to the account: in one transaction, read the
+         * account's copy, settle the check-in on it (utils/dailyCheckin.js
+         * settleCheckin) and write the result. Before the profile has been
+         * read, hydration settles it instead; a failure leaves it pending for
+         * the next boot.
+         */
+        commitCheckin: async () => {
+            const { userId } = get();
+            const pending = pendingCheckin;
+            if (!pending || !userId || !profileHydratedFromFirestore) return;
+            try {
+                const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
+                const settled = await runTransaction(db, async (tx) => {
+                    const snap = await tx.get(prefRef);
+                    const result = settleCheckin(pending, snap.exists() ? snap.data() : {});
+                    tx.set(prefRef, { checkin: result.checkin, streak: result.streak, updatedAt: Date.now() }, { merge: true });
+                    return result;
+                });
+                if (get().userId !== userId || pendingCheckin !== pending) return;
+                pendingCheckin = null;
+                writePendingCheckin(null);
+                writeCheckin(settled.checkin);
+                writeStreak(settled.streak);
+                set({ checkin: settled.checkin, streak: settled.streak });
+            } catch (_) {
+                return;
+            }
             // Others see the streak on the trainer card: one write a day.
             get().syncPublicProfile();
-            const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });
-            return { ...next.result, ...reward };
         },
 
         // A daily PokéPuzzle was played today: that counts as today's

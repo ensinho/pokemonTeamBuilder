@@ -6,7 +6,10 @@ import {
     dayDiff,
     liveStreak,
     localDayKey,
+    mergeCheckins,
+    mergeStreaks,
     normalizeStreak,
+    settleCheckin,
 } from './dailyCheckin';
 import { CHECKIN_CYCLE_XP } from './trainerLevel';
 
@@ -128,5 +131,76 @@ describe('checkinCalendar', () => {
         const cal = checkinCalendar({ count: 7, lastDay: '2026-10-16' }, '2026-10-17');
         expect(cal.todayIndex).toBe(1);
         expect(cal.days.some((d) => d.claimed)).toBe(false);
+    });
+});
+
+describe('mergeStreaks', () => {
+    const account = { count: 22, longest: 22, lastVisit: '2026-11-07', shields: 2 };
+
+    it('keeps the copy that saw the later day when the runs do not touch', () => {
+        const fresh = { count: 1, longest: 1, lastVisit: '2026-11-08', shields: 0 };
+        const old = { count: 9, longest: 9, lastVisit: '2026-11-01', shields: 0 };
+        expect(mergeStreaks(old, fresh)).toMatchObject({ count: 1, longest: 9, lastVisit: '2026-11-08' });
+    });
+
+    // 2026-11-08: a device a week behind checked in from its own copy (a run
+    // of 1) and that replaced the account's 22 days.
+    it('joins a run of 1 counted from a stale copy onto the live run before it', () => {
+        const stale = { count: 1, longest: 14, lastVisit: '2026-11-08', shields: 2 };
+        expect(mergeStreaks(stale, account)).toMatchObject({ count: 23, longest: 23, lastVisit: '2026-11-08' });
+        expect(mergeStreaks(account, stale).count).toBe(23);
+    });
+
+    it('joins overlapping runs without counting a day twice', () => {
+        const other = { count: 3, longest: 3, lastVisit: '2026-11-08', shields: 0 };
+        expect(mergeStreaks(account, other).count).toBe(23);
+    });
+
+    it('joins across one missed day only when a shield covers it', () => {
+        const later = { count: 1, longest: 1, lastVisit: '2026-11-09', shields: 0 };
+        expect(mergeStreaks(account, later).count).toBe(23);
+        expect(mergeStreaks({ ...account, shields: 0 }, later).count).toBe(1);
+    });
+
+    it('takes the higher count for the same day', () => {
+        const reset = { count: 1, longest: 1, lastVisit: '2026-11-07', shields: 0 };
+        expect(mergeStreaks(reset, account)).toMatchObject({ count: 22, shields: 2 });
+    });
+});
+
+describe('mergeCheckins', () => {
+    it('keeps the larger count and the later day', () => {
+        expect(mergeCheckins({ count: 4, lastDay: '2026-11-08' }, { count: 22, lastDay: '2026-11-07' }))
+            .toEqual({ count: 22, lastDay: '2026-11-08' });
+    });
+});
+
+describe('settleCheckin', () => {
+    const remote = {
+        checkin: { count: 22, lastDay: '2026-11-07' },
+        streak: { count: 22, longest: 22, lastVisit: '2026-11-07', shields: 2 },
+    };
+
+    it('counts the day on top of the account copy, not the stale device copy', () => {
+        const base = {
+            checkin: { count: 15, lastDay: '2026-10-31' },
+            streak: { count: 15, longest: 15, lastVisit: '2026-10-31', shields: 2 },
+        };
+        const settled = settleCheckin({ base, day: '2026-11-08' }, remote);
+        expect(settled.checkin).toEqual({ count: 23, lastDay: '2026-11-08' });
+        expect(settled.streak).toMatchObject({ count: 23, lastVisit: '2026-11-08' });
+    });
+
+    it('settles a check-in made before the profile loaded on an empty device', () => {
+        const settled = settleCheckin({ base: {}, day: '2026-11-08' }, remote);
+        expect(settled.streak.count).toBe(23);
+        expect(settled.checkin.count).toBe(23);
+    });
+
+    it('does not count a day the account already counted', () => {
+        const done = { ...remote, checkin: { count: 23, lastDay: '2026-11-08' }, streak: { ...remote.streak, count: 23, lastVisit: '2026-11-08' } };
+        const settled = settleCheckin({ base: {}, day: '2026-11-08' }, done);
+        expect(settled.checkin.count).toBe(23);
+        expect(settled.streak.count).toBe(23);
     });
 });

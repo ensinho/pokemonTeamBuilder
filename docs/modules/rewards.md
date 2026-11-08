@@ -16,7 +16,7 @@ no item ever gates a feature.
 | `src/constants/cosmetics.js` | **The catalogue.** `COSMETICS` — id, kind (`frame` / `title` / `theme`), unlock (`level`, `badge`, `journeys`, `checkins`), frame ring colours (canon type / Poké Ball colours). Names in `translations.js` → `rewards.items.<id>.name`. |
 | `src/utils/rewards.js` | **Rewards logic, pure.** `isRewardEarned`, `newlyEarnedRewards`, `levelTrack`, `nextLevelReward`, `unlockLabel`, `frameProps(frameId)` (the `data-frame` attribute + ring colours), `validEquip`, and the recorded copy: `normalizeRewards` / `mergeRewards`. |
 | `src/store/useRewardsStore.js` | **The record.** `xp`, `level`, `unlocked` (id → day), `equipped` + `equippedAt`, `seen`. localStorage `ptb:rewards` + the preferences doc's `rewards`. `syncProgress` (records, never celebrates), `addXp` (the check-in), `equip`, `markSeen`, `isThemeUnlocked`. |
-| `src/store/useAuthStore.js` | `checkin` (`ptb:checkin`, doc `checkin`), the streak (now with `shields`), `checkIn()`. `bumpPokePuzzleStreak` *is* a check-in. Hydration merges both, then `useRewardsStore.hydrate(data.rewards)`. |
+| `src/store/useAuthStore.js` | `checkin` (`ptb:checkin`, doc `checkin`), the streak (now with `shields`), `checkIn()`. `bumpPokePuzzleStreak` *is* a check-in. A check-in is optimistic locally, then `commitCheckin` **settles it on the account copy in a transaction** (`settleCheckin`; pending in `ptb:checkin-pending` until then) — never written from this device's copy alone (2026-11-08). Hydration merges both (`mergeCheckins`/`mergeStreaks`, which joins touching runs), then `useRewardsStore.hydrate(data.rewards)`; a failed read writes nothing back. |
 | `src/hooks/useTrainerBadges.js` | Computes XP from the stats it already builds and hands it to `syncProgress`. |
 | `src/store/useTrainerCosmeticsStore.js` + `src/hooks/useTrainerCosmetics.js` | **Other trainers' frames.** Reads `publicProfiles` through `publicCard()` (`frameId`, `titleId`, `trainerLevel`, and since 2026-11-05 the trainer card's `streak`, `persona`, `memberSince`, `battleRecord`), once per trainer per session, batched into `in` queries of 30. Your own come live from useRewardsStore. |
 | `src/components/rewards/` | `CheckinCard` (Home rail / under the hero on phones, and the head of the tab), `RewardsPanel` (`/journeys?tab=rewards`: collection + level track — the track opens on the last level reached and the next four, the rest behind "show more"), `FramedAvatar`, `TrainerTitle`. |
@@ -42,7 +42,7 @@ no item ever gates a feature.
 - **Recorded, not derived on render** (Enzo: "deixar tudo salvo"). Views read
   useRewardsStore; only useTrainerBadges computes, and only to record.
 - **Nothing is ever taken back.** XP is the highest ever seen; unlocks are a
-  union (earliest day wins); the streak copy with the later day is live.
+  union (earliest day wins); the streak copy with the later day is live — unless the two runs touch, then they join (`mergeStreaks`).
 - **Data never celebrates.** syncProgress records quietly — boot catch-up looks
   exactly like progress (the 2026-09-21 wound). New unlocks get a "New" tag in
   the collection (`seen`) and a count on the tab. Only the check-in tap gets

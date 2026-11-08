@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-08 — A 23-day check-in streak came back as "1 dia seguido" `bug`
+- **Symptom:** a trainer's streak kept falling to 1 (shields intact, the cycle strip mid-week) although they checked in every day; the account doc held `streak.count: 1`. Never on Enzo's account.
+- **Root cause:** `checkIn()` applied the check-in to **this device's** copy and wrote `{ checkin, streak }` straight over the account's (`setDoc` merge replaces the whole field). A device days behind — a PWA left open, a second phone, or a tap before the profile read (the card renders from the boot snapshot) — saw a gap > 2, started a run of 1 and overwrote the live 22. Hydration could not repair it: `mergeStreaks` let the copy with the later `lastVisit` win, and that was the reset one. A failed profile read also still set `profileHydratedFromFirestore = true` and pushed the stale local state up. Enzo uses one device every day, so his local copy was never behind — nothing admin-specific.
+- **Fix:** `settleCheckin(pending, remote)` (`dailyCheckin.js`) merges the state the check-in was counted from with the account's and counts the day on top; `commitCheckin` runs it in a Firestore **transaction**, and before hydration the pending check-in (`ptb:checkin-pending`, survives a reload) is settled by the hydration itself. `mergeStreaks` now joins two runs that touch (the newer starts ≤1 day — 2 with a shield — after the older ends). A failed profile read writes nothing back and retries on `visibilitychange`/`online`.
+- **Correct pattern:** never write a counter computed from this device's copy over the account's — read the account copy in the same transaction (or merge with a rule that can't lose days). No write-back to the preferences doc until a read of it has actually answered.
+- **Files:** `src/utils/dailyCheckin.js`, `src/utils/dailyCheckin.test.js`, `src/store/useAuthStore.js`
+
 ### 2026-11-05 — Signing out kept the trainer: streak, check-ins, forum name `bug`
 - **Symptom:** after "Sign out", Home still showed the 19-day streak, the check-ins and the trainer level, and a forum reply posted as the guest appeared as **@ensinho**.
 - **Root cause:** `signOut` made Firebase report "no user", and the null branch of `onAuthStateChanged` immediately signed a **new anonymous account** in — on top of the old trainer's in-memory store state and localStorage (`trainerStreak`, `ptb:checkin`, `ptb:rewards`, journeys, drafts, game runs…). The post-hydration `syncPreferencesToFirestore` then wrote that state, `displayName` included, into the guest's preferences doc. `leaveSession` only navigated to Home.
