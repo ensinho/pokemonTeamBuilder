@@ -295,7 +295,9 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    max-width: 56%;
+    /* The copy may run over the art's transparent left edge (it paints on
+       top): at 56% "Monte seu primeiro time" broke into four lines. */
+    max-width: 62%;
 }
 
 /* An h2 in the heading face: the page's loudest line after the hello. */
@@ -306,6 +308,7 @@
     font-weight: var(--weight-heading);
     line-height: 1.08;
     letter-spacing: -0.02em;
+    text-wrap: balance;
 }
 
 .day-hero__sub {

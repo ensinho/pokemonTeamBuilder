@@ -129,8 +129,10 @@ by being what ≥ 80% of visits need.
    save**.
 
 Budget at 390×844: greeting, the strip and the hero's headline and action are
-above the fold (measured 2026-11-09: the ▶ ends at ~600px); the whole Today
-is 2.5–2.8 screens of scroll (`scrollHeight / clientHeight`), was ~4.5.
+above the fold (measured 2026-11-09: the ▶ ends at ~620px); with one team
+of four, Today is 2.8 screens of scroll (`scrollHeight / clientHeight` of
+`.app-shell__content`) where the tabbed Home was 3.5 — measured on both
+builds with the same stores.
 
 ### Home (desktop) — same file, ≥ 1024px
 Same order, two columns: main = greeting, hero (the party row sits inside it,
