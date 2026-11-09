@@ -807,6 +807,7 @@ export default {
         tournamentsNoMatch: 'No teams match your search'
     },
     splash: {
+        tagline: 'Teams with no blind spots',
         msg1: 'Checking if you are who you say you are',
         msg2: 'Verifying trainer credentials',
         msg3: 'Confirming your identity with Professor Oak',

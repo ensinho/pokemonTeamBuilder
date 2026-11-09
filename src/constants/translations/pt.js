@@ -772,6 +772,7 @@ export default {
         tournamentsNoMatch: 'Nenhum time corresponde à busca'
     },
     splash: {
+        tagline: 'Times sem pontos cegos',
         msg1: 'Verificando se você é quem diz ser',
         msg2: 'Validando credenciais de treinador',
         msg3: 'Confirmando sua identidade com o Professor Carvalho',

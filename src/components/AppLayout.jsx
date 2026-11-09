@@ -1348,28 +1348,29 @@ export default function AppLayout() {
     // Splash renderer
     if (showInitialAuthSplash) {
         return (
-            <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
-                <div className="boot-splash w-full max-w-xs text-center">
-                    {/* The icon at rest, drawn without waiting for the mascot chunk; it pops in with the splash. */}
-                    <MascotIcon className="boot-splash__mascot mx-auto" />
-                    <BrandWordmark className="mx-auto mt-4 block w-48 h-auto" />
-                    <div
-                        className="mt-5 h-1 w-full overflow-hidden rounded-full"
-                        style={{ backgroundColor: colors.cardLight }}
-                        aria-hidden="true"
-                    >
+            <div className="boot-screen" style={{ backgroundColor: colors.background }}>
+                {/* The brand moment (2026-11-09, the references' splash —
+                    .claude/skills/app-screens): the Volt ground, the icon's
+                    ghost huge and cropped at two corners, the wordmark between
+                    them. It all fades in after 300 ms with the splash, so a
+                    warm start that settles sooner never flashes it. */}
+                <div className="boot-screen__ground" aria-hidden="true">
+                    <MascotIcon className="boot-screen__ghost boot-screen__ghost--top" />
+                    <MascotIcon className="boot-screen__ghost boot-screen__ghost--bottom" />
+                </div>
+                <div className="boot-splash">
+                    <p className="boot-splash__tagline">{t('splash.tagline')}</p>
+                    <BrandWordmark className="boot-splash__wordmark" />
+                    <div className="boot-splash__track" aria-hidden="true">
                         <span
-                            className="block h-full rounded-full"
+                            className="boot-splash__fill"
                             style={{
                                 width: `${authSplashProgress}%`,
-                                backgroundColor: colors.primary,
-                                transition: `width ${splashBar.durationMs}ms ease-out`,
+                                transitionDuration: `${splashBar.durationMs}ms`,
                             }}
                         />
                     </div>
-                    <p className="mt-3 text-xs" style={{ color: colors.textMuted }}>
-                        {authSplashMessage}
-                    </p>
+                    <p className="boot-splash__message">{authSplashMessage}</p>
                 </div>
             </div>
         );
@@ -2193,7 +2194,10 @@ export default function AppLayout() {
                                     className={`app-shell__tab ${tab.active ? 'is-active' : ''}`}
                                     aria-current={tab.active && !tab.action ? 'page' : undefined}
                                     aria-haspopup={tab.action ? 'dialog' : undefined}
-                                    aria-label={tab.shortLabel && tab.shortLabel !== tab.label ? tab.label : undefined}
+                                    // Only the current tab shows its label (2026-11-09, the
+                                    // references' label-on-active dock): every tab is named
+                                    // by its full label, shown or not.
+                                    aria-label={tab.label}
                                 >
                                     <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
                                     <span className="app-shell__tab-label">{tab.shortLabel || tab.label}</span>
