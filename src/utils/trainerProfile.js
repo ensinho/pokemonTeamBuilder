@@ -289,6 +289,19 @@ export function personaHomeOrder(profile) {
     return (persona && HOME_ORDER_BY_PERSONA[persona.id]) || DEFAULT_HOME_ORDER;
 }
 
+/**
+ * What the Home's one hero card is about (2026-11-09, the "of the day" hero —
+ * .claude/skills/app-screens): the team in progress for most trainers; the
+ * day's Champion battle for the one who came for the minigames. The rail of
+ * the day's cards then leaves that subject out, so nothing shows twice.
+ */
+export const HOME_HEROES = ['team', 'challenge'];
+
+export function personaHero(profile) {
+    const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
+    return persona?.id === 'challenger' ? 'challenge' : 'team';
+}
+
 /** Whether the builder should coach (competitive, just starting). */
 export const isBeginnerTrainer = (profile) => hasAnsweredProfile(profile) && profile?.competitiveLevel === 'new';
 

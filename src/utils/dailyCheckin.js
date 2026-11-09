@@ -197,3 +197,99 @@ export const checkinCalendar = (checkinRaw, today = localDayKey()) => {
     });
     return { doneToday, todayIndex, days, xpToday: checkinXp(doneToday ? checkin.count : checkin.count + 1) };
 };
+
+// ── The calendar the Home draws (2026-11-09, .claude/skills/app-screens) ────
+
+/** `key` moved by `n` whole days (negative goes back). */
+export const shiftDay = (key, n) => {
+    if (!DAY_RE.test(key || '')) return null;
+    const [y, m, d] = key.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d + n));
+    const pad = (v) => String(v).padStart(2, '0');
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+};
+
+/** 0 = Sunday … 6 = Saturday, for a `YYYY-MM-DD` key (calendar, not clock). */
+export const weekdayOf = (key) => {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+};
+
+/**
+ * What one day of the calendar says, as the streak counts it.
+ *
+ * The check-in stores a count and a last day, not a diary, so the history is
+ * derived: the run is the last `liveStreak` days up to the streak's last
+ * visit. A shield that will cover yesterday shows there as `shielded`. Days
+ * outside the run are `past` (absent, drawn dashed) — never "missed", since
+ * nothing says the trainer was even here yet.
+ *
+ * States: `caught` (in the run) · `shielded` · `past` · `today` (open — the
+ * check-in) · `today-done` · `ahead`.
+ */
+const dayState = (key, { today, doneToday, runFrom, runTo, shieldDay }) => {
+    const diff = dayDiff(key, today);
+    if (diff === 0) return doneToday ? 'today-done' : 'today';
+    if (diff < 0) return 'ahead';
+    if (key === shieldDay) return 'shielded';
+    if (runFrom && dayDiff(runFrom, key) >= 0 && dayDiff(key, runTo) >= 0) return 'caught';
+    return 'past';
+};
+
+const calendarContext = ({ checkin: checkinRaw, streak: streakRaw } = {}, today) => {
+    const checkin = normalizeCheckin(checkinRaw);
+    const streak = normalizeStreak(streakRaw);
+    const live = liveStreak(streak, today);
+    const gap = dayDiff(streak.lastVisit, today);
+    const runTo = live > 0 ? streak.lastVisit : null;
+    return {
+        today,
+        live,
+        doneToday: checkin.lastDay === today,
+        runTo,
+        runFrom: runTo ? shiftDay(runTo, -(live - 1)) : null,
+        // A shield covers one missed day: the one between the last visit and today.
+        shieldDay: live > 0 && gap === 2 ? shiftDay(streak.lastVisit, 1) : null,
+    };
+};
+
+/**
+ * This week, day by day, for the Home's strip: `weekStartsOn` 1 = Monday
+ * (en), 0 = Sunday (pt-BR calendars). Each day: `{ key, date, weekday, state }`.
+ */
+export const checkinWeek = (records = {}, today = localDayKey(), { weekStartsOn = 1 } = {}) => {
+    const context = calendarContext(records, today);
+    const back = (weekdayOf(today) - weekStartsOn + 7) % 7;
+    const start = shiftDay(today, -back);
+    const days = Array.from({ length: 7 }, (_, i) => {
+        const key = shiftDay(start, i);
+        return { key, date: Number(key.slice(8)), weekday: weekdayOf(key), state: dayState(key, context) };
+    });
+    return { days, streak: context.live, doneToday: context.doneToday };
+};
+
+/**
+ * The month `today` falls in, for the streak sheet: `leading` blank cells so
+ * the first day lands on its weekday column, then every day with its state.
+ */
+export const streakMonth = (records = {}, today = localDayKey(), { weekStartsOn = 1 } = {}) => {
+    const context = calendarContext(records, today);
+    const first = `${today.slice(0, 8)}01`;
+    const [y, m] = today.split('-').map(Number);
+    const length = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const days = Array.from({ length }, (_, i) => {
+        const key = shiftDay(first, i);
+        return { key, date: i + 1, weekday: weekdayOf(key), state: dayState(key, context) };
+    });
+    return {
+        year: y,
+        month: m,
+        leading: (weekdayOf(first) - weekStartsOn + 7) % 7,
+        days,
+        streak: context.live,
+        doneToday: context.doneToday,
+    };
+};
+
+/** pt-BR calendars start on Sunday; the en-GB the app speaks, on Monday. */
+export const weekStartFor = (language) => (language === 'pt' ? 0 : 1);

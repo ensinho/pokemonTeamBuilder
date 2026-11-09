@@ -204,3 +204,94 @@ describe('settleCheckin', () => {
         expect(settled.streak.count).toBe(23);
     });
 });
+
+describe('the Home calendar (checkinWeek, streakMonth)', () => {
+    // 2026-11-09 is a Monday.
+    const today = '2026-11-09';
+    const states = (days) => days.map((d) => d.state);
+
+    it('shiftDay and weekdayOf follow the calendar, across months', async () => {
+        const { shiftDay, weekdayOf } = await import('./dailyCheckin');
+        expect(shiftDay('2026-11-01', -1)).toBe('2026-10-31');
+        expect(shiftDay('2026-12-31', 1)).toBe('2027-01-01');
+        expect(shiftDay('nope', 1)).toBeNull();
+        expect(weekdayOf('2026-11-09')).toBe(1);
+        expect(weekdayOf('2026-11-08')).toBe(0);
+    });
+
+    it('starts the week on Monday or Sunday', async () => {
+        const { checkinWeek } = await import('./dailyCheckin');
+        expect(checkinWeek({}, today, { weekStartsOn: 1 }).days[0].key).toBe('2026-11-09');
+        expect(checkinWeek({}, today, { weekStartsOn: 0 }).days[0].key).toBe('2026-11-08');
+        expect(checkinWeek({}, '2026-11-15', { weekStartsOn: 1 }).days[6].key).toBe('2026-11-15');
+    });
+
+    it('a new trainer: nothing caught, today open, the rest ahead or absent', async () => {
+        const { checkinWeek } = await import('./dailyCheckin');
+        const week = checkinWeek({}, '2026-11-11', { weekStartsOn: 1 });
+        expect(states(week.days)).toEqual(['past', 'past', 'today', 'ahead', 'ahead', 'ahead', 'ahead']);
+        expect(week.streak).toBe(0);
+        expect(week.doneToday).toBe(false);
+    });
+
+    it('draws the run up to the last visit, today open while unclaimed', async () => {
+        const { checkinWeek } = await import('./dailyCheckin');
+        const records = {
+            checkin: { count: 5, lastDay: '2026-11-11' },
+            streak: { count: 3, lastVisit: '2026-11-11', shields: 0 },
+        };
+        const week = checkinWeek(records, '2026-11-12', { weekStartsOn: 1 });
+        // Mon 9 · Tue 10 · Wed 11 caught, Thu 12 today.
+        expect(states(week.days)).toEqual(['caught', 'caught', 'caught', 'today', 'ahead', 'ahead', 'ahead']);
+        expect(week.streak).toBe(3);
+    });
+
+    it('today counts as done once checked in', async () => {
+        const { checkinWeek } = await import('./dailyCheckin');
+        const records = {
+            checkin: { count: 2, lastDay: today },
+            streak: { count: 2, lastVisit: today, shields: 0 },
+        };
+        const week = checkinWeek(records, today, { weekStartsOn: 0 });
+        expect(states(week.days).slice(0, 3)).toEqual(['caught', 'today-done', 'ahead']);
+        expect(week.doneToday).toBe(true);
+    });
+
+    it('a puzzle that kept the streak today still leaves the check-in open', async () => {
+        const { checkinWeek } = await import('./dailyCheckin');
+        const records = {
+            checkin: { count: 4, lastDay: '2026-11-08' },
+            streak: { count: 5, lastVisit: today, shields: 0 },
+        };
+        expect(checkinWeek(records, today, { weekStartsOn: 0 }).days[1].state).toBe('today');
+    });
+
+    it('marks the day a shield will cover, and drops a broken run', async () => {
+        const { checkinWeek } = await import('./dailyCheckin');
+        const shielded = checkinWeek({ streak: { count: 7, lastVisit: '2026-11-10', shields: 1 } }, '2026-11-12');
+        expect(states(shielded.days).slice(0, 4)).toEqual(['caught', 'caught', 'shielded', 'today']);
+        const broken = checkinWeek({ streak: { count: 7, lastVisit: '2026-11-10', shields: 0 } }, '2026-11-12');
+        expect(states(broken.days).slice(0, 4)).toEqual(['past', 'past', 'past', 'today']);
+        expect(broken.streak).toBe(0);
+    });
+
+    it('lays a month out on its weekday columns', async () => {
+        const { streakMonth } = await import('./dailyCheckin');
+        // November 2026 starts on a Sunday.
+        const monday = streakMonth({}, today, { weekStartsOn: 1 });
+        expect(monday.days).toHaveLength(30);
+        expect(monday.leading).toBe(6);
+        expect(streakMonth({}, today, { weekStartsOn: 0 }).leading).toBe(0);
+        expect(streakMonth({}, '2026-02-10').days).toHaveLength(28);
+    });
+
+    it('carries a run back into the previous month without drawing it', async () => {
+        const { streakMonth } = await import('./dailyCheckin');
+        const month = streakMonth({
+            checkin: { count: 12, lastDay: '2026-11-03' },
+            streak: { count: 12, lastVisit: '2026-11-03', shields: 0 },
+        }, '2026-11-04');
+        expect(states(month.days).slice(0, 5)).toEqual(['caught', 'caught', 'caught', 'today', 'ahead']);
+        expect(month.streak).toBe(12);
+    });
+});

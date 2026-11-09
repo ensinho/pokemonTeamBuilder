@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'rea
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
-import { ArrowLeftRight, ArrowUpRight, Award, BookOpen, Calculator, Check, ChevronRight, CircleHelp, Crown, Gauge, Hourglass, Medal, MoreHorizontal, Palette, Pencil, Plus, Puzzle, ScrollText, Search, Shapes, Shield, ShieldHalf, Sparkles, Swords, TrendingUp, Trophy } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, Award, BookOpen, Calculator, Check, ChevronRight, CircleHelp, Crown, Gauge, Hourglass, Medal, MoreHorizontal, Pencil, Play, Plus, Puzzle, ScrollText, Search, Shapes, ShieldHalf, Sparkles, Swords, TrendingUp, Trophy } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GuestAccountCard } from '../GuestAccountCard';
 import { useForumStore } from '../../store/useForumStore';
@@ -14,12 +14,12 @@ import { useMetaUsage } from '../../hooks/useMetaUsage';
 import { useDailyPuzzle } from '../../hooks/useDailyPuzzle';
 import { useChallengeSummary } from '../../hooks/useChallengeSummary';
 import { maxWidthBelow } from '../../constants/breakpoints';
-import { typeColors, typeIcons } from '../../constants/types';
+import { typeColors } from '../../constants/types';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
-import { formatForumTime } from '../../utils/forumTime';
 import { timeUntil, trainerSpriteUrl } from '../../utils/challengeView';
 import { nextResetAt as challengeResetAt } from '../../utils/challengeDay';
+import { liveStreak, localDayKey } from '../../utils/dailyCheckin';
 import blueBattleUrl from '../../assets/challenge/blue-battle.png';
 import {
     TEAM_SIZE,
@@ -30,38 +30,42 @@ import {
     pickNextBadge,
     resolveMembers,
     summarizeTeam,
-    trainerIdFromUid,
 } from '../../utils/homeStatus';
-import { PartnerFlare } from '../PartnerFlare';
-import { CheckinCard } from '../rewards/CheckinCard';
+import { CheckinWeek } from '../rewards/CheckinWeek';
+import { HomeGreeting } from '../home/HomeGreeting';
+import { DayHero } from '../home/DayHero';
+import { HomeParty } from '../home/HomeParty';
+import { promptSignIn } from '../../utils/navigation';
 import { PcBox } from '../PcBox';
 import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
-import { JourneyBar, JourneyList, JourneyTile, MissionRow } from '../journeys/JourneyList';
+import { JourneyBar, JourneyTile, MissionRow } from '../journeys/JourneyList';
 import { currentJourney, journeyEmphasis, nextMission } from '../../utils/journeys';
-import { PICK_DESTINATIONS, derivePersona, hasAnsweredProfile, personaHomeOrder, personaPicks, suggestedJourney } from '../../utils/trainerProfile';
+import { PICK_DESTINATIONS, derivePersona, hasAnsweredProfile, personaHero, personaHomeOrder, personaPicks, suggestedJourney } from '../../utils/trainerProfile';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
-import { FramedAvatar } from '../rewards/FramedAvatar';
+// After cozy-home.css: the 2026-11-09 pieces override a few of its rules.
+import '../../styles/home-today.css';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { openTeamCompare } from '../../store/useTeamCompareStore';
-import { openTrainerCard } from '../../store/useTrainerCardStore';
 
 // The Traveler's Badge Case: its own chunk, only that persona's Home loads it.
 const BadgeCase = lazy(() => import('../home/BadgeCase').then((m) => ({ default: m.BadgeCase })));
 // "Hoje no Centro" (2026-11-09): its own chunk — it polls public counters and the friends' timeline.
 const CenterToday = lazy(() => import('../home/CenterToday').then((m) => ({ default: m.CenterToday })));
+// The streak sheet opens from the greeting's flame: its own chunk, fetched on the tap.
+const StreakSheet = lazy(() => import('../rewards/StreakSheet').then((m) => ({ default: m.StreakSheet })));
 
 /**
- * The cozy Home (2026-10-06 proposal). One trainer card that says where the
- * team in progress stands, the three things that are "today", and the
- * trainer's own story — tinted by the partner Pokémon's type, not by a
- * template's accent. The GitHub-repo metaphor of the classic Home is gone:
- * this reads as a Trainer Card. It is the only Home since 2026-10-06 — the
- * classic one and the switch between them are gone.
+ * The cozy Home (2026-10-06 proposal), rebuilt as an app's Today on
+ * 2026-11-09 (.claude/skills/app-screens): a greeting instead of chips and
+ * section tabs, the week strip, ONE hero of the day with its action in a
+ * player bar, the party, the day's cards as a rail — a priority list, not a
+ * stack of panels. Teams, the forum and the journeys are routes of their own,
+ * one tap away (the dock, the rail, "Ver todos").
  */
 
 // A saved team's "⋯" on Home: open its page, edit it, or compare it with
@@ -136,10 +140,6 @@ function TeamCardMenu({ team, onOpen, onEdit }) {
 }
 
 const PERIOD_PARTNER = { morning: 196, afternoon: 25, evening: 197, night: 197 };
-// Meta left the tabs on 2026-10-17 for the trainer's journey: Home guides
-// what you do here first; the meta stays one tap away (its card in "Your
-// day", the format chip, the rail).
-const TABS = ['today', 'journey', 'teams', 'community'];
 
 const displayName = (name = '') =>
     name.split('-').filter(Boolean).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
@@ -224,12 +224,14 @@ export function CozyHomeView({
     // through <Sprite> (placeholder, fade-in, artwork fallback for forms).
     const dexSprite = (id, shiny = false) => getPokemonFrontSpriteUrl(id, { shiny });
     const now = useNow();
-    const [tab, setTab] = useState('today');
+    const [isStreakOpen, setIsStreakOpen] = useState(false);
 
-    const { userId, streak, isAnonymous, trainerProfile } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous, trainerProfile: s.trainerProfile })));
+    const { userId, streak, isAnonymous, trainerProfile, displayName: trainerName } = useAuthStore(useShallow((s) => ({
+        userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous, trainerProfile: s.trainerProfile, displayName: s.displayName,
+    })));
     const openOnboarding = useOnboardingStore((s) => s.open);
-    const { badges, equippedBadge, journeys, stats: trainerStats } = useTrainerBadges();
-    const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
+    const { badges, journeys, stats: trainerStats } = useTrainerBadges();
+    const { ranked: metaRanked } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
     const challenge = useChallengeSummary(userId, isAnonymous);
     const challengeLine = (c) => {
@@ -238,7 +240,11 @@ export function CozyHomeView({
         if (c.state === 'active') return t('cozyHome.challengeContinue');
         if (c.state === 'won') return t('cozyHome.challengeWon', { n: c.streak });
         if (c.state === 'lost') return t('cozyHome.challengeLost');
-        return t('cozyHome.challengeReady', { difficulty: c.difficulty ? t(`challenge.difficulty.${c.difficulty}`) : t('cozyHome.challengeTitle') });
+        // Without a difficulty yet, never fall back to the title: every place
+        // that shows this line shows the title right above it.
+        return c.difficulty
+            ? t('cozyHome.challengeReady', { difficulty: t(`challenge.difficulty.${c.difficulty}`) })
+            : t('cozyHome.challengeWaiting');
     };
 
     // The Pokédex index carries names and types for every id; saved slots and
@@ -312,7 +318,6 @@ export function CozyHomeView({
     const partnerId = greetingPokemonId || PERIOD_PARTNER[period];
     const partner = indexById.get(partnerId);
     const partnerType = partner?.types?.[0] || 'normal';
-    const partnerName = partner ? displayName(partner.name) : '';
 
     const heroTitle = !activeTeam
         ? t('cozyHome.titleEmpty')
@@ -362,7 +367,6 @@ export function CozyHomeView({
         () => [...messages].reverse().find((m) => m.sharedTeam && m.createdBy !== userId) || null,
         [messages, userId],
     );
-    const latestMessages = useMemo(() => messages.slice(-5).reverse(), [messages]);
 
     const journey = useMemo(() => {
         const items = [];
@@ -418,138 +422,26 @@ export function CozyHomeView({
     }, [nextBadge, puzzle, challenge, savedTeams, activeTeam, summary, typesById, latestShare, language, now]);
 
     // ── Pieces ──────────────────────────────────────────────────────────────
-    const streakCount = streak?.count || 0;
+    // The run as it stands today (a broken one reads 0), not the stored count.
+    const streakCount = liveStreak(streak, localDayKey(now));
+    const persona = derivePersona(trainerProfile);
+    const heroKind = personaHero(trainerProfile);
 
-    const chips = (
-        <div className="cozy-chips">
-            {streakCount > 0 && (
-                <span className="cozy-chip cozy-chip--streak">
-                    <span className="cozy-chip__dot" aria-hidden="true" />
-                    {streakCount === 1 ? t('cozyHome.streakChipOne') : t('cozyHome.streakChip', { n: streakCount })}
-                </span>
-            )}
-            {partner && (
-                // The period's visitor stands in the hero until the trainer picks
-                // one, but the chip only claims a partner they chose: before
-                // that it is a silhouette asking "who?" (Profile shows "?" too).
-                <button type="button" className={`cozy-chip ${hasPartner ? '' : 'cozy-chip--unchosen'}`} onClick={onOpenPokemonSelector}
-                    title={t(hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
-                    style={hasPartner ? { '--chip-type': typeColors[partnerType] } : undefined}>
-                    <span className="cozy-chip__avatar">
-                        <Sprite src={dexSprite(partnerId, greetingPokemonIsShiny)} className="cozy-chip__sprite" eager />
-                    </span>
-                    {hasPartner ? t('cozyHome.partnerChip', { name: partnerName }) : t('cozyHome.choosePartner')}
-                </button>
-            )}
-            {equippedBadge && (
-                <span className="cozy-chip">
-                    <equippedBadge.Icon className="cozy-chip__badge" />
-                    {badgeName(equippedBadge)}
-                </span>
-            )}
-            {metaFormat?.label && (
-                <button type="button" className="cozy-chip cozy-chip--mono" onClick={() => navigate('/meta')}>
-                    {metaFormat.label}
-                </button>
-            )}
-        </div>
-    );
-
-    const tabs = (
-        <div className={`segmented cozy-tabs ${isPhone ? 'segmented--block' : ''}`} role="group" aria-label={t('cozyHome.tabsLabel')}>
-            {TABS.map((key) => (
-                <button key={key} type="button" className="segmented__item" aria-pressed={tab === key} onClick={() => setTab(key)}>
-                    {t(`cozyHome.tabs.${key}`)}
-                </button>
-            ))}
-        </div>
-    );
-
-    const hero = (
-        <section className="cozy-hero" style={{ '--hero-type': typeColors[partnerType] }}>
-            {wallpaper && (
-                // Keyed by wallpaper so a change the user asked for fades in;
-                // the first paint does not (`is-changed` is set only by the click).
-                <span
-                    key={wallpaper.id}
-                    className={`cozy-hero__scene ${wallpaperChanged ? 'is-changed' : ''}`}
-                    style={{ backgroundImage: `url(${wallpaper.url})` }}
-                    aria-hidden="true"
-                />
-            )}
-            <div className="cozy-hero__top">
-                <span className="cozy-hero__pill">
-                    <Shield aria-hidden="true" />
-                    {t('cozyHome.statusPill')}
-                    <span className="cozy-hero__id">{t('cozyHome.trainerId', { id: trainerIdFromUid(userId) })}</span>
-                </span>
-                {onChangeHeroBackground && (
-                    <button type="button" className="btn btn-icon btn-sm cozy-hero__wallpaper" onClick={cycleWallpaper}
-                        aria-label={t('cozyHome.changeWallpaper', { name: wallpaper?.name || '' })} title={t('cozyHome.changeWallpaper', { name: wallpaper?.name || '' })}>
-                        <Palette aria-hidden="true" />
-                    </button>
-                )}
-            </div>
-
-            <button type="button" className="cozy-hero__partner" onClick={onOpenPokemonSelector} aria-label={t(hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
-                style={{ '--partner-type-color': typeColors[partnerType] }}>
-                <span className="cozy-hero__platform" aria-hidden="true" />
-                <span className="cozy-hero__idle">
-                    <Sprite
-                        src={dexSprite(partnerId, greetingPokemonIsShiny)}
-                        artworkSrc={getPokemonArtworkSpriteUrl(partnerId, { shiny: greetingPokemonIsShiny })}
-                        alt={partnerName}
-                        className="cozy-hero__art"
-                        eager
-                    />
-                </span>
-                <PartnerFlare />
-            </button>
-
-            <div className="cozy-hero__card">
-                {typeIcons[partnerType] && <img src={typeIcons[partnerType]} alt="" aria-hidden="true" className="cozy-hero__watermark" />}
-                <p className="cozy-hero__clock"><span className="cozy-hero__date">{clockLine} · </span>{clock} · {t(`cozyHome.periods.${period}`)}</p>
-                <h2 className="cozy-hero__title">{heroTitle}</h2>
-                <p className="cozy-hero__sub">
-                    {activeTeam ? (
-                        <>
-                            {t('cozyHome.team')} <strong>{activeTeam.name}</strong>
-                            {activeTeam.updatedAt && <> · {t('cozyHome.saved', { when: whenLabel(activeTeam.updatedAt) })}</>}
-                        </>
-                    ) : t('cozyHome.subEmpty')}
-                </p>
-                {activeTeam && (
-                    <PartyRow members={summary.members} label={t('cozyHome.ofSix', { n: summary.size })} />
-                )}
-
-                <div className="cozy-hero__foot">
-                    <dl className="cozy-hero__stats">
-                        <div className="stat">
-                            <dt className="stat__label">{t('cozyHome.coverage')}</dt>
-                            <dd className="stat__value">{t('cozyHome.coverageValue', { n: summary.coverage, total: TYPE_COUNT })}</dd>
-                        </div>
-                        <div className="stat">
-                            <dt className="stat__label">{t('cozyHome.weakPoint')}</dt>
-                            <dd className="stat__value">
-                                {summary.weakness ? (
-                                    <>
-                                        <TypeChip type={summary.weakness.type} size="sm" />
-                                        <span>{summary.weakness.count}/{TEAM_SIZE}</span>
-                                    </>
-                                ) : t('cozyHome.noWeakness')}
-                            </dd>
-                        </div>
-                        <div className="stat cozy-hero__action">
-                            <dt className="stat__label">{t('cozyHome.nextAction')}</dt>
-                            <dd className="stat__value">{nextAction}</dd>
-                        </div>
-                    </dl>
-                    <button type="button" className="btn btn-lg cozy-ink cozy-hero__cta" onClick={continueTeam} title={ctaLabel}>
-                        <Swords aria-hidden="true" /> <span className="btn__label">{ctaLabel}</span>
-                    </button>
-                </div>
-            </div>
-        </section>
+    const greeting = (
+        <HomeGreeting
+            name={trainerName}
+            period={period}
+            personaId={hasAnsweredProfile(trainerProfile) ? persona?.id : null}
+            uid={userId}
+            partner={{ id: partnerId, shiny: greetingPokemonIsShiny, type: partnerType, hasPartner }}
+            streakCount={streakCount}
+            // A guest's way into an account sits here on a phone; the
+            // desktop rail's guest card already offers it.
+            isAnonymous={isAnonymous && isPhone}
+            onOpenPartner={onOpenPokemonSelector}
+            onOpenStreak={() => setIsStreakOpen(true)}
+            onSignIn={() => promptSignIn('signIn')}
+        />
     );
 
     const badgeSegments = nextBadge ? Math.min(nextBadge.progress.target, 10) : 0;
@@ -564,7 +456,99 @@ export function CozyHomeView({
     const herSix = Array.from({ length: 6 }, (_, i) => challengeDay.lineup?.[i] || null);
     const resetIn = timeUntil(challengeDay.nextResetAt, now.getTime());
     // The compact cards stacked beside the featured one: it spans all their rows.
-    const dayRows = (puzzle.target ? 1 : 0) + 1 + (metaLeader ? 1 : 0);
+    // The hero's subject leaves the rail: nothing shows twice.
+    const dayRows = (puzzle.target ? 1 : 0) + 1 + (metaLeader ? 1 : 0) - (heroKind === 'challenge' ? 1 : 0);
+
+    // ── The hero of the day ─────────────────────────────────────────────────
+    // The team in progress: tinted by its lead's type (the partner's with no
+    // team), the lead's official artwork as the protagonist.
+    const lead = summary.members[0] || null;
+    const leadType = lead?.types?.[0] || partnerType;
+    const heroArtId = lead?.id || partnerId;
+    const heroArtShiny = lead ? Boolean(lead.customization?.isShiny) : greetingPokemonIsShiny;
+    const challengeAction = challengeDay.state === 'active' ? 'cozyHome.challengeResume'
+        : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo';
+    const wallpaperLabel = t('cozyHome.changeWallpaper', { name: wallpaper?.name || '' });
+    const heroWallpaper = {
+        wallpaper,
+        wallpaperChanged,
+        onChangeWallpaper: onChangeHeroBackground && SHARE_BACKGROUNDS.length > 1 ? cycleWallpaper : undefined,
+        wallpaperLabel,
+    };
+    const hero = heroKind === 'challenge' ? (
+        <DayHero
+            {...heroWallpaper}
+            tone={typeColors.dragon}
+            art={(
+                <span className="day-hero__trainers">
+                    <img src={blueBattleUrl} alt="" width={80} height={80} decoding="async" className="day-hero__rival" />
+                    <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" fetchPriority="high" className="day-hero__trainer" />
+                </span>
+            )}
+            eyebrow={t('cozyHome.challengeNextInShort', { ...resetIn, minutes: String(resetIn.minutes).padStart(2, '0') })}
+            title={t('cozyHome.challengeTitle')}
+            sub={challengeLine(challengeDay)}
+            extra={(
+                <span className="day-hero__lineup" aria-hidden="true">
+                    {herSix.map((dex, index) => (
+                        <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
+                            {dex
+                                ? <Sprite src={dexSprite(dex)} className={`cozy-day__mini-sprite ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
+                                : '?'}
+                        </span>
+                    ))}
+                </span>
+            )}
+            label={t('homeToday.herTeam')}
+            meta={[
+                challengeDay.difficulty ? t(`challenge.difficulty.${challengeDay.difficulty}`) : null,
+                t('homeToday.challengeStreak', { n: challengeDay.streak || 0 }),
+            ].filter(Boolean).join(' · ')}
+            action={challengeDay.state === 'won' ? null : {
+                Icon: Swords,
+                label: t(challengeAction),
+                onClick: () => navigate('/challenge'),
+            }}
+        />
+    ) : (
+        <DayHero
+            {...heroWallpaper}
+            tone={typeColors[leadType]}
+            art={(
+                <img
+                    key={`${heroArtId}-${heroArtShiny}`}
+                    src={getPokemonArtworkSpriteUrl(heroArtId, { shiny: heroArtShiny })}
+                    alt=""
+                    width={240}
+                    height={240}
+                    decoding="async"
+                    fetchPriority="high"
+                    className={`day-hero__artwork ${lead || hasPartner ? '' : 'is-unchosen'}`}
+                />
+            )}
+            eyebrow={`${clockLine} · ${clock}`}
+            title={heroTitle}
+            sub={activeTeam ? `${t('cozyHome.nextAction')}: ${nextAction}` : t('cozyHome.subEmpty')}
+            // The desktop bar has room for the party itself; a phone shows
+            // it as its own row under the hero (HomeParty).
+            extra={activeTeam && !isPhone ? <PartyRow members={summary.members} label={t('cozyHome.ofSix', { n: summary.size })} /> : null}
+            label={activeTeam ? activeTeam.name : t('homeToday.newTeam')}
+            meta={activeTeam
+                ? [
+                    t('cozyHome.ofSix', { n: summary.size }),
+                    summary.size > 0 ? t('homeToday.coverageShort', { n: summary.coverage, total: TYPE_COUNT }) : null,
+                    activeTeam.updatedAt ? t('cozyHome.saved', { when: whenLabel(activeTeam.updatedAt) }) : null,
+                ].filter(Boolean).join(' · ')
+                : t('cozyHome.actionStart')}
+            percent={(summary.size / TEAM_SIZE) * 100}
+            action={{
+                Icon: activeTeam ? Play : Plus,
+                label: ctaLabel,
+                short: activeTeam ? t('homeToday.continueShort') : t('cozyHome.buildTeam'),
+                onClick: continueTeam,
+            }}
+        />
+    );
 
     const yourDay = (
         <Panel
@@ -576,52 +560,54 @@ export function CozyHomeView({
                 {/* The featured card: the Champion and her six, the day's one battle,
                     drawn as Black & White's trainer intro — the band across the card,
                     Cynthia on her pad. Always drawn (the summary fills it in), so the
-                    grid never reflows. */}
-                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature cozy-day__card--challenge" style={{ '--day-tone': typeColors.dragon }}
-                    onClick={() => navigate('/challenge')}>
-                    <span className="cozy-day__band" aria-hidden="true" />
-                    <span className="cozy-day__head">
-                        <span className="cozy-day__tile cozy-day__tile--trainer" aria-hidden="true">
-                            <span className="cozy-day__pad" />
-                            {/* Blue, a step behind her: the room has two champions, each with a ranking. */}
-                            <img src={blueBattleUrl} alt="" width={80} height={80} decoding="async" className="cozy-day__rival" />
-                            <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" className="cozy-day__trainer" />
-                        </span>
-                    </span>
-                    <span className="cozy-day__eyebrow">
-                        {/* A phone's row has room for the short countdown only. */}
-                        <span className="cozy-day__long">{t('cozyHome.challengeNextIn', resetIn)}</span>
-                        <span className="cozy-day__short">{t('cozyHome.challengeNextInShort', { ...resetIn, minutes: String(resetIn.minutes).padStart(2, '0') })}</span>
-                    </span>
-                    <span className="cozy-day__title">{t('cozyHome.challengeTitle')}</span>
-                    <span className="cozy-day__sub">{challengeLine(challengeDay)}</span>
-                    {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?".
-                        The filter goes on the sprite, never the slot, or the slot turns black too. */}
-                    <span className="cozy-day__lineup" aria-hidden="true">
-                        {herSix.map((dex, index) => (
-                            <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
-                                {dex
-                                    ? <Sprite src={dexSprite(dex)} className={`cozy-day__mini-sprite ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
-                                    : '?'}
-                            </span>
-                        ))}
-                    </span>
-                    <span className="cozy-day__foot">
-                        <span className="cozy-day__facts">
-                            <span className="stat">
-                                <span className="stat__label">{t('cozyHome.challengeDifficulty')}</span>
-                                <span className="stat__value">{challengeDay.difficulty ? t(`challenge.difficulty.${challengeDay.difficulty}`) : '—'}</span>
-                            </span>
-                            <span className="stat">
-                                <span className="stat__label">{t('cozyHome.challengeStreak')}</span>
-                                <span className="stat__value">{challengeDay.streak || 0}</span>
+                    grid never reflows — unless she is the hero (personaHero). */}
+                {heroKind !== 'challenge' && (
+                    <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature cozy-day__card--challenge" style={{ '--day-tone': typeColors.dragon }}
+                        onClick={() => navigate('/challenge')}>
+                        <span className="cozy-day__band" aria-hidden="true" />
+                        <span className="cozy-day__head">
+                            <span className="cozy-day__tile cozy-day__tile--trainer" aria-hidden="true">
+                                <span className="cozy-day__pad" />
+                                {/* Blue, a step behind her: the room has two champions, each with a ranking. */}
+                                <img src={blueBattleUrl} alt="" width={80} height={80} decoding="async" className="cozy-day__rival" />
+                                <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" className="cozy-day__trainer" />
                             </span>
                         </span>
-                        {challengeDay.state === 'won'
-                            ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
-                            : <span className="btn btn-sm cozy-ink cozy-day__go"><Swords aria-hidden="true" /> {t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
-                    </span>
-                </button>
+                        <span className="cozy-day__eyebrow">
+                            {/* A phone's row has room for the short countdown only. */}
+                            <span className="cozy-day__long">{t('cozyHome.challengeNextIn', resetIn)}</span>
+                            <span className="cozy-day__short">{t('cozyHome.challengeNextInShort', { ...resetIn, minutes: String(resetIn.minutes).padStart(2, '0') })}</span>
+                        </span>
+                        <span className="cozy-day__title">{t('cozyHome.challengeTitle')}</span>
+                        <span className="cozy-day__sub">{challengeLine(challengeDay)}</span>
+                        {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?".
+                            The filter goes on the sprite, never the slot, or the slot turns black too. */}
+                        <span className="cozy-day__lineup" aria-hidden="true">
+                            {herSix.map((dex, index) => (
+                                <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
+                                    {dex
+                                        ? <Sprite src={dexSprite(dex)} className={`cozy-day__mini-sprite ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
+                                        : '?'}
+                                </span>
+                            ))}
+                        </span>
+                        <span className="cozy-day__foot">
+                            <span className="cozy-day__facts">
+                                <span className="stat">
+                                    <span className="stat__label">{t('cozyHome.challengeDifficulty')}</span>
+                                    <span className="stat__value">{challengeDay.difficulty ? t(`challenge.difficulty.${challengeDay.difficulty}`) : '—'}</span>
+                                </span>
+                                <span className="stat">
+                                    <span className="stat__label">{t('cozyHome.challengeStreak')}</span>
+                                    <span className="stat__value">{challengeDay.streak || 0}</span>
+                                </span>
+                            </span>
+                            {challengeDay.state === 'won'
+                                ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
+                                : <span className="btn btn-sm cozy-ink cozy-day__go"><Swords aria-hidden="true" /> {t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
+                        </span>
+                    </button>
+                )}
 
                 {puzzle.target && (
                     <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-primary)' }}
@@ -795,64 +781,6 @@ export function CozyHomeView({
         </Panel>
     );
 
-    const communityPanel = (limit) => {
-        const list = latestMessages.slice(0, limit);
-        return (
-            <Panel
-                title={t('cozyHome.community')}
-                action={(
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/feed')}>
-                        {t('cozyHome.forum')} <ChevronRight aria-hidden="true" />
-                    </button>
-                )}
-            >
-                {list.length === 0 ? (
-                    <EmptyState compact title={t('cozyHome.community')} message={t('cozyHome.communityEmpty')} />
-                ) : (
-                    <ul className="cozy-posts">
-                        {list.map((m) => (
-                            <li key={m.id} className="cozy-post-item">
-                                <button type="button" className="card card--inset card--interactive card--compact cozy-post" onClick={() => navigate(teamsTopicId ? `/feed?topic=${encodeURIComponent(teamsTopicId)}` : '/feed')}>
-                                    {/* Holds the avatar's place; the avatar itself is the sibling button below. */}
-                                    <span className="cozy-post__avatar-slot" aria-hidden="true" />
-                                    <span className="cozy-post__body">
-                                        <span className="cozy-post__meta">
-                                            <strong>@{m.creatorName || 'Trainer'}</strong> · {formatForumTime(m.createdAt, language)}
-                                        </span>
-                                        <span className="cozy-post__text">
-                                            {m.text || (m.sharedTeam ? t('cozyHome.sharedTeam', { team: m.sharedTeam.name || '—' }) : '…')}
-                                        </span>
-                                    </span>
-                                </button>
-                                {/* The author opens their trainer card (2026-11-05). */}
-                                <FramedAvatar
-                                    as="button"
-                                    type="button"
-                                    uid={m.createdBy}
-                                    stampedFrameId={m.creatorFrameId}
-                                    className="cozy-post__avatar cozy-post__who"
-                                    aria-label={t('trainerCard.open', { name: m.creatorName || 'Trainer' })}
-                                    onClick={() => openTrainerCard({
-                                        userId: m.createdBy,
-                                        name: m.creatorName || 'Trainer',
-                                        avatar: m.creatorAvatar,
-                                        isShiny: m.creatorAvatarIsShiny,
-                                        trainerSprite: m.creatorTrainerSprite,
-                                        selectedBadgeId: m.creatorBadgeId || null,
-                                        frameId: m.creatorFrameId || null,
-                                        titleId: m.creatorTitleId || null,
-                                    })}
-                                >
-                                    <Sprite src={dexSprite(m.creatorAvatar || 25, Boolean(m.creatorAvatarIsShiny))} className="cozy-post__sprite" />
-                                </FramedAvatar>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </Panel>
-        );
-    };
-
     // ── The journey ─────────────────────────────────────────────────────────
     // The level being played and what is left in it, each mission a button
     // that goes and does it — the onboarding a new trainer meets first, and
@@ -914,16 +842,9 @@ export function CozyHomeView({
             </ol>
         </section>
     );
-    const journeyTab = (
-        <Panel card={false} title={t('journeys.title')} meta={t('journeys.subtitle')} action={seeJourneys}>
-            <JourneyList journeys={journeys} />
-        </Panel>
-    );
-
     // "Para você" (2026-11-05): where this trainer's profile says to look
     // first — a few destinations, each a line saying why. Without a profile
     // it is an invitation to make one, small, in the rail.
-    const persona = derivePersona(trainerProfile);
     const picks = personaPicks(trainerProfile, 4);
     const forYouPanel = hasAnsweredProfile(trainerProfile) && persona && picks.length > 0 && (
         <Panel
@@ -975,22 +896,26 @@ export function CozyHomeView({
     );
 
     // ── Layout ──────────────────────────────────────────────────────────────
-    // Phones get one tab at a time, the PDF's shape; desktop keeps the story
-    // rail beside whichever tab is open.
-    let main;
-    // A guest's invitation to an account, right under the hero on a phone and at
-    // the top of the rail on desktop. Renders nothing for an account holder.
+    // One priority list (2026-11-09, .claude/skills/app-screens): on a phone
+    // greeting → week → the hero → (a new trainer's first journey) → the party
+    // → the persona's blocks (the day's rail among them) → what is left. A
+    // desktop keeps the same main column and moves the week, the Centre and
+    // the journey into the rail beside it.
+    //
+    // The guest's invitation: at the top of the rail on desktop; on a phone
+    // only once there is progress to save (the greeting's "Entrar" covers
+    // the rest). Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
-    // The daily check-in and the Trainer Level (rewards, 2026-10-17): the
-    // day's first thing to do, so it sits above the day's cards on a phone and
-    // at the top of the rail on desktop. Reads recorded stores only.
-    const checkinCard = <CheckinCard variant="home" onOpenRewards={() => navigate('/journeys?tab=rewards')} />;
-    // On a desktop the journey heads the rail, above the story of what just
-    // happened (2026-10-17, Enzo). On a phone the full card comes right under
-    // the hero — it is a new trainer's way in — and the small one waits under
-    // the day's cards, after what an active trainer came for.
+    // The daily check-in as the week strip (rewards, 2026-10-17 → 2026-11-09):
+    // the day's first thing to do. Reads recorded stores only.
+    const checkinWeek = (
+        <CheckinWeek
+            onOpenRewards={() => navigate('/journeys?tab=rewards')}
+            onOpenStreak={() => setIsStreakOpen(true)}
+        />
+    );
     // The persona orders the day's blocks (personaHomeOrder); phones carry no
-    // teams block on this tab, so only "Para você" and "Seu dia" swap there.
+    // teams block (the party and "Ver todos" stand for it there).
     const homeOrder = personaHomeOrder(trainerProfile);
     const homeBlocks = {
         forYou: forYouPanel,
@@ -1004,35 +929,53 @@ export function CozyHomeView({
         ? { won: Boolean(puzzle.summary.solved), guesses: puzzle.summary.attempts }
         : null;
     const centerToday = (variant) => <Suspense fallback={null}><CenterToday variant={variant} myPuzzle={myPuzzle} /></Suspense>;
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{ordered}{centerToday('rail')}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{ordered}</>;
-    else if (tab === 'journey') main = journeyTab;
-    else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
-    else main = <>{centerToday('full')}{communityPanel(5)}</>;
+    const party = isPhone && activeTeam && summary.size > 0 && (
+        <HomeParty
+            team={activeTeam}
+            members={summary.members}
+            onEdit={() => handleEditTeam(activeTeam)}
+            onSeeAll={() => navigate('/teams')}
+        />
+    );
 
     return (
         <main className="cozy-home">
-            <div className="cozy-toolbar">
-                {chips}
-                {tabs}
-            </div>
-
             <div className="cozy-layout">
                 <div className="cozy-main">
-                    {main}
+                    {greeting}
+                    {isPhone && checkinWeek}
+                    {hero}
+                    {isPhone ? (
+                        <>
+                            {party}
+                            {journeyFocus}
+                            {ordered}
+                            {forYouSetup}
+                            {journeyCompact}
+                            {centerToday('rail')}
+                            {savedTeams.length > 0 && guestCard}
+                        </>
+                    ) : ordered}
                 </div>
 
                 {!isPhone && (
                     <aside className="cozy-rail">
                         {guestCard}
-                        {checkinCard}
+                        {checkinWeek}
                         {/* The day as a place, right under the trainer's own check-in (2026-11-09). */}
-                        {tab !== 'community' && centerToday('rail')}
+                        {centerToday('rail')}
                         {forYouSetup}
-                        {tab !== 'journey' && (journeyFocus || journeyCompact)}
+                        {journeyFocus || journeyCompact}
                         {journeyPanel}
                     </aside>
                 )}
             </div>
+
+            {isStreakOpen && (
+                <Suspense fallback={null}>
+                    <StreakSheet onClose={() => setIsStreakOpen(false)} />
+                </Suspense>
+            )}
         </main>
     );
 }

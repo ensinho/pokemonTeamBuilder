@@ -171,7 +171,8 @@ const readLocalStorage = () => {
 // landing's headline — was an SEO audit finding (2026-10-30). Everywhere
 // else the header title is the page's only H1. The first-visit landing is
 // added at the render site (it lives under 'home', whose dashboard has none).
-const VIEWS_WITH_OWN_H1 = new Set(['guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
+// Home's h1 is its greeting ("Boa noite, Enzo" — components/home/HomeGreeting.jsx).
+const VIEWS_WITH_OWN_H1 = new Set(['home', 'guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
 const DESKTOP_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
 
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
@@ -1708,7 +1709,15 @@ export default function AppLayout() {
                                         {React.createElement(
                                             isLandingOpen || VIEWS_WITH_OWN_H1.has(currentPage) ? 'p' : 'h1',
                                             { className: 'app-shell__header-title' },
-                                            pageInfo.shortTitle || pageInfo.title,
+                                            // A phone's Home wears the brand where a page title would
+                                            // be (the references' wordmark-top-left): the greeting
+                                            // under it already says where you are.
+                                            isMobile && currentPage === 'home' && !isLandingOpen ? (
+                                                <>
+                                                    <BrandWordmark className="app-shell__header-wordmark" />
+                                                    <span className="sr-only">{pageInfo.shortTitle || pageInfo.title}</span>
+                                                </>
+                                            ) : (pageInfo.shortTitle || pageInfo.title),
                                         )}
                                         {pageGuideTips[currentPage] && (
                                             <PageGuide

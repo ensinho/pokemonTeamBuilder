@@ -230,3 +230,26 @@ describe('personaQuickLinks', () => {
         expect(out.findIndex((d) => d.path === '/gyms')).toBeLessThan(out.findIndex((d) => d.path === '/'));
     });
 });
+
+describe('personaHero', () => {
+    const answered = (p) => normalizeTrainerProfile({ ...p, answeredAt: 1 });
+    it('is the team in progress with no profile, or a skipped one', async () => {
+        const { personaHero } = await import('./trainerProfile');
+        expect(personaHero(null)).toBe('team');
+        expect(personaHero(normalizeTrainerProfile({ interests: ['minigames'], skippedAt: 1 }))).toBe('team');
+    });
+    it('is the day\'s Champion battle for the minigames trainer only', async () => {
+        const { personaHero } = await import('./trainerProfile');
+        expect(personaHero(answered({ interests: ['minigames'] }))).toBe('challenge');
+        expect(personaHero(answered({ interests: ['competitive'] }))).toBe('team');
+        expect(personaHero(answered({ interests: ['franchise'] }))).toBe('team');
+        // All three interests make the Pokémon Master: the team leads.
+        expect(personaHero(answered({ interests: ['competitive', 'franchise', 'minigames'] }))).toBe('team');
+    });
+    it('only ever names a known hero', async () => {
+        const { personaHero, HOME_HEROES } = await import('./trainerProfile');
+        for (const interests of [[], ['minigames'], ['competitive'], ['franchise'], ['minigames', 'franchise']]) {
+            expect(HOME_HEROES).toContain(personaHero(answered({ interests })));
+        }
+    });
+});

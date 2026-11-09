@@ -309,6 +309,14 @@
     height: auto;
 }
 
+/* The phone Home's header: the wordmark at the title's height. Its alt names
+   the product; the page's name follows it for screen readers. */
+.app-shell__header-wordmark {
+    display: block;
+    width: auto;
+    height: 1.75rem;
+}
+
 /* The wordmark is the way home, as the icon was. A bare button so it is
    reachable by keyboard; it adds no box of its own. */
 .app-shell__brand-home {

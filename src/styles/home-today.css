@@ -1,0 +1,594 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Home · Today (2026-11-09) — the market's phone grammar in our material
+   (.claude/skills/app-screens). Loaded after cozy-home.css by CozyHomeView.
+
+   greeting → week strip (rewards.css) → the hero of the day → the party →
+   the day's rail (cozy-home.css, phones). One tinted surface for the hero,
+   the rest on surface fills; the hero's ▶ is the page's one primary.
+
+   View stylesheets load before index.css, so any rule that changes a
+   primitive's own property (.btn, .section) is compound (`.cozy-home .x`).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── The greeting ─────────────────────────────────────────────────────── */
+
+.home-greet {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.home-greet__avatar {
+    --avatar-tone: var(--color-primary);
+    position: relative;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: none;
+    cursor: pointer;
+    transition: scale var(--duration-press) var(--ease-out);
+}
+
+.home-greet__avatar:active {
+    scale: var(--press-scale);
+}
+
+.home-greet__face {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--avatar-tone) 28%, var(--color-surface));
+}
+
+/* Compound: <Sprite> carries Tailwind's `relative` and sizes. */
+.home-greet .home-greet__sprite {
+    flex-shrink: 0;
+    width: 3.75rem;
+    height: 3.75rem;
+    max-width: none;
+}
+
+/* No partner chosen yet: the period's visitor as a silhouette. */
+.home-greet__avatar.is-unchosen .home-greet__face {
+    background: color-mix(in srgb, var(--color-fg) 18%, var(--color-surface));
+}
+
+.home-greet__avatar.is-unchosen .home-greet__sprite {
+    filter: brightness(0);
+    opacity: 0.7;
+}
+
+.home-greet__text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+/* The page's h1. Heading face, one line: a long name ellipses, it never
+   pushes the flame off the row. */
+.cozy-home .home-greet__hello {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-heading);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-greet__ask {
+    margin: 0;
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The streak: a control's height, a pill's corners. Lit, it is earned — Shiny
+   Gold worn as a sticker (the brand layer's rule for a reward). */
+.home-greet__streak {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+    height: var(--control-h-md);
+    padding-inline: var(--space-3);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.home-greet__streak:hover {
+    background: var(--color-surface-hover);
+}
+
+.home-greet__streak:active {
+    scale: var(--press-scale);
+}
+
+.home-greet__streak svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.home-greet__streak.is-lit {
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    box-shadow: inset 0 0 0 2px var(--brand-ink), 3px 3px 0 0 var(--sticker-drop);
+}
+
+.cozy-home .home-greet__signin {
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+}
+
+/* ── The hero of the day ──────────────────────────────────────────────── */
+
+.day-hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 21rem;
+    padding: var(--space-4);
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--hero-type) 30%, var(--color-surface));
+    color: var(--color-fg);
+}
+
+/* The trainer's wallpaper, drained to its light and shade so it takes the
+   tint from the surface under it. Static; fades in only when changed. */
+.day-hero__scene {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background-position: center;
+    background-size: cover;
+    mix-blend-mode: luminosity;
+    opacity: 0.22;
+    pointer-events: none;
+}
+
+.day-hero__scene.is-changed {
+    animation: day-hero-scene-in var(--duration-entrance) var(--ease-out);
+}
+
+@keyframes day-hero-scene-in {
+    from { opacity: 0; }
+}
+
+/* The page's one gradient (the design system's "one hero surface"): a pool
+   of the subject's own colour behind the art. */
+.day-hero__disc {
+    position: absolute;
+    z-index: 0;
+    top: 6%;
+    right: -18%;
+    width: 78%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--hero-type) 60%, transparent), transparent);
+    pointer-events: none;
+}
+
+/* Official artwork, the protagonist: big, to the right, under the copy's
+   edge — never under the copy itself (the copy keeps 58%). */
+.day-hero__art {
+    position: absolute;
+    z-index: 1;
+    top: var(--space-10);
+    right: calc(var(--space-3) * -1);
+    width: 56%;
+    max-width: 15rem;
+    aspect-ratio: 1;
+    pointer-events: none;
+}
+
+.day-hero__artwork {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Nothing chosen and nothing built: the visitor as a silhouette. */
+.day-hero__artwork.is-unchosen {
+    filter: brightness(0);
+    opacity: 0.45;
+}
+
+/* The Champion's hero: the trainer sprites, pixels kept square. */
+.day-hero__trainers {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.day-hero__trainer,
+.day-hero__rival {
+    position: absolute;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.day-hero__trainer {
+    right: 6%;
+    bottom: 6%;
+    width: 80%;
+    height: 80%;
+}
+
+/* Blue, a step behind her, mirrored to face her — kept inside the art's
+   right side so he never stands on the copy. */
+.day-hero__rival {
+    bottom: 16%;
+    left: 12%;
+    width: 44%;
+    height: 44%;
+    opacity: 0.85;
+    scale: -1 1;
+}
+
+.day-hero__top {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.day-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    height: var(--control-h-sm);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+}
+
+.cozy-home .day-hero__wallpaper {
+    border: none;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    color: var(--color-fg);
+}
+
+.cozy-home .day-hero__wallpaper:hover:not(:disabled) {
+    background: var(--color-surface);
+}
+
+.cozy-home .day-hero__wallpaper svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.day-hero__copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-width: 56%;
+}
+
+/* An h2 in the heading face: the page's loudest line after the hello. */
+.cozy-home .day-hero__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-heading);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+}
+
+.day-hero__sub {
+    margin: 0;
+    color: var(--color-fg-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.4;
+}
+
+.day-hero__extra {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+}
+
+.day-hero__lineup {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.cozy-home .day-hero__lineup .cozy-day__mini {
+    width: 2rem;
+    height: 2rem;
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+}
+
+.cozy-home .day-hero__lineup .cozy-day__mini-sprite {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+/* The player bar (Poddi's mini-player): where things stand and the one
+   action, round, at the thumb. Opaque enough to read on any art — phones
+   never blur (design-system "Chrome is solid"). */
+.day-hero__bar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: auto;
+    padding: var(--space-3);
+    padding-inline-start: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.day-hero__extra + .day-hero__bar {
+    margin-top: 0;
+}
+
+.day-hero__now {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.day-hero__label,
+.day-hero__meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.day-hero__label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.day-hero__meta {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.day-hero__now .journey__bar {
+    margin-top: var(--space-1);
+}
+
+/* The ▶: the page's one primary, round on a phone (its name is its
+   aria-label), with its label from a desktop up. */
+.cozy-home .day-hero__play {
+    flex-shrink: 0;
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
+    border-radius: var(--radius-full);
+}
+
+.cozy-home .day-hero__play svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.day-hero__play-label {
+    display: none;
+}
+
+/* ── The party (phones) ───────────────────────────────────────────────── */
+
+.home-party__slots {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.home-party__slot {
+    --slot-tone: var(--color-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    width: 100%;
+    padding: var(--space-1) 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--color-fg);
+    font: inherit;
+    cursor: pointer;
+}
+
+/* The member stands on a disc of its own type and steps out of its top, the
+   party menu's gesture. A press is felt in the disc, not the column. */
+.home-party__disc {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: min(3.25rem, 100%);
+    aspect-ratio: 1;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--slot-tone) 26%, var(--color-surface));
+    transition: scale var(--duration-press) var(--ease-out);
+}
+
+.home-party__slot:active .home-party__disc {
+    scale: var(--press-scale);
+}
+
+.home-party .home-party__sprite {
+    position: absolute;
+    bottom: calc(var(--space-1) * -1);
+    left: 50%;
+    width: 4rem;
+    height: 4rem;
+    max-width: none;
+    translate: -50% 0;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+/* Absent: dashed, the app's one meaning for it. */
+.home-party__slot.is-empty .home-party__disc {
+    background: none;
+    box-shadow: none;
+    border: 1px dashed var(--color-border-strong);
+    color: var(--color-muted);
+}
+
+.home-party__disc svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.home-party__name {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-party__type {
+    max-width: 100%;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--slot-tone) 45%, var(--color-fg));
+    font-size: var(--text-2xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-party__slot.is-empty .home-party__name {
+    color: var(--color-muted);
+    font-weight: var(--weight-medium);
+}
+
+/* ── The week strip in the desktop rail ──────────────────────────────────
+   On a phone it sits on the page (cells on the surface); in the rail it is
+   one of the rail's cards, so its cells take the raised fill inside it. */
+
+.cozy-rail .checkin-week {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.cozy-rail .checkin-week__cell {
+    background: var(--color-surface-raised);
+}
+
+/* ── Desktop ──────────────────────────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+    .home-greet__face {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+    .home-greet .home-greet__sprite {
+        width: 4.25rem;
+        height: 4.25rem;
+    }
+
+    .cozy-home .home-greet__hello {
+        font-size: var(--text-2xl);
+    }
+
+    .day-hero {
+        min-height: 18rem;
+        padding: var(--space-6);
+    }
+
+    .day-hero__disc {
+        top: -20%;
+        right: -4%;
+        width: 48%;
+    }
+
+    .day-hero__art {
+        top: 50%;
+        right: var(--space-6);
+        width: 34%;
+        max-width: 17rem;
+        translate: 0 -50%;
+    }
+
+    .day-hero__copy {
+        max-width: min(60%, 34rem);
+    }
+
+    .cozy-home .day-hero__title {
+        font-size: var(--text-3xl);
+    }
+
+    .day-hero__extra,
+    .day-hero__bar {
+        max-width: min(62%, 36rem);
+    }
+
+    .cozy-home .day-hero__play {
+        width: auto;
+        height: var(--control-h-lg);
+        padding-inline: var(--space-5);
+        gap: var(--space-2);
+    }
+
+    .day-hero__play-label {
+        display: inline;
+    }
+
+    .cozy-home .day-hero .cozy-party {
+        margin-top: 0;
+    }
+}
+
+/* ── Phones ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+    /* The greeting opens the page: a step more air between it, the week and
+       the hero than between the blocks that follow. */
+    .cozy-home > .cozy-layout > .cozy-main {
+        gap: var(--space-4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-greet__avatar,
+    .home-greet__streak,
+    .home-party__disc {
+        transition: none;
+    }
+}

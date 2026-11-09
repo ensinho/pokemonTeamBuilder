@@ -1043,6 +1043,15 @@ h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
     letter-spacing: -0.02em;
 }
 
+/* One accent word in a headline (2026-11-09, the "12 day Streak" of the
+   references — .claude/skills/app-screens): the figure or the word the line
+   is about, in the primary as a word. Colour only — none of the three faces
+   has a true italic, and a synthesised one looks broken. One per screen. */
+.accent-word {
+    color: var(--color-primary-text);
+    font-style: normal;
+}
+
 .text-heading {
     font-family: var(--font-body);
     font-size: var(--text-lg);

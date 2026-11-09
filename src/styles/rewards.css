@@ -430,3 +430,375 @@
 .level-track__state svg { width: 0.875rem; height: 0.875rem; }
 .level-track__step.is-reached .level-track__state { color: var(--color-success); }
 .level-track__step.is-next .level-track__state { color: var(--color-primary-text); }
+
+/* ============================================================
+   THE WEEK STRIP (2026-11-09) — CheckinWeek.jsx
+   The journal reference's Mon–Sun row: seven pill columns, today
+   inverted, a Poké Ball for each day of the run. Today's open cell
+   is the check-in itself. Cells in a row never give (design-system):
+   the press is felt in the "+" glyph.
+   ============================================================ */
+
+.checkin-week {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.checkin-week__days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.checkin-week__day {
+    display: flex;
+}
+
+.checkin-week__cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    width: 100%;
+    padding: var(--space-2) 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font: inherit;
+}
+
+.checkin-week__weekday {
+    color: var(--color-muted);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
+    line-height: 1;
+}
+
+.checkin-week__date {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1;
+}
+
+/* Today, inverted: the selected value of the row reads at once on any
+   theme (the inverted-chip pattern, creative_direction.md). */
+.checkin-week__day.is-today .checkin-week__cell,
+.checkin-week__day.is-today-done .checkin-week__cell {
+    background: var(--color-fg);
+    color: var(--color-bg);
+}
+
+.checkin-week__day.is-today .checkin-week__weekday,
+.checkin-week__day.is-today-done .checkin-week__weekday {
+    color: color-mix(in srgb, var(--color-bg) 72%, var(--color-fg));
+}
+
+.checkin-week__day.is-ahead .checkin-week__date {
+    color: var(--color-muted);
+}
+
+.checkin-week__check {
+    cursor: pointer;
+}
+
+.checkin-week__plus {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    transition: scale var(--duration-press) var(--ease-out);
+}
+
+.checkin-week__plus svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.checkin-week__check:active .checkin-week__plus {
+    scale: 0.88;
+}
+
+/* The day as a Poké Ball (DayBall) — shared with the streak sheet. */
+.day-ball {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.day-ball__rim,
+.day-ball__band,
+.day-ball__button {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.25;
+}
+
+.day-ball.is-absent {
+    color: var(--color-muted);
+}
+
+.day-ball.is-absent .day-ball__rim {
+    stroke-dasharray: 2 1.6;
+}
+
+.day-ball.is-absent .day-ball__band {
+    opacity: 0.5;
+}
+
+.day-ball__top {
+    fill: var(--color-primary);
+}
+
+.day-ball.is-caught .day-ball__button {
+    fill: var(--color-surface);
+}
+
+.checkin-week__day.is-today-done .day-ball.is-caught .day-ball__button {
+    fill: var(--color-bg);
+}
+
+/* Ahead: not yet a day — a dot holding the ball's place. */
+.day-ball--ahead {
+    width: 0.375rem;
+    height: 0.375rem;
+    margin-block: calc((1.25rem - 0.375rem) / 2);
+    border-radius: var(--radius-full);
+    background: var(--color-border-strong);
+}
+
+/* A shield will cover this day: earned, so the gold word colour. */
+.day-ball--shield {
+    color: var(--color-accent);
+}
+
+.checkin-week__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: var(--control-h-sm);
+}
+
+.checkin-week__line {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: var(--text-xs);
+    text-align: left;
+}
+
+.checkin-week__streak {
+    cursor: pointer;
+}
+
+.checkin-week__level {
+    flex-shrink: 0;
+    color: var(--color-fg);
+    font-weight: var(--weight-semibold);
+}
+
+.checkin-week__level::after {
+    content: '·';
+    margin-inline-start: var(--space-1_5);
+    color: var(--color-muted);
+}
+
+.checkin-week__muted {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.checkin-week__line--result {
+    color: var(--color-fg);
+}
+
+.checkin-week__more {
+    flex-shrink: 0;
+}
+
+.checkin-week__more svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* ============================================================
+   THE STREAK SHEET (2026-11-09) — StreakSheet.jsx
+   The mood-streak reference: a sheet, the mascot answering the
+   state, one accent word in the title, the month as Poké Balls.
+   ============================================================ */
+
+.streak-sheet {
+    position: relative;
+}
+
+.streak-sheet .streak-sheet__close {
+    position: absolute;
+    z-index: 1;
+    top: var(--space-3);
+    right: var(--space-3);
+}
+
+.streak-sheet .streak-sheet__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-top: var(--space-6);
+}
+
+.streak-sheet__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+}
+
+.streak-sheet__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-heading);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+}
+
+.streak-sheet__lead {
+    margin: 0;
+    max-width: 22rem;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+}
+
+.streak-month {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.streak-month__name {
+    margin: 0 0 var(--space-3);
+    font-weight: var(--weight-semibold);
+    text-transform: capitalize;
+}
+
+.streak-month__name span {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-medium);
+}
+
+.streak-month__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-2) var(--space-1);
+    justify-items: center;
+}
+
+.streak-month__weekday {
+    color: var(--color-muted);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
+}
+
+.streak-month__day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-0_5);
+}
+
+.streak-month__day .day-ball {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.streak-month__day .day-ball--ahead {
+    width: 0.375rem;
+    height: 0.375rem;
+    margin-block: calc((1.5rem - 0.375rem) / 2);
+}
+
+.streak-month__date {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+}
+
+.streak-month__day.is-today .day-ball,
+.streak-month__day.is-today .streak-month__date,
+.streak-month__day.is-today-done .streak-month__date {
+    color: var(--color-primary-text);
+    font-weight: var(--weight-semibold);
+}
+
+.streak-month__day.is-caught .day-ball__button,
+.streak-month__day.is-today-done .day-ball__button {
+    fill: var(--color-surface-raised);
+}
+
+/* Figure + muted word (the community-boards reference): no boxes. */
+.streak-sheet__facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    text-align: center;
+}
+
+.streak-sheet__facts > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-0_5);
+}
+
+.streak-sheet__facts dt {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.streak-sheet__facts dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+}
+
+.streak-sheet__done {
+    margin: 0;
+    color: var(--color-fg-secondary);
+    font-size: var(--text-sm);
+    text-align: center;
+}
+
+.streak-sheet__note {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    line-height: 1.45;
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .checkin-week__plus {
+        transition: none;
+    }
+}
