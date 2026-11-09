@@ -1,3 +1,4 @@
+import { useTranslation } from '../../hooks/useTranslation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 
@@ -209,8 +210,13 @@ export function CutoffSelect({ cutoffs = [], value, onChange, pt = false, classN
  * phone is the definition of polluting the screen — and the button carries the
  * count so the filter can never be on without saying so.
  */
-export function TypeFilter({ selected = [], onChange, pt = false }) {
-    const [open, setOpen] = useState(false);
+export function TypeFilter({ selected = [], onChange, pt = false, inline = false }) {
+    // The type's name in the UI language (it printed the raw id, "fire", in PT).
+    const { t } = useTranslation();
+    // `inline`: the chips alone, always open — inside the phone's Filtros sheet,
+    // where a toggle to reveal them would be a second step for nothing.
+    const [isOpen, setOpen] = useState(false);
+    const open = inline || isOpen;
     const count = selected.length;
 
     const toggle = (type) => {
@@ -219,7 +225,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
 
     return (
         <div className="contents">
-            <button
+            {!inline && <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
@@ -234,10 +240,10 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                     </span>
                 )}
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
-            </button>
+            </button>}
 
             {open && (
-                <div className="w-full rounded-xl border border-border bg-surface p-2">
+                <div className={inline ? 'w-full' : 'w-full rounded-xl border border-border bg-surface p-2'}>
                     <div className="flex flex-wrap gap-1.5">
                         {ALL_TYPES.map((type) => {
                             const active = selected.includes(type);
@@ -260,7 +266,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                                     }`}
                                 >
                                     {typeIcons[type] && <img src={typeIcons[type]} alt="" className="h-3 w-3 shrink-0" aria-hidden="true" />}
-                                    {type}
+                                    {t(`types.${type}`)}
                                 </button>
                             );
                         })}

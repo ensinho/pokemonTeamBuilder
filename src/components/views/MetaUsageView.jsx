@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
+import { Search, Layers, X, Users, ArrowUpRight, SlidersHorizontal } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
@@ -8,7 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
-import { TOUR_BAND, filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
+import { TOUR_BAND, cutoffLabel, filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
 import { MonSprite, SourceCredit } from './metaShared';
 import { pretty } from '../../utils/metaFormat';
 import { CutoffSelect, FormatPicker, TypeFilter } from './metaControls';
@@ -19,6 +19,7 @@ import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
+import { BottomSheet } from '../BottomSheet';
 import { Loader } from '../Loader';
 import { DataNotes } from '../DataNotes';
 import { metaNotes } from '../../utils/dataNotes';
@@ -201,6 +202,7 @@ export function MetaUsageView() {
     // either is reachable. Reveal it in pages there; desktop keeps the full grid
     // beside the cores. A new format, sort or search starts from the first page.
     const isMobile = useMediaQuery(maxWidthBelow('lg'));
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const reveal = useProgressiveReveal(visible.length, {
         initial: 12,
         step: 24,
@@ -245,6 +247,27 @@ export function MetaUsageView() {
     // month — say that, and leave the picker reachable above the message.
     const noData = !ranked.length;
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
+
+    const sortControl = (variant) => (
+        <div className={`segmented ${variant}`} role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
+            {[
+                { id: 'usage', label: pt ? 'Uso' : 'Usage' },
+                ...(hasWinRates ? [{ id: 'wr', label: pt ? 'Vitórias' : 'Win rate' }] : []),
+                { id: 'name', label: 'A–Z' },
+            ].map((option) => (
+                <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSortMode(option.id)}
+                    aria-pressed={sortMode === option.id}
+                    className="segmented__item"
+                >
+                    {option.label}
+                </button>
+            ))}
+        </div>
+    );
+    const changedFilters = typeFilter.length + (sortMode !== 'usage' ? 1 : 0);
 
     // Starts at the page's edge, under the hub switcher (2026-11-09): centred
     // with its own inset, it began ~20px (and on wide screens far more) to the
@@ -332,8 +355,49 @@ export function MetaUsageView() {
                         pt={pt}
                         className="min-w-0 flex-1 sm:flex-none sm:min-w-[13rem]"
                     />
-                    <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} />
+                    {isMobile ? (
+                        // Phone (signed-in pass, 2026-11-09): rating, order and types
+                        // were six controls stacked above the first Pokémon. One
+                        // button holds them; its label carries the rating in force
+                        // and a count of anything else changed from the default.
+                        <button
+                            type="button"
+                            onClick={() => setFiltersOpen(true)}
+                            aria-haspopup="dialog"
+                            className={`btn btn-secondary meta-filters-btn ${changedFilters > 0 ? 'is-active' : ''}`}
+                        >
+                            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                            <span>{pt ? 'Filtros' : 'Filters'}</span>
+                            {cutoffs.length > 1 && <span className="tabular-nums text-muted">· {cutoffLabel(activeCutoff, pt)}</span>}
+                            {changedFilters > 0 && <span className="count-badge">{changedFilters}</span>}
+                        </button>
+                    ) : (
+                        <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} />
+                    )}
                 </div>
+            )}
+            {filtersOpen && isMobile && tab === 'usage' && (
+                <BottomSheet onClose={() => setFiltersOpen(false)} title={pt ? 'Filtros' : 'Filters'}>
+                    <div className="meta-filters-sheet">
+                        {cutoffs.length > 1 && (
+                            <section>
+                                <h3 className="meta-filters-sheet__label">{pt ? 'Rating mínimo' : 'Rating floor'}</h3>
+                                <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} className="segmented--block" />
+                            </section>
+                        )}
+                        <section>
+                            <h3 className="meta-filters-sheet__label">{pt ? 'Ordenar por' : 'Sort by'}</h3>
+                            {sortControl('segmented--block')}
+                        </section>
+                        <section>
+                            <h3 className="meta-filters-sheet__label">{pt ? 'Tipos' : 'Types'}</h3>
+                            <TypeFilter selected={typeFilter} onChange={setTypeFilter} pt={pt} inline />
+                        </section>
+                        <button type="button" className="btn btn-primary btn-block" onClick={() => setFiltersOpen(false)}>
+                            {pt ? 'Ver resultados' : 'Show results'}
+                        </button>
+                    </div>
+                </BottomSheet>
             )}
             <div className="mb-5 flex flex-wrap items-center gap-2">
                 {tab === 'usage' && (
@@ -353,26 +417,8 @@ export function MetaUsageView() {
                         )}
                     </div>
                 )}
-                {tab === 'usage' && (
-                    <div className="segmented segmented--lg" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
-                        {[
-                            { id: 'usage', label: pt ? 'Uso' : 'Usage' },
-                            ...(hasWinRates ? [{ id: 'wr', label: pt ? 'Vitórias' : 'Win rate' }] : []),
-                            { id: 'name', label: 'A–Z' },
-                        ].map((s) => (
-                            <button
-                                key={s.id}
-                                type="button"
-                                onClick={() => setSortMode(s.id)}
-                                aria-pressed={sortMode === s.id}
-                                className="segmented__item"
-                            >
-                                {s.label}
-                            </button>
-                        ))}
-                    </div>
-                )}
-                {tab === 'usage' && <TypeFilter selected={typeFilter} onChange={setTypeFilter} pt={pt} />}
+                {tab === 'usage' && !isMobile && sortControl('segmented--lg')}
+                {tab === 'usage' && !isMobile && <TypeFilter selected={typeFilter} onChange={setTypeFilter} pt={pt} />}
                 {tab === 'teams' && formats.length > 0 && (
                     <div className="w-full sm:ml-auto sm:w-auto">
                         <FormatPicker formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="w-full sm:w-auto" />

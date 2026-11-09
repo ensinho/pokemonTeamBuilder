@@ -613,8 +613,21 @@ export function PokedexView({
                                 ))}
                             </div>
                         </div>
-                        <TypeMatchToggle value={typeMatchMode} onChange={setTypeMatchMode} />
-                        <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
+                        {/* Progressive disclosure (signed-in pass, 2026-11-09): "any/all"
+                            only means something with two types picked, and the summary
+                            pill that read "Todos os tipos" looked like a button that did
+                            nothing — it is now the way to clear the pick. */}
+                        {selectedTypeCount >= 2 && <TypeMatchToggle value={typeMatchMode} onChange={setTypeMatchMode} />}
+                        {selectedTypeCount > 0 && (
+                            <button
+                                type="button"
+                                className="team-builder-picker-summary team-builder-picker-summary--clear"
+                                onClick={() => [...selectedTypes].forEach((type) => handleTypeSelection(type))}
+                            >
+                                <X className="w-3.5 h-3.5" aria-hidden="true" />
+                                {t('pokedex.clearTypes', { count: selectedTypeCount })}
+                            </button>
+                        )}
                     </div>
 
                     <div className="team-builder-unified-toolbar mt-3">
@@ -669,8 +682,9 @@ export function PokedexView({
                             className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
                             aria-pressed={showOnlyFavorites}
                         >
-                            <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-muted'}`} />
-                            <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
+                            <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-current text-accent' : 'text-muted'}`} />
+                            {/* One label, on or off: "★ Todos" when off read as a second "all" filter. */}
+                            <span>{t('pokedex.favoritesOnly')}</span>
                         </button>
                     </div>
 

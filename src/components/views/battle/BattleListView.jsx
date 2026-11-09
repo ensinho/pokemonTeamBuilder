@@ -129,14 +129,19 @@ export function BattleListView() {
                 </p>
 
                 <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        className="btn btn-primary font-semibold text-xs flex items-center gap-1.5 px-4 py-2"
-                        onClick={() => setIsChallengeModalOpen(true)}
-                    >
-                        <SwordsIcon className="w-4 h-4" />
-                        <span>{t('battle.createBattle')}</span>
-                    </button>
+                    {/* With no battles the empty state below holds the one
+                        "Criar batalha" — two identical primaries stacked read
+                        as two different actions (signed-in pass, 2026-11-09). */}
+                    {battles.length > 0 && (
+                        <button
+                            type="button"
+                            className="btn btn-primary font-semibold text-xs flex items-center gap-1.5 px-4 py-2"
+                            onClick={() => setIsChallengeModalOpen(true)}
+                        >
+                            <SwordsIcon className="w-4 h-4" />
+                            <span>{t('battle.createBattle')}</span>
+                        </button>
+                    )}
 
                     <NotificationToggle />
                 </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import '../../styles/tools-views.css';
 import { resolvePokemonDetail, getMoveDetails } from '../../services/pokemonDataCache';
 import { calcDamage, calcStat, getEffectiveMoveType, NATURE_MODIFIERS, natureMultiplier } from '../../utils/damageCalc';
@@ -276,6 +277,11 @@ const sideParams = (p) => ({
 
 // Damage `move` deals from `atk` to `def`. `fieldObj` supplies weather / terrain /
 // side modifiers. Returns null for status or zero-power moves.
+// The strongest damaging move in a matchup column (the phone's peek bar).
+const bestHit = (matrix) => matrix.reduce((best, entry) => (
+    entry.result && (!best || entry.result.maxPct > best.result.maxPct) ? entry : best
+), null);
+
 const computeMatchup = (atk, def, move, fieldObj) => {
     if (!atk?.pokemon || !def?.pokemon || !move?.name || !move.power) return null;
     const defenderMaxHP = calcStat({ base: def.baseStats.hp, statKey: 'hp', level: def.level, ev: def.evs.hp, iv: def.ivs.hp });
@@ -881,7 +887,9 @@ export function DamageCalculatorView() {
                             onClick={() => copyRow(attacker, defender, move, r, fieldObj)}
                             disabled={!r}
                             title={r ? t('damageCalc.copyCalc') : undefined}
-                            className={`w-full text-left bg-bg/30 border border-border rounded-lg p-2 transition-colors ${r ? 'hover:border-border-hover cursor-pointer' : 'cursor-default'}`}
+                            // A fill, not a border: these rows sit inside the bordered
+                            // live-damage panel (56 nested boxes — audit 2026-11-09).
+                            className={`w-full text-left bg-surface-raised rounded-lg p-2 transition-colors ${r ? 'hover:bg-surface-hover cursor-pointer' : 'cursor-default'}`}
                         >
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-1.5 min-w-0">
@@ -1051,7 +1059,9 @@ export function DamageCalculatorView() {
             </div>
 
             {/* ── Mobile tabs ───────────────────────────────────────────── */}
-            <div className="lg:hidden flex bg-surface rounded-xl p-1 gap-1 border border-border">
+            {/* The design system's segmented control (it was a hand-made Volt
+                pill row, the page's loudest object). */}
+            <div className="lg:hidden segmented segmented--block" role="group" aria-label={t('damageCalc.damageTab')}>
                 {[
                     { key: 'pokemon1', label: 'Pokémon 1' },
                     { key: 'damage', label: t('damageCalc.damageTab') },
@@ -1059,13 +1069,45 @@ export function DamageCalculatorView() {
                 ].map((tab) => (
                     <button
                         key={tab.key}
+                        type="button"
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 py-2 text-center text-xs font-semibold rounded-lg transition-colors ${activeTab === tab.key ? 'bg-primary text-on-primary' : 'text-muted hover:text-fg'}`}
+                        aria-pressed={activeTab === tab.key}
+                        className="segmented__item touch-target--y touch-target"
                     >
                         {tab.label}
                     </button>
                 ))}
             </div>
+
+            {/* While a Pokémon is being edited on a phone, the result it
+                changes is a tab away: its best hit rides along under the tabs,
+                updating as EVs, nature or moves change (signed-in pass,
+                2026-11-09). */}
+            {bothPicked && activeTab !== 'damage' && (() => {
+                const editing = activeTab === 'pokemon1';
+                const best = bestHit(editing ? matrix12 : matrix21);
+                const taken = bestHit(editing ? matrix21 : matrix12);
+                if (!best && !taken) return null;
+                return (
+                    <button type="button" className="dmg-peek lg:hidden" onClick={() => setActiveTab('damage')}>
+                        {best && (
+                            <span className="dmg-peek__line">
+                                <span className="dmg-peek__label">{t('damageCalc.peekDeals')}</span>
+                                <span className="dmg-peek__move">{prettify(best.move.name)}</span>
+                                <span className="dmg-peek__pct">{best.result.minPct}–{best.result.maxPct}%</span>
+                            </span>
+                        )}
+                        {taken && (
+                            <span className="dmg-peek__line">
+                                <span className="dmg-peek__label">{t('damageCalc.peekTakes')}</span>
+                                <span className="dmg-peek__move">{prettify(taken.move.name)}</span>
+                                <span className="dmg-peek__pct">{taken.result.minPct}–{taken.result.maxPct}%</span>
+                            </span>
+                        )}
+                        <ChevronRight className="dmg-peek__chevron" aria-hidden="true" />
+                    </button>
+                );
+            })()}
 
             {/* ── BODY: P1 | live damage | P2 ───────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">

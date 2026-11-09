@@ -2162,12 +2162,15 @@ export default function AppLayout() {
                 {isMobile && !isMobileDetailsOpen && !isLandingOpen && !isForumThreadOpen && (
                     <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
                         {(() => {
-                            const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail');
+                            // A hub's tab (Meta) lights on every page the hub holds (navHubs).
+                            const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail')
+                                || (key === 'meta' && hubMembers('meta').includes(currentPage));
                             // "Mais" answers "where am I" for every page it leads to: with
                             // no tab lit on /gyms, the bar said nothing about location.
                             // Only for pages the sheet actually lists — it used to light up
                             // on /404 and on a signed-in /profile, which it does not contain.
-                            const moreKeys = new Set([...moreSheetSections.flatMap((section) => section.items), ...moreSheetToolItems].map((item) => item.key));
+                            const moreKeys = new Set([...moreSheetSections.flatMap((section) => section.items), ...moreSheetToolItems]
+                                .flatMap((item) => [item.key, ...(item.members || [])]));
                             if (isAnonymous) moreKeys.add('profile');
                             const moreActive = !mobileTabs.some((tab) => tabActive(tab.key)) && moreKeys.has(currentPage);
                             return [
