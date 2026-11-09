@@ -609,6 +609,11 @@ export default {
         fairy: 'Fairy'
     },
     nav: {
+        hubUsage: 'Usage',
+        hubTournamentTeams: 'Tournament teams',
+        library: 'Library',
+        metaHub: 'Meta & tournaments',
+        hub: { library: 'Moves, abilities and items', meta: 'Meta, best teams and tournaments' },
         about: 'About',
         more: 'More',
         moreSheetLabel: 'More destinations',

@@ -90,6 +90,8 @@ import { useInboxStore } from '../store/useInboxStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { isCrawler } from '../utils/crawler';
+import { hubForPath, hubMembers } from '../constants/navHubs';
+import { HubSwitch } from './HubSwitch';
 import { BrandWordmark } from './BrandWordmark';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
@@ -393,6 +395,8 @@ export default function AppLayout() {
         if (path.includes('/admin')) return 'admin';
         return 'notFound';
     }, [location.pathname]);
+    // On a hub's list page, the switcher between its pages (constants/navHubs.js).
+    const activeHub = useMemo(() => hubForPath(location.pathname), [location.pathname]);
 
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
@@ -1001,9 +1005,9 @@ export default function AppLayout() {
                 key: 'teamBuilding',
                 title: t('nav.teamBuilding'),
                 items: [
-                    { key: 'meta', label: language === 'pt' ? 'Meta & uso' : 'Meta & usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
-                    { key: 'bestTeams', label: t('nav.bestTeams'), path: '/best-teams', icon: <Award className="w-5 h-5 shrink-0" /> },
-                    { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
+                    // One entry for usage, best teams and tournaments (2026-11-09,
+                    // Enzo: fewer tabs); the pages switch between them (HubSwitch).
+                    { key: 'meta', label: t('nav.metaHub'), path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, members: hubMembers('meta') },
                     // Short in the rail so it can stay narrow; the search keeps the
                     // full name, so "dano" / "tiers" still find them.
                     { key: 'damageCalc', label: t('nav.damageCalcShort'), searchLabel: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
@@ -1028,10 +1032,10 @@ export default function AppLayout() {
                 key: 'database',
                 title: t('nav.database'),
                 items: [
-                    { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
-                    { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
+                    // Moves, abilities and items: one library, filtered at the top
+                    // of the page (2026-11-09, Enzo).
+                    { key: 'library', label: t('nav.library'), path: '/moves', icon: <ScrollIcon />, members: hubMembers('library'), prefetchKey: 'moves' },
                     { key: 'types', label: t('nav.types'), path: '/types', icon: <Shapes className="w-5 h-5 shrink-0" /> },
-                    { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
                     { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                 ]
             },
@@ -1135,7 +1139,17 @@ export default function AppLayout() {
     // lived only behind a Home card); the search is where "where is X" goes.
     const searchDestinations = useMemo(() => {
         const seen = new Set();
+        // The hubs' pages left the menu, not the search: "itens", "torneios"
+        // still jump straight there.
+        const hubPages = [
+            { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
+            { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
+            { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
+            { key: 'bestTeams', label: t('nav.bestTeams'), path: '/best-teams', icon: <Award className="w-5 h-5 shrink-0" /> },
+            { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
+        ];
         const extras = [
+            ...hubPages,
             { key: 'favoritePokemon', label: t('favorites.title'), path: '/favorites?tab=pokemon', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
             { key: 'profile', label: t('nav.profile'), path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
         ];
@@ -1588,12 +1602,12 @@ export default function AppLayout() {
                                             {group.items.map((item) => (
                                                 <li key={item.key}>
                                                     <ShellNavButton
-                                                        active={currentPage === item.key}
+                                                        active={currentPage === item.key || Boolean(item.members?.includes(currentPage))}
                                                         collapsed={isRailCollapsed}
                                                         label={item.label}
                                                         icon={item.icon}
                                                         badge={item.badge || 0}
-                                                        onIntent={() => prefetchRoute(item.key)}
+                                                        onIntent={() => prefetchRoute(item.prefetchKey || item.key)}
                                                         to={item.path}
                                                         onClick={() => setIsSidebarOpen(false)}
                                                     />
@@ -1829,6 +1843,7 @@ export default function AppLayout() {
 
                     <main className={`app-shell__body ${isMobileDetailsOpen ? 'is-mobile-detail' : ''}`}>
                         <div className={pageFrameClassName}>
+                            {activeHub && <HubSwitch hub={activeHub} currentPage={currentPage} />}
                             <Suspense fallback={<RouteFallback />}>
                                 <Routes>
                                     <Route path="/" element={
