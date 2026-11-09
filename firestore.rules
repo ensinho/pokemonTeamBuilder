@@ -548,7 +548,8 @@ service cloud.firestore {
         match /messages/{messageId} {
           allow read: if true;
           allow create: if isSignedIn()
-            && request.resource.data.createdBy == request.auth.uid;
+            && request.resource.data.createdBy == request.auth.uid
+            && dayResultsOnlyInDiary();
           allow update: if isAdmin()
             || (isSignedIn() && resource.data.createdBy == request.auth.uid)
             || (isSignedIn() && touchesOnlyOwnMessageLike())
@@ -556,6 +557,16 @@ service cloud.firestore {
             || (isSignedIn() && touchesOnlyOwnReport());
           allow delete: if isAdmin()
             || (isSignedIn() && resource.data.createdBy == request.auth.uid);
+
+          // A PokéPuzzle or Champion Challenge result lives in the Diário do
+          // dia (2026-11-09): installed apps that never took the 2026-11-06
+          // update still posted them to the general chat, and so did the
+          // client's own fallback. Those posts are now refused, not misfiled.
+          function dayResultsOnlyInDiary() {
+            return topicId.matches('^diary-[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+              || (request.resource.data.get('sharedPuzzle', null) == null
+                && request.resource.data.get('sharedChallenge', null) == null);
+          }
 
           // Any signed-in user may add/remove only their own like, touching just
           // the like fields — they cannot alter the message text or ownership.

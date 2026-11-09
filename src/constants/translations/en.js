@@ -1801,6 +1801,7 @@ export default {
         catDiary: 'Daily log',
         catQuestions: 'Questions',
         catAdventures: 'Adventures',
+        catFeedback: 'Feedback',
         react: {
             trigger: 'React',
             super: "It's super effective!",

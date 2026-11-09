@@ -1765,6 +1765,7 @@ export default {
         catDiary: 'Diário do dia',
         catQuestions: 'Perguntas',
         catAdventures: 'Aventuras',
+        catFeedback: 'Sugestões',
         react: {
             trigger: 'Reagir',
             super: 'É super efetivo!',

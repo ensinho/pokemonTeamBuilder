@@ -13,6 +13,7 @@ import {
     ClockIcon,
     InfoCircleIcon,
     MapPinIcon,
+    LightbulbIcon,
 } from '../icons';
 
 // Same ids, same order as FORUM_CATEGORY_IDS (utils/forumRanking).
@@ -24,6 +25,7 @@ const FORUM_CATEGORIES = [
     { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
     { id: 'questions', key: 'forum.catQuestions', icon: InfoCircleIcon },
     { id: 'adventures', key: 'forum.catAdventures', icon: MapPinIcon },
+    { id: 'feedback', key: 'forum.catFeedback', icon: LightbulbIcon },
     { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
 ];
 

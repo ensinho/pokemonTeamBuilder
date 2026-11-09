@@ -13,7 +13,7 @@ export const TRENDING_LIMIT = 5;
 
 export const FEED_SORTS = ['hot', 'new', 'top'];
 export const DEFAULT_FEED_SORT = 'hot';
-export const FORUM_CATEGORY_IDS = ['all', 'diary', 'general', 'teams', 'strategy', 'questions', 'adventures', 'announcements'];
+export const FORUM_CATEGORY_IDS = ['all', 'diary', 'general', 'teams', 'strategy', 'questions', 'adventures', 'feedback', 'announcements'];
 
 const timeOf = (iso) => {
     const ms = iso ? Date.parse(iso) : NaN;

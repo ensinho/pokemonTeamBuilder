@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-09 — PokéPuzzle and Champion results kept landing in the general chat `bug`
+- **Symptom:** a trainer reported that sharing a Challenge or PokéPuzzle result "goes to random" — the General Chat — though the 2026-11-06 social pass moved those shares to the Diário do dia. Production confirmed it: results in `general` on 11-07 and 11-08 (03:19–06:06 UTC), in the diary only from 11-09.
+- **Root cause:** two doors to the same room. (1) `postToDiary` fell back to `'general'` whenever `ensureDiary()` failed, silently. (2) The PWA asks before it updates (`registerType: 'prompt'`), so installed apps still on a pre-11-06 build posted straight to `general` — nothing on the server said no. The night-time posts are the second door: the cron creates the diary at 12:00 UTC, before that only a current client can.
+- **Fix:** `postToDiary` never targets another topic — it says it failed (signed out, `sendMessage` asks for sign-in first). The message rule `dayResultsOnlyInDiary()` refuses a `sharedPuzzle`/`sharedChallenge` outside a `diary-YYYY-MM-DD` topic, so stale builds fail loudly instead of misfiling (**needs `firebase deploy --only firestore:rules`**). `src/store/forumDiaryRouting.guard.test.js` reads both.
+- **Correct pattern:** a client-side destination is a suggestion while old builds live on phones — where content goes must be enforced by the rules. And a "fallback" that changes *where* content is published is not a fallback; fail and say so.
+- **Files:** `src/store/useForumStore.js`, `firestore.rules`, `src/store/forumDiaryRouting.guard.test.js`
+
 ### 2026-11-09 — The Champion Challenge loaded forever when no session existed `bug`
 - **Symptom:** "Entrando na sala da Cynthia…" never ended (22 s measured, no change) when the anonymous sign-in failed, and for crawlers — which therefore indexed only a loader.
 - **Root cause:** the loading effect returns early on `!userId`, so `load()` never runs and `status` never becomes `error`; the view only knew two states (`error` or "still loading"). `useAuthStore` releases `isAuthReady` without a uid on a failed sign-in and for crawlers.

@@ -427,8 +427,8 @@ export function ChampionChallengeView() {
                     startAtChampion
                 />
             );
-            // Share posts the official result to the forum's general thread in one
-            // press, as the PokéPuzzle does (sendMessage reports its own failures).
+            // Share posts the official result to today's Diário do dia in one
+            // press, as the PokéPuzzle does (postToDiary reports its own failures).
             const share = async () => {
                 if (isSharing) return;
                 const run = challenge.run;

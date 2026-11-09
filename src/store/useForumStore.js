@@ -484,12 +484,20 @@ export const useForumStore = create((set, get) => ({
 
     /**
      * A day's result into today's diary (the challenge and the puzzle share
-     * here since 2026-11-06), falling back to the general chat if the diary
-     * cannot be opened. Returns the message id, or false.
+     * here since 2026-11-06). Returns the message id, or false. Never the
+     * general chat: falling back there filed results as random chatter
+     * (2026-11-09), and the rules now refuse a result outside a diary. Signed
+     * out, sendMessage asks the trainer to sign in before anything is written.
      */
     postToDiary: async (attachments) => {
-        const diaryId = await get().ensureDiary();
-        const ok = await get().sendMessage(diaryId || 'general', '', null, null, attachments);
+        const diaryId = useAuthStore.getState().userId
+            ? await get().ensureDiary()
+            : diaryTopicId(todayDiaryKey());
+        if (!diaryId) {
+            toast.error(t('toast.messageSendError'));
+            return false;
+        }
+        const ok = await get().sendMessage(diaryId, '', null, null, attachments);
         if (ok) markJourney('diaryShare');
         return ok;
     },
