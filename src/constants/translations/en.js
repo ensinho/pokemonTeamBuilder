@@ -1500,6 +1500,17 @@ export default {
         closeQuiz: 'Close quiz'
     },
     pokepuzzle: {
+        image: {
+            daily: 'Daily challenge',
+            free: 'Free play',
+            title: "Who's that Pokémon?",
+            won: 'Got it in {{n}} guesses',
+            lost: 'Not this time',
+            play: "Play today's",
+            shareText: 'My PokéPuzzle result — can you do it in fewer?',
+            downloaded: 'Image downloaded!',
+            error: 'Could not make the image.',
+        },
         day: {
             title: 'How the day went',
             total: '{{n}} trainers',

@@ -1465,6 +1465,17 @@ export default {
         closeQuiz: 'Fechar quiz'
     },
     pokepuzzle: {
+        image: {
+            daily: 'Desafio diário',
+            free: 'Modo livre',
+            title: 'Quem é esse Pokémon?',
+            won: 'Acertei em {{n}} palpites',
+            lost: 'Não foi dessa vez',
+            play: 'Jogue o de hoje',
+            shareText: 'Meu resultado no PokéPuzzle — consegue em menos?',
+            downloaded: 'Imagem baixada!',
+            error: 'Não deu para gerar a imagem.',
+        },
         day: {
             title: 'Como foi o dia',
             total: '{{n}} treinadores',
