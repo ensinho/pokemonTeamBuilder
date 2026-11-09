@@ -10,7 +10,7 @@ import { Mascot } from '../../Mascot';
  * covers his eyes, and peeks through his paws when the password is shown —
  * the Rive login bear's idea (2026-11-06).
  */
-export function PasswordField({ label, value, onChange, autoComplete, enterKeyHint, autoFocus, minLength, describedBy, invalid = false, inputRef, mascot = false }) {
+export function PasswordField({ label, value, onChange, autoComplete, enterKeyHint, autoFocus, minLength, describedBy, invalid = false, inputRef, mascot = false, icon: Icon = null, filled = false }) {
     const { t } = useTranslation();
     const [visible, setVisible] = useState(false);
     const [focused, setFocused] = useState(false);
@@ -20,10 +20,11 @@ export function PasswordField({ label, value, onChange, autoComplete, enterKeyHi
     }, [focused, visible, setCover]);
     useEffect(() => () => setCover(null), [setCover]);
     return (
-        <label className="field">
+        <label className={`field ${filled ? 'field--filled' : ''}`}>
             <span className="field-label">{label}</span>
-            <span className="auth-password">
+            <span className="auth-password field__control">
                 {mascot && <Mascot size="md" coverable seasonal={false} className="auth-password__mascot" />}
+                {Icon && <Icon className="field__icon" aria-hidden="true" />}
                 <input
                     ref={inputRef}
                     type={visible ? 'text' : 'password'}

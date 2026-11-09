@@ -2658,6 +2658,8 @@ export default {
         guestCardText: 'A free account keeps your teams on every device and unlocks friends and battles.',
         authTabSignIn: 'Sign in',
         authTabSignUp: 'Create account',
+        authNoAccount: 'New here?',
+        authHaveAccount: 'Already have an account?',
         authBenefitSync: 'Your teams, favorites and theme on every device.',
         authBenefitSocial: 'Friends, async battles and the forum.',
         authBenefitProgress: 'Streak, badges and PokéPuzzle history kept safe.',

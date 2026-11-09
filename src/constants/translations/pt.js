@@ -2621,6 +2621,8 @@ export default {
         guestCardText: 'Uma conta grátis guarda seus times em qualquer aparelho e libera amigos e batalhas.',
         authTabSignIn: 'Entrar',
         authTabSignUp: 'Criar conta',
+        authNoAccount: 'Novo por aqui?',
+        authHaveAccount: 'Já tem conta?',
         authBenefitSync: 'Seus times, favoritos e tema em todos os aparelhos.',
         authBenefitSocial: 'Amigos, batalhas assíncronas e o fórum.',
         authBenefitProgress: 'Sequência, insígnias e histórico do PokéPuzzle guardados.',
