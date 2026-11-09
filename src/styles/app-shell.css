@@ -185,11 +185,12 @@
     padding: var(--space-2);
 }
 
-/* Buy Me a Coffee: the primary button as its pill, in the heading voice. The
-   project's one standing ask, so it is the rail's one loud object. Compound
+/* Buy Me a Coffee: a pill in the heading voice. The project's one standing
+   ask — raised, not Volt (audit 2026-11-09): a filled primary in the rail was
+   a second "main action" on every page, beside the view's own. Compound
    selector: app-shell.css loads before index.css, where .btn lives. */
 .app-shell__account .app-shell__support {
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2);
     border-radius: var(--radius-full);
     font-family: var(--font-heading);
     font-size: var(--text-xs);

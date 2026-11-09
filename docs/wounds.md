@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-09 — The Champion Challenge loaded forever when no session existed `bug`
+- **Symptom:** "Entrando na sala da Cynthia…" never ended (22 s measured, no change) when the anonymous sign-in failed, and for crawlers — which therefore indexed only a loader.
+- **Root cause:** the loading effect returns early on `!userId`, so `load()` never runs and `status` never becomes `error`; the view only knew two states (`error` or "still loading"). `useAuthStore` releases `isAuthReady` without a uid on a failed sign-in and for crawlers.
+- **Fix:** `isAuthReady && !userId` is its own state: the error `EmptyState` with "Tentar de novo" (a reload, the same retry the auth toast offers).
+- **Correct pattern:** a loader gated on a precondition needs a branch for "the precondition settled and is false" — otherwise the precondition's failure looks like a wait forever.
+- **Files:** `src/components/views/challenge/ChampionChallengeView.jsx`
+
 ### 2026-11-09 — The forum's pinned rooms never listed today's Diário or Torneio `bug`
 - **Symptom:** the desktop explorer's "Salas fixadas" showed only General Chat and Team Showcase; the day's Diário and the week's Torneio — the rooms the social heart is built around — were missing, though the Hot feed pinned them.
 - **Root cause:** `FeedView` built the list with `topics.filter(isPinnedTopic)`. `Array.prototype.filter` calls back with `(item, index)`, and `isPinnedTopic(topic, now)` read the index as `now` — so `isTodayDiary(topic, 0)` / `isCurrentWeekly(topic, 0)` compared against 1970 and were never true.

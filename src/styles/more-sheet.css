@@ -290,6 +290,12 @@
    filled row for both shapes — "Entrar" for a guest, the profile shortcut once
    signed in. The shortcut's own hover draws a border, which inside the sheet
    is a box in a box; here the row separates by fill and presses by fill. */
+/* The guest card and the row under it are two objects, not one list:
+   2px between them read as a seam (audit 2026-11-09). */
+.more-sheet__account:has(.guest-card) {
+    gap: var(--space-3);
+}
+
 .more-sheet__account .app-shell__account-card {
     padding: 0;
 }

@@ -308,6 +308,7 @@ export function CozyHomeView({
     const activeTeam = savedTeams.find((team) => team.id === activeTeamId) || savedTeams[0] || null;
     const summary = useMemo(() => summarizeTeam(activeTeam, typesById), [activeTeam, typesById]);
 
+    const hasPartner = Boolean(greetingPokemonId);
     const partnerId = greetingPokemonId || PERIOD_PARTNER[period];
     const partner = indexById.get(partnerId);
     const partnerType = partner?.types?.[0] || 'normal';
@@ -428,12 +429,16 @@ export function CozyHomeView({
                 </span>
             )}
             {partner && (
-                <button type="button" className="cozy-chip" onClick={onOpenPokemonSelector} title={t('cozyHome.changePartner')}
-                    style={{ '--chip-type': typeColors[partnerType] }}>
+                // The period's visitor stands in the hero until the trainer picks
+                // one, but the chip only claims a partner they chose: before
+                // that it is a silhouette asking "who?" (Profile shows "?" too).
+                <button type="button" className={`cozy-chip ${hasPartner ? '' : 'cozy-chip--unchosen'}`} onClick={onOpenPokemonSelector}
+                    title={t(hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
+                    style={hasPartner ? { '--chip-type': typeColors[partnerType] } : undefined}>
                     <span className="cozy-chip__avatar">
                         <Sprite src={dexSprite(partnerId, greetingPokemonIsShiny)} className="cozy-chip__sprite" eager />
                     </span>
-                    {t('cozyHome.partnerChip', { name: partnerName })}
+                    {hasPartner ? t('cozyHome.partnerChip', { name: partnerName }) : t('cozyHome.choosePartner')}
                 </button>
             )}
             {equippedBadge && (
@@ -486,7 +491,7 @@ export function CozyHomeView({
                 )}
             </div>
 
-            <button type="button" className="cozy-hero__partner" onClick={onOpenPokemonSelector} aria-label={t('cozyHome.changePartner')}
+            <button type="button" className="cozy-hero__partner" onClick={onOpenPokemonSelector} aria-label={t(hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
                 style={{ '--partner-type-color': typeColors[partnerType] }}>
                 <span className="cozy-hero__platform" aria-hidden="true" />
                 <span className="cozy-hero__idle">
@@ -717,7 +722,8 @@ export function CozyHomeView({
                     compact
                     title={t('cozyHome.titleEmpty')}
                     message={t('cozyHome.teamsEmpty')}
-                    action={{ label: t('cozyHome.buildTeam'), onClick: startNewTeam }}
+                    // No button: the hero's "Montar time" and the "+" beside this
+                    // heading already start a team (one primary per view).
                 />
             ) : (
                 <ul className="cozy-teams">
@@ -962,7 +968,7 @@ export function CozyHomeView({
                 <span className="for-you-setup__title">{t('onboarding.home.setupTitle')}</span>
                 <span className="for-you-setup__sub">{t('onboarding.home.setupSub')}</span>
             </span>
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => openOnboarding('home')}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => openOnboarding('home')}>
                 {t('onboarding.home.setupCta')}
             </button>
         </section>

@@ -906,6 +906,7 @@ export default {
         usage: '{{pct}}% de uso',
         metaEmpty: 'Carregando o meta.',
         partnerChip: 'Parceiro · {{name}}',
+        choosePartner: 'Escolher parceiro',
         changePartner: 'Trocar parceiro',
         streakChip: '{{n}} dias seguidos',
         streakChipOne: '1 dia seguido',
@@ -2395,6 +2396,7 @@ export default {
             right: 'Direita',
         },
         errors: {
+            noSession: 'Não deu para abrir sua sessão de treinador. Atualize a página para tentar de novo.',
             invalidTeam: 'Este time não pode batalhar — veja a lista.',
             invalidChoice: 'Isso não pode ser usado agora.',
             staleTurn: 'A batalha avançou em outra aba — mostrando o turno mais recente.',

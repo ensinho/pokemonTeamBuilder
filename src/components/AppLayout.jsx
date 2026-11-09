@@ -1613,7 +1613,7 @@ export default function AppLayout() {
                                         rel="noopener noreferrer"
                                         aria-label={t('nav.support')}
                                         title={isRailCollapsed ? t('nav.support') : undefined}
-                                        className={`btn btn-primary app-shell__support ${isRailCollapsed ? 'btn-icon' : 'btn-block'}`}
+                                        className={`btn btn-secondary app-shell__support ${isRailCollapsed ? 'btn-icon' : 'btn-block'}`}
                                     >
                                         <Coffee aria-hidden="true" />
                                         {!isRailCollapsed && <span>{t('nav.support')}</span>}
@@ -1643,6 +1643,17 @@ export default function AppLayout() {
                                                 >
                                                     <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
                                                 </button>
+                                            ) : currentPage === 'home' ? (
+                                                // Home already shows the full guest card in its
+                                                // content: the rail keeps only the door, so the
+                                                // pitch is not on screen twice (audit 2026-11-09).
+                                                <ShellNavButton
+                                                    collapsed={false}
+                                                    label={t('nav.signIn')}
+                                                    icon={<AccountIcon />}
+                                                    onClick={(event) => { event.preventDefault(); setAuthModal({ open: true, mode: 'signIn' }); }}
+                                                    to="/profile"
+                                                />
                                             ) : (
                                                 <GuestAccountCard variant="rail" />
                                             )}
