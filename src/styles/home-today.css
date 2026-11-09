@@ -71,18 +71,21 @@
     min-width: 0;
 }
 
-/* The page's h1. Heading face, one line: a long name ellipses, it never
-   pushes the flame off the row. */
+/* The page's h1, in the heading face. Two lines at most: the name is the
+   point of the line ("Boa madrugada, Enzo" ran out of room beside the
+   "Entrar" pill at 390px and lost the name to an ellipsis). */
 .cozy-home .home-greet__hello {
+    display: -webkit-box;
     margin: 0;
     overflow: hidden;
     font-family: var(--font-heading);
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
     font-weight: var(--weight-heading);
     line-height: 1.2;
     letter-spacing: -0.015em;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .home-greet__ask {

@@ -663,6 +663,12 @@
     padding-top: var(--space-6);
 }
 
+/* The body scrolls on a short phone; its pieces keep their size instead of
+   being squeezed to fit (the CTA was crushed to half its height). */
+.streak-sheet .streak-sheet__body > * {
+    flex-shrink: 0;
+}
+
 .streak-sheet__head {
     display: flex;
     flex-direction: column;
