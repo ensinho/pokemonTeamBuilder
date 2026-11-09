@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T14:24:15.771Z",
+  "generatedAt": "2026-11-09T17:42:11.169Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -26,7 +26,7 @@
     "Nat Dex UU",
     "Nat Dex Mono"
   ],
-  "species": 474,
+  "species": 473,
   "byId": {
     "3": {
       "name": "Venusaur",
@@ -1577,10 +1577,10 @@
           "source": "VGC 2025"
         },
         {
-          "name": "Physical Wall",
+          "name": "Magic Guard Utility",
           "item": "leftovers",
           "itemAlts": [
-            "sitrus-berry"
+            "rocky-helmet"
           ],
           "ability": "magic-guard",
           "nature": "bold",
@@ -1590,16 +1590,13 @@
               "moonblast"
             ],
             [
+              "flamethrower"
+            ],
+            [
               "moonlight"
             ],
             [
-              "thunder-wave",
-              "calm-mind"
-            ],
-            [
-              "stealth-rock",
-              "calm-mind",
-              "flamethrower"
+              "stealth-rock"
             ]
           ],
           "evs": {
@@ -1631,7 +1628,56 @@
           "source": "Champions OU"
         },
         {
-          "name": "Utility",
+          "name": "Unaware Wall",
+          "item": "leftovers",
+          "itemAlts": [],
+          "ability": "unaware",
+          "nature": "bold",
+          "tera": [],
+          "moves": [
+            [
+              "calm-mind"
+            ],
+            [
+              "moonblast"
+            ],
+            [
+              "flamethrower"
+            ],
+            [
+              "moonlight"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 6,
+            "speed": 0
+          },
+          "sp": {
+            "hp": 32,
+            "attack": 0,
+            "defense": 32,
+            "special-attack": 0,
+            "special-defense": 2,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Champions OU"
+        },
+        {
+          "name": "Mega Utility",
           "item": "clefablite",
           "itemAlts": [],
           "ability": "magic-bounce",
@@ -1679,54 +1725,6 @@
           "level": null,
           "description": "Mega Clefable is an excellent utility Pokemon that uses Magic Bounce to deter entry hazards and status moves while either making progress with Calm Mind or providing Stealth Rock support. Its Ground immunity lets it comfortably switch into and stifle common entry hazard setters such as Garchomp and Hippowdon with…",
           "source": "Champions OU"
-        },
-        {
-          "name": "Utility",
-          "item": "leftovers",
-          "itemAlts": [
-            "sticky-barb",
-            "rocky-helmet"
-          ],
-          "ability": "magic-guard",
-          "nature": "bold",
-          "tera": [
-            "water",
-            "steel"
-          ],
-          "moves": [
-            [
-              "stealth-rock"
-            ],
-            [
-              "moonblast"
-            ],
-            [
-              "moonlight"
-            ],
-            [
-              "thunder-wave",
-              "knock-off"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Leveraging its passable bulk, amazing typing, solid movepool, a fantastic ability in Magic Guard, Clefable establishes its niche in the OU tier as a solid glue on bulkier team compositions, which appreciate its amazing role compression. Clefable maximizes its physical bulk to handle a myriad of physical attackers and…",
-          "source": "OU"
         }
       ]
     },
@@ -4419,52 +4417,6 @@
           "source": "Battle Stadium"
         },
         {
-          "name": "Shell Smash Sweeper",
-          "item": "white-herb",
-          "itemAlts": [
-            "heavy-duty-boots"
-          ],
-          "ability": "skill-link",
-          "nature": "adamant",
-          "tera": [
-            "electric",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "shell-smash"
-            ],
-            [
-              "icicle-spear"
-            ],
-            [
-              "drill-run"
-            ],
-            [
-              "tera-blast"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 4,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
-        {
           "name": "Shell Smash (Water)",
           "item": "never-melt-ice",
           "itemAlts": [],
@@ -4549,6 +4501,50 @@
           "level": null,
           "description": "Cloyster is one of Ice's best setup sweepers thanks to its access to Shell Smash in addition to its high Defense stat, which gives it opportunities to set up on the tier's physical attackers like Garchomp, Iron Treads, and Ceruledge. Icicle Spear targets opposing Flying-, Ground-, and Dragon-type Pokemon such as…",
           "source": "Monotype"
+        },
+        {
+          "name": "Defensive Utility (Ice)",
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "heavy-duty-boots"
+          ],
+          "ability": "overcoat",
+          "nature": "bold",
+          "tera": [],
+          "moves": [
+            [
+              "rapid-spin"
+            ],
+            [
+              "spikes"
+            ],
+            [
+              "surf"
+            ],
+            [
+              "teleport",
+              "hidden-power-fire"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 8,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Due to Cloyster's Water typing, high Defense stat, and utility, it is able to tank hits from Steel-type Pokemon that are often threatening to Ice-types, such as Excadrill. Rapid Spin is an asset for defensive utility sets, allowing Cloyster to remove entry hazards such as Stealth Rock. Spikes can help provide chip…",
+          "source": "Nat Dex Mono"
         }
       ]
     },
@@ -8617,8 +8613,9 @@
         },
         {
           "name": "Nasty Plot",
-          "item": "leftovers",
+          "item": "sitrus-berry",
           "itemAlts": [
+            "lum-berry",
             "life-orb"
           ],
           "ability": "",
@@ -8641,11 +8638,11 @@
             ]
           ],
           "evs": {
-            "hp": 4,
+            "hp": 0,
             "attack": 0,
             "defense": 0,
             "special-attack": 252,
-            "special-defense": 0,
+            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
@@ -23292,11 +23289,11 @@
             ]
           ],
           "evs": {
-            "hp": 4,
+            "hp": 0,
             "attack": 252,
             "defense": 0,
             "special-attack": 0,
-            "special-defense": 0,
+            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
@@ -25469,51 +25466,6 @@
           "source": "Champions OU"
         },
         {
-          "name": "Lead",
-          "item": "focus-sash",
-          "itemAlts": [],
-          "ability": "cursed-body",
-          "nature": "jolly",
-          "tera": [
-            "steel"
-          ],
-          "moves": [
-            [
-              "spikes"
-            ],
-            [
-              "triple-axel",
-              "avalanche"
-            ],
-            [
-              "will-o-wisp",
-              "destiny-bond"
-            ],
-            [
-              "taunt"
-            ]
-          ],
-          "evs": {
-            "hp": 156,
-            "attack": 100,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
-        {
           "name": "Spikes Utility",
           "item": "heavy-duty-boots",
           "itemAlts": [],
@@ -25556,6 +25508,52 @@
           "level": null,
           "description": "",
           "source": "NU"
+        },
+        {
+          "name": "Spikes Lead",
+          "item": "focus-sash",
+          "itemAlts": [],
+          "ability": "cursed-body",
+          "nature": "timid",
+          "tera": [
+            "fairy",
+            "dark"
+          ],
+          "moves": [
+            [
+              "spikes"
+            ],
+            [
+              "ice-beam",
+              "icy-wind"
+            ],
+            [
+              "taunt",
+              "will-o-wisp"
+            ],
+            [
+              "destiny-bond"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 4,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Froslass's rare combination of high Speed, vast utility movepool, and its typing, which lets it take advantage of spinners like Tatsugiri and Alolan Sandslash and aids it in beating the Defoggers such as Scyther and Altaria one-on-one, helps it solidify a niche as a dedicated hyper offense lead that can beat common…",
+          "source": "PU"
         }
       ]
     },
@@ -26057,108 +26055,6 @@
           "level": null,
           "description": "Choice Scarf Mesprit is a great revenge killer to handle fast Pokemon like Jolteon and Hisuian Sneasel. Dazzling Gleam is Mesprit's best complementary coverage move for Psychic, covering Dark-types like Sneasel and Sableye. U-turn lets Mesprit keep up offensive momentum against switch-ins like Orthworm, Farigiraf, and…",
           "source": "ZU"
-        }
-      ]
-    },
-    "482": {
-      "name": "Azelf",
-      "gen": "RU",
-      "overview": "",
-      "sets": [
-        {
-          "name": "Lead",
-          "item": "focus-sash",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "naive",
-          "tera": [
-            "ghost"
-          ],
-          "moves": [
-            [
-              "stealth-rock"
-            ],
-            [
-              "taunt"
-            ],
-            [
-              "explosion"
-            ],
-            [
-              "flamethrower",
-              "endeavor",
-              "drain-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 4,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
-        {
-          "name": "Offensive",
-          "item": "expert-belt",
-          "itemAlts": [
-            "life-orb"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "fairy",
-            "fire"
-          ],
-          "moves": [
-            [
-              "psychic",
-              "mystical-power"
-            ],
-            [
-              "draining-kiss",
-              "dazzling-gleam"
-            ],
-            [
-              "flamethrower",
-              "shadow-ball"
-            ],
-            [
-              "nasty-plot",
-              "thunderbolt"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
         }
       ]
     },
@@ -31942,11 +31838,11 @@
             ]
           ],
           "evs": {
-            "hp": 4,
+            "hp": 0,
             "attack": 0,
             "defense": 0,
             "special-attack": 252,
-            "special-defense": 0,
+            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
@@ -32669,11 +32565,11 @@
             ]
           ],
           "evs": {
-            "hp": 120,
+            "hp": 116,
             "attack": 252,
             "defense": 0,
             "special-attack": 0,
-            "special-defense": 0,
+            "special-defense": 4,
             "speed": 136
           },
           "ivs": {
@@ -40340,7 +40236,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "With an impressive 126 base Special Attack stat and decent bulk, Primarina threatens a significant portion of the metagame. It can use those advantages to create opportunities to set up with Calm Mind, even threatening Pokemon that would otherwise check it.\nEncore versus Rest: Encore punishes passive Pokemon and other…",
+          "description": "With an impressive Special Attack stat and decent bulk, Primarina threatens a significant portion of the metagame. It can use those advantages to create opportunities to set up with Calm Mind, which lets it even threaten Pokemon that would otherwise check it.\nSurf: Using Surf over Sparkling Aria avoids conflicting…",
           "source": "Champions BSS"
         },
         {
