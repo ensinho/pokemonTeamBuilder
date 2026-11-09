@@ -12,7 +12,6 @@ import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { RefreshIcon, CloseIcon } from '../icons';
 import { Lock, Frown, Award, Image, Delete, CornerDownLeft, Share2, MessageSquare } from 'lucide-react';
-import QRCode from 'qrcode';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
@@ -26,6 +25,8 @@ import { deployBase } from '../../services/localeHistory';
 import { useForumStore } from '../../store/useForumStore';
 import { track } from '../../services/analytics';
 import { PuzzleDayPanel } from '../pokepuzzle/PuzzleDayPanel';
+import { renderPuzzleShareBlob } from '../pokepuzzle/drawPuzzleShare';
+import { SITE_URL } from '../../utils/seoPages';
 import { Loader } from '../Loader';
 import { DecryptText } from '../DecryptText';
 import { TypeChip } from '../TypeChip';
@@ -790,7 +791,6 @@ export default function PokePuzzleView() {
     const showSilhouette = guesses.length >= 7 || gameStatus !== 'IN_PROGRESS' || unlockedTips.silhouette;
 
 
-    const host = typeof window !== 'undefined' ? window.location.host : 'poketeambuilder.com';
 
     // The link carries the board (`?r=`, utils/resultShareCode.js — the shape
     // of the attempt, never the answer), so where it is pasted it unfurls as
@@ -882,205 +882,58 @@ export default function PokePuzzleView() {
         }
     };
 
+    // The result image (2026-11-09): prepared once the game ends (below), so
+    // this tap can hand it to the share sheet at once — a phone refuses a
+    // share that comes after awaited work. Desktop downloads it.
+    const shareImageRef = useRef(null);
+    const buildShareImage = useCallback(() => {
+        const rows = buildPuzzleShare({ guesses, target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [];
+        if (!rows.length) return Promise.resolve(null);
+        const won = gameStatus === 'WON';
+        return renderPuzzleShareBlob({
+            rows,
+            won,
+            maxAttempts: MAX_ATTEMPTS,
+            puzzleNumber: mode === 'daily' ? getDaysSinceLaunch(selectedDate) + 1 : null,
+            logoUrl: `${import.meta.env.BASE_URL}logo-mark.webp`,
+            playUrl: `${SITE_URL}${localizePath('/pokepuzzle', language)}`,
+            labels: {
+                kicker: t(mode === 'daily' ? 'pokepuzzle.image.daily' : 'pokepuzzle.image.free'),
+                title: t('pokepuzzle.image.title'),
+                result: won ? t('pokepuzzle.image.won', { n: rows.length }) : t('pokepuzzle.image.lost'),
+                play: t('pokepuzzle.image.play'),
+            },
+        }).catch(() => null);
+    }, [guesses, targetNormalized, gameStatus, mode, selectedDate, language, t]);
+
     const handleShareImage = async () => {
-        showToast(language === 'pt' ? 'Gerando imagem...' : 'Generating image...', 'info');
-
-        try {
-            const canvas = document.createElement('canvas');
-            canvas.width = 400;
-            canvas.height = 640;
-            const ctx = canvas.getContext('2d');
-
-            // 1. Background (sleek deep purple)
-            ctx.fillStyle = '#0C0816'; // Neon Sticker void (the `dark` theme's ground)
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw a subtle radial glow in the center matching target type
-            const grad = ctx.createRadialGradient(200, 240, 20, 200, 240, 250);
-            grad.addColorStop(0, '#7C3AFF40'); // Volt at 25%
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw purple border
-            ctx.strokeStyle = '#7C3AFF';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-            // 2. Title Header
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('POKÉPUZZLE', 200, 50);
-
-            ctx.fillStyle = '#A47BFF'; // Volt as ink
-            ctx.font = '14px sans-serif';
-            const modeText = mode === 'daily'
-                ? (language === 'pt' ? 'Desafio Diário' : 'Daily Challenge')
-                : (language === 'pt' ? 'Modo Livre' : 'Ongoing Mode');
-            ctx.fillText(`${modeText} • ${guesses.length}/${MAX_ATTEMPTS} ${language === 'pt' ? 'tentativas' : 'tries'}`, 200, 75);
-
-            // Load brand logo (Gengar) instead of target Pokémon artwork to not reveal it
-            const getRuntimeBaseURL = () => {
-                const path = window.location.pathname;
-                if (path.includes('/pokemonTeamBuilder')) {
-                    return '/pokemonTeamBuilder/';
-                }
-                return '/';
-            };
-
-            const logoUrl = `${window.location.origin}${getRuntimeBaseURL()}logo-mark.webp`.replace(/([^:]\/)\/+/g, "$1");
-            const loadImg = (url) => new Promise((resolve, reject) => {
-                if (!url) return reject(new Error('URL is empty'));
-                const img = new Image();
-                // Only enable CORS for external cross-origin URLs
-                const isExternal = url.startsWith('http') && !url.startsWith(window.location.origin);
-                if (isExternal) {
-                    img.crossOrigin = 'anonymous';
-                }
-                img.onload = () => resolve(img);
-                img.onerror = () => reject(new Error('Failed to load image: ' + url));
-                img.src = url;
-            });
-
-            let logoImg;
-            const logoDomImg = document.querySelector('img[src$="/logo-mark.webp"]');
-            if (logoDomImg && logoDomImg.complete && logoDomImg.naturalWidth > 0) {
-                logoImg = logoDomImg;
-            } else {
-                try {
-                    logoImg = await loadImg(logoUrl);
-                } catch (err) {
-                    console.error("Could not load logo for canvas share", err);
-                }
-            }
-
-            if (logoImg) {
-                // Draw a nice container box background for logo (sleek indigo/purple theme)
-                ctx.fillStyle = '#161024'; // the dark theme's surface
-                ctx.beginPath();
-                ctx.roundRect(125, 100, 150, 150, 20);
-                ctx.fill();
-                ctx.strokeStyle = '#2E2448'; // the dark theme's border
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // Draw logo
-                ctx.drawImage(logoImg, 135, 110, 130, 130);
-            }
-
-            // 3. Riddle Title (Who's That Pokémon?)
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.fillText(language === 'pt' ? 'Quem é esse Pokémon?' : "Who's That Pokémon?", 200, 290);
-
-            // Result Message
-            ctx.fillStyle = '#A47BFF';
-            ctx.font = '14px sans-serif';
-            const msg = gameStatus === 'WON'
-                ? (language === 'pt' ? `Acertou em ${guesses.length} tentativas!` : `Guessed correctly in ${guesses.length} attempts!`)
-                : (language === 'pt' ? `Não foi dessa vez!` : `Could not solve this time!`);
-            ctx.fillText(msg, 200, 320);
-
-            // 4. Attempts Grid
-            const squareSize = 16;
-            const gap = 5;
-            const rowWidth = targetLength * squareSize + (targetLength - 1) * gap;
-            const startX = (canvas.width - rowWidth) / 2;
-            let startY = 350;
-
-            guesses.forEach((guess) => {
-                const norm = normalizeNameForGame(guess);
-                const letterStatuses = checkLetters(norm, targetNormalized);
-                letterStatuses.forEach((status, colIdx) => {
-                    const x = startX + colIdx * (squareSize + gap);
-                    if (status === 'correct') {
-                        ctx.fillStyle = '#10b981';
-                    } else if (status === 'present') {
-                        ctx.fillStyle = '#f59e0b';
-                    } else {
-                        ctx.fillStyle = '#3b3954'; // Sleek dark purple/gray
-                    }
-
-                    ctx.beginPath();
-                    ctx.roundRect(x, startY, squareSize, squareSize, 3);
-                    ctx.fill();
-                });
-                startY += squareSize + gap;
-            });
-
-            // 5. QR Code and Link footer
-            const footerY = 520;
-            ctx.strokeStyle = '#3b3954';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(30, footerY);
-            ctx.lineTo(370, footerY);
-            ctx.stroke();
-
-            const qrTarget = `${window.location.origin}${getRuntimeBaseURL()}pokepuzzle`.replace(/([^:]\/)\/+/g, "$1");
-            let qrCanvas;
-            try {
-                qrCanvas = await QRCode.toCanvas(qrTarget, {
-                    margin: 1,
-                    width: 70,
-                    color: { dark: '#000000', light: '#ffffff' }
-                });
-            } catch (err) {
-                console.error("Failed to generate QR code for canvas", err);
-            }
-
-            if (qrCanvas) {
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.roundRect(50, footerY + 15, 80, 80, 8);
-                ctx.fill();
-                ctx.drawImage(qrCanvas, 55, footerY + 20, 70, 70);
-            }
-
-            ctx.textAlign = 'left';
-            ctx.fillStyle = '#B9A7E6';
-            ctx.font = 'bold 11px sans-serif';
-            ctx.fillText(language === 'pt' ? 'ESCANEIE PARA JOGAR' : 'SCAN TO PLAY', 150, footerY + 45);
-
-            ctx.fillStyle = '#A47BFF';
-            ctx.font = 'bold 14px sans-serif';
-            const displayUrl = (host + getRuntimeBaseURL() + 'pokepuzzle').replace(/\/{2,}/g, '/');
-            ctx.fillText(displayUrl, 150, footerY + 65);
-
-            canvas.toBlob(async (blob) => {
-                if (!blob) throw new Error('Canvas toBlob failed');
-                const file = new File([blob], 'pokepuzzle-result.png', { type: 'image/png' });
-
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'PokePuzzle Results',
-                            text: language === 'pt' ? 'Confira meu resultado no PokePuzzle!' : 'Check out my PokePuzzle result!',
-                        });
-                        showToast(language === 'pt' ? 'Compartilhado com sucesso!' : 'Shared successfully!', 'success');
-                        return;
-                    } catch (shareErr) {
-                        if (shareErr.name === 'AbortError') return;
-                        console.error('Error sharing image, falling back to download', shareErr);
-                    }
-                }
-
-                const dataUrl = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.download = `pokepuzzle-result-${guesses.length}.png`;
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showToast(language === 'pt' ? 'Imagem baixada!' : 'Image downloaded!', 'success');
-            }, 'image/png');
-
-        } catch (err) {
-            console.error("Failed to generate and share results image:", err);
-            showToast(language === 'pt' ? 'Erro ao gerar imagem de compartilhamento' : 'Failed to generate share image', 'error');
+        const blob = shareImageRef.current || await buildShareImage();
+        if (!blob) {
+            showToast(t('pokepuzzle.image.error'), 'error');
+            return;
         }
+        const file = new File([blob], `pokepuzzle-${guesses.length}.png`, { type: 'image/png' });
+        const coarse = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+        if (coarse && navigator.canShare?.({ files: [file] })) {
+            try {
+                await navigator.share({ files: [file], title: 'PokéPuzzle', text: t('pokepuzzle.image.shareText') });
+                track('puzzle_share', { channel: 'image' });
+                return;
+            } catch (err) {
+                if (err?.name === 'AbortError') return;
+                // Refused (no gesture left, a WebView): the download below.
+            }
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        track('puzzle_share', { channel: 'download' });
+        showToast(t('pokepuzzle.image.downloaded'), 'success');
     };
 
     const isArchive = selectedDate !== getTodayDateString();
@@ -1089,6 +942,15 @@ export default function PokePuzzleView() {
     const dayShareRows = useMemo(() => (gameStatus === 'WON' || gameStatus === 'LOST')
         ? (buildPuzzleShare({ guesses, target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [])
         : [], [gameStatus, guesses, targetNormalized]);
+
+    // Prepare the result image as soon as the game is over (see handleShareImage).
+    useEffect(() => {
+        shareImageRef.current = null;
+        if (!dayShareRows.length) return undefined;
+        let alive = true;
+        buildShareImage().then((blob) => { if (alive) shareImageRef.current = blob; });
+        return () => { alive = false; };
+    }, [dayShareRows, buildShareImage]);
     const targetTypes = targetDetails.types || [];
     const tipTabs = [
         { id: 'types', label: t('pokepuzzle.tipTypes'), locked: false },

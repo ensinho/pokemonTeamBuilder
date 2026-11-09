@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-09 — PokéPuzzle "Imagem" did nothing on phones `bug`
+
+- **Symptom:** the result image's share did nothing on a phone (no share sheet, no file); with 8 guesses the grid also ran into the footer, and the card was a blurry 400 × 640.
+- **Root cause:** `handleShareImage` awaited the logo and the QR code, then called `navigator.share` inside `canvas.toBlob` — long after the tap. Phones require a share to come from the user's gesture, so it was refused, and the fallback (`<a download>` of a data URL) does nothing on iOS. The grid's height was never measured against the footer.
+- **Fix:** the image is prepared as soon as the game ends (`components/pokepuzzle/drawPuzzleShare.js`, a 1080 × 1350 post in the team sheet's style); the tap shares the ready blob at once and falls back to an object-URL download. The grid's geometry is a tested pure function (`utils/puzzleShareLayout.js`).
+- **Lesson:** never put awaited work between a tap and `navigator.share` / clipboard writes — prepare the file first, share on the tap.
+
 ### 2026-11-08 — A 23-day check-in streak came back as "1 dia seguido" `bug`
 - **Symptom:** a trainer's streak kept falling to 1 (shields intact, the cycle strip mid-week) although they checked in every day; the account doc held `streak.count: 1`. Never on Enzo's account.
 - **Root cause:** `checkIn()` applied the check-in to **this device's** copy and wrote `{ checkin, streak }` straight over the account's (`setDoc` merge replaces the whole field). A device days behind — a PWA left open, a second phone, or a tap before the profile read (the card renders from the boot snapshot) — saw a gap > 2, started a run of 1 and overwrote the live 22. Hydration could not repair it: `mergeStreaks` let the copy with the later `lastVisit` win, and that was the reset one. A failed profile read also still set `profileHydratedFromFirestore = true` and pushed the stale local state up. Enzo uses one device every day, so his local copy was never behind — nothing admin-specific.
