@@ -269,7 +269,7 @@ export const PROPS = {
     cape: () => '<path d="M-200 -40Q-330 160-300 420Q-150 380 0 420Q150 380 300 420Q330 160 200 -40Q100 40 0 40Q-100 40-200 -40Z" fill="var(--m-cape)" stroke="var(--m-line)" stroke-width="12" stroke-linejoin="round"/>',
     pillow: () => '<path d="M-360 300Q-370 196-210 210Q0 192 210 210Q370 196 360 300Q370 392 210 376Q0 396-210 376Q-370 392-360 300Z" fill="var(--m-hat)" stroke="var(--m-line)" stroke-width="10" stroke-opacity=".6"/><path d="M-250 300Q0 330 250 300" stroke="var(--m-line)" stroke-width="8" fill="none" opacity=".3"/>',
     // a card edge the mascot peeks over; stays put while the body moves
-    ledge: (p) => `<rect transform="translate(0 ${f(-(p.y || 0))})" x="-460" y="400" width="920" height="200" rx="22" fill="var(--m-ledge)" stroke="var(--m-line)" stroke-opacity=".35" stroke-width="6"/>`,
+    ledge: (p) => `<rect transform="translate(0 ${f(-(p.y || 0))})" x="-460" y="400" width="920" height="200" rx="22" fill="var(--m-ledge)" stroke="var(--m-line)" stroke-opacity=".7" stroke-width="8"/>`,
 };
 const HELD = new Set(['pokeball', 'clipboard', 'laptop', 'trophy', 'sign', 'book', 'controller', 'envelope', 'gift', 'clock', 'puzzle', 'scroll', 'pumpkin', 'shield', 'flame']);
 

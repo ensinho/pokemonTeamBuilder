@@ -20,6 +20,7 @@ const FACES = {
  *   title     — required short headline
  *   message   — secondary copy
  *   action    — optional { label, onClick, icon } primary CTA (icon renders after the label)
+ *   secondaryAction — optional { label, onClick } quiet second way out ("Entrar" beside "Criar conta")
  *   spriteSrc — optional context sprite; when omitted, shows the mascot
  *   mascot    — which face it makes: 'empty' (default) | 'search' | 'lost' | 'error'
  *   compact   — smaller variant for inline empty grids
@@ -27,7 +28,7 @@ const FACES = {
  * Box-free at every width (v3): the page is the canvas, so an empty view is the
  * page speaking — the mascot, a heading, a line, one action.
  */
-export function EmptyState({ title, message, action, spriteSrc, compact = false, mascot = 'empty' }) {
+export function EmptyState({ title, message, action, secondaryAction, spriteSrc, compact = false, mascot = 'empty' }) {
     const face = FACES[mascot] || FACES.empty;
     const sizeImg = compact ? 'w-16 h-16' : 'w-24 h-24 md:w-32 md:h-32';
 
@@ -48,7 +49,7 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false,
             </div>
             <h3 className="empty-state__title">{title}</h3>
             {message && <p className="empty-state__message">{message}</p>}
-            {action && (
+            {action && !secondaryAction && (
                 <button
                     type="button"
                     onClick={action.onClick}
@@ -57,6 +58,17 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false,
                     {action.label}
                     {action.icon}
                 </button>
+            )}
+            {action && secondaryAction && (
+                <div className="empty-state__actions">
+                    <button type="button" onClick={action.onClick} className="btn btn-primary">
+                        {action.label}
+                        {action.icon}
+                    </button>
+                    <button type="button" onClick={secondaryAction.onClick} className="btn btn-ghost">
+                        {secondaryAction.label}
+                    </button>
+                </div>
             )}
         </div>
     );

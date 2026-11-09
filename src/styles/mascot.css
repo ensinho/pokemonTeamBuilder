@@ -170,7 +170,9 @@
     --mascot-fang-edge: transparent;
     --mascot-bg: var(--mascot-tile);
     --mascot-hat: color-mix(in srgb, var(--mascot-brand) 24%, var(--mascot-tile));
-    --mascot-ledge: color-mix(in srgb, var(--mascot-brand) 12%, var(--mascot-tile));
+    /* The wall the mascot peeks over: at 12% it read as a grey placeholder
+       block (audit 2026-11-09); a step more of the brand makes it an object. */
+    --mascot-ledge: color-mix(in srgb, var(--mascot-brand) 26%, var(--mascot-tile));
     --mascot-shadow: color-mix(in srgb, var(--brand-black) 40%, transparent);
     --mascot-sil: var(--mascot-glint);
     --color-fg: var(--mascot-white);

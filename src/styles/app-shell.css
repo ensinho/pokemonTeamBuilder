@@ -1730,6 +1730,14 @@
     color: var(--color-muted);
 }
 
+/* Every footer link was under 24px tall — below WCAG 2.5.8's floor even for
+   a mouse (audit 2026-11-09). The hit box grows; the line does not. */
+.app-shell__footer-link:not(.app-shell__footer-link--inline) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+}
+
 .app-shell__footer-link:hover {
     color: var(--color-fg);
 }
@@ -2045,13 +2053,22 @@
     margin-top: var(--space-4);
 }
 
+.empty-state__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
 /* Phones: the CTA is a thumb target. */
 @media (max-width: 1023px) {
     .empty-state {
         padding: var(--space-8) var(--space-4);
     }
 
-    .empty-state__action {
+    .empty-state__action,
+    .empty-state__actions .btn {
         --btn-h: var(--control-h-lg);
         padding-inline: var(--space-5);
     }

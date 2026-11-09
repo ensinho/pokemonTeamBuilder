@@ -566,7 +566,9 @@ export function ProfileView({
                             {t('rewards.levelShort', { n: trainerLevel })}
                         </Link>
                         <TrainerTitle titleId={equipped.title} />
-                        {!equipped.title && (
+                        {/* A guest's name already reads "Convidado": the pill
+                            would say it twice (audit 2026-11-09). */}
+                        {!equipped.title && !(isAnonymous && trainerLabel === t('profile.guestPill')) && (
                             <span className="profile-hero__status">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
                         )}
                     </p>

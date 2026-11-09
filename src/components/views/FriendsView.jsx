@@ -179,6 +179,7 @@ export function FriendsView() {
                     title={t('friends.guestTitle')}
                     message={t('friends.guestMessage')}
                     action={{ label: t('profile.createAccountBtn'), onClick: () => promptSignIn('signUp') }}
+                    secondaryAction={{ label: t('nav.signIn'), onClick: () => promptSignIn('signIn') }}
                 />
             </div>
         );
