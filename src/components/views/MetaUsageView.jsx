@@ -246,8 +246,11 @@ export function MetaUsageView() {
     const noData = !ranked.length;
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
 
+    // Starts at the page's edge, under the hub switcher (2026-11-09): centred
+    // with its own inset, it began ~20px (and on wide screens far more) to the
+    // right of the switcher above it.
     return (
-        <div className="mx-auto max-w-[1600px] sm:px-5 sm:py-5">
+        <div className="max-w-[1600px] sm:pb-5">
             <header className="mb-4 sm:mb-5">
                 {/* No padding of its own on a phone: .app-shell__body is already the
                     gutter, and a second px-3 inside it put this text 12px right

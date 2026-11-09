@@ -644,6 +644,8 @@ export default {
         itemsSubtitle: 'Itens segurados, berries e seus efeitos',
         searchMoves: 'Buscar movimentos ou Pokémon…',
         searchAbilities: 'Buscar habilidades ou Pokémon…',
+        itemGroup: 'Grupo',
+        itemGroups: { all: 'Todos os grupos', held: 'Para segurar', berries: 'Berries', medicine: 'Cura e batalha', evolution: 'Evolução e forma', balls: 'Pokébolas' },
         searchItems: 'Buscar itens…',
         colName: 'Nome',
         colType: 'Tipo',

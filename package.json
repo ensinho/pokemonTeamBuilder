@@ -14,6 +14,7 @@
     "data:tournaments": "node scripts/build-tournaments.mjs",
     "data:smogon": "node scripts/build-smogon.mjs",
     "data:moves": "node scripts/build-move-types.mjs",
+    "data:reference-lists": "node scripts/build-item-list.mjs && node scripts/build-ability-list.mjs",
     "data:seo-dex": "node scripts/build-seo-dex.mjs",
     "data:usage": "node scripts/build-usage-stats.mjs",
     "data:limitless": "node scripts/build-limitless-usage.mjs",

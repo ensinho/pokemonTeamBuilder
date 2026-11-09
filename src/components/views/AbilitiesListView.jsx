@@ -2,7 +2,8 @@ import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
-import { getAbilitiesList, getAbilityDetails, resolvePokemonDetail } from '../../services/pokemonDataCache';
+import { resolvePokemonDetail } from '../../services/pokemonDataCache';
+import { loadStaticData } from '../../services/staticData';
 import { useReferenceList } from '../../hooks/useReferenceList';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
@@ -13,27 +14,40 @@ import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
 
-const loadDetail = (entry) => getAbilityDetails(entry);
 const prettify = (name = '') => name.replace(/-/g, ' ');
+
+// The whole list is one baked file (public/data/ability-list.json, ~11 KB gz,
+// 2026-11-09): name, short effect and holder count. Before, each visible row
+// was its own PokéAPI request carrying every Pokémon with the ability, and
+// the index listed non-main-series entries. The search matches the effect too.
+const loadIndex = () => loadStaticData('ability-list.json').then((data) => (data?.abilities || []).map((a) => ({
+    name: a.n,
+    label: a.en || prettify(a.n),
+    effect: a.e || '',
+    pokemonCount: a.k || 0,
+    hay: `${a.n} ${(a.en || '').toLowerCase()} ${(a.e || '').toLowerCase()}`,
+})));
+
+const matchEntry = (entry, slugTerm, rawTerm) => entry.name.includes(slugTerm) || entry.hay.includes(rawTerm);
 
 // Memoised row: only the row whose detail just landed re-renders, not every
 // revealed row once per arrival (see MoveRow in MovesListView).
 // A real link (Cmd/middle-click open a tab). `linkState` carries this list's
 // URL, search and filters included, so the detail page's back button returns
 // to the same filtered list.
-const AbilityRow = React.memo(function AbilityRow({ entry, linkState, d }) {
+const AbilityRow = React.memo(function AbilityRow({ entry, linkState }) {
     return (
         <Link
             to={`/abilities/${entry.name}`}
             state={linkState}
             className="ref-row ref-row--abilities"
         >
-            <span className="ref-row__name">{prettify(entry.name)}</span>
+            <span className="ref-row__name">{entry.label}</span>
 
-            <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>
+            <span className="ref-row__effect">{entry.effect || '—'}</span>
 
             <span className="ref-num ref-num--muted ref-col-holders">
-                {d ? d.pokemonCount : ''}
+                {entry.pokemonCount}
             </span>
         </Link>
     );
@@ -57,8 +71,8 @@ export function AbilitiesListView() {
         [pokemonIndex],
     );
 
-    const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
-        useReferenceList({ loadIndex: getAbilitiesList, loadDetail, getRelatedNames, listKey: 'abilities' });
+    const { search, setSearch, isLoadingIndex, total, visible, hasMore, sentinelRef } =
+        useReferenceList({ loadIndex, matchEntry, getRelatedNames, listKey: 'abilities' });
 
     return (
         <div className="ref-view">
@@ -103,7 +117,7 @@ export function AbilitiesListView() {
                     </div>
 
                     {visible.map((entry) => (
-                        <AbilityRow key={entry.name} entry={entry} linkState={linkState} d={details[entry.name]} />
+                        <AbilityRow key={entry.name} entry={entry} linkState={linkState} />
                     ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}

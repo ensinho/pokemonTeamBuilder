@@ -29,13 +29,16 @@ const revealMemory = new Map();
  *        Back, per search + filter signature.
  * @param {boolean}  [opts.enabled] false while the index's source is not loaded
  *        yet — reported as loading, never as an empty list.
+ * @param {Function} [opts.matchEntry] (entry, slugTerm, rawTerm) => boolean.
+ *        Replaces the slug-only name match — a baked list can match its display
+ *        name, category and effect text too ("restaura", "speed", "berry").
  * @param {Function} [opts.getRelatedNames] async (normalizedSearch) => string[] | null
  *        When the search term names a Pokémon, returns the index entry names
  *        related to it (e.g. that Pokémon's moves/abilities) so a search for
  *        "pikachu" surfaces "thunderbolt"/"static". Returns null when the term
  *        isn't a Pokémon, leaving the plain name filter in charge.
  */
-export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRelatedNames, filterEntry = null, filterKey = '', listKey = '', enabled = true }) {
+export function useReferenceList({ loadIndex, loadDetail = null, matchEntry = null, pageSize = 40, getRelatedNames, filterEntry = null, filterKey = '', listKey = '', enabled = true }) {
     const [index, setIndex] = useState([]);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
     // The search lives in the URL (?q=), so Back, refresh and a shared link keep it.
@@ -78,7 +81,8 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
         return () => { cancelled = true; clearTimeout(timer); };
     }, [loadIndex, enabled]);
 
-    const normalized = search.trim().toLowerCase().replace(/\s+/g, '-');
+    const rawTerm = search.trim().toLowerCase();
+    const normalized = rawTerm.replace(/\s+/g, '-');
 
     // Names related to a searched Pokémon (its moves/abilities). Resolved lazily
     // since it may require fetching that Pokémon's record. null = not a Pokémon.
@@ -95,7 +99,21 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
 
     const searched = useMemo(() => {
         if (!normalized) return index;
-        const byName = index.filter((entry) => entry.name.includes(normalized));
+        let byName;
+        if (matchEntry) {
+            // A name match outranks an effect match ("scarf" → Choice Scarf
+            // before every item whose text mentions a scarf); order is kept
+            // within each half.
+            const named = [];
+            const rest = [];
+            for (const entry of index) {
+                if (entry.name.includes(normalized)) named.push(entry);
+                else if (matchEntry(entry, normalized, rawTerm)) rest.push(entry);
+            }
+            byName = [...named, ...rest];
+        } else {
+            byName = index.filter((entry) => entry.name.includes(normalized));
+        }
         if (!relatedNames || relatedNames.length === 0) return byName;
         // Merge the Pokémon-related entries in, de-duped against the name matches.
         const related = new Set(relatedNames);
@@ -108,7 +126,7 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
             }
         }
         return merged;
-    }, [index, normalized, relatedNames]);
+    }, [index, normalized, rawTerm, relatedNames, matchEntry]);
 
     const filtered = useMemo(
         () => (filterEntry ? searched.filter(filterEntry) : searched),
@@ -143,6 +161,8 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
     // `requested` would leave rows as permanent skeletons. Each detail lands
     // as soon as it resolves instead of waiting on the slowest of the batch.
     useEffect(() => {
+        // A baked list carries its rows' data: nothing to fetch.
+        if (!loadDetail) return;
         const pending = visible.filter((entry) => !requested.current.has(entry.name));
         if (pending.length === 0) return;
         pending.forEach((entry) => requested.current.add(entry.name));
