@@ -27,8 +27,12 @@ the persona journeys' chapter 2 walking each trainer in.
 | **Badge Case share** | `home/BadgeCase.jsx`, `forum/BadgeCaseCard.jsx` | A topic in `adventures` with `sharedBadgeCase`. |
 | **Chapter 2 journeys** | `utils/journeys.js` (`chapter: 2`), `isChapterOpen` | Open after chapter 1 (the Master's after any one); locked ones are silhouettes. |
 | **Community badges** | `constants/badges.jsx` `markBadge`, `services/socialRecord.js` | Weekly Champion, Season Podium, Professor's Pick — from marks recorded once a session; unlock `title_weekly`, `title_professor`, `frame_season`. |
+| **Hoje no Centro** (2026-11-09) | `home/CenterToday.jsx`, `hooks/useFriendActivity.js`, `store/useCenterStore.js` | Home (desktop rail under the check-in, phone after the day's cards, the Community tab in full): three doors with the day's crowd (puzzle `total`, both champions' `played`, the Diário's `messageCount`), the friends who played today, their last lines, the week's Torneio. Numbers are `RollingNumber`s. |
+| **Atividade dos amigos** (2026-11-09) | `utils/friendActivity.js` (pure, tested), `social/FriendActivityList.jsx`, `social/FriendActivityTab.jsx` | The Friends page's first tab: "Jogaram hoje" faces, then Hoje / Ontem / Antes. Events from the Champion boards, friends' puzzle rows, their Diário messages, topics they opened, a streak milestone reached today, a friendship this week. Each line goes where it happened; a line arriving later slides in once. |
 
 ## Invariants
+
+- **The Center polls, it doesn't listen** (`useCenterStore`): a read on mount, every 2 min while the tab is visible, on coming back to it, never twice within 30 s for the same friend list; yesterday is read once. A listener on counters every finished run moves would bill one read per run per open Home. Nothing new is stored — every source was already public (rules unchanged).
 
 - **Ids, never recipients**: every notice the client asks for is re-derived on the server from stored docs.
 - **No letters leave the puzzle**: rows are c/p/a only, on the server and in the forum.

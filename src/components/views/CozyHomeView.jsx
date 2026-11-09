@@ -52,6 +52,8 @@ import { openTrainerCard } from '../../store/useTrainerCardStore';
 
 // The Traveler's Badge Case: its own chunk, only that persona's Home loads it.
 const BadgeCase = lazy(() => import('../home/BadgeCase').then((m) => ({ default: m.BadgeCase })));
+// "Hoje no Centro" (2026-11-09): its own chunk — it polls public counters and the friends' timeline.
+const CenterToday = lazy(() => import('../home/CenterToday').then((m) => ({ default: m.CenterToday })));
 
 /**
  * The cozy Home (2026-10-06 proposal). One trainer card that says where the
@@ -991,10 +993,15 @@ export function CozyHomeView({
         badges: homeOrder.includes('badges') ? <Suspense fallback={null}><BadgeCase /></Suspense> : null,
     };
     const ordered = homeOrder.map((id) => <React.Fragment key={id}>{homeBlocks[id]}</React.Fragment>);
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{ordered}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{ordered}</>;
+    // The day's own result, so a friend's puzzle line can say who did better.
+    const myPuzzle = puzzle.summary && (puzzle.summary.solved || puzzle.summary.attempts >= 8)
+        ? { won: Boolean(puzzle.summary.solved), guesses: puzzle.summary.attempts }
+        : null;
+    const centerToday = (variant) => <Suspense fallback={null}><CenterToday variant={variant} myPuzzle={myPuzzle} /></Suspense>;
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{checkinCard}{ordered}{centerToday('rail')}{forYouSetup}{journeyCompact}{journeyPanel}</> : <>{hero}{ordered}</>;
     else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
-    else main = communityPanel(5);
+    else main = <>{centerToday('full')}{communityPanel(5)}</>;
 
     return (
         <main className="cozy-home">
@@ -1012,10 +1019,11 @@ export function CozyHomeView({
                     <aside className="cozy-rail">
                         {guestCard}
                         {checkinCard}
+                        {/* The day as a place, right under the trainer's own check-in (2026-11-09). */}
+                        {tab !== 'community' && centerToday('rail')}
                         {forYouSetup}
                         {tab !== 'journey' && (journeyFocus || journeyCompact)}
                         {journeyPanel}
-                        {tab !== 'community' && communityPanel(1)}
                     </aside>
                 )}
             </div>

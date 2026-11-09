@@ -17,8 +17,9 @@ import { ChallengeModal } from '../modals/ChallengeModal';
 import '../../styles/friends-view.css';
 import { Loader } from '../Loader';
 import { promptSignIn } from '../../utils/navigation';
+import { FriendActivityTab } from '../social/FriendActivityTab';
 
-const TABS = ['friends', 'requests', 'find'];
+const TABS = ['activity', 'friends', 'requests', 'find'];
 
 /**
  * One trainer row: avatar, name, and whatever actions the caller supplies.
@@ -72,7 +73,8 @@ export function FriendsView() {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const tabParam = searchParams.get('tab');
-    const activeTab = TABS.includes(tabParam) ? tabParam : 'friends';
+    // Activity first (2026-11-09): what the friends did is why the page is opened.
+    const activeTab = TABS.includes(tabParam) ? tabParam : 'activity';
 
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 350);
@@ -206,6 +208,14 @@ export function FriendsView() {
                     </button>
                 ))}
             </div>
+
+            {activeTab === 'activity' && (
+                <FriendActivityTab
+                    isLoadingFriends={isLoadingFriends}
+                    onFind={() => setTab('find')}
+                    onPlay={() => navigate('/pokepuzzle')}
+                />
+            )}
 
             {activeTab === 'friends' && (
                 isLoadingFriends && friends.length === 0 ? (
