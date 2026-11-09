@@ -2,6 +2,8 @@
 
 > **Creative direction (Enzo, 2026-11-05):** the trainer-profile onboarding's creativity — a scene that answers the user, Pokémon's own devices (evolution lines, silhouettes, type colours, artwork) as the UI language — is the standard from now on, "definitivamente". Read [creative_direction.md](./modules/creative_direction.md) before designing any new screen.
 
+> **Phone screens (Enzo, 2026-11-09):** the market's app grammar — greeting, week strip, one hero with a player bar, rails, label-on-active dock, splash, welcome, filled sign-in — lives in the [`/app-screens` skill](../.claude/skills/app-screens/SKILL.md). Read it before restructuring any phone screen.
+
 > **For all AI agents:** Read this document before making architectural changes, modifying UI components, or adding features. This is the entry map. For build commands and high-level architecture, read `CLAUDE.md` at the repo root first.
 
 ---

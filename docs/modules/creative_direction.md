@@ -52,6 +52,9 @@ built; this file says what they should *feel* like.
 | Trainer card | `components/trainerCard/TrainerCardDialog.jsx`, `styles/trainer-card.css`, `utils/trainerCardPattern.js` | Per-trainer pixel banner in the persona's type colour, partner standing in it, streak/level/wins as "bold figure + muted word", "Treinando desde" signed with one gold pixel |
 | Badge Case | `components/home/BadgeCase.jsx`, `styles/badge-case.css` | The games' badge case on the Traveler's Home: leaders as silhouettes until their badge is tapped, a gem of their type lights, the full case turns gold |
 | The mascot | `components/Mascot.jsx`, `utils/mascot/*`, `styles/mascot.css` ([mascot.md](./mascot.md)) | The icon's ghost as a rig that answers: moods by name, the games' evolution silhouette on a level up, a scene for every wait (peeking over a Poké Ball that rocks three times, a Shadow Ball charging before a battle, the Pokédex being read, a lens, a thought bubble), Pokémon Refresh petting with its ceiling, a type tone per trainer, shiny as an easter egg |
+| Home · Today (2026-11-09) | `views/CozyHomeView.jsx`, `components/home/{HomeGreeting,DayHero,HomeParty}.jsx`, `styles/home-today.css` | The market's phone grammar in franchise devices (`.claude/skills/app-screens`): the partner as the trainer's face in a greeting by the hour; one hero tinted by the lead's type with its official artwork and a player bar; the party as six round slots (dashed "+" = absent) |
+| Week strip + streak sheet | `components/rewards/{CheckinWeek,StreakSheet}.jsx`, `utils/dailyCheckin.js` (`checkinWeek`, `streakMonth`) | Days as Poké Balls — caught in the run, dashed when absent, a shield where one will cover; today inverted and its "+" is the check-in; the mascot's mood answers the streak's state |
+| Splash, welcome, sign in | `AppLayout.jsx` (`.boot-screen`), `views/LandingView.jsx` (phones), `modals/AuthModal.jsx` | The icon's ghost huge and white on Volt, cropped by the corners; the party with a speech bubble and a sticker collage on the headline; the partner on its pad with the form rising over it |
 | Team sheet (share image) | `modals/ShareSnippetModal.jsx` (`renderTeamSheetSync`), `utils/teamSheet.js` | The regional-champion poster: trainer's face + "Time de X", six raked cards (art + item, ability, nature, four type-signed move pills) on the lead's type colour, poster rings |
 
 ## Inspiration bank — the "community boards" kit (reference 5, 2026-11-05)
@@ -74,6 +77,18 @@ used already, ☐ = proposed.
 | **Chat bubbles**, own message in accent, others neutral with a tiny avatar | Who said it is the colour | ☐ battle chat, thread quick replies |
 | **The calm card** — one radius, one hairline, a title row with ×, nothing else | Every card is the same container; content does the talking | ✅ already the panel rule |
 | **Footer meta line** with an icon ("109.1k holders, eight communities") | A page summarised in one muted sentence | ☐ forum and meta page footers |
+
+## Inspiration bank — the market app kit (references 6–10, 2026-11-09)
+
+Five phone-app shots (a mascot-led AI app, a podcast app before/after, a
+mood-streak sheet, a cozy journal's sign-up/home/welcome). Their anatomy, what
+each device became here, the recipes and the audit live in the
+**`/app-screens` skill** (`.claude/skills/app-screens/SKILL.md`) — read it
+before restructuring any phone screen. ✅ built on 2026-11-09: greeting,
+week strip, hero of the day with a player bar, party row, rails, streak sheet,
+label-on-active dock, brand splash, phone welcome, filled sign-in fields.
+☐ proposed: Google sign-in (the skill's "Sign in" recipe lists what it needs),
+the same greeting + hero grammar on Profile and the Pokédex's first screen.
 
 ## Checklist for the next screen
 

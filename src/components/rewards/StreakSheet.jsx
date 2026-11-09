@@ -9,7 +9,7 @@ import { checkinCalendar, localDayKey, normalizeStreak, streakMonth, weekStartFo
 import { CloseIcon } from '../icons';
 import { Mascot } from '../Mascot';
 import { DayBall } from './CheckinWeek';
-import '../../styles/rewards.css';
+import '../../styles/streak-sheet.css';
 
 /**
  * The streak, as a sheet (2026-11-09, the mood-streak reference —

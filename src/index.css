@@ -3001,6 +3001,7 @@ a.data-list__row:hover,
 }
 
 .field__control:has(> .field__icon) .input-clean {
+    /* The icon's inset, its 1rem width, then the gap to the text. */
     padding-left: calc(var(--space-3_5) + 1rem + var(--space-2_5));
 }
 

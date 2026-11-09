@@ -562,6 +562,8 @@ eight segmented controls before this list existed (2026-09-22).
 | a count in a tab or segment | `.count-badge` |
 | a dialog | `.modal-scrim` > `.modal-panel` with `ref={useModalA11y(onClose)}`; `.modal-header` / `.modal-title` / `.modal-subtitle` / `.modal-close` / `.modal-body` / `.modal-footer` (`--ruled` when the body scrolls under it). Phones get a draggable sheet and every dialog an exit animation for free |
 | a form row | `.field` > `.field-label` + `.input-clean` / `.select-clean` / `.textarea-clean` |
+| a short form that IS the screen (sign in, a code) | `.field.field--filled` — no edge, a fill, `--control-h-lg`; a leading icon is `.field__control` > `.field__icon` + the input (2026-11-09) |
+| the one word a headline is about | `<em className="accent-word">` — the primary as a word, colour only, one per screen (2026-11-09) |
 | a menu | `.menu-surface` > `.menu-item` |
 | **v2** a yes/no setting | `<Switch checked onChange label description variant="row" size="sm" tone>` — never two buttons that each mean half of a boolean |
 | **v2** a checkbox | native `<input type="checkbox" className="check">` inside a `<label>` |

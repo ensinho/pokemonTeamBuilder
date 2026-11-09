@@ -129,15 +129,17 @@ by being what ≥ 80% of visits need.
    save**.
 
 Budget at 390×844: greeting, the strip and the hero's headline and action are
-above the fold; the whole Today fits in ~3 screens (was ~5).
+above the fold (measured 2026-11-09: the ▶ ends at ~600px); the whole Today
+is 2.5–2.8 screens of scroll (`scrollHeight / clientHeight`), was ~4.5.
 
 ### Home (desktop) — same file, ≥ 1024px
-Same order, two columns: main = greeting, hero (its player bar carries the
-party row inline), the persona's blocks; rail = the week strip, *Hoje no
-Centro*, the journey. No section tabs: Teams, Community and Journeys have
-routes of their own, one click away in the rail.
+Same order, two columns: main = greeting, hero (the party row sits inside it,
+above the player bar, where the phone has its own row), the persona's blocks
+(the teams list among them); rail = the guest card, the week strip as a card,
+*Hoje no Centro*, the journey. No section tabs: Teams, Community and Journeys
+have routes of their own, one click away in the rail.
 
-### Streak sheet — `components/rewards/StreakSheet.jsx`
+### Streak sheet — `components/rewards/StreakSheet.jsx` (+ `styles/streak-sheet.css`, its own chunk)
 - A `BottomSheet`/dialog, never a page. Title "Você está numa sequência de
   **N dias**" (one accent word, `.accent-word`), the mascot above it with the
   mood the state earns (`radiante` checked in today, `acenando` waiting for
@@ -181,4 +183,4 @@ At 390×844 and 360×740, dark and light (`/verify-ui` §2 has the harness):
 | Section tabs inside a page that also has a dock | the sections are routes; the page is one priority list |
 | Nine blocks stacked on "Today" | the recipe's six; the rest is a route away |
 | Every reward rendered as a card (the check-in card ~350px) | a strip; the full card lives on the Rewards tab |
-| The same team in the hero, the party row *and* the list | the hero says the status, the row shows the members, the list (desktop / `/teams`) shows the others |
+| The same team in the hero, the party row *and* a list beside them on a phone | the hero says the status, the row shows the members, the full list is `/teams` ("Ver todos") — a desktop keeps its teams panel, which has the room |

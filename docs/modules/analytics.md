@@ -25,7 +25,7 @@ measures first.
 | Event | Where | Params |
 |---|---|---|
 | `landing_view` | `HomeEntry`, when the first-visit landing shows | — |
-| `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `closing_build`, `demo_open_builder`, `feature_<key>`, `skip` |
+| `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `hero_signin` ("Já tem conta? Entrar" — opens sign-in over the landing, 2026-11-09), `closing_build`, `demo_open_builder`, `feature_<key>`, `skip` |
 | `onboarding_complete` | `TrainerOnboarding` finished (the button or a pick) | `persona`, `interests` (comma list), `level`, `source`: `landing`, `auto`, `home`, `profile` |
 | `onboarding_skip` | `TrainerOnboarding` closed unanswered (Pular, Escape, drag) — only when there were no answers before | `step`, `source` |
 | `forum_post` / `forum_reply` | `useForumStore.sendMessage` (2026-11-06) | `kind` (text · team · puzzle · challenge · invite) |
