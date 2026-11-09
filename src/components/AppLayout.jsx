@@ -89,6 +89,7 @@ import { useTrainerCardStore } from '../store/useTrainerCardStore';
 import { useInboxStore } from '../store/useInboxStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
+import { glyphMotion } from '../utils/glyphMotion';
 import { isCrawler } from '../utils/crawler';
 import { hubForPath, hubMembers } from '../constants/navHubs';
 import { HubSwitch } from './HubSwitch';
@@ -137,7 +138,7 @@ const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemon
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
 // The mascot's drawing goes first: it is small and almost every screen has one.
-const MOBILE_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
+const MOBILE_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadChampionChallengeView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
 // Desktop had no warm-up at all, so the first click on Construtor downloaded a
 // 107 KB chunk behind the route fallback. Same idea, the rail's main entries.
 // Hovering or focusing a rail entry fetches its chunk: the half second between
@@ -265,7 +266,7 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size 
 
 // A real link, not a button that calls navigate(): Cmd/Ctrl-click, middle-click
 // and long-press "open in new tab" all work, and the browser shows the URL.
-const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent }) => {
+const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent, glyph = 'nudge' }) => {
     const buttonRef = useRef(null);
     // Styled hover tooltip for the collapsed rail. Rendered via a portal with
     // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
@@ -290,7 +291,8 @@ const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0
             aria-current={active ? 'page' : undefined}
             className={`app-shell__nav-link ${active ? 'is-active' : ''}  ${collapsed ? 'is-collapsed' : ''}`}
         >
-            <span className="app-shell__nav-icon" aria-hidden="true">
+            {/* data-glyph: the icon plays its own motion on hover (utils/glyphMotion.js). */}
+            <span className="app-shell__nav-icon" aria-hidden="true" data-glyph={glyph}>
                 {icon}
                 {/* Collapsed rail has no room for the count, so it degrades to a dot. */}
                 {badge > 0 && collapsed && <span className="app-shell__nav-dot" aria-hidden="true" />}
@@ -656,6 +658,14 @@ export default function AppLayout() {
         onboardingOffered.current = true;
         useOnboardingStore.getState().open('auto');
     }, [isAuthReady, currentPage, isLandingOpen, showPatchNotes, isOnboardingOpen]);
+
+    // The dock's icons play their motion when their tab becomes the current one
+    // (utils/glyphMotion.js) — from the first navigation on, never on load.
+    const [isDockLive, setIsDockLive] = useState(false);
+    const firstPathRef = useRef(location.pathname);
+    useEffect(() => {
+        if (location.pathname !== firstPathRef.current) setIsDockLive(true);
+    }, [location.pathname]);
 
     const isDockCompact = useDockCompact(contentScrollEl, {
         enabled: isMobile && !isMobileDetailsOpen,
@@ -1076,7 +1086,8 @@ export default function AppLayout() {
     const mobileTabs = useMemo(() => {
         // The tabs the dock's fourth slot can hold (personaDockSlot).
         const slotTabs = {
-            pokepuzzle: { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
+            // The full name is its accessible name; the pill says "Challenge" (Enzo, 2026-11-09).
+            challenge: { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeTab'), icon: <Crown className="w-5 h-5 shrink-0" />, path: '/challenge' },
             meta: { key: 'meta', label: t('nav.meta'), icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
             types: { key: 'types', label: t('nav.typesShort'), icon: <Shapes className="w-5 h-5 shrink-0" />, path: '/types' },
         };
@@ -1086,12 +1097,13 @@ export default function AppLayout() {
             // "Construtor" was cut to "Constru…". The full name stays its accessible name.
             { key: 'builder', label: t('nav.builder'), shortLabel: t('nav.builderShort'), icon: <SwordsIcon />, path: '/builder' },
             { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
-            // The daily puzzle is the one thing on a phone that is new every day, so it
-            // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
-            // Since 2026-11-05 the slot follows the trainer profile: anyone who plays
-            // (or has not said) keeps the puzzle; a competitive-only trainer gets
-            // Meta, a games-only one the type chart (personaDockSlot).
-            slotTabs[personaDockSlot(trainerProfile)] ?? slotTabs.pokepuzzle,
+            // The daily battle earns the thumb slot (2026-11-09, Enzo; the puzzle held
+            // it from 2026-09-24 and now lives in the Mais sheet). The slot follows
+            // the trainer profile: anyone who plays (or has not said) gets the
+            // Champion Challenge; a competitive-only trainer Meta, a games-only one
+            // the type chart (personaDockSlot). The Mais sheet keeps the Challenge's
+            // hero card too — it is the one destination Enzo wants in both places.
+            slotTabs[personaDockSlot(trainerProfile)] ?? slotTabs.challenge,
         ];
     }, [t, trainerProfile]);
 
@@ -1583,6 +1595,7 @@ export default function AppLayout() {
                                                 collapsed={isRailCollapsed}
                                                 label={item.label}
                                                 icon={item.icon}
+                                                glyph={glyphMotion(item.key)}
                                                 badge={item.badge || 0}
                                                 onIntent={() => prefetchRoute(item.key)}
                                                 to={item.path}
@@ -1608,6 +1621,7 @@ export default function AppLayout() {
                                                         collapsed={isRailCollapsed}
                                                         label={item.label}
                                                         icon={item.icon}
+                                                        glyph={glyphMotion(item.key)}
                                                         badge={item.badge || 0}
                                                         onIntent={() => prefetchRoute(item.prefetchKey || item.key)}
                                                         to={item.path}
@@ -1644,6 +1658,7 @@ export default function AppLayout() {
                                                 collapsed={isRailCollapsed}
                                                 label={t('nav.profile')}
                                                 icon={<SettingsGlyph />}
+                                                glyph="turn"
                                                 onIntent={() => prefetchRoute('profile')}
                                                 to="/profile"
                                             />
@@ -1755,7 +1770,7 @@ export default function AppLayout() {
                                         aria-keyshortcuts={ariaKeyShortcuts(searchShortcut)}
                                         className="app-shell__search-trigger"
                                     >
-                                        <Search aria-hidden="true" />
+                                        <span className="app-shell__search-glyph" data-glyph={glyphMotion('search')} aria-hidden="true"><Search /></span>
                                         <span className="app-shell__search-trigger-label">{t('search.placeholder')}</span>
                                         <kbd>{formatShortcut(searchShortcut, IS_APPLE)}</kbd>
                                     </button>
@@ -2170,7 +2185,7 @@ export default function AppLayout() {
                 </div>
 
                 {isMobile && !isMobileDetailsOpen && !isLandingOpen && !isForumThreadOpen && (
-                    <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
+                    <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''} ${isDockLive ? 'is-live' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
                         {(() => {
                             // A hub's tab (Meta) lights on every page the hub holds (navHubs).
                             const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail')
@@ -2199,7 +2214,7 @@ export default function AppLayout() {
                                     // by its full label, shown or not.
                                     aria-label={tab.label}
                                 >
-                                    <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
+                                    <span className="app-shell__tab-icon" aria-hidden="true" data-glyph={glyphMotion(tab.key)}>{tab.icon}</span>
                                     <span className="app-shell__tab-label">{tab.shortLabel || tab.label}</span>
                                 </button>
                             ));

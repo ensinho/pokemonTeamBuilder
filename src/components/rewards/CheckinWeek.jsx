@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useRewardsStore, selectUnseenCount } from '../../store/useRewardsStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
-import { checkinCalendar, checkinWeek, localDayKey, weekStartFor } from '../../utils/dailyCheckin';
+import { CHECKED_IN_EVENT, checkinCalendar, checkinWeek, localDayKey, weekStartFor } from '../../utils/dailyCheckin';
 import { levelForXp } from '../../utils/trainerLevel';
 import { getCosmetic } from '../../constants/cosmetics';
 import { Mascot } from '../Mascot';
@@ -81,6 +81,7 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
         if (!outcome) return;
         shiny.fire();
         setResult(outcome);
+        window.dispatchEvent(new CustomEvent(CHECKED_IN_EVENT));
     };
 
     const resultLine = result && (() => {

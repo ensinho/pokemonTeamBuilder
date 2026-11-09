@@ -70,6 +70,7 @@ export function BadgeHero(wallpaperProps) {
             percent={leaders.length ? (earned.length / leaders.length) * 100 : 0}
             action={{
                 Icon: next ? BookOpen : Trophy,
+                glyph: next ? 'open' : 'lift',
                 label: next ? t('homeToday.studyGym', { leader: next.name }) : t('homeToday.seeGyms'),
                 short: next ? t('homeToday.studyShort') : t('homeToday.seeGymsShort'),
                 onClick: () => navigate(studyPath),

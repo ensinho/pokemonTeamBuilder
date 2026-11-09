@@ -570,6 +570,7 @@ eight segmented controls before this list existed (2026-09-22).
 | **v2** anything loading | `<Loader size="xs\|sm\|md\|lg" label block scene />` — never a CSS ring, never `animate-spin` on a Poké Ball. `md`/`lg` (a region waiting) draw a scene of the mascot picked by what is loading (`scene`: capture · battle · pokedex · think · search; `ball` inside a `.ds-screen` or a solemn moment); `xs`/`sm` (controls, rows) stay the rocking ball |
 | **v2** a figure the user is changing | `<RollingNumber value format />` — on change only |
 | **v2** a reward for the user's own tap | `const shiny = useShinyBurst()` → `shiny.fire()` in the click, `{shiny.burst}` inside a `position: relative` control, `is-bursting` on it while `shiny.isBursting` |
+| **v2** an icon that moves | `data-glyph="<motion>"` on the icon's wrapper (`glyphMotion(key)` in `utils/glyphMotion.js` picks it by destination: hop · clash · wobble · rise · lift · snap · scan · turn · open · swing · pop · nudge); a trigger in `interactions.css` "Glyph motion" plays it once (rail hover, the dock tab becoming current, the hero's action). Never a second set of keyframes (2026-11-09) |
 | **v2** a question before destruction | `if (await confirmAction({ title, message, confirmText }))` — never `window.confirm` |
 | **v2** a reversible destructive action | do it, then `toast.info(title, { actions: [{ label: t('toast.undo'), onClick }] })` — undo beats confirm |
 | **v2** the theme | `chooseTheme(id, originFromEvent(event))` / `<ThemeToggle>` — never `changeTheme` from a control (it does not save) |

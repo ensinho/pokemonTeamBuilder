@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Flame } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { typeColors } from '../../constants/types';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { Sprite } from '../Sprite';
 import { FramedAvatar } from '../rewards/FramedAvatar';
+import { RollingNumber } from '../RollingNumber';
+import { CHECKED_IN_EVENT } from '../../utils/dailyCheckin';
 
 /**
  * The Home's first line (2026-11-09, the "Hey, Alex." of the references —
@@ -30,6 +32,14 @@ export function HomeGreeting({
     onSignIn,
 }) {
     const { t } = useTranslation();
+    // The flame answers the trainer's own check-in (CHECKED_IN_EVENT), once —
+    // never a streak that merely arrives from another device.
+    const [flare, setFlare] = useState(0);
+    useEffect(() => {
+        const onCheckIn = () => setFlare((n) => n + 1);
+        window.addEventListener(CHECKED_IN_EVENT, onCheckIn);
+        return () => window.removeEventListener(CHECKED_IN_EVENT, onCheckIn);
+    }, []);
     const hello = name
         ? t(`homeToday.hello.${period}`, { name })
         : t(`homeToday.helloAnon.${period}`);
@@ -70,8 +80,9 @@ export function HomeGreeting({
                     onClick={onOpenStreak}
                     aria-label={streakCount === 1 ? t('cozyHome.streakChipOne') : t('cozyHome.streakChip', { n: streakCount })}
                 >
-                    <Flame aria-hidden="true" />
-                    <span>{streakCount}</span>
+                    {/* Keyed by the flare, so each check-in plays it once. */}
+                    <Flame key={flare} aria-hidden="true" className={`home-greet__flame ${flare ? 'is-flaring' : ''}`} />
+                    <RollingNumber value={streakCount} />
                 </button>
             )}
         </header>

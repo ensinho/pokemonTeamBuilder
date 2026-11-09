@@ -136,8 +136,8 @@ describe('the rail', () => {
     });
 
     it('gives the dock slot to the puzzle unless the trainer does not play', () => {
-        expect(personaDockSlot(normalizeTrainerProfile({}))).toBe('pokepuzzle');
-        expect(personaDockSlot(profile(['competitive', 'minigames']))).toBe('pokepuzzle');
+        expect(personaDockSlot(normalizeTrainerProfile({}))).toBe('challenge');
+        expect(personaDockSlot(profile(['competitive', 'minigames']))).toBe('challenge');
         expect(personaDockSlot(profile(['competitive']))).toBe('meta');
         expect(personaDockSlot(profile(['franchise']))).toBe('types');
     });

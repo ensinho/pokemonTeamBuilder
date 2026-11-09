@@ -17,6 +17,7 @@
      .shiny-burst     the one-shot sparkle — useShinyBurst()
      .theme-toggle    sun ⇄ moon glyph — <ThemeToggle>
      theme reveal     the circular View Transition on a theme change
+     [data-glyph]     an icon's own motion — utils/glyphMotion.js (2026-11-09)
 
    Loaded after index.css (main.jsx), so like the primitives there
    these beat a Tailwind utility on the same element.
@@ -476,4 +477,134 @@ html[data-hero-transition]::view-transition-new(pokemon-hero) {
    part of the name: muted until they resolve. */
 .decrypt-text__noise {
     color: var(--color-muted);
+}
+
+/* ---- Glyph motion (2026-11-09) ----------------------------------------------
+   Micro-animations for icons, as one vocabulary (utils/glyphMotion.js): the
+   icon does what it draws — the Poké Ball wobbles like a caught Pokémon's,
+   the swords clash, the crown is lifted, the trend rises, the puzzle piece
+   snaps in, the lens scans. `data-glyph="<motion>"` on the icon's wrapper
+   names the motion; a trigger below plays it ONCE:
+     - desktop: hovering a rail link, the search field, the hero's action
+       (the build's hover gate keeps these off touch screens);
+     - phone: a dock tab the moment it becomes the current one (`.is-live`
+       is set from the first navigation, so nothing plays on load).
+   Transform only (the svg moves, never its box), under 600 ms, no fill, no
+   loop; reduced motion plays nothing. Adding a trigger here is the whole
+   cost of a new place — never a second set of keyframes. */
+[data-glyph='hop'] { --glyph-motion: glyph-hop; }
+[data-glyph='clash'] { --glyph-motion: glyph-clash; }
+[data-glyph='wobble'] { --glyph-motion: glyph-wobble; --glyph-origin: 50% 90%; }
+[data-glyph='rise'] { --glyph-motion: glyph-rise; }
+[data-glyph='lift'] { --glyph-motion: glyph-lift; --glyph-origin: 50% 100%; }
+[data-glyph='snap'] { --glyph-motion: glyph-snap; }
+[data-glyph='scan'] { --glyph-motion: glyph-scan; }
+[data-glyph='turn'] { --glyph-motion: glyph-turn; }
+[data-glyph='open'] { --glyph-motion: glyph-open; }
+[data-glyph='swing'] { --glyph-motion: glyph-swing; --glyph-origin: 50% 0%; }
+[data-glyph='pop'] { --glyph-motion: glyph-pop; }
+[data-glyph='nudge'] { --glyph-motion: glyph-nudge; }
+
+[data-glyph] > svg {
+    transform-origin: var(--glyph-origin, 50% 50%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .app-shell__nav-link:hover [data-glyph] > svg,
+    .app-shell__search-trigger:hover [data-glyph] > svg,
+    .day-hero__play:hover [data-glyph] > svg {
+        animation: var(--glyph-motion) 560ms var(--ease-out-expo);
+    }
+
+    /* Its own rule: a :hover in a selector list would carry the dock behind
+       the hover gate, and phones would never see it. */
+    .app-shell__tabbar.is-live .app-shell__tab.is-active [data-glyph] > svg {
+        animation: var(--glyph-motion) 560ms var(--ease-out-expo);
+    }
+}
+
+/* A chevron at the end of a button points the way it goes: a step forward on
+   hover (desktop). A transition, not a play — it returns when the pointer
+   leaves. `translate` composes with any transform the icon already has. */
+@media (prefers-reduced-motion: no-preference) {
+    .btn > .lucide-chevron-right {
+        transition: translate var(--duration-fast) var(--ease-out);
+    }
+
+    .btn:hover > .lucide-chevron-right {
+        translate: 0.125rem 0;
+    }
+}
+
+@keyframes glyph-hop {
+    0%, 100% { transform: none; }
+    35% { transform: translateY(-18%) scale(0.96, 1.04); }
+    65% { transform: translateY(3%) scale(1.04, 0.96); }
+}
+
+@keyframes glyph-clash {
+    0%, 100% { transform: none; }
+    30% { transform: rotate(-14deg); }
+    60% { transform: rotate(10deg); }
+    82% { transform: rotate(-4deg); }
+}
+
+/* The capture wobble: three rocks, each smaller (the games' own rhythm). */
+@keyframes glyph-wobble {
+    0%, 100% { transform: none; }
+    18% { transform: rotate(-16deg); }
+    42% { transform: rotate(12deg); }
+    66% { transform: rotate(-6deg); }
+    84% { transform: rotate(3deg); }
+}
+
+@keyframes glyph-rise {
+    0%, 100% { transform: none; }
+    40% { transform: translate(14%, -14%); }
+}
+
+@keyframes glyph-lift {
+    0%, 100% { transform: none; }
+    40% { transform: translateY(-20%) rotate(-8deg); }
+    70% { transform: translateY(2%); }
+}
+
+@keyframes glyph-snap {
+    0% { transform: rotate(-90deg) scale(0.86); }
+    60% { transform: rotate(8deg) scale(1.02); }
+    100% { transform: none; }
+}
+
+@keyframes glyph-scan {
+    0%, 100% { transform: none; }
+    25% { transform: translate(-10%, -6%); }
+    50% { transform: translate(0, -14%); }
+    75% { transform: translate(10%, -6%); }
+}
+
+@keyframes glyph-turn {
+    0%, 100% { transform: none; }
+    45% { transform: rotate(-28deg) scale(0.94); }
+}
+
+@keyframes glyph-open {
+    0%, 100% { transform: none; }
+    45% { transform: scaleX(1.16); }
+}
+
+@keyframes glyph-swing {
+    0%, 100% { transform: none; }
+    25% { transform: rotate(14deg); }
+    55% { transform: rotate(-10deg); }
+    80% { transform: rotate(4deg); }
+}
+
+@keyframes glyph-pop {
+    0%, 100% { transform: none; }
+    40% { transform: scale(1.18); }
+}
+
+@keyframes glyph-nudge {
+    0%, 100% { transform: none; }
+    45% { transform: translateX(16%); }
 }

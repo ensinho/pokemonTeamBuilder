@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
-import { checkinCalendar, localDayKey, normalizeStreak, streakMonth, weekStartFor } from '../../utils/dailyCheckin';
+import { CHECKED_IN_EVENT, checkinCalendar, localDayKey, normalizeStreak, streakMonth, weekStartFor } from '../../utils/dailyCheckin';
 import { CloseIcon } from '../icons';
 import { Mascot } from '../Mascot';
 import { DayBall } from './CheckinWeek';
@@ -55,6 +55,7 @@ export function StreakSheet({ onClose }) {
         if (!outcome) return;
         shiny.fire();
         setResult(outcome);
+        window.dispatchEvent(new CustomEvent(CHECKED_IN_EVENT));
     };
 
     return createPortal(
