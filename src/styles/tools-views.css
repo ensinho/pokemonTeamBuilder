@@ -25,6 +25,9 @@
     font-size: var(--text-base);
     text-transform: capitalize;
 }
+/* The value is a Pokémon name (capitalised); the placeholder is a sentence. */
+.tool-picker__input::placeholder { text-transform: none; }
+
 .tool-picker__menu {
     position: absolute;
     z-index: 20;
@@ -287,17 +290,20 @@ input[type="number"] {
     align-items: center;
     gap: var(--space-1);
     padding: var(--space-0_5) var(--space-1_5) var(--space-0_5) var(--space-0_5);
-    border: 1px solid var(--color-border);
+    /* Fill, not a border: these sit inside the bordered list (459 nested
+       boxes on desktop — audit 2026-11-09). */
+    border: none;
     border-radius: var(--radius-full);
-    background: var(--color-bg);
+    background: var(--color-surface-raised);
     color: var(--color-muted);
     font-size: var(--text-2xs);
     text-transform: capitalize;
     cursor: pointer;
     white-space: nowrap;
-    transition: border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
-.spd-chip:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
+.spd-chip:hover { background: var(--color-surface-hover); color: var(--color-primary-text); }
+.spd-chips__label { align-self: center; color: var(--color-muted); font-size: var(--text-2xs); }
 
 .spd-chip__sprite { width: 1.25rem; height: 1.25rem; image-rendering: pixelated; }
 

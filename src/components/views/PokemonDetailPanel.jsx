@@ -126,6 +126,8 @@ export function PokemonDetailPanel({
         formattedId,
         pokemonGenus,
         pokedexDescription,
+        isDescriptionLocal,
+        isGenusLocal,
         heightInM,
         heightInFt,
         weightInKg,
@@ -207,7 +209,7 @@ export function PokemonDetailPanel({
                                 <h3 className="mt-2 sm:mt-3.5 text-xl font-extrabold capitalize text-fg tracking-tight">
                                     {selectedPokemonDetails.name} <span className="text-muted font-normal text-base">#{selectedPokemonDetails.id}</span>
                                 </h3>
-                                {pokemonGenus && <p className="mt-0.5 text-sm text-muted">{pokemonGenus}</p>}
+                                {pokemonGenus && isGenusLocal && <p className="mt-0.5 text-sm text-muted">{pokemonGenus}</p>}
                                 <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                                     {selectedPokemonDetails.types?.map((type) => <TypeChip key={type} type={type} />)}
                                 </div>
@@ -295,7 +297,8 @@ export function PokemonDetailPanel({
                                     <ScrollText className="w-3.5 h-3.5 text-primary" />
                                     <span>{language === 'pt' ? 'Descrição da Pokédex' : 'Pokédex Entry'}</span>
                                 </h4>
-                                <p className="flex-1 flex items-center text-center justify-center text-sm text-fg leading-relaxed">{pokedexDescription}</p>
+                                <p className="flex-1 flex items-center text-center justify-center text-sm text-fg leading-relaxed" lang={isDescriptionLocal ? undefined : 'en'}>{pokedexDescription}</p>
+                                {!isDescriptionLocal && <p className="mt-2 text-center text-xs text-muted">{t('pokedex.originalText')}</p>}
                             </div>
                         ) : null;
 

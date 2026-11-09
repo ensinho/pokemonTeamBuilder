@@ -3070,6 +3070,31 @@ a.data-list__row:hover,
     }
 }
 
+/* A sideways scroller says there is more (audit 2026-11-09: weather rails
+   and the Pokédex detail tabs hid "Psíquico" and "Sprites" with no hint).
+   The edge that has more content fades; an edge at its end does not. Driven
+   by the scroller's own position, so it costs no JS; where scroll timelines
+   are unsupported, or nothing overflows, there is no fade at all. */
+@property --fade-start { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --fade-end { syntax: '<length>'; inherits: false; initial-value: 0px; }
+
+@keyframes scroll-fade-x {
+    from { --fade-start: 0px; --fade-end: var(--space-8); }
+    8% { --fade-start: var(--space-8); }
+    92% { --fade-end: var(--space-8); }
+    to { --fade-start: var(--space-8); --fade-end: 0px; }
+}
+
+@supports (animation-timeline: scroll()) {
+    .scroll-fade-x {
+        mask-image: linear-gradient(to right,
+            transparent, var(--color-fg) var(--fade-start),
+            var(--color-fg) calc(100% - var(--fade-end)), transparent);
+        animation: scroll-fade-x linear both;
+        animation-timeline: scroll(self inline);
+    }
+}
+
 /* Every control tap-activates immediately: no double-tap-to-zoom gesture to
    wait out, which is what makes a rapid second tap (a stepper, a like) zoom
    the page instead of registering. Pinch-zoom is untouched. */

@@ -305,6 +305,13 @@
         width: 100%;
     }
 
+    /* The count took the selects' room ("Categori▾" at 390, audit
+       2026-11-09): it reads under them, at the row's end. */
+    .ref-toolbar__count {
+        flex: 1 0 100%;
+        text-align: right;
+    }
+
     /* A fill, not a box (the clip itself is the base rule's). */
     .ref-list {
         border: none;

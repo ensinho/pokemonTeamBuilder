@@ -694,6 +694,8 @@ export default {
         resistances: 'Resistências',
         addToTeam: 'Adicionar ao time',
         onTeam: 'No seu time',
+        addToTeamShort: 'Time',
+        onTeamShort: 'No time',
         build: {
             title: 'Build mais usada',
             in: '{{format}} · {{usage}}% de uso',
@@ -749,7 +751,8 @@ export default {
         neutral: 'Máx neutro',
         positive: 'Máx positivo',
         scarf: 'Scarf',
-        speedNote: 'Velocidade no nível 50. alterne um spread para reordenar.',
+        speedTiesWith: 'Empata com',
+        speedNote: 'Velocidade no nível 50. Alterne um spread para reordenar.',
         tournamentsEmpty: 'Nenhum torneio ainda',
         tournamentsEmptyDesc: 'Times de eventos selecionados aparecerão aqui em breve.',
         featuredTeams: 'Times em destaque',
@@ -980,8 +983,8 @@ export default {
         selectedTypes: 'Tipos ({{count}})',
         typesFilterLabel: 'Tipos',
         typeMatchLabel: 'Como combinar os tipos',
-        typeMatchAny: 'Ou',
-        typeMatchAll: 'E',
+        typeMatchAny: 'Qualquer',
+        typeMatchAll: 'Todos',
         typeMatchAnyHint: 'Mostrar Pokémon com QUALQUER um dos tipos selecionados',
         typeMatchAllHint: 'Mostrar apenas Pokémon que tenham TODOS os tipos selecionados',
         genFilterLabel: 'Geração',
@@ -1044,6 +1047,7 @@ export default {
 
         /* ---- Tela do Pokédex no celular (MobilePokemonDetailView) ----- */
         competitiveTab: 'Competitivo',
+        originalText: 'Texto original da Pokédex, em inglês',
         pokedexEntry: 'Descrição da Pokédex',
         pokedexData: 'Dados da Pokédex',
         statTotal: 'Total',

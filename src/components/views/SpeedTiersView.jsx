@@ -195,6 +195,8 @@ export function SpeedTiersView({ generations = [] }) {
                                         </Link>
                                         {rest.length > 0 && (
                                             <div className="spd-chips">
+                                                {/* Nothing said what the pills were: the same speed stat. */}
+                                                <span className="spd-chips__label">{t('tools.speedTiesWith')}</span>
                                                 {rest.map((p) => (
                                                     <Link key={`${p.id}-${p.name}`} to={`/pokemon/${p.id}`} state={linkState} className="spd-chip">
                                                         <img

@@ -183,7 +183,9 @@ export function TypesView() {
         <div className="edv types-view">
             <header className="edv-header types-hero">
                 <div className="types-hero__copy">
-                    <h1 className="edv-title">{t('typesPage.title')}</h1>
+                    {/* The app bar already titles the page "Tabela de tipos"; the
+                        heading stays for readers and search (audit 2026-11-09). */}
+                    <h1 className="edv-title sr-only">{t('typesPage.title')}</h1>
                     <p className="edv-lead">{t('typesPage.lede')}</p>
                 </div>
                 <nav className="types-grid" aria-label={t('typesPage.allTypes')}>
