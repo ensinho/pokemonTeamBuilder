@@ -695,6 +695,13 @@
     align-content: start;
 }
 
+/* Columns follow the card's width, not the viewport (audit 2026-11-09): five
+   fixed columns at 1280 made 126px cards where the dex number, two type
+   icons, ⓘ and ★ overlapped and "Basculegion-Male" wrapped. 9rem holds them. */
+.team-builder-results__grid {
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+}
+
 .team-builder-spinner-wrap {
     display: flex;
     align-items: center;
@@ -911,6 +918,12 @@
 .tb-team__actions + .tb-share-row { margin-top: var(--space-2); }
 .tb-share-row .btn { min-width: 0; gap: var(--space-1); padding-inline: var(--space-2); }
 .tb-share-row .btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A narrow rail (1280, audit 2026-11-09) cut "Imagem" to "Imag…": there the
+   words stay and the glyphs go. */
+.tb-share-row { container-type: inline-size; }
+@container (max-width: 16.5rem) {
+    .tb-share-row .btn svg { display: none; }
+}
 
 /* Destructive, so it says so on hover — the one glyph in the row that does. */
 .btn.btn-ghost.tb-team__clear:hover:not(:disabled) {

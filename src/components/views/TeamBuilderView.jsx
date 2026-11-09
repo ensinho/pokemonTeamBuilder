@@ -845,6 +845,23 @@ export function TeamBuilderView({
                             the dot marks unsaved work. Export is the other thing
                             people came to do, so it is a labelled button, not a
                             Showdown glyph among four others. */}
+                        {/* Nothing to save, export or share before the first member
+                            (audit 2026-11-09: seven actions on an empty team). The
+                            one useful act there is a random start. */}
+                        {currentTeam.length === 0 ? (
+                            <div className="tb-team__actions">
+                                <button
+                                    type="button"
+                                    onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                                    className="btn btn-secondary"
+                                    disabled={isRandomizing || displayedPokemons.length === 0}
+                                >
+                                    <Dices aria-hidden="true" />
+                                    {t('builder.randomizeTeam')}
+                                </button>
+                            </div>
+                        ) : (
+                        <>
                         <div className="tb-team__actions">
                             <button
                                 type="button"
@@ -924,6 +941,8 @@ export function TeamBuilderView({
                                 </button>
                             )}
                         </div>}
+                        </>
+                        )}
                     </section>
 
                     <BuilderCoach teamSize={currentTeam.length} />
@@ -1134,7 +1153,7 @@ export function TeamBuilderView({
                                 </div>
                             ) : (
                                 <div className="team-builder-results__scroll custom-scrollbar">
-                                    <div className="team-builder-results__grid grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 p-1 py-2">
+                                    <div className="team-builder-results__grid grid gap-3 p-1 py-2">
                                         {isGameFilterActive ? (
                                             (grid.visibleSections || []).map((section) => (
                                                 <React.Fragment key={section.key}>

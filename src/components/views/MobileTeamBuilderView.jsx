@@ -6,7 +6,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
 import {
     Dices, Trophy, ShieldCheck, Sparkles, SlidersHorizontal, Search, HelpCircle, Info,
-    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, SaveAll, Check, Share2, Trash2, ArrowLeftRight,
+    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, BoxIcon, Check, Share2, Trash2, ArrowLeftRight,
 } from 'lucide-react';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
@@ -664,10 +664,25 @@ export const MobileTeamBuilderView = ({
                             two things people came to do, labelled, and a sheet
                             for the rest. */}
                         <div className="team-builder-mobile__composer-actions mt-2.5">
+                            {/* Nothing to save, export or share before the first
+                                member (audit 2026-11-09): a random start is the
+                                one useful act on an empty team. */}
+                            {teamSize === 0 ? (
+                                <button
+                                    type="button"
+                                    onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                                    className="btn btn-secondary"
+                                    disabled={isRandomizing || displayedPokemons.length === 0}
+                                >
+                                    <Dices aria-hidden="true" />
+                                    <span>{t('builder.randomizeTeam')}</span>
+                                </button>
+                            ) : (
+                            <>
                             <button
                                 type="button"
                                 onClick={handleSaveTeam}
-                                className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} team-builder-mobile__save`}
+                                className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} team-builder-mobile__save touch-target`}
                                 aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
                                 aria-busy={isSaving || undefined}
                             >
@@ -678,7 +693,7 @@ export const MobileTeamBuilderView = ({
                             <button
                                 type="button"
                                 onClick={handleExportToShowdown}
-                                className="btn btn-secondary team-builder-mobile__export"
+                                className="btn btn-secondary team-builder-mobile__export touch-target"
                                 aria-label={t('builder.exportShowdown')}
                             >
                                 <ShowdownIcon className="h-4 w-4" />
@@ -687,14 +702,16 @@ export const MobileTeamBuilderView = ({
                             <button
                                 type="button"
                                 onClick={() => setActionsOpen(true)}
-                                className="btn btn-secondary btn-icon shrink-0"
+                                className="btn btn-secondary btn-icon shrink-0 touch-target"
                                 aria-haspopup="dialog"
                                 aria-label={t('builder.moreActions')}
                             >
                                 <MoreHorizontal aria-hidden="true" />
                             </button>
+                            </>
+                            )}
                         </div>
-                        <TeamShareRow onImage={handleShareTeam} disabled={teamSize === 0} className="mt-2" />
+                        {teamSize > 0 && <TeamShareRow onImage={handleShareTeam} className="mt-2" />}
                         <BuilderCoach teamSize={teamSize} className="mt-2" />
 
                         <div className="team-builder-mobile__composer-analysis">
@@ -881,7 +898,8 @@ export const MobileTeamBuilderView = ({
                         aria-label={t('builder.savedTeams')}
                         title={t('builder.savedTeams')}
                     >
-                        <SaveAll className="h-4 w-4" />
+                        {/* The nav's "Meus times" box, not a second floppy beside Salvar. */}
+                        <BoxIcon className="h-4 w-4" />
                         {recentTeams.length > 0 && (
                             <span className="team-builder-mobile__saved-icon-badge">{recentTeams.length}</span>
                         )}
