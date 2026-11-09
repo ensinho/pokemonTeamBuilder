@@ -85,6 +85,8 @@ export const ForumExplorer = memo(function ForumExplorer({
                 {CATEGORIES.map(({ id, key, icon }) => {
                     const Icon = icon;
                     const current = !inThread && selectedCategory === id;
+                    // An empty category is a dead end: listed only once it has a post (or is the one chosen).
+                    if (id !== 'all' && !current && !(categoryCounts?.[id] > 0)) return null;
                     return (
                         <button
                             key={id}
@@ -101,7 +103,8 @@ export const ForumExplorer = memo(function ForumExplorer({
                 })}
             </section>
 
-            {pinned.length > 0 && (
+            {/* On the feed the rooms are the doors above it (ForumRooms); in a post they are one click away here. */}
+            {inThread && pinned.length > 0 && (
                 <section className="forum-explorer__section">
                     <h3 className="forum-explorer__heading">{t('forum.pinnedRooms')}</h3>
                     {pinned.map((tp) => (

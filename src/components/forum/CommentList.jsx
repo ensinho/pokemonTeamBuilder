@@ -174,7 +174,7 @@ const CommentNode = memo(function CommentNode({
                         className={`cmt-action ${liked ? 'is-liked' : ''}`}
                     >
                         <HeartIcon className="cmt-action__icon" />
-                        <span>{likeCount > 0 ? likeCount : t('forum.like')}</span>
+                        {likeCount > 0 && <span>{likeCount}</span>}
                     </button>
                     <button type="button" onClick={() => actions.reply(comment)} className="cmt-action">
                         <ReplyIcon className="cmt-action__icon" />
@@ -185,9 +185,9 @@ const CommentNode = memo(function CommentNode({
                         onClick={() => actions.share(comment)}
                         className="cmt-action"
                         aria-label={t('forum.share')}
+                        title={t('forum.share')}
                     >
                         <ShareIcon className="cmt-action__icon" />
-                        <span className="cmt-action__label">{t('forum.share')}</span>
                     </button>
                     <ReactionBar reactions={comment.reactions} userId={userId} onReact={(kind) => actions.react(id, kind)} t={t} inline />
                     {qa?.canAccept && !isAccepted && comment.createdBy !== userId && (

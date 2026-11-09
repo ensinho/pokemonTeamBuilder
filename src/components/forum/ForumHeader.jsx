@@ -48,6 +48,7 @@ export function ForumHeader({
     onSortChange,
     onOpenCreateTopic,
     stats,
+    categoryCounts = null,
     t,
 }) {
     const [isSearchOpen, setIsSearchOpen] = useState(() => !!searchQuery);
@@ -154,6 +155,8 @@ export function ForumHeader({
                 <div className="forum-chips" role="group" aria-label={t('forum.categoriesLabel')}>
                     {FORUM_CATEGORIES.map(({ id, key, icon }) => {
                         const Icon = icon;
+                        // Eleven choices in one sideways row was too many: an empty category waits until it has a post.
+                        if (categoryCounts && id !== 'all' && selectedCategory !== id && !(categoryCounts[id] > 0)) return null;
                         return (
                             <button
                                 key={id}

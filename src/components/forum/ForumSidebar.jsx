@@ -10,16 +10,20 @@ import { topicLikes, topicReplies } from '../../utils/forumRanking';
  * The forum's rail (desktop), on Reddit's model: the community card with its
  * figures and rules, what is trending, and the one thing this community is
  * for — sharing a team.
+ *
+ * Nothing here repeats the centre (2026-11-09): Trending hides while the
+ * centre already is the Hot feed, and the share card shows only when the
+ * trainer has a team to share.
  */
 export function ForumSidebar({
     stats,
     trending = [],
+    showTrending = true,
     currentTopicId = null,
     hrefFor,
     onBeforeOpen,
     featuredTeam,
     onShareTeam,
-    navigate,
     language = 'pt',
     t,
 }) {
@@ -60,6 +64,7 @@ export function ForumSidebar({
                 </details>
             </section>
 
+            {showTrending && (
             <section className="forum-sidebar-card">
                 <h4 className="forum-sidebar-card__title">
                     <FlameIcon className="w-4 h-4 shrink-0 text-primary" />
@@ -92,13 +97,14 @@ export function ForumSidebar({
                     </ol>
                 )}
             </section>
+            )}
 
+            {featuredTeam && (
             <section className="forum-sidebar-card">
                 <h4 className="forum-sidebar-card__title">
                     <SwordsIcon className="w-4 h-4 shrink-0 text-primary" />
                     {t('forum.shareTeamTitle')}
                 </h4>
-                {featuredTeam ? (
                     <>
                         <p className="forum-sidebar-card__text">
                             <span className="forum-sidebar-card__team-name">{featuredTeam.name}</span>
@@ -130,15 +136,8 @@ export function ForumSidebar({
                             {t('forum.shareTeamAction')}
                         </button>
                     </>
-                ) : (
-                    <>
-                        <p className="forum-sidebar-card__text">{t('forum.noTeamHint')}</p>
-                        <button type="button" onClick={() => navigate('/builder')} className="btn btn-secondary btn-sm btn-block">
-                            {t('forum.openBuilder')}
-                        </button>
-                    </>
-                )}
             </section>
+            )}
         </aside>
     );
 }

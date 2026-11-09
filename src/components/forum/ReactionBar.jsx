@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SmilePlus } from 'lucide-react';
 import { typeColors } from '../../constants/types';
 import { REACTION_KINDS, myReaction, nextReaction, summarizeReactions } from '../../utils/forumReactions';
 
@@ -39,10 +40,13 @@ export function ReactionBar({ reactions, userId, onReact, t, inline = false }) {
                 type="button"
                 className={`reaction-trigger ${open ? 'is-open' : ''}`}
                 aria-expanded={open}
+                aria-label={t('forum.react.trigger')}
+                title={t('forum.react.trigger')}
                 onClick={() => setOpen((v) => !v)}
                 onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
             >
-                {t('forum.react.trigger')}
+                {/* An icon, not the word: the reactions themselves are words. */}
+                <SmilePlus className="reaction-trigger__icon" aria-hidden="true" />
             </button>
             {open && (
                 <div className="reaction-picker" role="group" aria-label={t('forum.react.trigger')}>

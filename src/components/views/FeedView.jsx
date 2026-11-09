@@ -23,6 +23,8 @@ import {
     topicLastActivity,
 } from '../../utils/forumRanking';
 import { currentTopicUrl, shareLink } from '../../utils/forumShare';
+import { isDiaryTopic } from '../../utils/forumDiary';
+import { isWeeklyTopic } from '../../utils/forumWeekly';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { openTrainerCard } from '../../store/useTrainerCardStore';
 import {
@@ -31,6 +33,7 @@ import {
     ForumHeader,
     ForumSidebar,
     ForumExplorer,
+    ForumRooms,
     TopicCreateModal,
     ThreadCardSkeleton,
 } from '../forum';
@@ -53,6 +56,9 @@ const profileFromData = (data) => {
         titleId: data.titleId || data.creatorTitleId || null,
     };
 };
+
+// The rooms' order above the feed: the day's, the week's, then the chats.
+const roomRank = (topic) => (isDiaryTopic(topic) ? 0 : isWeeklyTopic(topic) ? 1 : 2);
 
 // Where the feed was scrolled when a post was opened. Module scope, because
 // the feed unmounts while a post is open; coming back lands where you left
@@ -222,7 +228,7 @@ export function FeedView({ showToast, navigate }) {
 
     // Ranking, trending and the community figures, all from the one topics
     // stream. `now` is read here so Hot re-ranks whenever a topic moves.
-    const { pinned, rows, trending, trendingIds, stats, categoryCounts, pinnedRooms } = useMemo(() => {
+    const { pinned, rows, trending, stats, categoryCounts, pinnedRooms } = useMemo(() => {
         const now = Date.now();
         const filtered = filterTopics(topics, { category: selectedCategory, query: deferredQuery });
         const ranked = rankTopics(filtered, sortBy, now);
@@ -232,11 +238,14 @@ export function FeedView({ showToast, navigate }) {
         return {
             ...ranked,
             trending: hot,
-            trendingIds: new Set(hot.map((tp) => tp.id)),
             stats: communityStats(topics, now),
             categoryCounts: counts,
             // The explorer's rooms ignore the feed's filters: they are always one click away.
-            pinnedRooms: topics.filter(isPinnedTopic).sort((a, b) => topicLastActivity(b) - topicLastActivity(a)),
+            // `filter(isPinnedTopic)` handed the array index in as `now`, so today's
+            // Diário and the week's Torneio were never "today" and never listed
+            // (2026-11-09). Today's diary first, then the week's, then the chats.
+            pinnedRooms: topics.filter((tp) => isPinnedTopic(tp, now))
+                .sort((a, b) => roomRank(a) - roomRank(b) || topicLastActivity(b) - topicLastActivity(a)),
         };
     }, [topics, selectedCategory, deferredQuery, sortBy]);
 
@@ -526,16 +535,19 @@ export function FeedView({ showToast, navigate }) {
         onRating: setRating,
     };
 
+    const hasFilters = !!searchQuery || selectedCategory !== 'all';
+
     const sidebar = (
         <ForumSidebar
             stats={stats}
             trending={trending}
+            // On the unfiltered Hot feed the trending list is the feed itself.
+            showTrending={isThreadOpen || sortBy !== 'hot' || hasFilters}
             currentTopicId={activeTopic?.id || null}
             hrefFor={hrefFor}
             onBeforeOpen={rowActions.beforeOpen}
             featuredTeam={featuredTeam}
             onShareTeam={(team) => openCreate({ team, category: 'teams' })}
-            navigate={navigate}
             language={language}
             t={t}
         />
@@ -548,7 +560,6 @@ export function FeedView({ showToast, navigate }) {
             href={hrefFor(topic.id)}
             liked={isTopicLikedBy(topic, userId)}
             isPinned={isPinned}
-            isTrending={!isPinned && trendingIds.has(topic.id)}
             onOpen={rowActions.open}
             onBeforeOpen={rowActions.beforeOpen}
             onLike={rowActions.like}
@@ -559,12 +570,19 @@ export function FeedView({ showToast, navigate }) {
         />
     );
 
-    const hasFilters = !!searchQuery || selectedCategory !== 'all';
+    // The Professor's rooms are doors above the feed (ForumRooms), not rows
+    // in it — unless the trainer is searching, when a matching room is just
+    // another result.
+    const showRooms = !searchQuery;
+    const roomsHere = showRooms
+        ? pinnedRooms.filter((tp) => selectedCategory === 'all' || tp.category === selectedCategory)
+        : [];
+    const feedRows = showRooms ? rows.filter((tp) => !isPinnedTopic(tp)) : [...pinned, ...rows];
     // Above the list (or its empty state) once topics answered, on the views
     // a team belongs to: everything, or the teams category, unsearched.
     const showWeeklyTeam = !(isInitialLoadingTopics && topics.length === 0)
         && !searchQuery && (selectedCategory === 'all' || selectedCategory === 'teams');
-    const isEmpty = pinned.length === 0 && rows.length === 0;
+    const isEmpty = feedRows.length === 0;
 
     return (
         <div className="forum-view">
@@ -621,6 +639,7 @@ export function FeedView({ showToast, navigate }) {
                                 onSortChange={(id) => setFeedParam('sort', id)}
                                 onOpenCreateTopic={() => openCreate()}
                                 stats={stats}
+                                categoryCounts={categoryCounts}
                                 t={t}
                             />
 
@@ -629,6 +648,15 @@ export function FeedView({ showToast, navigate }) {
                                 aria-label={t('forum.title')}
                                 aria-busy={isInitialLoadingTopics && topics.length === 0}
                             >
+                                {roomsHere.length > 0 && !(isInitialLoadingTopics && topics.length === 0) && (
+                                    <ForumRooms
+                                        rooms={roomsHere}
+                                        hrefFor={hrefFor}
+                                        onBeforeOpen={rowActions.beforeOpen}
+                                        language={language}
+                                        t={t}
+                                    />
+                                )}
                                 {showWeeklyTeam && (
                                     <TeamOfTheWeek
                                         pick={weeklyTeam}
@@ -677,10 +705,7 @@ export function FeedView({ showToast, navigate }) {
                                         </div>
                                     </div>
                                 ) : (
-                                    <>
-                                        {pinned.map((topic) => renderRow(topic, true))}
-                                        {rows.map((topic) => renderRow(topic, false))}
-                                    </>
+                                    feedRows.map((topic) => renderRow(topic, isPinnedTopic(topic)))
                                 )}
                             </section>
                         </div>
