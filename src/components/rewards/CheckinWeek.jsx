@@ -33,7 +33,8 @@ export function DayBall({ state }) {
 /**
  * The daily check-in as the Home's week strip (2026-11-09, the journal
  * reference's Mon–Sun row — .claude/skills/app-screens): this week's seven
- * days as pill columns, today inverted, a Poké Ball for each day of the run.
+ * days, each date in a round disc (today's inverted, the run's tinted), a
+ * Poké Ball under each day of the run.
  * Today's open cell IS the check-in — the strip's one moment, with the shiny
  * sparkle from the trainer's own tap. Under it, one muted line: the level and
  * what the next check-in pays. The full card (cycle, shields, collection)
@@ -107,7 +108,7 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
                     const face = (
                         <>
                             <span className="checkin-week__weekday" aria-hidden="true">{weekdayName(day.key)}</span>
-                            <span className="checkin-week__date" aria-hidden="true">{day.date}</span>
+                            <span className="checkin-week__disc" aria-hidden="true">{day.date}</span>
                             {day.state === 'today'
                                 ? <span className="checkin-week__plus" aria-hidden="true"><Plus /></span>
                                 : <DayBall state={day.state} />}

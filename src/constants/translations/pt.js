@@ -951,7 +951,8 @@ export default {
         },
         signIn: 'Entrar',
         party: 'Seu time',
-        add: 'Adicionar',
+        // Fits a sixth of a 360px row ("Adicionar" was cut to "Adicion…").
+        add: 'Novo',
         editMember: 'Editar {{name}} no {{team}}',
         newTeam: 'Novo time',
         continueShort: 'Continuar',

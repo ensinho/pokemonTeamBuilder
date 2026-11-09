@@ -150,7 +150,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    min-height: 21rem;
+    /* Enzo, 2026-11-09: "um tico menor". */
+    min-height: 18rem;
     padding: var(--space-4);
     overflow: hidden;
     border-radius: var(--radius-xl);
@@ -198,10 +199,10 @@
 .day-hero__art {
     position: absolute;
     z-index: 1;
-    top: var(--space-10);
+    top: var(--space-6);
     right: calc(var(--space-3) * -1);
-    width: 56%;
-    max-width: 15rem;
+    width: 50%;
+    max-width: 13.5rem;
     aspect-ratio: 1;
     pointer-events: none;
 }
@@ -503,7 +504,7 @@
 
 /* ── The week strip in the desktop rail ──────────────────────────────────
    On a phone it sits on the page (cells on the surface); in the rail it is
-   one of the rail's cards, so its cells take the raised fill inside it. */
+   one of the rail's cards, so its plain discs take the raised fill inside it. */
 
 .cozy-rail .checkin-week {
     padding: var(--space-4);
@@ -512,7 +513,7 @@
     background: var(--color-surface);
 }
 
-.cozy-rail .checkin-week__cell {
+.cozy-rail .checkin-week__day:not(.is-today):not(.is-today-done):not(.is-caught):not(.is-shielded) .checkin-week__disc {
     background: var(--color-surface-raised);
 }
 

@@ -54,7 +54,7 @@ reference.
 | 2 | Poddi before → after | before: a list of small cards. After: ONE "of the day" card in a soft brand tint with a huge condensed headline, a photo as protagonist and a **mini-player bar** embedded at its foot; 2-up big-image cards in a sideways rail; an icon-only floating dock overlapping content | `.day-hero`: lead Pokémon's type tint, official artwork as protagonist, Unbounded headline, the "player" bar = team progress + round ▶; "Seu dia" as a scroll-snap rail of big-art cards |
 | 3 | Mood streak | a sheet, not a page; "You are on a **12 day** Streak!" — light weight, one accent word; a month grid where every day is a face or a ×; today a red "+" | the **streak sheet**: "Sequência de **12 dias**", a month of Poké Balls (caught · missed · today "+"), the mascot's mood answers the state |
 | 4a | Journal sign-up | a soft ground with the app icon at the top; a white sheet rising with rounded top corners; centred title + one-line sub; **filled, borderless fields with a leading icon**; a dark pill CTA; "or continue with" + provider pills; "Already have a journal? Log in" | the auth sheet: the partner on its pad on the persona's tint, the form surface rising over it, `.field--filled` with Mail/Lock, the mode switch as a footer link |
-| 4b | Journal home | avatar + "Hello, Baskey!" + a 🔥12 pill top-right; a big question as the title; a **week strip** (Mon–Sun columns, today inverted, a face per day); entry cards; a mini tab segment + a FAB | the greeting's gold streak pill; `CheckinWeek` (seven pill columns, today inverted, a Poké Ball per day, "+" is the check-in) |
+| 4b | Journal home | avatar + "Hello, Baskey!" + a 🔥12 pill top-right; a big question as the title; a **week strip** (Mon–Sun columns, today inverted, a face per day); entry cards; a mini tab segment + a FAB | the greeting's gold streak pill; `CheckinWeek` (seven columns — the day's name, the date in a round disc, a Poké Ball under it; the run's discs tinted, today's inverted, "+" is the check-in) |
 | 5 | Journal splash + welcome | splash = solid brand + the icon; welcome = a **sticker-collage headline** (words interleaved with little objects), a one-line promise, stacked pill buttons, "Not new? Log in" | landing headline with inline franchise stickers (a type chip, a Poké Ball) — on a phone only, the h1 text unchanged for crawlers |
 
 What we **refuse** from them: emoji faces (the mascot has named moods), stock
@@ -109,8 +109,9 @@ by being what ≥ 80% of visits need.
    chosen), "Boa noite, Enzo", the persona's question; the gold streak pill
    (earned → gold) opening the streak sheet; a guest gets an "Entrar" pill
    there instead. Replaces the chip strip and the section tabs.
-2. **Week strip** (`CheckinWeek`): this week's seven days as pill columns,
-   today inverted; each day a Poké Ball — caught (in the run), dashed (missed),
+2. **Week strip** (`CheckinWeek`): this week's seven days, each the date in a
+   round disc (tall capsules read "muito oval" — Enzo, 2026-11-09), the run's
+   discs tinted, today's inverted; under each a Poké Ball — caught (in the run), dashed (missed),
    "+" today (the check-in, the strip's one loud moment, shiny burst), a dot
    ahead. A muted line under it: the level and what the next check-in pays.
 3. **Hero of the day** (`DayHero`): one surface tinted by the lead's type

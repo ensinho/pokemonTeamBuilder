@@ -433,8 +433,8 @@
 
 /* ============================================================
    THE WEEK STRIP (2026-11-09) — CheckinWeek.jsx
-   The journal reference's Mon–Sun row: seven pill columns, today
-   inverted, a Poké Ball for each day of the run. Today's open cell
+   The journal reference's Mon–Sun row: seven days, each date in a
+   round disc, a Poké Ball under each day of the run. Today's open cell
    is the check-in itself. Cells in a row never give (design-system):
    the press is felt in the "+" glyph.
    ============================================================ */
@@ -458,17 +458,20 @@
     display: flex;
 }
 
+/* A day is a column — its name, the date in a round disc, its ball — with
+   no box of its own (Enzo, 2026-11-09: the tall capsules read "muito oval";
+   a circle per day is rounder and cleaner). */
 .checkin-week__cell {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-1_5);
     width: 100%;
-    padding: var(--space-2) 0;
+    padding: 0;
     border: none;
-    border-radius: var(--radius-full);
-    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    background: none;
     color: var(--color-fg);
     font: inherit;
 }
@@ -480,27 +483,41 @@
     line-height: 1;
 }
 
-.checkin-week__date {
+.checkin-week__disc {
+    display: grid;
+    place-items: center;
+    width: min(2.5rem, 100%);
+    aspect-ratio: 1;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     line-height: 1;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+/* The run reads as a band of tinted discs before a single ball is read. */
+.checkin-week__day.is-caught .checkin-week__disc,
+.checkin-week__day.is-shielded .checkin-week__disc {
+    background: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
 }
 
 /* Today, inverted: the selected value of the row reads at once on any
    theme (the inverted-chip pattern, creative_direction.md). */
-.checkin-week__day.is-today .checkin-week__cell,
-.checkin-week__day.is-today-done .checkin-week__cell {
+.checkin-week__day.is-today .checkin-week__disc,
+.checkin-week__day.is-today-done .checkin-week__disc {
     background: var(--color-fg);
     color: var(--color-bg);
 }
 
 .checkin-week__day.is-today .checkin-week__weekday,
 .checkin-week__day.is-today-done .checkin-week__weekday {
-    color: color-mix(in srgb, var(--color-bg) 72%, var(--color-fg));
+    color: var(--color-fg);
+    font-weight: var(--weight-semibold);
 }
 
-.checkin-week__day.is-ahead .checkin-week__date {
+.checkin-week__day.is-ahead .checkin-week__disc {
     color: var(--color-muted);
 }
 
@@ -511,8 +528,8 @@
 .checkin-week__plus {
     display: grid;
     place-items: center;
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1rem;
+    height: 1rem;
     border-radius: var(--radius-full);
     background: var(--color-primary);
     color: var(--color-on-primary);
@@ -520,8 +537,8 @@
 }
 
 .checkin-week__plus svg {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.75rem;
+    height: 0.75rem;
 }
 
 .checkin-week__check:active .checkin-week__plus {
@@ -563,8 +580,9 @@
     fill: var(--color-surface);
 }
 
-.checkin-week__day.is-today-done .day-ball.is-caught .day-ball__button {
-    fill: var(--color-bg);
+.checkin-week .day-ball {
+    width: 1rem;
+    height: 1rem;
 }
 
 /* Ahead: not yet a day — a dot in the ball's own box, so every cell keeps
