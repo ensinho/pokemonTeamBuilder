@@ -293,6 +293,10 @@ input[type="number"] {
     /* Fill, not a border: these sit inside the bordered list (459 nested
        boxes on desktop — audit 2026-11-09). */
     border: none;
+    /* The border used to make it 24px tall; without it, the floor is explicit
+       (WCAG 2.5.8 — the bench counted 362 chips under 24px). */
+    /* 24px floor in px: the root size can be under 16px (text-size setting). */
+    min-height: max(1.5rem, 24px);
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     color: var(--color-muted);

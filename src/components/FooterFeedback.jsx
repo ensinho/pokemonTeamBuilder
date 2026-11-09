@@ -184,7 +184,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                     aria-pressed={hasLiked}
                     aria-label={hasLiked ? 'Remove your like' : 'Like this app'}
                     title={hasLiked ? 'You liked this' : 'Like this app'}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-on-primary hover:opacity-90' : 'border-surface-raised bg-surface-raised text-muted hover:text-fg hover:border-border-hover'}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 min-h-[24px] text-xs font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-on-primary hover:opacity-90' : 'border-surface-raised bg-surface-raised text-muted hover:text-fg hover:border-border-hover'}`}
                 >
                     <HeartIcon color="currentColor" className="w-3.5 h-3.5 shrink-0" />
                     {likeCount !== null && <span>{likeCount}</span>}
@@ -195,7 +195,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                 <button
                     type="button"
                     onClick={() => setShowSuggestionModal(true)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-surface-raised bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-muted transition-colors duration-200 hover:text-fg hover:border-border-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-surface-raised bg-surface-raised px-2.5 py-0.5 min-h-[24px] text-xs font-semibold text-muted transition-colors duration-200 hover:text-fg hover:border-border-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                 >
                     <MessageIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>{t('layout.haveSuggestion')}</span>
@@ -209,7 +209,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                         onClick={() => setShowDisclaimerModal(true)}
                         onMouseEnter={() => setShowDisclaimerTooltip(true)}
                         onMouseLeave={() => setShowDisclaimerTooltip(false)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-surface-raised bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-muted transition-colors duration-200 hover:text-fg hover:border-border-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-surface-raised bg-surface-raised px-2.5 py-0.5 min-h-[24px] text-xs font-semibold text-muted transition-colors duration-200 hover:text-fg hover:border-border-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                     >
                         <InfoIcon className="w-3.5 h-3.5 shrink-0" />
                         <span>{t('layout.fanDisclaimer')}</span>

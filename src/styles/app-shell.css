@@ -1743,7 +1743,10 @@
 .app-shell__footer-link:not(.app-shell__footer-link--inline) {
     display: inline-flex;
     align-items: center;
-    min-height: 1.5rem;
+    /* 24px floor in px: the root size can be under 16px (text-size setting). */
+    min-height: max(1.5rem, 24px);
+    min-width: max(1.5rem, 24px);
+    justify-content: center;
 }
 
 .app-shell__footer-link:hover {
