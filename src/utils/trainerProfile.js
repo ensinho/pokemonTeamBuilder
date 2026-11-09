@@ -292,14 +292,18 @@ export function personaHomeOrder(profile) {
 /**
  * What the Home's one hero card is about (2026-11-09, the "of the day" hero —
  * .claude/skills/app-screens): the team in progress for most trainers; the
- * day's Champion battle for the one who came for the minigames. The rail of
- * the day's cards then leaves that subject out, so nothing shows twice.
+ * day's Champion battle for the one who came for the minigames; the next gym
+ * leader of the game being played for the one who came for the games (Enzo,
+ * 2026-11-09). The rail of the day's cards leaves the Champion out when she
+ * is the hero, so nothing shows twice.
  */
-export const HOME_HEROES = ['team', 'challenge'];
+export const HOME_HEROES = ['team', 'challenge', 'badges'];
+
+const HERO_BY_PERSONA = { challenger: 'challenge', traveler: 'badges' };
 
 export function personaHero(profile) {
     const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
-    return persona?.id === 'challenger' ? 'challenge' : 'team';
+    return HERO_BY_PERSONA[persona?.id] || 'team';
 }
 
 /** Whether the builder should coach (competitive, just starting). */

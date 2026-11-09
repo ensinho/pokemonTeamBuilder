@@ -83,8 +83,11 @@ open thread). Opened from forum authors and the friends list.
   carry no teams block (the party row stands for it), so only the first two
   swap there.
 - **Home hero (2026-11-09):** `personaHero(profile)` — the Desafiante's hero is
-  the day's Champion battle, everyone else's the team in progress
-  (`HOME_HEROES`); the rail of the day's cards leaves the hero's subject out.
+  the day's Champion battle, the Viajante's the next gym leader of the game
+  they play (`components/home/BadgeHero.jsx`, lazy, with the case's progress
+  in its bar; the Badge Case below stays where badges are tapped), everyone
+  else's the team in progress (`HOME_HEROES`). The rail of the day's cards
+  leaves the Champion out when she is the hero.
   The greeting's question is the persona's (`homeToday.ask.<persona>`).
 - **Builder:** `isBeginnerTrainer` shows `BuilderCoach` (the mascot's next
   step by team size: empty / start / grow / full; closing it is for good,

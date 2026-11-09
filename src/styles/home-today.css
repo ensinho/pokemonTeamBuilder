@@ -242,6 +242,19 @@
     height: 80%;
 }
 
+/* The Traveler's next gym leader, alone and larger (BadgeHero). */
+.day-hero__trainer--solo {
+    right: 4%;
+    bottom: 2%;
+    width: 92%;
+    height: 92%;
+}
+
+/* A lazy hero's floor while it loads (BadgeHero): the surface, no content. */
+.day-hero--placeholder {
+    background: var(--color-surface);
+}
+
 /* Blue, a step behind her, mirrored to face her — kept inside the art's
    right side so he never stands on the copy. */
 .day-hero__rival {

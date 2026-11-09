@@ -238,11 +238,11 @@ describe('personaHero', () => {
         expect(personaHero(null)).toBe('team');
         expect(personaHero(normalizeTrainerProfile({ interests: ['minigames'], skippedAt: 1 }))).toBe('team');
     });
-    it('is the day\'s Champion battle for the minigames trainer only', async () => {
+    it('is the Champion for the minigames trainer, the next gym for the games one', async () => {
         const { personaHero } = await import('./trainerProfile');
         expect(personaHero(answered({ interests: ['minigames'] }))).toBe('challenge');
         expect(personaHero(answered({ interests: ['competitive'] }))).toBe('team');
-        expect(personaHero(answered({ interests: ['franchise'] }))).toBe('team');
+        expect(personaHero(answered({ interests: ['franchise'] }))).toBe('badges');
         // All three interests make the Pokémon Master: the team leads.
         expect(personaHero(answered({ interests: ['competitive', 'franchise', 'minigames'] }))).toBe('team');
     });

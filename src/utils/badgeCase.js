@@ -10,6 +10,9 @@
 
 export const EMPTY_BADGE_CASE = Object.freeze({ game: null, earned: {}, updatedAt: null });
 
+/** The game a case shows before the trainer picks one. */
+export const DEFAULT_BADGE_GAME = 'scarlet-violet';
+
 const KEY = /^[a-z0-9-]{1,40}$/;
 
 export function normalizeBadgeCase(raw) {
@@ -56,4 +59,16 @@ export const chooseGame = (badgeCase, gameKey, now = Date.now()) => ({ ...normal
 /** The first leader not beaten yet, or null when the case is full. */
 export function nextLeader(leaders = [], earnedOrders = []) {
     return leaders.find((l) => !earnedOrders.includes(l.order)) || null;
+}
+
+/**
+ * The game the case shows: the trainer's pick, else the default, else the
+ * first listed; null while the list has not loaded. Shared by the Badge Case
+ * and the Traveler's hero, so both always show the same game.
+ */
+export function caseGame(games = [], badgeCase) {
+    return games.find((g) => g.key === badgeCase?.game)
+        || games.find((g) => g.key === DEFAULT_BADGE_GAME)
+        || games[0]
+        || null;
 }

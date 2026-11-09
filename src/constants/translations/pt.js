@@ -959,6 +959,11 @@ export default {
         coverageShort: 'cobre {{n}}/{{total}}',
         herTeam: 'O time de hoje',
         challengeStreak: 'sequência {{n}}',
+        nextGym: 'Próximo ginásio',
+        studyGym: 'Estudar o time de {{leader}}',
+        studyShort: 'Estudar',
+        seeGyms: 'Ver os ginásios',
+        seeGymsShort: 'Ginásios',
     },
     checkinWeek: {
         tapToday: 'toque em hoje: +{{xp}} XP',

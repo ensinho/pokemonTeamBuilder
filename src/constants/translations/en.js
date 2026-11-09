@@ -993,6 +993,11 @@ export default {
         coverageShort: 'covers {{n}}/{{total}}',
         herTeam: 'Today\'s team',
         challengeStreak: 'streak {{n}}',
+        nextGym: 'Next gym',
+        studyGym: 'Study {{leader}}\'s team',
+        studyShort: 'Study',
+        seeGyms: 'See the gyms',
+        seeGymsShort: 'Gyms',
     },
     checkinWeek: {
         tapToday: 'tap today: +{{xp}} XP',

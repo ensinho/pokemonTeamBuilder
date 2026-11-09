@@ -56,6 +56,8 @@ import { openTeamCompare } from '../../store/useTeamCompareStore';
 const BadgeCase = lazy(() => import('../home/BadgeCase').then((m) => ({ default: m.BadgeCase })));
 // "Hoje no Centro" (2026-11-09): its own chunk — it polls public counters and the friends' timeline.
 const CenterToday = lazy(() => import('../home/CenterToday').then((m) => ({ default: m.CenterToday })));
+// The Traveler's hero (the next gym leader): its own chunk — only that persona reads the gyms.
+const BadgeHero = lazy(() => import('../home/BadgeHero').then((m) => ({ default: m.BadgeHero })));
 // The streak sheet opens from the greeting's flame: its own chunk, fetched on the tap.
 const StreakSheet = lazy(() => import('../rewards/StreakSheet').then((m) => ({ default: m.StreakSheet })));
 
@@ -475,7 +477,13 @@ export function CozyHomeView({
         onChangeWallpaper: onChangeHeroBackground && SHARE_BACKGROUNDS.length > 1 ? cycleWallpaper : undefined,
         wallpaperLabel,
     };
-    const hero = heroKind === 'challenge' ? (
+    // The hero's floor while a lazy hero loads, so nothing under it moves.
+    const heroPlaceholder = <section className="day-hero day-hero--placeholder" aria-hidden="true" />;
+    const hero = heroKind === 'badges' ? (
+        <Suspense fallback={heroPlaceholder}>
+            <BadgeHero {...heroWallpaper} />
+        </Suspense>
+    ) : heroKind === 'challenge' ? (
         <DayHero
             {...heroWallpaper}
             tone={typeColors.dragon}

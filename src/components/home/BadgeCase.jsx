@@ -5,14 +5,13 @@ import '../../styles/badge-case.css';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useGymLeaders } from '../../hooks/useGymLeaders';
 import { useAuthStore } from '../../store/useAuthStore';
-import { caseLeaders, chooseGame, nextLeader, toggleBadge } from '../../utils/badgeCase';
+import { caseGame, caseLeaders, chooseGame, nextLeader, toggleBadge } from '../../utils/badgeCase';
 import { typeColors } from '../../constants/types';
 import { SHOWDOWN_SPRITES_BASE } from '../../utils/assetHost';
 import { Loader } from '../Loader';
 import { useForumStore } from '../../store/useForumStore';
 
 const TRAINER_SPRITE_BASE = `${SHOWDOWN_SPRITES_BASE}/trainers/`;
-const DEFAULT_GAME = 'scarlet-violet';
 
 /**
  * The Badge Case (2026-11-05) — the Traveler's Home. The game's eight gym
@@ -32,7 +31,7 @@ export function BadgeCase() {
 
     const official = useMemo(() => games.filter((g) => g.kind === 'official'), [games]);
     const hacks = useMemo(() => games.filter((g) => g.kind !== 'official'), [games]);
-    const game = games.find((g) => g.key === badgeCase?.game) || games.find((g) => g.key === DEFAULT_GAME) || games[0];
+    const game = caseGame(games, badgeCase);
 
     if (!game) {
         return status === 'error' ? null : <Loader size="sm" label={t('badgeCase.loading')} block />;

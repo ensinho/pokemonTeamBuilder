@@ -118,8 +118,9 @@ by being what ≥ 80% of visits need.
    (the partner's with no team), official artwork as protagonist, the headline
    in Unbounded, and the **player bar** at its foot: team name, "4 de 6 ·
    cobertura 12/18", a thin progress, the round ▶ that continues. Which hero
-   is the persona's call — `personaHero(profile)` in `utils/trainerProfile.js`,
-   never decided in the view.
+   is the persona's call — `personaHero(profile)` in `utils/trainerProfile.js`
+   (team · the Champion for the minigames trainer · the next gym leader for
+   the games one, `BadgeHero`), never decided in the view.
 4. **Party row** (`HomeParty`): the active team as six round slots, name + type
    under each, dashed "+" for an empty one; a tap edits the team.
 5. **Seu dia** as a rail: big-art cards (the Champion and her six, the puzzle's
