@@ -220,3 +220,13 @@ The type coverage engine in `useActiveTeamStore` uses `analyzeTeam` from `src/ut
 **Files:** `src/constants/translations/en.js`, `src/constants/translations/pt.js` (one table per language; `src/constants/translations.js` aggregates both for `api/` and tests)
 
 All user-facing strings, one nested key→value table per language. The browser loads only the active one as its own chunk (`src/i18n/catalog.js`, preloaded by `scripts/lib/i18nPreload.mjs`); `translateCore.js` is aliased to `translateClient.js` in the browser build. Every key goes in both files (`src/i18n/catalog.guard.test.js`). `useTranslation()` (`src/hooks/useTranslation.js`) resolves keys using the active language from `useLanguageStore`. Never hardcode UI strings in JSX — always add to both `translations/en.js` and `translations/pt.js` and resolve via the hook.
+
+## Library lists: baked, one request each (2026-11-09)
+
+The Biblioteca's Items and Abilities pages read one baked file each, never PokéAPI per row:
+
+- `public/data/item-list.json` (`scripts/build-item-list.mjs`, ~17 KB gz): 632 of PokéAPI's 2,223 items — held, berries, healing/battle, evolution/forms, Poké Balls. TM materials, picnic/sandwich/curry ingredients, loot and story items are left out (`CATEGORY_GROUP` / `POCKET_GROUP` decide). Row: `n` slug, `en` name, `g` group, `c` category, `$` cost, `e` short effect, `ns` no sprite.
+- `public/data/ability-list.json` (`scripts/build-ability-list.mjs`, ~11 KB gz): main-series abilities with `e` short effect and `k` holder count.
+- Rebuild both with `npm run data:reference-lists`. Detail pages (`/items/:name`, `/abilities/:name`) still read the full PokéAPI record.
+
+`useReferenceList` takes `matchEntry(entry, slugTerm, rawTerm)` for these lists, so search matches the name, category and effect text ("speed", "rain"), name matches first; with no `loadDetail` it fetches nothing per row. Items also filter by group (`?g=held`). Moves already read `battle-dex.json`.

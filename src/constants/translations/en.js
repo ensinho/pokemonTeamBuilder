@@ -679,6 +679,8 @@ export default {
         itemsSubtitle: 'Held items, berries and their effects',
         searchMoves: 'Search moves or a Pokémon…',
         searchAbilities: 'Search abilities or a Pokémon…',
+        itemGroup: 'Group',
+        itemGroups: { all: 'All groups', held: 'Held items', berries: 'Berries', medicine: 'Healing & battle', evolution: 'Evolution & forms', balls: 'Poké Balls' },
         searchItems: 'Search items…',
         colName: 'Name',
         colType: 'Type',
