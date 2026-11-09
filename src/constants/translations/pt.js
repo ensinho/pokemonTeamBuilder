@@ -77,6 +77,8 @@ export default {
         primaryCta: 'Montar meu time',
         secondaryCta: 'Explorar a Pokédex',
         skip: 'Ir para o meu início',
+        bubble: 'Quem entra no seu time?',
+        partySticker: 'time completo',
         demo: {
             title: 'Veja funcionando',
             hint: 'Toque num Pokémon para adicionar ou remover. É a mesma análise que o montador faz.',

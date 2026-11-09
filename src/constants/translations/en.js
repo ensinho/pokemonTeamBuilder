@@ -80,6 +80,8 @@ export default {
         primaryCta: 'Build my team',
         secondaryCta: 'Explore the Pokédex',
         skip: 'Go to my home',
+        bubble: 'Who makes your team?',
+        partySticker: 'full party',
         demo: {
             title: 'See it work',
             hint: 'Tap a Pokémon to add or remove it. This is the same analysis the builder runs.',
