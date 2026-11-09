@@ -53,7 +53,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                             )}
                             <ul className={`more-sheet__grid ${section.featured ? 'more-sheet__grid--featured' : ''} ${section.hero ? 'more-sheet__grid--hero' : ''}`}>
                                 {section.items.map((item) => {
-                                    const active = currentPage === item.key;
+                                    const active = currentPage === item.key || Boolean(item.members?.includes(currentPage));
                                     const shortened = item.shortLabel && item.shortLabel !== item.label;
                                     return (
                                         <li key={item.key}>
@@ -62,7 +62,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                                 className={`more-tile ${section.featured ? 'more-tile--featured' : ''} ${section.hero ? 'more-tile--hero' : ''} ${active ? 'is-active' : ''}`}
                                                 aria-current={active ? 'page' : undefined}
                                                 aria-label={shortened ? item.label : undefined}
-                                                onPointerDown={() => onIntent?.(item.key)}
+                                                onPointerDown={() => onIntent?.(item.prefetchKey || item.key)}
                                                 onClick={() => onNavigate(item.path)}
                                             >
                                                 <span className="more-tile__icon">

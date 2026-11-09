@@ -2442,3 +2442,38 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* ── Hub switcher (2026-11-09) ───────────────────────────────────────────
+   One menu entry for related pages (constants/navHubs.js); this is where the
+   trainer picks between them. Sized to its words on a desktop, the full
+   width of the page on a phone. */
+.hub-switch {
+    margin-bottom: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+    .hub-switch__track.segmented--block {
+        display: inline-flex;
+        width: auto;
+    }
+
+    .hub-switch__track.segmented--block > .segmented__item {
+        flex: 0 0 auto;
+        padding-inline: var(--space-4);
+    }
+}
+
+@media (max-width: 1023px) {
+    .hub-switch {
+        margin-bottom: var(--space-3);
+    }
+
+    /* Labels of unequal length ("Uso" / "Times de torneio"): each takes
+       what it needs, so the longest still fits a 360px phone. */
+    .hub-switch__track.segmented--block > .segmented__item {
+        flex: 1 1 auto;
+        padding-inline: var(--space-2);
+        font-size: var(--text-sm);
+        white-space: nowrap;
+    }
+}

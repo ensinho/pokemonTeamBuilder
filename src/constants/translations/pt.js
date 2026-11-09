@@ -574,6 +574,11 @@ export default {
         fairy: 'Fada'
     },
     nav: {
+        hubUsage: 'Uso',
+        hubTournamentTeams: 'Times de torneio',
+        library: 'Biblioteca',
+        metaHub: 'Meta e torneios',
+        hub: { library: 'Golpes, habilidades e itens', meta: 'Meta, melhores times e torneios' },
         about: 'Sobre o app',
         more: 'Mais',
         moreSheetLabel: 'Mais destinos',
