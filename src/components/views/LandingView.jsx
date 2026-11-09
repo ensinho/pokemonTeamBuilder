@@ -18,6 +18,7 @@ import { LandingFeatures } from '../landing/LandingFeatures';
 import { LogoMark } from '../LogoMark';
 import { THEME_META } from '../../constants/theme';
 import { LANGUAGES } from '../../utils/localePath';
+import { PokeballIcon } from '../icons';
 
 /**
  * Home for a first visit (2026-10-21): what the app does, shown working, and
@@ -43,7 +44,7 @@ const STAGE_LEAD_TYPE = 'dragon';
 // The stage is aria-hidden; the names are for image search and audits.
 const STAGE_NAMES = Object.fromEntries(DEMO_POOL.map((p) => [p.id, titleCaseSlug(p.name)]));
 
-function LandingStage() {
+function LandingStage({ bubble }) {
     const row = (ids, depth) => (
         <div className={`landing-stage__row landing-stage__row--${depth}`}>
             {ids.map((id) => (
@@ -56,9 +57,33 @@ function LandingStage() {
     return (
         <div className="landing-stage" aria-hidden="true" style={{ '--spark-color': typeColors[STAGE_LEAD_TYPE] }}>
             <span className="landing-stage__ball" />
+            {/* The product speaking for itself (the references' chat bubble),
+                asked in the franchise's own words. Decoration: the h1 says it. */}
+            <span className="landing-bubble">{bubble}</span>
             {row(STAGE_BACK, 'back')}
             {row(STAGE_FRONT, 'front')}
         </div>
+    );
+}
+
+/**
+ * The sticker collage on the headline (2026-11-09, the journal welcome's
+ * "Capture your [Day] in [Words]" — .claude/skills/app-screens): the lead's
+ * type and a full party, slapped on above the title at their own angles.
+ * Beside the h1, never inside it, so the sentence crawlers and screen readers
+ * get is the one in the translation table.
+ */
+function LandingStickers({ partyLabel }) {
+    return (
+        <span className="landing-stickers" aria-hidden="true">
+            <span className="landing-sticker landing-sticker--type">
+                <TypeChip type={STAGE_LEAD_TYPE} size="sm" />
+            </span>
+            <span className="landing-sticker landing-sticker--party">
+                {Array.from({ length: 6 }, (_, i) => <PokeballIcon key={i} className="landing-sticker__ball" />)}
+                <span>{partyLabel}</span>
+            </span>
+        </span>
     );
 }
 
@@ -156,7 +181,7 @@ function LandingDemo({ onLeave }) {
     );
 }
 
-export function LandingView({ onLeave, onSkip }) {
+export function LandingView({ onLeave, onSkip, onSignIn }) {
     const { t } = useTranslation();
     useDocumentMeta({ path: '/' });
 
@@ -169,11 +194,24 @@ export function LandingView({ onLeave, onSkip }) {
                         <BrandWordmark className="landing-brand__wordmark" />
                     </div>
                     <p className="landing-eyebrow"><span className="landing-eyebrow__dot" aria-hidden="true" />{t('landing.eyebrow')}</p>
-                    <h1 className="landing-title">{t('landing.title')}</h1>
+                    <div className="landing-headline">
+                        <LandingStickers partyLabel={t('landing.partySticker')} />
+                        <h1 className="landing-title">{t('landing.title')}</h1>
+                    </div>
                     <p className="landing-lede">{t('landing.lede')}</p>
                     <div className="landing-actions">
                         <Link to="/builder" className="btn btn-primary btn-lg" onClick={() => onLeave('hero_build')}>{t('landing.primaryCta')}</Link>
                         <Link to="/pokedex" className="btn btn-outline btn-lg" onClick={() => onLeave('hero_pokedex')}>{t('landing.secondaryCta')}</Link>
+                        {onSignIn && (
+                            // A trainer on a new device: the way back to their teams,
+                            // said as every app says it (the references' "I already
+                            // have an account").
+                            <p className="landing-signin">
+                                {t('modals.authHaveAccount')}
+                                {' '}
+                                <button type="button" className="landing-signin__link" onClick={onSignIn}>{t('modals.authTabSignIn')}</button>
+                            </p>
+                        )}
                         <button type="button" className="landing-skip" onClick={onSkip}>{t('landing.skip')}</button>
                     </div>
                     <dl className="landing-stats">
@@ -190,7 +228,7 @@ export function LandingView({ onLeave, onSkip }) {
                         ))}
                     </dl>
                 </div>
-                <LandingStage />
+                <LandingStage bubble={t('landing.bubble')} />
             </section>
 
             <LandingDemo onLeave={onLeave} />

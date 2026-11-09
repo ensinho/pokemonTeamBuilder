@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Cloud, Medal, Swords, MailCheck } from 'lucide-react';
+import { Cloud, LockKeyhole, Mail, Medal, Swords, MailCheck } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { authErrorField, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
@@ -15,6 +15,12 @@ const EMAIL_RE = /^\S+@\S+\.\S+$/;
  * Sign in, create an account, or get back in — the trainer card. Three views
  * in one dialog ('signIn' | 'signUp' | 'reset'), switched in place so the
  * email typed in one carries into the next.
+ *
+ * 2026-11-09 (the journal reference's sign-up — .claude/skills/app-screens):
+ * filled fields with a leading icon, the form first, and the other mode as a
+ * footer sentence ("Novo por aqui? Criar conta") instead of a switch above
+ * the fields. On a phone the form's surface rises over the scene
+ * (auth-dialog.css).
  */
 export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onResetPassword, onClose }) {
     const { t } = useTranslation();
@@ -116,47 +122,42 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                 </div>
             ) : (
                 <>
-                    {isReset ? (
+                    {isReset && (
                         <div className="auth-dialog__heading">
                             <h3>{t('modals.authResetHeading')}</h3>
                             <p>{t('modals.authResetHint')}</p>
                         </div>
-                    ) : (
-                        // Two places, one switch: the thumb travels between them.
-                        <div className="segmented segmented--block segmented--lg" role="group" aria-label={t('modals.authEyebrow')}>
-                            <button type="button" className="segmented__item" aria-pressed={!isSignUp} onClick={() => switchMode('signIn')}>
-                                {t('modals.authTabSignIn')}
-                            </button>
-                            <button type="button" className="segmented__item" aria-pressed={isSignUp} onClick={() => switchMode('signUp')}>
-                                {t('modals.authTabSignUp')}
-                            </button>
-                        </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="auth-dialog__form" noValidate>
-                        <label className="field">
+                        <label className="field field--filled">
                             <span className="field-label">{t('modals.authEmailLabel')}</span>
-                            <input
-                                ref={emailRef}
-                                type="email"
-                                autoComplete="email"
-                                autoCapitalize="none"
-                                autoCorrect="off"
-                                inputMode="email"
-                                enterKeyHint={isReset ? 'send' : 'next'}
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                aria-invalid={errorField === 'email' || undefined}
-                                aria-describedby={error && errorField === 'email' ? 'auth-modal-error' : undefined}
-                                className="input-clean"
-                                placeholder="trainer@pokemail.com"
-                            />
+                            <span className="field__control">
+                                <Mail className="field__icon" aria-hidden="true" />
+                                <input
+                                    ref={emailRef}
+                                    type="email"
+                                    autoComplete="email"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    inputMode="email"
+                                    enterKeyHint={isReset ? 'send' : 'next'}
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    aria-invalid={errorField === 'email' || undefined}
+                                    aria-describedby={error && errorField === 'email' ? 'auth-modal-error' : undefined}
+                                    className="input-clean"
+                                    placeholder="trainer@pokemail.com"
+                                />
+                            </span>
                         </label>
 
                         {!isReset && (
                             <PasswordField
                                 mascot
+                                filled
+                                icon={LockKeyhole}
                                 label={t('modals.authPasswordLabel')}
                                 value={password}
                                 onChange={setPassword}
@@ -189,6 +190,17 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             )}
                         </div>
                     </form>
+
+                    {!isReset && (
+                        // The other mode, as every app says it: a sentence and a link.
+                        <p className="auth-dialog__switch">
+                            {isSignUp ? t('modals.authHaveAccount') : t('modals.authNoAccount')}
+                            {' '}
+                            <button type="button" className="auth-dialog__switch-link" onClick={() => switchMode(isSignUp ? 'signIn' : 'signUp')}>
+                                {isSignUp ? t('modals.authTabSignIn') : t('modals.authTabSignUp')}
+                            </button>
+                        </p>
+                    )}
                 </>
             )}
         </AuthDialogShell>

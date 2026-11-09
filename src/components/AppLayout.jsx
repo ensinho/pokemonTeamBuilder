@@ -171,7 +171,8 @@ const readLocalStorage = () => {
 // landing's headline — was an SEO audit finding (2026-10-30). Everywhere
 // else the header title is the page's only H1. The first-visit landing is
 // added at the render site (it lives under 'home', whose dashboard has none).
-const VIEWS_WITH_OWN_H1 = new Set(['guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
+// Home's h1 is its greeting ("Boa noite, Enzo" — components/home/HomeGreeting.jsx).
+const VIEWS_WITH_OWN_H1 = new Set(['home', 'guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
 const DESKTOP_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
 
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
@@ -1347,28 +1348,29 @@ export default function AppLayout() {
     // Splash renderer
     if (showInitialAuthSplash) {
         return (
-            <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
-                <div className="boot-splash w-full max-w-xs text-center">
-                    {/* The icon at rest, drawn without waiting for the mascot chunk; it pops in with the splash. */}
-                    <MascotIcon className="boot-splash__mascot mx-auto" />
-                    <BrandWordmark className="mx-auto mt-4 block w-48 h-auto" />
-                    <div
-                        className="mt-5 h-1 w-full overflow-hidden rounded-full"
-                        style={{ backgroundColor: colors.cardLight }}
-                        aria-hidden="true"
-                    >
+            <div className="boot-screen" style={{ backgroundColor: colors.background }}>
+                {/* The brand moment (2026-11-09, the references' splash —
+                    .claude/skills/app-screens): the Volt ground, the icon's
+                    ghost huge and cropped at two corners, the wordmark between
+                    them. It all fades in after 300 ms with the splash, so a
+                    warm start that settles sooner never flashes it. */}
+                <div className="boot-screen__ground" aria-hidden="true">
+                    <MascotIcon className="boot-screen__ghost boot-screen__ghost--top" />
+                    <MascotIcon className="boot-screen__ghost boot-screen__ghost--bottom" />
+                </div>
+                <div className="boot-splash">
+                    <p className="boot-splash__tagline">{t('splash.tagline')}</p>
+                    <BrandWordmark className="boot-splash__wordmark" />
+                    <div className="boot-splash__track" aria-hidden="true">
                         <span
-                            className="block h-full rounded-full"
+                            className="boot-splash__fill"
                             style={{
                                 width: `${authSplashProgress}%`,
-                                backgroundColor: colors.primary,
-                                transition: `width ${splashBar.durationMs}ms ease-out`,
+                                transitionDuration: `${splashBar.durationMs}ms`,
                             }}
                         />
                     </div>
-                    <p className="mt-3 text-xs" style={{ color: colors.textMuted }}>
-                        {authSplashMessage}
-                    </p>
+                    <p className="boot-splash__message">{authSplashMessage}</p>
                 </div>
             </div>
         );
@@ -1708,7 +1710,15 @@ export default function AppLayout() {
                                         {React.createElement(
                                             isLandingOpen || VIEWS_WITH_OWN_H1.has(currentPage) ? 'p' : 'h1',
                                             { className: 'app-shell__header-title' },
-                                            pageInfo.shortTitle || pageInfo.title,
+                                            // A phone's Home wears the brand where a page title would
+                                            // be (the references' wordmark-top-left): the greeting
+                                            // under it already says where you are.
+                                            isMobile && currentPage === 'home' && !isLandingOpen ? (
+                                                <>
+                                                    <BrandWordmark className="app-shell__header-wordmark" />
+                                                    <span className="sr-only">{pageInfo.shortTitle || pageInfo.title}</span>
+                                                </>
+                                            ) : (pageInfo.shortTitle || pageInfo.title),
                                         )}
                                         {pageGuideTips[currentPage] && (
                                             <PageGuide
@@ -2184,7 +2194,10 @@ export default function AppLayout() {
                                     className={`app-shell__tab ${tab.active ? 'is-active' : ''}`}
                                     aria-current={tab.active && !tab.action ? 'page' : undefined}
                                     aria-haspopup={tab.action ? 'dialog' : undefined}
-                                    aria-label={tab.shortLabel && tab.shortLabel !== tab.label ? tab.label : undefined}
+                                    // Only the current tab shows its label (2026-11-09, the
+                                    // references' label-on-active dock): every tab is named
+                                    // by its full label, shown or not.
+                                    aria-label={tab.label}
                                 >
                                     <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
                                     <span className="app-shell__tab-label">{tab.shortLabel || tab.label}</span>

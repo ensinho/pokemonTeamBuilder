@@ -80,7 +80,15 @@ open thread). Opened from forum authors and the friends list.
 - **Home order:** `personaHomeOrder(profile)` — Desafiante: Seu dia → Para
   você → times; Estrategista: times → Para você → Seu dia; Viajante: Para
   você → times → Seu dia; anyone else keeps `DEFAULT_HOME_ORDER`. Phones
-  carry no teams block on the Today tab, so only the first two swap there.
+  carry no teams block (the party row stands for it), so only the first two
+  swap there.
+- **Home hero (2026-11-09):** `personaHero(profile)` — the Desafiante's hero is
+  the day's Champion battle, the Viajante's the next gym leader of the game
+  they play (`components/home/BadgeHero.jsx`, lazy, with the case's progress
+  in its bar; the Badge Case below stays where badges are tapped), everyone
+  else's the team in progress (`HOME_HEROES`). The rail of the day's cards
+  leaves the Champion out when she is the hero.
+  The greeting's question is the persona's (`homeToday.ask.<persona>`).
 - **Builder:** `isBeginnerTrainer` shows `BuilderCoach` (the mascot's next
   step by team size: empty / start / grow / full; closing it is for good,
   `ptb:builderCoachDismissed`). `isRankedTrainer` opens the analysis card on

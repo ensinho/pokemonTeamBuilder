@@ -296,6 +296,5 @@
 }
 .mascot-404 .mascot { width: clamp(8rem, 36vw, 11rem); height: clamp(8rem, 36vw, 11rem); }
 
-/* The boot splash's icon: as large as the raster mark was, popping in with
-   the splash itself (which fades in after 300 ms, app-shell.css). */
-.mascot.boot-splash__mascot { width: 7rem; height: 7rem; --mascot-delay: 300ms; }
+/* The boot splash's ghosts are sized and recoloured in app-shell.css
+   (.boot-screen__ghost): huge, cropped, white on the Volt ground. */

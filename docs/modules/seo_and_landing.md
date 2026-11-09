@@ -224,6 +224,15 @@ pages are crawlable from each other.
   demo's verdict were removed. The page is one centred 72rem column; every
   section opens with `.landing-section-head` (title + one line), and sections
   are `--space-16` apart.
+- **On a phone the landing is the app's welcome (2026-11-09, `.claude/skills/
+  app-screens`):** below 640px `.landing-banner__copy` dissolves
+  (`display: contents`) and CSS `order` arranges brand → the stage (with the
+  product's speech bubble, `landing.bubble`) → the headline with its sticker
+  collage (`LandingStickers`, aria-hidden, *beside* the h1 — the h1 text is
+  untouched) → the lede → the actions in the thumb zone (with "Já tem conta?
+  Entrar", `onSignIn` from `HomeEntry`: sign-in opens over the landing, which
+  gives way once an account is in) → the eyebrow as the trust line → the
+  figures. The primary CTA clears a 360×740 screen.
 - The demo is its own section under the banner (picker beside the verdict on
   wide screens); its cards animate only the Pokémon on the team (the bench is
   the still frame). A figure strip under the CTAs (1025 Pokémon · 18 types ·

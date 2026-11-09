@@ -38,3 +38,18 @@ describe('badge case', () => {
         expect(mergeBadgeCases(newer, older).game).toBe('x-y');
     });
 });
+
+describe('caseGame', () => {
+    const games = [{ key: 'red-blue' }, { key: 'scarlet-violet' }, { key: 'x-y' }];
+    it('is the trainer\'s pick, then the default, then the first listed', async () => {
+        const { caseGame } = await import('./badgeCase');
+        expect(caseGame(games, { game: 'x-y' }).key).toBe('x-y');
+        expect(caseGame(games, { game: 'unknown' }).key).toBe('scarlet-violet');
+        expect(caseGame(games, null).key).toBe('scarlet-violet');
+        expect(caseGame([{ key: 'gold-silver' }], null).key).toBe('gold-silver');
+    });
+    it('is null while nothing has loaded', async () => {
+        const { caseGame } = await import('./badgeCase');
+        expect(caseGame([], { game: 'x-y' })).toBeNull();
+    });
+});
