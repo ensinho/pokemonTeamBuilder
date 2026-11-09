@@ -24,7 +24,7 @@ export function TeamShareRow({ onImage, disabled = false, className = '' }) {
         <div className={`tb-share-row ${className}`} role="group" aria-label={t('builder.shareActions')}>
             <button
                 type="button"
-                className="btn btn-secondary btn-sm"
+                className="btn btn-secondary btn-sm touch-target--y touch-target"
                 onClick={isSharingLink ? undefined : copyTeamLink}
                 disabled={disabled}
                 aria-busy={isSharingLink || undefined}
@@ -32,11 +32,11 @@ export function TeamShareRow({ onImage, disabled = false, className = '' }) {
                 {isSharingLink ? <Loader size="xs" className="loader--inherit" /> : <Link2 aria-hidden="true" />}
                 <span>{t('builder.shareLink')}</span>
             </button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onImage} disabled={disabled}>
+            <button type="button" className="btn btn-secondary btn-sm touch-target--y touch-target" onClick={onImage} disabled={disabled}>
                 <Image aria-hidden="true" />
                 <span>{t('builder.shareImage')}</span>
             </button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/feed?compose=team')} disabled={disabled}>
+            <button type="button" className="btn btn-secondary btn-sm touch-target--y touch-target" onClick={() => navigate('/feed?compose=team')} disabled={disabled}>
                 <MessageSquare aria-hidden="true" />
                 <span>{t('builder.shareForum')}</span>
             </button>
