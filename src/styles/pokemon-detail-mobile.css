@@ -133,6 +133,22 @@
 }
 
 .pdm__iconbtn:active { background: color-mix(in srgb, var(--color-fg) 14%, transparent); }
+
+.pdm__iconbtn--label {
+    gap: var(--space-1);
+    padding-inline: var(--space-3) var(--space-3_5);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+/* Five tabs ran 449px on a 390 screen and cut "Sprites": a step smaller on
+   a phone, they fit, and the strip's edge fades when they still do not. */
+@media (max-width: 420px) {
+    .pdm__tab {
+        padding-inline: var(--space-2);
+        font-size: var(--text-sm);
+    }
+}
 .pdm__iconbtn.is-active { color: var(--color-accent); }
 
 .pdm__dex {
@@ -673,4 +689,11 @@
 .pdm-competitive section,
 .pdm-competitive .rounded-xl {
     border-width: 0;
+}
+
+/* The entry came in another language than the screen (audit 2026-11-09). */
+.pdm-prose-note {
+    margin: var(--space-2) 0 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
 }

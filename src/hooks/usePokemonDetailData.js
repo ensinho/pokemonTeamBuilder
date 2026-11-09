@@ -373,23 +373,33 @@ export function usePokemonDetailData({
     }, [selectedPokemonDetails, showShiny, customSelectedSprite]);
 
     const formattedId = useMemo(() => (selectedPokemonDetails?.id ? String(selectedPokemonDetails.id).padStart(4, '0') : ''), [selectedPokemonDetails]);
-    const pokemonGenus = useMemo(() => speciesData?.genera?.find((g) => g.language.name === 'en')?.genus || '', [speciesData]);
+    // Genus in the UI language when PokéAPI has it; English otherwise, flagged
+    // so a Portuguese screen can keep it out of the hero (audit 2026-11-09).
+    const genusEntry = useMemo(() => {
+        const genera = speciesData?.genera || [];
+        return genera.find((g) => g.language?.name === language) || genera.find((g) => g.language?.name === 'en') || null;
+    }, [speciesData, language]);
+    const pokemonGenus = genusEntry?.genus || '';
+    const isGenusLocal = !genusEntry || genusEntry.language?.name === language;
     // Pokédex flavor text — prefer the UI language, fall back to English (PokéAPI
     // rarely ships pt). Clean soft-hyphen word breaks and collapse the line breaks
     // old-gen entries carry mid-sentence.
-    const pokedexDescription = useMemo(() => {
+    const descriptionEntry = useMemo(() => {
         const entries = speciesData?.flavor_text_entries;
-        if (!entries?.length) return '';
+        if (!entries?.length) return null;
         const langName = language === 'pt' ? 'pt' : 'en';
-        const entry = entries.find((e) => e.language?.name === langName)
+        return entries.find((e) => e.language?.name === langName)
             || entries.find((e) => e.language?.name === 'en')
             || entries[0];
-        return String(entry?.flavor_text || '')
-            .replace(/[­]\s*/g, '')
-            .replace(/[\n\f\r]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
     }, [speciesData, language]);
+    const pokedexDescription = useMemo(() => String(descriptionEntry?.flavor_text || '')
+        .replace(/[­]\s*/g, '')
+        .replace(/[\n\f\r]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim(), [descriptionEntry]);
+    // The entry is in another language than the screen (PokéAPI rarely ships
+    // pt): the view says so instead of switching language unannounced.
+    const isDescriptionLocal = !descriptionEntry || descriptionEntry.language?.name === (language === 'pt' ? 'pt' : 'en');
     const heightInM = useMemo(() => { const h = selectedPokemonDetails?.height || fullApiData?.height; return h ? h / 10 : 0; }, [selectedPokemonDetails, fullApiData]);
     const heightInFt = useMemo(() => { if (!heightInM) return ''; const ftTotal = heightInM * 3.28084; const ft = Math.floor(ftTotal); const inches = Math.round((ftTotal % 1) * 12); return `${ft}′${String(inches).padStart(2, '0')}″`; }, [heightInM]);
     const weightInKg = useMemo(() => { const w = selectedPokemonDetails?.weight || fullApiData?.weight; return w ? w / 10 : 0; }, [selectedPokemonDetails, fullApiData]);
@@ -468,6 +478,8 @@ export function usePokemonDetailData({
         formattedId,
         pokemonGenus,
         pokedexDescription,
+        isDescriptionLocal,
+        isGenusLocal,
         heightInM,
         heightInFt,
         weightInKg,

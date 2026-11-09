@@ -729,6 +729,8 @@ export default {
         resistances: 'Resistances',
         addToTeam: 'Add to team',
         onTeam: 'On your team',
+        addToTeamShort: 'Team',
+        onTeamShort: 'On team',
         build: {
             title: 'Most used build',
             in: '{{format}} · {{usage}}% usage',
@@ -784,6 +786,7 @@ export default {
         neutral: 'Neutral max',
         positive: 'Positive max',
         scarf: 'Scarf',
+        speedTiesWith: 'Ties with',
         speedNote: 'Speed stat at level 50. Toggle a spread to re-rank.',
         tournamentsEmpty: 'No tournaments yet',
         tournamentsEmptyDesc: 'Curated event teams will appear here soon.',
@@ -1015,8 +1018,8 @@ export default {
         selectedTypes: 'Types ({{count}})',
         typesFilterLabel: 'Types',
         typeMatchLabel: 'How types combine',
-        typeMatchAny: 'Or',
-        typeMatchAll: 'And',
+        typeMatchAny: 'Any',
+        typeMatchAll: 'All',
         typeMatchAnyHint: 'Show Pokémon with ANY of the selected types',
         typeMatchAllHint: 'Show only Pokémon with ALL of the selected types',
         genFilterLabel: 'Generation',
@@ -1079,6 +1082,7 @@ export default {
 
         /* ---- Phone Pokédex screen (MobilePokemonDetailView) ---------- */
         competitiveTab: 'Competitive',
+        originalText: 'Original Pokédex text',
         pokedexEntry: 'Pokédex entry',
         pokedexData: 'Pokédex data',
         statTotal: 'Total',

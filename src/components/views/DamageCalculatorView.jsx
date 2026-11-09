@@ -775,11 +775,12 @@ export function DamageCalculatorView() {
                     <div className="space-y-2">{STAT_KEYS.map(key => renderStatsRow(key, pState, setP))}</div>
                 </div>
 
-                {/* Ability + Item */}
-                <div className="grid grid-cols-2 gap-2 items-start">
+                {/* Ability + Item: a row each until the column is wide enough
+                    for both ("Saudáve…", "(Sem Habilidade / Ne…" — audit 2026-11-09). */}
+                <div className="grid grid-cols-1 2xl:grid-cols-2 gap-2 items-start">
                     <div>
                         <label className="dmg-field__label">{t('damageCalc.ability')}</label>
-                        <select className="dmg-select text-xs capitalize" value={pState.ability} onChange={(e) => setP(prev => ({ ...prev, ability: e.target.value }))}>
+                        <select className="dmg-select text-xs" value={pState.ability} onChange={(e) => setP(prev => ({ ...prev, ability: e.target.value }))}>
                             {pState.ability && !pState.abilitiesList.some(a => a.name === pState.ability) && !BATTLE_ABILITIES.some(a => a.value === pState.ability) && (
                                 <option value={pState.ability}>{capitalize(pState.ability)}</option>
                             )}
@@ -943,7 +944,7 @@ export function DamageCalculatorView() {
                     {/* Weather */}
                     <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
                         <span className="dmg-caps w-14 shrink-0 text-2xs font-semibold text-muted sm:w-auto">{t('damageCalc.weather')}</span>
-                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.weather')}>
+                        <div className="dmg-rail scroll-fade-x segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.weather')}>
                             {WEATHERS.map((w) => (
                                 <button
                                     key={w}
@@ -961,7 +962,7 @@ export function DamageCalculatorView() {
                     {/* Terrain */}
                     <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
                         <span className="dmg-caps w-14 shrink-0 text-2xs font-semibold text-muted sm:w-auto">{t('damageCalc.terrain')}</span>
-                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.terrain')}>
+                        <div className="dmg-rail scroll-fade-x segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label={t('damageCalc.terrain')}>
                             {TERRAINS.map((tr) => (
                                 <button
                                     key={tr}

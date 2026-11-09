@@ -163,6 +163,8 @@ export function MobilePokemonDetailView({
         formattedId,
         pokemonGenus,
         pokedexDescription,
+        isDescriptionLocal,
+        isGenusLocal,
         heightInM,
         heightInFt,
         weightInKg,
@@ -255,7 +257,8 @@ export function MobilePokemonDetailView({
             <>
                 {pokedexDescription && (
                     <Section title={t('pokedex.pokedexEntry')}>
-                        <p className="pdm-prose">{pokedexDescription}</p>
+                        <p className="pdm-prose" lang={isDescriptionLocal ? undefined : 'en'}>{pokedexDescription}</p>
+                        {!isDescriptionLocal && <p className="pdm-prose-note">{t('pokedex.originalText')}</p>}
                     </Section>
                 )}
 
@@ -595,11 +598,15 @@ export function MobilePokemonDetailView({
                                         type="button"
                                         onClick={() => onAdd(indexEntry || { id: Number(identity.id), name: identity.name })}
                                         disabled={onTeam || full}
-                                        className={`pdm__iconbtn ${onTeam ? 'is-active' : ''}`}
+                                        className={`pdm__iconbtn pdm__iconbtn--label ${onTeam ? 'is-active' : ''}`}
                                         aria-label={onTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
                                         title={onTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
                                     >
-                                        {onTeam ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                                        {/* A lone "+" among three glyphs said nothing (audit
+                                            2026-11-09): the one action that changes the team
+                                            names what it adds to. */}
+                                        {onTeam ? <Check className="w-5 h-5" aria-hidden="true" /> : <Plus className="w-5 h-5" aria-hidden="true" />}
+                                        <span aria-hidden="true">{onTeam ? t('pdetail.onTeamShort') : t('pdetail.addToTeamShort')}</span>
                                     </button>
                                 );
                             })()}
@@ -623,7 +630,7 @@ export function MobilePokemonDetailView({
 
                     <p className="pdm__dex">#{String(identity.id).padStart(4, '0')}</p>
                     <h1 className="pdm__name">{cleanName(identity.name)}</h1>
-                    {pokemonGenus && <p className="pdm__genus">{pokemonGenus}</p>}
+                    {pokemonGenus && isGenusLocal && <p className="pdm__genus">{pokemonGenus}</p>}
                     <div className="pdm__types">
                         {types.map((type) => <TypeChip key={type} type={type} />)}
                     </div>
@@ -658,7 +665,7 @@ export function MobilePokemonDetailView({
                     </div>
                 </header>
 
-                <nav className="pdm__tabs" role="tablist" aria-label="Pokédex">
+                <nav className="pdm__tabs scroll-fade-x" role="tablist" aria-label="Pokédex">
                     {tabs.map((tab) => (
                         <button
                             key={tab.key}

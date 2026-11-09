@@ -166,10 +166,10 @@ export function MovesListView() {
                     <select
                         value={typeFilter}
                         onChange={(e) => setTypeFilter(e.target.value)}
-                        className="team-builder-field team-builder-field--compact team-builder-select appearance-none capitalize"
+                        className="team-builder-field team-builder-field--compact team-builder-select appearance-none"
                         aria-label={t('db.colType')}
                     >
-                        <option value="all">{t('db.allTypes')}</option>
+                        <option value="all">{t('db.colType')}</option>
                         {Object.keys(typeColors).map((type) => (
                             <option key={type} value={type}>{t(`types.${type}`)}</option>
                         ))}
@@ -180,10 +180,10 @@ export function MovesListView() {
                     <select
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="team-builder-field team-builder-field--compact team-builder-select appearance-none capitalize"
+                        className="team-builder-field team-builder-field--compact team-builder-select appearance-none"
                         aria-label={t('db.colCategory')}
                     >
-                        <option value="all">{t('db.allCategories')}</option>
+                        <option value="all">{t('db.colCategory')}</option>
                         <option value="physical">{t('db.physical')}</option>
                         <option value="special">{t('db.special')}</option>
                         <option value="status">{t('db.status')}</option>
