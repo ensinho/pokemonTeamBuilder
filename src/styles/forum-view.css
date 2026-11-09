@@ -3710,7 +3710,8 @@
 }
 .totw__sprite { width: 100%; height: 100%; object-fit: contain; }
 
-.totw__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.totw__foot { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.totw__foot .totw__hint { flex: 1 1 14rem; }
 
 .totw__hint { display: flex; align-items: baseline; gap: var(--space-1_5); flex-wrap: wrap; margin: 0; font-size: var(--text-xs); color: var(--color-muted); }
 .totw__post {
@@ -3728,7 +3729,13 @@
 @media (max-width: 640px) {
     .totw { margin-inline: 0; padding: var(--space-3); }
     .totw__roster { width: 100%; justify-content: space-between; }
-    .totw__slot { width: auto; flex: 1 1 0; aspect-ratio: 1; height: auto; }
+    .totw__slot { width: auto; flex: 1 1 0; aspect-ratio: 1; height: auto; max-width: 3rem; }
+    /* The card was most of the first screen on a phone (2026-11-09): the
+       kicker says what it is, the two buttons what to do. */
+    .totw__source,
+    .totw__hint-text { display: none; }
+    .totw__body { gap: var(--space-3); }
+    .totw__foot .totw__hint { flex: 0 1 auto; }
 }
 
 /* ── Battle-text reactions (2026-11-06, ReactionBar.jsx) ──────────────────
@@ -4316,5 +4323,261 @@
 
     .rating-chip:not([aria-pressed='true']) {
         padding-right: var(--space-1);
+    }
+}
+
+
+/* ==========================================================================
+   Calm pass (2026-11-09) — "muito texto e informação"
+   The feed read as a wall of words: every row spelled "Curtir ·
+   Compartilhar", flaired itself up to three times, and the first screen was
+   four of the Professor's rows. What changed, and why it stays this way:
+   - the rooms are one row of doors above the feed (ForumRooms);
+   - a row's actions are icons and counts at every width (they were on
+     phones only), its category a dot and a muted word, not a chip;
+   - the forum's own title is for screen readers at every width — the app
+     bar already names the page;
+   - in a post, Share and React are icons; Reply keeps its word, because it
+     is the thing a comment is for.
+   ========================================================================== */
+
+.forum-feed-head__title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ---- The rooms ------------------------------------------------------------ */
+
+.forum-rooms {
+    margin-bottom: var(--space-4);
+}
+
+.forum-rooms__list {
+    display: grid;
+    /* Two by two: there are four rooms most days, and three columns left one orphan. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.forum-rooms__item {
+    display: flex;
+    min-width: 0;
+}
+
+.forum-room {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-room:hover {
+    background: var(--color-surface-hover);
+}
+
+.forum-room:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.forum-room__icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: var(--color-primary-text);
+}
+
+.forum-room__icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.forum-room__body {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.forum-room__name,
+.forum-room__meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forum-room__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.3;
+}
+
+.forum-room__meta {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.forum-room__side {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-0_5);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+    position: relative;
+}
+
+.forum-room__count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--color-fg);
+}
+
+.forum-room__count svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--color-muted);
+}
+
+/* The live dot leans on the count, left of it, without moving it. */
+.forum-room__side .live-dot {
+    position: absolute;
+    top: 0.3rem;
+    right: calc(100% + var(--space-1_5));
+    margin: 0;
+}
+
+/* ---- A row: the category is a dot and a word ------------------------------ */
+
+.post-row__cat {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+
+.post-row__cat::before {
+    content: "";
+    flex-shrink: 0;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: var(--radius-full);
+    background: var(--flair, var(--color-muted));
+}
+
+.forum-flair--diary { --flair: var(--color-info); }
+.forum-flair--questions { --flair: var(--color-info); }
+.forum-flair--adventures { --flair: var(--color-success); }
+
+/* ---- Actions: icon and count at every width ------------------------------- */
+
+.post-row__actions,
+.thread-post__actions {
+    gap: var(--space-1);
+    margin-inline: calc(-1 * var(--space-2));
+}
+
+.post-row__actions .forum-pill,
+.thread-post__actions .forum-pill {
+    padding: 0 var(--space-2);
+    background: transparent;
+    color: var(--color-muted);
+}
+
+.post-row__actions .forum-pill:hover,
+.thread-post__actions .forum-pill:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.post-row__actions .forum-pill.is-liked,
+.thread-post__actions .forum-pill.is-liked {
+    background: transparent;
+    color: var(--color-primary-text);
+}
+
+.post-row__actions .forum-pill--share,
+.thread-post__actions .forum-pill--share {
+    margin-left: auto;
+}
+
+.thread-post__actions .reactions--inline {
+    margin-top: 0;
+}
+
+/* The trigger is an icon; the reactions it opens are the words. */
+.reaction-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-h-sm);
+    padding: 0;
+}
+
+.reaction-trigger__icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (max-width: 1023px) {
+    /* The doors scroll sideways to the screen's edges; one and a bit show,
+       so the row says there is more. */
+    .forum-rooms__list {
+        display: flex;
+        margin-inline: calc(-1 * var(--page-gutter));
+        padding-inline: var(--page-gutter);
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-padding-inline: var(--page-gutter);
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .forum-rooms__list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .forum-rooms__item {
+        flex: 0 0 min(16rem, 78%);
+        scroll-snap-align: start;
+    }
+
+    .forum-rooms {
+        margin-bottom: var(--space-3);
+    }
+
+    /* Hot / New / Top keep their icons; only the chosen one says its name,
+       so the categories get the row (eleven labels did not fit). */
+    .forum-feed-head__sort .segmented__item:not([aria-pressed='true']) > span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 }

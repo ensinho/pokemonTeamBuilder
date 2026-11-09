@@ -2152,6 +2152,17 @@
     .app-shell__content.is-landing {
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
+
+    /* An open forum post has no dock (AppLayout, isForumThreadOpen): its
+       composer is the bottom bar, and clears the home indicator itself. */
+    .app-shell__content.is-dockless {
+        padding-bottom: 0;
+        scroll-padding-bottom: 0;
+    }
+
+    .app-shell__content.is-dockless .thread-composer-dock {
+        padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
+    }
 }
 
 .app-shell__tab {

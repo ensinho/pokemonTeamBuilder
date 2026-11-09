@@ -71,22 +71,20 @@ export function TeamOfTheWeek({ pick, hrefFor, onBeforeOpen, onImport, onPostOwn
                 </ul>
             </div>
 
-            <div className="totw__actions">
-                <Link to={href} onClick={open} className="btn btn-outline btn-sm">
-                    {t(isCommunity ? 'forum.teamOfWeek.openPost' : 'forum.teamOfWeek.viewTeam')}
-                </Link>
+            {/* One line of what to do (2026-11-09): the title already opens the
+                post, so the card keeps Import and the way to take the spot. */}
+            <div className="totw__foot">
                 {isCommunity && (
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => onImport(team)}>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => onImport(team)}>
                         <DownloadIcon className="w-3.5 h-3.5" />
                         {t('forum.importTeam')}
                     </button>
                 )}
+                <p className="totw__hint">
+                    <span className="totw__hint-text">{t('forum.teamOfWeek.hint')}</span>
+                    <button type="button" className="totw__post" onClick={onPostOwn}>{t('forum.teamOfWeek.postOwn')}</button>
+                </p>
             </div>
-
-            <p className="totw__hint">
-                <span>{t('forum.teamOfWeek.hint')}</span>
-                <button type="button" className="totw__post" onClick={onPostOwn}>{t('forum.teamOfWeek.postOwn')}</button>
-            </p>
         </section>
     );
 }

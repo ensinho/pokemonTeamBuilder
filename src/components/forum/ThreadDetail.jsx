@@ -225,7 +225,7 @@ export function ThreadDetail({
                         <time className="thread-post__time" dateTime={topic.createdAt}>
                             {formatForumTime(topic.createdAt, language)}
                         </time>
-                        <span className={`forum-flair forum-flair--${categoryMeta.id}`}>{categoryMeta.label}</span>
+                        <span className={`post-row__cat forum-flair--${categoryMeta.id}`}>{categoryMeta.label}</span>
                     </div>
 
                     <h1 ref={titleRef} className="thread-post__title">{topic.title}</h1>
@@ -258,25 +258,30 @@ export function ThreadDetail({
                             onClick={() => onLikeTopic(topic.id, opMessage)}
                             aria-pressed={liked}
                             aria-label={`${liked ? t('forum.unlike') : t('forum.like')} · ${t('forum.likesCount', { count: likeCount })}`}
-                            className={`forum-pill ${liked ? 'is-liked' : ''}`}
+                            className={`forum-pill touch-target ${liked ? 'is-liked' : ''}`}
                         >
                             <HeartIcon className="forum-pill__heart" />
-                            <span>{likeCount > 0 ? likeCount : t('forum.like')}</span>
+                            {likeCount > 0 && <span>{likeCount}</span>}
                         </button>
                         <button
                             type="button"
-                            className="forum-pill"
+                            className="forum-pill touch-target"
                             onClick={() => composerRef?.current?.focus()}
                             aria-label={t('forum.commentsCount', { count: replyCount })}
                         >
                             <MessageIcon className="w-4 h-4" />
                             <span>{replyCount}</span>
                         </button>
-                        <button type="button" className="forum-pill" onClick={() => onShareTopic(topic)}>
-                            <ShareIcon className="w-4 h-4" />
-                            <span>{t('forum.share')}</span>
-                        </button>
                         <ReactionBar reactions={topic.reactions} userId={userId} onReact={(kind) => onReactTopic?.(topic.id, kind)} t={t} inline />
+                        <button
+                            type="button"
+                            className="forum-pill forum-pill--share touch-target"
+                            onClick={() => onShareTopic(topic)}
+                            aria-label={t('forum.share')}
+                            title={t('forum.share')}
+                        >
+                            <ShareIcon className="w-4 h-4" />
+                        </button>
                     </div>
 
                 </article>

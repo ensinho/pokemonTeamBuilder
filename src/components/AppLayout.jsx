@@ -627,6 +627,12 @@ export default function AppLayout() {
         return currentPage === 'pokedex' && searchParams.has('pokemon');
     }, [isMobile, currentPage, searchParams]);
 
+    // A forum post on a phone is a conversation: its composer is docked at
+    // the bottom, and the tab dock under it took a quarter of the screen
+    // (2026-11-09). The post has its own back button, so the dock steps
+    // aside while one is open, the way a chat app's tab bar does.
+    const isForumThreadOpen = isMobile && currentPage === 'feed' && searchParams.has('topic');
+
     // The floating tab dock shrinks while the page is scrolled down and comes
     // back on the way up — `.app-shell__content` is the app's one scroller.
     const [contentScrollEl, setContentScrollEl] = useState(null);
@@ -1664,7 +1670,7 @@ export default function AppLayout() {
                     </aside>
                 )}
 
-                <div ref={setContentScrollEl} className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''} ${isLandingOpen ? 'is-landing' : ''}`}>
+                <div ref={setContentScrollEl} className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''} ${isLandingOpen ? 'is-landing' : ''} ${isForumThreadOpen ? 'is-dockless' : ''}`}>
                     {!isMobileDetailsOpen && (
                         <header className="app-shell__header">
                             <div className="app-shell__header-main">
@@ -2127,7 +2133,7 @@ export default function AppLayout() {
                     )}
                 </div>
 
-                {isMobile && !isMobileDetailsOpen && !isLandingOpen && (
+                {isMobile && !isMobileDetailsOpen && !isLandingOpen && !isForumThreadOpen && (
                     <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
                         {(() => {
                             const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail');

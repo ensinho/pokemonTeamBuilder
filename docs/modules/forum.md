@@ -33,6 +33,13 @@ The page is the panel; rows run edge to edge under the shell gutter.
   `<Link>`), a preview of the post, the attached team as the thumbnail, then the
   ♥ / 💬 / Share pills. The rest of the row opens the post too.
 - **On a phone (≤ 1023px), one coloured thing per row** (2026-10-20, [audit](../audits/2026-10-20-battles-forum.md)). The forum's title is for screen readers only, because the app bar names the page; its figures (topics · active today) lead the line beside search and Create. Pinned, trending and official are a tinted icon dot (`.forum-flair--status`, label hidden but read). The pills are an icon and a count with no fill; the liked heart is primary, Share is an icon at the row's end, and all have `touch-target`.
+- **Calm pass (2026-11-09, Enzo: "muito texto e informações").** The rule is *one loud thing per row — the title*:
+  - **The rooms are doors, not rows** (`forum/ForumRooms.jsx`): the Professor's pinned topics (today's Diário, the week's Torneio, General Chat, Team Showcase) sit in one row above the feed — 2 × 2 on a desktop, a sideways snap row on a phone — with the part of the title after " · " (date, theme) or the last line said there, the message count and a live dot for a room that moved in the last hour. They leave the feed's rows; while searching they come back as ordinary results. The explorer lists them only while a post is open.
+  - **Actions are icons and counts at every width** (not just phones): no "Curtir"/"Compartilhar" words, Share at the row's end, a 0-like heart shows no number. In a post the same; React is a `SmilePlus` icon. A comment keeps the word on **Responder**, because replying is what a comment is for.
+  - **A category is a dot and a muted word** (`.post-row__cat`, tone from `.forum-flair--<id>`), not a chip; the "Em alta" flair is gone (the Hot sort already says it). The forum's own title is screen-reader-only at every width.
+  - **Nothing repeats**: empty categories are hidden from chips and explorer until they have a post; the rail's Trending hides on the unfiltered Hot feed (it *is* the feed); the rail's share card shows only with a team to share; Team of the week lost its "Abrir post" button (the title links) and, on phones, its source line and hint.
+  - **A post on a phone has no tab dock** (`isForumThreadOpen` in `AppLayout`, `.app-shell__content.is-dockless`): the composer is the bottom bar, as in a chat app; Back returns to the feed and the dock.
+  - On a phone, Hot / New / Top show only the chosen one's name; the others keep their icon.
 - Pinned rows are the megathreads Professor Oak seeded (`createdBy: 'system'`):
   they head the Hot feed only.
 - Ranking lives in **`src/utils/forumRanking.js`** (tested): Hot is

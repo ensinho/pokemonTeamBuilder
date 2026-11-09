@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-09 — The forum's pinned rooms never listed today's Diário or Torneio `bug`
+- **Symptom:** the desktop explorer's "Salas fixadas" showed only General Chat and Team Showcase; the day's Diário and the week's Torneio — the rooms the social heart is built around — were missing, though the Hot feed pinned them.
+- **Root cause:** `FeedView` built the list with `topics.filter(isPinnedTopic)`. `Array.prototype.filter` calls back with `(item, index)`, and `isPinnedTopic(topic, now)` read the index as `now` — so `isTodayDiary(topic, 0)` / `isCurrentWeekly(topic, 0)` compared against 1970 and were never true.
+- **Fix:** `topics.filter((tp) => isPinnedTopic(tp, now))`, ordered Diário → Torneio → chats. The same list now feeds the rooms row above the feed (`ForumRooms`).
+- **Correct pattern:** never hand a function with an optional second parameter straight to `filter`/`map` (`isPinnedTopic`, `parseInt`, anything taking `now`/`radix`/`options`) — wrap it in an arrow that passes only what you mean.
+- **Files:** `src/components/views/FeedView.jsx`, `src/utils/forumRanking.js`
+
 ### 2026-11-09 — PokéPuzzle "Imagem" did nothing on phones `bug`
 
 - **Symptom:** the result image's share did nothing on a phone (no share sheet, no file); with 8 guesses the grid also ran into the footer, and the card was a blurry 400 × 640.

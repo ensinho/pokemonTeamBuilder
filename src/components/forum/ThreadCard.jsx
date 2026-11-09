@@ -4,7 +4,7 @@ import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { Pin } from 'lucide-react';
-import { PokeballIcon, MessageIcon, HeartIcon, ShareIcon, FlameIcon, ReplyIcon, SparklesIcon } from '../icons';
+import { PokeballIcon, MessageIcon, HeartIcon, ShareIcon, ReplyIcon, SparklesIcon } from '../icons';
 import { formatForumTime, getCategoryMeta } from '../../utils/forumTime';
 import { topicReplies, topicLikes } from '../../utils/forumRanking';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -13,7 +13,9 @@ import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 /**
  * One post in the feed, laid out the way Reddit taught everyone to read one:
  * who · when · flair, the title, a preview of the post, the team as the
- * thumbnail, and the vote / comments / share pills. Rows separate by a
+ * thumbnail, and the vote / comments / share pills — icons and counts, no
+ * words: "Curtir · Compartilhar" spelled out on every row was most of the
+ * feed's text (2026-11-09). Rows separate by a
  * hairline, not a box each (the old card list was 4 boxes for 4 topics).
  *
  * The title is a real link (Cmd/middle-click open a new tab); the rest of the
@@ -24,7 +26,6 @@ export const ThreadCard = memo(function ThreadCard({
     href,
     liked = false,
     isPinned = false,
-    isTrending = false,
     onOpen,
     onBeforeOpen,
     onLike,
@@ -101,19 +102,15 @@ export const ThreadCard = memo(function ThreadCard({
                             <span className="forum-flair__label">{t('forum.pinned')}</span>
                         </span>
                     )}
-                    {isTrending && (
-                        <span className="forum-flair forum-flair--status forum-flair--trending" title={t('forum.trending')}>
-                            <FlameIcon className="w-3 h-3" />
-                            <span className="forum-flair__label">{t('forum.trending')}</span>
-                        </span>
-                    )}
                     {isOfficial && !isPinned && (
                         <span className="forum-flair forum-flair--status forum-flair--official" title={t('forum.official')}>
                             <SparklesIcon className="w-3 h-3" />
                             <span className="forum-flair__label">{t('forum.official')}</span>
                         </span>
                     )}
-                    <span className={`forum-flair forum-flair--${categoryMeta.id}`}>{categoryMeta.label}</span>
+                    {/* The category is said, not shouted: a dot of its tone and a muted word —
+                        the title is the row's one loud thing (2026-11-09). */}
+                    <span className={`post-row__cat forum-flair--${categoryMeta.id}`}>{categoryMeta.label}</span>
                 </span>
             </div>
 
@@ -128,7 +125,7 @@ export const ThreadCard = memo(function ThreadCard({
                     {lastReply && (
                         <p className="post-row__reply">
                             <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
-                            <span className="post-row__reply-label">{t('forum.lastReply')}</span>
+                            <span className="sr-only">{t('forum.lastReply')}</span>
                             <span className="post-row__reply-text">{lastReply}</span>
                         </p>
                     )}
@@ -163,7 +160,7 @@ export const ThreadCard = memo(function ThreadCard({
                     onClick={() => onLike(topic.id)}
                 >
                     <HeartIcon className="forum-pill__heart" />
-                    <span>{likes > 0 ? likes : t('forum.like')}</span>
+                    {likes > 0 && <span>{likes}</span>}
                 </button>
                 <Link
                     to={href}
@@ -179,9 +176,9 @@ export const ThreadCard = memo(function ThreadCard({
                     className="forum-pill forum-pill--share touch-target"
                     onClick={() => onShare(topic)}
                     aria-label={t('forum.share')}
+                    title={t('forum.share')}
                 >
                     <ShareIcon className="w-4 h-4" />
-                    <span className="forum-pill__label">{t('forum.share')}</span>
                 </button>
             </div>
         </article>
