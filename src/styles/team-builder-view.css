@@ -634,6 +634,19 @@
     color: var(--color-muted);
 }
 
+/* The summary is now the "clear the type pick" control: a fill, no border
+   inside the panel, and it answers a hover like a button. */
+.team-builder-picker-summary--clear {
+    gap: var(--space-1);
+    border: none;
+    color: var(--color-fg);
+    cursor: pointer;
+}
+
+.team-builder-picker-summary--clear:hover {
+    background: var(--color-surface-hover);
+}
+
 /* Borderless: this sits directly inside .team-builder-panel, which already
    draws the box. Two outlines 16px apart is the "box inside a box" that reads
    as busy — the recessed --color-bg fill separates the results from the panel
@@ -1750,7 +1763,10 @@
 }
 
 .team-builder-unified-toolbar .team-builder-toggle--compact {
-    flex: 1;
+    /* Sized to its label: stretched, the favourites toggle was the widest
+       control in the row (signed-in pass, 2026-11-09). */
+    flex: 0 0 auto;
+    width: auto;
     min-width: 90px;
     border-left: none;
     border-radius: var(--radius-md);
@@ -2016,7 +2032,16 @@
     .team-builder-mobile-card__favorite::after {
         content: "";
         position: absolute;
-        inset: calc(-1 * var(--space-1_5));
+        /* 26px star + 10px each side = 46px (was 38, under the 44px floor —
+           signed-in pass, 2026-11-09). */
+        inset: calc(-1 * var(--space-2_5));
+    }
+
+    /* The picker card's ⓘ: 24px + the generic reach was 32×40. It grows
+       sideways and up, where nothing else is, and only a little down toward
+       the star below it, so the two hit areas do not meet: 44×42. */
+    .team-builder-mobile-card__info.touch-target::after {
+        inset: calc(-1 * var(--space-3)) calc(-1 * var(--space-2_5)) calc(-1 * var(--space-1_5));
     }
 }
 

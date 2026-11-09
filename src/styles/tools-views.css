@@ -599,3 +599,35 @@ input[type="number"] {
         scroll-snap-align: start;
     }
 }
+
+/* Phone peek (2026-11-09): the best hit each way, under the calculator's tabs
+   while a Pokémon is being edited. A fill, one line each, the whole bar opens
+   the damage tab. */
+.dmg-peek {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-0_5) var(--space-2);
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-align: left;
+    cursor: pointer;
+}
+
+.dmg-peek__line {
+    grid-column: 1;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    min-width: 0;
+    font-size: var(--text-xs);
+}
+
+.dmg-peek__label { color: var(--color-muted); flex-shrink: 0; width: 3.5rem; }
+.dmg-peek__move { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; font-weight: var(--weight-semibold); }
+.dmg-peek__pct { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: var(--weight-semibold); }
+.dmg-peek__chevron { grid-column: 2; grid-row: 1 / span 2; width: 1rem; height: 1rem; color: var(--color-muted); }
