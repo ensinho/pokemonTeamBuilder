@@ -135,7 +135,7 @@ export function CheckinCard({ variant = 'full', onOpenRewards }) {
                 ) : (
                     <button
                         type="button"
-                        className={`btn btn-primary checkin__cta ${shiny.isBursting ? 'is-bursting' : ''}`}
+                        className={`btn ${isHome ? 'btn-secondary' : 'btn-primary'} checkin__cta ${shiny.isBursting ? 'is-bursting' : ''}`}
                         onClick={handleCheckIn}
                     >
                         {t('rewards.checkin.cta', { xp: calendar.xpToday })}

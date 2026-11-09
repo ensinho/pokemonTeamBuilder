@@ -223,17 +223,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                     )}
                 </div>
 
-                <span className="app-shell__footer-separator" aria-hidden="true">•</span>
-
-                <a
-                    href={SUPPORT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary transition-colors duration-200 hover:border-primary hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                    <Coffee className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                    <span>{t('nav.support')}</span>
-                </a>
+                {/* "Apoie o projeto" lives in the rail, once (audit 2026-11-09). */}
             </span>
 
             {dialogs}

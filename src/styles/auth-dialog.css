@@ -753,6 +753,14 @@
    section open, the sentence and the art would push Jogos and Comunidade
    below the fold. The title and the two buttons say enough there; the Home
    card carries the full pitch. */
+/* A laptop screen (≤ 900px tall, audit 2026-11-09): the rail's foot hid
+   Itens and Ginásios at 1280×800. "Criar conta / Entrar" say it alone. */
+@media (max-height: 900px) {
+    .guest-card--rail .guest-card__top {
+        display: none;
+    }
+}
+
 @media (max-height: 1200px) {
     .guest-card--rail .guest-card__stage,
     .guest-card--rail .guest-card__text {

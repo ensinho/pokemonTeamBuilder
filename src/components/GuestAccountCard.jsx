@@ -56,7 +56,9 @@ export function GuestAccountCard({ variant = 'rail', onBeforeOpen }) {
                 )}
             </div>
             <div className="guest-card__actions">
-                <button type="button" onClick={() => open('signUp')} className="btn btn-primary btn-sm">
+                {/* The rail is chrome: its button must not compete with the view's one
+                    primary action. Home and the sheet are where the card is the content. */}
+                <button type="button" onClick={() => open('signUp')} className={`btn ${variant === 'rail' ? 'btn-secondary' : 'btn-primary'} btn-sm`}>
                     {t('modals.authTabSignUp')}
                 </button>
                 <button type="button" onClick={() => open('signIn')} className="btn btn-ghost btn-sm">

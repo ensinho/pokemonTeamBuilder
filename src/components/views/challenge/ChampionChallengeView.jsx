@@ -367,9 +367,18 @@ export function ChampionChallengeView() {
     );
 
     if (!challenge.hasLoaded) {
+        // Auth settled with nobody signed in (the anonymous sign-in failed, or a
+        // crawler): load() never runs, so the room would wait forever.
+        const noSession = isAuthReady && !userId;
         return (
             <div className="challenge-view">
-                {challenge.status === 'error' ? (
+                {noSession ? (
+                    <EmptyState mascot="error"
+                        title={t('challenge.loadErrorTitle')}
+                        message={t('challenge.errors.noSession')}
+                        action={{ label: t('challenge.retry'), onClick: () => window.location.reload() }}
+                    />
+                ) : challenge.status === 'error' ? (
                     <EmptyState mascot="error"
                         title={t('challenge.loadErrorTitle')}
                         message={t(`challenge.errors.${challenge.loadError === 'offline' ? 'offline' : 'server'}`)}

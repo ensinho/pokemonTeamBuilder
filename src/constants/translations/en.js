@@ -941,6 +941,7 @@ export default {
         usage: '{{pct}}% usage',
         metaEmpty: 'The meta is loading.',
         partnerChip: 'Partner · {{name}}',
+        choosePartner: 'Choose a partner',
         changePartner: 'Change partner',
         streakChip: '{{n}} days in a row',
         streakChipOne: '1 day in a row',
@@ -2432,6 +2433,7 @@ export default {
             right: 'Right',
         },
         errors: {
+            noSession: 'Couldn\'t open your trainer session. Reload the page to try again.',
             invalidTeam: 'This team can\'t battle — see the list.',
             invalidChoice: 'That can\'t be used right now.',
             staleTurn: 'The battle moved on in another tab — showing the latest turn.',

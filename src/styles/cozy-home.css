@@ -157,6 +157,17 @@ button.cozy-chip:hover {
     flex-shrink: 0;
 }
 
+/* No partner chosen yet: the period's visitor as a silhouette ("Quem é
+   esse Pokémon?"), the creative direction's device for "not chosen yet". */
+.cozy-chip--unchosen .cozy-chip__avatar {
+    background: color-mix(in srgb, var(--color-fg) 24%, var(--color-surface));
+}
+
+.cozy-chip--unchosen .cozy-chip__sprite {
+    filter: brightness(0);
+    opacity: 0.7;
+}
+
 .cozy-chip__badge {
     width: 1rem;
     height: 1rem;
@@ -587,9 +598,17 @@ button.cozy-chip:hover {
     vertical-align: 0.0625em;
 }
 
-/* "Play" is drawn as a button but the whole card is the control. */
+/* "Play" is drawn as a button but the whole card is the control. Raised, not
+   Volt (audit 2026-11-09): the hero's "Montar time" is the page's one primary;
+   these are the cards' labels, and three Volt pills read as three main actions. */
 .cozy-home .cozy-day__go {
     pointer-events: none;
+}
+
+.cozy-home .cozy-day__go.cozy-ink {
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    box-shadow: none;
 }
 
 .cozy-day__chevron {
