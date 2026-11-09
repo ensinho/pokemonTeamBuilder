@@ -514,6 +514,7 @@ export function CozyHomeView({
             ].filter(Boolean).join(' · ')}
             action={challengeDay.state === 'won' ? null : {
                 Icon: Swords,
+                glyph: 'clash',
                 label: t(challengeAction),
                 onClick: () => navigate('/challenge'),
             }}
@@ -551,6 +552,7 @@ export function CozyHomeView({
             percent={(summary.size / TEAM_SIZE) * 100}
             action={{
                 Icon: activeTeam ? Play : Plus,
+                glyph: activeTeam ? 'nudge' : 'pop',
                 label: ctaLabel,
                 short: activeTeam ? t('homeToday.continueShort') : t('cozyHome.buildTeam'),
                 onClick: continueTeam,

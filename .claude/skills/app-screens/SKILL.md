@@ -155,7 +155,12 @@ have routes of their own, one click away in the rail.
 
 ### Dock — `AppLayout.jsx` (`.app-shell__tabbar`), `app-shell.css`
 - The active tab is a pill that carries its label; the others are glyphs with
-  an `aria-label`. The pill's width travels with the selection (continuity);
+  an `aria-label`. Its fourth slot follows the persona
+  (`personaDockSlot`): the Champion Challenge as "Challenge" for anyone who
+  plays or has not said (2026-11-09, Enzo — the PokéPuzzle moved to Mais, and
+  the Challenge keeps its hero card there too), Meta or the type chart for the
+  others. Each tab's icon plays its own motion once when it becomes the
+  current tab (`data-glyph`, `utils/glyphMotion.js`). The pill's width travels with the selection (continuity);
   the compact-on-scroll capsule stays.
 
 ## The audit (run it on any phone screen)

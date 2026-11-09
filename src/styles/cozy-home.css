@@ -135,7 +135,7 @@
 /* The party menu hop (see .cozy-team below): the row under the pointer
    alternates two frames, steps not easing, transform only. */
 @media (prefers-reduced-motion: no-preference) {
-    .day-hero__bar:hover .cozy-party__slot.is-filled .cozy-party__sprite {
+    .day-hero__extra:hover .cozy-party__slot.is-filled .cozy-party__sprite {
         animation: cozy-party-hop 0.5s steps(1, end) infinite;
         animation-delay: calc(var(--i, 0) * -0.25s);
     }

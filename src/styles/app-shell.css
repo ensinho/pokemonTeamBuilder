@@ -2421,8 +2421,12 @@
     color: var(--color-fg);
 }
 
-.app-shell__search-trigger > svg {
+.app-shell__search-glyph {
+    display: inline-flex;
     flex: none;
+}
+
+.app-shell__search-glyph > svg {
     width: 0.95rem;
     height: 0.95rem;
 }

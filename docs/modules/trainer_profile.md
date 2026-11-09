@@ -30,8 +30,8 @@ the builder's first regulation. The plan and the proposals still open are in
 |---|---|---|---|---|
 | Estrategista (`strategist`) | competitive first | Garchomp | Competitivo | Meta (unless minigames too) |
 | Viajante (`traveler`) | franchise first | Pikachu | PokéData | Tabela de tipos (unless minigames too) |
-| Desafiante (`challenger`) | minigames only | Mewtwo (silhouette until picked) | Jogos, Comunidade | PokéPuzzle |
-| Mestre Pokémon (`master`) | all three | Gengar | Competitivo, PokéData, Jogos | PokéPuzzle |
+| Desafiante (`challenger`) | minigames only | Mewtwo (silhouette until picked) | Jogos, Comunidade | Challenge (the Champion; PokéPuzzle in Mais since 2026-11-09) |
+| Mestre Pokémon (`master`) | all three | Gengar | Competitivo, PokéData, Jogos | Challenge |
 
 Priority is competitive → franchise → minigames; the others ride along as
 tags and still get a pick in the first row of "Para você".

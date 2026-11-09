@@ -207,13 +207,14 @@ export function sortNavGroups(groups, profile) {
 }
 
 /**
- * The phone dock's fourth slot. The daily puzzle earned it (2026-09-24) and
- * keeps it for anyone who plays, or who has not said; a trainer who came only
+ * The phone dock's fourth slot. The daily puzzle held it from 2026-09-24; the
+ * Champion Challenge took it on 2026-11-09 (Enzo), for anyone who plays or has
+ * not said — the PokéPuzzle moved into the Mais sheet. A trainer who came only
  * for competitive gets Meta there, one who only plays the games the type chart.
  */
 export function personaDockSlot(profile) {
     const interests = orderedInterests(profile);
-    if (interests.length === 0 || interests.includes('minigames')) return 'pokepuzzle';
+    if (interests.length === 0 || interests.includes('minigames')) return 'challenge';
     if (interests[0] === 'competitive') return 'meta';
     return 'types';
 }

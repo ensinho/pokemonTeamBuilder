@@ -131,6 +131,24 @@
     height: 1rem;
 }
 
+.home-greet__flame {
+    transform-origin: 50% 90%;
+}
+
+/* The trainer's check-in, answered by the flame: it flares once, on the pop
+   spring, while the count rolls to its new figure (RollingNumber). */
+@media (prefers-reduced-motion: no-preference) {
+    .home-greet__flame.is-flaring {
+        animation: greet-flare var(--duration-pop) var(--ease-pop);
+    }
+}
+
+@keyframes greet-flare {
+    0% { transform: none; }
+    35% { transform: translateY(-12%) scale(1.4) rotate(-10deg); }
+    100% { transform: none; }
+}
+
 .home-greet__streak.is-lit {
     background: var(--brand-gold);
     color: var(--brand-on-gold);
@@ -421,6 +439,10 @@
 
 .day-hero__play-label {
     display: none;
+}
+
+.day-hero__play-glyph {
+    display: inline-flex;
 }
 
 /* ── The party (phones) ───────────────────────────────────────────────── */

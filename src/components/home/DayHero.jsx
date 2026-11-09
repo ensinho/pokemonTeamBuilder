@@ -77,7 +77,10 @@ export function DayHero({
                         aria-label={action.label}
                         title={action.label}
                     >
-                        <action.Icon aria-hidden="true" />
+                        {/* Its own motion on hover (utils/glyphMotion.js), the caller's pick. */}
+                        <span className="day-hero__play-glyph" data-glyph={action.glyph || 'nudge'} aria-hidden="true">
+                            <action.Icon />
+                        </span>
                         <span className="day-hero__play-label">{action.short || action.label}</span>
                     </button>
                 )}

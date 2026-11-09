@@ -293,3 +293,10 @@ export const streakMonth = (records = {}, today = localDayKey(), { weekStartsOn 
 
 /** pt-BR calendars start on Sunday; the en-GB the app speaks, on Monday. */
 export const weekStartFor = (language) => (language === 'pt' ? 0 : 1);
+
+/**
+ * Fired on `window` by the check-in controls (CheckinWeek, StreakSheet) right
+ * after the trainer's own tap counts a day: the Home's flame answers it
+ * (HomeGreeting). A signal, not state — the streak itself is the store's.
+ */
+export const CHECKED_IN_EVENT = 'ptb:checked-in';

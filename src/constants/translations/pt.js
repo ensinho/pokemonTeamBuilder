@@ -619,6 +619,8 @@ export default {
         challengeSearch: 'Desafio da Campeã — batalhe com a Cynthia',
         // O tile da folha Mais: uma linha numa grade de quatro colunas.
         challengeShort: 'Desafio',
+        // The dock's pill (Enzo, 2026-11-09: "só com título challenge").
+        challengeTab: 'Challenge',
         play: 'Jogar',
         // O cartão em destaque da folha Mais: o que é o Desafio, numa linha.
         challengeHint: 'Uma batalha nova contra a Campeã todo dia',

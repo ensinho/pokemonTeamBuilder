@@ -654,6 +654,8 @@ export default {
         challengeSearch: 'Champion Challenge — battle Cynthia',
         // The Mais sheet's tile: one line in a four-column grid.
         challengeShort: 'Challenge',
+        // The dock's pill (Enzo, 2026-11-09: "só com título challenge").
+        challengeTab: 'Challenge',
         play: 'Play',
         // The More sheet's highlighted card: what the Challenge is, in a line.
         challengeHint: 'A new battle against the Champion every day',
