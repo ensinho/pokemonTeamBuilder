@@ -6,6 +6,7 @@ export { CommentComposer } from './CommentComposer';
 export { ForumHeader } from './ForumHeader';
 export { ForumSidebar } from './ForumSidebar';
 export { ForumExplorer } from './ForumExplorer';
+export { ForumDrawer } from './ForumDrawer';
 export { ForumRooms } from './ForumRooms';
 export { ForumTeamCard } from './ForumTeamCard';
 export { TopicCreateModal } from './TopicCreateModal';

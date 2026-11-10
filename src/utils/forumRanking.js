@@ -12,7 +12,8 @@ export const TRENDING_WINDOW_MS = 7 * DAY_MS;
 export const TRENDING_LIMIT = 5;
 
 export const FEED_SORTS = ['hot', 'new', 'top'];
-export const DEFAULT_FEED_SORT = 'hot';
+// Newest first since 2026-11-10 (Enzo): a forum is read as a timeline; Hot is one tab away.
+export const DEFAULT_FEED_SORT = 'new';
 export const FORUM_CATEGORY_IDS = ['all', 'diary', 'general', 'teams', 'strategy', 'questions', 'adventures', 'feedback', 'announcements'];
 
 const timeOf = (iso) => {
