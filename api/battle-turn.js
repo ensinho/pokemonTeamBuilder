@@ -114,7 +114,8 @@ const loadDeps = () => {
  * ## "Your turn" notifications
  *
  * Whenever `publishLog` produces a fresh `awaitingUids`, `notifyAwaitingPlayer`
- * (`./_lib/battleNotify.js`) emails whichever of them is *not* the caller — the
+ * (`./_lib/battleNotify.js`) pushes whichever of them is *not* the caller (and emails them,
+ * at most once per battle per 3h and 300 a day — see `decideEmailSlot`) — the
  * caller is, by definition, in the app right now. No cron job, no queue: the
  * nudge rides the same request that changed the state.
  */
