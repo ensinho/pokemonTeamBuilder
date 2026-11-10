@@ -83,6 +83,24 @@
     white-space: nowrap;
 }
 
+/* The bar's ⋯ menu on a phone (ConsoleMoreMenu). */
+.ds-more-menu {
+    min-width: 13rem;
+}
+
+.ds-more-menu__value {
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-more-menu .ds-more-menu__fact {
+    color: var(--color-muted);
+    cursor: default;
+    background: transparent;
+}
+
 .ds-chip.is-accent {
     background: color-mix(in srgb, var(--color-primary) 14%, transparent);
     color: color-mix(in srgb, var(--color-primary) 45%, var(--color-fg));
@@ -188,6 +206,8 @@
     /* One row: the countdown gives way before the bar wraps and pushes the screens down. */
     .ds-console__bar {
         flex-wrap: nowrap;
+        /* A chip of words and a chip that is only an icon share the row's height. */
+        align-items: stretch;
     }
 
     .ds-console__bar .ds-chip {
@@ -708,8 +728,20 @@
     color: var(--bw-white);
 }
 
+/* 42 (the slot) − 2 × 4 = 34 ≥ 3 × 11: "What will Gouging Fire do?" takes
+   three lines in the narrow box beside the commands, and they all stay inside.
+   Centred on the mascot's face, so one line does not hang from the top. */
 .ds-textbox.is-hud .ds-textbox__inner {
-    inset: calc(5 * var(--px)) calc(9 * var(--px)) calc(5 * var(--px)) calc(37 * var(--px));
+    inset: calc(4 * var(--px)) calc(8 * var(--px)) calc(4 * var(--px)) calc(36 * var(--px));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ds-textbox.is-hud .ds-textbox__text {
+    font-size: calc(9 * var(--px));
+    line-height: calc(11 * var(--px));
 }
 
 .ds-textbox__arrow {
@@ -3002,7 +3034,8 @@
 
 .ds-deck.is-two {
     --deck-rail: clamp(15rem, calc((100cqi - var(--deck-console)) / 2 - var(--deck-gap)), 20rem);
-    grid-template-columns: var(--deck-rail) minmax(0, var(--deck-console)) var(--deck-rail);
+    /* The teams need less than the ranking: names and a bar, no figures. */
+    grid-template-columns: calc(0.85 * var(--deck-rail)) minmax(0, var(--deck-console)) var(--deck-rail);
     grid-template-areas: "start console end";
 }
 
@@ -3071,6 +3104,28 @@
     flex-direction: column;
     gap: var(--space-3);
     min-height: 0;
+}
+
+/* The ranking carries more kinds of things than the teams (a head, two
+   switches, a podium, rows, tiles): in a tall rail, a step more air between
+   them — and around them and inside the rows where the rail is wide enough
+   to pay for it without cutting a name. A short rail (two stacked) keeps
+   every pixel for the list. */
+@container rail (min-height: 34rem) {
+    .ds-rail > .challenge-rank {
+        gap: var(--space-4);
+    }
+}
+
+@container rail (min-height: 34rem) and (min-width: 19rem) {
+    .ds-rail > .challenge-rank {
+        padding: var(--space-5);
+    }
+
+    .challenge-rank__row {
+        gap: var(--space-3);
+        padding: var(--space-2_5) var(--space-3);
+    }
 }
 
 /* Both teams: two columns of party cards — one, roomier, in a tall rail. */
@@ -3159,8 +3214,8 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: end;
     gap: var(--space-2);
-    margin: 0 0 var(--space-1);
-    padding: 0;
+    margin: 0 0 var(--space-2);
+    padding: var(--space-1) 0 0;
     list-style: none;
 }
 
@@ -3177,7 +3232,7 @@
     align-items: center;
     gap: var(--space-1);
     min-width: 0;
-    padding: var(--space-1) var(--space-1) var(--space-2);
+    padding: var(--space-2) var(--space-1);
     border-radius: var(--radius-md);
     transition: background-color var(--duration-fast) var(--ease-smooth);
 }
@@ -3392,7 +3447,7 @@
 }
 
 .challenge-rank__figures > div {
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2_5);
 }
 
 .challenge-rank__card {

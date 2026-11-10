@@ -2525,6 +2525,7 @@ export default {
             },
         },
         console: {
+            more: 'Mais opções',
             speed: 'Velocidade do texto',
             mute: 'Silenciar',
             unmute: 'Ativar som',

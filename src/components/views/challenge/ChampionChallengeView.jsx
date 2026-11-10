@@ -36,6 +36,7 @@ import { DsVersusLazy } from './ds/DsVersusLazy';
 import { preloadVersus } from './ds/versusChunk';
 import { ChallengeRanking, ChallengeRankingSheet } from './ChallengeRanking';
 import { ChallengeTeamsRail } from './ChallengeTeamsRail';
+import { ConsoleMoreMenu } from './ConsoleMoreMenu';
 import '../../../styles/champion-challenge-ds.css';
 import { ReminderOffer } from '../../ReminderOffer';
 import { nudgeSupport, cancelSupportNudge } from '../../../services/supportNudge';
@@ -297,48 +298,18 @@ export function ChampionChallengeView() {
     };
 
     const { hours, minutes } = timeUntil(nextResetAt);
-    const bar = (
+    // A phone's bar is one row: crown · clock · Ranking · ⋯ — the streak and the
+    // three switches live in the ⋯ menu (ConsoleMoreMenu); a desktop keeps them out.
+    const phone = layout !== 'single';
+    const hasStreak = !isAnonymous && challenge.stats?.streak > 0;
+    const streakChip = hasStreak && (
+        <span className="ds-chip">
+            <Flame className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            {t('challenge.streak', { count: challenge.stats.streak })}
+        </span>
+    );
+    const soundChips = (
         <>
-            {/* The day's difficulty, under the names of the champion last faced; a
-                phone keeps the crown (the label is on the VS card). */}
-            <span className="ds-chip is-accent" title={difficultyLabel || championName}>
-                <Crown className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span className="ds-chip__long">{difficultyLabel || championName}</span>
-            </span>
-            {nextResetAt && (
-                // A phone gets the short form: one row of chips has to fit above the screens.
-                <span className="ds-chip" title={t('challenge.nextIn', { hours, minutes })}>
-                    <Clock className="w-3.5 h-3.5 shrink-0 ds-chip__short" aria-hidden="true" />
-                    <span className="ds-chip__long">{t('challenge.nextIn', { hours, minutes })}</span>
-                    <span className="ds-chip__short">{t('challenge.nextInShort', { hours, minutes })}</span>
-                </span>
-            )}
-            {!isAnonymous && challenge.stats?.streak > 0 && (
-                <span className="ds-chip">
-                    <Flame className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                    {t('challenge.streak', { count: challenge.stats.streak })}
-                </span>
-            )}
-            <span className="ds-console__spacer" />
-            {/* After today's win: the moment tomorrow's team is worth a nudge. */}
-            <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />
-            {/* From the daily duel to a friend's (2026-11-06, social-heart C5). */}
-            {stage === 'result' && !isAnonymous && (
-                <Link to="/battles?new=1" className="ds-chip is-button">{t('challenge.result.challengeFriend')}</Link>
-            )}
-            {stage !== 'battle' && stage !== 'transition' && !railsOn && (
-                <button
-                    type="button"
-                    className="ds-chip is-button"
-                    aria-pressed={showRanks}
-                    onClick={() => setShowRanks((value) => !value)}
-                    aria-label={t('challenge.ranking.chip')}
-                    title={t('challenge.ranking.chip')}
-                >
-                    <Trophy className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                    <span className="ds-chip__long">{t('challenge.ranking.chip')}</span>
-                </button>
-            )}
             <button
                 type="button"
                 className="ds-chip is-button"
@@ -363,6 +334,55 @@ export function ChampionChallengeView() {
                 <FastForward className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                 {fast ? '2×' : '1×'}
             </button>
+        </>
+    );
+    const moreItems = [
+        ...(hasStreak ? [{ id: 'streak', icon: <Flame aria-hidden="true" />, label: t('challenge.streak', { count: challenge.stats.streak }) }] : []),
+        { id: 'music', icon: <Music aria-hidden="true" />, label: t(musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn'), onClick: toggleMusic },
+        { id: 'sound', icon: muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />, label: t(muted ? 'challenge.console.unmute' : 'challenge.console.mute'), onClick: toggleMuted },
+        { id: 'speed', icon: <FastForward aria-hidden="true" />, label: t('challenge.console.speed'), value: fast ? '2×' : '1×', onClick: toggleFast },
+    ];
+    const bar = (
+        <>
+            {/* The day's difficulty, under the names of the champion last faced; a
+                phone keeps the crown (the label is on the VS card). */}
+            <span className="ds-chip is-accent" title={difficultyLabel || championName}>
+                <Crown className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span className="ds-chip__long">{difficultyLabel || championName}</span>
+            </span>
+            {nextResetAt && (
+                // A phone gets the short form: one row of chips has to fit above the screens.
+                <span className="ds-chip" title={t('challenge.nextIn', { hours, minutes })}>
+                    <Clock className="w-3.5 h-3.5 shrink-0 ds-chip__short" aria-hidden="true" />
+                    <span className="ds-chip__long">{t('challenge.nextIn', { hours, minutes })}</span>
+                    <span className="ds-chip__short">{t('challenge.nextInShort', { hours, minutes })}</span>
+                </span>
+            )}
+            {!phone && streakChip}
+            <span className="ds-console__spacer" />
+            {/* After today's win: the moment tomorrow's team is worth a nudge. */}
+            <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />
+            {/* From the daily duel to a friend's (2026-11-06, social-heart C5). */}
+            {stage === 'result' && !isAnonymous && (
+                <Link to="/battles?new=1" className="ds-chip is-button">{t('challenge.result.challengeFriend')}</Link>
+            )}
+            {/* A phone has no rail: the ranking stays one tap away, in battle too. */}
+            {(phone || stage !== 'battle') && stage !== 'transition' && !railsOn && (
+                <button
+                    type="button"
+                    className="ds-chip is-button"
+                    aria-pressed={showRanks}
+                    onClick={() => setShowRanks((value) => !value)}
+                    aria-label={t('challenge.ranking.chip')}
+                    title={t('challenge.ranking.chip')}
+                >
+                    <Trophy className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                    <span className={phone ? '' : 'ds-chip__long'}>{t('challenge.ranking.chip')}</span>
+                </button>
+            )}
+            {phone ? (
+                <ConsoleMoreMenu label={t('challenge.console.more')} items={moreItems} />
+            ) : soundChips}
         </>
     );
 
