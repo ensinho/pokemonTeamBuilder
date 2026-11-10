@@ -2561,6 +2561,7 @@ export default {
             },
         },
         console: {
+            more: 'More options',
             speed: 'Text speed',
             mute: 'Mute sound',
             unmute: 'Turn sound on',
