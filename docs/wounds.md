@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-10 — PvP battles emailed the opponent on every round, until Gmail refused `bug`
+- **Symptom:** Vercel logs `Failed to send a notification email: … 550-5.4.5 Daily user sending limit exceeded`. The same mailbox sends the admin replies, so those stopped too.
+- **Root cause:** `notifyAwaitingPlayer` relied on `pickAwaitingTarget` ("never the caller") as its throttle. But a round is resolved by whoever moves second, so `awaitingUids` is both players and the *other* one is picked every round — even one sitting in the battle screen. One email per round per player; a 15-round battle is ~15 emails.
+- **Fix:** `decideEmailSlot` / `claimEmailSlot` in `api/_lib/battleNotify.js`: one email per recipient per battle per 3h (`battles/{id}/secret/mail`) and 300 a day for the whole mailbox (`mailQuota/{day}`), claimed in a transaction *before* sending and kept even if the send fails. The push is not throttled.
+- **Correct pattern:** "not the caller" is who to notify, never a rate limit. Any outbound email needs its own cooldown and a daily ceiling under the provider's limit, recorded server-side.
+- **Files:** `api/_lib/battleNotify.js`, `api/_lib/battleNotify.test.js`, `api/battle-turn.js`, `docs/modules/notifications.md`
+
 ### 2026-11-09 — PokéPuzzle and Champion results kept landing in the general chat `bug`
 - **Symptom:** a trainer reported that sharing a Challenge or PokéPuzzle result "goes to random" — the General Chat — though the 2026-11-06 social pass moved those shares to the Diário do dia. Production confirmed it: results in `general` on 11-07 and 11-08 (03:19–06:06 UTC), in the diary only from 11-09.
 - **Root cause:** two doors to the same room. (1) `postToDiary` fell back to `'general'` whenever `ensureDiary()` failed, silently. (2) The PWA asks before it updates (`registerType: 'prompt'`), so installed apps still on a pre-11-06 build posted straight to `general` — nothing on the server said no. The night-time posts are the second door: the cron creates the diary at 12:00 UTC, before that only a current client can.

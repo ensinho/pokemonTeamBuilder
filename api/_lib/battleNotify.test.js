@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { pickAwaitingTarget, buildTurnEmail, pickBattlePushTarget } from './battleNotify.js';
+import {
+    pickAwaitingTarget, buildTurnEmail, pickBattlePushTarget,
+    decideEmailSlot, EMAIL_COOLDOWN_MS, EMAIL_DAILY_CAP,
+} from './battleNotify.js';
 
 describe('pickAwaitingTarget', () => {
     it('picks the awaiting uid that is not the caller', () => {
@@ -97,5 +100,28 @@ describe('pickBattlePushTarget', () => {
     it('refuses a caller who is not in the battle', () => {
         expect(pickBattlePushTarget(battle(), 'stranger')).toBeNull();
         expect(pickBattlePushTarget(null, 'me')).toBeNull();
+    });
+});
+
+describe('decideEmailSlot', () => {
+    const now = Date.parse('2026-11-10T12:00:00Z');
+
+    it('allows the first email for a recipient in a battle', () => {
+        expect(decideEmailSlot({ lastAt: null, sentToday: 0, now })).toEqual({ ok: true });
+    });
+
+    it('holds back a second email inside the cooldown (one per round was the bug)', () => {
+        const lastAt = new Date(now - 60_000).toISOString();
+        expect(decideEmailSlot({ lastAt, sentToday: 1, now })).toEqual({ ok: false, reason: 'cooldown' });
+    });
+
+    it('allows another once the cooldown has passed', () => {
+        const lastAt = new Date(now - EMAIL_COOLDOWN_MS - 1).toISOString();
+        expect(decideEmailSlot({ lastAt, sentToday: 1, now }).ok).toBe(true);
+    });
+
+    it('stops at the daily cap whatever the cooldown says', () => {
+        expect(decideEmailSlot({ lastAt: null, sentToday: EMAIL_DAILY_CAP, now }))
+            .toEqual({ ok: false, reason: 'daily-cap' });
     });
 });

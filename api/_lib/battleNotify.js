@@ -22,10 +22,14 @@ import { battleUrl, sendPushToUser } from './webPush.js';
  * Who, if anyone, should be nudged for this round transition.
  *
  * Never the caller: they just posted this very request, so they're
- * necessarily in the app right now and don't need telling. This one check is
- * the entire throttle — it's why a back-and-forth played live, both tabs
- * open, never spams either side, while an opponent who left hours ago always
- * gets exactly one email per round that becomes theirs.
+ * necessarily in the app right now. That is NOT a throttle on its own — a
+ * round is resolved by whoever moves second, so `awaitingUids` is usually both
+ * players and the *other* one is picked every single round, even when they are
+ * sitting in the battle screen. Until 2026-11-10 that meant one email per round
+ * per player and a Gmail "Daily user sending limit exceeded" (550 5.4.5), which
+ * also silenced the admin replies sharing the mailbox. The email is therefore
+ * gated by `decideEmailSlot` below; the push is not (it is free, and the client
+ * already drops it for a visible tab).
  */
 export const pickAwaitingTarget = (awaitingUids, callerUid) => (
     (awaitingUids || []).find((id) => id && id !== callerUid) || null
@@ -62,6 +66,49 @@ export const buildTurnEmail = ({ lang, callerName, battleUrl }) => {
     };
 };
 
+// One email per recipient per battle every EMAIL_COOLDOWN_MS: a trainer who is
+// away gets told once and a link that stays valid, not one per round. And a
+// hard ceiling for the whole mailbox per UTC day, under Gmail's 500 (a Workspace
+// account allows 2000) so the admin-reply endpoint keeps working.
+export const EMAIL_COOLDOWN_MS = 3 * 60 * 60 * 1000;
+export const EMAIL_DAILY_CAP = 300;
+
+/**
+ * Pure: may this recipient be emailed right now?
+ *
+ * @param {{lastAt?: string|null, sentToday?: number, now?: number}} input
+ * @returns {{ok: boolean, reason?: 'cooldown'|'daily-cap'}}
+ */
+export const decideEmailSlot = ({ lastAt, sentToday = 0, now = Date.now() }) => {
+    if (sentToday >= EMAIL_DAILY_CAP) return { ok: false, reason: 'daily-cap' };
+    const last = lastAt ? Date.parse(lastAt) : NaN;
+    if (Number.isFinite(last) && now - last < EMAIL_COOLDOWN_MS) return { ok: false, reason: 'cooldown' };
+    return { ok: true };
+};
+
+/**
+ * Claim the right to send one email, atomically, before sending it. The claim
+ * is recorded even if the send then fails — retrying into a mailbox that has
+ * just said "limit exceeded" only digs deeper. Server-only documents: nothing
+ * under `battles/{id}/secret` or `mailQuota` is reachable by a client rule.
+ */
+export const claimEmailSlot = async ({ db, appId, battleId, uid, now = Date.now() }) => {
+    const day = new Date(now).toISOString().slice(0, 10);
+    const base = `artifacts/${appId}`;
+    const mailRef = db.doc(`${base}/battles/${battleId}/secret/mail`);
+    const quotaRef = db.doc(`${base}/mailQuota/${day}`);
+    return db.runTransaction(async (tx) => {
+        const [mailSnap, quotaSnap] = await Promise.all([tx.get(mailRef), tx.get(quotaRef)]);
+        const lastAt = mailSnap.exists ? mailSnap.data()?.lastEmailAt?.[uid] : null;
+        const sentToday = quotaSnap.exists ? Number(quotaSnap.data()?.count) || 0 : 0;
+        const verdict = decideEmailSlot({ lastAt, sentToday, now });
+        if (!verdict.ok) return verdict;
+        tx.set(mailRef, { lastEmailAt: { [uid]: new Date(now).toISOString() } }, { merge: true });
+        tx.set(quotaRef, { count: sentToday + 1, day }, { merge: true });
+        return verdict;
+    });
+};
+
 const APP_URL = process.env.PUBLIC_APP_URL || 'https://pokemonbuilder.app';
 
 /**
@@ -92,6 +139,12 @@ export const notifyAwaitingPlayer = async ({ db, battleId, awaitingUids, callerU
         });
 
         if (!user?.email) return;
+
+        const slot = await claimEmailSlot({ db, appId: getAppId(), battleId, uid: targetUid });
+        if (!slot.ok) {
+            if (slot.reason === 'daily-cap') console.warn('Skipped a "your turn" email: the daily mail cap is reached.');
+            return;
+        }
 
         const lang = prefsSnap?.data()?.language === 'pt' ? 'pt' : 'en';
         const email = buildTurnEmail({

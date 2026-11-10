@@ -10,7 +10,7 @@ Three channels, deliberately separate, all reachable from one switch:
 | Toast | a tab that is **open and visible** | `useBattleNotifications` → `useToastStore` |
 | OS notification | a tab that is **open but in the background** | `useBattleNotifications` → `registration.showNotification` |
 | **Web Push** | the app **closed**, phone locked | `src/services/pushNotifications.js` + `api/_lib/webPush.js` |
-| Email | a trainer not on the device at all | `api/_lib/battleNotify.js` |
+| Email | a trainer not on the device at all — throttled: 1 per battle per 3h, 300/day (`decideEmailSlot`) | `api/_lib/battleNotify.js` |
 
 ---
 
