@@ -34,10 +34,11 @@ import {
     ForumSidebar,
     ForumExplorer,
     ForumRooms,
+    ForumSupportCard,
     TopicCreateModal,
     ThreadCardSkeleton,
 } from '../forum';
-import { PokeballIcon } from '../icons';
+import { LightbulbIcon, PokeballIcon } from '../icons';
 import { TeamOfTheWeek } from '../forum/TeamOfTheWeek';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { teamOfTheWeek } from '../../utils/teamOfTheWeek';
@@ -228,7 +229,7 @@ export function FeedView({ showToast, navigate }) {
 
     // Ranking, trending and the community figures, all from the one topics
     // stream. `now` is read here so Hot re-ranks whenever a topic moves.
-    const { pinned, rows, trending, stats, categoryCounts, pinnedRooms } = useMemo(() => {
+    const { pinned, rows, trending, stats, categoryCounts, pinnedRooms, feedbackRoom } = useMemo(() => {
         const now = Date.now();
         const filtered = filterTopics(topics, { category: selectedCategory, query: deferredQuery });
         const ranked = rankTopics(filtered, sortBy, now);
@@ -244,8 +245,15 @@ export function FeedView({ showToast, navigate }) {
             // `filter(isPinnedTopic)` handed the array index in as `now`, so today's
             // Diário and the week's Torneio were never "today" and never listed
             // (2026-11-09). Today's diary first, then the week's, then the chats.
-            pinnedRooms: topics.filter((tp) => isPinnedTopic(tp, now))
+            // 2026-11-10 (Enzo): the week's Torneio left the rooms for Feedback;
+            // it is a row in the feed now (feedRows below).
+            pinnedRooms: topics.filter((tp) => isPinnedTopic(tp, now) && !isWeeklyTopic(tp))
                 .sort((a, b) => roomRank(a) - roomRank(b) || topicLastActivity(b) - topicLastActivity(a)),
+            feedbackRoom: (() => {
+                const list = topics.filter((tp) => tp.category === 'feedback');
+                const last = list.reduce((max, tp) => Math.max(max, topicLastActivity(tp)), 0);
+                return { count: list.length, lastActivityAt: last ? new Date(last).toISOString() : null };
+            })(),
         };
     }, [topics, selectedCategory, deferredQuery, sortBy]);
 
@@ -546,8 +554,6 @@ export function FeedView({ showToast, navigate }) {
             currentTopicId={activeTopic?.id || null}
             hrefFor={hrefFor}
             onBeforeOpen={rowActions.beforeOpen}
-            featuredTeam={featuredTeam}
-            onShareTeam={(team) => openCreate({ team, category: 'teams' })}
             language={language}
             t={t}
         />
@@ -574,10 +580,26 @@ export function FeedView({ showToast, navigate }) {
     // in it — unless the trainer is searching, when a matching room is just
     // another result.
     const showRooms = !searchQuery;
+    // Feedback is a room too (2026-11-10): the category behind a door, second
+    // after the day's Diário. Inside it waits the one support card.
+    const feedbackDoor = {
+        id: 'room-feedback',
+        virtual: true,
+        icon: LightbulbIcon,
+        title: t('forum.feedbackRoom.name'),
+        meta: t('forum.feedbackRoom.meta'),
+        count: feedbackRoom.count,
+        lastActivityAt: feedbackRoom.lastActivityAt,
+        href: '/feed?cat=feedback',
+    };
     const roomsHere = showRooms
-        ? pinnedRooms.filter((tp) => selectedCategory === 'all' || tp.category === selectedCategory)
+        ? (selectedCategory === 'all'
+            ? [...pinnedRooms.filter(isDiaryTopic), feedbackDoor, ...pinnedRooms.filter((tp) => !isDiaryTopic(tp))]
+            : pinnedRooms.filter((tp) => tp.category === selectedCategory))
         : [];
-    const feedRows = showRooms ? rows.filter((tp) => !isPinnedTopic(tp)) : [...pinned, ...rows];
+    const isRoomTopic = (tp) => isPinnedTopic(tp) && !isWeeklyTopic(tp);
+    const feedRows = showRooms ? rows.filter((tp) => !isRoomTopic(tp)) : [...pinned, ...rows];
+    const showSupport = selectedCategory === 'feedback' && !searchQuery;
     // Above the list (or its empty state) once topics answered, on the views
     // a team belongs to: everything, or the teams category, unsearched.
     const showWeeklyTeam = !(isInitialLoadingTopics && topics.length === 0)
@@ -637,7 +659,7 @@ export function FeedView({ showToast, navigate }) {
                                 onSearchChange={(value) => setFeedParam('q', value)}
                                 sortBy={sortBy}
                                 onSortChange={(id) => setFeedParam('sort', id)}
-                                onOpenCreateTopic={() => openCreate()}
+                                onOpenCreateTopic={() => openCreate(selectedCategory !== 'all' ? { category: selectedCategory } : null)}
                                 stats={stats}
                                 categoryCounts={categoryCounts}
                                 t={t}
@@ -657,6 +679,7 @@ export function FeedView({ showToast, navigate }) {
                                         t={t}
                                     />
                                 )}
+                                {showSupport && <ForumSupportCard t={t} />}
                                 {showWeeklyTeam && (
                                     <TeamOfTheWeek
                                         pick={weeklyTeam}
@@ -699,13 +722,14 @@ export function FeedView({ showToast, navigate }) {
                                                     {t('forum.clearFilters')}
                                                 </button>
                                             )}
-                                            <button type="button" onClick={() => openCreate()} className="btn btn-primary btn-sm">
+                                            {/* Inside a category, a new post starts in it (the Feedback room). */}
+                                            <button type="button" onClick={() => openCreate(selectedCategory !== 'all' ? { category: selectedCategory } : null)} className="btn btn-primary btn-sm">
                                                 {t('forum.createPost')}
                                             </button>
                                         </div>
                                     </div>
                                 ) : (
-                                    feedRows.map((topic) => renderRow(topic, isPinnedTopic(topic)))
+                                    feedRows.map((topic) => renderRow(topic, isRoomTopic(topic)))
                                 )}
                             </section>
                         </div>

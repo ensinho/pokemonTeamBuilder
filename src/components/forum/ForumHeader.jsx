@@ -53,6 +53,13 @@ export function ForumHeader({
     categoryCounts = null,
     t,
 }) {
+    // The chosen category in view (2026-11-10): the Feedback room links to
+    // ?cat=feedback, and on a phone that chip sat off the row's right edge.
+    const chipsRef = useRef(null);
+    useEffect(() => {
+        const chip = chipsRef.current?.querySelector('[aria-pressed="true"]');
+        chip?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    }, [selectedCategory]);
     const [isSearchOpen, setIsSearchOpen] = useState(() => !!searchQuery);
     const inputRef = useRef(null);
     const openedByTapRef = useRef(false);
@@ -154,7 +161,7 @@ export function ForumHeader({
 
                 <span className="forum-feed-head__divider" aria-hidden="true" />
 
-                <div className="forum-chips" role="group" aria-label={t('forum.categoriesLabel')}>
+                <div ref={chipsRef} className="forum-chips" role="group" aria-label={t('forum.categoriesLabel')}>
                     {FORUM_CATEGORIES.map(({ id, key, icon }) => {
                         const Icon = icon;
                         // Eleven choices in one sideways row was too many: an empty category waits until it has a post.

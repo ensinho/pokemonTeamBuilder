@@ -613,11 +613,13 @@ export default {
         fairy: 'Fairy'
     },
     nav: {
+        tools: 'Tools',
+        community: 'Battles & friends',
         hubUsage: 'Usage',
         hubTournamentTeams: 'Tournament teams',
         library: 'Library',
         metaHub: 'Meta & tournaments',
-        hub: { library: 'Moves, abilities and items', meta: 'Meta, best teams and tournaments' },
+        hub: { library: 'Moves, abilities and items', meta: 'Meta, best teams and tournaments', tools: 'Calculator and speed tiers', community: 'Battles and friends' },
         about: 'About',
         more: 'More',
         moreSheetLabel: 'More destinations',
@@ -1964,6 +1966,13 @@ export default {
         createPublishError: 'Could not publish. Your post is still here — try again.',
         pinnedRooms: 'Pinned rooms',
         roomsTitle: 'Center rooms',
+        roomTopics: '{{count}} topics',
+        feedbackRoom: { name: 'Feedback', meta: 'Suggestions, bugs and ideas' },
+        support: {
+            title: 'Support PokemonBuilder',
+            text: 'Made by one person, with no ads. A coffee helps pay the servers and build what you ask for here.',
+            cta: 'Buy a coffee',
+        },
         roomMessages: '{{count}} messages',
         roomLive: 'Busy right now',
         discussions: 'Discussions',

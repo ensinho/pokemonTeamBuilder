@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { SwordsIcon, PokeballIcon, ShieldCheckIcon, FlameIcon, HeartIcon, MessageIcon, ChevronDownIcon } from '../icons';
-import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
-import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { ShieldCheckIcon, FlameIcon, HeartIcon, MessageIcon, ChevronDownIcon } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
 import { topicLikes, topicReplies } from '../../utils/forumRanking';
 
@@ -12,8 +10,8 @@ import { topicLikes, topicReplies } from '../../utils/forumRanking';
  * for — sharing a team.
  *
  * Nothing here repeats the centre (2026-11-09): Trending hides while the
- * centre already is the Hot feed, and the share card shows only when the
- * trainer has a team to share.
+ * centre already is the Hot feed. The share card left on 2026-11-10 — the
+ * Team of the week's "Postar meu time" and "Criar post" already do it.
  */
 export function ForumSidebar({
     stats,
@@ -22,8 +20,6 @@ export function ForumSidebar({
     currentTopicId = null,
     hrefFor,
     onBeforeOpen,
-    featuredTeam,
-    onShareTeam,
     language = 'pt',
     t,
 }) {
@@ -99,45 +95,6 @@ export function ForumSidebar({
             </section>
             )}
 
-            {featuredTeam && (
-            <section className="forum-sidebar-card">
-                <h4 className="forum-sidebar-card__title">
-                    <SwordsIcon className="w-4 h-4 shrink-0 text-primary" />
-                    {t('forum.shareTeamTitle')}
-                </h4>
-                    <>
-                        <p className="forum-sidebar-card__text">
-                            <span className="forum-sidebar-card__team-name">{featuredTeam.name}</span>
-                            {' — '}{t('forum.shareTeamHint')}
-                        </p>
-                        <div className="forum-sidebar-team-slots">
-                            {Array.from({ length: 6 }).map((_, idx) => {
-                                const pk = featuredTeam.pokemons?.[idx];
-                                return (
-                                    <div key={idx} className="forum-sidebar-team-slot" title={pk?.name}>
-                                        {pk ? (
-                                            <img
-                                                src={getTeamPokemonDisplaySprite(pk)}
-                                                alt={pk.name || ''}
-                                                width="40"
-                                                height="40"
-                                                loading="lazy"
-                                                className="w-full h-full object-contain"
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                            />
-                                        ) : (
-                                            <PokeballIcon className="w-3.5 h-3.5 text-muted" />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <button type="button" onClick={() => onShareTeam(featuredTeam)} className="btn btn-secondary btn-sm btn-block">
-                            {t('forum.shareTeamAction')}
-                        </button>
-                    </>
-            </section>
-            )}
         </aside>
     );
 }
