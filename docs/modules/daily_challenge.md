@@ -105,7 +105,7 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 - **Before:** in the picker, a tap on a member of the Time do dia opens its sheet; "Ficha ▸" opens a saved team's. VOLTAR returns one level; A still starts.
 - **During:** POKéMON opens the sheet, **also while the turn plays** (phone: the button stays lit in the dimmed menu; desktop: POKéMON / TIME DELA beside the message in the HUD). On your turn the member shown can be sent in (ENVIAR); ← → walk the six. A forced switch opens on the first who can come in and waits for the faint to finish playing. On a desktop the sheet covers the HUD too (`.bw-overlay.is-full`).
 - **Never ahead of the field:** the sheet is built from the newest `|request|` among the lines already played (`settledRequest` — the sim sends it after its turn), with HP and status from the played lines (`shownConditions`). The order follows the sim's: the active Pokémon is first, as in the games.
-- Terastal Clause is on, so there is no Tera type on the sheet.
+- Terastal Clause was on until 2026-11-09 (see **Tera and Z-Moves** below); the sheet still shows no Tera type.
 
 ### After the battle, the Pokétch, sound
 
@@ -117,6 +117,12 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 ### Move effects by type (2026-10-15)
 
 `MoveFx` in `DsBattleScene.jsx`: eight particles at the target, a **pattern** (how they move: rise, fall, ring, slash, quake, swarm, burst; status moves sparkle) and a **shape** (flame, bubble, wisp, leaf, rock, shard, bolt, ring, sparkle, line, dot, star) per type (`FX_BY_TYPE`); a special move's particles wait for its orb. Heavy physical hits (ground, rock, fighting) shake the field (`is-shake`, the world layers only). Transform/opacity; none under reduced motion.
+
+### Tera and Z-Moves (2026-11-09)
+
+- **The player's, never the champion's** (Enzo: "ter tera onde couber", Cynthia "melhor não"). Terastal Clause is off; `CHOICE_PATTERN` accepts `move N terastallize` and `move N zmove`; `ai/options.js` `legalOptions` never offers either. Dynamax stays out — the sim allows it only in Gen 8. Plan and sim facts: `docs/plans/battle-gimmicks.md`.
+- **One switch, three faces.** A Pokémon has at most one gimmick (a Mega Stone or a Z-Crystal rules Tera out), so `useBattleCommands` derives one (`gimmickOf`: mega → zmove → terastallize) and the MEGA button becomes MEGA, Z or TERA (in the Tera type's colour). MEGA starts on, Z and TERA off — each is once a battle. With Z on, only the moves with a Z-Move (`canZMove[slot]`, read as `move.zMove`) can be picked and they show its name.
+- **The moment:** `-terastallize` → a `tera` timeline event (line, `mega`-sized flare in the type's colour, the Mega sound) and `teraType` on the active (also read from `tera:X` in a switch's details) — the HP box adds a TERA mark. `-zpower` → a `zpower` event (line, gold flare); the Z-Move is the next `move` line. Tests: `src/utils/battleGimmicks.test.js`, `api/_lib/challenge/gimmicks.test.js` (real sim, both formats).
 
 ### Mega Evolution and the anime flare (2026-10-20)
 
@@ -154,7 +160,7 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 ## Traps found while building it
 
 - **`Battle.toJSON()` returns `log` by reference, and `Battle.fromJSON` adopts it.** A clone made from a raw `toJSON()` writes its imagined turns into the live battle's log — the player would receive lines from simulated futures. `engine.snapshot()` copies the log; `fog.js` gives every clone its own (`cloneOf`). Caught by the I2 replay test (live log 2,220 lines vs replay 203).
-- **`gen9customgame` is a debug format**: it reports exact HP to both sides (`reportExactHP`). The challenge uses `gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Terastal Clause` — percentages for the other side, no debug lines. (PvP still uses customgame; see wounds.)
+- **`gen9customgame` is a debug format**: it reports exact HP to both sides (`reportExactHP`). The challenge uses `gen9anythinggoes@@@!Team Preview,Sleep Clause Mod` (Terastal Clause until 2026-11-09; runs keep the format they were created with) — percentages for the other side, no debug lines. (PvP still uses customgame; see wounds.)
 - **`|t:|` lines carry `Date.now()`** — stripped in `engine.js`, or no two runs of a battle are byte-identical.
 - **Nothing is emitted until `battle.sendUpdates()`**; `apply` flushes after every choice.
 - **Per-player channels are 1 and 2** in `extractChannelMessages` (0 is the spectator, −1 omniscient).

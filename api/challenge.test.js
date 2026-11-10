@@ -343,7 +343,8 @@ describe('POST /api/challenge', () => {
         const { body } = await call({ action: 'start', team: { source: 'daily' } });
         const { runId } = body;
 
-        const format = await call({ action: 'choose', runId, turn: 0, choice: 'move 1 terastallize' });
+        // Tera and Z-Moves are in the grammar since 2026-11-09; Dynamax never.
+        const format = await call({ action: 'choose', runId, turn: 0, choice: 'move 1 dynamax' });
         expect(format.statusCode).toBe(400);
         expect(format.body).toMatchObject({ error: 'invalidChoice', detail: 'format' });
 

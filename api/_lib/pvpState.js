@@ -38,12 +38,14 @@
  *    2026-10-14).
  *  - **No Team Preview.** The client answered it with "default" anyway; without
  *    it the first thing either player sees is a move.
- *  - **Terastal Clause.** The battle screen has no Tera button.
+ *  - **Tera and Z-Moves allowed** (2026-11-09). Terastal Clause came off once
+ *    the battle screen had a TERA switch; a held Z-Crystal works in Gen 9
+ *    with no validator. Dynamax cannot: the sim allows it only in Gen 8.
  *
  * Battles already running keep the format they started with — it is part of
  * the replay.
  */
-export const PVP_FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Terastal Clause';
+export const PVP_FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod';
 
 /** A claim on a round older than this belongs to a request that died. */
 export const CLAIM_STALE_MS = 20_000;

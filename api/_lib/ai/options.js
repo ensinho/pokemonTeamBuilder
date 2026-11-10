@@ -2,8 +2,9 @@
  * The legal choices, read only from the sim's own request (invariant I6). The
  * AI never invents a choice, so it can never send one the sim refuses.
  *
- * Never offers Terastallization or Dynamax: the format's Terastal Clause
- * refuses the first, and Gen 9 has no Dynamax. A Pokémon the sim says can Mega
+ * Never offers Terastallization, Z-Moves or Dynamax. Tera and Z are the
+ * player's since 2026-11-09 — the champion does not use them (Enzo's call) —
+ * and Gen 9 has no Dynamax. A Pokémon the sim says can Mega
  * Evolve (`canMegaEvo`, its Mega Stone held) always does, with whatever move it
  * makes — the same rule the player's MEGA switch defaults to.
  */

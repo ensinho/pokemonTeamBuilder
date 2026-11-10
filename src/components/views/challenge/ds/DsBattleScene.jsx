@@ -60,6 +60,15 @@ function HpBox({ mon, mine }) {
             <div className="ds-hpbox__row">
                 <span className="ds-hpbox__name">{mega ? mon.species.replace(MEGA_RE, '') : mon.species}</span>
                 {mega && <span className="ds-hpbox__status is-mega">{t('challenge.command.mega')}</span>}
+                {mon.teraType && (
+                    <span
+                        className="ds-hpbox__status is-tera"
+                        style={typeColors[mon.teraType.toLowerCase()] ? { '--tera': typeColors[mon.teraType.toLowerCase()] } : undefined}
+                        title={t(`types.${mon.teraType.toLowerCase()}`)}
+                    >
+                        {t('challenge.command.tera')}
+                    </span>
+                )}
                 {mon.gender && <span className={`ds-hpbox__gender is-${mon.gender === 'F' ? 'f' : 'm'}`}>{mon.gender === 'F' ? '♀' : '♂'}</span>}
                 {mon.status && <span className={`ds-hpbox__status is-${mon.status}`}>{String(mon.status).toUpperCase()}</span>}
                 <span className="ds-hpbox__level"><small>{t('challenge.battle.lv')}</small>{mon.level}</span>

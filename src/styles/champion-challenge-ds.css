@@ -309,6 +309,9 @@
     --ds-room-floor-2: #33333f;
     --ds-ring: #44d6bc;
     --ds-flare-mega: #b86cff;
+    /* Terastallization's crystal and the Z-Power's gold (2026-11-09). */
+    --ds-flare-tera: #8ff0ff;
+    --ds-flare-z: #ffcc33;
     /* The anime flare's white core (DsFlare). */
     --flare-core: var(--ds-paper);
     --ds-ring-band: #2db6a0;
@@ -919,6 +922,7 @@
 .ds-hpbox__status.is-tox { background: var(--ds-status-psn); }
 .ds-hpbox__status.is-frz { background: var(--ds-status-frz); }
 .ds-hpbox__status.is-mega { background: var(--ds-flare-mega); }
+.ds-hpbox__status.is-tera { background: var(--tera, var(--ds-flare-tera)); }
 
 /* Poké Ball rows — on their own only before the send-outs, mirrored like the boxes. */
 .ds-balls {
@@ -1236,6 +1240,10 @@
     background: var(--ds-flare-mega);
     box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-white);
 }
+.bw-mega.is-terastallize[aria-pressed='true'] { background: var(--tera, var(--ds-flare-tera)); }
+.bw-mega.is-zmove[aria-pressed='true'] { background: var(--ds-flare-z); }
+/* Z armed: the moves that become a Z-Move glow gold; the others wait. */
+.bw-move.is-z { box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--ds-flare-z); }
 
 .bw-moves__foot {
     display: flex;

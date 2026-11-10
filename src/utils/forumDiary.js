@@ -15,6 +15,9 @@ const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const diaryTopicId = (dayKey) => `diary-${dayKey}`;
 
+/** Where a day's result goes when the diary cannot take it (stamped `diaryFallback`). */
+export const DIARY_FALLBACK_TOPIC = 'general';
+
 export const isDiaryTopic = (topic) => topic?.category === DIARY_CATEGORY && DAY_RE.test(topic?.dayKey || '');
 
 export const todayDiaryKey = (now = Date.now()) => dayKeyAt(now);

@@ -139,7 +139,10 @@ runs here, so a battle-only forme saved as the species starts as its base
 (`toStartingForme` in `api/_lib/battleResolver.js`). PvP does this only before the
 first published line, because a published battle must replay exactly as shown.
 Any reader keyed by species must follow `detailschange`, including the sim's
-`[silent]` revert on a faint (`src/utils/megaEvolution.test.js`). Impact moments
+`[silent]` revert on a faint (`src/utils/megaEvolution.test.js`). Tera and Z-Moves
+(2026-11-09) ride the same switch (`move N terastallize` / `move N zmove`,
+`gimmickOf` in `useBattleCommands`) — the player's only, never the champion's
+(`ai/options.js`); Dynamax is impossible outside Gen 8. Impact moments
 get the anime flare (`ds/DsFlare.jsx`, chosen in `src/utils/battleFlare.js`),
 drawn with the Web Animations API, not new route CSS.
 

@@ -16,11 +16,13 @@
  *  - **`!Team Preview`.** Preview prints both teams (`|poke|`) before the lead —
  *    which would reveal the wildcard the Pokétch keeps as "?" until it comes out.
  *    The lead is slot 1 on both sides, as in the games.
- *  - **Terastal Clause.** There is no Tera button; the sim refuses the choice.
+ *  - **Tera and Z-Moves for the player** (2026-11-09; Terastal Clause until
+ *    then). The champion never uses either (`ai/options.js`). Runs keep the
+ *    format they were created with, so older runs still replay.
  *  - **Sleep Clause Mod** acts in battle. Species, OHKO and Evasion Moves clauses
  *    are validator rules, so `validateTeam` enforces them instead.
  */
-export const FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Terastal Clause';
+export const FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod';
 
 /** Everyone plays at 50, Cynthia included — Battle Tower rules. */
 export const LEVEL = 50;
@@ -38,8 +40,10 @@ export const MAX_TEAM_TEXT = 8 * 1024;
 export const MAX_NAME_LENGTH = 20;
 
 /** The one choice grammar the endpoint accepts before it reaches the sim. */
-// `move N mega` — a Pokémon holding its Mega Stone Mega Evolves as it moves.
-export const CHOICE_PATTERN = /^(move [1-4]( mega)?|switch [1-6]|default)$/;
+// `move N mega` — a Pokémon holding its Mega Stone Mega Evolves as it moves;
+// `terastallize` and `zmove` the same way (2026-11-09). The sim refuses one
+// the Pokémon cannot use.
+export const CHOICE_PATTERN = /^(move [1-4]( mega| terastallize| zmove)?|switch [1-6]|default)$/;
 
 /**
  * Champions the engine knows (premise A5): the engine is generic by

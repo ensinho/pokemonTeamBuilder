@@ -12,7 +12,7 @@
 /**
  * The sim's latest ask, from my own filtered log.
  *
- * @returns {{kind: 'teamPreview'|'move'|'switch'|'wait'|'none', moves: Array, switches: Array, teamSize: number, canMega?: boolean}}
+ * @returns {{kind: 'teamPreview'|'move'|'switch'|'wait'|'none', moves: Array, switches: Array, teamSize: number, canMega?: boolean, canTera?: string|null, canZ?: boolean}}
  */
 export const readMyRequest = (myLogLines = []) => {
     const requests = myLogLines.filter((line) => line.startsWith('|request|'));
@@ -52,16 +52,25 @@ export const readMyRequest = (myLogLines = []) => {
     }
 
     const active = payload.active?.[0];
+    // `canZMove`: one entry per move slot, the Z-Move it becomes (null where none).
+    const zMoves = Array.isArray(active?.canZMove) ? active.canZMove : [];
     const moves = (active?.moves || []).map((move, index) => ({
         slot: index + 1,
         name: move.move || move.id || `Move ${index + 1}`,
         pp: move.pp,
         maxpp: move.maxpp,
         disabled: Boolean(move.disabled),
+        ...(zMoves[index]?.move ? { zMove: zMoves[index].move } : {}),
     }));
 
-    // Its Mega Stone held and no Mega Evolution yet this battle.
-    return { kind: 'move', moves, switches, teamSize: roster.length, canMega: Boolean(active?.canMegaEvo) };
+    // Each once per side per battle, and a Pokémon has at most one of them:
+    // a Mega Stone or a Z-Crystal held rules Tera out (the sim's own rule).
+    return {
+        kind: 'move', moves, switches, teamSize: roster.length,
+        canMega: Boolean(active?.canMegaEvo),
+        canTera: typeof active?.canTerastallize === 'string' ? active.canTerastallize : null,
+        canZ: moves.some((move) => move.zMove),
+    };
 };
 
 /**

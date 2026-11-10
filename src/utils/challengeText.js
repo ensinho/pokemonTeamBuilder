@@ -82,6 +82,10 @@ export const eventText = (event, { t, mySide = 'p1', championName, foeSimName = 
             return { text: t(event.key, event.params || {}), speaker: championName };
         case 'mega':
             return say('challenge.text.mega', { mega: megaName(event.mega) });
+        case 'tera':
+            return say('challenge.text.tera', { type: t(`types.${String(event.teraType || '').toLowerCase()}`) });
+        case 'zpower':
+            return say('challenge.text.zpower');
         case 'end': {
             const lost = event.winner === (foeSimName || championName);
             if (rival) return say(lost ? 'battle.stage.lostTo' : 'battle.stage.beat');

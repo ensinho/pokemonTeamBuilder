@@ -1,9 +1,12 @@
 # Plan: battle gimmicks — Tera, Z-Moves, Dynamax
 
 > 2026-11-09. Asked for by a trainer in the forum ("tera i think would be easy
-> to do, but maybe you could do z moves or dynamax too"). Not built yet — this
-> is what the engine allows, measured against `@pkmn/sim` 0.10.11 in
-> `node_modules`, and the order to build it in.
+> to do, but maybe you could do z moves or dynamax too"). What the engine
+> allows, measured against `@pkmn/sim` 0.10.11 in `node_modules`.
+>
+> **Status (same day): phases 1 and 2 built**, with Enzo's answers below —
+> how it works is in `docs/modules/daily_challenge.md` (**Tera and Z-Moves**).
+> Phase 3 (Dynamax) is out.
 
 Both battle types (PvP `api/battle-turn.js`, the Champion Challenge
 `api/challenge.js`) run **Gen 9** formats with no validator, and today only
@@ -62,10 +65,13 @@ that do not exist in Gen 8 must be refused, Max Moves need their own menu and
 the 3-turn size change its own scene. Worth it only as a "Galar rules"
 variant, not mixed into today's battles.
 
-## Open decisions (Enzo's)
+## Decisions (Enzo, 2026-11-09)
 
-1. Tera on by default in PvP, or a challenge option ("com Tera / sem Tera")?
-2. Does Cynthia Terastallize? (It changes the Challenge's difficulty curve.)
-3. Z-Moves in the same battles as Tera (the sim counts each once per side —
-   one Mega, one Z-Move and one Tera, as in National Dex), or Tera only?
-4. Dynamax: a separate Gen 8 mode, or not at all?
+1. Tera wherever it fits — "ter tera onde couber": PvP (standard and random) and the Challenge, for the player.
+2. The champion does not Terastallize — "melhor não" (nor use Z-Moves).
+3. Z-Moves in the same battles as Tera — yes.
+4. Dynamax — left out.
+
+Not done from the phases above: Cynthia's sets carry no Tera Type (she never
+uses it), and the builder's item picker does not mark Z-Crystals the way it
+marks Mega Stones.

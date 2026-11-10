@@ -560,12 +560,14 @@ service cloud.firestore {
 
           // A PokéPuzzle or Champion Challenge result lives in the Diário do
           // dia (2026-11-09): installed apps that never took the 2026-11-06
-          // update still posted them to the general chat, and so did the
-          // client's own fallback. Those posts are now refused, not misfiled.
+          // update still posted them to the general chat. The general chat
+          // takes one only as the current client's fallback, which stamps it
+          // `diaryFallback` — old builds never do, so theirs are refused.
           function dayResultsOnlyInDiary() {
+            let d = request.resource.data;
             return topicId.matches('^diary-[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-              || (request.resource.data.get('sharedPuzzle', null) == null
-                && request.resource.data.get('sharedChallenge', null) == null);
+              || (topicId == 'general' && d.get('diaryFallback', false) == true)
+              || (d.get('sharedPuzzle', null) == null && d.get('sharedChallenge', null) == null);
           }
 
           // Any signed-in user may add/remove only their own like, touching just

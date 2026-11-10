@@ -112,6 +112,18 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
                 if (who) emit({ type: 'mega', ...who, mega: formes[who.side] || who.species, item: parts[4] || null });
                 break;
             }
+            case '-terastallize': {
+                // `|-terastallize|p1a: Garchomp|Fire` (2026-11-09).
+                const who = actor(parseSubject(parts[2]));
+                if (who) emit({ type: 'tera', ...who, teraType: parts[3] || null });
+                break;
+            }
+            case '-zpower': {
+                // `|-zpower|p1a: Pikachu` — the Z-Move itself is the next `move` line.
+                const who = actor(parseSubject(parts[2]));
+                if (who) emit({ type: 'zpower', ...who });
+                break;
+            }
             case '-supereffective':
             case '-resisted':
             case '-crit':
