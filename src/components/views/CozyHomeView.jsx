@@ -13,13 +13,15 @@ import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useMetaUsage } from '../../hooks/useMetaUsage';
 import { useDailyPuzzle } from '../../hooks/useDailyPuzzle';
 import { useChallengeSummary } from '../../hooks/useChallengeSummary';
+import { useBattles } from '../../hooks/useBattles';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { typeColors } from '../../constants/types';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { timeUntil, trainerSpriteUrl } from '../../utils/challengeView';
 import { nextResetAt as challengeResetAt } from '../../utils/challengeDay';
-import { liveStreak, localDayKey } from '../../utils/dailyCheckin';
+import { liveStreak, localDayKey, normalizeCheckin, normalizeStreak } from '../../utils/dailyCheckin';
+import { homeNote } from '../../utils/mascot/assistant';
 import blueBattleUrl from '../../assets/challenge/blue-battle.png';
 import {
     TEAM_SIZE,
@@ -33,6 +35,7 @@ import {
 } from '../../utils/homeStatus';
 import { CheckinWeek } from '../rewards/CheckinWeek';
 import { HomeGreeting } from '../home/HomeGreeting';
+import { MascotNote } from '../home/MascotNote';
 import { DayHero } from '../home/DayHero';
 import { HomeParty } from '../home/HomeParty';
 import { promptSignIn } from '../../utils/navigation';
@@ -228,14 +231,15 @@ export function CozyHomeView({
     const now = useNow();
     const [isStreakOpen, setIsStreakOpen] = useState(false);
 
-    const { userId, streak, isAnonymous, trainerProfile, displayName: trainerName } = useAuthStore(useShallow((s) => ({
-        userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous, trainerProfile: s.trainerProfile, displayName: s.displayName,
+    const { userId, streak, checkin, isAnonymous, trainerProfile, displayName: trainerName } = useAuthStore(useShallow((s) => ({
+        userId: s.userId, streak: s.streak, checkin: s.checkin, isAnonymous: s.isAnonymous, trainerProfile: s.trainerProfile, displayName: s.displayName,
     })));
     const openOnboarding = useOnboardingStore((s) => s.open);
     const { badges, journeys, stats: trainerStats } = useTrainerBadges();
     const { ranked: metaRanked } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
     const challenge = useChallengeSummary(userId, isAnonymous);
+    const { awaitingMeCount } = useBattles();
     const challengeLine = (c) => {
         if (c.state === 'guest') return t('cozyHome.challengeGuest');
         if (c.state === 'new') return t('cozyHome.challengeNew');
@@ -916,6 +920,20 @@ export function CozyHomeView({
     // only once there is progress to save (the greeting's "Entrar" covers
     // the rest). Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
+    // The mascot's one line for today (utils/mascot/assistant.js decides what,
+    // or nothing): who is waiting on the trainer, else the day's open door,
+    // else "all done". Unknowns stay null so he never speaks, then changes his mind.
+    const note = homeNote({
+        hour: now.getHours(),
+        isNew: emphasis === 'focus' && isBrandNew,
+        battlesWaiting: awaitingMeCount,
+        checkedIn: normalizeCheckin(checkin).lastDay === localDayKey(now),
+        streak: streakCount,
+        shields: normalizeStreak(streak).shields,
+        puzzle: puzzle.isLoading ? null : (puzzle.summary && (puzzle.summary.solved || puzzle.summary.attempts >= 8)) ? 'done' : 'open',
+        challenge: !challenge ? null : challenge.state === 'guest' ? 'none' : ['won', 'lost'].includes(challenge.state) ? 'done' : 'open',
+    });
+    const mascotNote = <MascotNote note={note} onOpenStreak={() => setIsStreakOpen(true)} />;
     // The daily check-in as the week strip (rewards, 2026-10-17 → 2026-11-09):
     // the day's first thing to do. Reads recorded stores only.
     const checkinWeek = (
@@ -953,6 +971,7 @@ export function CozyHomeView({
             <div className="cozy-layout">
                 <div className="cozy-main">
                     {greeting}
+                    {mascotNote}
                     {isPhone && checkinWeek}
                     {hero}
                     {isPhone ? (

@@ -16,7 +16,8 @@ was approved by Enzo on 2026-11-06 ("nossa eu amei").
 | `src/utils/mascot/catalog.js` | The vocabulary: 32 `MOODS` (faces) and 28 `POSES` (paws + props), `sizeTraits(px)` (the size ladder), `seasonalHat(date)`, `isNight(date)`, `personaTone(id)`. |
 | `src/utils/mascot/constants.js` | What the boot path needs without the rig: `TONES`, `VIEWS` (framings), `MASCOT_SIZES`, `LOADER_SCENES` (names only). |
 | `src/utils/mascot/icon.js` | **Generated** (`node scripts/build-mascot-icon.mjs`): the mascot at rest as static markup, drawn before the engine chunk lands and by the boot splash. `catalog.test.js` fails when it drifts from the rig. |
-| `src/components/Mascot.jsx` | `<Mascot>`, `<MascotTip>` (same API as before: `size`, `cheer`), `<MascotIcon>` (splash, no engine). |
+| `src/components/Mascot.jsx` | `<Mascot>`, `<MascotTip>` (same API as before: `size`, `cheer`), `<MascotIcon>` (splash, no engine), `<MascotFace>` (a still sticker for places where a face repeats). |
+| `src/utils/mascot/assistant.js` | What he says as an assistant: `teamVerdict`, `homeNote`, `patienceStage`, the costumes. Pure; see "The assistant". |
 | `src/components/mascot/engine.js` | The lazy chunk (≈17 KB gz): rig + motion + catalog + the controller. Loaded by `useMascotEngine`, warmed first in AppLayout's idle prefetch. |
 | `src/components/mascot/stage.js` | `MascotStage`, the interactive controller: looks at the pointer, answers taps; on a `playground` also petting, long press, drag and dozing off. Imperative: frames are written into the `<svg>`, no React render per frame, and it runs frames only while something moves. |
 | `src/components/mascot/ticker.js` | One shared rAF loop, none when nothing moves. |
@@ -104,6 +105,41 @@ a list) keep the Poké Ball alone, because they repeat and sit beside content.
   loops at rest; `catalog.test.js` fails if a scene names something that does
   not exist or does not move.
 
+## The assistant (2026-11-10)
+
+Enzo: "tenha ele como pequenino assistente em certas tarefas do sistema, com
+suas animaçõezinhas, sempre quando for coeso". What he says is decided in one
+pure file, **`src/utils/mascot/assistant.js`** (tested), never in a view.
+
+| Piece | Where | What it does |
+|---|---|---|
+| **Recado do dia** | `components/home/MascotNote.jsx`, under the greeting (`homeNote(facts)`) | ONE line a day: a friend's battle waiting → the streak (evening only, never a threat; says when a shield covers it) → the open PokéPuzzle → the Champion → "Tudo feito por hoje" (asleep at night). The line is the link; × sends him off until tomorrow (`ptb:mascotNote`). Silent while a fact is unknown and for a brand-new trainer |
+| **Veredito do time** | `components/builder/MascotVerdict.jsx` (desktop composer, the phone's analysis sheet; his face leads the phone's analysis chip) (`teamVerdict`) | start · growing · hole · weak · complete · coverage. Reads the same analysis **and grade** as `rateTeam`, so he never frowns beside "Excelente". Cheers only a step up the trainer just made (`verdictImproved`); stays out while the beginner's coach is on screen (`builder/coachState.js`) |
+| **Reaction faces** | `forum/ReactionBar.jsx`, `REACTION_KINDS[].mood` | Each battle-text line is said by his face in the line's type colour — `<MascotFace>`, a still sticker drawn once per mood and reused (no store, no controller, never loops) |
+| **A wait that runs on** | `Loader.jsx` (`PATIENCE_STEPS` 4 s / 10 s) | After 4 s a second line says what he is doing ("Segurando a bola…"); after 10 s he yawns and the line admits it is long. The caller's label stays |
+| **Trajes** | Profile → Mascote, `prefs.costume` (`COSTUMES`, `PERSONA_COSTUME`) | none (default) · the persona's (Professor / Explorador / Gamer / Elegante) · eight outfits. From 48 px up; a season's hat wins on its dates; the crown is never a costume (gold is earned) |
+
+Rules, each from the market study (sources in the 2026-11-10 proposal):
+
+- **The face is the readout** (Duolingo's widget, Notion AI's face): one mood
+  per state. Use `md` (48 px) where the mood must read; a 20 px sticker says
+  "a face in this colour", not which face.
+- **He gestures, the app speaks** (Mailchimp's Freddie "does not talk"): the
+  sentence is UI copy beside him, never first person.
+- **One thing, closable, and silence is an answer** (Clippy had to be closed
+  by hand; the Rotom Dex "would never shut up"): never a second note, never a
+  note that changes its mind, nothing when there is nothing to say.
+- **No guilt** (Duolingo's reminders, Forest's dead tree): the streak line
+  states what the check-in keeps.
+- **Do not judge early**: with one or two members every weakness is
+  "team-wide" — the first capture said "Muitas fraquezas…" for a lone
+  Bulbasaur, and then "Muitas fraquezas…" beside "94 Excelente". Both are tests now.
+
+Declined on purpose: a mascot face as the toast's severity icon (the icon's
+shape is what a colour-blind reader has), a floating always-on companion (the
+JourneyCoach already holds that corner), mascot stickers as free-form forum
+content (a new field, rules and moderation — its own change).
+
 ## Rules (from the creative direction and the design system)
 
 - **One per screen.** The stage is held by the most recently mounted `stage`
@@ -132,6 +168,10 @@ scenes (measured against the commit before them): entry 151.8 → 152.2 KB gz
 exchange the boot splash no longer requests `logo-mark.webp` (7 KB), empty
 states and the loader no longer fetch the Gengar sprite, and the precache
 drops 50 KB (the 404 PNGs).
+
+The assistant (measured 2026-11-10 against `main`): entry 159.49 → 161.05 KB gz
+(+1.56: the note, the verdict, the sticker, the copy of one language), engine
+17.86 KB gz.
 
 ## Media
 

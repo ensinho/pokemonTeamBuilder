@@ -3786,6 +3786,13 @@
     box-shadow: inset 3px 0 0 color-mix(in srgb, var(--react) 75%, var(--color-fg)), inset 0 0 0 1px color-mix(in srgb, var(--react) 55%, transparent);
 }
 
+/* The mascot's face that says the line (MascotFace), in the line's own colour. */
+.reactions .reaction-face {
+    --mascot-bg: transparent;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
 .reaction-chip__count {
     color: var(--color-muted);
     font-variant-numeric: tabular-nums;

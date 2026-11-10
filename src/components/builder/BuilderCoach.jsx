@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useAuthStore } from '../../store/useAuthStore';
 import { isBeginnerTrainer } from '../../utils/trainerProfile';
 import { MascotTip } from '../Mascot';
+import { dismissCoach, isCoachDismissed } from './coachState';
 
 /**
  * The builder's coach (2026-11-05): for a trainer who said they are just
@@ -11,12 +12,6 @@ import { MascotTip } from '../Mascot';
  * the next step is, by where the team stands — empty, a few members, almost
  * there, complete. Closing it is for good on this device.
  */
-const DISMISS_KEY = 'ptb:builderCoachDismissed';
-
-const readDismissed = () => {
-    try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch { return false; }
-};
-
 const coachStage = (size) => (size === 0 ? 'empty' : size < 3 ? 'start' : size < 6 ? 'grow' : 'full');
 
 // The coach's face follows the team: pointing at where to start, glad, set on
@@ -32,7 +27,7 @@ const COACH_FACE = {
 export function BuilderCoach({ teamSize = 0, className = '' }) {
     const { t } = useTranslation();
     const isBeginner = useAuthStore((s) => isBeginnerTrainer(s.trainerProfile));
-    const [dismissed, setDismissed] = useState(readDismissed);
+    const [dismissed, setDismissed] = useState(isCoachDismissed);
     const stage = coachStage(teamSize);
     const previous = useRef(stage);
     const [celebrate, setCelebrate] = useState(0);
@@ -44,7 +39,7 @@ export function BuilderCoach({ teamSize = 0, className = '' }) {
 
     const dismiss = () => {
         setDismissed(true);
-        try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* the tip just comes back next visit */ }
+        dismissCoach();
     };
 
     return (

@@ -17,6 +17,7 @@ import { isRankedTrainer } from '../../utils/trainerProfile';
 import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
+import { MascotVerdict } from '../builder/MascotVerdict';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
 import { coreIconFor } from '../coreIcons';
 import { detectTeamCores } from '../../utils/metaCores';
@@ -837,7 +838,10 @@ export function TeamBuilderView({
                                 </button>
                             </p>
                         ) : (
-                            <TeamIdentitySummary team={currentTeam} analysis={teamAnalysis} />
+                            <>
+                                <MascotVerdict analysis={teamAnalysis} teamSize={currentTeam.length} />
+                                <TeamIdentitySummary team={currentTeam} analysis={teamAnalysis} />
+                            </>
                         )}
 
                         {/* Save says what saving would do — nothing ("Salvo") on a

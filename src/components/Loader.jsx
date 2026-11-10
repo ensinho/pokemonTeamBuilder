@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PokeballIcon } from './icons';
 import { Mascot } from './Mascot';
 import { LOADER_SCENES } from '../utils/mascot/constants';
+import { PATIENCE_STEPS } from '../utils/mascot/assistant';
 import { useTranslation } from '../hooks/useTranslation';
 
 /**
@@ -22,11 +23,18 @@ import { useTranslation } from '../hooks/useTranslation';
  * - `block`: centre it in a padded block, for a view with nothing else yet.
  *
  * A scene fades in after a beat, so a wait shorter than that shows nothing.
+ * One that runs on gets company (2026-11-10, `PATIENCE_STEPS`): after 4 s a
+ * line says what the mascot is doing ("Segurando a bola…"); after 10 s — where
+ * attention drifts — he yawns and the line admits the wait is long. The
+ * caller's label stays: it says *what* is loading, the line says *how it goes*.
  */
 export function Loader({ size = 'md', label, block = false, scene, className = '' }) {
     const { t } = useTranslation();
     const text = label || t('common.loading');
-    const look = (size === 'md' || size === 'lg') && scene !== 'ball' ? LOADER_SCENES[scene] || LOADER_SCENES.capture : null;
+    const isScene = (size === 'md' || size === 'lg') && scene !== 'ball';
+    const sceneName = LOADER_SCENES[scene] ? scene : 'capture';
+    const look = isScene ? LOADER_SCENES[sceneName] : null;
+    const patience = usePatience(isScene);
     const handoff = useHandoff(Boolean(look));
     const classes = ['loader', size !== 'md' && `loader--${size}`, look && 'loader--scene', handoff && 'is-handoff', className]
         .filter(Boolean).join(' ');
@@ -34,15 +42,29 @@ export function Loader({ size = 'md', label, block = false, scene, className = '
     const loader = (
         <span className={classes} role="status">
             {look
-                ? <Mascot size="xl" framing="body" mood={look.mood} pose={look.pose} className="loader__mascot" />
+                ? <Mascot size="xl" framing="body" mood={patience === 2 ? 'bocejo' : look.mood} pose={look.pose} className="loader__mascot" />
                 : <PokeballIcon className="loader__ball" />}
             {label
                 ? <span className="loader__label">{text}</span>
                 : <span className="sr-only">{text}</span>}
+            {patience > 0 && (
+                <span className="loader__aside">{t(patience === 2 ? 'mascot.wait.long' : `mascot.wait.${sceneName}`)}</span>
+            )}
         </span>
     );
 
     return block ? <div className="loader-block">{loader}</div> : loader;
+}
+
+/** 0 at first, 1 once the wait is clearly a wait, 2 when it is long (utils/mascot/assistant.js). */
+function usePatience(on) {
+    const [stage, setStage] = useState(0);
+    useEffect(() => {
+        if (!on) return undefined;
+        const timers = PATIENCE_STEPS.map((ms, i) => setTimeout(() => setStage(i + 1), ms));
+        return () => timers.forEach(clearTimeout);
+    }, [on]);
+    return on ? stage : 0;
 }
 
 // One wait often hands over to the next: the route's chunk, then the view's

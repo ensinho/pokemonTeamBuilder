@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { myReaction, nextReaction, summarizeReactions } from './forumReactions';
+import { REACTION_KINDS, myReaction, nextReaction, summarizeReactions } from './forumReactions';
+import { MOODS } from './mascot/catalog';
+import { TONES } from './mascot/constants';
 
 describe('forum reactions', () => {
     const reactions = { a: 'super', b: 'super', c: 'crit', me: 'crit', x: 'bogus' };
@@ -12,5 +14,12 @@ describe('forum reactions', () => {
         expect(myReaction(reactions, 'x')).toBeNull();
         expect(nextReaction('crit', 'crit')).toBeNull();
         expect(nextReaction('crit', 'super')).toBe('super');
+    });
+
+    it('gives every line a face the mascot draws, in a tone the rig knows', () => {
+        for (const kind of REACTION_KINDS) {
+            expect(MOODS[kind.mood]).toBeTruthy();
+            expect(TONES).toContain(kind.tone);
+        }
     });
 });

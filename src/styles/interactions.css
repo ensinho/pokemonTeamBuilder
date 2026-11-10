@@ -280,6 +280,16 @@
     height: 7.5rem;
 }
 
+/* A wait that runs on gets a second line (Loader.jsx, PATIENCE_STEPS): what
+   the mascot is doing, then that it is taking long. It arrives quietly. */
+.loader__aside {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    max-width: 20rem;
+    text-align: center;
+    animation: loader-in var(--duration-slow) var(--ease-smooth) both;
+}
+
 @keyframes loader-in {
     from { opacity: 0; }
 }
