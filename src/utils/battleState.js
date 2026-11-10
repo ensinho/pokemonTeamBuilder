@@ -14,9 +14,12 @@
  * instead, in pure and tested code.
  *
  * Stat stages are modelled (`active.boosts`, 2026-11-10: the HP boxes show
- * them). What it deliberately does NOT model: weather/terrain beyond a
- * label, hazards, screens, volatiles. Those are cosmetic overlays; if they're
- * wanted later, the honest options are to add them here or to accept the 805 KB.
+ * them), and so is what a player has to remember between turns: the hazards
+ * and screens on each side (`side.conditions`), the lasting effects on the
+ * Pokémon out (`active.volatiles`), the terrain and the rooms (`terrain`,
+ * `rooms`). Only the ones in `CONDITIONS` — a whitelist, so an effect the
+ * HUD has no chip for is ignored, not half-shown. Turn counters are NOT
+ * modelled: an item can stretch a screen or a weather and the log never says.
  */
 
 const SIDES = ['p1', 'p2'];
@@ -99,7 +102,101 @@ const cleanBoosts = (boosts) => {
     return out;
 };
 
+/**
+ * What the HUD keeps on screen, by the id the protocol names it with once
+ * `move: ` is dropped and the rest is squeezed (`move: Stealth Rock` →
+ * `stealthrock`). `short` is the chip (the abbreviations players already
+ * use; move names stay English, as everywhere in the battle text); a `label`
+ * is a key under `challenge.battle.cond` instead, for the few that are words.
+ */
+export const CONDITIONS = {
+    // A side's: screens help whoever stands there, hazards hurt whoever comes in.
+    reflect: { kind: 'screen', short: 'REF', name: 'Reflect' },
+    lightscreen: { kind: 'screen', short: 'LS', name: 'Light Screen' },
+    auroraveil: { kind: 'screen', short: 'VEIL', name: 'Aurora Veil' },
+    tailwind: { kind: 'screen', short: 'TW', name: 'Tailwind' },
+    safeguard: { kind: 'screen', short: 'SAFE', name: 'Safeguard' },
+    mist: { kind: 'screen', short: 'MIST', name: 'Mist' },
+    stealthrock: { kind: 'hazard', short: 'SR', name: 'Stealth Rock' },
+    spikes: { kind: 'hazard', short: 'SPK', name: 'Spikes' },
+    toxicspikes: { kind: 'hazard', short: 'TSPK', name: 'Toxic Spikes' },
+    stickyweb: { kind: 'hazard', short: 'WEB', name: 'Sticky Web' },
+    // The Pokémon's, until it leaves.
+    substitute: { kind: 'volatile', short: 'SUB', name: 'Substitute' },
+    leechseed: { kind: 'volatile', short: 'SEED', name: 'Leech Seed' },
+    confusion: { kind: 'volatile', label: 'confusion' },
+    taunt: { kind: 'volatile', short: 'TAUNT', name: 'Taunt' },
+    encore: { kind: 'volatile', short: 'ENC', name: 'Encore' },
+    yawn: { kind: 'volatile', short: 'YAWN', name: 'Yawn' },
+    curse: { kind: 'volatile', short: 'CURSE', name: 'Curse' },
+    perish: { kind: 'volatile', short: 'PERISH', name: 'Perish Song' },
+    // The whole field's.
+    sun: { kind: 'field', label: 'sun' },
+    rain: { kind: 'field', label: 'rain' },
+    sand: { kind: 'field', label: 'sand' },
+    snow: { kind: 'field', label: 'snow' },
+    wind: { kind: 'field', label: 'wind' },
+    electricterrain: { kind: 'field', short: 'ELEC', name: 'Electric Terrain' },
+    grassyterrain: { kind: 'field', short: 'GRASSY', name: 'Grassy Terrain' },
+    mistyterrain: { kind: 'field', short: 'MISTY', name: 'Misty Terrain' },
+    psychicterrain: { kind: 'field', short: 'PSYCHIC', name: 'Psychic Terrain' },
+    trickroom: { kind: 'field', short: 'TR', name: 'Trick Room' },
+    gravity: { kind: 'field', short: 'GRAV', name: 'Gravity' },
+    magicroom: { kind: 'field', short: 'M.ROOM', name: 'Magic Room' },
+    wonderroom: { kind: 'field', short: 'W.ROOM', name: 'Wonder Room' },
+};
+
+const WEATHER_IDS = {
+    sunnyday: 'sun', desolateland: 'sun',
+    raindance: 'rain', primordialsea: 'rain',
+    sandstorm: 'sand',
+    hail: 'snow', snowscape: 'snow', snow: 'snow',
+    deltastream: 'wind',
+};
+
+/** `move: Stealth Rock` → `stealthrock`; `perish3` → `perish` (its count is read apart). */
+const conditionId = (raw) => {
+    const id = String(raw || '').replace(/^(move|ability|item):\s*/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return /^perish\d$/.test(id) ? 'perish' : id;
+};
+
+const isKind = (id, ...kinds) => kinds.includes(CONDITIONS[id]?.kind);
+
+/** What Baton Pass hands over with the stages (the sim copies them without a line). */
+const PASSED_VOLATILES = ['substitute', 'leechseed', 'confusion', 'curse', 'perish'];
+
+/**
+ * The whole field's chips, in the order the HUD lists them: the weather, the
+ * terrain, the rooms.
+ */
+export const fieldConditions = (field) => [
+    WEATHER_IDS[conditionId(field?.weather)],
+    field?.terrain,
+    ...(field?.rooms || []),
+].filter((id) => isKind(id, 'field'));
+
+/**
+ * One side's chips: what is on the Pokémon out, then the side's screens, then
+ * its hazards — `{ id, kind, count }`, `count` only where it says something
+ * (Spikes' layers, Perish Song's turns).
+ */
+export const sideConditions = (side) => {
+    const out = [];
+    const active = side?.active && !side.active.fainted ? side.active : null;
+    for (const id of Object.keys(CONDITIONS)) {
+        const kind = CONDITIONS[id].kind;
+        const value = kind === 'volatile' ? active?.volatiles?.[id] : side?.conditions?.[id];
+        if (kind === 'field' || value == null || value === false) continue;
+        const counted = id === 'perish' || ((id === 'spikes' || id === 'toxicspikes') && value > 1);
+        out.push({ id, kind, count: counted ? value : null });
+    }
+    const order = ['volatile', 'screen', 'hazard'];
+    return out.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
+};
+
 const blankSide = () => ({
+    /** Hazards and screens, by id: the layers for a hazard, 1 for the rest. */
+    conditions: {},
     name: null,
     active: null,
     /** Species seen at team preview, in order — enough for a team bar. */
@@ -118,6 +215,8 @@ export const readBattleField = (lines = []) => {
         mySide: null,
         turn: 0,
         weather: null,
+        terrain: null,
+        rooms: [],
         ended: false,
         winner: null,
         myDetailsMap: new Map(),
@@ -185,8 +284,11 @@ export const readBattleField = (lines = []) => {
                 if (!ident) break;
                 const details = parseDetails(rest[1]);
                 // Baton Pass hands the stages to whoever comes in; any other switch clears them.
-                const passed = rest.some((part) => /^\[from\].*Baton Pass/i.test(part))
-                    ? cleanBoosts(state.sides[ident.side].active?.boosts)
+                const leaving = state.sides[ident.side].active;
+                const batonPass = rest.some((part) => /^\[from\].*Baton Pass/i.test(part));
+                const passed = batonPass ? cleanBoosts(leaving?.boosts) : {};
+                const passedVolatiles = batonPass
+                    ? Object.fromEntries(PASSED_VOLATILES.filter((id) => leaving?.volatiles?.[id] != null).map((id) => [id, leaving.volatiles[id]]))
                     : {};
 
                 state.sides[ident.side].active = {
@@ -198,6 +300,7 @@ export const readBattleField = (lines = []) => {
                     item: null,
                     ability: null,
                     boosts: passed,
+                    volatiles: passedVolatiles,
                 };
                 applyCondition(ident.side, rest[2]);
                 break;
@@ -298,6 +401,48 @@ export const readBattleField = (lines = []) => {
                 b.boosts = cleanBoosts(theirs);
                 break;
             }
+            case '-start':
+            case '-end': {
+                // `|-start|p1a: Mew|Substitute`, `|-start|p2a: Blissey|move: Leech Seed`,
+                // `|-start|p1a: Gengar|perish2`, `|-end|p2a: Blissey|move: Taunt`
+                const active = activeOf(rest[0]);
+                const id = conditionId(rest[1]);
+                if (!active || !isKind(id, 'volatile')) break;
+                const volatiles = { ...active.volatiles };
+                if (tag === '-end') delete volatiles[id];
+                else volatiles[id] = id === 'perish' ? Number(String(rest[1]).slice(-1)) || 0 : true;
+                active.volatiles = volatiles;
+                break;
+            }
+            case '-sidestart':
+            case '-sideend': {
+                // `|-sidestart|p2: B|move: Stealth Rock`, `|-sidestart|p2: B|Spikes` (once per layer),
+                // `|-sideend|p2: B|Sticky Web|[from] move: Rapid Spin`
+                const ident = parseIdent(rest[0]);
+                const id = conditionId(rest[1]);
+                if (!ident || !isKind(id, 'screen', 'hazard')) break;
+                const conditions = { ...state.sides[ident.side].conditions };
+                if (tag === '-sideend') delete conditions[id];
+                else conditions[id] = (conditions[id] || 0) + 1;
+                state.sides[ident.side].conditions = conditions;
+                break;
+            }
+            case '-swapsideconditions': {
+                // Court Change: everything on one side is now on the other.
+                const mine = state.sides.p1.conditions;
+                state.sides.p1.conditions = state.sides.p2.conditions;
+                state.sides.p2.conditions = mine;
+                break;
+            }
+            case '-fieldstart':
+            case '-fieldend': {
+                // `|-fieldstart|move: Trick Room|[of] p2a: Blissey`, `|-fieldend|move: Electric Terrain`
+                const id = conditionId(rest[0]);
+                if (!isKind(id, 'field')) break;
+                if (id.endsWith('terrain')) state.terrain = tag === '-fieldstart' ? id : (state.terrain === id ? null : state.terrain);
+                else state.rooms = [...state.rooms.filter((room) => room !== id), ...(tag === '-fieldstart' ? [id] : [])];
+                break;
+            }
             case '-status': {
                 const ident = parseIdent(rest[0]);
                 if (ident && state.sides[ident.side].active) {
@@ -320,6 +465,7 @@ export const readBattleField = (lines = []) => {
                 if (side.active) {
                     side.active.fainted = true;
                     side.active.boosts = {};
+                    side.active.volatiles = {};
                     side.active.hp = { current: 0, max: side.active.hp?.max ?? null, pct: 0, status: null, fainted: true };
                 }
                 break;

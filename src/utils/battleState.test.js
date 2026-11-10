@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { boostMultiplier, readBattleField, parseCondition, hpTone } from './battleState';
+import { boostMultiplier, fieldConditions, readBattleField, parseCondition, hpTone, sideConditions } from './battleState';
 
 describe('parseCondition', () => {
     it('reads real HP with a maximum', () => {
@@ -208,5 +208,85 @@ describe('stat stages (the HP boxes\' buff chips)', () => {
         expect(boostMultiplier('atk', -1)).toBeCloseTo(2 / 3);
         expect(boostMultiplier('accuracy', 1)).toBeCloseTo(4 / 3);
         expect(boostMultiplier('spe', 0)).toBe(1);
+    });
+});
+
+// Lines as @pkmn/sim prints them (captured from a real gen9customgame run).
+describe('hazards, screens, volatiles and the field (the HUD\'s condition chips)', () => {
+    const OPENING = [
+        '|player|p1|A', '|player|p2|B',
+        '|switch|p1a: Mew|Mew, L50|207/207',
+        '|switch|p2a: Blissey|Blissey, L50, F|362/362',
+    ];
+    const read = (lines) => readBattleField([...OPENING, ...lines]);
+    const ids = (list) => list.map((chip) => (chip.count ? `${chip.id}:${chip.count}` : chip.id));
+    const chips = (lines) => {
+        const field = read(lines);
+        return { p1: ids(sideConditions(field.sides.p1)), p2: ids(sideConditions(field.sides.p2)), field: fieldConditions(field) };
+    };
+
+    it('reads a side\'s hazards, with Spikes\' layers, and its screens', () => {
+        const out = chips([
+            '|-sidestart|p2: B|move: Stealth Rock',
+            '|-sidestart|p2: B|Spikes',
+            '|-sidestart|p2: B|Spikes',
+            '|-sidestart|p2: B|move: Toxic Spikes',
+            '|-sidestart|p1: A|Reflect',
+            '|-sidestart|p1: A|move: Light Screen',
+        ]);
+        expect(out.p2).toEqual(['stealthrock', 'spikes:2', 'toxicspikes']);
+        expect(out.p1).toEqual(['reflect', 'lightscreen']);
+    });
+
+    it('ends them, and Court Change trades the sides', () => {
+        const set = ['|-sidestart|p2: B|move: Stealth Rock', '|-sidestart|p1: A|move: Sticky Web', '|-sidestart|p1: A|Reflect'];
+        expect(chips([...set, '|-sideend|p1: A|Sticky Web|[from] move: Rapid Spin|[of] p1a: Mew', '|-sideend|p1: A|Reflect'])).toMatchObject({ p1: [], p2: ['stealthrock'] });
+        expect(chips([...set, '|-swapsideconditions'])).toMatchObject({ p1: ['stealthrock'], p2: ['reflect', 'stickyweb'] });
+    });
+
+    it('hazards outlive the Pokémon; its volatiles leave with it', () => {
+        const out = chips([
+            '|-sidestart|p2: B|move: Stealth Rock',
+            '|-start|p2a: Blissey|move: Leech Seed',
+            '|-start|p2a: Blissey|confusion',
+            '|switch|p2a: Chansey|Chansey, L50, F|300/300',
+        ]);
+        expect(out.p2).toEqual(['stealthrock']);
+    });
+
+    it('reads the volatiles, Perish Song\'s count, and their end', () => {
+        const lines = [
+            '|-start|p1a: Mew|Substitute',
+            '|-start|p2a: Blissey|move: Leech Seed',
+            '|-start|p2a: Blissey|move: Taunt',
+            '|-start|p2a: Blissey|perish3',
+            '|-start|p2a: Blissey|perish2',
+            '|-start|p2a: Blissey|typechange|Water',
+        ];
+        expect(chips(lines)).toMatchObject({ p1: ['substitute'], p2: ['leechseed', 'taunt', 'perish:2'] });
+        expect(chips([...lines, '|-end|p1a: Mew|Substitute', '|-end|p2a: Blissey|move: Taunt']))
+            .toMatchObject({ p1: [], p2: ['leechseed', 'perish:2'] });
+        expect(chips([...lines, '|faint|p2a: Blissey']).p2).toEqual([]);
+    });
+
+    it('Baton Pass hands on the Substitute, not the Taunt', () => {
+        const out = chips([
+            '|-start|p1a: Mew|Substitute',
+            '|-start|p1a: Mew|move: Taunt',
+            '|switch|p1a: Gengar|Gengar, L50, M|167/167|[from] Baton Pass',
+        ]);
+        expect(out.p1).toEqual(['substitute']);
+    });
+
+    it('reads the weather, the terrain and the rooms', () => {
+        const set = [
+            '|-weather|RainDance|[from] ability: Drizzle|[of] p2a: Pelipper',
+            '|-weather|RainDance|[upkeep]',
+            '|-fieldstart|move: Trick Room|[of] p2a: Blissey',
+            '|-fieldstart|move: Electric Terrain',
+        ];
+        expect(chips(set).field).toEqual(['rain', 'electricterrain', 'trickroom']);
+        expect(chips([...set, '|-fieldend|move: Trick Room', '|-fieldend|move: Electric Terrain', '|-weather|none']).field).toEqual([]);
+        expect(chips(['|-weather|Snowscape']).field).toEqual(['snow']);
     });
 });

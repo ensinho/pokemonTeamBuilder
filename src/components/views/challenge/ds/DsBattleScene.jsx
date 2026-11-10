@@ -5,7 +5,7 @@ import { useSpriteFeet } from '../../../../hooks/useSpriteFeet';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getDsSprite, spriteFeet } from '../../../../utils/battleSprites';
 import { FLARE_VARIANTS, flareOf } from '../../../../utils/battleFlare';
-import { BOOST_STATS, boostMultiplier, hpTone } from '../../../../utils/battleState';
+import { BOOST_STATS, CONDITIONS, boostMultiplier, fieldConditions, hpTone, sideConditions } from '../../../../utils/battleState';
 import { trainerSpriteUrl } from '../../../../utils/challengeView';
 import { DsFlare } from './DsFlare';
 import { DsTextBox } from './DsTextBox';
@@ -87,15 +87,39 @@ function HpBox({ mon, mine }) {
 }
 
 /**
- * The stat stages of the Pokémon on the field, as chips on the field side of
- * its box (under hers, over yours): an arrow, how many stages, the stat —
- * warm for a rise, cool for a drop, the games' own colours. The chip whose
- * line is playing pops once. `title` says what the stage is worth.
+ * One condition as a chip: the abbreviation players already use (SR, REF,
+ * SUB), its count where it has one (Spikes' layers, Perish Song's turns), the
+ * full name on hover. The tone says whose problem it is — a screen is Volt, a
+ * hazard amber, what clings to the Pokémon white, the field's own muted.
  */
-function BoostRow({ mon, mine, current }) {
+function ConditionChip({ id, kind, count = null }) {
     const { t } = useTranslation();
+    const entry = CONDITIONS[id];
+    const short = entry.label ? t(`challenge.battle.cond.${entry.label}`) : entry.short;
+    const name = entry.label ? t(`challenge.battle.condName.${entry.label}`) : entry.name;
+    const title = count ? `${name} · ${count}` : name;
+    return (
+        <li className={`ds-boost is-cond is-${kind}`} title={title} aria-label={title}>
+            <span aria-hidden="true">{short}</span>
+            {count != null && <span className="ds-boost__n" aria-hidden="true">{count}</span>}
+        </li>
+    );
+}
+
+/**
+ * What a side is carrying, as chips on the field side of its box (under hers,
+ * over yours). First the stat stages of the Pokémon out — an arrow, how many
+ * stages, the stat; warm for a rise, cool for a drop, the games' own colours;
+ * the chip whose line is playing pops once and `title` says what the stage is
+ * worth — then what clings to it (Substitute, Leech Seed), then the side's
+ * screens and hazards, which stay when the Pokémon leaves.
+ */
+function StateRow({ side, mine, current }) {
+    const { t } = useTranslation();
+    const mon = side?.active || null;
     const stats = mon && !mon.fainted ? BOOST_STATS.filter((stat) => mon.boosts?.[stat]) : [];
-    if (!stats.length) return null;
+    const conditions = sideConditions(side);
+    if (!stats.length && !conditions.length) return null;
     const sideId = mine ? 'p1' : 'p2';
     return (
         <ul className={`ds-boosts ${mine ? 'is-mine' : 'is-foe'}`}>
@@ -115,6 +139,18 @@ function BoostRow({ mon, mine, current }) {
                     </li>
                 );
             })}
+            {conditions.map((chip) => <ConditionChip key={chip.id} {...chip} />)}
+        </ul>
+    );
+}
+
+/** The weather, the terrain and the rooms: one row over her box, the field's own. */
+function FieldRow({ field }) {
+    const ids = fieldConditions(field);
+    if (!ids.length) return null;
+    return (
+        <ul className="ds-boosts is-field">
+            {ids.map((id) => <ConditionChip key={id} id={id} kind="field" />)}
         </ul>
     );
 }
@@ -299,8 +335,9 @@ export const DsBattleScene = memo(function DsBattleScene({
 
             <HpBox mon={foe} mine={false} />
             <HpBox mon={mine} mine />
-            <BoostRow mon={foe} mine={false} current={current} />
-            <BoostRow mon={mine} mine current={current} />
+            <FieldRow field={field} />
+            <StateRow side={field?.theirs} mine={false} current={current} />
+            <StateRow side={field?.mine} mine current={current} />
             {/* Before the send-outs, the two rows of balls stand on their own, as in the games. */}
             {!foe && <BallRow slots={foeBalls} mine={false} />}
             {!mine && <BallRow slots={myBalls} mine />}

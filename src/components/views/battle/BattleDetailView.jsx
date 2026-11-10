@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, FastForward, MessageSquare, Music, Swords, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Swords } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useBattles } from '../../../hooks/useBattles';
@@ -24,6 +24,7 @@ import { asViewer, opponentRoster, simNameOf } from '../../../utils/pvpView';
 import { EmptyState } from '../../EmptyState';
 import { Loader } from '../../Loader';
 import { ChallengeModal } from '../../modals/ChallengeModal';
+import { ConsoleSoundControls } from '../challenge/ConsoleSoundControls';
 import { DsBattleScene } from '../challenge/ds/DsBattleScene';
 import { DsBattleStage } from '../challenge/ds/DsBattleStage';
 import { DsConsole } from '../challenge/ds/DsConsole';
@@ -366,30 +367,16 @@ export function BattleDetailView() {
                     {unread > 0 && <span className="pvp-chip__count">{unread}</span>}
                 </button>
             )}
-            <button
-                type="button"
-                className="ds-chip is-button"
-                aria-pressed={sound.musicOn}
-                onClick={sound.toggleMusic}
-                aria-label={t(sound.musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
-                title={t(sound.musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
-            >
-                <Music className={`w-3.5 h-3.5 shrink-0 ${sound.musicOn ? '' : 'opacity-40'}`} aria-hidden="true" />
-            </button>
-            <button
-                type="button"
-                className="ds-chip is-button"
-                aria-pressed={!sound.muted}
-                onClick={sound.toggleMuted}
-                aria-label={t(sound.muted ? 'challenge.console.unmute' : 'challenge.console.mute')}
-                title={t(sound.muted ? 'challenge.console.unmute' : 'challenge.console.mute')}
-            >
-                {sound.muted ? <VolumeX className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> : <Volume2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
-            </button>
-            <button type="button" className="ds-chip is-button" aria-pressed={sound.fast} onClick={sound.toggleFast} title={t('challenge.console.speed')}>
-                <FastForward className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                {sound.fast ? '2×' : '1×'}
-            </button>
+            {/* A phone's bar is one row: back · the opponent · chat · ⋯ (music, sound, speed). */}
+            <ConsoleSoundControls
+                phone={layout !== 'single'}
+                musicOn={sound.musicOn}
+                muted={sound.muted}
+                fast={sound.fast}
+                onMusic={sound.toggleMusic}
+                onMuted={sound.toggleMuted}
+                onFast={sound.toggleFast}
+            />
         </>
     );
     const chatRail = railsOn && layout === 'single' ? chatPanel(true) : null;
