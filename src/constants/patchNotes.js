@@ -45,7 +45,7 @@ export const RELEASES = [
                 cta: 'patchNotes.socialCta',
                 links: SOCIAL_LINKS,
             },
-            { key: 'mascot-assistant', icon: 'sparkles', title: 'patchNotes.mascotTitle', description: 'patchNotes.mascotDesc', cta: 'patchNotes.mascotCta', path: '/profile' },
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
             { key: 'pokemon-center', icon: 'message', title: 'patchNotes.centerTitle', description: 'patchNotes.centerDesc', cta: 'patchNotes.centerCta', path: '/feed' },
             { key: 'tera-zmoves', icon: 'swords', title: 'patchNotes.gimmicksTitle', description: 'patchNotes.gimmicksDesc', cta: 'patchNotes.gimmicksCta', path: '/challenge' },
         ],

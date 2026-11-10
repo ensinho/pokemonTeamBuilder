@@ -768,7 +768,10 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
             </div>
         );
     }
-    // A note with `href` leaves the site: a real link, drawn as a centred card.
+    // A note with `href` leaves the site: a real link. Featured, it is a centred
+    // card under its cover with a real button; beside the featured note it keeps
+    // the side notes' row layout.
+    const centred = Boolean(note.href) && featured;
     const Card = note.href ? 'a' : 'button';
     const cardProps = note.href
         ? { href: note.href, target: '_blank', rel: 'noopener noreferrer' }
@@ -776,17 +779,17 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
     return (
         <Card
             {...cardProps}
-            className={`flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${note.href ? 'items-center justify-center text-center' : 'text-left'}`}
+            className={`flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${centred ? 'items-center justify-center text-center' : 'text-left'}`}
             aria-label={`${title} – ${cta}`}
         >
             {/* An illustration grows with the column beside it; a link card's cover
                 (a fixed 4:1 image) keeps its height and the card centres instead. */}
             {featured && NoteVisual && (
-                <div className={`mb-3 flex min-h-0 w-full flex-col overflow-hidden rounded-lg bg-surface ${note.href ? '' : 'flex-1'}`}>
+                <div className={`mb-3 flex min-h-0 w-full flex-col overflow-hidden rounded-lg bg-surface ${centred ? '' : 'flex-1'}`}>
                     <NoteVisual colors={colors} t={t} language={language} />
                 </div>
             )}
-            {note.href ? (
+            {centred ? (
                 <>
                     {/* The cup sits on the cover's bottom edge, a little tilted; below it on a phone, where it would hide the cover's line of text. */}
                     <span className="relative mb-2 inline-flex sm:-mt-10 h-14 w-14 -rotate-6 items-center justify-center rounded-full bg-primary text-on-primary ring-4 ring-surface-raised" aria-hidden="true">
