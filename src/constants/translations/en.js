@@ -2062,6 +2062,7 @@ export default {
             teamNotReady: 'A Pokémon has no moves',
             sending: 'Sending…',
             sendChallenge: 'Challenge',
+            pickTeam: 'Pick a team to send with the challenge.',
             waiting: 'Waiting for {{name}}…',
             foeTeamButton: 'THEIR TEAM',
             foeTeam: "{{name}}'s team",
@@ -3656,6 +3657,7 @@ export default {
         sendingBtn: '...',
         successMsg: '✓ Thanks for your feedback!',
         emailWarning: 'Add a valid email so I can reply.',
+        ideaWarning: 'Write your idea first.',
         submitSuccess: 'Thanks for your feedback!',
         submitError: 'Could not send your suggestion. Try again.'
     }

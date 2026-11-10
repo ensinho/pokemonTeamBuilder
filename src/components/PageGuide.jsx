@@ -57,7 +57,11 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
         event.preventDefault();
         const text = suggestionText.trim();
         const normalizedEmail = suggestionEmail.trim().toLowerCase();
-        if (!db || !userId || !text || isSending) return;
+        if (!db || !userId || isSending) return;
+        if (!text) {
+            showToast?.(t('guide.ideaWarning'), 'warning');
+            return;
+        }
         if (!isValidEmail(normalizedEmail)) {
             showToast?.(t('guide.emailWarning'), 'warning');
             return;
@@ -97,7 +101,6 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
 
     if (!guide) return null;
 
-    const isSuggestionEmailValid = isValidEmail(suggestionEmail);
     const titleText = t('guide.titleText', { page: guide.title });
     const ariaLabelText = t('guide.ariaLabel', { page: guide.title });
 
@@ -179,7 +182,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                                     />
                                     <button
                                         type="submit"
-                                        disabled={!suggestionText.trim() || !isSuggestionEmailValid || isSending || !db || !userId}
+                                        disabled={isSending || !db || !userId}
                                         className="btn btn-primary btn-sm"
                                     >
                                         {isSending ? t('guide.sendingBtn') : t('guide.sendBtn')}

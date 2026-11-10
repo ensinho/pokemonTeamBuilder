@@ -206,7 +206,7 @@ export function ChangePasswordDialog({ onClose }) {
                     </ul>
                     {error && <p className="auth-dialog__message auth-dialog__message--error" role="alert">{error}</p>}
                     <div className="auth-dialog__actions">
-                        <button type="submit" disabled={!canSave} className="btn btn-primary btn-lg btn-block">
+                        <button type="submit" className="btn btn-primary btn-lg btn-block">
                             {t('modals.accountPasswordBtn')}
                         </button>
                         <button type="button" onClick={() => { setError(''); setStep('verify'); }} className="btn btn-ghost btn-block">

@@ -2026,6 +2026,7 @@ export default {
             teamNotReady: 'Um Pokémon está sem golpes',
             sending: 'Enviando…',
             sendChallenge: 'Desafiar',
+            pickTeam: 'Escolha um time para ir com o desafio.',
             waiting: 'Aguardando {{name}}…',
             foeTeamButton: 'TIME RIVAL',
             foeTeam: 'Time de {{name}}',
@@ -3618,6 +3619,7 @@ export default {
         sendingBtn: '...',
         successMsg: 'Obrigado pelo seu feedback!',
         emailWarning: 'Adicione um e-mail válido para que eu possa responder.',
+        ideaWarning: 'Escreva sua ideia primeiro.',
         submitSuccess: 'Obrigado pelo seu feedback!',
         submitError: 'Não foi possível enviar sua sugestão. Tente novamente.'
     }
