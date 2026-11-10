@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { TONES } from '../utils/mascot/constants';
+import { COSTUMES } from '../utils/mascot/assistant';
 
 /**
  * The mascot's shared state (2026-11-06). Small on purpose: it ships on the
@@ -8,7 +9,9 @@ import { TONES } from '../utils/mascot/constants';
  * - `prefs`, this device's choices (`ptb:mascot`, a DEVICE_KEYS entry — it
  *   describes how the app looks here, like the theme): the line colour
  *   (`brand`, `persona`, a type or `shiny`), and whether he reacts and
- *   celebrates on his own. `shinyFound` remembers the easter egg.
+ *   celebrates on his own. `shinyFound` remembers the easter egg. `costume`
+ *   is what he wears (`none`, `persona` — the trainer's persona's outfit —
+ *   or one of `COSTUMES`, utils/mascot/assistant.js).
  * - `reaction`, a one-shot the app asks for (`hop` on a saved team, `oops`
  *   on an error); only the mascot holding the stage plays it — one per screen.
  * - `cover`, set while a password field has focus: the mascot near it covers
@@ -16,13 +19,15 @@ import { TONES } from '../utils/mascot/constants';
  */
 export const MASCOT_PREFS_KEY = 'ptb:mascot';
 export const MASCOT_TONE_CHOICES = ['brand', 'persona', ...TONES, 'shiny'];
-const DEFAULT_PREFS = Object.freeze({ tone: 'brand', reactions: true, shinyFound: false });
+export const MASCOT_COSTUME_CHOICES = ['none', 'persona', ...COSTUMES];
+const DEFAULT_PREFS = Object.freeze({ tone: 'brand', reactions: true, shinyFound: false, costume: 'none' });
 
 export function normalizeMascotPrefs(raw) {
     const v = raw && typeof raw === 'object' ? raw : {};
     const shinyFound = v.shinyFound === true;
     const tone = MASCOT_TONE_CHOICES.includes(v.tone) && (v.tone !== 'shiny' || shinyFound) ? v.tone : 'brand';
-    return { tone, reactions: v.reactions !== false, shinyFound };
+    const costume = MASCOT_COSTUME_CHOICES.includes(v.costume) ? v.costume : 'none';
+    return { tone, reactions: v.reactions !== false, shinyFound, costume };
 }
 
 const readPrefs = () => {

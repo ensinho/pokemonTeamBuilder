@@ -16,6 +16,9 @@ import { TypeChip } from '../TypeChip';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
 import { coreIconFor } from '../coreIcons';
 import { TeamRatingBadge } from '../TeamIdentitySummary';
+import { MascotVerdict } from '../builder/MascotVerdict';
+import { MascotFace } from '../Mascot';
+import { teamVerdict } from '../../utils/mascot/assistant';
 import { detectTeamCores } from '../../utils/metaCores';
 import { rateTeam } from '../../utils/teamAnalysis';
 import { LegacyTypesSwitch } from '../LegacyTypesSwitch';
@@ -212,6 +215,7 @@ function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough,
                     <TeamRatingBadge score={score} grade={grade} />
                     <Link to="/methodology" onClick={onClose} className="btn btn-ghost btn-sm">{t('builder.ratingHow')}</Link>
                 </div>
+                <MascotVerdict analysis={teamAnalysis} teamSize={teamSize} />
                 {!isPlaythrough && (
                     <div className="segmented segmented--block" role="group" aria-label={t('builder.analysisTitle')}>
                         <button type="button" className="segmented__item" aria-pressed={tab === 'coverage'} onClick={() => setTab('coverage')}>
@@ -733,6 +737,8 @@ export const MobileTeamBuilderView = ({
                                     className="team-builder-mobile__analysis-chip"
                                     aria-label={`${t('builder.analysisTitle')}: ${t(`builder.grade.${rating.grade}`)} ${rating.score}, ${t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}`}
                                 >
+                                    {/* The mascot's face is the verdict at a glance (utils/mascot/assistant.js). */}
+                                    <MascotFace mood={teamVerdict(teamAnalysis, teamSize)?.mood} className="team-builder-mobile__analysis-face" />
                                     <TeamRatingBadge score={rating.score} grade={rating.grade} compact />
                                     <span className="team-builder-mobile__analysis-chip-counts">
                                         {t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}

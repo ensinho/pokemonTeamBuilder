@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SmilePlus } from 'lucide-react';
 import { typeColors } from '../../constants/types';
+import { MascotFace } from '../Mascot';
 import { REACTION_KINDS, myReaction, nextReaction, summarizeReactions } from '../../utils/forumReactions';
 
 /**
@@ -10,6 +11,9 @@ import { REACTION_KINDS, myReaction, nextReaction, summarizeReactions } from '..
  * Open: the four lines in a row, in place (no popover over the thread).
  * Tapping your own takes it back. `inline`: it lives in the action row (a
  * comment's Like · Reply · Share), so a post with no reactions costs no line.
+ *
+ * Each line is said by the mascot's face for it (2026-11-10), in the line's
+ * own type colour: a still sticker (`MascotFace`), because it repeats.
  */
 export function ReactionBar({ reactions, userId, onReact, t, inline = false }) {
     const [open, setOpen] = useState(false);
@@ -32,6 +36,7 @@ export function ReactionBar({ reactions, userId, onReact, t, inline = false }) {
                     aria-label={`${t(`forum.react.${k.id}`)} · ${k.count}`}
                     onClick={() => pick(k.id)}
                 >
+                    <MascotFace mood={k.mood} tone={k.tone} className="reaction-face" />
                     <span className="reaction-chip__text">{t(`forum.react.${k.id}`)}</span>
                     <span className="reaction-chip__count">{k.count}</span>
                 </button>
@@ -60,6 +65,7 @@ export function ReactionBar({ reactions, userId, onReact, t, inline = false }) {
                             onClick={() => pick(k.id)}
                             onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
                         >
+                            <MascotFace mood={k.mood} tone={k.tone} className="reaction-face" />
                             {t(`forum.react.${k.id}`)}
                         </button>
                     ))}

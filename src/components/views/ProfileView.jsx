@@ -31,7 +31,8 @@ import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
 import { Mascot } from '../Mascot';
-import { useMascotStore } from '../../store/useMascotStore';
+import { useMascotStore, MASCOT_COSTUME_CHOICES } from '../../store/useMascotStore';
+import { costumeHat } from '../../utils/mascot/assistant';
 import { TONES as MASCOT_TONES } from '../../utils/mascot/constants';
 import { typeColors } from '../../constants/typeChart';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
@@ -196,6 +197,9 @@ const MascotSection = () => {
     const setPrefs = useMascotStore((s) => s.setPrefs);
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const personaTone = derivePersona(trainerProfile)?.tone || null;
+    const personaId = derivePersona(trainerProfile)?.id || null;
+    // "The profile's" is offered once there is a profile to follow.
+    const costumes = MASCOT_COSTUME_CHOICES.filter((k) => k !== 'persona' || (personaId && hasAnsweredProfile(trainerProfile)));
     const [mood, setMood] = useState('feliz');
     const tones = ['brand', ...(personaTone ? ['persona'] : []), ...MASCOT_TONES, ...(prefs.shinyFound ? ['shiny'] : [])];
     const toneLabel = (k) => (k === 'brand' ? t('profile.mascotToneBrand')
@@ -227,6 +231,18 @@ const MascotSection = () => {
                     {tones.map((k) => (
                         <button key={k} type="button" className="mascot-tone" style={{ '--tone': toneSwatch(k) }} aria-pressed={prefs.tone === k} onClick={() => setPrefs({ tone: k })}>
                             {toneLabel(k)}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div className="profile-row profile-row--stacked">
+                <span className="profile-row__label">{t('profile.mascotCostume')}</span>
+                <span className="profile-row__desc">{t('profile.mascotCostumeDesc')}</span>
+                <div className="profile-mascot__costumes" role="group" aria-label={t('profile.mascotCostume')}>
+                    {costumes.map((k) => (
+                        <button key={k} type="button" className="mascot-costume" aria-pressed={prefs.costume === k} onClick={() => setPrefs({ costume: k })}>
+                            <Mascot size="md" hat={costumeHat(k, personaId) || undefined} seasonal={false} />
+                            <span className="mascot-costume__name">{t(`mascot.costumes.${k}`)}</span>
                         </button>
                     ))}
                 </div>

@@ -32,4 +32,9 @@ describe('Loader', () => {
         expect(out).toContain('Entrando na sala da Cynthia…');
         expect(out).toMatch(/class="mascot[^"]*loader__mascot"[^>]*aria-hidden="true"/);
     });
+
+    it('says nothing extra at first: the company arrives only once the wait runs on', () => {
+        const out = html(<Loader size="lg" scene="pokedex" label="Abrindo a Pokédex…" />);
+        expect(out).not.toContain('loader__aside');
+    });
 });

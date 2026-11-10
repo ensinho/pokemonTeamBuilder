@@ -2,13 +2,15 @@
  * Battle-text reactions (2026-11-06, docs/plans/social-heart.md A2): the
  * games' own lines instead of emoji. One per trainer per post, stored as
  * `reactions: { [uid]: kind }` (firestore.rules `touchesOnlyOwnReaction`).
- * `tone` is the type whose canon colour edges the battle box.
+ * `tone` is the type whose canon colour edges the battle box; `mood` is the
+ * mascot's face that says the line (2026-11-10, utils/mascot/catalog.js) —
+ * the face is how the reaction reads at a glance, the words stay.
  */
 export const REACTION_KINDS = [
-    { id: 'super', tone: 'fire' },
-    { id: 'crit', tone: 'electric' },
-    { id: 'weak', tone: 'steel' },
-    { id: 'confused', tone: 'psychic' },
+    { id: 'super', tone: 'fire', mood: 'empolgado' },
+    { id: 'crit', tone: 'electric', mood: 'surpreso' },
+    { id: 'weak', tone: 'steel', mood: 'desconfiado' },
+    { id: 'confused', tone: 'psychic', mood: 'tonto' },
 ];
 
 const KIND_IDS = new Set(REACTION_KINDS.map((k) => k.id));

@@ -709,6 +709,34 @@
 }
 .mascot-tone:focus-visible { outline: none; box-shadow: var(--ring-logo); }
 
+/* What he wears (utils/mascot/assistant.js COSTUMES): each choice is the mascot wearing it. */
+.profile-mascot__costumes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+.mascot-costume {
+    --mascot-bg: var(--color-surface-raised);
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1_5);
+    /* room above for a hat: the drawing overflows its box on purpose */
+    padding: var(--space-5) var(--space-1_5) var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--mascot-bg);
+    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+.mascot-costume:hover { --mascot-bg: var(--color-surface-hover); }
+.mascot-costume[aria-pressed='true'] { box-shadow: var(--ring-primary); }
+.mascot-costume:focus-visible { outline: none; box-shadow: var(--ring-logo); }
+.mascot-costume__name {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: var(--color-muted);
+}
+.mascot-costume[aria-pressed='true'] .mascot-costume__name { color: var(--color-fg); }
+
 @media (max-width: 639px) {
     .profile-mascot { grid-template-columns: minmax(0, 1fr); }
     .profile-mascot__stage { width: min(100%, 16rem); margin-inline: auto; }

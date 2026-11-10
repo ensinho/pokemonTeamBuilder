@@ -2718,6 +2718,13 @@
     background: var(--color-surface-active);
 }
 
+/* The verdict's face, ahead of the grade (MascotFace). */
+.team-builder-mobile__analysis-chip .team-builder-mobile__analysis-face {
+    --mascot-bg: var(--color-surface-raised);
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
 .team-builder-mobile__analysis-chip-counts {
     flex: 1;
     min-width: 0;

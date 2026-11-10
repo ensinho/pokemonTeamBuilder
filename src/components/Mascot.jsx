@@ -6,6 +6,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { derivePersona } from '../utils/trainerProfile';
 import { ICON_INNER, ICON_INNER_SMALL } from '../utils/mascot/icon';
 import { MASCOT_SIZES, VIEWS } from '../utils/mascot/constants';
+import { costumeHat } from '../utils/mascot/assistant';
 import { useMascotEngine } from './mascot/useMascotEngine';
 
 /**
@@ -28,6 +29,8 @@ import { useMascotEngine } from './mascot/useMascotEngine';
  *   app's reactions (`useMascotStore.react`). `playground`: petting, a long
  *   press, dragging and dozing off — the Profile and the 404.
  * - `coverable`: covers its eyes while a password field has focus.
+ * - What he wears: the caller's `hat`, else the season's (on its dates), else
+ *   the trainer's costume (Profile → Mascote) — from 48 px up, where a hat reads.
  */
 const toneOf = (prefs, profile) => {
     if (prefs.tone === 'brand') return null;
@@ -64,12 +67,14 @@ export function Mascot({
 
     const base = useMemo(() => {
         if (!engine) return null;
-        const season = (seasonal ?? px >= 48) && !hat ? engine.seasonalHat(new Date()) : null;
-        const pose0 = engine.buildPose({ px, mood, pose, hat: hat || season || undefined, extra: { ...(extra || {}), ...(cover ? COVER_POSE[cover] : {}) } });
+        const dressed = (seasonal ?? px >= 48) && !hat;
+        const season = dressed ? engine.seasonalHat(new Date()) : null;
+        const costume = dressed && !season ? costumeHat(prefs.costume, derivePersona(trainerProfile)?.id) : null;
+        const pose0 = engine.buildPose({ px, mood, pose, hat: hat || season || costume || undefined, extra: { ...(extra || {}), ...(cover ? COVER_POSE[cover] : {}) } });
         return tone ? { ...pose0, tone } : pose0;
         // extraKey stands in for `extra` (callers pass literals)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [engine, px, mood, pose, hat, extraKey, cover, tone, seasonal]);
+    }, [engine, px, mood, pose, hat, extraKey, cover, tone, seasonal, prefs.costume, trainerProfile]);
     const baseRef = useRef(base);
     baseRef.current = base;
 
@@ -155,6 +160,36 @@ export function MascotTip({ children, size = 'md', cheer = false, mood, pose, pl
             <Mascot size={size} cheer={cheer} mood={mood} pose={pose} play={play} playKey={playKey} interactive stage />
             <div className="mascot-tip__bubble">{children}</div>
         </div>
+    );
+}
+
+// One drawing per (mood, size, tone): a thread can show the same face fifty times.
+const faceCache = new Map();
+
+/**
+ * A face as a sticker: one mood, still, no controller, no store — for places
+ * where the face repeats (a reaction under every post, a row in a list). The
+ * markup is drawn once per mood and size and reused. `tone` is a type name
+ * (the reaction's own colour) or nothing for the brand's violet.
+ */
+export function MascotFace({ mood, size = 'xs', tone, className = '' }) {
+    const engine = useMascotEngine();
+    const ref = useRef(null);
+    const px = MASCOT_SIZES[size] ?? 24;
+    useLayoutEffect(() => {
+        if (!ref.current) return;
+        if (!engine) { ref.current.innerHTML = px <= 28 ? ICON_INNER_SMALL : ICON_INNER; return; }
+        const key = `${mood}|${px}|${tone || ''}`;
+        if (!faceCache.has(key)) {
+            const pose = engine.buildPose({ px, mood });
+            faceCache.set(key, engine.mascotInner(tone ? { ...pose, tone } : pose));
+        }
+        ref.current.innerHTML = faceCache.get(key);
+    }, [engine, mood, px, tone]);
+    return (
+        <span className={`mascot mascot--${MASCOT_SIZES[size] ? size : 'xs'} mascot-face ${className}`} aria-hidden="true">
+            <svg ref={ref} className="mascot__svg" viewBox={VIEWS.head} xmlns="http://www.w3.org/2000/svg" focusable="false" />
+        </span>
     );
 }
 
