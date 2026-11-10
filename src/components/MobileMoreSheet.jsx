@@ -55,6 +55,23 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                 {section.items.map((item) => {
                                     const active = currentPage === item.key || Boolean(item.members?.includes(currentPage));
                                     const shortened = item.shortLabel && item.shortLabel !== item.label;
+                                    // An outside link (the support page) is a real <a>, quiet:
+                                    // icon over label, no Volt box, opens in a new tab.
+                                    if (item.href) {
+                                        return (
+                                            <li key={item.key}>
+                                                <a
+                                                    href={item.href}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="more-tile more-tile--featured more-tile--quiet"
+                                                >
+                                                    <span className="more-tile__icon">{item.icon}</span>
+                                                    <span className="more-tile__label">{item.label}</span>
+                                                </a>
+                                            </li>
+                                        );
+                                    }
                                     return (
                                         <li key={item.key}>
                                             <button

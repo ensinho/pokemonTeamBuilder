@@ -71,7 +71,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -90,6 +90,7 @@ import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { glyphMotion } from '../utils/glyphMotion';
 import { isCrawler } from '../utils/crawler';
+import { SUPPORT_URL } from '../constants/support';
 import { hubForPath, hubMembers } from '../constants/navHubs';
 import { HubSwitch } from './HubSwitch';
 import { BrandWordmark } from './BrandWordmark';
@@ -1123,7 +1124,13 @@ export default function AppLayout() {
         const challenge = navigationGroups.flatMap((group) => group.items).find((item) => item.key === 'challenge');
         return [
             // The card has room for the full name; the hint says what it is.
-            { key: 'hero', title: null, hero: true, items: challenge ? [{ ...challenge, shortLabel: undefined, hint: t('nav.challengeHint') }] : [] },
+            // The Challenge shares its row with the support link (Enzo, 2026-11-10):
+            // the ask in sight on a phone without opening "Sobre", and quieter —
+            // a plain tile beside the Volt card, never a second accent.
+            { key: 'hero', title: null, hero: true, items: [
+                ...(challenge ? [{ ...challenge, shortLabel: undefined, hint: t('nav.challengeHint') }] : []),
+                { key: 'support', label: t('nav.support'), icon: <Coffee className="w-5 h-5 shrink-0" />, href: SUPPORT_URL, quiet: true },
+            ] },
             { key: 'pinned', title: null, featured: true, items: visible(primaryNavItems) },
             { key: 'play', title: t('nav.play'), items: itemsOf('guessing') },
             { key: 'teamBuilding', title: titleOf('teamBuilding'), items: itemsOf('teamBuilding') },
@@ -1632,9 +1639,19 @@ export default function AppLayout() {
                             {/* Bottom: Theme button, collapse button, account menu */}
                             <div className="app-shell__sidebar-bottom">
                                 <div className={`app-shell__account ${isRailCollapsed ? 'is-collapsed' : ''}`}>
-                                    {/* "Apoie o projeto" left the rail on 2026-11-10 (Enzo): the
-                                        ask lives in the forum's Feedback room and the Mais
-                                        sheet's About list, not on every page. */}
+                                    {/* Always in the rail (Enzo, 2026-11-10: removed and put back
+                                        the same day — the project's one standing ask stays visible). */}
+                                    <a
+                                        href={SUPPORT_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={t('nav.support')}
+                                        title={isRailCollapsed ? t('nav.support') : undefined}
+                                        className={`btn btn-secondary app-shell__support ${isRailCollapsed ? 'btn-icon' : 'btn-block'}`}
+                                    >
+                                        <Coffee aria-hidden="true" />
+                                        {!isRailCollapsed && <span>{t('nav.support')}</span>}
+                                    </a>
                                     {isAnonymous ? (
                                         <>
                                             {/* A guest's preferences (language, notifications,
