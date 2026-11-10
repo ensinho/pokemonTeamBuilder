@@ -36,7 +36,7 @@ import { DsVersusLazy } from './ds/DsVersusLazy';
 import { preloadVersus } from './ds/versusChunk';
 import { ChallengeRanking, ChallengeRankingSheet } from './ChallengeRanking';
 import { ChallengeTeamsRail } from './ChallengeTeamsRail';
-import { ConsoleMoreMenu } from './ConsoleMoreMenu';
+import { ConsoleSoundControls } from './ConsoleSoundControls';
 import '../../../styles/champion-challenge-ds.css';
 import { ReminderOffer } from '../../ReminderOffer';
 import { nudgeSupport, cancelSupportNudge } from '../../../services/supportNudge';
@@ -308,40 +308,9 @@ export function ChampionChallengeView() {
             {t('challenge.streak', { count: challenge.stats.streak })}
         </span>
     );
-    const soundChips = (
-        <>
-            <button
-                type="button"
-                className="ds-chip is-button"
-                aria-pressed={musicOn}
-                onClick={toggleMusic}
-                aria-label={t(musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
-                title={t(musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn')}
-            >
-                <Music className={`w-3.5 h-3.5 shrink-0 ${musicOn ? '' : 'opacity-40'}`} aria-hidden="true" />
-            </button>
-            <button
-                type="button"
-                className="ds-chip is-button"
-                aria-pressed={!muted}
-                onClick={toggleMuted}
-                aria-label={t(muted ? 'challenge.console.unmute' : 'challenge.console.mute')}
-                title={t(muted ? 'challenge.console.unmute' : 'challenge.console.mute')}
-            >
-                {muted ? <VolumeX className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> : <Volume2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
-            </button>
-            <button type="button" className="ds-chip is-button" aria-pressed={fast} onClick={toggleFast} title={t('challenge.console.speed')}>
-                <FastForward className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                {fast ? '2×' : '1×'}
-            </button>
-        </>
-    );
-    const moreItems = [
-        ...(hasStreak ? [{ id: 'streak', icon: <Flame aria-hidden="true" />, label: t('challenge.streak', { count: challenge.stats.streak }) }] : []),
-        { id: 'music', icon: <Music aria-hidden="true" />, label: t(musicOn ? 'battle.stage.musicOff' : 'battle.stage.musicOn'), onClick: toggleMusic },
-        { id: 'sound', icon: muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />, label: t(muted ? 'challenge.console.unmute' : 'challenge.console.mute'), onClick: toggleMuted },
-        { id: 'speed', icon: <FastForward aria-hidden="true" />, label: t('challenge.console.speed'), value: fast ? '2×' : '1×', onClick: toggleFast },
-    ];
+    const streakFact = hasStreak
+        ? [{ id: 'streak', icon: <Flame aria-hidden="true" />, label: t('challenge.streak', { count: challenge.stats.streak }) }]
+        : [];
     const bar = (
         <>
             {/* The day's difficulty, under the names of the champion last faced; a
@@ -380,9 +349,16 @@ export function ChampionChallengeView() {
                     <span className={phone ? '' : 'ds-chip__long'}>{t('challenge.ranking.chip')}</span>
                 </button>
             )}
-            {phone ? (
-                <ConsoleMoreMenu label={t('challenge.console.more')} items={moreItems} />
-            ) : soundChips}
+            <ConsoleSoundControls
+                phone={phone}
+                musicOn={musicOn}
+                muted={muted}
+                fast={fast}
+                onMusic={toggleMusic}
+                onMuted={toggleMuted}
+                onFast={toggleFast}
+                facts={streakFact}
+            />
         </>
     );
 

@@ -2251,6 +2251,8 @@ export default {
             fieldLabel: 'Batalha contra {{name}}',
             lv: 'Nv',
             boost: { atk: 'Atq', def: 'Def', spa: 'AtE', spd: 'DfE', spe: 'Vel', accuracy: 'Prec', evasion: 'Evas' },
+            cond: { sun: 'SOL', rain: 'CHUVA', sand: 'AREIA', snow: 'NEVE', wind: 'VENTO', confusion: 'CONF' },
+            condName: { sun: 'Sol forte', rain: 'Chuva', sand: 'Tempestade de areia', snow: 'Neve', wind: 'Ventos fortes', confusion: 'Confuso' },
             hp: 'PS',
             theirTeam: 'Time de {{name}}',
             yourTeam: 'Seu time',

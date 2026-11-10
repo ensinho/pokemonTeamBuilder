@@ -989,9 +989,12 @@
 .ds-hpbox__status.is-mega { background: var(--ds-flare-mega); }
 .ds-hpbox__status.is-tera { background: var(--tera, var(--ds-flare-tera)); }
 
-/* Stat stages (BoostRow): chips on the field side of each box — under hers,
-   over yours (her box ends at y 39, yours starts at y 104). An arrow, the
-   stages, the stat; the chip whose line is playing pops once. */
+/* What a side carries (StateRow): chips on the field side of each box — under
+   hers, over yours (her box ends at y 39, yours starts at y 104). A stat stage
+   is an arrow, the stages, the stat, and pops once when its line plays; a
+   condition (Substitute, Reflect, Stealth Rock) is its abbreviation in the
+   tone of its kind. The field's own row (weather, terrain, rooms) sits over
+   her box, in the strip above y 12. */
 .ds-boosts {
     position: absolute;
     z-index: 20;
@@ -1043,6 +1046,22 @@
 }
 
 .ds-boost.is-down .ds-boost__arrow { scale: 1 -1; }
+
+.ds-boosts.is-field {
+    left: calc(3 * var(--px));
+    top: calc(2 * var(--px));
+}
+
+.ds-boost.is-cond {
+    padding-left: calc(3 * var(--px));
+    animation: ds-boost-pop 450ms var(--ease-out);
+}
+
+.ds-boost.is-volatile { --tone: var(--bw-white); }
+.ds-boost.is-screen { --tone: var(--hud-volt-text); }
+.ds-boost.is-hazard { --tone: var(--ds-hp-mid); }
+.ds-boost.is-field { --tone: var(--hud-muted); }
+.ds-boost.is-cond .ds-boost__n { color: var(--bw-white); }
 .ds-boost__stat { color: var(--bw-white); }
 .ds-boost.is-fresh { animation: ds-boost-pop 450ms var(--ease-out); }
 

@@ -2287,6 +2287,8 @@ export default {
             fieldLabel: 'Battle against {{name}}',
             lv: 'Lv',
             boost: { atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe', accuracy: 'Acc', evasion: 'Eva' },
+            cond: { sun: 'SUN', rain: 'RAIN', sand: 'SAND', snow: 'SNOW', wind: 'WIND', confusion: 'CONF' },
+            condName: { sun: 'Harsh sunlight', rain: 'Rain', sand: 'Sandstorm', snow: 'Snow', wind: 'Strong winds', confusion: 'Confused' },
             hp: 'HP',
             theirTeam: '{{name}}\'s team',
             yourTeam: 'Your team',
