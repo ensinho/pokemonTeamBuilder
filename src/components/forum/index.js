@@ -10,3 +10,4 @@ export { ForumRooms } from './ForumRooms';
 export { ForumTeamCard } from './ForumTeamCard';
 export { TopicCreateModal } from './TopicCreateModal';
 export { ThreadCardSkeleton, ThreadDetailSkeleton } from './ForumSkeletons';
+export { ForumSupportCard } from './ForumSupportCard';

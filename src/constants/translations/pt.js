@@ -578,11 +578,13 @@ export default {
         fairy: 'Fada'
     },
     nav: {
+        tools: 'Ferramentas',
+        community: 'Batalhas e amigos',
         hubUsage: 'Uso',
         hubTournamentTeams: 'Times de torneio',
         library: 'Biblioteca',
         metaHub: 'Meta e torneios',
-        hub: { library: 'Golpes, habilidades e itens', meta: 'Meta, melhores times e torneios' },
+        hub: { library: 'Golpes, habilidades e itens', meta: 'Meta, melhores times e torneios', tools: 'Calculadora e velocidades', community: 'Batalhas e amigos' },
         about: 'Sobre o app',
         more: 'Mais',
         moreSheetLabel: 'Mais destinos',
@@ -1928,6 +1930,13 @@ export default {
         createPublishError: 'Não foi possível publicar. Seu post continua aqui — tente de novo.',
         pinnedRooms: 'Salas fixadas',
         roomsTitle: 'Salas do Centro',
+        roomTopics: '{{count}} tópicos',
+        feedbackRoom: { name: 'Feedback', meta: 'Sugestões, bugs e ideias' },
+        support: {
+            title: 'Apoie o PokemonBuilder',
+            text: 'Feito por uma pessoa, sem anúncios. Um café ajuda a pagar os servidores e a trazer o que vocês pedem aqui.',
+            cta: 'Apoiar com um café',
+        },
         roomMessages: '{{count}} mensagens',
         roomLive: 'Movimento agora',
         discussions: 'Discussões',

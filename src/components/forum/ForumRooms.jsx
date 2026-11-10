@@ -18,7 +18,7 @@ const roomIcon = (topic) => {
 
 /**
  * The Centro's rooms (2026-11-09): the Professor's pinned topics — today's
- * Diário, the week's Torneio, the two chat rooms — as one row of doors above
+ * Diário, Feedback (a category, 2026-11-10), the two chat rooms — as one row of doors above
  * the feed, instead of four feed rows that each repeated "@Professor Oak ·
  * Fixado" and pushed the community's own posts below the first screen.
  *
@@ -34,17 +34,19 @@ export const ForumRooms = memo(function ForumRooms({ rooms = [], hrefFor, onBefo
         <nav className="forum-rooms" aria-label={t('forum.roomsTitle')}>
             <ul className="forum-rooms__list">
                 {rooms.map((room) => {
-                    const Icon = roomIcon(room);
+                    // A virtual room (2026-11-10: Feedback) is a category behind a door:
+                    // its own icon, link, count and line, no topic to open.
+                    const Icon = room.icon || roomIcon(room);
                     const [name, ...rest] = String(room.title || '').split(' · ');
-                    const detail = rest.join(' · ');
-                    const replies = topicReplies(room);
+                    const detail = room.virtual ? room.meta : rest.join(' · ');
+                    const replies = room.virtual ? room.count : topicReplies(room);
                     const last = topicLastActivity(room);
                     const isLive = last > 0 && now - last < LIVE_MS;
                     return (
                         <li key={room.id} className="forum-rooms__item">
                             <Link
-                                to={hrefFor(room.id)}
-                                onClick={() => onBeforeOpen?.(room.id)}
+                                to={room.href || hrefFor(room.id)}
+                                onClick={room.virtual ? undefined : () => onBeforeOpen?.(room.id)}
                                 className="forum-room"
                             >
                                 <span className="forum-room__icon" aria-hidden="true"><Icon /></span>
@@ -52,12 +54,12 @@ export const ForumRooms = memo(function ForumRooms({ rooms = [], hrefFor, onBefo
                                     <span className="forum-room__name">{name}</span>
                                     <span className="forum-room__meta">
                                         {/* What is in it today: the date or theme, else the last line said there. */}
-                                        {detail || (room.lastMessageText || '').trim() || t('forum.roomMessages', { count: replies })}
+                                        {detail || (room.lastMessageText || '').trim() || t(room.virtual ? 'forum.roomTopics' : 'forum.roomMessages', { count: replies })}
                                     </span>
                                 </span>
                                 <span className="forum-room__side">
                                     {isLive && <span className="live-dot" role="img" aria-label={t('forum.roomLive')} />}
-                                    <span className="forum-room__count" aria-label={t('forum.roomMessages', { count: replies })}>
+                                    <span className="forum-room__count" aria-label={t(room.virtual ? 'forum.roomTopics' : 'forum.roomMessages', { count: replies })}>
                                         <MessageIcon aria-hidden="true" />
                                         {replies}
                                     </span>

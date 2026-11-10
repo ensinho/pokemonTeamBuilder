@@ -4583,3 +4583,59 @@
         white-space: nowrap;
     }
 }
+
+/* ── Feedback room's support card (2026-11-10) ─────────────────────────────
+   The forum's one ask, only inside Feedback. A fill like the Team of the
+   week (no border inside the feed), the mascot as its face, one action. */
+.forum-support {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    margin: 0 calc(-1 * var(--space-3)) var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.forum-support__body { min-width: 0; }
+
+.forum-support__title {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.forum-support__text {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.forum-support .forum-support__cta { gap: var(--space-1_5); white-space: nowrap; }
+.forum-support__cta svg { width: 1rem; height: 1rem; }
+
+/* ── Phone: less above the first post (2026-11-10) ─────────────────────────
+   The first post sat ~480px down: a figures line, filters, rooms and a
+   210px Team of the week. The figures go (the desktop rail has them), the
+   weekly card keeps its kicker, its title and the six — the post holds the
+   likes, the import and the invitation. */
+@media (max-width: 640px) {
+    .forum-feed-head__top .forum-feed-head__stats { display: none; }
+    .forum-feed-head__top { justify-content: flex-end; }
+
+    .totw { gap: var(--space-2); }
+    .totw__meta,
+    .totw__foot { display: none; }
+    .totw__body { gap: var(--space-2); }
+    .totw__slot { max-width: 2.5rem; }
+
+    .forum-support {
+        grid-template-columns: auto minmax(0, 1fr);
+        margin-inline: 0;
+        padding: var(--space-3);
+    }
+
+    .forum-support .forum-support__cta { grid-column: 1 / -1; justify-content: center; }
+}

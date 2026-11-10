@@ -108,3 +108,9 @@ The page is the panel; rows run edge to edge under the shell gutter.
   the production build with the same clicks logs nothing.
 - Test scripts must block Firestore writes to `public/` paths — the dev server
   talks to the production project.
+
+### Feedback room (2026-11-10, Enzo)
+- The rooms row is Diário do dia · **Feedback** · the two chats. The week's Torneio left it and is a plain row in the feed (`FeedView` `isRoomTopic`).
+- Feedback is a *virtual* room: no topic — a door to `?cat=feedback` (`ForumRooms` takes `virtual`, `icon`, `href`, `count`, `meta`). No rules change: a client may only create the Diário and Torneio system topics.
+- Inside it, and nowhere else in the feed, the one support card (`ForumSupportCard`, `SUPPORT_URL`). "Criar post" there starts in the category.
+- Less on the way to the first post: the rail's "Compartilhe seu time" card is gone (the Team of the week and Criar post do it); on phones the figures line hides and the Team of the week keeps kicker, title and six (likes, import and the invitation are in the post).

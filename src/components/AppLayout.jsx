@@ -18,7 +18,6 @@ import { useTeamCompareStore } from '../store/useTeamCompareStore';
 import { useNotifications } from '../hooks/useNotifications';
 
 import { PATCH_NOTES_VERSION, THEME_META } from '../constants/theme';
-import { SUPPORT_URL } from '../constants/support';
 import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { DrawerAboutSection } from './DrawerAboutSection';
@@ -72,7 +71,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -1021,8 +1020,8 @@ export default function AppLayout() {
                     { key: 'meta', label: t('nav.metaHub'), path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, members: hubMembers('meta') },
                     // Short in the rail so it can stay narrow; the search keeps the
                     // full name, so "dano" / "tiers" still find them.
-                    { key: 'damageCalc', label: t('nav.damageCalcShort'), searchLabel: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
-                    { key: 'speedTiers', label: t('nav.speedTiersShort'), searchLabel: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
+                    // Calculator and speed tiers: one "Ferramentas" entry (2026-11-10).
+                    { key: 'tools', label: t('nav.tools'), path: '/damage-calculator', icon: <CalculatorIcon />, members: hubMembers('tools'), prefetchKey: 'damageCalc' },
                     // How to use the rest of this section (2026-10-30).
                     { key: 'guides', label: t('nav.guides'), path: '/guides', icon: <BookOpen className="w-5 h-5 shrink-0" /> },
                 ]
@@ -1036,6 +1035,10 @@ export default function AppLayout() {
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <CircleHelp className="w-5 h-5 shrink-0" /> },
+                    // Battles and friends: one entry, its badge the sum of both
+                    // (a battle on your turn, a request waiting) — 2026-11-10;
+                    // the Community section it was alone in is gone.
+                    { key: 'community', label: t('nav.community'), path: '/battles', icon: <ShieldHalf className="w-5 h-5 shrink-0" />, members: hubMembers('community'), prefetchKey: 'battles', badge: battlesAwaitingMe + pendingFriendRequests },
                 ]
             },
             {
@@ -1048,18 +1051,6 @@ export default function AppLayout() {
                     { key: 'library', label: t('nav.library'), path: '/moves', icon: <ScrollIcon />, members: hubMembers('library'), prefetchKey: 'moves' },
                     { key: 'types', label: t('nav.types'), path: '/types', icon: <Shapes className="w-5 h-5 shrink-0" /> },
                     { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
-                ]
-            },
-            {
-                // Community: the other trainers — the forum itself is pinned above.
-                // The key stays 'dashboard' so a stored open/folded preference
-                // still applies.
-                key: 'dashboard',
-                title: t('nav.dashboard'),
-                items: [
-                    // Battles first: a battle waiting on you is the one thing here with a clock on it.
-                    { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <ShieldHalf className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
-                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <Users className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
                 ]
             },
         ];
@@ -1134,7 +1125,7 @@ export default function AppLayout() {
             // The card has room for the full name; the hint says what it is.
             { key: 'hero', title: null, hero: true, items: challenge ? [{ ...challenge, shortLabel: undefined, hint: t('nav.challengeHint') }] : [] },
             { key: 'pinned', title: null, featured: true, items: visible(primaryNavItems) },
-            { key: 'play', title: t('nav.play'), items: itemsOf('dashboard', 'guessing') },
+            { key: 'play', title: t('nav.play'), items: itemsOf('guessing') },
             { key: 'teamBuilding', title: titleOf('teamBuilding'), items: itemsOf('teamBuilding') },
             { key: 'database', title: titleOf('database'), items: itemsOf('database') },
         ].filter((section) => section.items.length > 0);
@@ -1160,6 +1151,10 @@ export default function AppLayout() {
             { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
             { key: 'bestTeams', label: t('nav.bestTeams'), path: '/best-teams', icon: <Award className="w-5 h-5 shrink-0" /> },
             { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
+            { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
+            { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
+            { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <ShieldHalf className="w-5 h-5 shrink-0" /> },
+            { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <Users className="w-5 h-5 shrink-0" /> },
         ];
         const extras = [
             ...hubPages,
@@ -1637,17 +1632,9 @@ export default function AppLayout() {
                             {/* Bottom: Theme button, collapse button, account menu */}
                             <div className="app-shell__sidebar-bottom">
                                 <div className={`app-shell__account ${isRailCollapsed ? 'is-collapsed' : ''}`}>
-                                    <a
-                                        href={SUPPORT_URL}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={t('nav.support')}
-                                        title={isRailCollapsed ? t('nav.support') : undefined}
-                                        className={`btn btn-secondary app-shell__support ${isRailCollapsed ? 'btn-icon' : 'btn-block'}`}
-                                    >
-                                        <Coffee aria-hidden="true" />
-                                        {!isRailCollapsed && <span>{t('nav.support')}</span>}
-                                    </a>
+                                    {/* "Apoie o projeto" left the rail on 2026-11-10 (Enzo): the
+                                        ask lives in the forum's Feedback room and the Mais
+                                        sheet's About list, not on every page. */}
                                     {isAnonymous ? (
                                         <>
                                             {/* A guest's preferences (language, notifications,
