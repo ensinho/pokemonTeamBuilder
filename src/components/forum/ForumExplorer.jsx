@@ -13,6 +13,7 @@ import {
     ClockIcon,
     InfoCircleIcon,
     MapPinIcon,
+    LightbulbIcon,
 } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
 import { topicLikes, topicReplies } from '../../utils/forumRanking';
@@ -31,6 +32,7 @@ const CATEGORIES = [
     { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
     { id: 'questions', key: 'forum.catQuestions', icon: InfoCircleIcon },
     { id: 'adventures', key: 'forum.catAdventures', icon: MapPinIcon },
+    { id: 'feedback', key: 'forum.catFeedback', icon: LightbulbIcon },
     { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
 ];
 

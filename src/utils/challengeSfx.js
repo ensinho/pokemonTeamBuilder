@@ -180,7 +180,9 @@ export const soundFor = (event, { championName = 'Cynthia' } = {}) => {
             if (event.kind === 'resisted') return 'hitWeak';
             return null;
         case 'faint': return 'faint';
-        case 'mega': return 'mega';
+        case 'mega':
+        case 'tera':
+        case 'zpower': return 'mega';
         case 'stat': return event.amount > 0 ? 'statUp' : 'statDown';
         case 'end': return event.winner && event.winner !== championName ? 'victory' : 'defeat';
         default: return null;

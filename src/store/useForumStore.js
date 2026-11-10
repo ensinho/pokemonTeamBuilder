@@ -17,7 +17,7 @@ import {
     limitToLast,
     deleteField
 } from 'firebase/firestore';
-import { diaryDateLabel, diaryTopicDoc, diaryTopicId, isDiaryTopic, todayDiaryKey } from '../utils/forumDiary';
+import { DIARY_FALLBACK_TOPIC, diaryDateLabel, diaryTopicDoc, diaryTopicId, isDiaryTopic, todayDiaryKey } from '../utils/forumDiary';
 import { currentWeekKey, isWeeklyTopic, weeklyTopicDoc, weeklyTopicId } from '../utils/forumWeekly';
 import { useLanguageStore } from './useLanguageStore';
 import { track } from '../services/analytics';
@@ -321,7 +321,7 @@ export const useForumStore = create((set, get) => ({
     // `notifyError: false` — the caller owns the failure (the composer puts the
     // draft back and offers Retry itself).
     sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}, { notifyError = true } = {}) => {
-        const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null, rating = null } = attachments || {};
+        const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null, rating = null, diaryFallback = false } = attachments || {};
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -396,6 +396,8 @@ export const useForumStore = create((set, get) => ({
                 sharedChallenge: sharedChallenge?.v === 1 ? sharedChallenge : null,
                 // "Avalie meu time" (2026-11-06, social-heart B4).
                 ...(['ready', 'almost', 'train'].includes(rating) ? { rating } : {}),
+                // A day's result the diary could not take (postToDiary).
+                ...(diaryFallback === true ? { diaryFallback: true } : {}),
                 replyTo: replyRef
             };
 
@@ -484,12 +486,24 @@ export const useForumStore = create((set, get) => ({
 
     /**
      * A day's result into today's diary (the challenge and the puzzle share
-     * here since 2026-11-06), falling back to the general chat if the diary
-     * cannot be opened. Returns the message id, or false.
+     * here since 2026-11-06). Returns the message id, or false. If the diary
+     * cannot be opened or written, the result still gets posted — in the
+     * general chat, stamped `diaryFallback` (Enzo, 2026-11-09). The stamp is
+     * what the rules let through there: an installed app on a pre-diary build
+     * never sends it, so its results are refused instead of misfiled.
+     * Signed out, sendMessage asks the trainer to sign in before anything.
      */
     postToDiary: async (attachments) => {
+        if (!useAuthStore.getState().userId) {
+            return get().sendMessage(diaryTopicId(todayDiaryKey()), '', null, null, attachments);
+        }
         const diaryId = await get().ensureDiary();
-        const ok = await get().sendMessage(diaryId || 'general', '', null, null, attachments);
+        let ok = diaryId
+            ? await get().sendMessage(diaryId, '', null, null, attachments, { notifyError: false })
+            : false;
+        if (!ok) {
+            ok = await get().sendMessage(DIARY_FALLBACK_TOPIC, '', null, null, { ...attachments, diaryFallback: true });
+        }
         if (ok) markJourney('diaryShare');
         return ok;
     },

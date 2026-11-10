@@ -73,6 +73,14 @@ export const getCategoryMeta = (cat, language = 'pt') => {
             colorClass: 'category-badge--adventures',
             dotClass: 'forum-category-dot--adventures'
         },
+        // 2026-11-09: suggestions and bug reports had nowhere to go but the
+        // general chat (a trainer asked for this room in the forum itself).
+        feedback: {
+            id: 'feedback',
+            label: language === 'pt' ? 'Sugestões & Feedback' : 'Feedback & Ideas',
+            colorClass: 'category-badge--feedback',
+            dotClass: 'forum-category-dot--feedback'
+        },
         announcements: {
             id: 'announcements',
             label: language === 'pt' ? 'Anúncios Oficiais' : 'Announcements',

@@ -37,6 +37,7 @@ import {
     Info,
     Layers,
     MapPin,
+    Lightbulb,
     Menu,
     MessageCircleMore,
     Moon,
@@ -247,6 +248,10 @@ export const HouseIcon = ({ className = 'w-5 h-5', color }) => (
 
 export const MapPinIcon = ({ className = 'w-5 h-5 shrink-0', color }) => (
     <MapPin className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const LightbulbIcon = ({ className = 'w-5 h-5 shrink-0', color }) => (
+    <Lightbulb className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
 export const SettingsIcon = ({ className = 'w-5 h-5', color }) => (

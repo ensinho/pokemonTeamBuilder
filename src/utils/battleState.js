@@ -30,9 +30,11 @@ const parseIdent = (raw) => {
 /** `Charizard, L50, M` → `{ species, level, gender, shiny }` */
 const parseDetails = (raw) => {
     const parts = String(raw || '').split(',').map((part) => part.trim()).filter(Boolean);
-    const out = { species: parts[0] || '', level: 50, gender: null, shiny: false };
+    const out = { species: parts[0] || '', level: 50, gender: null, shiny: false, teraType: null };
     for (const part of parts.slice(1)) {
         if (/^L\d+$/i.test(part)) out.level = Number.parseInt(part.slice(1), 10);
+        // A Terastallized Pokémon switching back in carries `tera:Fire`.
+        else if (/^tera:/i.test(part)) out.teraType = part.slice(5) || null;
         else if (part === 'M' || part === 'F') out.gender = part;
         else if (part.toLowerCase() === 'shiny') out.shiny = true;
     }
@@ -175,6 +177,13 @@ export const readBattleField = (lines = []) => {
                 const ident = parseIdent(rest[0]);
                 const active = ident && state.sides[ident.side].active;
                 if (active) Object.assign(active, parseDetails(rest[1]));
+                break;
+            }
+            case '-terastallize': {
+                // `|-terastallize|p1a: Garchomp|Fire` — the box wears the type from here on.
+                const ident = parseIdent(rest[0]);
+                const active = ident && state.sides[ident.side].active;
+                if (active && rest[1]) active.teraType = rest[1];
                 break;
             }
             case '-formechange': {

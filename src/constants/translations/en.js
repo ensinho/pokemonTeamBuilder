@@ -1801,6 +1801,7 @@ export default {
         catDiary: 'Daily log',
         catQuestions: 'Questions',
         catAdventures: 'Adventures',
+        catFeedback: 'Feedback',
         react: {
             trigger: 'React',
             super: "It's super effective!",
@@ -2348,6 +2349,8 @@ export default {
             },
             cure: '{{who}} recovered!',
             mega: '{{who}} has Mega Evolved into {{mega}}!',
+            tera: '{{who}} has Terastallized into the {{type}} type!',
+            zpower: '{{who}} surrounds itself with its Z-Power!',
             stat: {
                 up: '{{who}}\'s {{stat}} rose!',
                 up2: '{{who}}\'s {{stat}} rose sharply!',
@@ -2463,6 +2466,10 @@ export default {
             herTeam: 'FOE TEAM',
             mega: 'MEGA',
             megaLabel: 'Mega Evolve with this move',
+            tera: 'TERA',
+            teraLabel: 'Terastallize into {{type}} with this move',
+            z: 'Z',
+            zLabel: 'Use this move as a Z-Move',
             turn: 'Turn {{n}}',
             chooseWho: 'Choose who comes in',
             category: { physical: 'Physical', special: 'Special', status: 'Status' },

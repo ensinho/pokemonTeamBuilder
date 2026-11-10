@@ -256,6 +256,7 @@
 .forum-category-dot--diary { background-color: var(--brand-gold); }
 .forum-category-dot--questions { background-color: var(--color-primary); }
 .forum-category-dot--adventures { background-color: var(--color-success); }
+.forum-category-dot--feedback { background-color: var(--color-warning); }
 
 /* The category as a pill, for the thread header. It used to be written in the
    markup with no rule behind it at all, so it rendered as loose text in the
@@ -4492,6 +4493,7 @@
 .forum-flair--diary { --flair: var(--color-info); }
 .forum-flair--questions { --flair: var(--color-info); }
 .forum-flair--adventures { --flair: var(--color-success); }
+.forum-flair--feedback { --flair: var(--color-warning); }
 
 /* ---- Actions: icon and count at every width ------------------------------- */
 

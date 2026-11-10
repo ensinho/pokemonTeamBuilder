@@ -3,6 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getBattleIcon } from '../../../../utils/battleSprites';
+import { moveChoosable } from '../../../../hooks/useBattleCommands';
 import { DsTeamSheet } from './DsTeamSheet';
 import { DsTextBox } from './DsTextBox';
 
@@ -31,21 +32,23 @@ const ppTone = (pp, max) => {
     return 'ok';
 };
 
-function MoveButton({ move, meta, focused, onChoose, onFocus }) {
+function MoveButton({ move, meta, focused, onChoose, onFocus, cmd }) {
     const { t } = useTranslation();
     if (!move) return <span className="bw-move is-empty" aria-hidden="true" />;
     const category = meta?.category ? meta.category.toLowerCase() : null;
+    // Z armed: the move reads as the Z-Move it becomes; the others wait.
+    const asZ = cmd.armed && cmd.gimmick === 'zmove' && move.zMove;
     return (
         <button
             type="button"
-            className={`bw-move ${focused ? 'is-focused' : ''}`}
+            className={`bw-move ${focused ? 'is-focused' : ''} ${asZ ? 'is-z' : ''}`}
             style={{ '--type': typeColors[meta?.type] || 'var(--ds-ink-soft)' }}
-            disabled={move.disabled || move.pp === 0}
+            disabled={!moveChoosable(move, cmd.gimmick, cmd.armed)}
             onClick={() => onChoose(move)}
             onPointerEnter={onFocus}
             onFocus={onFocus}
         >
-            <span className="bw-move__name">{move.name}</span>
+            <span className="bw-move__name">{asZ ? move.zMove : move.name}</span>
             <span className="bw-move__meta">
                 {meta?.type && <span className="bw-move__type">{t(`types.${meta.type}`)}</span>}
                 {category && <span className={`ds-move__cat is-${category}`} role="img" aria-label={t(`challenge.command.category.${category}`)} />}
@@ -57,20 +60,32 @@ function MoveButton({ move, meta, focused, onChoose, onFocus }) {
     );
 }
 
-/** MEGA: on while the active Pokémon can Mega Evolve; the move chosen next does it. */
+/**
+ * The gimmick switch — MEGA, Z or TERA, whichever the active Pokémon has (one
+ * at most); the move chosen next uses it. TERA wears its type's colour.
+ */
 function MegaToggle({ cmd }) {
     const { t } = useTranslation();
-    if (!cmd.canMega) return null;
+    if (!cmd.gimmick) return null;
+    const tera = cmd.gimmick === 'terastallize';
+    const type = tera ? String(cmd.teraType || '').toLowerCase() : null;
+    const label = {
+        mega: t('challenge.command.megaLabel'),
+        zmove: t('challenge.command.zLabel'),
+        terastallize: t('challenge.command.teraLabel', { type: type ? t(`types.${type}`) : '' }),
+    }[cmd.gimmick];
+    const text = { mega: t('challenge.command.mega'), zmove: t('challenge.command.z'), terastallize: t('challenge.command.tera') }[cmd.gimmick];
     return (
         <button
             type="button"
-            className="bw-mega"
-            aria-pressed={cmd.mega}
-            onClick={cmd.toggleMega}
-            aria-label={t('challenge.command.megaLabel')}
-            title={t('challenge.command.megaLabel')}
+            className={`bw-mega is-${cmd.gimmick}`}
+            style={tera && typeColors[type] ? { '--tera': typeColors[type] } : undefined}
+            aria-pressed={cmd.armed}
+            onClick={cmd.toggleGimmick}
+            aria-label={label}
+            title={label}
         >
-            {t('challenge.command.mega')}
+            {text}
         </button>
     );
 }
@@ -87,6 +102,7 @@ function MoveGrid({ cmd, request, moveMeta }) {
                     focused={cmd.focus === index}
                     onChoose={cmd.chooseMove}
                     onFocus={() => cmd.setFocus(index)}
+                    cmd={cmd}
                 />
             ))}
         </div>
@@ -223,7 +239,7 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, shee
                 <div className="bw-hud__message">
                     {choosing && focused ? (
                         <div className="bw-hud__info" aria-live="polite">
-                            <span className="bw-hud__info-name">{focused.name}</span>
+                            <span className="bw-hud__info-name">{cmd.armed && cmd.gimmick === 'zmove' && focused.zMove ? focused.zMove : focused.name}</span>
                             <span className="bw-hud__info-line">
                                 {meta?.type && <span className="bw-move__type" style={{ '--type': typeColors[meta.type] }}>{t(`types.${meta.type}`)}</span>}
                                 {meta?.category && <span>{t(`challenge.command.category.${meta.category.toLowerCase()}`)}</span>}

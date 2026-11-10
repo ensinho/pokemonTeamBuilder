@@ -1765,6 +1765,7 @@ export default {
         catDiary: 'Diário do dia',
         catQuestions: 'Perguntas',
         catAdventures: 'Aventuras',
+        catFeedback: 'Sugestões',
         react: {
             trigger: 'Reagir',
             super: 'É super efetivo!',
@@ -2312,6 +2313,8 @@ export default {
             },
             cure: '{{who}} se recuperou!',
             mega: '{{who}} megaevoluiu para {{mega}}!',
+            tera: '{{who}} terastalizou para o tipo {{type}}!',
+            zpower: '{{who}} se envolve em seu Poder Z!',
             stat: {
                 up: '{{stat}} de {{who}} aumentou!',
                 up2: '{{stat}} de {{who}} aumentou muito!',
@@ -2427,6 +2430,10 @@ export default {
             herTeam: 'TIME RIVAL',
             mega: 'MEGA',
             megaLabel: 'Megaevoluir com este golpe',
+            tera: 'TERA',
+            teraLabel: 'Terastalizar para {{type}} com este golpe',
+            z: 'Z',
+            zLabel: 'Usar este golpe como Movimento Z',
             turn: 'Turno {{n}}',
             chooseWho: 'Escolha quem entra',
             category: { physical: 'Físico', special: 'Especial', status: 'Status' },

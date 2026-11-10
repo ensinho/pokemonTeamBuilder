@@ -6,6 +6,8 @@
  *   a move connects             hit, on the side it hit, the move's type colour
  *   …a critical hit / super     crit (larger, every part)
  *   Mega Evolution              mega, on the Pokémon
+ *   Terastallization            mega's size, in the Tera type's colour
+ *   Z-Power                     mega's size, gold
  *   the battle won              win, over the field's middle
  *
  * Only a direct hit counts — a `-damage` with no `[from]`, which the timeline
@@ -41,6 +43,11 @@ export const flareOf = (current, { moveMeta, foeName, typeColors }) => {
         };
     }
     if (current.type === 'mega') return { variant: 'mega', at, colorA: 'var(--ds-flare-mega)', colorB: 'var(--ds-ring)' };
+    if (current.type === 'tera') {
+        const type = String(current.teraType || '').toLowerCase();
+        return { variant: 'mega', at, colorA: typeColors[type] || 'var(--ds-flare-tera)', colorB: 'var(--ds-flare-tera)' };
+    }
+    if (current.type === 'zpower') return { variant: 'mega', at, colorA: 'var(--ds-flare-z)', colorB: 'var(--ds-ring)' };
     if (current.type === 'end' && current.winner && current.winner !== foeName) {
         return { variant: 'win', at: 'centre', colorA: 'var(--ds-banner-stripe)', colorB: 'var(--ds-ring)' };
     }
