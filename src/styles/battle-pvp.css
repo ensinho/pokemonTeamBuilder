@@ -127,7 +127,7 @@
 
 .pvp-chat__row.is-mine {
     align-self: flex-end;
-    background: var(--bw-blue-edge);
+    background: var(--hud-volt-lip);
 }
 
 .pvp-chat__author {
@@ -153,15 +153,16 @@
     padding: 0 calc(8 * var(--px));
     border: none;
     border-radius: calc(10 * var(--px));
-    background: var(--bw-white);
-    color: var(--ds-ink);
+    background: var(--hud-raised);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
+    color: var(--bw-white);
     font: inherit;
     font-size: calc(8 * var(--px));
     text-shadow: none;
 }
 
 .pvp-chat__input:focus-visible {
-    outline: calc(1.5 * var(--px)) solid var(--bw-gold);
+    outline: calc(1.5 * var(--px)) solid var(--hud-volt-text);
     outline-offset: calc(1 * var(--px));
 }
 

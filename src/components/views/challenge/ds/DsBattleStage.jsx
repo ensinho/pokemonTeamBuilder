@@ -14,7 +14,9 @@ import { eventText } from '../../../../utils/challengeText';
 import { play, soundFor } from '../../../../utils/challengeSfx';
 import { setPinch, startMusic, stopMusic } from '../../../../utils/battleMusic';
 import { settledRequest, sheetFromRequest, shownConditions, withShown } from '../../../../utils/challengeSheet';
+import { battleMood } from '../../../../utils/mascot/assistant';
 import { championRoster, faintedSpecies, myRoster, railTeams, switchCounts } from '../../../../utils/challengeView';
+import { Mascot } from '../../../Mascot';
 import { DsBattleScene } from './DsBattleScene';
 import { DsHud, DsTouchMenu } from './DsBwCommands';
 import { DsConsole } from './DsConsole';
@@ -181,6 +183,13 @@ export function DsBattleStage({
         showArrow: playing,
         onAdvance: playing ? skip : undefined,
     };
+    // His face beside the message: the moment's readout (`battleMood`), never a second voice.
+    const mood = battleMood(current, { hpPct: myHpPct, yourTurn, waiting: !playing && pending, ended, won: run.status === 'won' });
+    const mascot = (
+        <span className="hud-mascot" aria-hidden="true">
+            <Mascot size="fill" framing="head" mood={mood} />
+        </span>
+    );
     const scene = (
         <DsBattleScene
             field={field}
@@ -195,6 +204,7 @@ export function DsBattleStage({
             foeName={foeName}
             reducedMotion={reducedMotion}
             messageMode={layout === 'single' ? 'none' : 'band'}
+            mascot={mascot}
         />
     );
     const labels = rival?.labels;
@@ -233,6 +243,7 @@ export function DsBattleStage({
                             championName={championName}
                             labels={labels}
                             reducedMotion={reducedMotion}
+                            mascot={mascot}
                         />
                         {overlay}
                     </div>
