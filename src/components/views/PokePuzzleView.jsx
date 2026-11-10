@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSessionGame } from '../../hooks/useSessionGame';
 import { usePokePuzzleHistory } from '../../hooks/usePokePuzzleHistory';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { useToastStore, toast } from '../../store/useToastStore';
@@ -224,6 +225,9 @@ export default function PokePuzzleView() {
     const trayRef = useRef(null);
     const activeRowRef = useRef(null);
     const resultRef = useRef(null);
+    // From lg up the ended game is two columns (pokepuzzle-view.css): the day's
+    // panel sits under the board there, inside the result card below it.
+    const isTwoColumn = useMediaQuery('(min-width: 1024px)');
     // The coffee nudge waits for the result card to be read; a new board or
     // leaving the page cancels it, so it never lands on the next game.
     const nudgeTimerRef = useRef(0);
@@ -970,6 +974,12 @@ export default function PokePuzzleView() {
         </div>
     );
 
+    // The day, together: the crowd's distribution and friends' grids
+    // (2026-11-06). One element — it reports the result when it mounts.
+    const dayPanel = mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0
+        ? <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} />
+        : null;
+
     return (
         <>
             <main
@@ -1269,20 +1279,29 @@ export default function PokePuzzleView() {
                                     </section>
                                 </div>
                             )}
+
+                            {/* Two columns: the day fills the space under the board
+                                instead of stretching the result card beside it. */}
+                            {isTwoColumn && gameStatus !== 'IN_PROGRESS' && dayPanel}
                         </div>
 
                         {/* Result: one next step, one share. */}
                         {gameStatus !== 'IN_PROGRESS' && (
                             <div className="pokepuzzle-game-sidebar">
                                 <section ref={resultRef} className="pokepuzzle-result-card" aria-labelledby="pokepuzzle-result-title">
-                                    <div className={`pokepuzzle-result-badge ${isWon ? 'is-win spark-host' : 'is-lose'}`} aria-hidden="true">
-                                        {isWon ? <Award /> : <Frown />}
+                                    {/* Head and entry are layout groups for the two-column
+                                        desktop card only (`display: contents` below lg). */}
+                                    <div className="pokepuzzle-result-head">
+                                        <div className={`pokepuzzle-result-badge ${isWon ? 'is-win spark-host' : 'is-lose'}`} aria-hidden="true">
+                                            {isWon ? <Award /> : <Frown />}
+                                        </div>
+
+                                        <h2 id="pokepuzzle-result-title" className={`pokepuzzle-result-title ${isWon ? 'is-win' : 'is-lose'}`}>
+                                            {isWon ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
+                                        </h2>
                                     </div>
 
-                                    <h2 id="pokepuzzle-result-title" className={`pokepuzzle-result-title ${isWon ? 'is-win' : 'is-lose'}`}>
-                                        {isWon ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
-                                    </h2>
-
+                                    <div className="pokepuzzle-result-entry">
                                     <div className="pokepuzzle-result-sprite-box">
                                         <img
                                             src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
@@ -1294,6 +1313,7 @@ export default function PokePuzzleView() {
                                         />
                                     </div>
 
+                                    <div className="pokepuzzle-result-info">
                                     <h3 className="pokepuzzle-result-pokemon-name">
                                         <DecryptText text={formatPokemonDisplayName(targetPokemon.name)} play={solvedNow && isWon} />
                                     </h3>
@@ -1310,6 +1330,8 @@ export default function PokePuzzleView() {
                                             : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
                                         }
                                     </p>
+                                    </div>
+                                    </div>
 
                                     {mode === 'daily' && guesses.length > 0 && (
                                         <div className="pokepuzzle-share-preview">
@@ -1333,10 +1355,7 @@ export default function PokePuzzleView() {
                                         </div>
                                     )}
 
-                                    {/* The day, together: the crowd's distribution and friends' grids (2026-11-06). */}
-                                    {mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0 && (
-                                        <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} />
-                                    )}
+                                    {!isTwoColumn && dayPanel}
 
                                     {/* After a daily win: the one moment "come back tomorrow" is worth asking. */}
                                     <ReminderOffer topic="puzzle" active={mode === 'daily' && isWon} />

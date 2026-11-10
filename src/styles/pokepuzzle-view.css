@@ -673,30 +673,80 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Desktop layout overrides */
+/* Layout groups of the result card. Below lg they do not exist: the card is
+   one centred column. */
+.pokepuzzle-result-head,
+.pokepuzzle-result-entry,
+.pokepuzzle-result-info {
+    display: contents;
+}
+
+/* Desktop: the ended game is the board beside its result (2026-11-10). The
+   result card used to carry everything in one 20rem column, twice the
+   height of a short board, with the page empty under the tiles. Now the
+   card is the answer as an entry (artwork beside name, types and line) and
+   the day's panel sits under the board, so both columns end close together. */
 @media (min-width: 1024px) {
     .pokepuzzle-view.has-ended {
         max-width: 56.25rem;
     }
 
     .pokepuzzle-game-container.has-ended {
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: var(--space-8);
-    }
-
-    .pokepuzzle-game-main {
-        flex: 1.25;
-        max-width: 42.5rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 21rem;
+        align-items: start;
+        gap: var(--space-6);
     }
 
     .pokepuzzle-game-sidebar {
-        flex: 0.75;
-        max-width: 20rem;
         position: sticky;
         top: var(--space-6);
         animation: slide-in-right var(--duration-fast) var(--ease-out-expo) forwards;
+    }
+
+    .pokepuzzle-result-card {
+        align-items: stretch;
+        gap: var(--space-4);
+        text-align: left;
+    }
+
+    /* Centred: the medal's spark burst needs the room on both sides. */
+    .pokepuzzle-result-head {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-4);
+    }
+
+    /* The board itself is beside the card here; its miniature says nothing new. */
+    .pokepuzzle-game-container.has-ended .pokepuzzle-share-preview {
+        display: none;
+    }
+
+    .pokepuzzle-result-entry {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: var(--space-4);
+    }
+
+    .pokepuzzle-result-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+        min-width: 0;
+    }
+
+    .pokepuzzle-result-types {
+        justify-content: flex-start;
+    }
+
+    /* Under the board the panel is a card of the page, like the hints. */
+    .pokepuzzle-game-main > .puzzle-day {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        background: var(--color-surface);
     }
 }
 
