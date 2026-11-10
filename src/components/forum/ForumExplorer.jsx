@@ -1,69 +1,85 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Pin } from 'lucide-react';
-import {
-    PokeballIcon,
-    SwordsIcon,
-    StarIcon,
-    MessageIcon,
-    FlameIcon,
-    SparklesIcon,
-    TrophyIcon,
-    HeartIcon,
-    ClockIcon,
-    InfoCircleIcon,
-    MapPinIcon,
-    LightbulbIcon,
-} from '../icons';
+import { ChevronDownIcon, MessageIcon } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
-import { topicLikes, topicReplies } from '../../utils/forumRanking';
+import { topicReplies } from '../../utils/forumRanking';
+import { FORUM_SORTS, FORUM_CATEGORIES, roomIcon } from './forumNav';
 
-const SORTS = [
-    { id: 'hot', key: 'forum.sortHot', icon: FlameIcon },
-    { id: 'new', key: 'forum.sortNew', icon: SparklesIcon },
-    { id: 'top', key: 'forum.sortTop', icon: TrophyIcon },
-];
+const categoryIcon = (id) => FORUM_CATEGORIES.find((c) => c.id === id)?.icon || MessageIcon;
 
-const CATEGORIES = [
-    { id: 'all', key: 'forum.catAll', icon: PokeballIcon },
-    { id: 'diary', key: 'forum.catDiary', icon: ClockIcon },
-    { id: 'general', key: 'forum.catGeneral', icon: MessageIcon },
-    { id: 'teams', key: 'forum.catTeams', icon: SwordsIcon },
-    { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
-    { id: 'questions', key: 'forum.catQuestions', icon: InfoCircleIcon },
-    { id: 'adventures', key: 'forum.catAdventures', icon: MapPinIcon },
-    { id: 'feedback', key: 'forum.catFeedback', icon: LightbulbIcon },
-    { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
-];
+// A section that folds, the way the Reddit app's side menu does: a long map
+// stays a short one for whoever only uses two parts of it. Native <details>,
+// so it works with a keyboard and needs no state.
+function Section({ title, children }) {
+    return (
+        <details className="forum-explorer__section" open>
+            <summary className="forum-explorer__heading">
+                <span>{title}</span>
+                <ChevronDownIcon className="forum-explorer__chevron" />
+            </summary>
+            {children}
+        </details>
+    );
+}
 
 /**
- * The forum's left column on a desktop, an editor's explorer: how the feed
- * is sorted, which category it shows, the pinned rooms, and — while a post
- * is open — the other discussions, so moving between threads never needs a
- * trip back to the feed. Transparent, like a code editor's side bar; the
- * centre pane is the one surface.
+ * The forum's map — the left column on a desktop, the drawer behind ☰ on a
+ * phone (`ForumDrawer`), the Reddit app's side menu in our material: which
+ * feed, the pinned rooms, where the talk is right now, the trainer's own
+ * topics, and the categories. The same five sections in the same order whether the
+ * feed or a post is open (2026-11-10): a map that changed shape between the
+ * two had to be re-read each time.
+ *
+ * The feed is ordered by when a post was made; "Atividade recente" is the
+ * other clock — the same topics by when they last moved — so an old thread
+ * that woke up is one tap away without re-sorting the feed.
  */
 export const ForumExplorer = memo(function ForumExplorer({
+    variant = 'column',
     sortBy,
     selectedCategory,
     categoryCounts,
-    pinned = [],
-    topics = [],
+    rooms = [],
+    ownTopics = [],
+    latest = [],
     activeTopicId = null,
     hrefFor,
     onSelectSort,
     onSelectCategory,
     onBeforeOpen,
+    onNavigate,
     language = 'pt',
     t,
 }) {
     const inThread = !!activeTopicId;
 
+    // A topic is one line here: its category's icon, the title, and the clock
+    // the section is about (when it was posted, or when it last moved).
+    const topicLink = (tp, when) => {
+        const Icon = categoryIcon(tp.category);
+        return (
+            <Link
+                key={tp.id}
+                to={hrefFor(tp.id)}
+                // Hopping between posts must not stack history (docs/modules/forum.md, Traps).
+                replace={inThread}
+                onClick={() => { onBeforeOpen?.(tp.id); onNavigate?.(); }}
+                className="forum-explorer__item"
+                aria-current={tp.id === activeTopicId ? 'page' : undefined}
+                title={tp.title}
+            >
+                <Icon className="forum-explorer__icon" />
+                <span className="forum-explorer__label">{tp.title}</span>
+                <span className="forum-explorer__count forum-explorer__count--when">{formatForumTime(when(tp), language)}</span>
+            </Link>
+        );
+    };
+
     return (
-        <nav className="forum-explorer custom-scrollbar" aria-label={t('forum.title')}>
+        <nav className={`forum-explorer forum-explorer--${variant} custom-scrollbar`} aria-label={t('forum.menuTitle')}>
             <section className="forum-explorer__section">
                 <h3 className="forum-explorer__heading">{t('forum.sortLabel')}</h3>
-                {SORTS.map(({ id, key, icon }) => {
+                {FORUM_SORTS.map(({ id, key, icon }) => {
                     const Icon = icon;
                     // In a post, the feed's filters read as "go to the feed like this".
                     const current = !inThread && sortBy === id;
@@ -73,7 +89,7 @@ export const ForumExplorer = memo(function ForumExplorer({
                             type="button"
                             className="forum-explorer__item"
                             aria-current={current ? 'true' : undefined}
-                            onClick={() => onSelectSort(id)}
+                            onClick={() => { onSelectSort(id); onNavigate?.(); }}
                         >
                             <Icon className="forum-explorer__icon" />
                             <span className="forum-explorer__label">{t(key)}</span>
@@ -82,9 +98,43 @@ export const ForumExplorer = memo(function ForumExplorer({
                 })}
             </section>
 
-            <section className="forum-explorer__section">
-                <h3 className="forum-explorer__heading">{t('forum.categoriesLabel')}</h3>
-                {CATEGORIES.map(({ id, key, icon }) => {
+            {rooms.length > 0 && (
+                <Section title={t('forum.pinnedRooms')}>
+                    {rooms.map((room) => {
+                        const Icon = room.icon || roomIcon(room);
+                        const [name] = String(room.title || '').split(' · ');
+                        return (
+                            <Link
+                                key={room.id}
+                                to={room.href || hrefFor(room.id)}
+                                replace={inThread && !room.virtual}
+                                onClick={() => { if (!room.virtual) onBeforeOpen?.(room.id); onNavigate?.(); }}
+                                className="forum-explorer__item"
+                                aria-current={room.id === activeTopicId ? 'page' : undefined}
+                            >
+                                <Icon className="forum-explorer__icon" />
+                                <span className="forum-explorer__label">{name}</span>
+                                <span className="forum-explorer__count">{room.virtual ? room.count : topicReplies(room)}</span>
+                            </Link>
+                        );
+                    })}
+                </Section>
+            )}
+
+            {latest.length > 0 && (
+                <Section title={t('forum.recentActivity')}>
+                    {latest.map((tp) => topicLink(tp, (x) => x.lastActivityAt || x.createdAt))}
+                </Section>
+            )}
+
+            {ownTopics.length > 0 && (
+                <Section title={t('forum.yourTopics')}>
+                    {ownTopics.map((tp) => topicLink(tp, (x) => x.createdAt || x.lastActivityAt))}
+                </Section>
+            )}
+
+            <Section title={t('forum.categoriesLabel')}>
+                {FORUM_CATEGORIES.map(({ id, key, icon }) => {
                     const Icon = icon;
                     const current = !inThread && selectedCategory === id;
                     // An empty category is a dead end: listed only once it has a post (or is the one chosen).
@@ -95,7 +145,7 @@ export const ForumExplorer = memo(function ForumExplorer({
                             type="button"
                             className="forum-explorer__item"
                             aria-current={current ? 'true' : undefined}
-                            onClick={() => onSelectCategory(id)}
+                            onClick={() => { onSelectCategory(id); onNavigate?.(); }}
                         >
                             <Icon className="forum-explorer__icon" />
                             <span className="forum-explorer__label">{t(key)}</span>
@@ -103,52 +153,7 @@ export const ForumExplorer = memo(function ForumExplorer({
                         </button>
                     );
                 })}
-            </section>
-
-            {/* On the feed the rooms are the doors above it (ForumRooms); in a post they are one click away here. */}
-            {inThread && pinned.length > 0 && (
-                <section className="forum-explorer__section">
-                    <h3 className="forum-explorer__heading">{t('forum.pinnedRooms')}</h3>
-                    {pinned.map((tp) => (
-                        <Link
-                            key={tp.id}
-                            to={hrefFor(tp.id)}
-                            replace={inThread}
-                            onClick={() => onBeforeOpen(tp.id)}
-                            className="forum-explorer__item"
-                            aria-current={tp.id === activeTopicId ? 'page' : undefined}
-                        >
-                            <Pin className="forum-explorer__icon" aria-hidden="true" />
-                            <span className="forum-explorer__label">{tp.title}</span>
-                            <span className="forum-explorer__count">{topicReplies(tp)}</span>
-                        </Link>
-                    ))}
-                </section>
-            )}
-
-            {inThread && topics.length > 0 && (
-                <section className="forum-explorer__section">
-                    <h3 className="forum-explorer__heading">{t('forum.discussions')}</h3>
-                    {topics.map((tp) => (
-                        <Link
-                            key={tp.id}
-                            to={hrefFor(tp.id)}
-                            replace
-                            onClick={() => onBeforeOpen(tp.id)}
-                            className="forum-explorer__topic"
-                            aria-current={tp.id === activeTopicId ? 'page' : undefined}
-                        >
-                            <span className="forum-explorer__topic-title">{tp.title}</span>
-                            <span className="forum-explorer__topic-meta">
-                                <HeartIcon className="w-3 h-3" /><span>{topicLikes(tp)}</span>
-                                <MessageIcon className="w-3 h-3" /><span>{topicReplies(tp)}</span>
-                                <span aria-hidden="true">·</span>
-                                {formatForumTime(tp.lastActivityAt || tp.createdAt, language)}
-                            </span>
-                        </Link>
-                    ))}
-                </section>
-            )}
+            </Section>
         </nav>
     );
 });

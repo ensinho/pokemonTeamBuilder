@@ -1,20 +1,13 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { ClockIcon, TrophyIcon, MessageIcon, SwordsIcon } from '../icons';
+import { Pin } from 'lucide-react';
+import { MessageIcon } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
 import { topicReplies, topicLastActivity } from '../../utils/forumRanking';
-import { isDiaryTopic } from '../../utils/forumDiary';
-import { isWeeklyTopic } from '../../utils/forumWeekly';
+import { roomIcon } from './forumNav';
 
 // A room that moved in the last hour has someone in it right now.
 const LIVE_MS = 60 * 60 * 1000;
-
-const roomIcon = (topic) => {
-    if (isDiaryTopic(topic)) return ClockIcon;
-    if (isWeeklyTopic(topic)) return TrophyIcon;
-    if (topic.category === 'teams') return SwordsIcon;
-    return MessageIcon;
-};
 
 /**
  * The Centro's rooms (2026-11-09): the Professor's pinned topics — today's
@@ -31,7 +24,12 @@ export const ForumRooms = memo(function ForumRooms({ rooms = [], hrefFor, onBefo
     const now = Date.now();
 
     return (
-        <nav className="forum-rooms" aria-label={t('forum.roomsTitle')}>
+        <nav className="forum-rooms" aria-labelledby="forum-rooms-title">
+            {/* Said out loud (2026-11-10): four unlabeled cards above the feed did not read as "these stay here". */}
+            <h3 className="forum-section-title" id="forum-rooms-title">
+                <Pin aria-hidden="true" />
+                {t('forum.pinnedRooms')}
+            </h3>
             <ul className="forum-rooms__list">
                 {rooms.map((room) => {
                     // A virtual room (2026-11-10: Feedback) is a category behind a door:

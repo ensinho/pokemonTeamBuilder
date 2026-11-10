@@ -11,7 +11,7 @@ Read this before touching `FeedView`, `src/components/forum/` or
 
 | Pane | Component | What it holds |
 |---|---|---|
-| Explorer (left, transparent, 16rem) | `ForumExplorer` | Sort (Hot / New / Top), categories with counts, pinned rooms, and — while a post is open — the other discussions |
+| Explorer (left, transparent, 16rem) | `ForumExplorer` | The forum's map, the same on the feed and in a post: Feed (Recentes / Em alta / Top) · Fixados · Atividade recente · Seus tópicos · Categorias. Sections fold (`<details>`) |
 | Centre (the rest, no card) | the feed, or `ThreadDetail` | The feed's rows, or the open post with its comments and the docked composer |
 | Rail (right, cards, ≥1440px only) | `ForumSidebar` | About the community (figures, rules), Trending now, Share your team |
 
@@ -21,14 +21,15 @@ route). Between 1024 and 1439 the rail is hidden and the feed header shows the
 community figures instead.
 
 **Phone (<1024px)** — the centre alone; the feed and a post are two screens.
-The page is the panel; rows run edge to edge under the shell gutter.
+The page is the panel; rows run edge to edge under the shell gutter. The
+explorer is the drawer behind ☰ (`ForumDrawer`), from the feed's header and
+from a post's bar.
 
 ## Feed
 
 - `ForumHeader`: name (+ figures where the rail is hidden), search, Create.
-  Below 1024 a second row holds Hot/New/Top and the category chips (on a
-  desktop the explorer has them). On a phone search is one tap away and takes
-  over the first line.
+  Below 1024 it is ☰ · the search field · Criar, then the tabs Recentes /
+  Em alta / Top (see "The timeline pass" below).
 - `ThreadCard` is a **row**, not a card: who · when · flairs, the title (a real
   `<Link>`), a preview of the post, the attached team as the thumbnail, then the
   ♥ / 💬 / Share pills. The rest of the row opens the post too.
@@ -36,11 +37,10 @@ The page is the panel; rows run edge to edge under the shell gutter.
 - **Calm pass (2026-11-09, Enzo: "muito texto e informações").** The rule is *one loud thing per row — the title*:
   - **The rooms are doors, not rows** (`forum/ForumRooms.jsx`): the Professor's pinned topics (today's Diário, the week's Torneio, General Chat, Team Showcase) sit in one row above the feed — 2 × 2 on a desktop, a sideways snap row on a phone — with the part of the title after " · " (date, theme) or the last line said there, the message count and a live dot for a room that moved in the last hour. They leave the feed's rows; while searching they come back as ordinary results. The explorer lists them only while a post is open.
   - **Actions are icons and counts at every width** (not just phones): no "Curtir"/"Compartilhar" words, Share at the row's end, a 0-like heart shows no number. In a post the same; React is a `SmilePlus` icon. A comment keeps the word on **Responder**, because replying is what a comment is for.
-  - **Categories** (`FORUM_CATEGORY_IDS`, `getCategoryMeta`): diary · general · teams · strategy · questions · adventures · **feedback** (2026-11-09, asked for by a trainer in the forum: suggestions and bug reports had nowhere but General) · announcements (admins). A new one goes in all five places: `forumRanking.js`, `forumTime.js`, `ForumHeader`, `ForumExplorer`, `TopicCreateModal` — plus a dot and a flair tone in `forum-view.css` and `forum.cat*` in both translation files. Like every category it is hidden from the chips until it has a post; the create dialog always offers it.
+  - **Categories** (`FORUM_CATEGORY_IDS`, `getCategoryMeta`): diary · general · teams · strategy · questions · adventures · **feedback** (2026-11-09, asked for by a trainer in the forum: suggestions and bug reports had nowhere but General) · announcements (admins). A new one goes in four places: `forumRanking.js`, `forumTime.js`, `forum/forumNav.js` (the header, the explorer and the drawer read it), `TopicCreateModal` — plus a dot and a flair tone in `forum-view.css` and `forum.cat*` in both translation files. Like every category it is hidden from the chips until it has a post; the create dialog always offers it.
   - **A category is a dot and a muted word** (`.post-row__cat`, tone from `.forum-flair--<id>`), not a chip; the "Em alta" flair is gone (the Hot sort already says it). The forum's own title is screen-reader-only at every width.
   - **Nothing repeats**: empty categories are hidden from chips and explorer until they have a post; the rail's Trending hides on the unfiltered Hot feed (it *is* the feed); the rail's share card shows only with a team to share; Team of the week lost its "Abrir post" button (the title links) and, on phones, its source line and hint.
   - **A post on a phone has no tab dock** (`isForumThreadOpen` in `AppLayout`, `.app-shell__content.is-dockless`): the composer is the bottom bar, as in a chat app; Back returns to the feed and the dock.
-  - On a phone, Hot / New / Top show only the chosen one's name; the others keep their icon.
 - Pinned rows are the megathreads Professor Oak seeded (`createdBy: 'system'`):
   they head the Hot feed only.
 - Ranking lives in **`src/utils/forumRanking.js`** (tested): Hot is
@@ -100,7 +100,7 @@ The page is the panel; rows run edge to edge under the shell gutter.
 
 ## Traps
 
-- The explorer's discussion links use `replace`: hopping between threads must
+- The explorer's topic links use `replace` while a post is open: hopping between threads must
   not stack history, or the bar's back button walks back through every thread
   instead of returning to the feed.
 - `FIRESTORE INTERNAL ASSERTION FAILED (ca9 / b815)` in the **dev server** after
@@ -114,3 +114,37 @@ The page is the panel; rows run edge to edge under the shell gutter.
 - Feedback is a *virtual* room: no topic — a door to `?cat=feedback` (`ForumRooms` takes `virtual`, `icon`, `href`, `count`, `meta`). No rules change: a client may only create the Diário and Torneio system topics.
 - Inside it, and nowhere else in the feed, the one support card (`ForumSupportCard`, `SUPPORT_URL`). "Criar post" there starts in the category.
 - Less on the way to the first post: the rail's "Compartilhe seu time" card is gone (the Team of the week and Criar post do it); on phones the figures line hides and the Team of the week keeps kicker, title and six (likes, import and the invitation are in the post).
+
+### The timeline pass (2026-11-10, Enzo)
+Brief: on a phone "não fica claro o que fazer ou onde achar, sem organização
+cronológica fácil"; reference, the Reddit app's home and side menu. Before /
+after at 390 and 1440 were measured with the same seeded store.
+
+- **The feed opens newest first.** `DEFAULT_FEED_SORT` is `new` ("Recentes");
+  Em alta and Top are tabs. On Recentes, unsearched, the rows are cut into
+  **Hoje · Ontem · Últimos 7 dias · Últimos 30 dias · Mais antigos**
+  (`src/utils/forumTimeline.js` `groupByDay`, tested; the reader's own
+  calendar day, not "24 h ago"). A search or a ranking by votes is one list.
+- **Recentes is the timeline and nothing else**: the Team of the week shows
+  on Em alta / Top only.
+- **What stays put says so**: the rooms have the heading "Fixados" and, on a
+  phone, are a 2 × 2 grid — all four at once (the sideways row showed one and
+  a half). A door there is its name, count, time and live dot.
+- **One map** (`ForumExplorer`, lists in `forum/forumNav.js`): a desktop's
+  left column and a phone's drawer are the same component (`variant`). Feed
+  and Fixados first, then **Atividade recente** — the other clock: the same
+  topics by their last reply (`latestActivity`), so a thread that woke up is
+  a tap away without re-sorting the feed — **Seus tópicos** (`topicsBy`) and
+  the categories.
+- **Phone header**: ☰ · search field · Criar, then word tabs (`.tabs`). The
+  category chips row is gone; a chosen category is one chip under the tabs
+  ("Mostrando · Times ×") that clears it. The forum's search is a field, not
+  a second magnifier under the app bar's.
+- **`ForumDrawer`**: mounted while open or leaving (its own 250 ms exit, as
+  the dialog hook's ghost only knows sheets); `useModalA11y` owns Escape and
+  focus; picking anything closes it; it closes itself at ≥ 1024px.
+- Trap: the explorer's sections are `<details>`, whose content is laid out
+  as blocks — a row states its own `width: 100%` and step, the section's
+  `gap` does not reach it.
+- Not done: swipe-to-close on the drawer; remembering which sections a
+  trainer folded.

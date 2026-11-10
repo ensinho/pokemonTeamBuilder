@@ -25,6 +25,7 @@ import {
 import { currentTopicUrl, shareLink } from '../../utils/forumShare';
 import { isDiaryTopic } from '../../utils/forumDiary';
 import { isWeeklyTopic } from '../../utils/forumWeekly';
+import { groupByDay, latestActivity, topicsBy } from '../../utils/forumTimeline';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { openTrainerCard } from '../../store/useTrainerCardStore';
 import {
@@ -33,6 +34,7 @@ import {
     ForumHeader,
     ForumSidebar,
     ForumExplorer,
+    ForumDrawer,
     ForumRooms,
     ForumSupportCard,
     TopicCreateModal,
@@ -174,6 +176,9 @@ export function FeedView({ showToast, navigate }) {
     // Local UI state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createPreset, setCreatePreset] = useState(null);
+    // The forum's map on a phone (ForumDrawer); a desktop has it as a column.
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const closeMenu = useCallback(() => setIsMenuOpen(false), []);
     const [replyText, setReplyText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
@@ -229,7 +234,7 @@ export function FeedView({ showToast, navigate }) {
 
     // Ranking, trending and the community figures, all from the one topics
     // stream. `now` is read here so Hot re-ranks whenever a topic moves.
-    const { pinned, rows, trending, stats, categoryCounts, pinnedRooms, feedbackRoom } = useMemo(() => {
+    const { pinned, rows, trending, stats, categoryCounts, pinnedRooms, feedbackRoom, latest, now: rankedAt } = useMemo(() => {
         const now = Date.now();
         const filtered = filterTopics(topics, { category: selectedCategory, query: deferredQuery });
         const ranked = rankTopics(filtered, sortBy, now);
@@ -238,7 +243,10 @@ export function FeedView({ showToast, navigate }) {
         for (const tp of topics) counts[tp.category] = (counts[tp.category] || 0) + 1;
         return {
             ...ranked,
+            now,
             trending: hot,
+            // The explorer's other clock: the same topics by their last reply.
+            latest: latestActivity(topics, { now }),
             stats: communityStats(topics, now),
             categoryCounts: counts,
             // The explorer's rooms ignore the feed's filters: they are always one click away.
@@ -263,8 +271,7 @@ export function FeedView({ showToast, navigate }) {
     const { teams: tournamentTeams } = useTournamentData();
     const weeklyTeam = useMemo(() => teamOfTheWeek(topics, tournamentTeams), [topics, tournamentTeams]);
 
-    // The explorer's discussion list: the feed's own order, minus the rooms it lists above.
-    const explorerTopics = useMemo(() => rows.filter((tp) => !isPinnedTopic(tp)), [rows]);
+    const ownTopics = useMemo(() => topicsBy(topics, userId), [topics, userId]);
 
     // The team the rail offers to share: the one being built, else the newest saved.
     const featuredTeam = useMemo(() => {
@@ -592,39 +599,48 @@ export function FeedView({ showToast, navigate }) {
         lastActivityAt: feedbackRoom.lastActivityAt,
         href: '/feed?cat=feedback',
     };
+    // Diário do dia · Feedback · the chats: the order above the feed and in the explorer.
+    const allRooms = [...pinnedRooms.filter(isDiaryTopic), feedbackDoor, ...pinnedRooms.filter((tp) => !isDiaryTopic(tp))];
     const roomsHere = showRooms
-        ? (selectedCategory === 'all'
-            ? [...pinnedRooms.filter(isDiaryTopic), feedbackDoor, ...pinnedRooms.filter((tp) => !isDiaryTopic(tp))]
-            : pinnedRooms.filter((tp) => tp.category === selectedCategory))
+        ? (selectedCategory === 'all' ? allRooms : pinnedRooms.filter((tp) => tp.category === selectedCategory))
         : [];
     const isRoomTopic = (tp) => isPinnedTopic(tp) && !isWeeklyTopic(tp);
     const feedRows = showRooms ? rows.filter((tp) => !isRoomTopic(tp)) : [...pinned, ...rows];
     const showSupport = selectedCategory === 'feedback' && !searchQuery;
     // Above the list (or its empty state) once topics answered, on the views
     // a team belongs to: everything, or the teams category, unsearched.
+    // Not on Recentes (2026-11-10): that tab is the timeline and nothing else —
+    // the week's best belongs with Em alta and Top, which rank by the same votes.
     const showWeeklyTeam = !(isInitialLoadingTopics && topics.length === 0)
+        && sortBy !== 'new'
         && !searchQuery && (selectedCategory === 'all' || selectedCategory === 'teams');
     const isEmpty = feedRows.length === 0;
+    // Recentes is cut into the days a person thinks in — Hoje, Ontem, the
+    // week… A search or a ranking by votes is one list.
+    const dayGroups = sortBy === 'new' && !searchQuery ? groupByDay(feedRows, rankedAt) : null;
+
+    const explorerProps = {
+        sortBy,
+        selectedCategory,
+        categoryCounts,
+        rooms: allRooms,
+        ownTopics,
+        latest,
+        activeTopicId: activeTopic?.id || null,
+        hrefFor,
+        onSelectSort: (id) => selectFeedFilter('sort', id),
+        onSelectCategory: (id) => selectFeedFilter('cat', id),
+        onBeforeOpen: rowActions.beforeOpen,
+        language,
+        t,
+    };
 
     return (
         <div className="forum-view">
             {/* Desktop: explorer | the content | rail, like an editor. Phone:
                 the centre alone, the feed and a post as two screens. */}
             <div className={`forum-workspace ${activeTopic ? 'is-thread' : 'is-feed'}`}>
-                <ForumExplorer
-                    sortBy={sortBy}
-                    selectedCategory={selectedCategory}
-                    categoryCounts={categoryCounts}
-                    pinned={pinnedRooms}
-                    topics={explorerTopics}
-                    activeTopicId={activeTopic?.id || null}
-                    hrefFor={hrefFor}
-                    onSelectSort={(id) => selectFeedFilter('sort', id)}
-                    onSelectCategory={(id) => selectFeedFilter('cat', id)}
-                    onBeforeOpen={rowActions.beforeOpen}
-                    language={language}
-                    t={t}
-                />
+                <ForumExplorer {...explorerProps} />
 
                 <main className="forum-center">
                     {activeTopic ? (
@@ -635,6 +651,7 @@ export function FeedView({ showToast, navigate }) {
                             onBack={handleBackToFeed}
                             onOpenProfile={(data) => openProfile(data)}
                             onDeleteTopic={handleDeleteTopic}
+                            onOpenMenu={() => setIsMenuOpen(true)}
                             canDeleteTopic={isAdmin || (!!userId && activeTopic.createdBy === userId)}
                             userId={userId}
                             isAdmin={isAdmin}
@@ -660,8 +677,9 @@ export function FeedView({ showToast, navigate }) {
                                 sortBy={sortBy}
                                 onSortChange={(id) => setFeedParam('sort', id)}
                                 onOpenCreateTopic={() => openCreate(selectedCategory !== 'all' ? { category: selectedCategory } : null)}
+                                onOpenMenu={() => setIsMenuOpen(true)}
+                                isMenuOpen={isMenuOpen}
                                 stats={stats}
-                                categoryCounts={categoryCounts}
                                 t={t}
                             />
 
@@ -728,6 +746,16 @@ export function FeedView({ showToast, navigate }) {
                                             </button>
                                         </div>
                                     </div>
+                                ) : dayGroups ? (
+                                    dayGroups.map((group) => (
+                                        <section key={group.id} className="forum-day" aria-labelledby={`forum-day-${group.id}`}>
+                                            <h3 className="forum-section-title forum-day__title" id={`forum-day-${group.id}`}>
+                                                {t(`forum.timeline.${group.id}`)}
+                                                <span className="forum-day__count">{group.topics.length}</span>
+                                            </h3>
+                                            {group.topics.map((topic) => renderRow(topic, false))}
+                                        </section>
+                                    ))
                                 ) : (
                                     feedRows.map((topic) => renderRow(topic, isRoomTopic(topic)))
                                 )}
@@ -738,6 +766,8 @@ export function FeedView({ showToast, navigate }) {
 
                 <div className="forum-rail-scroll custom-scrollbar">{sidebar}</div>
             </div>
+
+            <ForumDrawer open={isMenuOpen} onClose={closeMenu} {...explorerProps} />
 
             <TopicCreateModal
                 isOpen={isCreateModalOpen}

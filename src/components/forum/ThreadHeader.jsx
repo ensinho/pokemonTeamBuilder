@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeftIcon, ShareIcon, TrashIcon } from '../icons';
+import { ChevronLeftIcon, ShareIcon, TrashIcon, MenuIcon } from '../icons';
 import { getCategoryMeta } from '../../utils/forumTime';
 
 /**
@@ -15,6 +15,7 @@ export function ThreadHeader({
     onBack,
     onShare,
     onDelete,
+    onOpenMenu,
     canDelete = false,
     language = 'pt',
     t,
@@ -46,6 +47,18 @@ export function ThreadHeader({
             </div>
 
             <div className="thread-bar__actions">
+                {/* Phones: the forum's map from inside a post — another topic without a trip back to the feed. */}
+                {onOpenMenu && (
+                    <button
+                        type="button"
+                        onClick={onOpenMenu}
+                        className="btn btn-ghost btn-icon btn-sm thread-bar__menu"
+                        aria-label={t('forum.openMenu')}
+                        aria-haspopup="dialog"
+                    >
+                        <MenuIcon className="w-4 h-4" />
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={onShare}

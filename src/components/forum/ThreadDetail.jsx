@@ -51,6 +51,7 @@ export function ThreadDetail({
     onBack,
     onOpenProfile,
     onDeleteTopic,
+    onOpenMenu,
     canDeleteTopic = false,
     userId,
     isAdmin,
@@ -194,6 +195,7 @@ export function ThreadDetail({
                     onBack={onBack}
                     onShare={() => onShareTopic(topic)}
                     onDelete={() => onDeleteTopic(topic.id)}
+                    onOpenMenu={onOpenMenu}
                     canDelete={canDeleteTopic}
                     language={language}
                     t={t}

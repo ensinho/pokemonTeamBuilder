@@ -1,45 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-    PokeballIcon,
-    SwordsIcon,
-    StarIcon,
-    MessageIcon,
-    FlameIcon,
-    SearchIcon,
-    CloseIcon,
-    PlusIcon,
-    SparklesIcon,
-    TrophyIcon,
-    ClockIcon,
-    InfoCircleIcon,
-    MapPinIcon,
-    LightbulbIcon,
-} from '../icons';
-
-// Same ids, same order as FORUM_CATEGORY_IDS (utils/forumRanking).
-const FORUM_CATEGORIES = [
-    { id: 'all', key: 'forum.catAll', icon: PokeballIcon },
-    { id: 'diary', key: 'forum.catDiary', icon: ClockIcon },
-    { id: 'general', key: 'forum.catGeneral', icon: MessageIcon },
-    { id: 'teams', key: 'forum.catTeams', icon: SwordsIcon },
-    { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
-    { id: 'questions', key: 'forum.catQuestions', icon: InfoCircleIcon },
-    { id: 'adventures', key: 'forum.catAdventures', icon: MapPinIcon },
-    { id: 'feedback', key: 'forum.catFeedback', icon: LightbulbIcon },
-    { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
-];
-
-const SORTS = [
-    { id: 'hot', key: 'forum.sortHot', icon: FlameIcon },
-    { id: 'new', key: 'forum.sortNew', icon: SparklesIcon },
-    { id: 'top', key: 'forum.sortTop', icon: TrophyIcon },
-];
+import React from 'react';
+import { SearchIcon, CloseIcon, PlusIcon, MenuIcon } from '../icons';
+import { FORUM_SORTS, FORUM_CATEGORIES } from './forumNav';
 
 /**
- * The top of the feed in two lines:
- *   name (+ figures on a phone) · search · Create post
- *   Hot / New / Top | category chips — one row that scrolls on a phone
- * On a phone the search is one tap away and takes over the first line.
+ * The top of the feed. On a phone it is the Reddit app's two lines
+ * (2026-11-10, Enzo: "não fica claro o que fazer ou onde achar"):
+ *   ☰ · the search field · Criar
+ *   Recentes | Em alta | Top — every tab says its name
+ * and, only while a category is chosen, one chip that names it and clears it.
+ * The categories themselves live behind ☰ (`ForumDrawer`), with the pinned
+ * rooms and the trainer's own topics; before, three unlabeled icons and a
+ * sideways row of eight chips stood between the trainer and the first post.
+ * On a desktop the explorer column carries all of that, so the header is the
+ * name's figures, the search and Create.
  */
 export function ForumHeader({
     selectedCategory,
@@ -49,44 +22,37 @@ export function ForumHeader({
     sortBy,
     onSortChange,
     onOpenCreateTopic,
+    onOpenMenu,
+    isMenuOpen = false,
     stats,
-    categoryCounts = null,
     t,
 }) {
-    // The chosen category in view (2026-11-10): the Feedback room links to
-    // ?cat=feedback, and on a phone that chip sat off the row's right edge.
-    const chipsRef = useRef(null);
-    useEffect(() => {
-        const chip = chipsRef.current?.querySelector('[aria-pressed="true"]');
-        chip?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-    }, [selectedCategory]);
-    const [isSearchOpen, setIsSearchOpen] = useState(() => !!searchQuery);
-    const inputRef = useRef(null);
-    const openedByTapRef = useRef(false);
-
-    useEffect(() => {
-        if (isSearchOpen && openedByTapRef.current) {
-            openedByTapRef.current = false;
-            inputRef.current?.focus();
-        }
-    }, [isSearchOpen]);
-
-    const closeSearch = () => {
-        onSearchChange('');
-        setIsSearchOpen(false);
-    };
+    const category = selectedCategory !== 'all'
+        ? FORUM_CATEGORIES.find((c) => c.id === selectedCategory)
+        : null;
+    const CategoryIcon = category?.icon;
 
     return (
         <header className="forum-feed-head">
-            <div className={`forum-feed-head__top ${isSearchOpen ? 'is-searching' : ''}`}>
+            <div className="forum-feed-head__top">
+                <button
+                    type="button"
+                    className="btn btn-ghost btn-icon forum-feed-head__menu touch-target"
+                    aria-label={t('forum.openMenu')}
+                    aria-haspopup="dialog"
+                    aria-expanded={isMenuOpen}
+                    onClick={onOpenMenu}
+                >
+                    <MenuIcon className="w-5 h-5" />
+                </button>
+
                 <div className="forum-feed-head__id">
                     <h2 className="forum-feed-head__title">{t('forum.title')}</h2>
                     {stats && (
                         <p className="forum-feed-head__stats">
                             <span>{t('forum.statTopics', { count: stats.topics })}</span>
-                            {/* On a phone the line keeps to one row beside Create: the trainer count goes. */}
-                            <span className="forum-feed-head__stat-wide" aria-hidden="true">·</span>
-                            <span className="forum-feed-head__stat-wide">{t('forum.statTrainers', { count: stats.trainers })}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>{t('forum.statTrainers', { count: stats.trainers })}</span>
                             {stats.activeToday > 0 && (
                                 <>
                                     <span aria-hidden="true">·</span>
@@ -100,20 +66,19 @@ export function ForumHeader({
                 <label className="forum-search">
                     <SearchIcon className="forum-search__icon" />
                     <input
-                        ref={inputRef}
                         type="search"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Escape') closeSearch(); }}
+                        onKeyDown={(e) => { if (e.key === 'Escape') onSearchChange(''); }}
                         placeholder={t('forum.searchPlaceholder')}
                         aria-label={t('forum.searchPlaceholder')}
                         className="forum-search__input"
                         enterKeyHint="search"
                     />
-                    {(searchQuery || isSearchOpen) && (
+                    {searchQuery && (
                         <button
                             type="button"
-                            onClick={closeSearch}
+                            onClick={() => onSearchChange('')}
                             className="forum-search__clear"
                             aria-label={t('forum.clearSearch')}
                         >
@@ -122,17 +87,6 @@ export function ForumHeader({
                     )}
                 </label>
 
-                {!isSearchOpen && (
-                    <button
-                        type="button"
-                        className="btn btn-ghost btn-icon btn-sm forum-feed-head__search-toggle"
-                        aria-label={t('forum.openSearch')}
-                        onClick={() => { openedByTapRef.current = true; setIsSearchOpen(true); }}
-                    >
-                        <SearchIcon className="w-4 h-4" />
-                    </button>
-                )}
-
                 <button type="button" onClick={onOpenCreateTopic} className="btn btn-primary btn-sm forum-feed-head__create">
                     <PlusIcon className="w-3.5 h-3.5 shrink-0" />
                     <span className="forum-feed-head__create-long">{t('forum.createPost')}</span>
@@ -140,47 +94,37 @@ export function ForumHeader({
                 </button>
             </div>
 
-            <div className="forum-feed-head__filters">
-                <div className="segmented segmented--sm forum-feed-head__sort" role="group" aria-label={t('forum.sortLabel')}>
-                    {SORTS.map(({ id, key, icon }) => {
-                        const Icon = icon;
-                        return (
-                            <button
-                                key={id}
-                                type="button"
-                                className="segmented__item"
-                                aria-pressed={sortBy === id}
-                                onClick={() => onSortChange(id)}
-                            >
-                                <Icon />
-                                <span>{t(key)}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-
-                <span className="forum-feed-head__divider" aria-hidden="true" />
-
-                <div ref={chipsRef} className="forum-chips" role="group" aria-label={t('forum.categoriesLabel')}>
-                    {FORUM_CATEGORIES.map(({ id, key, icon }) => {
-                        const Icon = icon;
-                        // Eleven choices in one sideways row was too many: an empty category waits until it has a post.
-                        if (categoryCounts && id !== 'all' && selectedCategory !== id && !(categoryCounts[id] > 0)) return null;
-                        return (
-                            <button
-                                key={id}
-                                type="button"
-                                onClick={() => onSelectCategory(id)}
-                                aria-pressed={selectedCategory === id}
-                                className="forum-chip"
-                            >
-                                <Icon className="w-3.5 h-3.5 shrink-0" />
-                                <span>{t(key)}</span>
-                            </button>
-                        );
-                    })}
-                </div>
+            <div className="tabs forum-feed-head__tabs" role="tablist" aria-label={t('forum.sortLabel')}>
+                {FORUM_SORTS.map(({ id, key }) => (
+                    <button
+                        key={id}
+                        type="button"
+                        role="tab"
+                        className="tabs__item"
+                        aria-selected={sortBy === id}
+                        onClick={() => onSortChange(id)}
+                    >
+                        {t(key)}
+                    </button>
+                ))}
             </div>
+
+            {category && (
+                <p className="forum-feed-head__scope">
+                    <span className="forum-feed-head__scope-label">{t('forum.showingCategory')}</span>
+                    <button
+                        type="button"
+                        className="forum-chip"
+                        aria-pressed="true"
+                        aria-label={`${t(category.key)} · ${t('forum.clearCategory')}`}
+                        onClick={() => onSelectCategory('all')}
+                    >
+                        <CategoryIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t(category.key)}</span>
+                        <CloseIcon className="w-3 h-3 shrink-0" />
+                    </button>
+                </p>
+            )}
         </header>
     );
 }
