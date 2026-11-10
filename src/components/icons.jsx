@@ -75,6 +75,25 @@ export const LinkedinIcon = ({ color }) => (
     </svg>
 );
 
+// X and Instagram — the project's profiles (constants/social.js). The X mark is
+// a fill like the two above; Instagram's is its outline, which reads at 16px.
+export const XIcon = ({ className = 'w-6 h-6' }) => (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+);
+
+export const InstagramIcon = ({ className = 'w-6 h-6' }) => (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <circle cx="12" cy="12" r="4" />
+        <path d="M17.5 6.5h.01" />
+    </svg>
+);
+
+// Brand mark by `id` of a SOCIAL_LINKS entry.
+export const SocialIcon = ({ id, className }) => (id === 'instagram' ? <InstagramIcon className={className} /> : <XIcon className={className} />);
+
 export const StarsIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={className}>
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />

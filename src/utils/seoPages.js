@@ -13,6 +13,7 @@ import { LOCALE_TAG, localizePath } from './localePath.js';
 import { TYPE_IDS, strongAgainst, weaknessesOf } from './typeMatchups.js';
 import { guideMeta } from '../content/guideIndex.js';
 import { STRUCTURED_COPY } from '../content/structuredCopy.js';
+import { SOCIAL_INSTAGRAM_URL, SOCIAL_X_URL } from '../constants/social.js';
 
 export { TYPE_IDS, strongAgainst, weaknessesOf };
 
@@ -26,7 +27,7 @@ export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
  *  search engines and AI assistants learn what PokemonBuilder is (2026-10-30). */
 export const SITE_LOGO = `${SITE_URL}/android-chrome-512x512.png`;
 export const SITE_FOUNDER = 'Enzo Esmeraldo';
-export const SITE_SAME_AS = ['https://github.com/ensinho/pokemonTeamBuilder'];
+export const SITE_SAME_AS = ['https://github.com/ensinho/pokemonTeamBuilder', SOCIAL_X_URL, SOCIAL_INSTAGRAM_URL];
 /** Where people (and the About / Privacy pages) reach the site. */
 export const SITE_CONTACT_EMAIL = 'pokemonteambuilderadmin@gmail.com';
 const ORG_ID = `${SITE_URL}/#organization`;

@@ -4,7 +4,8 @@ import { FileText, Info, ScrollText, Shield, Type } from 'lucide-react';
 import { ShellNavGroup } from './ShellNavGroup';
 import { FooterFeedback } from './FooterFeedback';
 import { TextSizeControl } from './TextSizeControl';
-import { GithubIcon, LinkedinIcon, StarsIcon } from './icons';
+import { GithubIcon, LinkedinIcon, SocialIcon, StarsIcon } from './icons';
+import { SOCIAL_LINKS } from '../constants/social';
 import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useTranslation } from '../hooks/useTranslation';
 import { SITE_PAGE_PATHS } from '../utils/seoPages';
@@ -88,6 +89,9 @@ export function DrawerAboutSection({ onOpenPatchNotes, onNavigate, db, userId, u
                 <span className="app-shell__nav-credit-links">
                     <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="touch-target"><GithubIcon /></a>
                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="touch-target"><LinkedinIcon /></a>
+                    {SOCIAL_LINKS.map(({ id, name, href }) => (
+                        <a key={id} href={href} target="_blank" rel="noopener noreferrer" aria-label={`PokemonBuilder — ${name}`} className="touch-target"><SocialIcon id={id} /></a>
+                    ))}
                 </span>
             </li>
         </ShellNavGroup>

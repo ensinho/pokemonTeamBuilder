@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Coffee, Crown, KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
+import { Coffee, Crown, KeyRound, Megaphone, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIcon, MenuIcon, MessageIcon, PokeballIcon, SparklesIcon, SwordsIcon } from '../icons';
+import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIcon, MenuIcon, MessageIcon, PokeballIcon, SocialIcon, SparklesIcon, SwordsIcon } from '../icons';
 import { ShinyBurst } from '../ShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
@@ -13,6 +13,8 @@ import { typeIcons } from '../../constants/types';
 import { trainerSpriteUrl } from '../../utils/challengeView';
 import { BrandWordmark } from '../BrandWordmark';
 import { LogoMark } from '../LogoMark';
+import { Mascot } from '../Mascot';
+import { SOCIAL_HANDLE, SOCIAL_LINKS } from '../../constants/social';
 import { POKEAPI_SPRITES_BASE } from '../../utils/assetHost';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
@@ -663,6 +665,28 @@ const SupportVisual = ({ language }) => (
     />
 );
 
+// 1.22.0: the project's profiles as a number saved in the Pokégear — the ghost
+// waving between the two networks, the games' "registered!" line (the note's
+// `cta`), and the one handle both answer to.
+const SocialVisual = ({ t }) => (
+    <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-3 bg-bg p-5" aria-hidden="true">
+        <div className="flex items-center gap-5">
+            {SOCIAL_LINKS.map(({ id }, i) => (
+                <React.Fragment key={id}>
+                    {i === 1 && <Mascot size="xl" framing="body" mood="acenando" seasonal={false} />}
+                    <span className="sticker flex h-14 w-14 items-center justify-center bg-surface-raised text-fg">
+                        <SocialIcon id={id} className="h-6 w-6" />
+                    </span>
+                </React.Fragment>
+            ))}
+        </div>
+        <span className="rounded-full bg-primary px-3 py-0.5 text-2xs font-bold uppercase text-on-primary tracking-[0.06em]">
+            {t('patchNotes.socialCta')}
+        </span>
+        <span className="font-mono text-base font-bold text-fg">{SOCIAL_HANDLE}</span>
+    </div>
+);
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -679,6 +703,7 @@ const NOTE_ICONS = {
     trophy: Trophy,
     scale: Scale,
     coffee: Coffee,
+    megaphone: Megaphone,
 };
 
 const NOTE_VISUALS = {
@@ -704,6 +729,7 @@ const NOTE_VISUALS = {
     regMc: RegMcVisual,
     compare: CompareVisual,
     support: SupportVisual,
+    social: SocialVisual,
 };
 
 // One "what's new" card. The featured one carries its illustration and grows to
@@ -714,6 +740,34 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
     const { title, description, cta } = note;
     const NoteIcon = note.Icon;
     const NoteVisual = note.Visual;
+    // A note with `links` holds one real link per destination (the social
+    // profiles), so the card itself is not a control: a plain box around them.
+    if (note.links) {
+        return (
+            <div className="flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 text-left">
+                {featured && NoteVisual && (
+                    <div className="mb-3 flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg bg-surface">
+                        <NoteVisual colors={colors} t={t} language={language} />
+                    </div>
+                )}
+                <div className="mb-1 flex items-center gap-2">
+                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                        <NoteIcon className="h-4 w-4" />
+                    </span>
+                    <h3 className={`font-bold text-primary${featured ? ' text-lg' : ''}`}>{title}</h3>
+                </div>
+                <p className="text-sm text-fg">{description}</p>
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {note.links.map(({ id, name, href }) => (
+                        <a key={id} href={href} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                            <SocialIcon id={id} className="h-4 w-4" />
+                            {t('patchNotes.socialFollow', { network: name })}
+                        </a>
+                    ))}
+                </div>
+            </div>
+        );
+    }
     // A note with `href` leaves the site: a real link, drawn as a centred card.
     const Card = note.href ? 'a' : 'button';
     const cardProps = note.href
