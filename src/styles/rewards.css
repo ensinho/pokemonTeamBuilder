@@ -654,6 +654,28 @@
     color: var(--color-fg);
 }
 
+/* In the desktop rail the strip is ~17rem wide and the hint read "toque e…"
+   (2026-11-10). There the level line takes the whole row and "Recompensas"
+   steps under it, so neither is cut. */
+.checkin-week {
+    container-type: inline-size;
+}
+
+@container (max-width: 19rem) {
+    .checkin-week__foot {
+        flex-wrap: wrap;
+        row-gap: var(--space-1);
+    }
+
+    .checkin-week__line {
+        flex: 1 0 100%;
+    }
+
+    .checkin-week__more {
+        margin-inline-start: auto;
+    }
+}
+
 .checkin-week__more {
     flex-shrink: 0;
 }
