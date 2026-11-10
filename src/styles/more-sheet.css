@@ -68,9 +68,24 @@
     gap: var(--space-2);
 }
 
-/* The highlighted destination: one card, alone on its row. */
+/* The highlighted destination: one card, alone on its row — or, with the
+   support tile beside it (2026-11-10), the card takes most of the row. */
 .more-sheet__grid.more-sheet__grid--hero {
     grid-template-columns: minmax(0, 1fr);
+}
+
+.more-sheet__grid.more-sheet__grid--hero:has(> li + li) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+/* Support: the quiet tile of the row — muted until touched. */
+.more-tile.more-tile--quiet {
+    color: var(--color-muted);
+    text-decoration: none;
+}
+
+.more-tile.more-tile--quiet .more-tile__label {
+    font-size: var(--text-xs);
 }
 
 /* A tile is a nav item: it never sinks and never takes a fill of its own. The
