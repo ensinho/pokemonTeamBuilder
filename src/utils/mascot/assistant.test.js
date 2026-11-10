@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { COSTUMES, PERSONA_COSTUME, costumeHat, homeNote, patienceStage, teamVerdict, verdictImproved, VERDICT_RANK } from './assistant';
+import { COSTUMES, battleMood, PERSONA_COSTUME, costumeHat, homeNote, patienceStage, teamVerdict, verdictImproved, VERDICT_RANK } from './assistant';
 import { MOODS } from './catalog';
 import { HATS } from './rig';
 import { PERSONAS } from '../trainerProfile';
@@ -116,5 +116,47 @@ describe('costumes', () => {
         expect(costumeHat('glasses')).toBe('glasses');
         expect(costumeHat('none')).toBeNull();
         expect(costumeHat('crown')).toBeNull(); // gold is earned, never worn by choice
+    });
+});
+
+describe('battleMood', () => {
+    const moments = [
+        { type: 'intro' }, { type: 'dialogue' }, { type: 'end' }, { type: 'move', side: 'p1' }, { type: 'switch', side: 'p2' },
+        ...['p1', 'p2'].flatMap((side) => [
+            { type: 'mega', side }, { type: 'tera', side }, { type: 'zpower', side }, { type: 'faint', side },
+            { type: 'status', side }, { type: 'cure', side }, { type: 'cant', side },
+            { type: 'stat', side, amount: 2 }, { type: 'stat', side, amount: -1 },
+            { type: 'hp', side, heal: true }, { type: 'hp', side, heal: false },
+            ...['supereffective', 'crit', 'resisted', 'immune', 'miss', 'fail'].map((kind) => ({ type: 'effect', kind, side })),
+        ]),
+    ];
+
+    it('names a real mood for every moment and every idle state', () => {
+        for (const event of moments) expect(MOODS, JSON.stringify(event)).toHaveProperty(battleMood(event));
+        for (const facts of [{}, { yourTurn: true }, { yourTurn: true, hpPct: 10 }, { waiting: true }, { ended: true }, { ended: true, won: true }]) {
+            expect(MOODS).toHaveProperty(battleMood(null, facts));
+        }
+    });
+
+    it('roots for the trainer', () => {
+        // The effect line names who was hit.
+        expect(battleMood({ type: 'effect', kind: 'supereffective', side: 'p2' })).toBe('empolgado');
+        expect(battleMood({ type: 'effect', kind: 'supereffective', side: 'p1' })).toBe('assustado');
+        expect(battleMood({ type: 'stat', side: 'p1', amount: 2 })).toBe('confiante');
+        expect(battleMood({ type: 'stat', side: 'p2', amount: -1 })).toBe('confiante');
+        expect(battleMood({ type: 'stat', side: 'p2', amount: 2 })).toBe('preocupado');
+        expect(battleMood({ type: 'faint', side: 'p2' })).toBe('animado');
+        expect(battleMood({ type: 'faint', side: 'p1' })).toBe('triste');
+    });
+
+    it('reads the trainer\'s side, not always p1', () => {
+        expect(battleMood({ type: 'faint', side: 'p2' }, { mySide: 'p2' })).toBe('triste');
+    });
+
+    it('worries on a turn at low HP, and ends on the result', () => {
+        expect(battleMood(null, { yourTurn: true, hpPct: 80 })).toBe('determinado');
+        expect(battleMood(null, { yourTurn: true, hpPct: 20 })).toBe('preocupado');
+        expect(battleMood({ type: 'end' }, { won: true })).toBe('radiante');
+        expect(battleMood(null, { ended: true, won: false })).toBe('triste');
     });
 });

@@ -339,32 +339,41 @@
        script on --ds-paper: CVD ΔE 28.5, normal 31.1, both ≥ 3:1. */
     --ds-chart-you: #3a6ad0;
     /* Black & White's HUD (the battle menu, the data boxes, the bands). */
-    --bw-white: #f8f8f8;
-    --bw-text-shadow: #18181e;
-    --bw-dark: #26262e;
-    --bw-dark-2: #3c3c48;
-    --bw-rim: #6c6c80;
-    --bw-band: #0e0e14;
-    --bw-hp-label: #f8b830;
+    /* The battle HUD's material (2026-11-10): the site's ink and Volt inside
+       the screen. The field stays the game; the boxes, the message and the
+       menus are the app's. Stat stages wear the games' warm rise / cool drop. */
+    --hud-ink: #0b0a12;
+    --hud-surface: #15131f;
+    --hud-raised: #221f31;
+    --hud-edge: #3a3552;
+    --hud-muted: #a39fb8;
+    --hud-volt: #7c3aff;
+    --hud-volt-lip: #4a1fb0;
+    --hud-volt-text: #b79cff;
+    --hud-up: #ff8a4c;
+    --hud-down: #5aa8ff;
+    --hud-ground:
+        radial-gradient(circle, color-mix(in srgb, var(--hud-volt) 34%, transparent) calc(0.6 * var(--px)), transparent calc(0.8 * var(--px))) 0 0 / calc(8 * var(--px)) calc(8 * var(--px)),
+        var(--hud-ink);
+    /* The mascot beside the message: his dark-surface colours in every theme. */
+    --mascot-line: var(--mascot-brand);
+    --mascot-eye: var(--mascot-white);
+    --mascot-fang: var(--mascot-white);
+    --mascot-fang-edge: transparent;
+    --mascot-bg: var(--hud-surface);
+    --bw-white: #f4f2fb;
+    --bw-text-shadow: #08070d;
+    --bw-dark: var(--hud-surface);
+    --bw-dark-2: var(--hud-raised);
+    --bw-rim: var(--hud-edge);
+    --bw-hp-label: var(--hud-muted);
     --bw-male: #7aa8f8;
     --bw-female: #f888a8;
-    --bw-status: #2c2c34;
-    --bw-red: #d8343a;
-    --bw-red-2: #b0242c;
-    --bw-red-deep: #6c121c;
-    --bw-fight-1: #f2604e;
-    --bw-fight-2: #c8282c;
-    --bw-pink: #ee6e7c;
-    --bw-pink-edge: #a83444;
+    --bw-red-deep: #08070d;
     --bw-gold: #eea42e;
-    --bw-gold-edge: #a0680e;
-    --bw-green: #4eae4a;
-    --bw-green-edge: #2a7428;
-    --bw-blue: #4a7ad0;
-    --bw-blue-edge: #264a96;
-    --bw-card-1: #4c6694;
-    --bw-card-2: #34486e;
-    --bw-card-rim: #94acd8;
+    --bw-card-1: var(--hud-raised);
+    --bw-card-2: #1b1828;
+    --bw-card-rim: var(--hud-edge);
     --bw-pp-mid: #f8d030;
     --bw-ok: #8ee08a;
     --bw-warn: #ffaaa8;
@@ -649,20 +658,43 @@
     bottom: calc(2 * var(--px));
     height: calc(38 * var(--px));
     border: none;
-    border-radius: calc(4 * var(--px));
-    background: color-mix(in srgb, var(--bw-band) 86%, transparent);
-    box-shadow:
-    inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--bw-white) 70%, transparent),
-    inset 0 0 0 calc(2 * var(--px)) var(--bw-band);
+    border-radius: calc(5 * var(--px));
+    background: color-mix(in srgb, var(--hud-ink) 92%, transparent);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
     color: var(--bw-white);
 }
 
+/* The mascot's face holds the left of the message; the text starts after it. */
 .ds-textbox.is-band .ds-textbox__inner {
-    inset: calc(6 * var(--px)) calc(10 * var(--px));
+    inset: calc(5 * var(--px)) calc(10 * var(--px)) calc(5 * var(--px)) calc(38 * var(--px));
 }
 
-.ds-textbox.is-band .ds-textbox__text {
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+.ds-textbox.is-band .ds-textbox__text,
+.ds-textbox.is-hud .ds-textbox__text {
+    text-shadow: none;
+}
+
+.ds-textbox.is-band .ds-textbox__arrow,
+.ds-textbox.is-hud .ds-textbox__arrow {
+    color: var(--hud-volt-text);
+}
+
+/* His face beside the battle's message (DsBattleStage, `battleMood`): on the
+   band across a phone's field, in the strip's message box on a desktop. */
+.hud-mascot {
+    position: absolute;
+    z-index: 55;
+    left: calc(8 * var(--px));
+    bottom: calc(8 * var(--px));
+    width: calc(26 * var(--px));
+    pointer-events: none;
+}
+
+.bw-hud__message > .hud-mascot {
+    left: calc(6 * var(--px));
+    top: 50%;
+    bottom: auto;
+    translate: 0 -50%;
 }
 
 /* The message in a desktop's HUD strip: a white box filling its slot. */
@@ -671,12 +703,13 @@
     height: auto;
     border: none;
     border-radius: calc(5 * var(--px));
-    background: var(--bw-white);
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-rim);
+    background: var(--hud-surface);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
+    color: var(--bw-white);
 }
 
 .ds-textbox.is-hud .ds-textbox__inner {
-    inset: calc(5 * var(--px)) calc(9 * var(--px));
+    inset: calc(5 * var(--px)) calc(9 * var(--px)) calc(5 * var(--px)) calc(37 * var(--px));
 }
 
 .ds-textbox__arrow {
@@ -792,33 +825,34 @@
 .ds-mon.is-hit img { animation: ds-blink-hit 450ms steps(6, jump-none); }
 .ds-mon.is-fainted { animation: ds-faint 500ms var(--ease-out) forwards; }
 
-/* HP boxes, Black & White's: a slim dark bar flush against the screen's
-   edge, cut on a slant toward the field, a lighter upper half; the name row,
-   then the HP bar in its dark frame behind the orange HP mark. Yours adds the
-   figures under the bar. Mirrored: the same width, opposite edges. */
+/* HP boxes: a slim ink bar flush against the screen's edge, cut on a slant
+   toward the field (Black & White's shape, the site's material) — the name
+   row, then the HP bar after its mark. Yours adds the figures under the bar
+   and a Volt line along its foot. Mirrored: the same width, opposite edges. */
 .ds-hpbox {
     position: absolute;
     z-index: 20;
     display: flex;
     flex-direction: column;
-    gap: calc(1 * var(--px));
+    gap: calc(2 * var(--px));
     width: calc(120 * var(--px));
-    padding: calc(3 * var(--px)) calc(8 * var(--px)) calc(4 * var(--px));
-    background:
-        linear-gradient(color-mix(in srgb, var(--bw-white) 9%, transparent) 0 52%, transparent 52%),
-        color-mix(in srgb, var(--bw-dark) 90%, transparent);
-    box-shadow:
-        inset 0 calc(1 * var(--px)) 0 color-mix(in srgb, var(--bw-white) 30%, transparent),
-        inset 0 calc(-1 * var(--px)) 0 var(--bw-band);
+    padding: calc(4 * var(--px)) calc(8 * var(--px)) calc(5 * var(--px));
+    --box: color-mix(in srgb, var(--hud-ink) 90%, transparent);
+    --slant: calc(9 * var(--px));
     color: var(--bw-white);
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
 
+/* The slant is painted, not clipped: a diagonal split in a strip --slant wide
+   beside the fill, and the line along the foot as a third layer (a clip-path
+   here came and went between paints in Chrome while the chips changed). */
 .ds-hpbox.is-foe {
     left: 0;
     top: calc(12 * var(--px));
     padding-right: calc(17 * var(--px));
-    clip-path: polygon(0 0, 100% 0, calc(100% - 9 * var(--px)) 100%, 0 100%);
+    background:
+        linear-gradient(var(--hud-edge), var(--hud-edge)) left bottom / calc(100% - var(--slant)) calc(1 * var(--px)) no-repeat,
+        linear-gradient(to top left, transparent 50%, var(--box) 50%) right / var(--slant) 100% no-repeat,
+        linear-gradient(var(--box), var(--box)) left / calc(100% - var(--slant)) 100% no-repeat;
 }
 
 /* Below her platform (ends at y 102), above the message (from y 146). */
@@ -826,7 +860,10 @@
     right: 0;
     top: calc(104 * var(--px));
     padding-left: calc(17 * var(--px));
-    clip-path: polygon(calc(9 * var(--px)) 0, 100% 0, 100% 100%, 0 100%);
+    background:
+        linear-gradient(var(--hud-volt), var(--hud-volt)) left bottom / 100% calc(1 * var(--px)) no-repeat,
+        linear-gradient(to top left, var(--box) 50%, transparent 50%) left / var(--slant) 100% no-repeat,
+        linear-gradient(var(--box), var(--box)) right / calc(100% - var(--slant)) 100% no-repeat;
 }
 
 .ds-hpbox__row {
@@ -849,6 +886,7 @@
 
 .ds-hpbox__level {
     margin-left: auto;
+    color: var(--hud-muted);
     font-variant-numeric: tabular-nums;
 }
 
@@ -860,27 +898,22 @@
 .ds-hpbox__bar {
     display: flex;
     align-items: center;
-    gap: calc(2 * var(--px));
-    height: calc(7 * var(--px));
-    padding: 0 calc(2 * var(--px)) 0 calc(3 * var(--px));
-    border-radius: calc(3.5 * var(--px));
-    background: var(--bw-band);
-    box-shadow: 0 0 0 calc(0.5 * var(--px)) var(--bw-rim);
+    gap: calc(3 * var(--px));
+    height: calc(6 * var(--px));
 }
 
 .ds-hpbox__label {
     color: var(--bw-hp-label);
     font-size: calc(6 * var(--px));
-    line-height: calc(7 * var(--px));
-    text-shadow: none;
+    line-height: calc(6 * var(--px));
 }
 
 .ds-hpbox__track {
     flex: 1;
-    height: calc(3 * var(--px));
+    height: calc(4 * var(--px));
     overflow: hidden;
-    border-radius: calc(1.5 * var(--px));
-    background: var(--ds-hp-track);
+    border-radius: calc(2 * var(--px));
+    background: var(--hud-raised);
 }
 
 .ds-hpbox__fill,
@@ -899,8 +932,9 @@
 
 .ds-hpbox__numbers {
     align-self: flex-end;
-    font-size: calc(8 * var(--px));
-    line-height: calc(9 * var(--px));
+    color: var(--hud-muted);
+    font-size: calc(7 * var(--px));
+    line-height: calc(8 * var(--px));
     font-variant-numeric: tabular-nums;
 }
 
@@ -912,7 +946,6 @@
     color: var(--ds-paper);
     font-size: calc(6 * var(--px));
     line-height: calc(8 * var(--px));
-    text-shadow: none;
 }
 
 .ds-hpbox__status.is-brn { background: var(--ds-status-brn); }
@@ -923,6 +956,110 @@
 .ds-hpbox__status.is-frz { background: var(--ds-status-frz); }
 .ds-hpbox__status.is-mega { background: var(--ds-flare-mega); }
 .ds-hpbox__status.is-tera { background: var(--tera, var(--ds-flare-tera)); }
+
+/* Stat stages (BoostRow): chips on the field side of each box — under hers,
+   over yours (her box ends at y 39, yours starts at y 104). An arrow, the
+   stages, the stat; the chip whose line is playing pops once. */
+.ds-boosts {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(2 * var(--px));
+    width: calc(112 * var(--px));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ds-boosts.is-foe {
+    left: calc(3 * var(--px));
+    top: calc(41 * var(--px));
+}
+
+.ds-boosts.is-mine {
+    right: calc(3 * var(--px));
+    top: calc(102 * var(--px));
+    flex-wrap: wrap-reverse;
+    justify-content: flex-end;
+    translate: 0 -100%;
+}
+
+.ds-boost {
+    --tone: var(--hud-up);
+    display: flex;
+    align-items: center;
+    gap: calc(1.5 * var(--px));
+    height: calc(9 * var(--px));
+    padding: 0 calc(3 * var(--px)) 0 calc(2.5 * var(--px));
+    border-radius: calc(2.5 * var(--px));
+    background: color-mix(in srgb, var(--hud-ink) 90%, transparent);
+    box-shadow: inset 0 0 0 calc(0.5 * var(--px)) color-mix(in srgb, var(--tone) 60%, transparent);
+    color: var(--tone);
+    font-size: calc(7 * var(--px));
+    line-height: calc(9 * var(--px));
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-boost.is-down { --tone: var(--hud-down); }
+
+.ds-boost__arrow {
+    width: calc(5 * var(--px));
+    height: calc(4 * var(--px));
+    background: currentColor;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.ds-boost.is-down .ds-boost__arrow { scale: 1 -1; }
+.ds-boost__stat { color: var(--bw-white); }
+.ds-boost.is-fresh { animation: ds-boost-pop 450ms var(--ease-out); }
+
+@keyframes ds-boost-pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    55% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+/* The moment a stat changes (StatFx): three arrows rise over the Pokémon, or fall. */
+.ds-statfx {
+    position: absolute;
+    z-index: 30;
+    left: calc(var(--x) * var(--px));
+    top: calc(var(--y) * var(--px));
+    color: var(--hud-up);
+    pointer-events: none;
+}
+
+.ds-statfx.is-down { color: var(--hud-down); }
+
+.ds-statfx span {
+    position: absolute;
+    left: calc((var(--i) * 16 - 21) * var(--px));
+    top: calc(-5 * var(--px));
+    width: calc(10 * var(--px));
+    height: calc(9 * var(--px));
+    background: currentColor;
+    clip-path: polygon(50% 0, 100% 55%, 100% 100%, 50% 45%, 0 100%, 0 55%);
+    opacity: 0;
+    animation: ds-stat-rise 640ms var(--ease-out) calc(var(--i) * 90ms) both;
+}
+
+.ds-statfx.is-down span {
+    scale: 1 -1;
+    animation-name: ds-stat-fall;
+}
+
+@keyframes ds-stat-rise {
+    0% { transform: translateY(calc(18 * var(--px))); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(calc(-24 * var(--px))); opacity: 0; }
+}
+
+@keyframes ds-stat-fall {
+    0% { transform: translateY(calc(-24 * var(--px))); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(calc(18 * var(--px))); opacity: 0; }
+}
 
 /* Poké Ball rows — on their own only before the send-outs, mirrored like the boxes. */
 .ds-balls {
@@ -1033,9 +1170,7 @@
     flex-direction: column;
     gap: calc(5 * var(--px));
     padding: calc(8 * var(--px)) calc(10 * var(--px));
-    background:
-        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-card-2) 70%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
-        linear-gradient(var(--bw-card-1), var(--bw-ground-2));
+    background: var(--hud-ground);
     color: var(--bw-white);
     text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
@@ -1116,62 +1251,68 @@
    One set of pieces in two homes (DsBwCommands.jsx): the red touch screen
    on a phone, the HUD strip inside the one screen on a desktop. */
 
-/* The four buttons: BW's two-tone fill, a light rim inside, a dark outline. */
+/* The four buttons, the site's hierarchy: one primary (LUTAR — Volt on its
+   lip), the two teams as raised fills with an edge, DESISTIR a quiet ghost. */
 .bw-btn {
-    --btn-1: var(--bw-blue);
-    --btn-edge: var(--bw-blue-edge);
     border-radius: calc(6 * var(--px));
-    background: linear-gradient(var(--btn-1) 0 50%, color-mix(in srgb, var(--btn-1) 82%, var(--btn-edge)) 50%);
-    box-shadow:
-        inset 0 0 0 calc(1.5 * var(--px)) var(--btn-edge),
-        inset 0 0 0 calc(3 * var(--px)) color-mix(in srgb, var(--btn-1) 55%, var(--bw-white));
+    background: var(--hud-raised);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
     color: var(--bw-white);
     font-size: calc(10 * var(--px));
     letter-spacing: calc(0.5 * var(--px));
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--btn-edge);
+    text-shadow: none;
 }
 
-.bw-btn.is-fight { --btn-1: var(--bw-pink); --btn-edge: var(--bw-pink-edge); }
-.bw-btn.is-dossier { --btn-1: var(--bw-gold); --btn-edge: var(--bw-gold-edge); }
-.bw-btn.is-pokemon { --btn-1: var(--bw-green); --btn-edge: var(--bw-green-edge); }
-.bw-btn.is-run { --btn-1: var(--bw-blue); --btn-edge: var(--bw-blue-edge); }
+.bw-btn.is-fight {
+    background: var(--hud-volt);
+    box-shadow: inset 0 calc(-2 * var(--px)) 0 var(--hud-volt-lip);
+}
+
+.bw-btn.is-run {
+    background: transparent;
+    color: var(--hud-muted);
+}
+
+.bw-btn[aria-pressed='true'] {
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--hud-volt-text);
+}
 
 .bw-btn:disabled,
 .bw-fight:disabled,
 .bw-move:disabled {
     cursor: default;
-    filter: grayscale(0.75);
-    opacity: 0.55;
+    opacity: 0.45;
 }
 
-/* A move: its type's colour in two tones, a white rim, name and PP. */
+/* A move: a raised card tinted by its type, the type's bar down its left edge. */
 .bw-move {
     display: grid;
     grid-template-rows: 1fr auto;
     align-items: center;
     min-width: 0;
-    padding: calc(4 * var(--px)) calc(8 * var(--px));
-    border-radius: calc(8 * var(--px));
-    background: linear-gradient(color-mix(in srgb, var(--type) 78%, var(--bw-white)) 0 50%, var(--type) 50%);
+    padding: calc(4 * var(--px)) calc(8 * var(--px)) calc(4 * var(--px)) calc(10 * var(--px));
+    border-radius: calc(6 * var(--px));
+    background: color-mix(in srgb, var(--type) 18%, var(--hud-raised));
     box-shadow:
-        inset 0 0 0 calc(2 * var(--px)) color-mix(in srgb, var(--type) 30%, var(--bw-white)),
-        0 0 0 calc(1.5 * var(--px)) color-mix(in srgb, var(--type) 55%, var(--bw-text-shadow));
+        inset calc(3 * var(--px)) 0 0 var(--type),
+        inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--type) 40%, var(--hud-edge));
     color: var(--bw-white);
     text-align: left;
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 color-mix(in srgb, var(--type) 45%, var(--bw-text-shadow));
+    text-shadow: none;
 }
 
 /* The keyboard's cursor lives on a desktop's HUD; a touch screen has none. */
 .bw-hud .bw-move.is-focused,
 .bw-move:focus-visible {
-    outline: calc(2 * var(--px)) solid var(--bw-white);
-    outline-offset: calc(1 * var(--px));
+    outline: calc(1.5 * var(--px)) solid var(--bw-white);
+    outline-offset: calc(0.5 * var(--px));
 }
 
 .bw-move.is-empty {
     cursor: default;
-    background: color-mix(in srgb, var(--bw-white) 12%, transparent);
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) color-mix(in srgb, var(--bw-white) 30%, transparent);
+    background: transparent;
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
+    opacity: 0.5;
 }
 
 .bw-move__name {
@@ -1193,9 +1334,9 @@
 .bw-move__type {
     padding: 0 calc(4 * var(--px));
     border-radius: calc(3 * var(--px));
-    background: color-mix(in srgb, var(--type) 60%, var(--bw-text-shadow));
-    box-shadow: inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--type) 40%, var(--bw-white));
-    color: var(--bw-white);
+    background: color-mix(in srgb, var(--type) 22%, transparent);
+    box-shadow: inset 0 0 0 calc(0.5 * var(--px)) color-mix(in srgb, var(--type) 55%, transparent);
+    color: color-mix(in srgb, var(--type) 45%, var(--bw-white));
     text-transform: uppercase;
 }
 
@@ -1227,12 +1368,11 @@
     flex: none;
     height: calc(22 * var(--px));
     border-radius: calc(11 * var(--px));
-    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-rim);
+    background: var(--hud-raised);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
     color: var(--bw-white);
     font-size: calc(9 * var(--px));
     letter-spacing: calc(0.5 * var(--px));
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
 
 .bw-mega { padding: 0 calc(10 * var(--px)); }
@@ -1266,7 +1406,6 @@
 .bw-sheet__title {
     margin: 0;
     font-size: calc(10 * var(--px));
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
 
 .bw-sheet__grid {
@@ -1290,12 +1429,10 @@
     row-gap: calc(1 * var(--px));
     min-width: 0;
     padding: calc(3 * var(--px)) calc(6 * var(--px));
-    border-radius: calc(8 * var(--px));
-    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    border-radius: calc(6 * var(--px));
+    background: var(--hud-raised);
     color: var(--bw-white);
     text-align: left;
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
 
 .bw-card img {
@@ -1376,12 +1513,12 @@
     gap: calc(1 * var(--px));
     padding: calc(2 * var(--px)) calc(3 * var(--px)) calc(3 * var(--px));
     border-radius: calc(6 * var(--px));
-    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    background: var(--hud-raised);
 }
 
+/* The one in full below: a selection ring, the site's (never a border that moves its neighbours). */
 .bw-ficha__tab[aria-selected='true'] {
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white), 0 0 0 calc(1 * var(--px)) var(--bw-text-shadow);
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--hud-volt-text);
 }
 
 .bw-ficha__tab img {
@@ -1406,12 +1543,10 @@
     gap: calc(4 * var(--px));
     min-height: 0;
     padding: calc(5 * var(--px)) calc(7 * var(--px));
-    border-radius: calc(8 * var(--px));
-    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    border-radius: calc(6 * var(--px));
+    background: var(--hud-raised);
     color: var(--bw-white);
     font-size: calc(8 * var(--px));
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
 
 .bw-ficha__head {
@@ -1432,7 +1567,8 @@
 .bw-ficha__field {
     padding: 0 calc(3 * var(--px));
     border-radius: calc(3 * var(--px));
-    background: var(--bw-gold-edge);
+    background: color-mix(in srgb, var(--hud-volt) 35%, transparent);
+    color: var(--hud-volt-text);
     font-size: calc(6 * var(--px));
 }
 
@@ -1465,8 +1601,8 @@
 
 .bw-ficha__facts dt,
 .bw-ficha__stats dt {
+    color: var(--hud-muted);
     font-size: calc(6 * var(--px));
-    opacity: 0.75;
 }
 
 .bw-ficha__facts img {
@@ -1493,14 +1629,16 @@
     align-items: center;
     gap: calc(3 * var(--px));
     min-width: 0;
-    padding: 0 calc(5 * var(--px));
+    padding: 0 calc(5 * var(--px)) 0 calc(7 * var(--px));
     border-radius: calc(5 * var(--px));
-    background: linear-gradient(color-mix(in srgb, var(--type, var(--bw-card-1)) 78%, var(--bw-white)) 0 50%, var(--type, var(--bw-card-1)) 50%);
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 color-mix(in srgb, var(--type, var(--bw-card-2)) 45%, var(--bw-text-shadow));
+    background: color-mix(in srgb, var(--type, var(--hud-edge)) 20%, var(--hud-ink));
+    box-shadow: inset calc(2 * var(--px)) 0 0 var(--type, var(--hud-edge));
+    text-shadow: none;
 }
 
 .bw-ficha__move.is-empty {
-    background: color-mix(in srgb, var(--bw-white) 12%, transparent);
+    background: color-mix(in srgb, var(--hud-ink) 60%, transparent);
+    box-shadow: none;
 }
 
 .bw-ficha__move .bw-move__name {
@@ -1546,15 +1684,26 @@
     height: calc(22 * var(--px));
 }
 
-/* ── A phone's bottom screen: the red touch menu ─────────────────────── */
+/* ENVIAR is what this sheet is for on your turn: the primary, with room for a long name. */
+.bw-ficha__foot .bw-btn {
+    flex: 2;
+    overflow: hidden;
+    padding: 0 calc(6 * var(--px));
+    border-radius: calc(11 * var(--px));
+    background: var(--hud-volt);
+    box-shadow: inset 0 calc(-2 * var(--px)) 0 var(--hud-volt-lip);
+    font-size: calc(9 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── A phone's bottom screen: the touch menu, on the page's dotted ink ── */
 
 .bw-touch {
     position: absolute;
     inset: 0;
     color: var(--bw-white);
-    background:
-        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-red-2) 55%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
-        radial-gradient(ellipse at 50% 42%, var(--bw-red) 0 50%, var(--bw-red-2));
+    background: var(--hud-ground);
 }
 
 .bw-touch.is-moves,
@@ -1563,9 +1712,6 @@
     flex-direction: column;
     gap: calc(6 * var(--px));
     padding: calc(20 * var(--px)) calc(8 * var(--px)) calc(8 * var(--px));
-    background:
-        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-red-deep) 50%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
-        var(--bw-red-2);
 }
 
 /* The DS's status bar along the top: the clock, the turn. */
@@ -1578,7 +1724,8 @@
     justify-content: space-between;
     height: calc(14 * var(--px));
     padding: 0 calc(6 * var(--px));
-    background: var(--bw-status);
+    background: var(--hud-surface);
+    color: var(--hud-muted);
     font-size: calc(7 * var(--px));
     font-variant-numeric: tabular-nums;
 }
@@ -1604,7 +1751,7 @@
     top: calc(112 * var(--px) + 0.6 * var(--ds-extra, 0px));
 }
 
-/* FIGHT: the wide capsule in the middle, white-rimmed, the screen's centre of gravity. */
+/* FIGHT: the wide capsule in the middle — the site's primary, Volt on its lip. */
 .bw-fight {
     position: absolute;
     left: calc(30 * var(--px));
@@ -1613,22 +1760,17 @@
     top: calc(34 * var(--px) + 0.2 * var(--ds-extra, 0px));
     height: calc(72 * var(--px) + 0.4 * var(--ds-extra, 0px));
     border-radius: calc(36 * var(--px) + 0.2 * var(--ds-extra, 0px));
-    background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
-    box-shadow:
-        inset 0 0 0 calc(3 * var(--px)) var(--bw-white),
-        inset 0 0 0 calc(5 * var(--px)) var(--bw-fight-2),
-        0 0 0 calc(2 * var(--px)) var(--bw-red-deep),
-        0 calc(3 * var(--px)) 0 calc(2 * var(--px)) var(--bw-red-deep);
+    background: var(--hud-volt);
+    box-shadow: 0 calc(4 * var(--px)) 0 var(--hud-volt-lip);
     color: var(--bw-white);
     font-size: calc(20 * var(--px));
     letter-spacing: calc(1 * var(--px));
-    text-shadow:
-        calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-red-deep),
-        calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--bw-red-deep);
 }
 
-.bw-fight__label::before { content: '‹ '; }
-.bw-fight__label::after { content: ' ›'; }
+.bw-fight:active:not(:disabled) {
+    transform: translateY(calc(3 * var(--px)));
+    box-shadow: 0 calc(1 * var(--px)) 0 var(--hud-volt-lip);
+}
 
 .bw-touch__row {
     position: absolute;
@@ -1645,16 +1787,11 @@
     height: calc(40 * var(--px) + 0.15 * var(--ds-extra, 0px));
 }
 
-/* RUN sits lower and smaller between the other two, as in BW. */
-.bw-touch__row .bw-btn.is-run {
-    height: calc(30 * var(--px) + 0.1 * var(--ds-extra, 0px));
-}
 
 /* While the turn plays the menu stays, dimmed — the screen never jumps. */
 .bw-touch.is-waiting .bw-fight,
 .bw-touch.is-waiting .bw-btn:disabled {
-    filter: grayscale(0.5) brightness(0.85);
-    opacity: 0.7;
+    opacity: 0.55;
 }
 
 /* ── A desktop's single screen: the HUD strip ────────────────────────── */
@@ -1674,8 +1811,8 @@
     gap: calc(3 * var(--px));
     height: calc(48 * var(--px));
     padding: calc(3 * var(--px));
-    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
-    box-shadow: 0 calc(-1 * var(--px)) 0 var(--bw-rim);
+    background: var(--hud-ink);
+    box-shadow: 0 calc(-1 * var(--px)) 0 var(--hud-edge);
 }
 
 .bw-hud__message {
@@ -1714,9 +1851,12 @@
 .bw-hud .bw-move {
     grid-template-rows: 1fr;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: calc(3 * var(--px));
-    padding: 0 calc(5 * var(--px));
+    gap: calc(2 * var(--px));
+    padding: 0 calc(4 * var(--px)) 0 calc(7 * var(--px));
     border-radius: calc(5 * var(--px));
+    box-shadow:
+        inset calc(2 * var(--px)) 0 0 var(--type),
+        inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--type) 40%, var(--hud-edge));
 }
 
 .bw-hud .bw-move__name {
@@ -1757,9 +1897,9 @@
     gap: calc(2 * var(--px)) calc(3 * var(--px));
     padding: calc(3 * var(--px)) calc(8 * var(--px));
     border-radius: calc(5 * var(--px));
-    background: var(--bw-white);
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-rim);
-    color: var(--ds-ink);
+    background: var(--hud-surface);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
+    color: var(--bw-white);
 }
 
 .bw-hud__info-name {
@@ -1775,6 +1915,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: calc(2 * var(--px)) calc(5 * var(--px));
+    color: var(--hud-muted);
     font-size: calc(7 * var(--px));
 }
 
@@ -1811,10 +1952,8 @@
     inset: calc(6 * var(--px)) calc(6 * var(--px)) calc(52 * var(--px));
     z-index: 70;
     border-radius: calc(8 * var(--px));
-    background:
-        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-red-deep) 45%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
-        var(--bw-red-2);
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white), 0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep);
+    background: var(--hud-ground);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge), 0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep);
     animation: ds-fade-in 150ms var(--ease-out) both;
 }
 
@@ -2274,15 +2413,11 @@
 .ds-go {
     padding: calc(6 * var(--px)) calc(12 * var(--px));
     border-radius: calc(14 * var(--px));
-    background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
-    box-shadow:
-    inset 0 0 0 calc(2 * var(--px)) var(--bw-white),
-    inset 0 0 0 calc(3.5 * var(--px)) var(--bw-fight-2),
-    0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep),
-    0 calc(2 * var(--px)) 0 calc(1.5 * var(--px)) var(--bw-red-deep);
+    background: var(--hud-volt);
+    box-shadow: inset 0 calc(-2 * var(--px)) 0 var(--hud-volt-lip);
     color: var(--bw-white);
     font-size: calc(10 * var(--px));
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-red-deep);
+    text-shadow: none;
     white-space: nowrap;
 }
 
@@ -2524,9 +2659,9 @@
 
 /* The focused move's PP in the HUD's info box, toned like the buttons' (on white: darker). */
 .bw-hud__pp { font-variant-numeric: tabular-nums; }
-.bw-hud__pp.is-mid { color: var(--ds-pp-mid); }
-.bw-hud__pp.is-low { color: var(--ds-pp-low); }
-.bw-hud__pp.is-out { color: var(--ds-pp-out); }
+.bw-hud__pp.is-mid { color: var(--bw-pp-mid); }
+.bw-hud__pp.is-low { color: var(--bw-pp-low); }
+.bw-hud__pp.is-out { color: var(--bw-pp-out); }
 
 /* Over the field the six cards sit 3 × 2 — the overlay is wider than tall. */
 .bw-overlay .bw-sheet__grid {
@@ -2623,12 +2758,10 @@
 
 .ds-cmd.is-share {
     border-radius: calc(14 * var(--px));
-    background: linear-gradient(var(--bw-blue) 0 50%, color-mix(in srgb, var(--bw-blue) 82%, var(--bw-blue-edge)) 50%);
-    box-shadow:
-        inset 0 0 0 calc(1.5 * var(--px)) var(--bw-blue-edge),
-        inset 0 0 0 calc(3 * var(--px)) color-mix(in srgb, var(--bw-blue) 55%, var(--bw-white));
+    background: var(--hud-raised);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-volt-text);
     color: var(--bw-white);
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-blue-edge);
+    text-shadow: none;
 }
 
 /* The bar's long and short forms: a phone gets icons and "0h44", one row. */

@@ -50,7 +50,7 @@ at low alpha. No amber in chrome.
 - **Motion**: 150ms for data, the glide spring for selection, and the *peel* —
   `.is-peeling` (rotate −3° → 0 on the pop spring) on a team slot that was
   filled while the builder is open; never on load, settles on `animationend`.
-- **Untouched**: `.ds-screen` and the rest of the game exception.
+- **The game exception**: `.ds-screen` keeps its unit, its face and its field; its HUD wears this theme through `--hud-*` (2026-11-10).
 
 
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
@@ -289,10 +289,14 @@ Three rules replace the app's there — and only there:
   sizes (Pixelify Sans failed that); a faux-bold pixel font smears, so the
   hierarchy is size and colour, as on the DS.
 
-Two palettes live there: `--ds-*` (the room, the DS console's paper and the
-Pokétch) and `--bw-*` (the battle HUD, styled on Pokémon Black & White at
-Enzo's call, 2026-10-15: dark slanted data boxes, the black message band, the
-red touch menu with the FIGHT capsule, blue menu cards). Two layouts
+Two palettes live there: `--ds-*` (the room, the field, the DS console's paper
+and the Pokétch) and `--hud-*` (everything laid over the field — since
+2026-11-10, at Enzo's call, the site's material inside the screen: ink
+surfaces, one Volt primary on its lip, raised fills with an edge, moves tinted
+by their type, warm/cool stat chips; the `--bw-*` names that remain point at
+it). BW's shapes stay — the slanted data boxes, the FIGHT capsule, the menus'
+layout. `.ds-screen` is no longer "untouched" by the Neon Sticker theme: its
+HUD is that theme, in DS pixels and DotGothic16. Two layouts
 (`useConsoleLayout`): **single** — one screen holds everything on a desktop,
 the HUD as a strip inside it — and **dual** — two stacked screens on a phone,
 the bottom one for touch. Every sub-menu ends in the same VOLTAR capsule

@@ -2286,6 +2286,7 @@ export default {
         battle: {
             fieldLabel: 'Battle against {{name}}',
             lv: 'Lv',
+            boost: { atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe', accuracy: 'Acc', evasion: 'Eva' },
             hp: 'HP',
             theirTeam: '{{name}}\'s team',
             yourTeam: 'Your team',

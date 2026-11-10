@@ -5,7 +5,7 @@ import { useSpriteFeet } from '../../../../hooks/useSpriteFeet';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getDsSprite, spriteFeet } from '../../../../utils/battleSprites';
 import { FLARE_VARIANTS, flareOf } from '../../../../utils/battleFlare';
-import { hpTone } from '../../../../utils/battleState';
+import { BOOST_STATS, boostMultiplier, hpTone } from '../../../../utils/battleState';
 import { trainerSpriteUrl } from '../../../../utils/challengeView';
 import { DsFlare } from './DsFlare';
 import { DsTextBox } from './DsTextBox';
@@ -82,6 +82,50 @@ function HpBox({ mon, mine }) {
             {mine && mon.hp?.max && (
                 <span className="ds-hpbox__numbers">{Math.max(0, Math.round(mon.hp.current))}/{mon.hp.max}</span>
             )}
+        </div>
+    );
+}
+
+/**
+ * The stat stages of the Pokémon on the field, as chips on the field side of
+ * its box (under hers, over yours): an arrow, how many stages, the stat —
+ * warm for a rise, cool for a drop, the games' own colours. The chip whose
+ * line is playing pops once. `title` says what the stage is worth.
+ */
+function BoostRow({ mon, mine, current }) {
+    const { t } = useTranslation();
+    const stats = mon && !mon.fainted ? BOOST_STATS.filter((stat) => mon.boosts?.[stat]) : [];
+    if (!stats.length) return null;
+    const sideId = mine ? 'p1' : 'p2';
+    return (
+        <ul className={`ds-boosts ${mine ? 'is-mine' : 'is-foe'}`}>
+            {stats.map((stat) => {
+                const stage = mon.boosts[stat];
+                const signed = stage > 0 ? `+${stage}` : `${stage}`;
+                const fresh = current?.type === 'stat' && current.side === sideId && current.stat === stat;
+                return (
+                    <li
+                        key={stat}
+                        className={`ds-boost ${stage > 0 ? 'is-up' : 'is-down'} ${fresh ? 'is-fresh' : ''}`}
+                        title={`${t(`challenge.text.stats.${stat}`)} ${signed} · ×${Number(boostMultiplier(stat, stage).toFixed(2))}`}
+                    >
+                        <span className="ds-boost__arrow" aria-hidden="true" />
+                        <span className="ds-boost__n">{Math.abs(stage)}</span>
+                        <span className="ds-boost__stat">{t(`challenge.battle.boost.${stat}`)}</span>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
+
+/** A stat changing, as the games draw it: arrows rising (or falling) over the Pokémon. */
+function StatFx({ event }) {
+    if (event?.type !== 'stat') return null;
+    const spot = STAGE[event.side === 'p1' ? 'mine' : 'foe'];
+    return (
+        <div className={`ds-statfx ${event.amount > 0 ? 'is-up' : 'is-down'}`} style={{ '--x': spot.x, '--y': spot.body }} aria-hidden="true">
+            {[0, 1, 2].map((i) => <span key={i} style={{ '--i': i }} />)}
         </div>
     );
 }
@@ -216,7 +260,7 @@ function SceneFlare({ current, moveMeta, foeName }) {
  */
 export const DsBattleScene = memo(function DsBattleScene({
     field, current, text, speaker, foeBalls, myBalls, switchKeys, moveMeta, championName, onAdvance, showArrow, reducedMotion,
-    messageMode = 'band', foeSprite = null, foeName = championName,
+    messageMode = 'band', foeSprite = null, foeName = championName, mascot = null,
 }) {
     const feetTable = useSpriteFeet();
     const foe = field?.theirs?.active || null;
@@ -251,8 +295,12 @@ export const DsBattleScene = memo(function DsBattleScene({
             {/* Keyed by the moment, so each one draws its own (and none under reduced motion). */}
             {!reducedMotion && <SceneFlare key={`flare-${current?.lineIndex ?? 'none'}`} current={current} moveMeta={moveMeta} foeName={foeName} />}
 
+            {!reducedMotion && <StatFx key={`stat-${current?.lineIndex ?? 'none'}`} event={current} />}
+
             <HpBox mon={foe} mine={false} />
             <HpBox mon={mine} mine />
+            <BoostRow mon={foe} mine={false} current={current} />
+            <BoostRow mon={mine} mine current={current} />
             {/* Before the send-outs, the two rows of balls stand on their own, as in the games. */}
             {!foe && <BallRow slots={foeBalls} mine={false} />}
             {!mine && <BallRow slots={myBalls} mine />}
@@ -261,7 +309,10 @@ export const DsBattleScene = memo(function DsBattleScene({
 
             {/* On a phone the message is a band across this screen; on a desktop the HUD strip carries it. */}
             {messageMode === 'band' && (
-                <DsTextBox text={text} speaker={speaker} showArrow={showArrow} onAdvance={onAdvance} reducedMotion={reducedMotion} msPerChar={14} variant="band" />
+                <>
+                    <DsTextBox text={text} speaker={speaker} showArrow={showArrow} onAdvance={onAdvance} reducedMotion={reducedMotion} msPerChar={14} variant="band" />
+                    {mascot}
+                </>
             )}
         </div>
     );

@@ -225,7 +225,7 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
  * buttons on the right — or, choosing a move, the moves on the right and what
  * the focused one does on the left. Party and her team open over the field.
  */
-export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, sheet, championName, reducedMotion, labels = null }) {
+export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, sheet, championName, reducedMotion, labels = null, mascot = null }) {
     const { t } = useTranslation();
     const choosing = enabled && cmd.view === 'moves';
     const focused = choosing ? request.moves?.[cmd.focus] : null;
@@ -262,7 +262,10 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, shee
                             </button>
                         </div>
                     ) : (
-                        <DsTextBox {...message} variant="hud" reducedMotion={reducedMotion} msPerChar={14} />
+                        <>
+                            <DsTextBox {...message} variant="hud" reducedMotion={reducedMotion} msPerChar={14} />
+                            {mascot}
+                        </>
                     )}
                 </div>
                 {enabled && (

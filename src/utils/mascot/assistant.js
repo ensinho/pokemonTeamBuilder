@@ -114,3 +114,44 @@ export function costumeHat(choice, personaId) {
     if (choice === 'persona') return PERSONA_COSTUME[personaId] || null;
     return COSTUMES.includes(choice) ? choice : null;
 }
+
+/**
+ * His face beside the battle's message (2026-11-10): the readout of the
+ * moment on screen, from the trainer's side (`mySide`). He gestures, the
+ * message speaks — this only names a mood. Rooting for the trainer, never
+ * gloating: a rival's faint is a cheer, the trainer's own a wince.
+ *
+ * @param {object|null} event the timeline's current moment (`battleTimeline`)
+ * @param {{mySide?: string, hpPct?: number, yourTurn?: boolean, waiting?: boolean, ended?: boolean, won?: boolean}} facts
+ * @returns {string} a `MOODS` name
+ */
+export function battleMood(event, { mySide = 'p1', hpPct = 100, yourTurn = false, waiting = false, ended = false, won = false } = {}) {
+    const mine = event?.side === mySide;
+    switch (event?.type) {
+        case 'end': return won ? 'radiante' : 'triste';
+        case 'intro': return 'desafiador';
+        case 'dialogue': return 'desconfiado';
+        case 'mega':
+        case 'tera':
+        case 'zpower': return mine ? 'brilhando' : 'surpreso';
+        case 'faint': return mine ? 'triste' : 'animado';
+        case 'effect':
+            if (event.kind === 'supereffective' || event.kind === 'crit') return mine ? 'assustado' : 'empolgado';
+            if (event.kind === 'resisted' || event.kind === 'immune') return mine ? 'aliviado' : 'preocupado';
+            if (event.kind === 'miss') return 'surpreso';
+            break;
+        case 'stat': return (event.amount > 0) === mine ? 'confiante' : 'preocupado';
+        case 'status': return mine ? 'preocupado' : 'travesso';
+        case 'cure': return mine ? 'aliviado' : 'desconfiado';
+        case 'cant': return mine ? 'tonto' : 'travesso';
+        case 'hp':
+            if (event.heal) return mine ? 'aliviado' : 'desconfiado';
+            break;
+        default: break;
+    }
+    if (ended) return won ? 'radiante' : 'triste';
+    if (event) return 'concentrado';
+    if (waiting) return 'pensando';
+    if (yourTurn) return hpPct <= 25 ? 'preocupado' : 'determinado';
+    return 'concentrado';
+}

@@ -13,7 +13,8 @@
  * species, level, gender and HP in one line. So this reads the subset that matters
  * instead, in pure and tested code.
  *
- * What it deliberately does NOT model: stat boosts, weather/terrain beyond a
+ * Stat stages are modelled (`active.boosts`, 2026-11-10: the HP boxes show
+ * them). What it deliberately does NOT model: weather/terrain beyond a
  * label, hazards, screens, volatiles. Those are cosmetic overlays; if they're
  * wanted later, the honest options are to add them here or to accept the 805 KB.
  */
@@ -78,6 +79,26 @@ export const parseCondition = (raw) => {
  *  active-mon bar and the switch-chooser's mini bar never drift apart. */
 export const hpTone = (pct) => (pct > 50 ? 'high' : pct > 20 ? 'mid' : 'low');
 
+/** The stats a stage can move, in the order the HUD lists them. */
+export const BOOST_STATS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'];
+
+/** What a stage is worth: +2 Attack is ×2, −1 is ×0.67; accuracy/evasion run on thirds. */
+export const boostMultiplier = (stat, stage) => {
+    const base = stat === 'accuracy' || stat === 'evasion' ? 3 : 2;
+    const n = Math.max(-6, Math.min(6, Number(stage) || 0));
+    return n >= 0 ? (base + n) / base : base / (base - n);
+};
+
+/** Only the stages that are not zero, clamped to ±6. */
+const cleanBoosts = (boosts) => {
+    const out = {};
+    for (const stat of BOOST_STATS) {
+        const n = Math.max(-6, Math.min(6, Number(boosts?.[stat]) || 0));
+        if (n) out[stat] = n;
+    }
+    return out;
+};
+
 const blankSide = () => ({
     name: null,
     active: null,
@@ -111,6 +132,11 @@ export const readBattleField = (lines = []) => {
         active.hp = parsed;
         if (parsed.fainted) active.fainted = true;
         if (parsed.status) active.status = parsed.status;
+    };
+
+    const activeOf = (raw) => {
+        const ident = parseIdent(raw);
+        return (ident && state.sides[ident.side].active) || null;
     };
 
     for (const line of lines) {
@@ -158,6 +184,10 @@ export const readBattleField = (lines = []) => {
                 const ident = parseIdent(rest[0]);
                 if (!ident) break;
                 const details = parseDetails(rest[1]);
+                // Baton Pass hands the stages to whoever comes in; any other switch clears them.
+                const passed = rest.some((part) => /^\[from\].*Baton Pass/i.test(part))
+                    ? cleanBoosts(state.sides[ident.side].active?.boosts)
+                    : {};
 
                 state.sides[ident.side].active = {
                     nickname: ident.nickname,
@@ -167,6 +197,7 @@ export const readBattleField = (lines = []) => {
                     fainted: false,
                     item: null,
                     ability: null,
+                    boosts: passed,
                 };
                 applyCondition(ident.side, rest[2]);
                 break;
@@ -215,6 +246,58 @@ export const readBattleField = (lines = []) => {
                 if (ident) applyCondition(ident.side, rest[1]);
                 break;
             }
+            case '-boost':
+            case '-unboost':
+            case '-setboost': {
+                // `|-boost|p1a: Scizor|atk|2`, `|-setboost|p1a: Mew|atk|6|[from] move: Belly Drum`
+                const active = activeOf(rest[0]);
+                const amount = Number(rest[2]) || 0;
+                if (!active || !BOOST_STATS.includes(rest[1])) break;
+                const now = active.boosts[rest[1]] || 0;
+                const next = tag === '-setboost' ? amount : now + (tag === '-boost' ? amount : -amount);
+                active.boosts = cleanBoosts({ ...active.boosts, [rest[1]]: next });
+                break;
+            }
+            case '-clearboost': {
+                const active = activeOf(rest[0]);
+                if (active) active.boosts = {};
+                break;
+            }
+            case '-clearallboost':
+                // Haze: both sides.
+                for (const side of SIDES) if (state.sides[side].active) state.sides[side].active.boosts = {};
+                break;
+            case '-clearpositiveboost':
+            case '-clearnegativeboost': {
+                const active = activeOf(rest[0]);
+                if (!active) break;
+                const keep = tag === '-clearpositiveboost' ? (n) => n < 0 : (n) => n > 0;
+                active.boosts = Object.fromEntries(Object.entries(active.boosts).filter(([, n]) => keep(n)));
+                break;
+            }
+            case '-invertboost': {
+                const active = activeOf(rest[0]);
+                if (active) active.boosts = Object.fromEntries(Object.entries(active.boosts).map(([stat, n]) => [stat, -n]));
+                break;
+            }
+            case '-swapboost':
+            case '-copyboost': {
+                // `|-swapboost|A|B|atk, spa` trades the listed stats (all of them
+                // when none is listed); `|-copyboost|A|B` gives A what B has.
+                const a = activeOf(rest[0]);
+                const b = activeOf(rest[1]);
+                if (!a || !b) break;
+                const listed = rest[2] && !rest[2].startsWith('[') ? rest[2].split(',').map((stat) => stat.trim()) : BOOST_STATS;
+                const mine = { ...a.boosts };
+                const theirs = { ...b.boosts };
+                for (const stat of listed) {
+                    mine[stat] = b.boosts[stat] || 0;
+                    if (tag === '-swapboost') theirs[stat] = a.boosts[stat] || 0;
+                }
+                a.boosts = cleanBoosts(mine);
+                b.boosts = cleanBoosts(theirs);
+                break;
+            }
             case '-status': {
                 const ident = parseIdent(rest[0]);
                 if (ident && state.sides[ident.side].active) {
@@ -236,6 +319,7 @@ export const readBattleField = (lines = []) => {
                 side.faintedCount += 1;
                 if (side.active) {
                     side.active.fainted = true;
+                    side.active.boosts = {};
                     side.active.hp = { current: 0, max: side.active.hp?.max ?? null, pct: 0, status: null, fainted: true };
                 }
                 break;

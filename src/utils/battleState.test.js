@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readBattleField, parseCondition, hpTone } from './battleState';
+import { boostMultiplier, readBattleField, parseCondition, hpTone } from './battleState';
 
 describe('parseCondition', () => {
     it('reads real HP with a maximum', () => {
@@ -161,5 +161,52 @@ describe('readBattleField', () => {
         expect(readBattleField()).toMatchObject({ turn: 0, ended: false });
         expect(readBattleField(['garbage', '', '|switch|broken'])).toMatchObject({ turn: 0 });
         expect(readBattleField(['|request|{oops']).mySide).toBeNull();
+    });
+});
+
+describe('stat stages (the HP boxes\' buff chips)', () => {
+    // Lines from a real @pkmn/sim run (Swords Dance, Topsy-Turvy, Baton Pass, Psych Up, Heart Swap, Belly Drum, Haze).
+    const open = [
+        '|switch|p1a: Scizor|Scizor, L50, M|145/145',
+        '|switch|p2a: Malamar|Malamar, L50, F|161/161',
+    ];
+    const boostsOf = (lines) => {
+        const field = readBattleField([...open, ...lines]);
+        return { p1: field.sides.p1.active.boosts, p2: field.sides.p2.active.boosts };
+    };
+
+    it('adds and subtracts stages, dropping a stat that returns to zero', () => {
+        expect(boostsOf(['|-boost|p1a: Scizor|atk|2', '|-unboost|p1a: Scizor|def|1']).p1).toEqual({ atk: 2, def: -1 });
+        expect(boostsOf(['|-boost|p1a: Scizor|atk|2', '|-unboost|p1a: Scizor|atk|2']).p1).toEqual({});
+    });
+
+    it('clamps at six and reads -setboost', () => {
+        expect(boostsOf(['|-boost|p1a: Scizor|atk|4', '|-boost|p1a: Scizor|atk|4']).p1).toEqual({ atk: 6 });
+        expect(boostsOf(['|-setboost|p1a: Scizor|atk|6|[from] move: Belly Drum']).p1).toEqual({ atk: 6 });
+    });
+
+    it('inverts, copies, swaps and clears', () => {
+        const start = ['|-boost|p1a: Scizor|atk|2', '|-boost|p2a: Malamar|spa|1', '|-boost|p2a: Malamar|spd|1'];
+        expect(boostsOf([...start, '|-invertboost|p1a: Scizor|[from] move: Topsy-Turvy']).p1).toEqual({ atk: -2 });
+        expect(boostsOf([...start, '|-copyboost|p1a: Scizor|p2a: Malamar|[from] move: Psych Up'])).toEqual({ p1: { spa: 1, spd: 1 }, p2: { spa: 1, spd: 1 } });
+        expect(boostsOf([...start, '|-swapboost|p1a: Scizor|p2a: Malamar|[from] move: Heart Swap'])).toEqual({ p1: { spa: 1, spd: 1 }, p2: { atk: 2 } });
+        expect(boostsOf([...start, '|-swapboost|p1a: Scizor|p2a: Malamar|atk, spa|[from] move: Power Swap'])).toEqual({ p1: { spa: 1 }, p2: { atk: 2, spd: 1 } });
+        expect(boostsOf([...start, '|-clearallboost'])).toEqual({ p1: {}, p2: {} });
+        expect(boostsOf([...start, '|-unboost|p2a: Malamar|atk|1', '|-clearnegativeboost|p2a: Malamar']).p2).toEqual({ spa: 1, spd: 1 });
+        expect(boostsOf([...start, '|-unboost|p2a: Malamar|atk|1', '|-clearpositiveboost|p2a: Malamar|p1a: Scizor|move: Spectral Thief']).p2).toEqual({ atk: -1 });
+    });
+
+    it('a switch clears them; Baton Pass hands them on; a faint clears them', () => {
+        const boosted = ['|-boost|p1a: Scizor|atk|2'];
+        expect(boostsOf([...boosted, '|switch|p1a: Mew|Mew, L50|175/175']).p1).toEqual({});
+        expect(boostsOf([...boosted, '|switch|p1a: Mew|Mew, L50|175/175|[from] Baton Pass']).p1).toEqual({ atk: 2 });
+        expect(boostsOf([...boosted, '|faint|p1a: Scizor']).p1).toEqual({});
+    });
+
+    it('says what a stage is worth', () => {
+        expect(boostMultiplier('atk', 2)).toBe(2);
+        expect(boostMultiplier('atk', -1)).toBeCloseTo(2 / 3);
+        expect(boostMultiplier('accuracy', 1)).toBeCloseTo(4 / 3);
+        expect(boostMultiplier('spe', 0)).toBe(1);
     });
 });
