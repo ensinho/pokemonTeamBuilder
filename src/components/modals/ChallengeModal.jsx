@@ -36,6 +36,7 @@ export function ChallengeModal({
     const [selectedMode, setSelectedMode] = useState('normal'); // 'normal' | 'random'
     const [selectedTeamId, setSelectedTeamId] = useState(null);
     const [isSending, setIsSending] = useState(false);
+    const [problem, setProblem] = useState(null);
 
     const teams = useMemo(() => savedTeams.map((team) => {
         const members = (team.pokemons || []).filter(Boolean);
@@ -66,7 +67,12 @@ export function ChallengeModal({
 
     const selectedTeam = teams.find((row) => row.team.id === selectedTeamId) || null;
     const needsTeam = selectedMode === 'normal';
-    const canSend = Boolean(activeFriend) && (!needsTeam || selectedTeam?.ready) && !isSending;
+    // The button stays enabled: a click that cannot send says what is missing.
+    const missing = !activeFriend
+        ? 'battle.stage.noFriends'
+        : needsTeam && !selectedTeam?.ready
+            ? (teams.length === 0 ? 'battle.lobby.noTeams' : 'battle.stage.pickTeam')
+            : null;
 
     const inviteLink = useMemo(() => {
         if (!userId || typeof window === 'undefined') return '';
@@ -87,7 +93,9 @@ export function ChallengeModal({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!canSend) return;
+        if (isSending) return;
+        if (missing) { setProblem(missing); return; }
+        setProblem(null);
         setIsSending(true);
         try {
             await onStartChallenge(activeFriend, {
@@ -218,11 +226,13 @@ export function ChallengeModal({
                         <ClipIcon className="w-4 h-4 shrink-0" />
                         <span>{t('battle.copyBattleInvite')}</span>
                     </button>
+                    {/* Shown only while it is still true: fixing it clears it. */}
+                    {problem && problem === missing && <p className="text-xs text-danger" role="alert">{t(problem)}</p>}
                     </div>
 
                     <div className="modal-footer">
                         <button type="button" onClick={onClose} className="btn btn-ghost">{t('common.cancel')}</button>
-                        <button type="submit" disabled={!canSend} className="btn btn-primary">
+                        <button type="submit" disabled={isSending} className="btn btn-primary">
                             {isSending ? t('battle.stage.sending') : t('battle.stage.sendChallenge')}
                         </button>
                     </div>
