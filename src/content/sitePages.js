@@ -24,6 +24,7 @@
 
 import { SITE_CONTACT_EMAIL as CONTACT_EMAIL, SITE_PAGE_PATHS } from '../utils/seoPages.js';
 import { SUPPORT_URL } from '../constants/support.js';
+import { SOCIAL_INSTAGRAM_URL, SOCIAL_X_URL } from '../constants/social.js';
 
 export { CONTACT_EMAIL, SITE_PAGE_PATHS };
 const MAILTO = `mailto:${CONTACT_EMAIL}`;
@@ -48,7 +49,7 @@ export const SITE_PAGES = {
                     paragraphs: [
                         'Enzo Esmeraldo, an independent developer, designs, writes and runs the site. There is no company or advertiser behind it, and the source code is public on GitHub under the MIT license.',
                     ],
-                    links: [{ href: GITHUB, label: 'Source code on GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo on LinkedIn' }],
+                    links: [{ href: GITHUB, label: 'Source code on GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo on LinkedIn' }, { href: SOCIAL_X_URL, label: 'PokemonBuilder on X' }, { href: SOCIAL_INSTAGRAM_URL, label: 'PokemonBuilder on Instagram' }],
                 },
                 {
                     heading: 'How is it funded?',
@@ -96,7 +97,7 @@ export const SITE_PAGES = {
                     paragraphs: [
                         'Enzo Esmeraldo, um desenvolvedor independente, projeta, escreve e mantém o site. Não há empresa nem anunciante por trás dele, e o código-fonte é público no GitHub, sob a licença MIT.',
                     ],
-                    links: [{ href: GITHUB, label: 'Código-fonte no GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo no LinkedIn' }],
+                    links: [{ href: GITHUB, label: 'Código-fonte no GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo no LinkedIn' }, { href: SOCIAL_X_URL, label: 'PokemonBuilder no X' }, { href: SOCIAL_INSTAGRAM_URL, label: 'PokemonBuilder no Instagram' }],
                 },
                 {
                     heading: 'Como o projeto se mantém?',

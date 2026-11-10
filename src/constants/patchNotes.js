@@ -1,5 +1,6 @@
 import { PATCH_NOTES_VERSION } from './theme';
 import { SUPPORT_URL } from './support';
+import { SOCIAL_LINKS } from './social';
 
 // The release ledger — every version that shipped a "what's new" entry, newest
 // first. The modal renders the first one in full (icon, illustration, CTA) and
@@ -20,6 +21,8 @@ import { SUPPORT_URL } from './support';
 // side notes — the right column divides its height evenly between them. A
 // release with no side notes gives the featured card the full width.
 //
+// `links` (a list from constants/social.js) makes a note a box holding one real
+// link per entry.
 // `href` makes a note a link that leaves the site, drawn as a centred card with a
 // real button. `thanks: false` drops the thank-you band for a release with
 // nothing to thank anyone for.
@@ -28,21 +31,33 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
-        // Blue joins the Champion Challenge; the donation card stays the featured one.
+        // The project's own profiles. `links` makes the featured card a pair of
+        // real links (one per network) instead of one target; `cta` is the
+        // "registered!" line its illustration says.
         notes: [
             {
-                key: 'buy-me-a-coffee',
+                key: 'social-profiles',
                 featured: true,
-                icon: 'coffee',
-                visual: 'support',
-                title: 'patchNotes.supportTitle',
-                description: 'patchNotes.supportBody',
-                cta: 'patchNotes.supportCta',
-                href: SUPPORT_URL,
+                icon: 'megaphone',
+                visual: 'social',
+                title: 'patchNotes.socialTitle',
+                description: 'patchNotes.socialDesc',
+                cta: 'patchNotes.socialCta',
+                links: SOCIAL_LINKS,
             },
-            { key: 'champion-blue', icon: 'crown', title: 'patchNotes.blueTitle', description: 'patchNotes.blueDesc', cta: 'patchNotes.blueCta', path: '/challenge?champion=blue' },
-            { key: 'challenge-boards', icon: 'trophy', title: 'patchNotes.boardsTitle', description: 'patchNotes.boardsDesc', cta: 'patchNotes.boardsCta', path: '/challenge' },
-            { key: 'challenge-share', icon: 'sparkles', title: 'patchNotes.challengeShareTitle', description: 'patchNotes.challengeShareDesc', cta: 'patchNotes.challengeShareCta', path: '/feed' },
+            { key: 'mascot-assistant', icon: 'sparkles', title: 'patchNotes.mascotTitle', description: 'patchNotes.mascotDesc', cta: 'patchNotes.mascotCta', path: '/profile' },
+            { key: 'pokemon-center', icon: 'message', title: 'patchNotes.centerTitle', description: 'patchNotes.centerDesc', cta: 'patchNotes.centerCta', path: '/feed' },
+            { key: 'tera-zmoves', icon: 'swords', title: 'patchNotes.gimmicksTitle', description: 'patchNotes.gimmicksDesc', cta: 'patchNotes.gimmicksCta', path: '/challenge' },
+        ],
+    },
+    {
+        version: '1.21.0',
+        month: '2026-11',
+        thanks: false,
+        notes: [
+            { key: 'champion-blue', title: 'patchNotes.blueTitle' },
+            { key: 'challenge-boards', title: 'patchNotes.boardsTitle' },
+            { key: 'challenge-share', title: 'patchNotes.challengeShareTitle' },
         ],
     },
     {

@@ -62,7 +62,7 @@ import { SyncPromptModal } from './modals/SyncPromptModal';
 import { VersionUpdateModal } from './modals/VersionUpdateModal';
 
 import {
-    GithubIcon, LinkedinIcon, CollapseLeftIcon, CollapseRightIcon,
+    GithubIcon, LinkedinIcon, SocialIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
     HomeIcon, AccountIcon, ChartColumnIcon,
     MapPinIcon, MessageIcon,
@@ -91,6 +91,7 @@ import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/tr
 import { glyphMotion } from '../utils/glyphMotion';
 import { isCrawler } from '../utils/crawler';
 import { SUPPORT_URL } from '../constants/support';
+import { SOCIAL_HANDLE, SOCIAL_LINKS } from '../constants/social';
 import { hubForPath, hubMembers } from '../constants/navHubs';
 import { HubSwitch } from './HubSwitch';
 import { BrandWordmark } from './BrandWordmark';
@@ -2182,6 +2183,9 @@ export default function AppLayout() {
                                         ("Perfil e preferências"), and in the account menu. */}
                                     <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
+                                    {SOCIAL_LINKS.map(({ id, name, href }) => (
+                                        <a key={id} href={href} target="_blank" rel="noopener noreferrer" aria-label={`PokemonBuilder — ${name}`} title={`${name} · ${SOCIAL_HANDLE}`} className="app-shell__footer-link"><SocialIcon id={id} /></a>
+                                    ))}
                                 </div>
                             </div>
                         </footer>

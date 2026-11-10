@@ -177,6 +177,10 @@ history, so an announcement can be re-read after it is dismissed.
 3. Add the new notes with `icon` and `visual` names, resolved to components by
    `NOTE_ICONS` / `NOTE_VISUALS` in the modal — the ledger stays JSX-free so it
    can be unit-tested.
+   A note is a button to a `path`, one outbound link (`href`, the centred
+   donation card) or a box of several (`links`, 1.22.0's social profiles —
+   the list is `SOCIAL_LINKS` in `constants/social.js`, which also feeds the
+   footer, the drawer's About section, the About page and the JSON-LD `sameAs`).
 4. Dates are formatted from `month` per language (`formatReleaseMonth`), so a
    release never needs new date copy.
 
