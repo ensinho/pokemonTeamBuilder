@@ -9,7 +9,7 @@ import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIc
 import { ShinyBurst } from '../ShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
-import { typeIcons } from '../../constants/types';
+import { typeColors, typeIcons } from '../../constants/types';
 import { trainerSpriteUrl } from '../../utils/challengeView';
 import { BrandWordmark } from '../BrandWordmark';
 import { LogoMark } from '../LogoMark';
@@ -687,6 +687,49 @@ const SocialVisual = ({ t }) => (
     </div>
 );
 
+// 1.23.0: the desktop Pokédex entry, pocket-sized — the hero in Garchomp's type
+// colours (canon, mixed into tokens like the real one), the artwork as the
+// protagonist, and the tab strip under it with Data underlined.
+const PokedexDeskVisual = ({ language }) => {
+    const pt = language === 'pt';
+    const tabs = pt ? ['Dados', 'Golpes', 'Sprites'] : ['Data', 'Moves', 'Sprites'];
+    return (
+        <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-2 bg-bg p-4" aria-hidden="true">
+            <span
+                className="flex w-[17rem] max-w-full items-center gap-3 rounded-xl p-3"
+                style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${typeColors.dragon} 26%, var(--color-surface)), color-mix(in srgb, ${typeColors.ground} 10%, var(--color-surface)))` }}
+            >
+                <img
+                    src={`${SPRITE_BASE}/other/official-artwork/445.png`}
+                    alt=""
+                    className="h-20 w-20 shrink-0 object-contain"
+                />
+                <span className="flex min-w-0 flex-col gap-1">
+                    <span className="font-mono text-2xs text-muted">#0445</span>
+                    <span className="text-base font-bold text-fg" style={{ fontFamily: 'var(--font-heading)' }}>Garchomp</span>
+                    <span className="flex gap-1">
+                        {['dragon', 'ground'].map((type) => (
+                            <img key={type} src={typeIcons[type]} alt="" className="h-4 w-4" />
+                        ))}
+                    </span>
+                    <span className="mt-1 flex items-center gap-1.5">
+                        <span className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-raised">
+                            <span className="block h-full w-[51%] rounded-full bg-accent" />
+                        </span>
+                        <span className="font-mono text-2xs text-fg">130</span>
+                    </span>
+                </span>
+            </span>
+            <span className="flex w-[17rem] max-w-full gap-4 px-1 text-2xs font-semibold text-muted">
+                {tabs.map((tab, index) => (
+                    <span key={tab} className={index === 0 ? 'border-b-2 border-primary pb-0.5 text-fg' : 'pb-0.5'}>{tab}</span>
+                ))}
+                <span className="ml-auto font-mono">← →</span>
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -730,6 +773,7 @@ const NOTE_VISUALS = {
     compare: CompareVisual,
     support: SupportVisual,
     social: SocialVisual,
+    pokedexDesk: PokedexDeskVisual,
 };
 
 // One "what's new" card. The featured one carries its illustration and grows to

@@ -183,10 +183,15 @@ history, so an announcement can be re-read after it is dismissed.
    footer, the drawer's About section, the About page and the JSON-LD `sameAs`).
 4. Dates are formatted from `month` per language (`formatReleaseMonth`), so a
    release never needs new date copy.
+5. **Every release asks for donations — a fixed rule (Enzo, 2026-11-11).** The
+   current release always carries the Buy Me a Coffee note
+   (`key: 'buy-me-a-coffee'`, `href: SUPPORT_URL`, `patchNotes.supportShort` as a
+   side note or `supportBody` when featured). It takes one of the three side
+   slots; `patchNotes.test.js` fails without it.
 
 `patchNotes.test.js` guards the invariants: head version equals
 `PATCH_NOTES_VERSION`, versions descend, none repeat, every release has a month
-and notes, and the current release carries the illustration data.
+and notes, the current release carries the illustration data and the donation note.
 
 **Reopening:** the version button (`app-shell__footer-version` — in the page
 footer on desktop and as the "What's new" row of the Mais sheet's About section on phones; the only entry point a guest
