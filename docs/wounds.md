@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-11 — "Merged" was reported as done while production still served the old build `dispattern`
+- **Symptom:** PR #125 (the forum timeline) was merged with green CI and reported as delivered; Enzo opened the app and found the old forum. The live site was still the build of 18:40 UTC, three hours older than the merge, and Vercel's last production deployment was still #124's commit — the merge of #125 never produced one.
+- **Root cause:** the report stopped at GitHub. A merge and a green `checks` run say the code is on `main` and builds; neither says Vercel deployed it. The PR's "Vercel" status covers the *preview* of the branch, not production.
+- **Fix:** checked the live site instead of the PR: `curl -sI https://pokemonbuilder.app/` (`last-modified`, `age`) and a string the change introduced inside the published language chunk (`/assets/pt-*.js`). Production is only moved by a new commit on `main` or by a deployment created in the Vercel dashboard — "Redeploy" there repeats the old commit.
+- **Correct pattern:** **after merging something a user will look for, verify production before saying it shipped** — compare `last-modified` with the merge time and grep the live bundle for a string from the change. If it has not moved after ~10 minutes, say so and name what you could not see (the Vercel dashboard is not reachable from a cloud session). Also remind that an installed PWA only switches builds after its update prompt (`useAppUpdate`).
+- **Files:** `docs/wounds.md`, `docs/modules/forum.md`
+
 ### 2026-11-10 — PvP battles emailed the opponent on every round, until Gmail refused `bug`
 - **Symptom:** Vercel logs `Failed to send a notification email: … 550-5.4.5 Daily user sending limit exceeded`. The same mailbox sends the admin replies, so those stopped too.
 - **Root cause:** `notifyAwaitingPlayer` relied on `pickAwaitingTarget` ("never the caller") as its throttle. But a round is resolved by whoever moves second, so `awaitingUids` is both players and the *other* one is picked every round — even one sitting in the battle screen. One email per round per player; a 15-round battle is ~15 emails.
