@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T15:41:46.192Z",
+  "generatedAt": "2026-11-11T15:29:20.392Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -32821,7 +32821,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Bisharp can become a devastating sweeper thanks to Swords Dance and Eviolite-boosted bulk. Its typing gives it both a deadly STAB combination and a unique defensive typing, allowing it to help take hits from Latios and Weavile for its team. Sucker Punch allows Bisharp to circumvent its poor Speed and hit faster foes…",
           "source": "UU"
         },
         {
@@ -37849,7 +37849,7 @@
       "overview": "",
       "sets": [
         {
-          "name": "Unburden Sweeper",
+          "name": "Grassy Terrain Sweeper",
           "item": "grassy-seed",
           "itemAlts": [],
           "ability": "unburden",
@@ -37860,10 +37860,10 @@
               "swords-dance"
             ],
             [
-              "close-combat"
+              "acrobatics"
             ],
             [
-              "acrobatics"
+              "close-combat"
             ],
             [
               "substitute"
@@ -37894,7 +37894,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Hawlucha is Grassy Terrain's most defining sweeper due to its excellent STAB combination and the Speed boost from Unburden. Substitute allows it to negate status effects such as poison from Toxapex and phazing attempts from Dragon Tail Garchomp. 27 HP SPs allow its Substitute to not be broken by Dragon Tail from…",
           "source": "Champions OU"
         },
         {
