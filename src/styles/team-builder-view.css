@@ -2819,14 +2819,309 @@
     color: var(--color-fg);
 }
 
-/* Member editor (TeamPokemonEditorModal). */
+/* ============================================================
+   Member editor (TeamPokemonEditorModal).
+
+   Two regions. The STAGE — the Pokémon's official artwork on its type's
+   tone, its identity and the build as it stands (item, ability, nature and
+   four move slots; a dashed slot is an empty one). The MAIN — the tabs, the
+   one scroller and the actions. Side by side from 900px, at a fixed height
+   so nothing resizes when a tab or a filter changes; stacked below that,
+   where the stage folds into a compact header and the sheet rules apply.
+   ============================================================ */
+.modal-panel.editor {
+    max-width: 68rem;
+}
+
+.editor__close {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 2;
+    margin: 0;
+}
+
+/* ---- Stage ---------------------------------------------------------------- */
+.editor-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    flex-shrink: 0;
+    padding: var(--space-4) var(--space-12) var(--space-3) var(--space-4);
+    background: color-mix(in srgb, var(--stage-tone) 10%, var(--color-surface));
+}
+
+.editor-stage__art {
+    position: relative;
+    display: inline-flex;
+    width: 4.5rem;
+    height: 4.5rem;
+}
+
+.editor-stage__art img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.editor-stage__id {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.editor-stage__name {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-heading);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
+    color: var(--color-fg);
+}
+
+.editor-stage__types,
+.editor-stage__weak {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.editor-stage__label {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+/* A weakness is its type's icon; a ×4 says so. */
+.editor-weak {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    height: 1.5rem;
+    padding: 0 var(--space-0_5);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--type-chip) 16%, transparent);
+    color: var(--color-danger);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+}
+
+.editor-weak img {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.editor-weak .figure {
+    padding-right: var(--space-1);
+}
+
+.editor-stage__shiny {
+    grid-column: 1 / -1;
+    width: fit-content;
+}
+
+.editor-sheet {
+    display: none;
+}
+
+/* ---- Main ----------------------------------------------------------------- */
+.editor-main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.editor-main__head {
+    flex-shrink: 0;
+    padding: var(--space-3) var(--space-4) 0;
+}
+
+/* The dialog's one scroller. */
+.editor-main__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-4);
+}
+
+.editor-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3) var(--space-4);
+}
+
+/* ---- Move picker ---------------------------------------------------------- */
+.editor-moves {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.editor-moves__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--control-h-sm);
+}
+
+.editor-moves__head h3 {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.editor-moves__count {
+    margin-left: auto;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.editor-picked {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--control-h-md);
+}
+
+.editor-moves__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.editor-moves__search {
+    flex: 1 1 12rem;
+}
+
+.editor-moves__tools .editor-moves__sort {
+    width: auto;
+    flex: 0 0 auto;
+}
+
+/* The damage classes in Showdown's canon tones (data), as a dot: the legend
+   is the filter itself, and each row's power wears the same dot. */
+.editor-cat-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-muted);
+}
+
+.editor-cat-dot[data-cat='physical'] { background: #F08030; }
+.editor-cat-dot[data-cat='special'] { background: #6890F0; }
+
+.segmented__item .editor-cat-dot {
+    margin-right: var(--space-1_5);
+}
+
+.editor-types {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.editor-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1_5);
+    min-width: var(--control-h-sm);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-1);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: color-mix(in srgb, var(--type-chip, var(--color-fg)) 45%, var(--color-fg));
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.editor-type img {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.editor-type--all {
+    padding: 0 var(--space-2_5);
+    color: var(--color-muted);
+}
+
+.editor-type:hover {
+    background: var(--color-surface-hover);
+}
+
+.editor-type:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.editor-type[aria-pressed='true'] {
+    padding: 0 var(--space-2_5) 0 var(--space-1);
+    background: color-mix(in srgb, var(--type-chip, var(--color-fg)) 16%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--type-chip, var(--color-fg)) 50%, transparent);
+}
+
+.editor-type--all[aria-pressed='true'] {
+    padding: 0 var(--space-2_5);
+    color: var(--color-fg);
+}
+
+/* The move box: two lines reserved, so the grid under it never moves. */
+.editor-move-info {
+    display: -webkit-box;
+    min-height: 2.5rem;
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--text-xs);
+    line-height: 1.25rem;
+    color: var(--color-muted);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.editor-move-info strong {
+    margin-right: var(--space-2);
+    font-weight: var(--weight-semibold);
+    text-transform: capitalize;
+    color: var(--color-fg);
+}
+
+.editor-move-info .figure {
+    margin-right: var(--space-2);
+}
+
+.editor-move-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
 .editor-move {
     display: flex;
     min-width: 0;
-    min-height: var(--control-h-md);
+    height: var(--control-h-md);
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-1_5) var(--space-2_5);
+    padding: 0 var(--space-2_5);
     border: none;
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -2836,6 +3131,39 @@
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.editor-move__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.editor-move__name {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.editor-move__power {
+    display: none;
+    width: 3rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-1_5);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.editor-move__check {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    color: color-mix(in srgb, var(--type-chip, var(--color-primary)) 45%, var(--color-fg));
 }
 
 .editor-move:hover:not(:disabled) {
@@ -2858,6 +3186,25 @@
 .editor-move:disabled {
     cursor: not-allowed;
     opacity: 0.45;
+}
+
+/* Pads a short last page to a full one, so the pager stays under the pointer. */
+.editor-move--filler {
+    visibility: hidden;
+}
+
+.editor-moves__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-8) 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.editor-moves__empty p {
+    margin: 0;
 }
 
 .editor-move-chip {
@@ -2944,6 +3291,186 @@
 @media (min-width: 641px) {
     .modal-footer .editor-remove {
         margin-right: auto;
+    }
+
+    .editor-fields {
+        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    }
+
+    .editor-move__power {
+        display: inline-flex;
+    }
+}
+
+/* ---- Wide: stage beside main ---------------------------------------------- */
+@media (min-width: 900px) {
+    .modal-panel.editor {
+        display: grid;
+        grid-template-columns: 19rem minmax(0, 1fr);
+        height: 52rem;
+    }
+
+    .editor-stage {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-4);
+        min-height: 0;
+        overflow-y: auto;
+        padding: var(--space-6) var(--space-5) var(--space-5);
+    }
+
+    /* The artwork stands on a disc of its type's tone. */
+    .editor-stage__art {
+        align-self: center;
+        width: 12rem;
+        height: 12rem;
+        border-radius: var(--radius-full);
+        background: color-mix(in srgb, var(--stage-tone) 16%, transparent);
+    }
+
+    .editor-stage__art img {
+        scale: 1.08;
+    }
+
+    .editor-stage__id {
+        gap: var(--space-2);
+    }
+
+    .editor-stage__name {
+        font-size: var(--text-xl);
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    .editor-sheet {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        margin-top: auto;
+    }
+
+    .editor-sheet__facts {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1_5);
+        margin: 0;
+    }
+
+    .editor-sheet__facts > div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        min-height: 1.5rem;
+    }
+
+    .editor-sheet__facts dt {
+        flex-shrink: 0;
+        font-size: var(--text-xs);
+        color: var(--color-muted);
+    }
+
+    .editor-sheet__facts dd {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1_5);
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        font-size: var(--text-sm);
+        font-weight: var(--weight-semibold);
+        text-overflow: ellipsis;
+        text-transform: capitalize;
+        white-space: nowrap;
+        color: var(--color-fg);
+    }
+
+    .editor-sheet__facts dd img {
+        width: 1.5rem;
+        height: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .editor-slots {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1_5);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .editor-slot {
+        display: flex;
+        width: 100%;
+        height: var(--control-h-md);
+        align-items: center;
+        gap: var(--space-2);
+        padding: 0 var(--space-2_5);
+        border: 1px solid color-mix(in srgb, var(--type-chip) 45%, transparent);
+        border-radius: var(--radius-md);
+        background: color-mix(in srgb, var(--type-chip) 14%, var(--color-surface));
+        color: color-mix(in srgb, var(--type-chip) 45%, var(--color-fg));
+        font-size: var(--text-sm);
+        font-weight: var(--weight-semibold);
+        text-align: left;
+        text-transform: capitalize;
+        cursor: pointer;
+        transition: background-color var(--duration-fast) var(--ease-smooth);
+    }
+
+    .editor-slot:hover {
+        background: color-mix(in srgb, var(--type-chip) 24%, var(--color-surface));
+    }
+
+    .editor-slot:focus-visible {
+        outline: none;
+        box-shadow: var(--ring-focus);
+    }
+
+    .editor-slot img {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+    }
+
+    .editor-slot span {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .editor-slot svg {
+        width: 0.75rem;
+        height: 0.75rem;
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
+
+    /* Dashed = empty: nothing picked for this slot yet. */
+    .editor-slot--empty {
+        border: 1px dashed var(--color-border-strong);
+        background: transparent;
+        color: var(--color-muted);
+        font-weight: var(--weight-regular);
+        text-transform: none;
+        cursor: default;
+    }
+
+    /* The stage's slots are the picked moves here. */
+    .editor-picked {
+        display: none;
+    }
+
+    .editor-main__head {
+        padding: var(--space-4) var(--space-12) 0 var(--space-6);
+    }
+
+    .editor-main__body {
+        padding: var(--space-5) var(--space-6);
     }
 }
 

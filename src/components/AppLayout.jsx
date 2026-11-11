@@ -85,6 +85,7 @@ import { HomeEntry } from './views/HomeEntry';
 import { useLandingStore } from '../store/useLandingStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useTrainerCardStore } from '../store/useTrainerCardStore';
+import { useAbilityDialogStore } from '../store/useAbilityDialogStore';
 import { useInboxStore } from '../store/useInboxStore';
 import { useQuickLookStore } from '../store/useQuickLookStore';
 import { PokegearButton } from './pokegear/PokegearButton';
@@ -139,6 +140,7 @@ const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) =
 const TrainerOnboarding = lazy(() => import('./onboarding/TrainerOnboarding').then((m) => ({ default: m.TrainerOnboarding })));
 const PokegearDialog = lazy(() => import('./pokegear/PokegearDialog').then((m) => ({ default: m.PokegearDialog })));
 const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
+const AbilityDialog = lazy(() => import('./AbilityDialog').then((m) => ({ default: m.AbilityDialog })));
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
@@ -462,6 +464,7 @@ export default function AppLayout() {
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const isOnboardingOpen = useOnboardingStore((s) => s.isOpen);
     const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
+    const isAbilityDialogOpen = useAbilityDialogStore((s) => Boolean(s.name));
     const isPokegearOpen = useInboxStore((s) => s.isOpen);
     const isQuickLookOpen = useQuickLookStore((s) => s.stack.length > 0);
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
@@ -1525,6 +1528,11 @@ export default function AppLayout() {
             {isTrainerCardOpen && (
                 <Suspense fallback={null}>
                     <TrainerCardDialog />
+                </Suspense>
+            )}
+            {isAbilityDialogOpen && (
+                <Suspense fallback={null}>
+                    <AbilityDialog />
                 </Suspense>
             )}
             {isOnboardingOpen && (

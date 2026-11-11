@@ -8,11 +8,11 @@ import { getItemPageData } from '../../services/pokemonDataCache';
 import { useEntityPageData } from '../../hooks/useEntityPageData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { formatVersionGroup } from '../../utils/gameVersions';
 import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
-import { PokemonLinkChips } from '../PokemonLinkChips';
+import { EntityHolders } from '../entity/EntityHolders';
+import { GameDescriptions } from '../entity/GameDescriptions';
 import { Loader } from '../Loader';
 
 const prettify = (name = '') => String(name).replace(/-/g, ' ');
@@ -60,81 +60,63 @@ export function ItemDetailView() {
         );
     }
 
-    const hasDescriptions = data.flavorTexts.length > 0;
+    const hasHolders = data.heldBy.length > 0;
+    const hasLongEffect = Boolean(data.effectLong && data.effectLong !== data.effect);
+    const hasLeft = hasLongEffect || data.flavorTexts.length > 0;
 
     return (
-        <div className="edv">
+        <div className="edv edv--entity">
             <button type="button" className="edv-back" onClick={handleBack}>
                 <ChevronLeft className="h-4 w-4" /> {backLabel}
             </button>
 
-            <div className={`edv-main ${hasDescriptions ? '' : 'edv-main--single'}`}>
-                <div className="edv-col">
-                    <header className="edv-header">
-                        <div className="edv-kicker">
-                            <span>{t('db.itemTag')}</span>
-                            {data.category && <span className="capitalize">· {prettify(data.category)}</span>}
-                        </div>
-                        <h1 className="edv-title flex items-center gap-2">
-                            {data.sprite && <img src={data.sprite} alt="" aria-hidden="true" className="w-9 h-9 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
-                            {displayName}
-                        </h1>
-                        {data.effect && <p className="edv-lead">{data.effect}</p>}
-                        <div className="mt-2 flex flex-wrap gap-1.5 text-2xs font-semibold">
-                            <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">
-                                <span className="text-muted">{t('db.colCost')}:</span> <span className="figure">{data.cost > 0 ? data.cost : '—'}</span>
-                            </span>
-                            {data.flingPower != null && (
-                                <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">
-                                    <span className="text-muted">{t('db.flingPower')}:</span> <span className="figure">{data.flingPower}</span>
-                                </span>
-                            )}
-                        </div>
-                    </header>
-
-                    {data.effectLong && data.effectLong !== data.effect && (
-                        <section className="edv-section">
-                            <h2 className="edv-section__title">{t('db.effectHeading')}</h2>
-                            <p className="edv-effect">{data.effectLong}</p>
-                        </section>
+            <header className="edv-header">
+                <div className="edv-kicker">
+                    <span>{t('db.itemTag')}</span>
+                    {data.category && <span className="capitalize">· {prettify(data.category)}</span>}
+                </div>
+                <h1 className="edv-title flex items-center gap-2">
+                    {data.sprite && <img src={data.sprite} alt="" aria-hidden="true" className="w-9 h-9 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                    {displayName}
+                </h1>
+                {data.effect && <p className="edv-lead">{data.effect}</p>}
+                <div className="mt-2 flex flex-wrap gap-1.5 text-2xs font-semibold">
+                    <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">
+                        <span className="text-muted">{t('db.colCost')}:</span> <span className="figure">{data.cost > 0 ? data.cost : '—'}</span>
+                    </span>
+                    {data.flingPower != null && (
+                        <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">
+                            <span className="text-muted">{t('db.flingPower')}:</span> <span className="figure">{data.flingPower}</span>
+                        </span>
                     )}
                 </div>
+            </header>
 
-                {hasDescriptions && (
+            <div className={`edv-main ${hasHolders && hasLeft ? '' : 'edv-main--single'}`}>
+                {hasLeft && (
                     <div className="edv-col">
-                        <section className="edv-section">
-                            <h2 className="edv-section__title">{t('db.gameDescriptions')}</h2>
-                            <div className="edv-table-wrap">
-                                <table className="edv-table">
-                                    <thead>
-                                        <tr>
-                                            <th>{t('db.colGames')}</th>
-                                            <th>{t('db.colDescription')}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {data.flavorTexts.map((group) => (
-                                            <tr key={group.text}>
-                                                <td className="edv-table__games">
-                                                    {group.versions.map((v) => <span key={v}>{formatVersionGroup(v)}</span>)}
-                                                </td>
-                                                <td className="edv-table__text">{group.text}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
+                        {hasLongEffect && (
+                            <section className="edv-section">
+                                <h2 className="edv-section__title">{t('db.effectHeading')}</h2>
+                                <p className="edv-effect">{data.effectLong}</p>
+                            </section>
+                        )}
+                        <GameDescriptions groups={data.flavorTexts} />
                     </div>
                 )}
-            </div>
 
-            {data.heldBy.length > 0 && (
-                <section className="edv-section">
-                    <h2 className="edv-section__title">{t('db.heldByWild')} · {data.heldBy.length}</h2>
-                    <PokemonLinkChips pokemons={data.heldBy} cap={60} />
-                </section>
-            )}
+                {hasHolders && (
+                    <section className="edv-section">
+                        <h2 className="edv-section__title">
+                            {t('db.heldByWild')} <span className="count-badge">{data.heldBy.length}</span>
+                        </h2>
+                        <EntityHolders
+                            ariaLabel={t('db.heldByWild')}
+                            groups={[{ id: 'all', label: t('db.heldByWild'), pokemons: data.heldBy }]}
+                        />
+                    </section>
+                )}
+            </div>
         </div>
     );
 }

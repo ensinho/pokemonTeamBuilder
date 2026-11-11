@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Sparkles, Package, Swords, Zap, TrendingUp, ArrowUpRight, Plus, Check, RotateCcw, Trash2 } from 'lucide-react';
+import { Sparkles, Package, Swords, Zap, TrendingUp, ArrowUpRight, Plus, Check, RotateCcw, Trash2, Search } from 'lucide-react';
 
 // Styles (.editor-*) live in team-builder-view.css, loaded with the shell.
 import { typeColors, typeIcons } from '../../constants/types';
-import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { getPokemonArtworkSpriteUrl, getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
+import { useBattleDex } from '../../hooks/useBattleDex';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { applySmogonSet, formatSetSpread } from '../../utils/smogonSets';
 import { applyEvChange, evLimitsFor, maxEvFor, remainingEvs } from '../../utils/evBudget';
@@ -22,10 +23,12 @@ import { pctOf, pretty } from '../../utils/metaFormat';
 import { SpriteSelect } from '../SpriteSelect';
 import { Switch } from '../Switch';
 import { RollingNumber } from '../RollingNumber';
+import { Pager } from '../Pager';
+import { usePaged } from '../../hooks/usePaged';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { TypeChip } from '../TypeChip';
 import { CloseIcon } from '../icons';
-import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
+import { getPokemonWeaknessEntries } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
@@ -56,10 +59,15 @@ const STAT_ABBR = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': '
 const STAT_NAMES = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
 const ZERO_EVS = { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 };
 
-// Moves shown before "show more". A learnset runs 50–120 moves; listed whole
-// inside the dialog it made the phone editor 2.4 screens long, and the four
-// moves people actually pick are the first dozen once ranked by usage.
-const MOVES_PREVIEW = 12;
+// Moves per page. A learnset runs 50–120 moves; listed whole inside the dialog
+// it made the phone editor 2.4 screens long. A fixed page (two columns of
+// six) keeps the dialog the same height whatever is filtered, and the four
+// moves people actually pick are on the first one once ranked by usage.
+const MOVES_PER_PAGE = 12;
+const MOVE_CATEGORIES = ['physical', 'special', 'status'];
+// Showdown id ("Rock Slide" / "rock-slide" → "rockslide"), the battle dex's key.
+const toDexId = (s = '') => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const prettyMove = (s = '') => s.replace(/-/g, ' ');
 
 /**
  * The member editor.
@@ -74,7 +82,7 @@ const MOVES_PREVIEW = 12;
  * per-move fetch loop wrote one entry per move into a cache that lived in the
  * app shell, re-rendering the whole shell ~60 times each time this opened.
  */
-export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures }) {
+export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, natures }) {
     const { t, language } = useTranslation();
     // Tera Type is gen IX only — hidden entirely when the user has it switched off.
     const showTeraType = useThemeStore((state) => state.showTeraType);
@@ -90,6 +98,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     const fmtId = searchParams.get('fmt') || defaultFormatId || '';
     const { usageFor, format, status: fmtStatus } = useUsageFormat(fmtId);
     const { typeForMove } = useMoveTypes();
+    // Category, power, accuracy, PP and the one-line effect of every move —
+    // one small static file, shared with the Moves list and the battle screen.
+    const dex = useBattleDex();
     const battleItems = useBattleItems();
     const smogonEntry = smogonFor(pokemon.id);
     const usage = usageFor(pokemon.id);
@@ -104,7 +115,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     );
     const [customization, setCustomization] = useState(pokemon.customization);
     const [moveSearch, setMoveSearch] = useState('');
-    const [showAllMoves, setShowAllMoves] = useState(false);
+    const [moveCategory, setMoveCategory] = useState('all');
+    const [moveType, setMoveType] = useState('all');
+    // null = the default order: most used when the format has data, else A–Z.
+    const [moveSort, setMoveSort] = useState(null);
+    // The move whose description the info line shows (pointed at, focused or
+    // just picked) — the games' move box.
+    const [inspected, setInspected] = useState(null);
+    const [artFailed, setArtFailed] = useState(false);
     const [activeTab, setActiveTab] = useState('build');
     const [evNotice, setEvNotice] = useState(null);
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
@@ -121,7 +139,11 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         openedWithRef.current = pokemon.customization;
         setCustomization(pokemon.customization);
         setMoveSearch('');
-        setShowAllMoves(false);
+        setMoveCategory('all');
+        setMoveType('all');
+        setMoveSort(null);
+        setInspected(null);
+        setArtFailed(false);
         setActiveTab('build');
         setEvNotice(null);
     }, [pokemon]);
@@ -232,24 +254,53 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         return map;
     }, [usage, usageN]);
 
+    // The learnset as rows the picker can filter and sort: each move with its
+    // type, category, numbers and usage share. Built once per Pokémon/dex.
+    const moveRows = useMemo(() => (pokemon.moves || []).map((move) => {
+        const row = dex?.moves?.[toDexId(move.name)];
+        return {
+            name: move.name,
+            slug: toSlug(move.name),
+            type: typeForMove(move.name) || row?.[1] || null,
+            category: row ? String(row[2] || '').toLowerCase() : null,
+            power: row?.[3] || null,
+            accuracy: row && row[4] !== true ? row[4] || null : null,
+            pp: row?.[5] || null,
+            desc: row?.[6] || '',
+            pct: movePctBySlug.get(toSlug(move.name)) || 0,
+        };
+    }), [pokemon.moves, dex, typeForMove, movePctBySlug]);
+
+    // The types this Pokémon actually has moves of — its own types first (the
+    // STAB ones are what gets picked), then the best-stocked.
+    const moveTypeOptions = useMemo(() => {
+        const counts = new Map();
+        for (const row of moveRows) if (row.type) counts.set(row.type, (counts.get(row.type) || 0) + 1);
+        const own = (pokemon.types || []).map((type) => String(type).toLowerCase());
+        return [...counts.keys()].sort((a, b) => (own.includes(b) - own.includes(a)) || counts.get(b) - counts.get(a) || a.localeCompare(b));
+    }, [moveRows, pokemon.types]);
+
     // Most-used first (with the share on the row), then A–Z. The learnset
     // arrives in level-up order, which is the order nobody builds in.
-    const sortedMoves = useMemo(() => {
-        const moves = [...(pokemon.moves || [])];
-        return moves.sort((a, b) => {
-            const pa = movePctBySlug.get(toSlug(a.name)) || 0;
-            const pb = movePctBySlug.get(toSlug(b.name)) || 0;
-            return pb - pa || a.name.localeCompare(b.name);
-        });
-    }, [pokemon.moves, movePctBySlug]);
-
+    const sortMode = moveSort || (movePctBySlug.size > 0 ? 'usage' : 'name');
     const filteredMoves = useMemo(() => {
-        if (!moveSearch) return sortedMoves;
-        const q = moveSearch.toLowerCase().replace(/\s+/g, '-');
-        return sortedMoves.filter((move) => move.name.toLowerCase().includes(q) || move.name.toLowerCase().replace(/-/g, ' ').includes(moveSearch.toLowerCase()));
-    }, [moveSearch, sortedMoves]);
-    const isMovePreview = !moveSearch && !showAllMoves && filteredMoves.length > MOVES_PREVIEW;
-    const visibleMoves = isMovePreview ? filteredMoves.slice(0, MOVES_PREVIEW) : filteredMoves;
+        const raw = moveSearch.trim().toLowerCase();
+        const q = raw.replace(/\s+/g, '-');
+        const list = moveRows.filter((row) => {
+            if (moveCategory !== 'all' && row.category !== moveCategory) return false;
+            if (moveType !== 'all' && row.type !== moveType) return false;
+            if (!raw) return true;
+            return row.name.toLowerCase().includes(q) || prettyMove(row.name.toLowerCase()).includes(raw);
+        });
+        const byName = (a, b) => a.name.localeCompare(b.name);
+        if (sortMode === 'power') return list.sort((a, b) => (b.power || 0) - (a.power || 0) || byName(a, b));
+        if (sortMode === 'usage') return list.sort((a, b) => b.pct - a.pct || byName(a, b));
+        return list.sort(byName);
+    }, [moveRows, moveSearch, moveCategory, moveType, sortMode]);
+    const movePages = usePaged(filteredMoves, MOVES_PER_PAGE, `${moveSearch}|${moveCategory}|${moveType}|${sortMode}`);
+    const visibleMoves = movePages.pageItems;
+    const hasMoveFilters = Boolean(moveSearch) || moveCategory !== 'all' || moveType !== 'all';
+    const clearMoveFilters = () => { setMoveSearch(''); setMoveCategory('all'); setMoveType('all'); };
 
     if (!pokemon) return null;
 
@@ -269,8 +320,15 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         ...(hasUsage ? [{ id: 'usage', label: t('builder.editor.tabUsage') }] : []),
     ];
 
-    const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm capitalize text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary';
-    const fieldLabelClassName = 'field-label mb-1 block';
+    // The stage takes the Pokémon's first type as its tone; the artwork is the
+    // protagonist and falls back to the sprite for a form with no artwork.
+    const stageTone = typeColors[String(pokemon.types?.[0] || '').toLowerCase()] || 'var(--color-primary)';
+    const artSrc = artFailed
+        ? getPokemonDisplaySprite(pokemon, { shiny: customization.isShiny, animated: true })
+        : getPokemonArtworkSpriteUrl(pokemon.id, { shiny: customization.isShiny });
+    const itemOption = customization.item ? itemOptions.find((it) => it.slug === customization.item) : null;
+    const inspectedRow = inspected ? moveRows.find((row) => row.slug === toSlug(inspected)) : null;
+    const moveSlots = [0, 1, 2, 3].map((i) => customization.moves[i] || null);
     const removeMember = () => useActiveTeamStore.getState().handleRemoveFromTeam(pokemon.instanceId);
 
     return (
@@ -281,53 +339,125 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                 aria-modal="true"
                 aria-labelledby="team-editor-title"
                 tabIndex={-1}
-                className="modal-panel modal-panel--2xl"
+                className="modal-panel editor"
+                style={{ '--stage-tone': stageTone }}
                 onClick={(event) => event.stopPropagation()}
             >
-                <header className="px-4 pt-4 sm:px-6 sm:pt-5">
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <span className="relative inline-flex flex-shrink-0">
-                                <img
-                                    src={getPokemonDisplaySprite(pokemon, { shiny: customization.isShiny, animated: true })}
-                                    alt={pokemon.name}
-                                    className="h-12 w-12 sm:h-14 sm:w-14 image-pixelated"
-                                />
-                                {shinyBurst.burst}
-                            </span>
-                            <div className="min-w-0">
-                                <h2 id="team-editor-title" className="truncate text-lg font-bold capitalize text-fg sm:text-xl md:text-2xl">{pokemon.name}</h2>
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {(pokemon.types || []).map((type) => <TypeChip key={type} type={type} />)}
-                                </div>
-                                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                    <span className="text-xs text-muted">
-                                        {t('modals.editorModalWeakVs')}
-                                    </span>
-                                    {pokemonWeaknesses.length > 0 ? pokemonWeaknesses.slice(0, 4).map(({ type, multiplier }) => (
-                                        <WeaknessBadge key={type} type={type} multiplier={multiplier} colors={colors} />
-                                    )) : (
-                                        <span className="text-xs text-muted">{t('common.none')}</span>
-                                    )}
-                                    {pokemonWeaknesses.length > 4 && (
-                                        <span className="count-badge">+{pokemonWeaknesses.length - 4}</span>
-                                    )}
-                                </div>
-                            </div>
+                <button
+                    onClick={closeKeepingEdits}
+                    type="button"
+                    className="modal-close editor__close"
+                    aria-label={t('modals.editorModalCloseAria')}
+                >
+                    <CloseIcon />
+                </button>
+
+                {/* The stage: who is being built, and the build as it stands.
+                    It answers every edit — the artwork turns shiny, a picked
+                    move takes its slot in its type's colour, an empty slot
+                    stays dashed — and it stays put while the tabs change. */}
+                <aside className="editor-stage" data-sheet-handle>
+                    <span className="editor-stage__art">
+                        <img
+                            key={artFailed ? 'sprite' : 'art'}
+                            src={artSrc}
+                            alt=""
+                            aria-hidden="true"
+                            width="192"
+                            height="192"
+                            decoding="async"
+                            className={artFailed ? 'image-pixelated' : ''}
+                            onError={() => setArtFailed(true)}
+                        />
+                        {shinyBurst.burst}
+                    </span>
+
+                    <div className="editor-stage__id">
+                        <h2 id="team-editor-title" className="editor-stage__name">{prettyMove(pokemon.name)}</h2>
+                        <div className="editor-stage__types">
+                            {(pokemon.types || []).map((type) => <TypeChip key={type} type={type} />)}
                         </div>
-                        <button
-                            onClick={closeKeepingEdits}
-                            type="button"
-                            className="modal-close"
-                            aria-label={t('modals.editorModalCloseAria')}
-                        >
-                            <CloseIcon />
-                        </button>
+                        <div className="editor-stage__weak">
+                            <span className="editor-stage__label">{t('modals.editorModalWeakVs')}</span>
+                            {pokemonWeaknesses.length > 0 ? pokemonWeaknesses.map(({ type, multiplier }) => (
+                                <span
+                                    key={type}
+                                    className="editor-weak"
+                                    style={{ '--type-chip': typeColors[type] }}
+                                    title={`${t(`types.${type.toLowerCase()}`, { defaultValue: type })} ×${multiplier}`}
+                                >
+                                    <img src={typeIcons[type]} alt={t(`types.${type.toLowerCase()}`, { defaultValue: type })} />
+                                    {multiplier > 2 && <span className="figure">×{multiplier}</span>}
+                                </span>
+                            )) : (
+                                <span className="editor-stage__label">{t('common.none')}</span>
+                            )}
+                        </div>
                     </div>
 
+                    <Switch
+                        checked={customization.isShiny}
+                        onChange={(next) => {
+                            handleCustomizationChange('isShiny', next);
+                            if (next) shinyBurst.fire();
+                        }}
+                        label={t('modals.editorModalShinyLabel')}
+                        size="sm"
+                        className="editor-stage__shiny"
+                    />
+
+                    <div className="editor-sheet">
+                        <dl className="editor-sheet__facts">
+                            <div>
+                                <dt>{t('modals.editorModalItemLabel')}</dt>
+                                <dd>
+                                    {itemOption && <img src={itemSpriteUrl(itemOption.slug)} alt="" aria-hidden="true" className="image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                                    {itemOption ? itemOption.name : (customization.item ? prettyMove(customization.item) : '—')}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>{t('modals.editorModalAbilityLabel')}</dt>
+                                <dd>{customization.ability ? prettyMove(customization.ability) : '—'}</dd>
+                            </div>
+                            <div>
+                                <dt>{t('modals.editorModalNatureLabel')}</dt>
+                                <dd>{customization.nature ? natureLabel(customization.nature) : '—'}</dd>
+                            </div>
+                        </dl>
+
+                        <ul className="editor-slots" aria-label={t('modals.editorModalMovesHeading')}>
+                            {moveSlots.map((moveName, i) => {
+                                if (!moveName) {
+                                    return <li key={`empty-${i}`} className="editor-slot editor-slot--empty">{t('builder.editor.emptySlot')}</li>;
+                                }
+                                const slotType = typeForMove(moveName);
+                                return (
+                                    <li key={moveName}>
+                                        <button
+                                            type="button"
+                                            className="editor-slot"
+                                            style={{ '--type-chip': slotType ? typeColors[slotType] : 'var(--color-muted)' }}
+                                            onClick={() => handleMoveToggle(moveName)}
+                                            onMouseEnter={() => setInspected(moveName)}
+                                            onFocus={() => setInspected(moveName)}
+                                            aria-label={t('modals.editorModalRemoveMove', { move: prettyMove(moveName) })}
+                                        >
+                                            {slotType && <img src={typeIcons[slotType]} alt="" aria-hidden="true" />}
+                                            <span>{prettyMove(moveName)}</span>
+                                            <CloseIcon aria-hidden="true" />
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                </aside>
+
+                <div className="editor-main">
+                <header className="editor-main__head">
                     {/* Short labels in a full-width track: "Uso competitivo" was
                         cut off as the third tab on a phone. */}
-                    <div role="tablist" aria-label={t('builder.editor.sectionsAria')} className="segmented segmented--block mt-3">
+                    <div role="tablist" aria-label={t('builder.editor.sectionsAria')} className="segmented segmented--block">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
@@ -347,7 +477,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                 {/* The dialog's one scroller. The move grid used to scroll on
                     its own inside it (max-h-72), a scroller in a scroller. */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6">
+                <div className="editor-main__body custom-scrollbar">
                     {activeTab === 'build' && (
                         <div role="tabpanel" id="panel-build" aria-labelledby="tab-build" className="space-y-5">
                             {smogonEntry?.sets?.length > 0 && (
@@ -390,9 +520,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
-                                <div>
-                                    <span className={fieldLabelClassName}>{t('modals.editorModalItemLabel')}</span>
+                            <div className="editor-fields">
+                                <div className="field">
+                                    <span className="field-label">{t('modals.editorModalItemLabel')}</span>
                                     <SpriteSelect
                                         value={customization.item}
                                         onChange={(slug) => handleCustomizationChange('item', slug)}
@@ -403,51 +533,40 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         searchPlaceholder={t('builder.editor.searchItem')}
                                     />
                                 </div>
-                                <div>
-                                    <label htmlFor="editor-nature" className={fieldLabelClassName}>{t('modals.editorModalNatureLabel')}</label>
-                                    <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className={controlClassName}>
-                                        {(natures && natures.length >= 25 ? natures : ALL_NATURES).map((nature) => <option key={nature.name} value={nature.name}>{natureLabel(nature.name)}</option>)}
-                                    </select>
-                                </div>
-                                {showTeraType && (
-                                    <div>
-                                        <label htmlFor="editor-tera" className={fieldLabelClassName}>{t('modals.editorModalTeraLabel')}</label>
-                                        <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className={controlClassName}>
-                                            {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</option>)}
-                                        </select>
-                                    </div>
-                                )}
-                                <div>
-                                    <label htmlFor="editor-ability" className={fieldLabelClassName}>{t('modals.editorModalAbilityLabel')}</label>
-                                    <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className={controlClassName}>
+                                <div className="field">
+                                    <label htmlFor="editor-ability" className="field-label">{t('modals.editorModalAbilityLabel')}</label>
+                                    <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className="select-clean capitalize">
                                         {(pokemon.abilities || []).map((ability) => (
                                             <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
                                         ))}
                                     </select>
                                 </div>
+                                <div className="field">
+                                    <label htmlFor="editor-nature" className="field-label">{t('modals.editorModalNatureLabel')}</label>
+                                    <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className="select-clean capitalize">
+                                        {(natures && natures.length >= 25 ? natures : ALL_NATURES).map((nature) => <option key={nature.name} value={nature.name}>{natureLabel(nature.name)}</option>)}
+                                    </select>
+                                </div>
+                                {showTeraType && (
+                                    <div className="field">
+                                        <label htmlFor="editor-tera" className="field-label">{t('modals.editorModalTeraLabel')}</label>
+                                        <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className="select-clean capitalize">
+                                            {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</option>)}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
 
-                            <Switch
-                                checked={customization.isShiny}
-                                onChange={(next) => {
-                                    handleCustomizationChange('isShiny', next);
-                                    if (next) shinyBurst.fire();
-                                }}
-                                label={t('modals.editorModalShinyLabel')}
-                                className="w-fit"
-                            />
-
-                            <div className="pt-1">
-                                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-base font-bold text-fg">{t('modals.editorModalMovesHeading')}</h3>
-                                        <span className={`count-badge ${customization.moves.length === 4 ? 'text-success' : ''}`}>
-                                            {customization.moves.length}/4
-                                        </span>
-                                    </div>
-                                    <span className="text-xs text-muted">
-                                        {movePctBySlug.size > 0 ? t('builder.editor.mostUsedFirst') : t('modals.editorModalMovesHint')}
+                            <section className="editor-moves" aria-labelledby="editor-moves-title">
+                                <div className="editor-moves__head">
+                                    <h3 id="editor-moves-title">{t('modals.editorModalMovesHeading')}</h3>
+                                    <span className={`count-badge ${customization.moves.length === 4 ? 'text-success' : ''}`}>
+                                        {customization.moves.length}/4
                                     </span>
+                                    {/* The pager rides the heading, above the grid: turning
+                                        a page never needs a scroll to reach it. */}
+                                    <span className="editor-moves__count figure">{t('db.results', { count: filteredMoves.length })}</span>
+                                    <Pager page={movePages.page} pageCount={movePages.pageCount} onChange={movePages.setPage} label={t('builder.editor.movesPager')} />
                                 </div>
 
                                 {/* The picked moves, each removable, whatever the grid
@@ -456,89 +575,178 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     an old save, a gap in the data) stays visible here
                                     and can be taken off. It is not flagged — the
                                     learnset data has gaps, and Kingambit's Sucker
-                                    Punch read as illegal. */}
-                                <div className="mb-3 flex min-h-[2.25rem] flex-wrap items-center gap-2">
+                                    Punch read as illegal. On a wide screen the
+                                    stage's four slots are this row. */}
+                                <div className="editor-picked">
                                     {customization.moves.length === 0 && (
                                         <span className="text-sm text-muted">{t('modals.editorModalNoMovesYet')}</span>
                                     )}
                                     {customization.moves.map((moveName) => {
-                                        const moveType = typeForMove(moveName);
+                                        const pickedType = typeForMove(moveName);
                                         return (
                                             <button
                                                 key={moveName}
                                                 type="button"
                                                 onClick={() => handleMoveToggle(moveName)}
-                                                aria-label={t('modals.editorModalRemoveMove', { move: moveName.replace(/-/g, ' ') })}
+                                                aria-label={t('modals.editorModalRemoveMove', { move: prettyMove(moveName) })}
                                                 className="type-chip editor-move-chip"
-                                                style={{ '--type-chip': moveType ? typeColors[moveType] : 'var(--color-muted)' }}
+                                                style={{ '--type-chip': pickedType ? typeColors[pickedType] : 'var(--color-muted)' }}
                                             >
-                                                {moveType && <img src={typeIcons[moveType]} alt="" aria-hidden="true" className="type-chip__icon" />}
-                                                <span className="capitalize">{moveName.replace(/-/g, ' ')}</span>
+                                                {pickedType && <img src={typeIcons[pickedType]} alt="" aria-hidden="true" className="type-chip__icon" />}
+                                                <span className="capitalize">{prettyMove(moveName)}</span>
                                                 <CloseIcon className="h-3 w-3" />
                                             </button>
                                         );
                                     })}
                                 </div>
 
-                                <input
-                                    type="text"
-                                    placeholder={t('modals.editorModalSearchMoves')}
-                                    value={moveSearch}
-                                    onChange={(event) => setMoveSearch(event.target.value)}
-                                    onKeyDown={(event) => {
-                                        // Enter takes the top match the grid shows (the first
-                                        // one not already picked) and clears the search for
-                                        // the next move: type, Enter, type, Enter.
-                                        if (event.key !== 'Enter' || event.nativeEvent.isComposing || !moveSearch.trim()) return;
-                                        event.preventDefault();
-                                        if (customization.moves.length >= 4) return;
-                                        const top = visibleMoves.find((move) => !hasMove(customization.moves, move.name));
-                                        if (!top) return;
-                                        handleMoveToggle(top.name);
-                                        setMoveSearch('');
-                                    }}
-                                    enterKeyHint="done"
-                                    className="input-clean mb-3 w-full"
-                                    aria-label={t('modals.editorModalSearchMoves')}
-                                />
-
-                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                                    {filteredMoves.length === 0 ? (
-                                        <p className="col-span-full py-6 text-center text-sm text-muted">{t('modals.editorModalNoMovesFound')}</p>
-                                    ) : visibleMoves.map((move) => {
-                                        const moveType = typeForMove(move.name);
-                                        const isSelected = hasMove(customization.moves, move.name);
-                                        const isFull = customization.moves.length >= 4;
-                                        const isDisabled = !isSelected && isFull;
-                                        const pct = movePctBySlug.get(toSlug(move.name));
-
-                                        return (
-                                            <button
-                                                key={move.name}
-                                                type="button"
-                                                disabled={isDisabled}
-                                                onClick={() => handleMoveToggle(move.name)}
-                                                aria-pressed={isSelected}
-                                                className={`editor-move ${isSelected ? 'is-selected' : ''}`}
-                                                style={moveType ? { '--type-chip': typeColors[moveType] } : undefined}
-                                            >
-                                                {moveType ? (
-                                                    <img src={typeIcons[moveType]} alt="" className="h-4 w-4 flex-shrink-0" />
-                                                ) : (
-                                                    <span className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                                                )}
-                                                <span className="min-w-0 flex-1 truncate capitalize">{move.name.replace(/-/g, ' ')}</span>
-                                                {pct > 0 && <span className="count-badge shrink-0">{pct}%</span>}
+                                {/* Find a move three ways, left to right: by name, by
+                                    what it is (category), by how to rank the rest. */}
+                                <div className="editor-moves__tools">
+                                    <label className="search-field editor-moves__search">
+                                        <Search aria-hidden="true" />
+                                        <input
+                                            type="text"
+                                            placeholder={t('modals.editorModalSearchMoves')}
+                                            value={moveSearch}
+                                            onChange={(event) => setMoveSearch(event.target.value)}
+                                            onKeyDown={(event) => {
+                                                // Enter takes the top match the grid shows (the first
+                                                // one not already picked) and clears the search for
+                                                // the next move: type, Enter, type, Enter.
+                                                if (event.key !== 'Enter' || event.nativeEvent.isComposing || !moveSearch.trim()) return;
+                                                event.preventDefault();
+                                                if (customization.moves.length >= 4) return;
+                                                const top = visibleMoves.find((move) => !hasMove(customization.moves, move.name));
+                                                if (!top) return;
+                                                handleMoveToggle(top.name);
+                                                setInspected(top.name);
+                                                setMoveSearch('');
+                                            }}
+                                            enterKeyHint="done"
+                                            className="input-clean"
+                                            aria-label={t('modals.editorModalSearchMoves')}
+                                        />
+                                    </label>
+                                    <div className="segmented segmented--sm" role="group" aria-label={t('builder.editor.moveCategoryFilter')}>
+                                        <button type="button" className="segmented__item" aria-pressed={moveCategory === 'all'} onClick={() => setMoveCategory('all')}>
+                                            {t('builder.editor.moveFilterAll')}
+                                        </button>
+                                        {MOVE_CATEGORIES.map((category) => (
+                                            <button key={category} type="button" className="segmented__item" aria-pressed={moveCategory === category} onClick={() => setMoveCategory(category)}>
+                                                <span className="editor-cat-dot" data-cat={category} aria-hidden="true" />
+                                                {t(`db.${category}`)}
                                             </button>
-                                        );
-                                    })}
+                                        ))}
+                                    </div>
+                                    <select
+                                        value={sortMode}
+                                        onChange={(event) => setMoveSort(event.target.value)}
+                                        className="select-clean editor-moves__sort"
+                                        aria-label={t('builder.editor.moveSort')}
+                                    >
+                                        {movePctBySlug.size > 0 && <option value="usage">{t('builder.editor.sortUsage')}</option>}
+                                        <option value="power">{t('builder.editor.sortPower')}</option>
+                                        <option value="name">{t('builder.editor.sortName')}</option>
+                                    </select>
                                 </div>
-                                {isMovePreview && (
-                                    <button type="button" className="btn btn-ghost btn-sm btn-block mt-2" onClick={() => setShowAllMoves(true)}>
-                                        {t('common.showMore', { count: filteredMoves.length - MOVES_PREVIEW })}
-                                    </button>
+
+                                {/* Only the types this Pokémon has moves of, its own
+                                    first. The chosen one spells its name. */}
+                                {moveTypeOptions.length > 1 && (
+                                    <div className="editor-types" role="group" aria-label={t('builder.editor.moveTypeFilter')}>
+                                        <button type="button" className="editor-type editor-type--all" aria-pressed={moveType === 'all'} onClick={() => setMoveType('all')}>
+                                            {t('builder.editor.moveFilterAll')}
+                                        </button>
+                                        {moveTypeOptions.map((type) => {
+                                            const label = t(`types.${type}`, { defaultValue: type });
+                                            return (
+                                                <button
+                                                    key={type}
+                                                    type="button"
+                                                    className="editor-type"
+                                                    style={{ '--type-chip': typeColors[type] }}
+                                                    aria-pressed={moveType === type}
+                                                    aria-label={label}
+                                                    title={label}
+                                                    onClick={() => setMoveType(moveType === type ? 'all' : type)}
+                                                >
+                                                    <img src={typeIcons[type]} alt="" aria-hidden="true" />
+                                                    {moveType === type && <span className="capitalize">{label}</span>}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 )}
-                            </div>
+
+                                {/* The games' move box: what the move under the
+                                    pointer (or just picked) does. A reserved line. */}
+                                <p className="editor-move-info" role="status" aria-live="polite">
+                                    {inspectedRow ? (
+                                        <>
+                                            <strong>{prettyMove(inspectedRow.name)}</strong>
+                                            <span className="figure">
+                                                {[
+                                                    inspectedRow.power ? `${t('builder.editor.movePower')} ${inspectedRow.power}` : null,
+                                                    inspectedRow.accuracy ? `${t('builder.editor.moveAccuracy')} ${inspectedRow.accuracy}%` : null,
+                                                    inspectedRow.pp ? `PP ${inspectedRow.pp}` : null,
+                                                ].filter(Boolean).join(' · ')}
+                                            </span>
+                                            {inspectedRow.desc && <span>{inspectedRow.desc}</span>}
+                                        </>
+                                    ) : t('builder.editor.moveHint')}
+                                </p>
+
+                                {filteredMoves.length === 0 ? (
+                                    <div className="editor-moves__empty">
+                                        <p>{t('modals.editorModalNoMovesFound')}</p>
+                                        {hasMoveFilters && (
+                                            <button type="button" className="btn btn-secondary btn-sm" onClick={clearMoveFilters}>
+                                                {t('builder.editor.clearMoveFilters')}
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="editor-move-grid">
+                                        {visibleMoves.map((move) => {
+                                            const isSelected = hasMove(customization.moves, move.name);
+                                            const isDisabled = !isSelected && customization.moves.length >= 4;
+                                            return (
+                                                <button
+                                                    key={move.name}
+                                                    type="button"
+                                                    disabled={isDisabled}
+                                                    onClick={() => { handleMoveToggle(move.name); setInspected(move.name); }}
+                                                    onMouseEnter={() => setInspected(move.name)}
+                                                    onFocus={() => setInspected(move.name)}
+                                                    aria-pressed={isSelected}
+                                                    className={`editor-move ${isSelected ? 'is-selected' : ''}`}
+                                                    style={move.type ? { '--type-chip': typeColors[move.type] } : undefined}
+                                                >
+                                                    {move.type ? (
+                                                        <img src={typeIcons[move.type]} alt="" className="editor-move__icon" />
+                                                    ) : (
+                                                        <span className="editor-move__icon" aria-hidden="true" />
+                                                    )}
+                                                    <span className="editor-move__name">{prettyMove(move.name)}</span>
+                                                    {move.pct > 0 && <span className="count-badge">{move.pct}%</span>}
+                                                    {move.category && (
+                                                        <span className="editor-move__power figure" data-cat={move.category} title={t(`db.${move.category}`)}>
+                                                            <span className="editor-cat-dot" data-cat={move.category} aria-hidden="true" />
+                                                            {move.power || '—'}
+                                                        </span>
+                                                    )}
+                                                    {isSelected && <Check className="editor-move__check" aria-hidden="true" />}
+                                                </button>
+                                            );
+                                        })}
+                                        {movePages.pageCount > 1 && Array.from({ length: MOVES_PER_PAGE - visibleMoves.length }, (_, i) => (
+                                            <span key={`filler-${i}`} className="editor-move editor-move--filler" aria-hidden="true" />
+                                        ))}
+                                    </div>
+                                )}
+
+                            </section>
                         </div>
                     )}
 
@@ -805,6 +1013,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         <Check aria-hidden="true" /> {t('builder.done')}
                     </button>
                 </footer>
+                </div>
             </div>
         </div>
     );
