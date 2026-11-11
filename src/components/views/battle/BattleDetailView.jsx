@@ -11,6 +11,7 @@ import { useDocumentMeta } from '../../../hooks/useDocumentMeta';
 import { useFirestoreTeams } from '../../../hooks/useFirestoreTeams';
 import { useFriends } from '../../../hooks/useFriends';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { useQuickLookMode } from '../../../hooks/useQuickLookMode';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useVersusSide } from '../../../hooks/useVersusSide';
 import { useAuthStore } from '../../../store/useAuthStore';
@@ -177,6 +178,8 @@ export function BattleDetailView() {
     const [stage, setStage] = useState(null); // 'lobby' | 'versus' | 'battle' | 'result'
     const [playIntro, setPlayIntro] = useState(false);
     const [replayKey, setReplayKey] = useState(0);
+    // The same console as the Champion Challenge: ⌘K looks things up beside it.
+    useQuickLookMode(stage === 'battle' || stage === 'versus');
     useEffect(() => {
         setStage(null);
         setPlayIntro(false);

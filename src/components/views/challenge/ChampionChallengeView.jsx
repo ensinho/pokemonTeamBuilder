@@ -14,6 +14,7 @@ import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useVersusSide } from '../../../hooks/useVersusSide';
 import { useBattleSound } from '../../../hooks/useBattleSound';
+import { useQuickLookMode } from '../../../hooks/useQuickLookMode';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useChampionChallengeStore } from '../../../store/useChampionChallengeStore';
 import { toast } from '../../../store/useToastStore';
@@ -82,6 +83,9 @@ export function ChampionChallengeView() {
     // Sound, music and speed — the bar's switches, unlocked by the first press.
     const { muted, toggleMuted, musicOn, toggleMusic, fast, toggleFast } = useBattleSound();
     const [startedRunId, setStartedRunId] = useState(null);
+    // While a battle is on screen, ⌘K looks things up in a panel beside it
+    // instead of leaving it (QuickLookPanel).
+    useQuickLookMode(stage === 'battle' || stage === 'transition');
     const arenaInput = useRef(null);
     const screenInput = useRef(null);
 

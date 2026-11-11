@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import '../../styles/pokemon-detail-view.css';
 
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -14,7 +13,6 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { Loader } from '../Loader';
 
 export function PokemonDetailView({
-    colors,
     favoritePokemons,
     onToggleFavoritePokemon,
     onAdd,
@@ -103,22 +101,20 @@ export function PokemonDetailView({
     }
 
     return (
-        <div className="pdv">
-            <PokemonDetailPanel
-                key={resolvedId}
-                pokemonId={resolvedId}
-                colors={colors}
-                favoritePokemons={favoritePokemons}
-                onToggleFavoritePokemon={onToggleFavoritePokemon}
-                onAdd={onAdd}
-                currentTeam={currentTeam}
-                onNavigate={handleNavigate}
-                db={db}
-                pokemonDetailsCache={pokemonDetailsCache}
-                setPokemonDetailsCache={setPokemonDetailsCache}
-                backLabel={backLabel}
-                onBack={handleBack}
-            />
-        </div>
+        <PokemonDetailPanel
+            key={resolvedId}
+            pokemonId={resolvedId}
+            indexEntry={indexEntry}
+            favoritePokemons={favoritePokemons}
+            onToggleFavoritePokemon={onToggleFavoritePokemon}
+            onAdd={onAdd}
+            currentTeam={currentTeam}
+            onNavigate={handleNavigate}
+            db={db}
+            pokemonDetailsCache={pokemonDetailsCache}
+            setPokemonDetailsCache={setPokemonDetailsCache}
+            backLabel={backLabel}
+            onBack={handleBack}
+        />
     );
 }

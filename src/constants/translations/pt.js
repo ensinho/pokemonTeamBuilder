@@ -557,6 +557,20 @@ export default {
         hintNavigate: 'navegar',
         hintOpen: 'abrir',
         hintClose: 'fechar',
+        battleMode: 'Em batalha: Pokémon, golpes, habilidades e itens abrem num painel ao lado — sem sair da luta.',
+    },
+    quickLook: {
+        label: 'Consulta rápida',
+        openPage: 'Abrir a página completa em outra aba',
+        fold: 'Recolher',
+        unfold: 'Expandir',
+        coverage: 'Contra cada tipo',
+        superEffective: 'Super efetivo contra',
+        notVeryEffective: 'Pouco efetivo contra',
+        noEffect: 'Não afeta',
+        neverMisses: 'Este golpe nunca erra.',
+        notFound: 'Sem dados sobre isso aqui. A página completa pode ter.',
+        englishNote: 'Texto original, em inglês.',
     },
     common: {
         showMore: 'Ver mais ({{count}} restantes)',
@@ -1187,7 +1201,13 @@ export default {
         toggleShiny: 'Alternar brilhante',
         addFavorite: 'Adicionar aos favoritos',
         previousPokemon: 'Pokémon anterior',
-        nextPokemon: 'Próximo Pokémon'
+        nextPokemon: 'Próximo Pokémon',
+
+        /* ---- Pokédex no desktop (PokemonDetailPanel) ------------------- */
+        neutralCount: 'Os outros {{count}} tipos causam dano normal (1×).',
+        movesFilter: 'Filtrar golpes',
+        spritesSpotlightHint: 'Escolha um sprite para colocá-lo em destaque no topo da página.',
+        spritesSpotlightReset: 'Voltar para a arte oficial'
     },
     builder: {
         verdict: {

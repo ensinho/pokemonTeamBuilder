@@ -212,6 +212,29 @@
 
 .command-palette__empty p { margin: 0; }
 
+/* ---- Battle mode (quick look) -------------------------------------------- */
+/* A battle is on screen: entries open in the quick-look panel beside it. The
+   line says so before the first Enter, so nobody fears leaving the battle. */
+.command-palette__mode {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: var(--space-2) var(--space-4);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-fg);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+}
+
+.command-palette__mode svg {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--color-primary-text);
+}
+
 /* ---- Keyboard hints (desktop) -------------------------------------------- */
 .command-palette__hints {
     display: flex;

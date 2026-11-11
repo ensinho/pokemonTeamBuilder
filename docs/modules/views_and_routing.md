@@ -136,8 +136,25 @@ document meta, and then picks a **surface**:
 
 | Breakpoint | Component | Shape |
 |---|---|---|
-| ≥ 1024px | `PokemonDetailPanel` | The tabbed panel inside the normal page shell |
+| ≥ 1024px | `PokemonDetailPanel` | A type-tinted hero, a sticky tab strip, then the regions (redesigned 2026-11-11 to match the phone) |
 | < 1024px | `MobilePokemonDetailView` | A dedicated full-screen Pokédex entry |
+
+**The desktop entry (2026-11-11)** tells the phone's story with a desktop's width,
+so the two read as one product. A **hero** in the Pokémon's own type colours (`--pdd-type-a/b`,
+mixed into theme tokens like the phone hero): the official artwork on a disc of
+its type colour as the protagonist (a gallery sprite picked in the Sprites tab
+replaces it, pixelated), and beside it the dex number, name (Unbounded), genus, type
+chips, the Pokédex entry and three facts (height, weight, abilities). The
+actions (share, shiny, favourite, add to team) sit in the hero's bar; the bottom
+edge leafs to the neighbour in the browsed list (`getPokemonNeighbors`, the
+phone's swipe), also on **← / →**, replacing the history entry like the swipe.
+Then one **sticky `.tabs` strip**, and the Data tab in the order a trainer asks:
+stats beside type defences, evolution line (with forms beside it when there are
+one or two), most used build, tournaments — with training and breeding in a
+sticky side rail (`--page-rail-width`, from a 72rem body; container queries on
+`.pdd-body`). Moves is one table with a Level / TM / Other segmented control,
+a filter and the version select. Every region owns one border (`.pdd-card`);
+what is inside separates by fill.
 
 Both read the same data through **`usePokemonDetailData(...)`** (`src/hooks/`) — the
 detail cascade, species, encounters, evolution chain, forms, resolved moves and every

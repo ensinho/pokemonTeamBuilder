@@ -592,6 +592,20 @@ export default {
         hintNavigate: 'navigate',
         hintOpen: 'open',
         hintClose: 'close',
+        battleMode: 'In battle: Pokémon, moves, abilities and items open in a side panel — the battle stays put.',
+    },
+    quickLook: {
+        label: 'Quick look',
+        openPage: 'Open the full page in a new tab',
+        fold: 'Fold',
+        unfold: 'Unfold',
+        coverage: 'Against each type',
+        superEffective: 'Super effective against',
+        notVeryEffective: 'Not very effective against',
+        noEffect: 'No effect on',
+        neverMisses: 'This move never misses.',
+        notFound: 'No data for this one here. The full page may have it.',
+        englishNote: 'Original text, in English.',
     },
     common: {
         showMore: 'Show more ({{count}} left)',
@@ -1221,7 +1235,13 @@ export default {
         toggleShiny: 'Toggle shiny',
         addFavorite: 'Add to favorites',
         previousPokemon: 'Previous Pokémon',
-        nextPokemon: 'Next Pokémon'
+        nextPokemon: 'Next Pokémon',
+
+        /* ---- Desktop Pokédex entry (PokemonDetailPanel) ---------------- */
+        neutralCount: '{{count}} other types hit it for normal damage (1×).',
+        movesFilter: 'Filter moves',
+        spritesSpotlightHint: 'Pick a sprite to put it in the spotlight at the top of the page.',
+        spritesSpotlightReset: 'Back to the artwork'
     },
     builder: {
         verdict: {
