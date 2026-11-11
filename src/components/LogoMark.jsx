@@ -25,7 +25,7 @@ export function LogoMark({ sizes = '4rem', decorative = true, ...rest }) {
             srcSet={`${SMALL} 128w, ${LARGE} 256w`}
             sizes={sizes}
             width={256}
-            height={250}
+            height={256}
             alt={SITE_NAME}
             aria-hidden={decorative ? 'true' : undefined}
             decoding="async"
