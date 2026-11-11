@@ -1752,6 +1752,25 @@ h2:is(.modal-title, .landing-section-title, .cozy-hero__title, .pdm__name,
     color: var(--color-on-primary);
 }
 
+/* A paged list's control (Pager): previous · "2 / 9" · next. */
+.pager {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.pager__status {
+    min-width: 3.5rem;
+    text-align: center;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.pager__of {
+    color: var(--color-muted);
+}
+
 /* ---- Underlined tabs ------------------------------------------------------
    Sections of one object ("Overview | Content"). The rule under the strip is
    an inset shadow and the indicator is drawn inside each tab, so an

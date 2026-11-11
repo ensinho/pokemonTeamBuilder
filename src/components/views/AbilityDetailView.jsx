@@ -8,11 +8,12 @@ import { getAbilityPageData } from '../../services/pokemonDataCache';
 import { useEntityPageData } from '../../hooks/useEntityPageData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { formatVersionGroup, generationNumeral } from '../../utils/gameVersions';
+import { generationNumeral } from '../../utils/gameVersions';
 import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
-import { PokemonLinkChips } from '../PokemonLinkChips';
+import { EntityHolders } from '../entity/EntityHolders';
+import { GameDescriptions } from '../entity/GameDescriptions';
 import { Loader } from '../Loader';
 
 /**
@@ -63,75 +64,52 @@ export function AbilityDetailView() {
         );
     }
 
-    const hasDescriptions = data.flavorTexts.length > 0;
+    const hasHolders = regular.length + hidden.length > 0;
+    const hasLongEffect = Boolean(data.effectLong && data.effectLong !== data.effect);
 
     return (
-        <div className="edv">
+        <div className="edv edv--entity">
             <button type="button" className="edv-back" onClick={handleBack}>
                 <ChevronLeft className="h-4 w-4" /> {backLabel}
             </button>
 
-            <div className={`edv-main ${hasDescriptions ? '' : 'edv-main--single'}`}>
-                <div className="edv-col">
-                    <header className="edv-header">
-                        <div className="edv-kicker">
-                            <span>{t('db.abilityTag')}</span>
-                            {data.generation && <span>· {t('db.generationLabel', { num: generationNumeral(data.generation) })}</span>}
-                        </div>
-                        <h1 className="edv-title">{displayName}</h1>
-                        {data.effect && <p className="edv-lead">{data.effect}</p>}
-                    </header>
-
-                    {data.effectLong && data.effectLong !== data.effect && (
-                        <section className="edv-section">
-                            <h2 className="edv-section__title">{t('db.effectHeading')}</h2>
-                            <p className="edv-effect">{data.effectLong}</p>
-                        </section>
-                    )}
+            <header className="edv-header">
+                <div className="edv-kicker">
+                    <span>{t('db.abilityTag')}</span>
+                    {data.generation && <span>· {t('db.generationLabel', { num: generationNumeral(data.generation) })}</span>}
                 </div>
+                <h1 className="edv-title">{displayName}</h1>
+                {data.effect && <p className="edv-lead">{data.effect}</p>}
+            </header>
 
-                {hasDescriptions && (
+            <div className={`edv-main ${hasHolders && (hasLongEffect || data.flavorTexts.length > 0) ? '' : 'edv-main--single'}`}>
+                {(hasLongEffect || data.flavorTexts.length > 0) && (
                     <div className="edv-col">
-                        <section className="edv-section">
-                            <h2 className="edv-section__title">{t('db.gameDescriptions')}</h2>
-                            <div className="edv-table-wrap">
-                                <table className="edv-table">
-                                    <thead>
-                                        <tr>
-                                            <th>{t('db.colGames')}</th>
-                                            <th>{t('db.colDescription')}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {data.flavorTexts.map((group) => (
-                                            <tr key={group.text}>
-                                                <td className="edv-table__games">
-                                                    {group.versions.map((v) => <span key={v}>{formatVersionGroup(v)}</span>)}
-                                                </td>
-                                                <td className="edv-table__text">{group.text}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
+                        {hasLongEffect && (
+                            <section className="edv-section">
+                                <h2 className="edv-section__title">{t('db.effectHeading')}</h2>
+                                <p className="edv-effect">{data.effectLong}</p>
+                            </section>
+                        )}
+                        <GameDescriptions groups={data.flavorTexts} />
                     </div>
                 )}
+
+                {hasHolders && (
+                    <section className="edv-section">
+                        <h2 className="edv-section__title">
+                            {t('db.usedBy')} <span className="count-badge">{regular.length + hidden.length}</span>
+                        </h2>
+                        <EntityHolders
+                            ariaLabel={t('db.usedBy')}
+                            groups={[
+                                { id: 'regular', label: t('db.holdersRegular'), pokemons: regular },
+                                { id: 'hidden', label: t('db.holdersHidden'), pokemons: hidden },
+                            ]}
+                        />
+                    </section>
+                )}
             </div>
-
-            {regular.length > 0 && (
-                <section className="edv-section">
-                    <h2 className="edv-section__title">{t('db.usedBy')} · {regular.length}</h2>
-                    <PokemonLinkChips pokemons={regular} cap={60} />
-                </section>
-            )}
-
-            {hidden.length > 0 && (
-                <section className="edv-section">
-                    <h2 className="edv-section__title">{t('db.hiddenAbilityHolders')} · {hidden.length}</h2>
-                    <PokemonLinkChips pokemons={hidden} cap={60} />
-                </section>
-            )}
         </div>
     );
 }

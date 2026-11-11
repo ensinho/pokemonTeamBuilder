@@ -18,10 +18,16 @@
     padding-bottom: var(--space-8);
 }
 
-/* Two-column body on wide screens: identity/effect on the left, the tall
-   game-descriptions table on the right — cuts vertical scroll roughly in half.
-   Collapses back to one column on narrow viewports (or via --single when a
-   page has no descriptions to fill the right side). */
+/* The page is a column of equal steps: back, the header, then the body.
+   Body on wide screens: what it does (effect, the games' wording) on the
+   left, who has it (a paged grid, so its height is known) on the right —
+   two columns of the same width that start on the same line. One column
+   on narrow viewports, or via --single when a side has nothing to show. */
+.edv--entity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
 .edv-main {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -105,31 +111,31 @@
     margin-top: var(--space-3);
 }
 
-/* Stat tiles (move pages: power / accuracy / PP / priority / target) */
-.edv-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-    gap: var(--space-2);
+/* A move's numbers (power / accuracy / PP / priority / target): one readout
+   in the header — the figure carries, its word whispers. No tiles. */
+.edv-figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-8);
+    margin: var(--space-5) 0 0;
 }
-.edv-stat {
-    padding: var(--space-2_5) var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
+.edv-figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
 }
-.edv-stat__label {
-    display: block;
-    font-size: var(--text-xs);
+.edv-figure dd {
+    margin: 0;
+    font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-    margin-bottom: var(--space-0_5);
-}
-.edv-stat__value {
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
+    line-height: 1.2;
     color: var(--color-fg);
-    font-variant-numeric: tabular-nums;
     text-transform: capitalize;
+}
+.edv-figure dt {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
 }
 
 /* Content sections */
@@ -154,42 +160,144 @@
 }
 .edv-effect + .edv-effect { margin-top: var(--space-2_5); }
 
-/* Game-descriptions table */
-.edv-table-wrap { overflow-x: auto; }
-.edv-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--text-sm);
+/* What each game says: the games as a label, the wording under it. Rows are
+   separated by space — the section already owns the only border here. */
+.edv-games {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
 }
-.edv-table th {
-    text-align: left;
-    padding: var(--space-1_5) var(--space-3) var(--space-1_5) 0;
+.edv-games__row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+.edv-games dt {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    line-height: 1.4;
+    color: var(--color-fg);
+}
+.edv-games dd {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+.edv-games__more {
+    margin: var(--space-3) 0 0 calc(-1 * var(--space-2_5));
+}
+
+/* A section title may carry its count. */
+.edv-section__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Who has it (EntityHolders): equal tiles, one page at a time. Fills, not
+   borders — they sit inside a bordered section. */
+.holders {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.holders__switch {
+    align-self: flex-start;
+}
+.holders__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.holder {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    height: 3rem;
+    padding: 0 var(--space-3) 0 var(--space-1_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    text-transform: capitalize;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+.holder:hover { background: var(--color-surface-hover); }
+.holder:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+.holder img {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+}
+.holder span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Keeps a short last page as tall as a full one, so the pager does not move. */
+.holder--filler {
+    visibility: hidden;
+}
+.holders__pager {
+    align-self: center;
+}
+
+/* The ability dialog (AbilityDialog): the page's content in a panel. */
+.ability-dialog__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-height: 14rem;
+}
+.ability-dialog__lead {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--color-fg);
+}
+.ability-dialog__block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+.ability-dialog__block h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
-    border-bottom: 1px solid var(--color-border);
-    white-space: nowrap;
 }
-.edv-table td {
-    vertical-align: top;
-    padding: var(--space-2) var(--space-3) var(--space-2) 0;
-    border-bottom: 1px solid var(--color-border);
-    line-height: 1.5;
+.ability-dialog__block p {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--color-muted);
+    white-space: pre-line;
 }
-.edv-table tr:last-child td { border-bottom: none; }
-.edv-table__games {
-    width: 14rem;
-    min-width: 10rem;
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
+.ability-dialog .holders__grid {
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
 }
-.edv-table__games span { display: block; }
-.edv-table__text { color: var(--color-muted); }
 
 @media (max-width: 640px) {
     .edv-title { font-size: var(--text-xl); }
     .edv-header, .edv-section { padding: var(--space-3_5) var(--space-4); }
-    .edv-table__games { width: 9rem; min-width: 8rem; }
+    .edv-figures { gap: var(--space-3) var(--space-6); }
+    .holders__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ============================================================
@@ -201,7 +309,6 @@
     /* Cards on the page are their fill; the border was a second edge on every
        one of them. */
     .edv-header,
-    .edv-stat,
     .edv-section {
         border-color: transparent;
     }

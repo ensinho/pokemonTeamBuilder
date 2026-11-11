@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { getAbilityDescription } from '../services/pokemonDataCache';
-import { useEntityNavigate } from '../hooks/useEntityNavigate';
+import { openAbilityDialog } from '../store/useAbilityDialogStore';
 
 export const AbilityChip = ({ ability, onBeforeNavigate }) => {
     const abilityResource = ability?.ability || ability;
@@ -37,34 +37,36 @@ export const AbilityChip = ({ ability, onBeforeNavigate }) => {
         setTimeout(() => setTooltipVisible(false), 2000);
     };
 
-    // Hover/press previews the description; click opens the ability's page.
-    const { goToAbility } = useEntityNavigate();
+    // Hover previews the short description; a click opens the ability's
+    // dialog over the page — the reader stays on the Pokémon they were on
+    // (it used to navigate away to /abilities/:name). `onBeforeNavigate` now
+    // runs only if they follow a link out of that dialog.
     const open = (e) => {
         if (!abilityName) return;
-        if (onBeforeNavigate) onBeforeNavigate();
-        goToAbility(abilityName, e);
+        e.stopPropagation();
+        setTooltipVisible(false);
+        openAbilityDialog(abilityName, onBeforeNavigate);
     };
 
     return (
-        <span
-            role="link"
-            className="relative capitalize text-fg inline-block bg-surface-raised px-3 py-1 rounded-full text-sm cursor-pointer transition-colors hover:text-primary"
+        <button
+            type="button"
+            aria-haspopup="dialog"
+            className="relative capitalize text-fg inline-block bg-surface-raised px-3 py-1 rounded-full text-sm cursor-pointer transition-colors hover:bg-surface-hover hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={open}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); open(e); } }}
             onMouseEnter={show}
             onMouseLeave={hide}
             onFocus={show}
             onBlur={hide}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            tabIndex={0}
         >
             {abilityName.replace(/-/g, ' ')}
             {isTooltipVisible && (
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-surface text-fg text-xs rounded-md shadow-lg z-20 border border-border">
+                <span role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-surface text-fg text-xs font-normal normal-case text-left rounded-md shadow-lg z-20 border border-border">
                     {isLoading ? 'Loading...' : description}
                 </span>
             )}
-        </span>
+        </button>
     );
 };
