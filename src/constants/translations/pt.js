@@ -557,6 +557,20 @@ export default {
         hintNavigate: 'navegar',
         hintOpen: 'abrir',
         hintClose: 'fechar',
+        battleMode: 'Em batalha: Pokémon, golpes, habilidades e itens abrem num painel ao lado — sem sair da luta.',
+    },
+    quickLook: {
+        label: 'Consulta rápida',
+        openPage: 'Abrir a página completa em outra aba',
+        fold: 'Recolher',
+        unfold: 'Expandir',
+        coverage: 'Contra cada tipo',
+        superEffective: 'Super efetivo contra',
+        notVeryEffective: 'Pouco efetivo contra',
+        noEffect: 'Não afeta',
+        neverMisses: 'Este golpe nunca erra.',
+        notFound: 'Sem dados sobre isso aqui. A página completa pode ter.',
+        englishNote: 'Texto original, em inglês.',
     },
     common: {
         showMore: 'Ver mais ({{count}} restantes)',
@@ -1187,7 +1201,13 @@ export default {
         toggleShiny: 'Alternar brilhante',
         addFavorite: 'Adicionar aos favoritos',
         previousPokemon: 'Pokémon anterior',
-        nextPokemon: 'Próximo Pokémon'
+        nextPokemon: 'Próximo Pokémon',
+
+        /* ---- Pokédex no desktop (PokemonDetailPanel) ------------------- */
+        neutralCount: 'Os outros {{count}} tipos causam dano normal (1×).',
+        movesFilter: 'Filtrar golpes',
+        spritesSpotlightHint: 'Escolha um sprite para colocá-lo em destaque no topo da página.',
+        spritesSpotlightReset: 'Voltar para a arte oficial'
     },
     builder: {
         verdict: {
@@ -2967,6 +2987,15 @@ export default {
         whatsNew: 'Novidades!',
         gotIt: 'Entendido, vamos lá!',
         madeBy: 'Feito por Enzo Esmeraldo -- espero que goste!',
+        pokedexDeskTitle: 'A Pokédex nova chegou ao computador',
+        pokedexDeskDesc: 'A ficha de cada Pokémon no desktop agora fala a mesma língua do celular: a arte oficial em destaque nas cores do tipo, os atributos ao lado das fraquezas e a linha evolutiva logo abaixo — cada coisa no seu lugar. Use ← → para folhear a Pokédex.',
+        pokedexDeskCta: 'Ver o Garchomp',
+        quickLookTitle: 'Consulta rápida na batalha',
+        quickLookDesc: 'No meio de uma batalha, o Ctrl K abre Pokémon, golpes, habilidades e itens num painel ao lado — sem sair da luta.',
+        quickLookCta: 'Ir para o Desafio',
+        movesTableTitle: 'Golpes numa tabela só',
+        movesTableDesc: 'Nível, MT e outros num seletor, com filtro por nome ou tipo e a versão do jogo ao lado.',
+        movesTableCta: 'Ver os golpes',
         socialTitle: 'Estamos no X e no Instagram',
         socialDesc: 'O PokemonBuilder agora tem perfil próprio, com o mesmo @ nas duas redes. É por lá que as novidades do app saem primeiro — e onde dá para marcar a gente no time que você montou.',
         socialCta: 'Novo contato registrado!',

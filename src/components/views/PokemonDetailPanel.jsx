@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { useUrlTab } from '../../hooks/useUrlTab';
-
-const DETAIL_TABS = ['data', 'competitive', 'locations', 'moves', 'sprites'];
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     MapPin, Star, Sparkles, ChevronRight, Compass, Footprints, Waves, Fish, Gift, Music,
-    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, Check, ChevronLeft, Trophy, ScrollText, Share2,
+    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Plus, Check, ChevronLeft, Trophy, Share2, Search,
 } from 'lucide-react';
 
-import '../../styles/team-builder-view.css';
-import '../../styles/locations-view.css';
-import { typeColors, typeIcons } from '../../constants/types';
+import '../../styles/pokemon-detail-view.css';
+import '../../styles/reference-views.css';
+import { typeColors } from '../../constants/types';
 import { TypeChip } from '../TypeChip';
 import { StatBar } from '../StatBar';
 import { AbilityChip } from '../AbilityChip';
+import { Sprite } from '../Sprite';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useUrlTab } from '../../hooks/useUrlTab';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { usePokemonDetailData } from '../../hooks/usePokemonDetailData';
-import { VERSION_CONFIG, formatTmName } from '../../constants/pokemonVersions';
+import { VERSION_CONFIG, formatTmName, formatVersionLabel } from '../../constants/pokemonVersions';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
@@ -27,55 +27,88 @@ import { useSharePage } from '../../hooks/useSharePage';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { MostUsedBuild } from '../MostUsedBuild';
 import { useMostUsedBuild } from '../../hooks/useMostUsedBuild';
-import { toneInk } from '../../utils/toneInk';
+import { usePokedexStore } from '../../store/usePokedexStore';
+import { useReferenceStore } from '../../store/useReferenceStore';
+import { getPokemonNeighbors } from '../../utils/pokemonNeighbors';
+import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+
+const DETAIL_TABS = ['data', 'competitive', 'locations', 'moves', 'sprites'];
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
     gift: Gift, headbutt: Compass, 'rock-smash': Hammer, pokeflute: Music,
 };
 
-const PhysicalIcon = () => (
-    <svg className="w-5 h-4 inline-block text-[#ef4444]" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2l1.5 4.5 4.5-1.5-1.5 4.5 4.5 1.5-4.5 1.5 1.5 4.5-4.5-1.5-1.5 4.5-1.5-4.5-4.5 1.5 1.5-4.5-4.5-1.5 4.5-1.5-1.5-4.5 4.5 1.5z" />
-    </svg>
-);
-const SpecialIcon = () => (
-    <svg className="w-5 h-4 inline-block text-[#3b82f6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-        <circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="2" fill="currentColor" />
-    </svg>
-);
-const StatusIcon = () => (
-    <svg className="w-5 h-4 inline-block text-[#9ca3af]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-        <circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16" fill="currentColor" opacity="0.3" /><circle cx="12" cy="12" r="3" fill="currentColor" />
-    </svg>
+// Damage tiers, worst first — the same reading as the phone screen.
+const DEFENSE_TIERS = [4, 2, 0.5, 0.25, 0];
+const MULTIPLIER_LABEL = { 4: '4×', 2: '2×', 0.5: '½×', 0.25: '¼×', 0: '0×' };
+
+const MOVE_METHODS = ['levelUp', 'machine', 'other'];
+
+const cleanName = (name = '') => String(name).replace(/-/g, ' ');
+const padDex = (id) => `#${String(id).padStart(4, '0')}`;
+
+/** The type-tinted backdrop of the hero, shared in spirit with the phone screen. */
+const heroTypeStyle = (types = []) => ({
+    '--pdd-type-a': typeColors[types[0]] || 'var(--color-primary)',
+    '--pdd-type-b': typeColors[types[1]] || typeColors[types[0]] || 'var(--color-primary)',
+});
+
+const isTypingTarget = (target) => Boolean(
+    target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)),
 );
 
-// One sprite in the gallery: a real toggle button (it was a bare <img> with a
-// click handler — no keyboard, no pressed state for a screen reader).
-function SpriteChoice({ src, alt, selected, onSelect, sizeClass, title }) {
+/* ── Building blocks ───────────────────────────────────────────────────────── */
+
+/** One region of the page: a bordered surface, a sentence-case title, a fill inside. */
+function Card({ title, meta, children, className = '' }) {
     return (
-        <button
-            type="button"
-            onClick={() => onSelect(src)}
-            aria-pressed={selected}
-            title={title}
-            className={`${sizeClass} block cursor-pointer rounded-lg transition-transform hover:scale-110 active:scale-90 ${selected ? 'ring-2 ring-primary bg-primary/10' : ''}`}
-        >
-            <img src={src} alt={alt} className="h-full w-full image-pixelated" />
-        </button>
+        <section className={`pdd-card ${className}`}>
+            {(title || meta) && (
+                <div className="pdd-card__head">
+                    {title && <h2 className="pdd-card__title">{title}</h2>}
+                    {meta}
+                </div>
+            )}
+            {children}
+        </section>
+    );
+}
+
+/** Label/value row for the spec lists (training, breeding). */
+function Spec({ label, value }) {
+    return (
+        <div className="pdd-spec">
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+        </div>
+    );
+}
+
+function Empty({ title, message }) {
+    return (
+        <div className="pdd-empty">
+            <AlertCircle className="w-8 h-8" aria-hidden="true" />
+            <p className="pdd-empty__title">{title}</p>
+            <p className="pdd-empty__message">{message}</p>
+        </div>
     );
 }
 
 /**
- * The full Pokédex detail experience (Data / Locations / Moves / Sprites tabs),
- * self-contained: give it a `pokemonId` and it loads everything itself. This is
- * the **desktop** surface — below 1024px PokemonDetailView renders
- * MobilePokemonDetailView instead, and both read the same data through
- * `usePokemonDetailData`.
+ * The desktop Pokédex entry (≥1024px). Same story as the phone screen
+ * (MobilePokemonDetailView), told with the width a desktop has: a hero in the
+ * Pokémon's own type colours where the artwork is the protagonist, one tab
+ * strip, and below it the data in order of what a trainer asks first — what it
+ * does (stats, matchups), where it goes (evolution, forms), how it is played
+ * (build, tournaments) — with the reference specs in a side rail.
+ *
+ * Both screens read `usePokemonDetailData`, so this is a layout, not a second
+ * Pokédex. ← / → walk to the neighbour in the list the trainer was browsing.
  */
 export function PokemonDetailPanel({
     pokemonId,
-    colors,
+    indexEntry = null,
     favoritePokemons,
     onToggleFavoritePokemon,
     onAdd,
@@ -88,6 +121,9 @@ export function PokemonDetailPanel({
     onBack,
 }) {
     const { t, language } = useTranslation();
+    const pt = language === 'pt';
+    const navigate = useNavigate();
+    const location = useLocation();
     const { goToMove } = useEntityNavigate();
 
     // In the URL (?tab=): Pikachu → Moves → a move → Back used to land on Data.
@@ -95,7 +131,6 @@ export function PokemonDetailPanel({
     const tournamentPresence = useTournamentPresence(pokemonId);
     const build = useMostUsedBuild(pokemonId);
     const sharePage = useSharePage();
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
     // The sparkle a shiny makes, fired by the two buttons that earn it.
     const shinyBurst = useShinyBurst();
     const favoriteBurst = useShinyBurst();
@@ -123,7 +158,6 @@ export function PokemonDetailPanel({
         setSelectedMoveVersion,
         resolvedMoves,
         typeDefenses,
-        formattedId,
         pokemonGenus,
         pokedexDescription,
         isDescriptionLocal,
@@ -141,631 +175,628 @@ export function PokemonDetailPanel({
         catchRateText,
     } = usePokemonDetailData({ pokemonId, db, pokemonDetailsCache, setPokemonDetailsCache, language });
 
-    // A new Pokémon always opens on Data — the previous one's Moves tab is not
-    // where anyone wants to land.
+    // The hero paints from the light index entry on the first frame and upgrades
+    // in place, like the phone screen — no blank page while the document loads.
+    const identity = selectedPokemonDetails || indexEntry || { id: pokemonId, name: '', types: [] };
+    const types = identity.types || [];
+    const favoriteId = Number(identity.id);
+    const isFavorite = Boolean(favoritePokemons?.has?.(favoriteId));
+    const isOnTeam = currentTeam.some((m) => Number(m.id) === favoriteId);
+    const isTeamFull = currentTeam.length >= 6;
+
+    /* ── Neighbours (← / →) ───────────────────────────────────────────────── */
+    const browseSequence = usePokedexStore((s) => s.browseSequence);
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const { prev, next } = useMemo(
+        () => getPokemonNeighbors(browseSequence, pokemonId, pokemonIndex),
+        [browseSequence, pokemonId, pokemonIndex],
+    );
+
+    // Stepping sideways REPLACES the history entry, as the phone's swipe does:
+    // ten Pokémon browsed with the arrows still leave Back meaning the Pokédex.
+    const goToNeighbor = useCallback((entry) => {
+        if (!entry?.id) return;
+        navigate(`/pokemon/${entry.id}${location.search}`, { replace: true, state: location.state });
+    }, [navigate, location.search, location.state]);
 
     useEffect(() => {
-        const onResize = () => setIsMobile(window.innerWidth < 1024);
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
+        const onKeyDown = (event) => {
+            if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+            if (isTypingTarget(event.target) || document.querySelector('[aria-modal="true"]')) return;
+            const target = event.key === 'ArrowLeft' ? prev : next;
+            if (!target) return;
+            event.preventDefault();
+            goToNeighbor(target);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [prev, next, goToNeighbor]);
+
+    // The app has one scroller and it does not reset between routes (2026-08-26
+    // wound): stepping from halfway down one Pokémon must start the next at the top.
+    useEffect(() => {
+        document.querySelector('.app-shell__content')?.scrollTo({ top: 0 });
+    }, [pokemonId]);
 
     const handleSelectPokemon = (pokemon) => { if (pokemon?.id != null) onNavigate?.(pokemon.id); };
 
-    const isOnTeam = selectedPokemonDetails && currentTeam.some((m) => m.id === selectedPokemonDetails.id);
-    // The favourites Set is numeric (the store normalises it), so the id has to
-    // be too — a detail loaded from a route param or a Firestore doc can arrive
-    // as a string, and `Set.has('6')` is quietly false for `6`.
-    const favoriteId = selectedPokemonDetails ? Number(selectedPokemonDetails.id) : null;
-    const isFavorite = Boolean(favoritePokemons?.has?.(favoriteId));
+    // A stage resolved without its full document has no types; the index has them.
+    const typesOf = (entry) => {
+        if (entry?.types?.length) return entry.types;
+        return pokemonIndex.find((p) => Number(p.id) === Number(entry?.id))?.types || [];
+    };
 
-    // ── Tab content (copied from PokedexView's renderDetailsContent) ───────────
-    const renderDetailsContent = () => {
-        // Competitive only needs the species id, so it renders even while the rest
-        // of the Pokédex details are still loading.
-        if (activeTab === 'competitive') {
-            return <SmogonCompetitivePanel pokemonId={selectedPokemon?.id || pokemonId} />;
-        }
+    /* ── Moves tab state ──────────────────────────────────────────────────── */
+    const [moveMethod, setMoveMethod] = useState('levelUp');
+    const [moveQuery, setMoveQuery] = useState('');
 
-        if (!selectedPokemonDetails) return null;
+    const stats = selectedPokemonDetails?.stats || [];
+    const statTotal = stats.reduce((sum, s) => sum + (s.base_stat || 0), 0);
+    const peakStat = stats.length ? Math.max(...stats.map((s) => s.base_stat)) : null;
 
-        if (activeTab === 'data') {
-            return (
-                <div className="flex-1 flex flex-col space-y-5 animate-scale-in">
-                    <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.3fr] gap-4 items-stretch">
-                        <div className="text-center p-3.5 sm:p-4 bg-surface rounded-xl border border-border flex flex-col justify-between items-center">
-                            <div className="w-full flex-1 flex flex-col justify-center items-center py-1 sm:py-2">
-                                <div className="relative inline-block">
-                                    <img src={spriteToShow} alt={selectedPokemonDetails.name} data-vt-hero="" className="mx-auto h-24 w-24 sm:h-36 sm:w-36 image-pixelated hover:scale-105 transition-transform duration-300" />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (!showShiny) shinyBurst.fire();
-                                            setShowShiny((value) => !value);
-                                        }}
-                                        aria-pressed={showShiny}
-                                        className={`absolute -bottom-2 -right-4 rounded-full p-1.5 transition-colors duration-150 active:scale-95 border ${showShiny ? 'bg-accent text-bg border-accent' : 'bg-surface-raised text-fg border-border'}  ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
-                                        title={language === 'pt' ? 'Alternar Brilhante' : 'Toggle Shiny'}
-                                    >
-                                        <Sparkles className="w-4 h-4" />
-                                        {shinyBurst.burst}
-                                    </button>
-                                    {onToggleFavoritePokemon && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (!isFavorite) favoriteBurst.fire();
-                                                onToggleFavoritePokemon(favoriteId);
-                                            }}
-                                            aria-pressed={isFavorite}
-                                            className={`absolute -bottom-2 -left-4 rounded-full p-1.5 transition-colors duration-150 active:scale-95 border ${isFavorite ? 'bg-accent-soft text-accent border-accent-soft' : 'bg-surface-raised text-muted border-border'}  ${favoriteBurst.isBursting ? 'is-bursting' : ''}`}
-                                            title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
-                                        >
-                                            <Star className={`w-4 h-4 ${isFavorite ? 'fill-current text-warning' : 'text-muted'}`} />
-                                            {favoriteBurst.burst}
-                                        </button>
-                                    )}
+    const defenseGroups = DEFENSE_TIERS
+        .map((multiplier) => ({
+            multiplier,
+            types: Object.entries(typeDefenses).filter(([, m]) => m === multiplier).map(([name]) => name),
+        }))
+        .filter((group) => group.types.length > 0);
+    const neutralCount = Object.values(typeDefenses).filter((m) => m === 1).length;
+
+    // The artwork is the protagonist; a sprite picked in the gallery takes its place.
+    const heroSrc = customSelectedSprite || getPokemonArtworkSpriteUrl(identity.id, { shiny: showShiny });
+
+    /* ── Tabs ─────────────────────────────────────────────────────────────── */
+    const tabs = [
+        { key: 'data', icon: <Activity />, label: t('pokedex.dataTab') },
+        { key: 'competitive', icon: <Trophy />, label: t('pokedex.competitiveTab') },
+        { key: 'locations', icon: <MapPin />, label: t('pokedex.locationsTab') },
+        { key: 'moves', icon: <Swords />, label: t('pokedex.movesTab') },
+        { key: 'sprites', icon: <ImageIcon />, label: t('pokedex.spritesTab') },
+    ];
+
+    const renderData = () => {
+        if (!selectedPokemonDetails) return <div className="pdd-loading"><Loader size="md" scene="pokedex" /></div>;
+        const hasEvolution = evolutionDetails.length > 1;
+        // Two short rows read better as one: a three-stage line beside a couple
+        // of forms, instead of a wide card that is mostly empty.
+        const pairLineage = hasEvolution && forms.length > 0 && forms.length <= 2;
+        return (
+            <div className="pdd-data">
+                <div className="pdd-data__main">
+                    <div className="pdd-duo">
+                        {stats.length > 0 && (
+                            <Card
+                                title={t('pokedex.baseStats')}
+                                meta={<span className="pdd-card__meta">{t('pokedex.statTotal')} <b>{statTotal}</b></span>}
+                            >
+                                <div className="pdd-stats">
+                                    {stats.map((stat) => (
+                                        <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} peak={stat.base_stat === peakStat} />
+                                    ))}
                                 </div>
-                                <h3 className="mt-2 sm:mt-3.5 text-xl font-extrabold capitalize text-fg tracking-tight">
-                                    {selectedPokemonDetails.name} <span className="text-muted font-normal text-base">#{selectedPokemonDetails.id}</span>
-                                </h3>
-                                {pokemonGenus && isGenusLocal && <p className="mt-0.5 text-sm text-muted">{pokemonGenus}</p>}
-                                <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-                                    {selectedPokemonDetails.types?.map((type) => <TypeChip key={type} type={type} />)}
-                                </div>
-                                {/* The builder's core verb, on the page people browse most —
-                                    onAdd/isOnTeam were wired here and never rendered. */}
-                                {onAdd && (
-                                    <button
-                                        type="button"
-                                        className={`btn ${isOnTeam ? 'btn-secondary' : 'btn-primary'} btn-sm mt-3`}
-                                        onClick={() => onAdd({ id: Number(selectedPokemonDetails.id), name: selectedPokemonDetails.name, types: selectedPokemonDetails.types })}
-                                        disabled={isOnTeam || currentTeam.length >= 6}
-                                    >
-                                        {isOnTeam ? <Check className="w-4 h-4" aria-hidden="true" /> : <Plus className="w-4 h-4" aria-hidden="true" />}
-                                        {isOnTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
+                            </Card>
+                        )}
 
-                        <div className="rounded-xl bg-surface p-4 border border-border flex flex-col justify-between">
-                            <h4 className="mb-3 text-center text-xs font-bold text-muted">{t('pokedex.baseStats')}</h4>
-                            <div className="space-y-2 flex-1 flex flex-col justify-center">
-                                {selectedPokemonDetails.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} peak={stat.base_stat === Math.max(...selectedPokemonDetails.stats.map((s) => s.base_stat))} />)}
-                            </div>
-                        </div>
-                    </div>
-
-                    {(() => {
-                        const hasEvolution = evolutionDetails.length > 1;
-                        const hasForms = forms.length > 0;
-
-                        const evolutionBlock = hasEvolution ? (
-                            <div className="rounded-xl bg-surface p-4 border border-border h-full flex flex-col">
-                                <h4 className="mb-3 text-center text-xs font-bold text-muted">{language === 'pt' ? 'Linha Evolutiva' : 'Evolution Line'}</h4>
-                                <div className="overflow-x-auto custom-scrollbar pb-1 flex-1 flex items-center">
-                                    <div className="flex min-w-max items-center gap-2 px-1 justify-center mx-auto">
-                                        {evolutionDetails.map((evo, index) => (
-                                            <React.Fragment key={evo.name}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleSelectPokemon(evo)}
-                                                    className={`min-w-[5.5rem] text-center p-2 rounded-xl transition-all border ${selectedPokemonDetails.id === evo.id ? 'bg-primary-soft border-primary' : 'bg-surface-raised border-border hover:bg-surface-raised/80 hover:border-border'}`}
-                                                >
-                                                    <img src={evo.sprite || POKEBALL_PLACEHOLDER_URL} alt={evo.name} className="h-12 w-12 mx-auto image-pixelated" />
-                                                    <p className="text-xs font-bold text-fg capitalize mt-1 truncate max-w-[80px]">{evo.name}</p>
-                                                </button>
-                                                {index < evolutionDetails.length - 1 && <span className="text-muted text-base">➔</span>}
-                                            </React.Fragment>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null;
-
-                        const formsBlock = hasForms ? (
-                            <div className="rounded-xl bg-surface p-4 border border-border h-full flex flex-col">
-                                <h4 className="mb-3 text-center text-xs font-bold text-muted">{language === 'pt' ? 'Formas & Megas' : 'Forms & Megas'}</h4>
-                                <div className="overflow-x-auto custom-scrollbar pb-1 flex-1 flex items-center">
-                                    <div className="flex min-w-max items-stretch gap-2 px-1 justify-center mx-auto">
-                                        {forms.map((form) => (
-                                            <button
-                                                key={form.id}
-                                                type="button"
-                                                onClick={() => handleSelectPokemon({ id: form.id })}
-                                                title={form.displayName}
-                                                className="w-[6.5rem] text-center p-2 rounded-xl transition-all border bg-surface-raised border-border hover:border-primary hover:bg-primary-soft"
-                                            >
-                                                <img src={form.sprite || POKEBALL_PLACEHOLDER_URL} alt={form.displayName} className="h-14 w-14 mx-auto image-pixelated" />
-                                                <p className="text-2xs font-bold text-fg capitalize mt-1 leading-tight line-clamp-2">{form.displayName}</p>
-                                                {form.types?.length > 0 && (
-                                                    <div className="mt-1.5 flex flex-wrap justify-center gap-1">
-                                                        {(form.types || []).map((type) => <TypeChip key={type} type={type} size="sm" />)}
-                                                    </div>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null;
-
-                        const descriptionBlock = pokedexDescription ? (
-                            <div className="rounded-xl bg-surface p-4 border border-border h-full flex flex-col">
-                                <h4 className="mb-3 text-center text-xs font-bold text-muted flex items-center justify-center gap-1.5">
-                                    <ScrollText className="w-3.5 h-3.5 text-primary" />
-                                    <span>{language === 'pt' ? 'Descrição da Pokédex' : 'Pokédex Entry'}</span>
-                                </h4>
-                                <p className="flex-1 flex items-center text-center justify-center text-sm text-fg leading-relaxed" lang={isDescriptionLocal ? undefined : 'en'}>{pokedexDescription}</p>
-                                {!isDescriptionLocal && <p className="mt-2 text-center text-xs text-muted">{t('pokedex.originalText')}</p>}
-                            </div>
-                        ) : null;
-
-                        // Both evolution and forms exist → the Pokédex entry leads as its
-                        // own full-width row, then evolution & forms share a two-column row.
-                        if (hasEvolution && hasForms) {
-                            return (
-                                <>
-                                    {descriptionBlock}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-                                        {evolutionBlock}
-                                        {formsBlock}
-                                    </div>
-                                </>
-                            );
-                        }
-
-                        // Exactly one of them exists → the Pokédex entry leads the two-column
-                        // row (or the block takes the full width if there's no entry).
-                        const single = evolutionBlock || formsBlock;
-                        if (single) {
-                            return descriptionBlock ? (
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-                                    {descriptionBlock}
-                                    {single}
-                                </div>
-                            ) : single;
-                        }
-
-                        // Neither exists → the Pokédex entry occupies the whole row.
-                        return descriptionBlock;
-                    })()}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-                        <div className="flex flex-col gap-4">
-                            <div className="rounded-xl bg-surface p-4 border border-border">
-                                <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
-                                    <Database className="w-3.5 h-3.5 text-primary" />
-                                    <span>{language === 'pt' ? 'Dados da Pokédex' : 'Pokédex Data'}</span>
-                                </h4>
-                                <table className="w-full text-xs text-fg">
-                                    <tbody>
-                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">{language === 'pt' ? 'Nº Nacional' : 'National ID'}</td>
-                                            <td className="font-mono font-bold">#{formattedId || '----'}</td>
-                                        </tr>
-                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">{t('pokedex.typesFilterLabel')}</td>
-                                            <td className="flex gap-1">{selectedPokemonDetails.types?.map((type) => <TypeChip key={type} type={type} size="sm" />)}</td>
-                                        </tr>
-                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">{language === 'pt' ? 'Espécie' : 'Species'}</td>
-                                            <td className="font-bold capitalize">{pokemonGenus || t('common.loading')}</td>
-                                        </tr>
-                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">{t('pokedex.height')}</td>
-                                            <td className="font-bold font-mono">{heightInM ? `${heightInM} m` : t('common.loading')} {heightInFt && <span className="text-muted font-normal text-2xs font-sans">({heightInFt})</span>}</td>
-                                        </tr>
-                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">{t('pokedex.weight')}</td>
-                                            <td className="font-bold font-mono">{weightInKg ? `${weightInKg} kg` : t('common.loading')} {weightInLbs && <span className="text-muted font-normal text-2xs font-sans">({weightInLbs} lbs)</span>}</td>
-                                        </tr>
-                                        <tr className="py-2.5 flex justify-between items-start">
-                                            <td className="text-muted py-1">{t('pokedex.abilities')}</td>
-                                            <td className="font-bold text-right flex flex-col items-end space-y-1">
-                                                {selectedPokemonDetails.abilities?.map((ab, idx) => (
-                                                    <div key={idx} className="capitalize text-xs">
-                                                        {ab.is_hidden ? (
-                                                            <span className="text-muted font-normal text-2xs inline-flex items-center gap-1">
-                                                                <AbilityChip ability={ab} /> <span className="text-2xs text-muted">{language === 'pt' ? '(oculta)' : '(hidden)'}</span>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-block"><AbilityChip ability={ab} /></span>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="rounded-xl bg-surface p-4 border border-border">
-                                <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
-                                    <Zap className="w-3.5 h-3.5 text-primary" />
-                                    <span>{language === 'pt' ? 'Treinamento' : 'Training'}</span>
-                                </h4>
-                                <table className="w-full text-xs text-fg">
-                                    <tbody>
-                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Pontos de EV' : 'EV Yield'}</td><td className="font-bold font-mono text-right truncate max-w-[200px]">{evYield}</td></tr>
-                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Taxa de Captura' : 'Catch Rate'}</td><td className="font-bold font-mono text-right">{catchRateText || t('common.loading')}</td></tr>
-                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Amizade Base' : 'Base Friendship'}</td><td className="font-bold font-mono text-right">{baseFriendshipText || t('common.loading')}</td></tr>
-                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Exp. Base' : 'Base Exp.'}</td><td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? t('common.loading')}</td></tr>
-                                        <tr className="py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Crescimento' : 'Growth Rate'}</td><td className="font-bold text-right">{growthRateText || t('common.loading')}</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                            <div className="rounded-xl bg-surface p-4 border border-border">
-                                <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
-                                    <HandFist className="w-3.5 h-3.5 text-primary" />
-                                    <span>{t('pokedex.typeEffectivenessTitle')}</span>
-                                </h4>
-                                <p className="text-2xs text-muted mb-4">{t('pokedex.typeEffectivenessSubtitle')}</p>
-                                {(() => {
-                                    const tiers = [
-                                        { label: language === 'pt' ? '4×  Muito Fraco' : '4×  Super Weak', mult: 4, bg: 'bg-red-500/15', border: 'border-red-500/40', text: 'text-red-400', badge: 'bg-red-500/20 border-red-500/50 text-red-300' },
-                                        { label: language === 'pt' ? '2×  Fraco' : '2×  Weak', mult: 2, bg: 'bg-orange-500/10', border: 'border-orange-500/35', text: 'text-orange-400', badge: 'bg-orange-500/20 border-orange-500/50 text-orange-300' },
-                                        { label: language === 'pt' ? '½×  Resistente' : '½×  Resistant', mult: 0.5, bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', badge: 'bg-blue-500/15 border-blue-500/40 text-blue-300' },
-                                        { label: language === 'pt' ? '¼×  Muito Resistente' : '¼×  Very Resistant', mult: 0.25, bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', badge: 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300' },
-                                        { label: language === 'pt' ? '0×  Imune' : '0×  Immune', mult: 0, bg: 'bg-surface-raised/60', border: 'border-border', text: 'text-muted', badge: 'bg-surface-raised border-border text-muted' },
-                                    ];
-                                    const groups = tiers.map((tier) => ({ ...tier, types: Object.entries(typeDefenses).filter(([, m]) => m === tier.mult).map(([ty]) => ty) })).filter((g) => g.types.length > 0);
-                                    const neutralTypes = Object.entries(typeDefenses).filter(([, m]) => m === 1).map(([ty]) => ty);
-                                    return (
-                                        <div className="space-y-2.5">
-                                            {groups.map((g) => (
-                                                <div key={g.mult} className={`rounded-lg border ${g.border}  ${g.bg} px-3 py-2.5`}>
-                                                    <span className={`text-2xs font-extrabold ${g.text} block mb-2`}>{g.label}</span>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {(g.types || []).map((tName) => (
-                                                            <span key={tName} className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-semibold capitalize ${g.badge}`}>
-                                                                <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0" />{tName}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {neutralTypes.length > 0 && (
-                                                <details className="group">
-                                                    <summary className="cursor-pointer text-2xs font-bold text-muted hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
-                                                        <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
-                                                        {neutralTypes.length} {language === 'pt' ? 'tipos neutros' : 'neutral types'} (1×)
-                                                    </summary>
-                                                    <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
-                                                        {neutralTypes.map((tName) => (
-                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted">
-                                                                <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0 opacity-60" />{tName}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </details>
-                                            )}
-                                        </div>
-                                    );
-                                })()}
-                            </div>
-
-                            <div className="rounded-xl bg-surface p-4 border border-border">
-                                <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
-                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                    <span>{language === 'pt' ? 'Cruzamento' : 'Breeding'}</span>
-                                </h4>
-                                <table className="w-full text-xs text-fg">
-                                    <tbody>
-                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Grupos de Ovos' : 'Egg Groups'}</td><td className="font-bold text-right capitalize">{eggGroups}</td></tr>
-                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Gênero' : 'Gender Ratio'}</td><td className="font-bold font-mono text-right">{genderText || t('common.loading')}</td></tr>
-                                        <tr className="py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Ciclos de Ovo' : 'Egg Cycles'}</td><td className="font-bold font-mono text-right">{eggCyclesText || t('common.loading')}</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {build && (
-                        <div className="rounded-xl bg-surface p-4 border border-border">
-                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 mb-3">
-                                <Swords className="w-3.5 h-3.5 text-primary" />
-                                <span>{t('pdetail.build.title')}</span>
-                            </h4>
-                            <MostUsedBuild pokemonId={pokemonId} build={build} />
-                        </div>
-                    )}
-
-                    {tournamentPresence && (
-                        <div className="rounded-xl bg-surface p-4 border border-border">
-                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 mb-3">
-                                <Trophy className="w-3.5 h-3.5 text-primary" />
-                                <span>{t('pdetail.tournaments.title')}</span>
-                            </h4>
-                            <TournamentPresence presence={tournamentPresence} onShowAll={() => setActiveTab('competitive')} />
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        if (activeTab === 'locations') {
-            return (
-                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
-                    <div className="flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <h4 className="text-base font-bold text-fg">{t('pokedex.locationsTitle')}</h4>
-                    </div>
-
-                    {availableVersions.length > 0 && (
-                        <div className="flex items-center justify-between gap-4 bg-surface p-3 rounded-xl border border-border">
-                            <label htmlFor="pdp-locations-version-filter" className="text-xs font-bold text-muted">{t('pokedex.locationsVersionFilter')}:</label>
-                            <div className="relative min-w-[150px]">
-                                <select id="pdp-locations-version-filter" value={locationsVersionFilter} onChange={(e) => setLocationsVersionFilter(e.target.value)} className="team-builder-field team-builder-field--compact team-builder-select w-full">
-                                    <option value="all">{language === 'pt' ? 'Todos os Jogos' : 'All Games'}</option>
-                                    {availableVersions.map((vName) => {
-                                        const conf = VERSION_CONFIG[vName] || { label: vName.replace('-', ' ') };
-                                        return <option key={vName} value={vName}>{conf.label}</option>;
-                                    })}
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {isEncountersLoading ? (
-                        <div className="flex-1 flex items-center justify-center py-16"><Loader scene="search" /></div>
-                    ) : filteredGroupedEncounters.length > 0 ? (
-                        <div className="custom-scrollbar overflow-y-auto pr-1 flex-1 space-y-3">
-                            {filteredGroupedEncounters.map((group) => (
-                                <div key={group.id} className="locations-version-group border border-border bg-surface p-4 rounded-2xl">
-                                    <h5 className="locations-version-group__title text-xs font-extrabold text-muted flex items-center gap-1.5 mb-3">
-                                        <MapPin className="w-3.5 h-3.5" /><span>{group.name}</span>
-                                    </h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                                        {group.locations.map((loc, idx) => (
-                                            <div key={idx} className="locations-item border border-border p-3.5 rounded-xl bg-bg">
-                                                <div className="flex items-center gap-2 border-b border-border pb-2 mb-3">
-                                                    <MapPin className="w-4 h-4 text-primary shrink-0" />
-                                                    <span className="font-extrabold text-fg text-sm truncate">{loc.location}</span>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    {loc.versions.map((ver) => {
-                                                        const conf = VERSION_CONFIG[ver.name] || { label: ver.name.replace('-', ' '), color: '#7f8c8d' };
-                                                        const distinctDetails = ver.details.reduce((acc, current) => {
-                                                            const key = `${current.methodKey}-${current.minLevel}-${current.maxLevel}`;
-                                                            if (!acc.has(key)) acc.set(key, current);
-                                                            return acc;
-                                                        }, new Map()).values();
-                                                        return Array.from(distinctDetails).map((detail, dIdx) => {
-                                                            const IconComp = METHOD_ICON_MAP[detail.methodKey] || Compass;
-                                                            return (
-                                                                <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface transition-colors">
-                                                                    <div className="flex items-center gap-2.5 min-w-0">
-                                                                        <span className="px-2 py-0.5 rounded text-2xs font-extrabold uppercase border shrink-0 text-center tracking-[0.06em]" style={{ borderColor: `${conf.color}55`, backgroundColor: `${conf.color}18`, color: toneInk(conf.color) }}>{conf.label}</span>
-                                                                        <span className="flex items-center gap-1.5 text-xs text-muted truncate">
-                                                                            <IconComp className="w-3.5 h-3.5 text-muted shrink-0" /><span className="capitalize">{detail.method}</span>
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2 shrink-0">
-                                                                        <span className="text-2xs font-mono font-semibold bg-bg px-2 py-0.5 rounded border border-border text-muted">{detail.minLevel === detail.maxLevel ? `Lv. ${detail.minLevel}` : `Lv. ${detail.minLevel}-${detail.maxLevel}`}</span>
-                                                                        <span className="text-xs font-bold font-mono text-primary">{detail.chance}%</span>
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        });
-                                                    })}
+                        {defenseGroups.length > 0 && (
+                            <Card title={t('pokedex.typeEffectivenessTitle')}>
+                                <div className="pdd-defenses">
+                                    {defenseGroups.map((group) => {
+                                        const tone = group.multiplier > 1 ? 'weak' : group.multiplier === 0 ? 'immune' : 'resist';
+                                        return (
+                                            <div key={group.multiplier} className={`pdd-defense pdd-defense--${tone}`}>
+                                                <p className="pdd-defense__label">
+                                                    <span className="pdd-defense__mult">{MULTIPLIER_LABEL[group.multiplier]}</span>
+                                                    {tone === 'weak' ? t('pokedex.weakAgainst')
+                                                        : tone === 'immune' ? t('pokedex.immuneTo')
+                                                            : t('pokedex.resistantTo')}
+                                                </p>
+                                                <div className="pdd-pills">
+                                                    {group.types.map((type) => <TypeChip key={type} type={type} size="sm" />)}
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                        );
+                                    })}
+                                    {neutralCount > 0 && (
+                                        <p className="pdd-defense__neutral">{t('pokedex.neutralCount', { count: neutralCount })}</p>
+                                    )}
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
-                            <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                            <h5 className="font-bold text-fg mb-1">{language === 'pt' ? 'Não Encontrado na Natureza' : 'Not Found in the Wild'}</h5>
-                            <p className="text-xs text-muted max-w-sm mx-auto">{t('pokedex.locationsEmpty')}</p>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        if (activeTab === 'moves') {
-            return (
-                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-surface p-3 rounded-xl border border-border">
-                        <h4 className="text-sm font-bold text-muted flex items-center gap-2"><Swords className="w-4 h-4 text-primary" /><span>{t('pokedex.movesTitle')}</span></h4>
-                        {availableMoveVersions.length > 0 && (
-                            <div className="relative min-w-[170px]">
-                                <select value={selectedMoveVersion} onChange={(e) => setSelectedMoveVersion(e.target.value)} className="team-builder-field team-builder-field--compact team-builder-select w-full">
-                                    {availableMoveVersions.map((vName) => <option key={vName} value={vName}>{vName.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>)}
-                                </select>
-                            </div>
+                            </Card>
                         )}
                     </div>
 
-                    {isMovesLoading ? (
-                        <div className="flex-1 flex items-center justify-center py-20"><Loader scene="pokedex" /></div>
-                    ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0 || (resolvedMoves.other?.length > 0)) ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-                            {[{ key: 'levelUp', title: t('pokedex.movesLevelUp'), col: t('pokedex.movesHeaderLevel'), rows: resolvedMoves.levelUp },
-                            { key: 'machine', title: t('pokedex.movesMachine'), col: t('pokedex.movesHeaderTm'), rows: resolvedMoves.machine },
-                            { key: 'other', title: language === 'pt' ? 'Outros Movimentos' : 'Other Moves', col: language === 'pt' ? 'Método' : 'Method', rows: resolvedMoves.other || [] }].filter((block) => block.rows.length > 0).map((block) => (
-                                <div key={block.key} className="rounded-xl bg-surface p-4 border border-border">
-                                    <h5 className="text-xs font-extrabold text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border"><ChevronRight className="w-3.5 h-3.5 text-primary" /><span>{block.title}</span></h5>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
-                                            <thead>
-                                                <tr className="border-b border-border text-muted">
-                                                    <th className="pb-2 font-bold w-12">{block.col}</th>
-                                                    <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
-                                                    <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
-                                                    <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderClass')}</th>
-                                                    <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderPower')}</th>
-                                                    <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderAcc')}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {block.rows.map((m, idx) => (
-                                                    <tr key={idx} className="border-b border-border hover:bg-bg/10">
-                                                        <td className="py-2.5 font-bold font-mono text-muted">{block.key === 'levelUp' ? m.level : block.key === 'machine' ? (m.tmName ? formatTmName(m.tmName) : '—') : (m.learnMethod ? m.learnMethod.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '—')}</td>
-                                                        <td className="py-2.5 font-bold capitalize text-fg">
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => goToMove(m.name, e)}
-                                                                className="capitalize font-bold text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-                                                            >
-                                                                {m.name.replace(/-/g, ' ')}
-                                                            </button>
-                                                        </td>
-                                                        <td className="py-2.5 text-center"><span className="px-1.5 py-0.5 rounded text-2xs font-extrabold uppercase text-white tracking-[0.06em]" style={{ backgroundColor: typeColors[m.type] }}>{m.type.slice(0, 3)}</span></td>
-                                                        <td className="py-2 text-center"><span title={m.damageClass} className="inline-flex items-center justify-center"><span aria-hidden="true" className="inline-flex">{m.damageClass === 'physical' ? <PhysicalIcon /> : m.damageClass === 'special' ? <SpecialIcon /> : <StatusIcon />}</span><span className="sr-only">{t(`db.${m.damageClass === 'physical' || m.damageClass === 'special' ? m.damageClass : 'status'}`)}</span></span></td>
-                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.power ?? '—'}</td>
-                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.accuracy ? `${m.accuracy}%` : '—'}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                    <div className={pairLineage ? 'pdd-duo pdd-duo--lineage' : 'pdd-stack'}>
+                        {hasEvolution && (
+                            <Card title={t('pokedex.evolutionLine')}>
+                                {/* The evolution line is the progress bar the games
+                                    taught everyone to read: stage → stage → stage. */}
+                                <ol className="pdd-evo">
+                                    {evolutionDetails.map((evo, index) => (
+                                        <li key={evo.id || evo.name} className="pdd-evo__step">
+                                            {index > 0 && <ChevronRight className="pdd-evo__arrow" aria-hidden="true" />}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSelectPokemon(evo)}
+                                                aria-current={Number(evo.id) === favoriteId ? 'page' : undefined}
+                                                className={`pdd-tile ${Number(evo.id) === favoriteId ? 'is-current' : ''}`}
+                                            >
+                                                <Sprite
+                                                    className="pdd-tile__art"
+                                                    src={evo.id ? getPokemonArtworkSpriteUrl(evo.id) : (evo.sprite || POKEBALL_PLACEHOLDER_URL)}
+                                                    artworkSrc={evo.sprite || null}
+                                                    alt=""
+                                                />
+                                                {evo.id && <span className="pdd-tile__dex">{padDex(evo.id)}</span>}
+                                                <span className="pdd-tile__name">{cleanName(evo.name)}</span>
+                                                {typesOf(evo).length > 0 && (
+                                                    <span className="pdd-tile__types">
+                                                        {typesOf(evo).map((type) => <TypeChip key={type} type={type} size="sm" />)}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </Card>
+                        )}
+
+                        {forms.length > 0 && (
+                            <Card title={t('pokedex.formsAndMegas')}>
+                                <div className={`pdd-forms ${pairLineage ? 'pdd-forms--paired' : ''}`}>
+                                    {forms.map((form) => (
+                                        <button
+                                            key={form.id}
+                                            type="button"
+                                            onClick={() => handleSelectPokemon({ id: form.id })}
+                                            className={`pdd-tile ${Number(form.id) === favoriteId ? 'is-current' : ''}`}
+                                            title={form.displayName}
+                                        >
+                                            <Sprite className="pdd-tile__art" src={form.sprite || POKEBALL_PLACEHOLDER_URL} alt="" />
+                                            <span className="pdd-tile__name">{form.displayName}</span>
+                                            {form.types?.length > 0 && (
+                                                <span className="pdd-tile__types">
+                                                    {form.types.map((type) => <TypeChip key={type} type={type} size="sm" />)}
+                                                </span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
+                    </div>
+
+                    {build && (
+                        <Card title={t('pdetail.build.title')}>
+                            <MostUsedBuild pokemonId={pokemonId} build={build} />
+                        </Card>
+                    )}
+
+                    {tournamentPresence && (
+                        <Card title={t('pdetail.tournaments.title')}>
+                            <TournamentPresence presence={tournamentPresence} onShowAll={() => setActiveTab('competitive')} />
+                        </Card>
+                    )}
+                </div>
+
+                <aside className="pdd-data__rail">
+                    <Card title={t('pokedex.training')} className="pdd-card--specs">
+                        <dl className="pdd-specs">
+                            <Spec label={t('pokedex.evYield')} value={evYield || '—'} />
+                            <Spec label={t('pokedex.catchRate')} value={catchRateText || '—'} />
+                            <Spec label={t('pokedex.baseFriendship')} value={baseFriendshipText || '—'} />
+                            <Spec label={t('pokedex.baseExp')} value={<span className="pdd-mono">{fullApiData?.base_experience ?? '—'}</span>} />
+                            <Spec label={t('pokedex.growthRate')} value={growthRateText || '—'} />
+                        </dl>
+                        <h3 className="pdd-card__subtitle">{t('pokedex.breeding')}</h3>
+                        <dl className="pdd-specs">
+                            <Spec label={t('pokedex.eggGroups')} value={<span className="pdd-capitalize">{eggGroups || '—'}</span>} />
+                            <Spec label={t('pokedex.genderRatio')} value={genderText || '—'} />
+                            <Spec label={t('pokedex.eggCycles')} value={eggCyclesText || '—'} />
+                        </dl>
+                    </Card>
+                </aside>
+            </div>
+        );
+    };
+
+    const renderLocations = () => {
+        if (isEncountersLoading) return <div className="pdd-loading"><Loader size="md" scene="search" /></div>;
+        if (filteredGroupedEncounters.length === 0 && locationsVersionFilter === 'all') {
+            return <Empty title={t('pokedex.locationsEmptyTitle')} message={t('pokedex.locationsEmpty')} />;
+        }
+        return (
+            <div className="pdd-stack">
+                {availableVersions.length > 0 && (
+                    <div className="pdd-toolbar">
+                        <p className="pdd-toolbar__title">{t('pokedex.locationsTitle')}</p>
+                        <label className="pdd-toolbar__field">
+                            <span className="sr-only">{t('pokedex.locationsVersionFilter')}</span>
+                            <select
+                                value={locationsVersionFilter}
+                                onChange={(event) => setLocationsVersionFilter(event.target.value)}
+                                className="select-clean"
+                            >
+                                <option value="all">{t('pokedex.locationsAllVersions')}</option>
+                                {availableVersions.map((version) => (
+                                    <option key={version} value={version}>{formatVersionLabel(version)}</option>
+                                ))}
+                            </select>
+                        </label>
+                    </div>
+                )}
+
+                {filteredGroupedEncounters.length === 0 && (
+                    <Empty title={t('pokedex.locationsEmptyTitle')} message={t('pokedex.locationsEmpty')} />
+                )}
+
+                {filteredGroupedEncounters.map((group) => (
+                    <Card key={group.id} title={group.name}>
+                        <div className="pdd-places">
+                            {group.locations.map((place) => (
+                                <div key={place.location} className="pdd-place">
+                                    <p className="pdd-place__name">
+                                        <MapPin aria-hidden="true" />
+                                        <span>{place.location}</span>
+                                    </p>
+                                    {place.versions.map((version) => {
+                                        const config = VERSION_CONFIG[version.name] || { label: cleanName(version.name), color: 'var(--color-muted)' };
+                                        const distinct = Array.from(version.details.reduce((acc, detail) => {
+                                            acc.set(`${detail.methodKey}-${detail.minLevel}-${detail.maxLevel}`, detail);
+                                            return acc;
+                                        }, new Map()).values());
+                                        return distinct.map((detail, index) => {
+                                            const MethodIcon = METHOD_ICON_MAP[detail.methodKey] || Compass;
+                                            return (
+                                                <div key={`${version.name}-${index}`} className="pdd-encounter">
+                                                    <span className="pdd-encounter__version" style={{ '--pdd-pill': config.color }}>{config.label}</span>
+                                                    <span className="pdd-encounter__method">
+                                                        <MethodIcon aria-hidden="true" />
+                                                        <span className="pdd-capitalize">{detail.method}</span>
+                                                    </span>
+                                                    <span className="pdd-encounter__meta pdd-mono">
+                                                        {detail.minLevel === detail.maxLevel ? `Lv ${detail.minLevel}` : `Lv ${detail.minLevel}–${detail.maxLevel}`}
+                                                        <b>{detail.chance}%</b>
+                                                    </span>
+                                                </div>
+                                            );
+                                        });
+                                    })}
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
-                            <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                            <h5 className="font-bold text-fg mb-1">{language === 'pt' ? 'Nenhum movimento encontrado' : 'No Moves Found'}</h5>
-                            <p className="text-xs text-muted max-w-sm mx-auto">{t('pokedex.movesEmpty')}</p>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        if (activeTab === 'sprites') {
-            return (
-                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
-                    <div className="bg-surface p-3 rounded-xl border border-border">
-                        <h4 className="text-sm font-bold text-muted flex items-center gap-2"><ImageIcon className="w-4 h-4 text-primary" /><span>{t('pokedex.spritesTitle')}</span></h4>
-                        <p className="text-2xs text-muted mt-1.5">{t('pokedex.spritesPreviewTitle')}</p>
-                    </div>
-
-                    {pokemonGenerationSprites.length > 0 ? (
-                        isMobile ? (
-                            <div className="pokedex-sprites-grid">
-                                {pokemonGenerationSprites.map((g) => (
-                                    <div key={g.name} className="pokedex-sprite-gen-card">
-                                        <span className="text-2xs font-extrabold text-muted mb-2.5 block">{g.name}</span>
-                                        <div className="flex items-center justify-center gap-3">
-                                            {g.normal ? (
-                                                <div className="flex flex-col items-center">
-                                                    <SpriteChoice src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} selected={customSelectedSprite === g.normal} onSelect={setCustomSelectedSprite} sizeClass="h-11 w-11" title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} />
-                                                    <span className="text-2xs text-muted font-bold mt-1">Normal</span>
-                                                </div>
-                                            ) : <span className="text-muted text-2xs">—</span>}
-                                            {g.shiny ? (
-                                                <div className="flex flex-col items-center">
-                                                    <SpriteChoice src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} selected={customSelectedSprite === g.shiny} onSelect={setCustomSelectedSprite} sizeClass="h-11 w-11" title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} />
-                                                    <span className="text-2xs text-muted font-bold mt-1">Shiny</span>
-                                                </div>
-                                            ) : <span className="text-muted text-2xs">—</span>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="rounded-xl border border-border bg-surface overflow-hidden">
-                                <div className="overflow-x-auto custom-scrollbar pb-1">
-                                    <table className="w-full text-center border-collapse text-xs">
-                                        <thead>
-                                            <tr className="border-b border-border bg-surface-raised">
-                                                <th className="p-3 font-bold text-muted text-left">{t('pokedex.typesFilterLabel')}</th>
-                                                {pokemonGenerationSprites.map((g) => <th key={g.name} className="p-3 font-bold text-muted min-w-[90px]">{g.name}</th>)}
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            <tr>
-                                                <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
-                                                {pokemonGenerationSprites.map((g) => (
-                                                    <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
-                                                        {g.normal ? <SpriteChoice src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} selected={customSelectedSprite === g.normal} onSelect={setCustomSelectedSprite} sizeClass="h-12 w-12 mx-auto" title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} /> : <span className="text-muted text-2xs">➔</span>}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                            <tr>
-                                                <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
-                                                {pokemonGenerationSprites.map((g) => (
-                                                    <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
-                                                        {g.shiny ? <SpriteChoice src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} selected={customSelectedSprite === g.shiny} onSelect={setCustomSelectedSprite} sizeClass="h-12 w-12 mx-auto" title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} /> : <span className="text-muted text-2xs">—</span>}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )
-                    ) : (
-                        <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
-                            <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                            <h5 className="font-bold text-fg mb-1">{language === 'pt' ? 'Nenhum Sprite Registrado' : 'No Sprites Recorded'}</h5>
-                            <p className="text-xs text-muted max-w-sm mx-auto">{language === 'pt' ? 'Sprites específicos de geração não estão disponíveis para este Pokémon.' : 'Generation-specific sprites are not available for this Pokémon.'}</p>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-        return null;
+                    </Card>
+                ))}
+            </div>
+        );
     };
 
+    const renderMoves = () => {
+        if (isMovesLoading) return <div className="pdd-loading"><Loader size="md" scene="pokedex" /></div>;
+        const counts = {
+            levelUp: resolvedMoves.levelUp.length,
+            machine: resolvedMoves.machine.length,
+            other: (resolvedMoves.other || []).length,
+        };
+        const available = MOVE_METHODS.filter((key) => counts[key] > 0);
+        if (available.length === 0) {
+            return <Empty title={t('pokedex.movesEmptyTitle')} message={t('pokedex.movesEmpty')} />;
+        }
+        // A method with nothing in this game version falls to the first that has rows.
+        const method = counts[moveMethod] > 0 ? moveMethod : available[0];
+        const labels = { levelUp: t('pokedex.movesLevelUp'), machine: t('pokedex.movesMachine'), other: t('pokedex.movesOther') };
+        const slotHeader = { levelUp: t('pokedex.movesHeaderLevel'), machine: t('pokedex.movesHeaderTm'), other: t('pokedex.locationsMethod') };
+        const query = moveQuery.trim().toLowerCase().replace(/\s+/g, '-');
+        const rows = (method === 'other' ? resolvedMoves.other || [] : resolvedMoves[method])
+            .filter((move) => !query || move.name.includes(query) || move.type?.includes(query));
+
+        return (
+            <div className="pdd-stack">
+                <div className="pdd-toolbar">
+                    <div className="segmented" role="group" aria-label={t('pokedex.movesTitle')}>
+                        {MOVE_METHODS.map((key) => (
+                            <button
+                                key={key}
+                                type="button"
+                                className="segmented__item"
+                                aria-pressed={method === key}
+                                disabled={counts[key] === 0}
+                                onClick={() => setMoveMethod(key)}
+                            >
+                                {labels[key]}
+                                <span className="count-badge">{counts[key]}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="pdd-toolbar__end">
+                        <label className="pdd-search">
+                            <Search aria-hidden="true" />
+                            <input
+                                type="search"
+                                className="input-clean"
+                                value={moveQuery}
+                                onChange={(event) => setMoveQuery(event.target.value)}
+                                placeholder={t('pokedex.movesFilter')}
+                                aria-label={t('pokedex.movesFilter')}
+                            />
+                        </label>
+                        {availableMoveVersions.length > 0 && (
+                            <label className="pdd-toolbar__field">
+                                <span className="sr-only">{t('pokedex.movesVersionFilter')}</span>
+                                <select
+                                    value={selectedMoveVersion}
+                                    onChange={(event) => setSelectedMoveVersion(event.target.value)}
+                                    className="select-clean"
+                                >
+                                    {availableMoveVersions.map((version) => (
+                                        <option key={version} value={version}>{formatVersionLabel(version)}</option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
+                    </div>
+                </div>
+
+                <section className="pdd-card pdd-card--flush">
+                    {rows.length === 0 ? (
+                        <p className="pdd-card__note">{t('search.noResults', { query: moveQuery.trim() })}</p>
+                    ) : (
+                        <table className="pdd-moves">
+                            <thead>
+                                <tr>
+                                    <th className="pdd-moves__slot">{slotHeader[method]}</th>
+                                    <th>{t('pokedex.movesHeaderName')}</th>
+                                    <th>{t('pokedex.movesHeaderType')}</th>
+                                    <th>{t('pokedex.movesHeaderClass')}</th>
+                                    <th className="pdd-moves__num">{t('pokedex.movesHeaderPower')}</th>
+                                    <th className="pdd-moves__num">{t('pokedex.movesHeaderAcc')}</th>
+                                    <th className="pdd-moves__num">{t('pokedex.movesHeaderPp')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((move, index) => {
+                                    const category = move.damageClass === 'physical' || move.damageClass === 'special' ? move.damageClass : 'status';
+                                    return (
+                                        <tr key={`${move.name}-${index}`} onClick={(event) => goToMove(move.name, event)}>
+                                            <td className="pdd-moves__slot pdd-mono">
+                                                {method === 'levelUp' ? (move.level === 0 ? 'Evo' : (move.level || '—'))
+                                                    : method === 'machine' ? (move.tmName ? formatTmName(move.tmName) : '—')
+                                                        : cleanName(move.learnMethod || '—')}
+                                            </td>
+                                            <td>
+                                                <button type="button" className="pdd-moves__name" onClick={(event) => goToMove(move.name, event)}>
+                                                    {cleanName(move.name)}
+                                                </button>
+                                            </td>
+                                            <td>{move.type && <TypeChip type={move.type} size="sm" />}</td>
+                                            <td><span className={`ref-cat ref-cat--${category}`}>{t(`db.${category}`)}</span></td>
+                                            <td className="pdd-moves__num pdd-mono">{move.power ?? '—'}</td>
+                                            <td className="pdd-moves__num pdd-mono">{move.accuracy ? `${move.accuracy}%` : '—'}</td>
+                                            <td className="pdd-moves__num pdd-mono">{move.pp ?? '—'}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
+                </section>
+            </div>
+        );
+    };
+
+    const renderSprites = () => {
+        if (pokemonGenerationSprites.length === 0) {
+            return <Empty title={t('pokedex.spritesEmptyTitle')} message={t('pokedex.spritesEmpty')} />;
+        }
+        return (
+            <Card
+                title={t('pokedex.spritesTitle')}
+                meta={customSelectedSprite && (
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCustomSelectedSprite(null)}>
+                        {t('pokedex.spritesSpotlightReset')}
+                    </button>
+                )}
+            >
+                <p className="pdd-card__note">{t('pokedex.spritesSpotlightHint')}</p>
+                <div className="pdd-sprites">
+                    {pokemonGenerationSprites.map((generation) => (
+                        <div key={generation.name} className="pdd-sprite">
+                            <p className="pdd-sprite__label">{generation.name}</p>
+                            <div className="pdd-sprite__row">
+                                {[{ url: generation.normal, tag: 'Normal' }, { url: generation.shiny, tag: 'Shiny' }]
+                                    .filter((variant) => variant.url)
+                                    .map((variant) => (
+                                        <button
+                                            key={variant.tag}
+                                            type="button"
+                                            onClick={() => setCustomSelectedSprite(variant.url)}
+                                            aria-pressed={customSelectedSprite === variant.url}
+                                            className={`pdd-sprite__pick ${customSelectedSprite === variant.url ? 'is-active' : ''}`}
+                                        >
+                                            <img src={variant.url} alt={`${identity.name} ${generation.name} ${variant.tag}`} className="image-pixelated" loading="lazy" />
+                                            <span>{variant.tag}</span>
+                                        </button>
+                                    ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        );
+    };
+
+    const renderTab = () => {
+        // Competitive only needs the species id, so it renders while the rest loads.
+        if (activeTab === 'competitive') return <SmogonCompetitivePanel pokemonId={selectedPokemon?.id || pokemonId} />;
+        if (activeTab === 'locations') return renderLocations();
+        if (activeTab === 'moves') return renderMoves();
+        if (activeTab === 'sprites') return renderSprites();
+        return renderData();
+    };
+
+    const abilities = selectedPokemonDetails?.abilities || [];
+
     return (
-        <section className="team-builder-panel p-5 md:p-6 relative flex flex-col">
-            <div className="flex border-b border-border mb-4 overflow-x-auto whitespace-nowrap scrollbar-none gap-2 items-stretch">
-                {onBack && (
-                    <>
+        <div className="pdd">
+            <header className="pdd-hero" style={heroTypeStyle(types)}>
+                <div className="pdd-hero__bar">
+                    {onBack ? (
+                        <button type="button" className="btn btn-ghost btn-sm pdd-hero__back" onClick={onBack}>
+                            <ChevronLeft aria-hidden="true" />
+                            {backLabel || t('common.back')}
+                        </button>
+                    ) : <span />}
+                    <div className="pdd-hero__actions">
                         <button
                             type="button"
-                            onClick={onBack}
-                            className="pb-2.5 px-3 flex items-center gap-1.5 font-bold text-sm text-muted hover:text-primary transition-colors shrink-0"
+                            onClick={() => sharePage(`/pokemon/${indexEntry?.name || identity.name || identity.id}`, titleCaseSlug(identity.name))}
+                            className="pdd-iconbtn"
+                            aria-label={t('common.sharePage')}
+                            title={t('common.sharePage')}
                         >
-                            <ChevronLeft className="w-4 h-4 shrink-0" />
-                            {/* Full contextual label on desktop; just "Voltar" on mobile so
-                                the long "…à Pokédex" suffix doesn't crowd the tab row. */}
-                            <span className="hidden sm:inline">{backLabel}</span>
-                            <span className="sm:hidden">{language === 'pt' ? 'Voltar' : 'Back'}</span>
+                            <Share2 aria-hidden="true" />
                         </button>
-                        <div className="w-px bg-border self-stretch mb-2.5 shrink-0" />
-                    </>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (!showShiny) shinyBurst.fire();
+                                setCustomSelectedSprite(null);
+                                setShowShiny((value) => !value);
+                            }}
+                            className={`pdd-iconbtn ${showShiny ? 'is-active' : ''} ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
+                            aria-pressed={showShiny}
+                            aria-label={t('pokedex.toggleShiny')}
+                            title={t('pokedex.toggleShiny')}
+                        >
+                            <Sparkles aria-hidden="true" />
+                            {shinyBurst.burst}
+                        </button>
+                        {onToggleFavoritePokemon && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (!isFavorite) favoriteBurst.fire();
+                                    onToggleFavoritePokemon(favoriteId);
+                                }}
+                                className={`pdd-iconbtn ${isFavorite ? 'is-active' : ''} ${favoriteBurst.isBursting ? 'is-bursting' : ''}`}
+                                aria-pressed={isFavorite}
+                                aria-label={isFavorite ? t('common.remove') : t('pokedex.addFavorite')}
+                                title={isFavorite ? t('common.remove') : t('pokedex.addFavorite')}
+                            >
+                                <Star aria-hidden="true" fill={isFavorite ? 'currentColor' : 'none'} />
+                                {favoriteBurst.burst}
+                            </button>
+                        )}
+                        {onAdd && (
+                            <button
+                                type="button"
+                                className={`btn ${isOnTeam ? 'btn-secondary' : 'btn-primary'} btn-sm`}
+                                onClick={() => onAdd({ id: favoriteId, name: identity.name, types })}
+                                disabled={!identity.name || isOnTeam || isTeamFull}
+                            >
+                                {isOnTeam ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
+                                {isOnTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                <div className="pdd-hero__main">
+                    <div className="pdd-hero__stage">
+                        <Sprite
+                            key={heroSrc}
+                            className={`pdd-hero__art ${customSelectedSprite ? 'is-pixel' : ''}`}
+                            src={heroSrc}
+                            artworkSrc={spriteToShow}
+                            alt={cleanName(identity.name)}
+                            eager
+                            heroTarget
+                        />
+                    </div>
+
+                    <div className="pdd-hero__identity">
+                        <p className="pdd-hero__dex">{padDex(identity.id)}</p>
+                        <h1 className="pdd-hero__name">{cleanName(identity.name)}</h1>
+                        {pokemonGenus && isGenusLocal && <p className="pdd-hero__genus">{pokemonGenus}</p>}
+                        <div className="pdd-hero__types">
+                            {types.map((type) => <TypeChip key={type} type={type} />)}
+                        </div>
+
+                        {pokedexDescription && (
+                            <div className="pdd-hero__entry">
+                                <p lang={isDescriptionLocal ? undefined : 'en'}>{pokedexDescription}</p>
+                                {!isDescriptionLocal && <p className="pdd-hero__note">{t('pokedex.originalText')}</p>}
+                            </div>
+                        )}
+
+                        <dl className="pdd-facts">
+                            <div className="pdd-fact">
+                                <dt>{t('pokedex.height')}</dt>
+                                <dd className="pdd-mono">{heightInM ? `${heightInM} m` : '—'}{heightInFt && <small>{heightInFt}</small>}</dd>
+                            </div>
+                            <div className="pdd-fact">
+                                <dt>{t('pokedex.weight')}</dt>
+                                <dd className="pdd-mono">{weightInKg ? `${weightInKg} kg` : '—'}{weightInLbs && <small>{weightInLbs} lbs</small>}</dd>
+                            </div>
+                            <div className="pdd-fact pdd-fact--wide">
+                                <dt>{t('pokedex.abilities')}</dt>
+                                <dd className="pdd-fact__abilities">
+                                    {abilities.length === 0 && '—'}
+                                    {abilities.map((ability, index) => (
+                                        <span key={index} className="pdd-ability">
+                                            <AbilityChip ability={ability} />
+                                            {ability.is_hidden && <em>{t('pokedex.hiddenShort')}</em>}
+                                        </span>
+                                    ))}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                {(prev || next) && (
+                    <nav className="pdd-hero__steps" aria-label={pt ? 'Pokémon vizinhos' : 'Neighbouring Pokémon'}>
+                        {prev ? (
+                            <button type="button" className="pdd-step" onClick={() => goToNeighbor(prev)} aria-keyshortcuts="ArrowLeft">
+                                <ChevronLeft aria-hidden="true" />
+                                <span className="pdd-step__dex">{padDex(prev.id)}</span>
+                                <span className="pdd-step__name">{cleanName(prev.name)}</span>
+                            </button>
+                        ) : <span />}
+                        <kbd className="pdd-step__hint" aria-hidden="true">← →</kbd>
+                        {next ? (
+                            <button type="button" className="pdd-step pdd-step--next" onClick={() => goToNeighbor(next)} aria-keyshortcuts="ArrowRight">
+                                <span className="pdd-step__name">{cleanName(next.name)}</span>
+                                <span className="pdd-step__dex">{padDex(next.id)}</span>
+                                <ChevronRight aria-hidden="true" />
+                            </button>
+                        ) : <span />}
+                    </nav>
                 )}
-                {[
-                    { key: 'data', icon: <Activity className="w-4 h-4" />, label: t('pokedex.dataTab') },
-                    { key: 'competitive', icon: <Trophy className="w-4 h-4" />, label: language === 'pt' ? 'Competitivo' : 'Competitive' },
-                    { key: 'locations', icon: <MapPin className="w-4 h-4" />, label: t('pokedex.locationsTab') },
-                    { key: 'moves', icon: <Swords className="w-4 h-4" />, label: t('pokedex.movesTab') },
-                    { key: 'sprites', icon: <ImageIcon className="w-4 h-4" />, label: t('pokedex.spritesTab') },
-                ].map((tb) => (
-                    <button
-                        key={tb.key}
-                        type="button"
-                        onClick={() => setActiveTab(tb.key)}
-                        className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === tb.key ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
-                    >
-                        {tb.icon}<span>{tb.label}</span>
-                    </button>
-                ))}
-                {selectedPokemonDetails && (
-                    <button
-                        type="button"
-                        onClick={() => sharePage(`/pokemon/${selectedPokemonDetails.name}`, titleCaseSlug(selectedPokemonDetails.name))}
-                        className="pb-2.5 px-3 ml-auto flex items-center gap-1.5 font-bold text-sm text-muted hover:text-primary transition-colors shrink-0"
-                    >
-                        <Share2 className="w-4 h-4 shrink-0" />
-                        <span>{t('common.sharePage')}</span>
-                    </button>
-                )}
+            </header>
+
+            <div className="pdd-tabs-bar">
+                <div className="tabs" role="tablist" aria-label="Pokédex">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.key}
+                            id={`pdd-tab-${tab.key}`}
+                            type="button"
+                            role="tab"
+                            aria-selected={activeTab === tab.key}
+                            aria-controls="pdd-panel"
+                            onClick={() => setActiveTab(tab.key)}
+                            className="tabs__item"
+                        >
+                            {tab.icon}
+                            <span>{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <div className="flex-1">{renderDetailsContent()}</div>
-        </section>
+            <div className="pdd-body" id="pdd-panel" role="tabpanel" aria-labelledby={`pdd-tab-${activeTab}`}>
+                {renderTab()}
+            </div>
+        </div>
     );
 }

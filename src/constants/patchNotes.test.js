@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PATCH_NOTES_VERSION } from './theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from './patchNotes';
+import { SUPPORT_URL } from './support';
 
 const versionParts = (v) => String(v).split('.').map(Number);
 const compare = (a, b) => {
@@ -52,6 +53,16 @@ describe('the release ledger', () => {
         expect(featured).toHaveLength(1);
         expect(featured[0].visual).toBeTruthy();
         expect(CURRENT_RELEASE.notes.length - 1).toBeLessThanOrEqual(3);
+    });
+});
+
+describe('the donation rule', () => {
+    // Fixed rule (Enzo, 2026-11-11): every release's "what's new" asks for support.
+    it('puts the donation note in the current release', () => {
+        const support = CURRENT_RELEASE.notes.find((note) => note.href === SUPPORT_URL);
+        expect(support).toBeTruthy();
+        expect(support.key).toBe('buy-me-a-coffee');
+        expect(support.cta).toMatch(/^patchNotes\./);
     });
 });
 

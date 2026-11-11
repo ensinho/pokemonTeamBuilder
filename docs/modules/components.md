@@ -183,10 +183,15 @@ history, so an announcement can be re-read after it is dismissed.
    footer, the drawer's About section, the About page and the JSON-LD `sameAs`).
 4. Dates are formatted from `month` per language (`formatReleaseMonth`), so a
    release never needs new date copy.
+5. **Every release asks for donations — a fixed rule (Enzo, 2026-11-11).** The
+   current release always carries the Buy Me a Coffee note
+   (`key: 'buy-me-a-coffee'`, `href: SUPPORT_URL`, `patchNotes.supportShort` as a
+   side note or `supportBody` when featured). It takes one of the three side
+   slots; `patchNotes.test.js` fails without it.
 
 `patchNotes.test.js` guards the invariants: head version equals
 `PATCH_NOTES_VERSION`, versions descend, none repeat, every release has a month
-and notes, and the current release carries the illustration data.
+and notes, the current release carries the illustration data and the donation note.
 
 **Reopening:** the version button (`app-shell__footer-version` — in the page
 footer on desktop and as the "What's new" row of the Mais sheet's About section on phones; the only entry point a guest
@@ -291,6 +296,24 @@ deduped). Built on `.modal-scrim` > `.modal-panel` + `useModalA11y`: a palette n
 the top on desktop, a **full-height sheet with the field at the top** below 640px
 (a bottom sheet would put the field under the keyboard). ARIA combobox + listbox;
 arrows walk across groups, Enter opens.
+
+**Quick look in battle (2026-11-11).** While a battle is on screen (the Champion
+Challenge's `battle`/`transition` stages, a friend battle's `versus`/`battle`), the
+screen calls `useQuickLookMode(active)`, which holds `useQuickLookStore` (a
+counter, so one screen leaving never switches off another). In that mode the
+palette shows a line saying so, marks Pokémon / move / ability / item rows with a
+panel glyph, and Enter opens them in **`QuickLookPanel`** (`src/components/`,
+`src/styles/quick-look.css`, lazy, mounted by `AppLayout` while the store's stack
+is not empty) instead of navigating. Pages still navigate. The panel is **not a
+modal** — no scrim, the battle keeps working and keeps the keyboard; Escape
+closes it only from inside (the console owns Escape for VOLTAR). Docked
+bottom-right on desktop, over the field at the top on a phone (the bottom screen
+holds the commands); it folds to its bar, keeps a back stack (a Pokémon's
+abilities open in it), and links the full page in a new tab. Its data is what
+the app already ships — `battle-dex.json`, `ability-list.json`, `item-list.json`,
+the Pokédex index — resolved by the pure `utils/quickLook.js` (+ test: defences,
+a move's coverage, Showdown form ids); a move/ability/item the baked lists lack
+falls back to the PokéAPI page loaders. The last battle screen leaving closes it.
 
 Ranking lives in `utils/globalSearch.js` and is tested: exact > prefix (fewer extra
 words first, so forms rank under their species and a line keeps dex order) > word

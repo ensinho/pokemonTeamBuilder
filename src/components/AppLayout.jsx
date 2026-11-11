@@ -86,6 +86,7 @@ import { useLandingStore } from '../store/useLandingStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useTrainerCardStore } from '../store/useTrainerCardStore';
 import { useInboxStore } from '../store/useInboxStore';
+import { useQuickLookStore } from '../store/useQuickLookStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { glyphMotion } from '../utils/glyphMotion';
@@ -116,6 +117,9 @@ const MobileMoreSheet = lazy(() => loadMobileMoreSheet().then((m) => ({ default:
 // only way in.
 const loadCommandPalette = () => import('./CommandPalette');
 const CommandPalette = lazy(() => loadCommandPalette().then((m) => ({ default: m.CommandPalette })));
+// The quick look a battle opens from the search (useQuickLookStore): only ever
+// loaded once a trainer looks something up mid-battle.
+const QuickLookPanel = lazy(() => import('./QuickLookPanel').then((m) => ({ default: m.QuickLookPanel })));
 // Dialogs that only open from a click. They were ~90 KB of the entry bundle
 // (the share composer alone is 25 KB) paid by every visitor before first paint;
 // as chunks they cost nothing until wanted, and the idle warm-up below fetches
@@ -459,6 +463,7 @@ export default function AppLayout() {
     const isOnboardingOpen = useOnboardingStore((s) => s.isOpen);
     const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
     const isPokegearOpen = useInboxStore((s) => s.isOpen);
+    const isQuickLookOpen = useQuickLookStore((s) => s.stack.length > 0);
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
         generations: s.generations, items: s.items, natures: s.natures, games: s.games,
@@ -1503,6 +1508,12 @@ export default function AppLayout() {
             {isSearchOpen && (
                 <Suspense fallback={null}>
                     <CommandPalette onClose={() => setIsSearchOpen(false)} destinations={searchDestinations} />
+                </Suspense>
+            )}
+
+            {isQuickLookOpen && (
+                <Suspense fallback={null}>
+                    <QuickLookPanel />
                 </Suspense>
             )}
 

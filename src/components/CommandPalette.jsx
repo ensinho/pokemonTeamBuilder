@@ -1,6 +1,6 @@
 import React, { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowDown, ArrowUp, CornerDownLeft, Package, Search, Sparkles, Swords } from 'lucide-react';
+import { ArrowDown, ArrowUp, CornerDownLeft, Package, PanelRight, Search, Sparkles, Swords } from 'lucide-react';
 import { PokeballIcon } from './icons';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { useTranslation } from '../hooks/useTranslation';
@@ -11,6 +11,7 @@ import { itemSpriteUrl } from '../utils/itemSuggestions';
 import { typeIcons } from '../constants/types';
 import { prepareEntries, scoreDexNumber, searchGroups } from '../utils/globalSearch';
 import { useAuthStore } from '../store/useAuthStore';
+import { useQuickLookStore } from '../store/useQuickLookStore';
 import { personaQuickLinks } from '../utils/trainerProfile';
 import { Mascot } from './Mascot';
 import '../styles/command-palette.css';
@@ -82,6 +83,10 @@ export function CommandPalette({ onClose, destinations = [] }) {
     const items = useReferenceStore((state) => state.items);
     const moves = useCachedList('moves', getMovesList);
     const abilities = useCachedList('abilities', getAbilitiesList);
+    // A battle is on screen (useQuickLookMode): Pokémon, moves, abilities and
+    // items open in the quick-look panel beside it instead of leaving it.
+    const quickLook = useQuickLookStore((state) => state.holds > 0);
+    const openQuickLook = useQuickLookStore((state) => state.open);
 
     useEffect(() => {
         useReferenceStore.getState().fetchPokemonIndex();
@@ -122,14 +127,15 @@ export function CommandPalette({ onClose, destinations = [] }) {
                         title: prettyName(item.name),
                         meta: padDex(item.id),
                         types: item.types || [],
+                        peek: { kind: 'pokemon', key: item.id },
                         thumb: <SpriteThumb src={getPokemonDisplaySprite(item)} fallback={<PokeballIcon />} />,
                     };
                 case 'pages':
                     return { key: `page-${item.key}`, href: item.path, title: item.label, meta: t('search.kindPage'), thumb: item.icon };
                 case 'moves':
-                    return { key: `move-${item.name}`, href: `/moves/${item.name}`, title: prettyName(item.name), meta: t('search.kindMove'), thumb: <Swords /> };
+                    return { key: `move-${item.name}`, href: `/moves/${item.name}`, title: prettyName(item.name), meta: t('search.kindMove'), thumb: <Swords />, peek: { kind: 'move', key: item.name } };
                 case 'abilities':
-                    return { key: `ability-${item.name}`, href: `/abilities/${item.name}`, title: prettyName(item.name), meta: t('search.kindAbility'), thumb: <Sparkles /> };
+                    return { key: `ability-${item.name}`, href: `/abilities/${item.name}`, title: prettyName(item.name), meta: t('search.kindAbility'), thumb: <Sparkles />, peek: { kind: 'ability', key: item.name } };
                 default:
                     return {
                         key: `item-${item.name}`,
@@ -137,6 +143,7 @@ export function CommandPalette({ onClose, destinations = [] }) {
                         title: prettyName(item.name),
                         meta: t('search.kindItem'),
                         thumb: <SpriteThumb src={itemSpriteUrl(item.name)} fallback={<Package />} />,
+                        peek: { kind: 'item', key: item.name },
                     };
             }
         };
@@ -185,8 +192,12 @@ export function CommandPalette({ onClose, destinations = [] }) {
     const open = useCallback((option) => {
         if (!option) return;
         onClose();
+        if (quickLook && option.peek) {
+            openQuickLook(option.peek);
+            return;
+        }
         navigate(option.href);
-    }, [navigate, onClose]);
+    }, [navigate, onClose, quickLook, openQuickLook]);
 
     const moveActive = (delta) => {
         if (!options.length) return;
@@ -248,6 +259,13 @@ export function CommandPalette({ onClose, destinations = [] }) {
                     </button>
                 </div>
 
+                {quickLook && (
+                    <p className="command-palette__mode">
+                        <PanelRight aria-hidden="true" />
+                        <span>{t('search.battleMode')}</span>
+                    </p>
+                )}
+
                 <div id={listboxId} role="listbox" aria-label={t('search.label')} className="command-palette__results">
                     {sections.some((section) => section.key === 'fallback') && (
                         <div className="command-palette__empty" role="presentation">
@@ -282,7 +300,9 @@ export function CommandPalette({ onClose, destinations = [] }) {
                                                 ))}
                                             </span>
                                         </span>
-                                        <CornerDownLeft className="command-palette__enter" aria-hidden="true" />
+                                        {quickLook && option.peek
+                                            ? <PanelRight className="command-palette__enter" aria-hidden="true" />
+                                            : <CornerDownLeft className="command-palette__enter" aria-hidden="true" />}
                                     </div>
                                 );
                             })}

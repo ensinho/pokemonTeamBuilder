@@ -1,6 +1,5 @@
 import { PATCH_NOTES_VERSION } from './theme';
 import { SUPPORT_URL } from './support';
-import { SOCIAL_LINKS } from './social';
 
 // The release ledger — every version that shipped a "what's new" entry, newest
 // first. The modal renders the first one in full (icon, illustration, CTA) and
@@ -23,6 +22,10 @@ import { SOCIAL_LINKS } from './social';
 //
 // `links` (a list from constants/social.js) makes a note a box holding one real
 // link per entry.
+// **Every current release carries the donation note** (`key: 'buy-me-a-coffee'`,
+// `href: SUPPORT_URL`) — a fixed rule set by Enzo on 2026-11-11, enforced by
+// patchNotes.test.js. As a side note it takes one of the three slots.
+//
 // `href` makes a note a link that leaves the site, drawn as a centred card with a
 // real button. `thanks: false` drops the thank-you band for a release with
 // nothing to thank anyone for.
@@ -31,23 +34,35 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
-        // The project's own profiles. `links` makes the featured card a pair of
-        // real links (one per network) instead of one target; `cta` is the
-        // "registered!" line its illustration says.
+        // The desktop Pokédex entry rebuilt in the phone's language, and the
+        // quick look a battle opens from ⌘K. The CTA lands on an entry, not the
+        // list, so the first click shows what changed.
         notes: [
             {
-                key: 'social-profiles',
+                key: 'pokedex-desktop',
                 featured: true,
-                icon: 'megaphone',
-                visual: 'social',
-                title: 'patchNotes.socialTitle',
-                description: 'patchNotes.socialDesc',
-                cta: 'patchNotes.socialCta',
-                links: SOCIAL_LINKS,
+                icon: 'pokeball',
+                visual: 'pokedexDesk',
+                title: 'patchNotes.pokedexDeskTitle',
+                description: 'patchNotes.pokedexDeskDesc',
+                cta: 'patchNotes.pokedexDeskCta',
+                path: '/pokemon/445',
             },
+            { key: 'battle-quick-look', icon: 'search', title: 'patchNotes.quickLookTitle', description: 'patchNotes.quickLookDesc', cta: 'patchNotes.quickLookCta', path: '/challenge' },
+            { key: 'moves-table', icon: 'swords', title: 'patchNotes.movesTableTitle', description: 'patchNotes.movesTableDesc', cta: 'patchNotes.movesTableCta', path: '/pokemon/445?tab=moves' },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
             { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
-            { key: 'pokemon-center', icon: 'message', title: 'patchNotes.centerTitle', description: 'patchNotes.centerDesc', cta: 'patchNotes.centerCta', path: '/feed' },
-            { key: 'tera-zmoves', icon: 'swords', title: 'patchNotes.gimmicksTitle', description: 'patchNotes.gimmicksDesc', cta: 'patchNotes.gimmicksCta', path: '/challenge' },
+        ],
+    },
+    {
+        version: '1.22.0',
+        month: '2026-11',
+        thanks: false,
+        notes: [
+            { key: 'social-profiles', title: 'patchNotes.socialTitle' },
+            { key: 'buy-me-a-coffee', title: 'patchNotes.supportTitle' },
+            { key: 'pokemon-center', title: 'patchNotes.centerTitle' },
+            { key: 'tera-zmoves', title: 'patchNotes.gimmicksTitle' },
         ],
     },
     {
