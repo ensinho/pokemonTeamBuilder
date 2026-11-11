@@ -80,6 +80,34 @@ route it knows; the copy lives under `seo.*` in `translations.js`.
   it is visually hidden until then (`.seo-prerender` in `index.html`). **It must
   only say what the rendered page says.**
 
+### Smogon sets in the HTML, "moveset" in the title (2026-11-11)
+
+From an outside SEO checklist (Enzo): "Charizard – Best Moveset, EVs &
+Counters", stars from schema, SSR. Measured on production as Googlebot first:
+every Pokémon page already had its H1, matchups, stats, the most used build
+and tournament teams in the HTML, and `/pokedex` all 1025 links — the
+"Google sees an empty JS page" premise did not hold. What did hold:
+
+- The description promised "competitive Smogon movesets", but only the
+  default format's ladder build was written, so ~350 Pokémon with Smogon sets
+  and no Reg M ladder data (Koraidon, most Ubers/OU) had no moveset in the
+  HTML. `render-meta` now loads `smogon.json` (facts only, not the written
+  analysis — it is Smogon's prose) and `seoSnapshot` writes up to three sets:
+  item (+ alternatives), ability, nature and EVs/SP, Tera, moves, all as links.
+  Only on `/pokemon/:name`, where the Competitive tab draws them.
+- The title says **moveset** (what people type) instead of "builds". Not
+  "best moveset & EVs" / "counters": 511 of 1219 index entries (mostly
+  pre-evolutions) have no set or usage, and the page has no counters section.
+  One title per route on both sides, so it must be true for every Pokémon.
+
+Declined: `aggregateRating` stars (no real reviews exist — fabricating them
+breaks Google's review-snippet policy), FAQPage for rich results (Google shows
+them only for government/health sites since August 2023; guides keep it for
+answer engines), Next.js/SSR (the prerender already is that, per route).
+Counters need data, not a heuristic: Smogon's chaos stats carry "Checks and
+Counters", which `build-usage-stats.mjs` does not extract yet — extract it, show
+it on the page, then the prerender and the title may say it.
+
 ### Pokémon pages in tournaments (2026-10-23)
 
 People search "best team with Garchomp". `src/utils/tournamentPresence.js`

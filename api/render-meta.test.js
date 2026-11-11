@@ -17,6 +17,10 @@ const data = {
     findPokemon: (p) => pokemons.find((x) => x.name === p || String(x.id) === p) || null,
     findTeam: (id) => (id === 'worlds' ? { id, title: 'Worlds winner', tournament: 'Worlds', placement: '1st', pokemons: [{ name: 'Incineroar' }] } : null),
     usage: { label: 'VGC Reg M-C', byId: { 6: { n: 100, usage: 12, items: [{ name: 'Charizardite Y', count: 61 }], abilities: [{ name: 'Blaze', count: 100 }], moves: [{ name: 'Heat Wave', count: 90 }, { name: 'Protect', count: 80 }], spreads: [{ nature: 'Timid', evs: { spa: 32, spe: 32 }, count: 40 }] } } },
+    smogon: {
+        6: { gen: 'Champions VGC', sets: [{ name: 'Sun Sweeper', item: 'charizardite-y', itemAlts: [], ability: '', nature: 'modest', tera: [], moves: [['heat-wave'], ['weather-ball'], ['solar-beam', 'scorching-sands'], ['protect']], sp: { hp: 16, 'special-attack': 12, speed: 13 } }] },
+        10034: { gen: 'OU', sets: [{ name: 'Dragon Dance', item: 'charizardite-x', ability: 'tough-claws', nature: 'jolly', tera: ['dragon'], moves: [['dragon-dance']], evs: { attack: 252, speed: 252 } }] },
+    },
     tournamentTeams: [
         { id: 'w1', title: 'Wolfe\'s team', tournament: 'Worlds 2026', placement: '1st', format: 'Reg M-B', pokemons: [{ id: 6, name: 'Charizard-Mega-Y' }, { id: 4, name: 'Charmander' }] },
         { id: 'r2', title: 'Regional pick', tournament: 'Lille', pokemons: [{ id: 4, name: 'Charmander' }] },
@@ -31,7 +35,7 @@ describe('render-meta buildPage', () => {
     it('serves /pt pages in Portuguese, with lang, canonical and hreflang', () => {
         const html = page('/pt/pokemon/charizard');
         expect(html).toContain('<html lang="pt-BR"');
-        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Charizard: fraquezas, status e builds | PokemonBuilder');
+        expect(attr(html, /<title>([^<]*)<\/title>/)).toBe('Charizard: moveset, fraquezas e status | PokemonBuilder');
         expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe('https://pokemonbuilder.app/pt/pokemon/charizard');
         expect(html).toContain('<link rel="alternate" hreflang="en" href="https://pokemonbuilder.app/pokemon/charizard" />');
         expect(html).toContain('<link rel="alternate" hreflang="pt-BR" href="https://pokemonbuilder.app/pt/pokemon/charizard" />');
@@ -67,7 +71,7 @@ describe('render-meta buildPage', () => {
         const html = page('/pt/pokemon/charizard');
         const snapshot = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<script/)?.[1] || '';
         expect(snapshot).toContain('class="seo-prerender"');
-        expect(snapshot).toContain('<h1>Charizard: fraquezas, status e builds</h1>');
+        expect(snapshot).toContain('<h1>Charizard: moveset, fraquezas e status</h1>');
         expect(snapshot).toContain('href="/pt/types/rock">Pedra</a> (4×)');
         expect(snapshot).toContain('Velocidade: 100');
         expect(snapshot).toContain('href="/pt/meta/charizard"');
@@ -117,6 +121,23 @@ describe('render-meta buildPage', () => {
         expect(html).toContain('<li>Item: Charizardite Y (61%)</li>');
         expect(html).toContain('<li>Natureza e EVs: Timid · 32 SpA / 32 Spe (40%)</li>');
         expect(html).toContain('<li>Golpes: Heat Wave (90%), Protect (80%)</li>');
+    });
+
+    it('writes the Smogon sets the Competitive tab shows, as links', () => {
+        const html = page('/pt/pokemon/charizard');
+        expect(html).toContain('<h2>Moveset de Charizard: sets do Smogon para Champions VGC</h2>');
+        expect(html).toContain('<h3>Sun Sweeper</h3>');
+        expect(html).toContain('<li>Item: <a href="/pt/items/charizardite-y">Charizardite Y</a></li>');
+        expect(html).toContain('<li>Natureza e EVs: Modest · 16 HP / 12 SpA / 13 Spe SP</li>');
+        expect(html).toContain('<a href="/pt/moves/solar-beam">Solar Beam</a> / <a href="/pt/moves/scorching-sands">Scorching Sands</a>');
+        // EVs, an ability and a Tera type when the set has them.
+        const megaX = page('/pokemon/10034');
+        expect(megaX).toContain('<li>Ability: <a href="/abilities/tough-claws">Tough Claws</a></li>');
+        expect(megaX).toContain('<li>Nature and EVs: Jolly · 252 Atk / 252 Spe</li>');
+        expect(megaX).toContain('<li>Tera: <a href="/types/dragon">Dragon</a></li>');
+        // Nothing for a Pokémon without sets, and only on the Pokémon page.
+        expect(page('/pokemon/charmander')).not.toContain('Smogon sets for');
+        expect(page('/meta/charizard')).not.toContain('Sun Sweeper');
     });
 
     it('lists only base-form Pokémon on a type page', () => {
