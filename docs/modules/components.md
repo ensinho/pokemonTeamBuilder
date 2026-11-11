@@ -147,7 +147,7 @@ than a growing tail of positional arguments:
 |---|---|---|
 | `sharedTeam` | inline in `FeedView` | the serialized roster |
 | `battleInvite` | `BattleInviteCard` | **a pointer** (`battleId`), so the card reads the live battle and everyone sees it claimed |
-| `sharedPuzzle` | `PuzzleShareCard` | a finished PokéPuzzle board from `utils/pokePuzzleShare` |
+| `sharedPuzzle` | `PuzzleShareCard` | a finished PokéPuzzle board from `utils/pokePuzzleShare` (with `hints`, the letter hints taken, shown as a 💡 badge — 2026-11-11) |
 
 All three reuse the `forum-team-share-card` shell, so a thread keeps one visual
 language for "somebody attached something".

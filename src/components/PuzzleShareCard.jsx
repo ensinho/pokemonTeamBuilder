@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Puzzle } from 'lucide-react';
+import { Lightbulb, Puzzle } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
-import { STATUS_BY_CODE, puzzleShareScore } from '../utils/pokePuzzleShare';
+import { STATUS_BY_CODE, puzzleShareHints, puzzleShareScore } from '../utils/pokePuzzleShare';
 
 /** No board is worth more rows than this, whatever the payload claims. */
 const MAX_ROWS = 10;
@@ -40,6 +40,9 @@ export function PuzzleShareCard({ puzzle }) {
         MAX_ROWS,
     );
     const pendingRows = attemptRows - rows.length;
+    // Letter hints the sharer took travel with the board (2026-11-11).
+    const hints = puzzleShareHints(puzzle);
+    const hintsLabel = hints === 1 ? t('pokepuzzle.hint.usedOne') : t('pokepuzzle.hint.usedMany', { n: hints });
 
     const title = puzzle.mode === 'free'
         ? t('forum.puzzleTitleFree')
@@ -54,8 +57,16 @@ export function PuzzleShareCard({ puzzle }) {
                     <Puzzle className="w-3.5 h-3.5 text-primary shrink-0" />
                     {title}
                 </h5>
-                <span className={`badge shrink-0 ${puzzle.won ? 'badge--success' : ''}`}>
-                    {puzzleShareScore(puzzle)}
+                <span className="flex items-center gap-1 shrink-0">
+                    {hints > 0 && (
+                        <span className="badge" title={hintsLabel} aria-label={hintsLabel}>
+                            <Lightbulb className="w-3 h-3" aria-hidden="true" />
+                            {hints}
+                        </span>
+                    )}
+                    <span className={`badge ${puzzle.won ? 'badge--success' : ''}`}>
+                        {puzzleShareScore(puzzle)}
+                    </span>
                 </span>
             </div>
 

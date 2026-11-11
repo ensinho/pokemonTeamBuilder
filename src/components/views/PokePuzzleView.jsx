@@ -12,13 +12,13 @@ import { showDailyPuzzleNotification } from '../../services/pushNotifications';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { RefreshIcon, CloseIcon } from '../icons';
-import { Lock, Frown, Award, Image, Delete, CornerDownLeft, Share2, MessageSquare } from 'lucide-react';
+import { Lock, Frown, Award, Image, Delete, CornerDownLeft, Share2, MessageSquare, Lightbulb } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import '../../styles/pokepuzzle-view.css';
-import { getDailyPokemonIndex, checkLetters, getDaysSinceLaunch } from '../../utils/pokePuzzle';
+import { getDailyPokemonIndex, checkLetters, getDaysSinceLaunch, maxLetterHints, nextHintPosition, cleanHints } from '../../utils/pokePuzzle';
 import { buildPuzzleShare, puzzleShareScore, puzzleShareToEmoji } from '../../utils/pokePuzzleShare';
 import { encodePuzzleResult } from '../../utils/resultShareCode';
 import { localizePath } from '../../utils/localePath';
@@ -185,6 +185,7 @@ export default function PokePuzzleView() {
         addGuess,
         setStatus,
         unlockTip,
+        addHint,
     } = useSessionGame({ userId, allowedPool, language, getDailyIndex: getDailyPokemonIndex });
 
     // Aliases so the render tree below reads naturally.
@@ -456,6 +457,23 @@ export default function PokePuzzleView() {
 
     const targetLength = targetNormalized.length;
 
+    // Letter hints (2026-11-11): positions whose letter a hint has shown. They
+    // are saved with the game and counted in every share of its result.
+    const hints = useMemo(() => cleanHints(session.hints, targetLength), [session.hints, targetLength]);
+    const hintCap = maxLetterHints(targetLength);
+    const nextHint = useMemo(
+        () => (gameStatus === 'IN_PROGRESS' ? nextHintPosition(targetNormalized, guesses.map(normalizeNameForGame), hints) : -1),
+        [gameStatus, targetNormalized, guesses, hints],
+    );
+    const [hintNote, setHintNote] = useState('');
+    useEffect(() => { setHintNote(''); }, [targetPokemon?.id]);
+    // The note floats over the board's foot: it says its piece, then gets out of the way.
+    useEffect(() => {
+        if (!hintNote) return undefined;
+        const id = window.setTimeout(() => setHintNote(''), 3500);
+        return () => window.clearTimeout(id);
+    }, [hintNote]);
+
     // Suggestions matching character-by-character against non-empty slots in inputValue
     const suggestions = useMemo(() => {
         if (!targetPokemon || allowedPool.length === 0) return [];
@@ -498,6 +516,8 @@ export default function PokePuzzleView() {
     const keyboardStatusMap = useMemo(() => {
         const statuses = {};
         if (!targetNormalized) return statuses;
+        // A hinted letter is known to be in the name, in its place.
+        hints.forEach((i) => { statuses[targetNormalized[i]] = 'correct'; });
 
         guesses.forEach(guess => {
             const guessNorm = normalizeNameForGame(guess);
@@ -520,7 +540,16 @@ export default function PokePuzzleView() {
             }
         });
         return statuses;
-    }, [guesses, targetNormalized]);
+    }, [guesses, targetNormalized, hints]);
+
+    // One letter of the answer, in its place, for the price of a mark on the
+    // result. The tile shows it as a ghost until the trainer types over it.
+    const requestHint = () => {
+        if (nextHint < 0) return;
+        addHint(nextHint);
+        setHintNote(t('pokepuzzle.hint.revealed', { pos: nextHint + 1, letter: targetNormalized[nextHint].toUpperCase() }));
+        track('puzzle_hint', { mode, n: hints.length + 1 });
+    };
 
     // ── Input ────────────────────────────────────────────────────────────
     // One set of handlers for the on-screen keys, the physical keyboard and
@@ -586,17 +615,18 @@ export default function PokePuzzleView() {
         setInputValue(' '.repeat(targetLength));
         setSelectedCharIdx(0);
         setInvalidMessage('');
+        setHintNote('');
         setSubmitTick((n) => n + 1);
 
         if (norm === targetNormalized) {
             setSolvedNow(true);
             setEndedNow(true);
             setStatus('WON');
-            track('puzzle_finish', { mode, won: true, guesses: nextCount });
+            track('puzzle_finish', { mode, won: true, guesses: nextCount, hints: hints.length });
         } else if (nextCount >= MAX_ATTEMPTS) {
             setEndedNow(true);
             setStatus('LOST');
-            track('puzzle_finish', { mode, won: false, guesses: nextCount });
+            track('puzzle_finish', { mode, won: false, guesses: nextCount, hints: hints.length });
         }
         // Win or loss, once the result card has been read.
         if (norm === targetNormalized || nextCount >= MAX_ATTEMPTS) {
@@ -796,6 +826,11 @@ export default function PokePuzzleView() {
 
 
 
+    // "💡 2 hints" — the same words in the copied text and on the image.
+    const hintsShareLabel = hints.length === 1
+        ? t('pokepuzzle.hint.shareOne')
+        : t('pokepuzzle.hint.shareMany', { n: hints.length });
+
     // The link carries the board (`?r=`, utils/resultShareCode.js — the shape
     // of the attempt, never the answer), so where it is pasted it unfurls as
     // this result, drawn by api/og.js, rather than the game's generic card.
@@ -811,11 +846,13 @@ export default function PokePuzzleView() {
             won: gameStatus === 'WON',
             mode: mode === 'daily' ? 'daily' : 'free',
             puzzleNumber: mode === 'daily' ? getDaysSinceLaunch(selectedDate) + 1 : null,
+            hints: hints.length,
         });
         const code = encodePuzzleResult(share);
         const shareUrl = `${window.location.origin}${localizePath('/pokepuzzle', language, deployBase())}${code ? `?r=${code}` : ''}`;
+        const hintMark = hints.length ? ` · ${hintsShareLabel}` : '';
 
-        return `PokePuzzle - ${modeTitle} ${puzzleShareScore(share)}\n\n${puzzleShareToEmoji(share)}\n\n${language === 'pt' ? 'Jogue aqui' : 'Play here'}: ${shareUrl}`;
+        return `PokePuzzle - ${modeTitle} ${puzzleShareScore(share)}${hintMark}\n\n${puzzleShareToEmoji(share)}\n\n${language === 'pt' ? 'Jogue aqui' : 'Play here'}: ${shareUrl}`;
     };
 
     const copyShareText = (text) => {
@@ -870,6 +907,7 @@ export default function PokePuzzleView() {
             mode: mode === 'daily' ? 'daily' : 'free',
             // Day 1 is launch day, so the count is 1-based for a human label.
             puzzleNumber: mode === 'daily' ? getDaysSinceLaunch(selectedDate) + 1 : null,
+            hints: hints.length,
         });
         if (!share) return;
 
@@ -904,11 +942,14 @@ export default function PokePuzzleView() {
             labels: {
                 kicker: t(mode === 'daily' ? 'pokepuzzle.image.daily' : 'pokepuzzle.image.free'),
                 title: t('pokepuzzle.image.title'),
-                result: won ? t('pokepuzzle.image.won', { n: rows.length }) : t('pokepuzzle.image.lost'),
+                result: [
+                    won ? t('pokepuzzle.image.won', { n: rows.length }) : t('pokepuzzle.image.lost'),
+                    hints.length ? hintsShareLabel : null,
+                ].filter(Boolean).join(' · '),
                 play: t('pokepuzzle.image.play'),
             },
         }).catch(() => null);
-    }, [guesses, targetNormalized, gameStatus, mode, selectedDate, language, t]);
+    }, [guesses, targetNormalized, gameStatus, mode, selectedDate, language, t, hints.length, hintsShareLabel]);
 
     const handleShareImage = async () => {
         const blob = shareImageRef.current || await buildShareImage();
@@ -1093,6 +1134,24 @@ export default function PokePuzzleView() {
                                             {guesses.length}/{MAX_ATTEMPTS}
                                         </span>
                                     </span>
+                                    {gameStatus === 'IN_PROGRESS' && (
+                                        <button
+                                            type="button"
+                                            onClick={requestHint}
+                                            disabled={nextHint < 0}
+                                            className="pokepuzzle-hint-btn"
+                                            aria-label={nextHint < 0
+                                                ? t('pokepuzzle.hint.none')
+                                                : t('pokepuzzle.hint.ask', { left: hintCap - hints.length })}
+                                            title={nextHint < 0
+                                                ? t('pokepuzzle.hint.none')
+                                                : t('pokepuzzle.hint.ask', { left: hintCap - hints.length })}
+                                        >
+                                            <Lightbulb aria-hidden="true" />
+                                            <span>{t('pokepuzzle.hint.button')}</span>
+                                            <span className="pokepuzzle-hint-btn__count" aria-hidden="true">{hints.length}/{hintCap}</span>
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="pokepuzzle-tip-panel" role="tabpanel">
@@ -1149,6 +1208,10 @@ export default function PokePuzzleView() {
                                             const status = row.statuses[letterIdx];
                                             const hasLtr = letter !== '' && letter !== ' ';
                                             const isSelected = !row.submitted && letterIdx === selectedCharIdx;
+                                            // A hinted letter waits in its empty tile as a ghost; typing covers it.
+                                            const hintGhost = !row.submitted && !hasLtr && hints.includes(letterIdx)
+                                                ? targetNormalized[letterIdx]
+                                                : null;
 
                                             return (
                                                 <div
@@ -1156,7 +1219,8 @@ export default function PokePuzzleView() {
                                                     className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''}  ${row.submitted && status === 'correct' ? 'is-correct' :
                                                         row.submitted && status === 'present' ? 'is-present' :
                                                             row.submitted && status === 'absent' ? 'is-absent' : ''
-                                                        }  ${isSelected ? 'is-selected-cell' : ''}  ${!row.submitted ? 'is-active-row' : ''}`}
+                                                        }  ${isSelected ? 'is-selected-cell' : ''}  ${!row.submitted ? 'is-active-row' : ''}  ${hintGhost ? 'is-hint' : ''}`}
+                                                    title={hintGhost ? t('pokepuzzle.hint.tile') : undefined}
                                                     role="gridcell"
                                                     onClick={() => {
                                                         if (!row.submitted) {
@@ -1167,7 +1231,7 @@ export default function PokePuzzleView() {
                                                         }
                                                     }}
                                                 >
-                                                    {letter}
+                                                    {hintGhost || letter}
                                                 </div>
                                             );
                                         })}
@@ -1200,7 +1264,7 @@ export default function PokePuzzleView() {
                             {gameStatus === 'IN_PROGRESS' && (
                                 <div className="pokepuzzle-tray" ref={trayRef}>
                                     <div className="pokepuzzle-tray-pop">
-                                        <p className="pokepuzzle-tray-message" role="status" aria-live="polite">{invalidMessage}</p>
+                                        <p className={`pokepuzzle-tray-message ${!invalidMessage && hintNote ? 'is-hint' : ''}`} role="status" aria-live="polite">{invalidMessage || hintNote}</p>
                                         {inputValue.trim() && suggestions.length > 0 && (
                                             <div
                                                 className="pokepuzzle-autocomplete-list custom-scrollbar"
@@ -1330,6 +1394,12 @@ export default function PokePuzzleView() {
                                             : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
                                         }
                                     </p>
+                                    {hints.length > 0 && (
+                                        <p className="pokepuzzle-result-hints">
+                                            <Lightbulb aria-hidden="true" />
+                                            {hints.length === 1 ? t('pokepuzzle.hint.usedOne') : t('pokepuzzle.hint.usedMany', { n: hints.length })}
+                                        </p>
+                                    )}
                                     </div>
                                     </div>
 

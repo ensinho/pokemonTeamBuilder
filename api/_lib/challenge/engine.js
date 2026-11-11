@@ -1,4 +1,5 @@
 import { Battle, Teams, extractChannelMessages } from '@pkmn/sim';
+import '../simRules.js';
 
 import { FORMAT, LEVEL } from './constants.js';
 

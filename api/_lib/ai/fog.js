@@ -1,4 +1,5 @@
 import { Battle, toID } from '@pkmn/sim';
+import '../simRules.js';
 
 /**
  * `Battle.fromJSON` adopts the JSON's `log` array instead of copying it, so two

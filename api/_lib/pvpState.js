@@ -42,10 +42,13 @@
  *    the battle screen had a TERA switch; a held Z-Crystal works in Gen 9
  *    with no validator. Dynamax cannot: the sim allows it only in Gen 8.
  *
+ *  - **Quick Thaw Mod** (2026-11-11): a freeze thaws 1 time in 3 instead of
+ *    1 in 5 (`simRules.js`).
+ *
  * Battles already running keep the format they started with — it is part of
  * the replay.
  */
-export const PVP_FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod';
+export const PVP_FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Quick Thaw Mod';
 
 /** A claim on a round older than this belongs to a request that died. */
 export const CLAIM_STALE_MS = 20_000;

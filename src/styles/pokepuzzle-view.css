@@ -109,6 +109,55 @@
     color: var(--color-fg);
 }
 
+/* Letter hints (2026-11-11): one letter of the name, in its place, for a mark
+   on the result. A quiet pill beside the game's numbers — asking is a choice,
+   not a call to action. */
+.pokepuzzle-hint-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+    color: var(--color-primary);
+    font: inherit;
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.pokepuzzle-hint-btn:hover {
+    background: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
+}
+
+.pokepuzzle-hint-btn:active {
+    scale: var(--press-scale);
+}
+
+.pokepuzzle-hint-btn:disabled {
+    background: transparent;
+    color: var(--color-muted);
+    cursor: default;
+    scale: none;
+}
+
+.pokepuzzle-hint-btn svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.pokepuzzle-hint-btn__count {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+}
+
 /* Every hint card holds the same height, so switching tabs never moves the
    board below it. */
 .pokepuzzle-tip-card {
@@ -226,6 +275,14 @@
 
 .pokepuzzle-tile.is-active-row {
     cursor: pointer;
+}
+
+/* A letter a hint showed, waiting in its empty tile: green ink on a dashed
+   edge — known, but not yet typed. */
+.pokepuzzle-tile.is-hint {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-success) 60%, transparent);
+    color: color-mix(in srgb, var(--color-success) 80%, var(--color-fg));
 }
 
 /* The cursor: a ring, not a glow and not a scale — it moves on every key. */
@@ -349,6 +406,12 @@
     box-shadow: var(--shadow-md);
 }
 
+/* The hint's own line: news, not an error. */
+.pokepuzzle-tray-message.is-hint {
+    background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-success) 55%, var(--color-fg));
+}
+
 /* Empty but kept in the tree: a live region must exist before it speaks. */
 .pokepuzzle-tray-message:empty {
     padding: 0;
@@ -452,6 +515,14 @@
     flex: 1.5;
 }
 
+/* The middle row sits half a key in, as on every keyboard — so its keys are
+   the same width as the row above when the keys fill the tray (phones). */
+.pokepuzzle-keyboard-row:nth-child(2)::before,
+.pokepuzzle-keyboard-row:nth-child(2)::after {
+    content: '';
+    flex: 0.5;
+}
+
 .pokepuzzle-key.is-correct {
     background: var(--color-success);
     color: var(--color-surface);
@@ -469,6 +540,21 @@
 }
 
 /* ---- Result ------------------------------------------------------------ */
+
+.pokepuzzle-result-hints {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+}
+
+.pokepuzzle-result-hints svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
 
 .pokepuzzle-result-card {
     display: flex;
@@ -838,6 +924,9 @@
             + var(--space-4)
         );
         gap: var(--space-3);
+        /* The shell's gutter is the gutter: no second inset of our own, so the
+           board, the hints and the keyboard take the screen's whole width. */
+        padding-inline: 0;
         padding-bottom: var(--space-4);
     }
 
@@ -891,25 +980,53 @@
         margin-top: auto;
     }
 
-    /* Thumb-sized keys: a phone keyboard's height, not a laptop's. */
+    /* Thumb-sized keys that fill the tray edge to edge (2026-11-11, Enzo:
+       "deixar o teclado mais confortável… ocupar o espaço da tela"): no cap
+       on a key's width, so the ten-key row spans the whole tray, and a phone
+       keyboard's height — taller where the screen has the room. */
     .pokepuzzle-keyboard {
         gap: var(--space-2);
     }
 
+    .pokepuzzle-keyboard-row {
+        gap: var(--space-1);
+    }
+
+    .pokepuzzle-key,
+    .pokepuzzle-key.is-wide {
+        max-width: none;
+    }
+
     .pokepuzzle-key {
-        height: 3.25rem;
-        font-size: var(--text-lg);
+        height: 3.5rem;
+        border-radius: var(--radius-md);
+        font-size: var(--text-xl);
     }
 
     .pokepuzzle-key svg {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1.375rem;
+        height: 1.375rem;
     }
 
     .pokepuzzle-tip-card {
         min-height: 6rem;
     }
 
+}
+
+/* A tall phone has the room for a keyboard its own size; a short one keeps
+   the board in view. Heights on the screen's height, never a viewport unit. */
+@media (max-width: 1023px) and (min-height: 46rem) {
+    .pokepuzzle-key {
+        height: 3.75rem;
+    }
+}
+
+@media (max-width: 1023px) and (max-height: 40rem) {
+    .pokepuzzle-key {
+        height: 3rem;
+        font-size: var(--text-lg);
+    }
 }
 
 @media (max-width: 480px) {
@@ -930,10 +1047,20 @@
         row-gap: var(--space-1);
     }
 
+    /* First line: the numbers, then the hint pill at the far end. */
     .pokepuzzle-tip-meta {
-        order: -1;
-        width: 100%;
+        order: -2;
+        flex: 1 1 auto;
         padding-top: var(--space-2);
+    }
+
+    .pokepuzzle-hint-btn {
+        order: -1;
+        margin-top: var(--space-2);
+    }
+
+    .pokepuzzle-tips-container .pokepuzzle-tip-tabs {
+        flex-basis: 100%;
     }
 
     .pokepuzzle-tip-description-text {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDailyPokemonIndex, getDaysSinceLaunch } from './pokePuzzle';
+import { cleanHints, getDailyPokemonIndex, getDaysSinceLaunch, knownPositions, maxLetterHints, nextHintPosition } from './pokePuzzle';
 
 // Mock allowed pool of 1025 items
 const mockAllowedPool = Array.from({ length: 1025 }, (_, i) => ({
@@ -96,5 +96,34 @@ describe('pokePuzzle utility', () => {
                 prevIdx = idx;
             }
         });
+    });
+});
+
+describe('letter hints', () => {
+    it('allows one hint per three letters, between 1 and 3', () => {
+        expect(maxLetterHints(3)).toBe(1);
+        expect(maxLetterHints(7)).toBe(2);
+        expect(maxLetterHints(12)).toBe(3);
+    });
+
+    it('reveals a letter no guess has right, the same one for everyone, never the last unknown', () => {
+        const target = 'toxapex';
+        const guesses = ['torkoal'];
+        const known = knownPositions(guesses, target);
+        expect([...known].sort()).toEqual([0, 1]);
+        const first = nextHintPosition(target, guesses, []);
+        expect(known.has(first)).toBe(false);
+        expect(nextHintPosition(target, guesses, [])).toBe(first);
+        const second = nextHintPosition(target, guesses, [first]);
+        expect(second).not.toBe(first);
+        // Two hints is the cap for seven letters.
+        expect(nextHintPosition(target, guesses, [first, second])).toBe(-1);
+        // One letter left unknown: a hint would name the Pokémon.
+        expect(nextHintPosition('mew', ['mex'], [])).toBe(-1);
+    });
+
+    it('cleans saved hints: in range, unique, capped', () => {
+        expect(cleanHints([2, 2, -1, 9, 'x', 4, 5], 7)).toEqual([2, 4]);
+        expect(cleanHints(undefined, 7)).toEqual([]);
     });
 });

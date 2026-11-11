@@ -1,4 +1,5 @@
 import { Dex, Teams, BattleStreams } from '@pkmn/sim';
+import './simRules.js';
 
 /**
  * The turn resolver — the authority on what happens in a battle.

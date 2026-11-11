@@ -82,6 +82,8 @@ export const eventText = (event, { t, mySide = 'p1', championName, foeSimName = 
             return { text: t(event.key, event.params || {}), speaker: championName };
         case 'mega':
             return say('challenge.text.mega', { mega: megaName(event.mega) });
+        case 'transform':
+            return event.into ? say('challenge.text.transform', { into: event.into }) : { text: null, speaker: null };
         case 'tera':
             return say('challenge.text.tera', { type: t(`types.${String(event.teraType || '').toLowerCase()}`) });
         case 'zpower':

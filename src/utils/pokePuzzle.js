@@ -118,3 +118,58 @@ export const checkLetters = (guess = '', target = '') => {
 
     return result;
 };
+
+// ── Letter hints (2026-11-11) ───────────────────────────────────────────────
+// A hint gives away one letter of the answer in its place — a green tile the
+// trainer did not earn. How many were taken is part of the result: it is
+// saved with the game and travels with every share (the text, the image, the
+// forum card, the `?r=` link), so "3/8 · 2 hints" never passes for a clean 3/8.
+
+/** Hints a name of this length allows: one per three letters, between 1 and 3. */
+export const maxLetterHints = (length = 0) => Math.max(1, Math.min(3, Math.floor(length / 3)));
+
+/** Positions some guess already has right (a green tile). */
+export const knownPositions = (guesses = [], target = '') => {
+    const known = new Set();
+    for (const guess of guesses) {
+        for (let i = 0; i < target.length; i += 1) {
+            if (guess[i] === target[i]) known.add(i);
+        }
+    }
+    return known;
+};
+
+/** A stable shuffle of `0..length-1` per answer, so a day's hints come in the same order for everyone. */
+const hintOrder = (target) => {
+    let seed = 7;
+    for (const char of target) seed = (seed * 31 + char.charCodeAt(0)) % 233280;
+    const order = Array.from({ length: target.length }, (_, i) => i);
+    const rand = seededRandom(seed || 1);
+    for (let i = order.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(rand() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+};
+
+/**
+ * The position the next hint reveals, or -1 when none may be given: a letter
+ * no guess has right and no hint has shown, never the last one unknown (a
+ * hint helps find the Pokémon; it never names it), and never past the cap.
+ *
+ * @param {string} target   normalized answer
+ * @param {string[]} guesses normalized guesses so far
+ * @param {number[]} hints  positions already revealed
+ */
+export const nextHintPosition = (target = '', guesses = [], hints = []) => {
+    if (!target || hints.length >= maxLetterHints(target.length)) return -1;
+    const known = knownPositions(guesses, target);
+    const shown = new Set(hints);
+    const open = hintOrder(target).filter((i) => !known.has(i) && !shown.has(i));
+    return open.length >= 2 ? open[0] : -1;
+};
+
+/** Hinted positions that still belong to this answer, deduplicated (a saved game is data, not trust). */
+export const cleanHints = (hints, length) => (Array.isArray(hints)
+    ? [...new Set(hints.filter((i) => Number.isInteger(i) && i >= 0 && i < length))].slice(0, maxLetterHints(length))
+    : []);

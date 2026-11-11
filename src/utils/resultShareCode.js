@@ -20,20 +20,24 @@ const MAX_ROW = 20;
 const MAX_ATTEMPTS = 12;
 
 // ── PokéPuzzle ──────────────────────────────────────────────────────────────
-// `{day}.{w|l}.{max}.{rows}`: day 0 = free play; rows joined by `-`, one
-// c (correct) / p (present) / a (absent) per letter. `12.w.8.apcaa-ccccc`.
+// `{day}.{w|l}.{max}.{rows}[.h{hints}]`: day 0 = free play; rows joined by
+// `-`, one c (correct) / p (present) / a (absent) per letter; the letter
+// hints taken, when any (2026-11-11 — a code without them is a game without
+// them, so every older link still reads). `12.w.8.apcaa-ccccc.h2`.
 
-/** @param {{ puzzleNumber: number|null, won: boolean, maxAttempts: number, rows: string[] }} share */
+/** @param {{ puzzleNumber: number|null, won: boolean, maxAttempts: number, rows: string[], hints?: number }} share */
 export function encodePuzzleResult(share) {
     if (!share?.rows?.length) return '';
     const day = Number.isInteger(share.puzzleNumber) && share.puzzleNumber > 0 ? share.puzzleNumber : 0;
-    return [day, share.won ? 'w' : 'l', share.maxAttempts, share.rows.join('-')].join('.');
+    const hints = Number.isInteger(share.hints) && share.hints > 0 ? Math.min(share.hints, 9) : 0;
+    return [day, share.won ? 'w' : 'l', share.maxAttempts, share.rows.join('-'), ...(hints ? [`h${hints}`] : [])].join('.');
 }
 
 export function decodePuzzleResult(code) {
     const parts = typeof code === 'string' ? code.split('.') : [];
-    if (parts.length !== 4) return null;
-    const [dayText, outcome, maxText, rowsText] = parts;
+    if (parts.length !== 4 && parts.length !== 5) return null;
+    const [dayText, outcome, maxText, rowsText, hintsText] = parts;
+    if (hintsText !== undefined && !/^h[1-9]$/.test(hintsText)) return null;
     if (!/^\d{1,5}$/.test(dayText) || !/^[wl]$/.test(outcome) || !/^\d{1,2}$/.test(maxText)) return null;
     const maxAttempts = Number(maxText);
     const rows = rowsText.split('-');
@@ -46,7 +50,8 @@ export function decodePuzzleResult(code) {
     if (won && (!solved(rows[rows.length - 1]) || rows.slice(0, -1).some(solved))) return null;
     if (!won && (rows.length !== maxAttempts || rows.some(solved))) return null;
     const day = Number(dayText);
-    return { puzzleNumber: day > 0 ? day : null, won, maxAttempts, attempts: rows.length, rows };
+    const hints = hintsText ? Number(hintsText.slice(1)) : 0;
+    return { puzzleNumber: day > 0 ? day : null, won, maxAttempts, attempts: rows.length, rows, hints };
 }
 
 // ── Champion Challenge ──────────────────────────────────────────────────────

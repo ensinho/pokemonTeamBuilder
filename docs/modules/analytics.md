@@ -33,7 +33,8 @@ measures first.
 | `forum_answer_accepted` | Pergunte ao Professor: an answer accepted | — |
 | `challenge_finish` | any Champion run ends | `champion`, `board`, `result`, `practice` |
 | `challenge_share` | a Champion result posted to the Diário do dia | `champion`, `board` |
-| `puzzle_finish` | a PokéPuzzle ends | `mode`, `won`, `guesses` |
+| `puzzle_finish` | a PokéPuzzle ends | `mode`, `won`, `guesses`, `hints` |
+| `puzzle_hint` | a letter hint is taken (2026-11-11) | `mode`, `n` (which hint) |
 | `puzzle_share` | a puzzle result posted to the Diário do dia | `channel` |
 | `quiz_finish` | a quiz run completed | `mode` (generation · category), `total` |
 | `quiz_duel_share` | a quiz duel link shared or copied | `found`, `total` |
