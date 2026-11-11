@@ -329,7 +329,7 @@ export default {
         types: { title: 'Tabela de tipos Pokémon', description: 'A tabela de tipos Pokémon completa: fraquezas, resistências e imunidades dos 18 tipos, com os Pokémon de cada tipo.' },
         bestTeams: { title: 'Melhores times de Pokémon VGC', description: 'Os times que chegaram ao topo dos torneios de VGC, os Pokémon que eles mais usam e as duplas que se repetem, com importação para o montador em um toque.' },
         pokemon: {
-            title: '{{name}}: fraquezas, status e builds',
+            title: '{{name}}: moveset, fraquezas e status',
             description: '{{name}} é um Pokémon do tipo {{types}}, fraco contra {{weaknesses}}. Veja status base, sets competitivos do Smogon, speed tiers e uso em torneios.',
             fallbackDescription: 'Veja status, fraquezas, sets competitivos, speed tiers e uso em torneios de {{name}}.',
         },
@@ -401,6 +401,7 @@ export default {
             allPokemon: 'Todos os Pokémon',
             roster: 'Time',
             build: '{{name}}: build mais usada em {{format}}',
+            smogonSets: 'Moveset de {{name}}: sets do Smogon para {{format}}',
             tournamentTeams: 'Times de torneio com {{name}}',
             tournamentPartners: 'Parceiros mais comuns em torneios',
             tournamentShare: 'Em {{count}} de {{total}} times de torneio recentes.',

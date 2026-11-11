@@ -349,7 +349,7 @@ export default {
         types: { title: 'Pokémon Type Chart', description: 'The complete Pokémon type chart: weaknesses, resistances, and immunities for all 18 types, with the Pokémon of each type.' },
         bestTeams: { title: 'Best Pokémon VGC Teams', description: 'The teams that finished on top of VGC tournaments, the Pokémon they use most and the pairs that keep coming back, each one a tap away from the builder.' },
         pokemon: {
-            title: '{{name}}: weaknesses, stats & builds',
+            title: '{{name}}: moveset, weaknesses & stats',
             description: '{{name}} is a {{types}}-type Pokémon, weak to {{weaknesses}}. See its base stats, competitive Smogon movesets, speed tiers, and tournament usage.',
             fallbackDescription: 'See stats, weaknesses, competitive movesets, speed tiers, and tournament usage for {{name}}.',
         },
@@ -421,6 +421,7 @@ export default {
             allPokemon: 'Every Pokémon',
             roster: 'Team',
             build: '{{name}}: most used build in {{format}}',
+            smogonSets: '{{name}} moveset: Smogon sets for {{format}}',
             tournamentTeams: 'Tournament teams with {{name}}',
             tournamentPartners: 'Most common partners in tournaments',
             tournamentShare: 'On {{count}} of {{total}} recent tournament teams.',

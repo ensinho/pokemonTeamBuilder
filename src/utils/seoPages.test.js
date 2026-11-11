@@ -67,7 +67,7 @@ describe('joinList', () => {
 describe('pageMeta', () => {
     it('writes a Pokémon page in Portuguese with its weaknesses', () => {
         const meta = pageMeta('/pokemon/6', 'pt', { pokemon: { id: 6, name: 'charizard', types: ['fire', 'flying'] } });
-        expect(meta.title).toBe('Charizard: fraquezas, status e builds | PokemonBuilder');
+        expect(meta.title).toBe('Charizard: moveset, fraquezas e status | PokemonBuilder');
         expect(meta.description).toContain('do tipo Fogo/Voador, fraco contra Pedra, Água e Elétrico');
         expect(meta.canonicalPath).toBe('/pokemon/charizard');
         expect(meta.breadcrumbs.map((c) => c.path)).toEqual(['/', '/pokedex', '/pokemon/charizard']);
@@ -75,7 +75,7 @@ describe('pageMeta', () => {
 
     it('falls back to the slug when the Pokémon is unknown', () => {
         const meta = pageMeta('/pokemon/mr-mime', 'en');
-        expect(meta.title).toBe('Mr Mime: weaknesses, stats & builds | PokemonBuilder');
+        expect(meta.title).toBe('Mr Mime: moveset, weaknesses & stats | PokemonBuilder');
         expect(meta.canonicalPath).toBe('/pokemon/mr-mime');
     });
 

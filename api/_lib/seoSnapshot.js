@@ -24,6 +24,7 @@ import { typeChart } from '../../src/constants/typeChart.js';
 import { GUIDE_INDEX } from '../../src/content/guideIndex.js';
 import { bestTeamsNotes, dayLabel, metaNotes } from '../../src/utils/dataNotes.js';
 import { SITE_PAGE_PATHS } from '../../src/utils/seoPages.js';
+import { formatSetSpread } from '../../src/utils/smogonSets.js';
 
 const NAV = [
     ['/builder', 'builder'],
@@ -44,6 +45,8 @@ const MOVE_TYPE = (raw) => String(raw || '').toLowerCase();
 const HOLDER_LIMIT = 60;
 /** How many of the default format's Pokémon the Meta page's HTML lists. */
 const META_TOP = 30;
+/** How many of a Pokémon's Smogon sets its page's HTML writes. */
+const SMOGON_SET_LIMIT = 3;
 
 const STAT_KEYS = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
 const LANDING_FEATURES = ['builder', 'pokedex', 'calc', 'meta', 'types', 'challenge'];
@@ -52,6 +55,7 @@ const LANDING_LINKS = {
 };
 
 /**
+ * `smogon` — the Pokémon's smogon.json entry ({ gen, sets }), for its page;
  * `entity` — { kind: 'move'|'ability'|'item', data } from the baked dex
  * (battle-dex.json / seo-dex.json, see render-meta.js); `guide` — a guide's
  * text (content/guides.js); `usage` — the default format, for /meta;
@@ -59,7 +63,7 @@ const LANDING_LINKS = {
  * meta: format, battles, month, kind); `sitePage` — About / How it works /
  * Privacy / Terms (content/sitePages.js); `notFound` — the page does not exist.
  */
-export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, pokemons = [], entity = null, guide = null, sitePage = null, usage = null, notes = null, notFound = false }) {
+export function renderSnapshot({ meta, language, appPath, pokemon = null, team = null, sharedTeam = null, presence = null, bestTeams = null, build = null, smogon = null, pokemons = [], entity = null, guide = null, sitePage = null, usage = null, notes = null, notFound = false }) {
     const t = (key, params) => translate(language, key, params);
     const href = (path) => escapeHtml(localizePath(path, language));
     const link = (path, text) => `<a href="${href(path)}">${escapeHtml(text)}</a>`;
@@ -146,6 +150,28 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
         ].filter(Boolean);
         body.push(`<h2>${escapeHtml(t('seo.snapshot.build', { name: formatSlug(pokemon.name), format: build.format }))}</h2>`);
         body.push(list(rows));
+    }
+
+    // The Competitive tab's Smogon analysis (SmogonCompetitivePanel, from
+    // smogon.json): each recommended set's item, ability, nature and spread,
+    // Tera and moves, as links. The sets' written analysis stays in the app —
+    // it is Smogon's prose, and the facts are what answer "best moveset".
+    if (meta.key === 'pokemon' && pokemon && smogon?.sets?.length) {
+        const label = (key) => escapeHtml(t(`pdetail.build.${key}`));
+        const pretty = (slug) => formatSlug(slug);
+        body.push(`<h2>${escapeHtml(t('seo.snapshot.smogonSets', { name: formatSlug(pokemon.name), format: smogon.gen }))}</h2>`);
+        for (const set of smogon.sets.slice(0, SMOGON_SET_LIMIT)) {
+            const spread = formatSetSpread(set);
+            const rows = [
+                set.item ? `${label('item')}: ${[set.item, ...(set.itemAlts || [])].map((i) => link(`/items/${i}`, pretty(i))).join(' / ')}` : null,
+                set.ability ? `${label('ability')}: ${link(`/abilities/${set.ability}`, pretty(set.ability))}` : null,
+                set.nature || spread ? `${label('spread')}: ${escapeHtml([set.nature && pretty(set.nature), spread].filter(Boolean).join(' · '))}` : null,
+                set.tera?.length ? `${label('tera')}: ${set.tera.map((x) => (typeChart[x] ? typeLink(x) : escapeHtml(pretty(x)))).join(' / ')}` : null,
+                set.moves?.length ? `${label('moves')}: ${set.moves.map((slot) => slot.map((mv) => link(`/moves/${mv}`, pretty(mv))).join(' / ')).join(', ')}` : null,
+            ].filter(Boolean);
+            body.push(`<h3>${escapeHtml(set.name)}</h3>`);
+            body.push(list(rows));
+        }
     }
 
     // What the page's "In tournaments" card shows (utils/tournamentPresence.js):

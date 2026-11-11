@@ -83,6 +83,25 @@ try {
     console.error("Failed to load the default usage format in render-meta:", e?.message || e);
 }
 
+// The Smogon analysis the Pokémon page's Competitive tab shows (smogon.json):
+// only the format and the sets' facts, not the written analysis.
+let smogonById = {};
+try {
+    const file = path.join(process.cwd(), 'dist', 'data', 'smogon.json');
+    if (fs.existsSync(file)) {
+        const byId = JSON.parse(fs.readFileSync(file, 'utf8')).byId || {};
+        for (const [id, entry] of Object.entries(byId)) {
+            smogonById[id] = {
+                gen: entry.gen,
+                sets: (entry.sets || []).map(({ name, item, itemAlts, ability, nature, tera, moves, evs, sp }) => ({ name, item, itemAlts, ability, nature, tera, moves, evs, sp })),
+            };
+        }
+    }
+} catch (e) {
+    smogonById = {};
+    console.error("Failed to load smogon.json in render-meta:", e?.message || e);
+}
+
 function findPokemon(param) {
     if (!param) return null;
     let clean = param;
@@ -128,6 +147,7 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
     const allPokemons = data.pokemons || pokemons;
     const allTeams = data.tournamentTeams || tournamentTeams;
     const usage = data.usage === undefined ? defaultUsage : data.usage;
+    const smogonSets = data.smogon || smogonById;
     let html = shell;
 
     const { language, appPath: rawAppPath } = splitLocalePath(urlPath);
@@ -165,7 +185,7 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
 
     // Does the page exist, and should it be indexed? (2026-10-30: every path
     // answered 200 with an indexable page — /pokemon/notreal became
-    // "Notreal: weaknesses, stats & builds".) Lookups only count as a miss
+    // "Notreal: weaknesses, stats & builds", its old title.) Lookups only count as a miss
     // when their data loaded; a cold start without it keeps the old answer.
     let status = 200;
     let indexable = true;
@@ -255,6 +275,7 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
         meta: { ...meta, title, description }, language, appPath,
         pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam,
         presence, bestTeams, build, pokemons: allPokemons,
+        smogon: meta.key === 'pokemon' && context.pokemon ? smogonSets[context.pokemon.id] || null : null,
         entity, guide, sitePage: sitePageContent(meta.key, language), usage: meta.key === 'meta' ? usage : null, notes, notFound: status === 404,
     });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);
