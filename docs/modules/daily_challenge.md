@@ -172,7 +172,7 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 ## Traps found while building it
 
 - **`Battle.toJSON()` returns `log` by reference, and `Battle.fromJSON` adopts it.** A clone made from a raw `toJSON()` writes its imagined turns into the live battle's log — the player would receive lines from simulated futures. `engine.snapshot()` copies the log; `fog.js` gives every clone its own (`cloneOf`). Caught by the I2 replay test (live log 2,220 lines vs replay 203).
-- **`gen9customgame` is a debug format**: it reports exact HP to both sides (`reportExactHP`). The challenge uses `gen9anythinggoes@@@!Team Preview,Sleep Clause Mod` (Terastal Clause until 2026-11-09; runs keep the format they were created with) — percentages for the other side, no debug lines. (PvP still uses customgame; see wounds.)
+- **`gen9customgame` is a debug format**: it reports exact HP to both sides (`reportExactHP`). The challenge uses `gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Quick Thaw Mod` (Terastal Clause until 2026-11-09; Quick Thaw Mod since 2026-11-11; runs keep the format they were created with) — percentages for the other side, no debug lines. (PvP still uses customgame; see wounds.)
 - **`|t:|` lines carry `Date.now()`** — stripped in `engine.js`, or no two runs of a battle are byte-identical.
 - **Nothing is emitted until `battle.sendUpdates()`**; `apply` flushes after every choice.
 - **Per-player channels are 1 and 2** in `extractChannelMessages` (0 is the spectator, −1 omniscient).
@@ -219,3 +219,8 @@ npm run ai:arena -- --cynthia all --vs random,greedy --games 80
 npm run ai:dataset -- --battles 1500 && npm run ai:train      # retrain M1
 curl https://pokemonbuilder.app/api/challenge?ping=1           # then the bare GET for the self-check
 ```
+
+## Our own rules and Transform (2026-11-11)
+
+- **Quick Thaw Mod** (`api/_lib/simRules.js`): a frozen Pokémon thaws 1 time in 3 before it moves instead of the games' 1 in 5 (an extra 1-in-6 roll at priority 11, ahead of `frz`'s own). It is a ruleset registered on `Dex.data.Rulesets` when `simRules.js` is imported — `battleResolver.js`, `challenge/engine.js` and `ai/fog.js` do — and it joins a battle only through its format string, so a run or PvP battle created before it replays exactly as it was played. A new rule of ours goes in the same file and the same way. `simRules.test.js` measures the rate.
+- **Transform** (Ditto, Imposter, Mew): `|-transform|p2a: Ditto|p1a: Iron Hands|…` — `readBattleField` sets `active.transformedInto` (the target as it looks, copying its stat stages, with a `transform` volatile chip, TRANSF) until the switch-out; `DsBattleScene` draws that sprite and keeps the box's own name; the timeline emits a `transform` event ("Ditto inimigo se transformou em Iron Hands!") that flashes like a Mega Evolution.

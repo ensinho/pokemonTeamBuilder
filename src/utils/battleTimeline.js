@@ -50,6 +50,8 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
     // The forme a side's active just changed into (`detailschange` comes right
     // before `-mega`): what the Mega Evolution line names.
     const formes = { p1: null, p2: null };
+    // What a side's active has Transformed into, until it switches out.
+    const transformed = { p1: null, p2: null };
     // The move the next direct `-damage` (no `[from]`) belongs to, and whether
     // it landed hard (a critical hit, super effective): the scene's flare
     // takes its colour and size from it.
@@ -70,6 +72,7 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
                 if (!subject) break;
                 const species = speciesOf(parts[3]);
                 names[subject.side].set(subject.nickname, species);
+                transformed[subject.side] = null;
                 emit({ type: 'switch', side: subject.side, species, hpPct: hpPctOf(parts[4]), drag: tag === 'drag' });
                 break;
             }
@@ -110,6 +113,14 @@ export const toTimeline = (lines = [], { from = 0 } = {}) => {
                 // `|-mega|p1a: Charizard|Charizard|Charizardite X`
                 const who = actor(parseSubject(parts[2]));
                 if (who) emit({ type: 'mega', ...who, mega: formes[who.side] || who.species, item: parts[4] || null });
+                break;
+            }
+            case '-transform': {
+                // `|-transform|p2a: Ditto|p1a: Iron Hands|[from] ability: Imposter`
+                const who = actor(parseSubject(parts[2]));
+                const into = actor(parseSubject(parts[3]));
+                if (who) emit({ type: 'transform', ...who, into: into ? (transformed[into.side] || into.species) : null });
+                if (who && into) transformed[who.side] = transformed[into.side] || into.species;
                 break;
             }
             case '-terastallize': {
@@ -232,6 +243,7 @@ const BASE_MS = {
     item: 700,
     dialogue: 1900,
     mega: 2200,
+    transform: 1500,
     end: 1400,
     turn: 0,
 };

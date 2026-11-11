@@ -95,3 +95,15 @@ describe('timing', () => {
         expect(isSilent({ type: 'hp', from: 'item: Leftovers' })).toBe(false);
     });
 });
+
+describe('toTimeline: Transform', () => {
+    it('says what the Pokémon became, by species', () => {
+        const events = toTimeline([
+            '|switch|p1a: Big Fish|Milotic, L50, F|202/202',
+            '|switch|p2a: Ditto|Ditto, L50|100/100',
+            '|-transform|p2a: Ditto|p1a: Big Fish|[from] ability: Imposter',
+        ]);
+        expect(events.at(-1)).toMatchObject({ type: 'transform', side: 'p2', species: 'Ditto', into: 'Milotic', lineIndex: 2 });
+        expect(isSilent(events.at(-1))).toBe(false);
+    });
+});

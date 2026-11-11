@@ -10,7 +10,7 @@ describe('PokéPuzzle result code', () => {
         const code = encodePuzzleResult(share);
         expect(code).toMatch(/^42\.w\.8\.[cpa-]+$/);
         expect(code).not.toMatch(/ditto|eevee|pichu/);
-        expect(decodePuzzleResult(code)).toEqual({ puzzleNumber: 42, won: true, maxAttempts: 8, attempts: 3, rows: share.rows });
+        expect(decodePuzzleResult(code)).toEqual({ puzzleNumber: 42, won: true, maxAttempts: 8, attempts: 3, rows: share.rows, hints: 0 });
     });
 
     it('marks free play as day 0 and a loss as every attempt used', () => {
@@ -70,5 +70,18 @@ describe('quiz duel code', () => {
         expect(decodeQuizDuel('zz.1.2')).toBeNull();
         expect(decodeQuizDuel('1.9.2')).toBeNull();
         expect(decodeQuizDuel('<script>')).toBeNull();
+    });
+});
+
+describe('PokéPuzzle codes with hints', () => {
+    it('carries the hints taken, and reads a code from before hints as none', () => {
+        const share = { puzzleNumber: 7, won: true, maxAttempts: 8, rows: ['apcaa', 'ccccc'], hints: 2 };
+        const code = encodePuzzleResult(share);
+        expect(code).toBe('7.w.8.apcaa-ccccc.h2');
+        expect(decodePuzzleResult(code)).toMatchObject({ hints: 2, attempts: 2, won: true });
+        expect(decodePuzzleResult('7.w.8.apcaa-ccccc')).toMatchObject({ hints: 0 });
+        expect(encodePuzzleResult({ ...share, hints: 0 })).toBe('7.w.8.apcaa-ccccc');
+        expect(decodePuzzleResult('7.w.8.apcaa-ccccc.h0')).toBe(null);
+        expect(decodePuzzleResult('7.w.8.apcaa-ccccc.lots')).toBe(null);
     });
 });

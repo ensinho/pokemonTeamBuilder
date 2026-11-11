@@ -130,6 +130,7 @@ export const CONDITIONS = {
     yawn: { kind: 'volatile', short: 'YAWN', name: 'Yawn' },
     curse: { kind: 'volatile', short: 'CURSE', name: 'Curse' },
     perish: { kind: 'volatile', short: 'PERISH', name: 'Perish Song' },
+    transform: { kind: 'volatile', label: 'transform' },
     // The whole field's.
     sun: { kind: 'field', label: 'sun' },
     rain: { kind: 'field', label: 'rain' },
@@ -311,6 +312,19 @@ export const readBattleField = (lines = []) => {
                 const ident = parseIdent(rest[0]);
                 const active = ident && state.sides[ident.side].active;
                 if (active) Object.assign(active, parseDetails(rest[1]));
+                break;
+            }
+            case '-transform': {
+                // `|-transform|p2a: Ditto|p1a: Iron Hands|[from] ability: Imposter`:
+                // the box keeps its own name, the sprite becomes the target's
+                // (as it looks now — a Ditto copying a Ditto copies its copy),
+                // and the stat stages are copied with it. A switch-out ends it.
+                const active = activeOf(rest[0]);
+                const target = activeOf(rest[1]);
+                if (!active) break;
+                active.transformedInto = target ? (target.transformedInto || target.species) : null;
+                if (target) active.boosts = cleanBoosts(target.boosts);
+                active.volatiles = { ...active.volatiles, transform: true };
                 break;
             }
             case '-terastallize': {

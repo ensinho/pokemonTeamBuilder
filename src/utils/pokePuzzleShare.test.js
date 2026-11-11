@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPuzzleShare, puzzleShareToEmoji, puzzleShareScore, STATUS_BY_CODE } from './pokePuzzleShare';
+import { buildPuzzleShare, puzzleShareHints, puzzleShareToEmoji, puzzleShareScore, STATUS_BY_CODE } from './pokePuzzleShare';
 
 const game = (over = {}) => ({
     guesses: ['pichuu', 'raichu'],
@@ -94,5 +94,13 @@ describe('rendering helpers', () => {
     it('is empty rather than throwing on junk', () => {
         expect(puzzleShareToEmoji(null)).toBe('');
         expect(puzzleShareToEmoji({ rows: [] })).toBe('');
+    });
+});
+
+describe('hints in the share', () => {
+    it('records how many hints were taken, 0 for an older payload', () => {
+        expect(buildPuzzleShare({ guesses: ['abc'], target: 'abc', won: true, hints: 1 }).hints).toBe(1);
+        expect(buildPuzzleShare({ guesses: ['abc'], target: 'abc', won: true }).hints).toBe(0);
+        expect(puzzleShareHints({ rows: ['ccc'] })).toBe(0);
     });
 });

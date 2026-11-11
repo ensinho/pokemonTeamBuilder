@@ -25,6 +25,7 @@ const EMOJI = { c: '🟩', p: '🟨', a: '⬛' };
  * @param {boolean} game.won
  * @param {'daily'|'free'} game.mode
  * @param {number|null} game.puzzleNumber  which day it was, when known
+ * @param {number} game.hints        letter hints taken (utils/pokePuzzle.js) — part of the result
  * @returns {object|null} payload for a forum message, or null if nothing to share
  */
 export function buildPuzzleShare({
@@ -34,6 +35,7 @@ export function buildPuzzleShare({
     won = false,
     mode = 'daily',
     puzzleNumber = null,
+    hints = 0,
 } = {}) {
     // The board only ever accepts a guess exactly as long as the answer, so a
     // mismatch cannot come from play — but a ragged row would render a broken
@@ -53,8 +55,18 @@ export function buildPuzzleShare({
         // the first render — so the row width gives nothing away.
         wordLength: rows[0].length,
         puzzleNumber: Number.isFinite(puzzleNumber) ? puzzleNumber : null,
+        hints: puzzleShareHints({ hints }),
         rows,
     };
+}
+
+/**
+ * Letter hints the sharer took, 0 when none — or when the payload predates
+ * hints (a share from before 2026-11-11 has no field, and took none).
+ */
+export function puzzleShareHints(share) {
+    const n = Number(share?.hints);
+    return Number.isInteger(n) && n > 0 ? Math.min(n, 9) : 0;
 }
 
 /** The familiar emoji grid, for plain-text contexts (topic previews, clipboard). */

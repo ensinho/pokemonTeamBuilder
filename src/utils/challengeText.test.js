@@ -37,3 +37,10 @@ describe('eventText', () => {
         expect(keys(TRANSLATIONS.pt.challenge.text).sort()).toEqual(keys(TRANSLATIONS.en.challenge.text).sort());
     });
 });
+
+describe('eventText: Transform', () => {
+    it('names what the Pokémon transformed into', () => {
+        expect(eventText({ type: 'transform', side: 'p2', species: 'Ditto', into: 'Iron Hands' }, ctx('pt')).text).toBe('Ditto inimigo se transformou em Iron Hands!');
+        expect(eventText({ type: 'transform', side: 'p1', species: 'Ditto', into: 'Milotic' }, ctx('en')).text).toBe('Ditto transformed into Milotic!');
+    });
+});

@@ -67,6 +67,7 @@ export const emptySession = () => ({
     guesses: [],
     gameStatus: 'IN_PROGRESS',
     unlockedTips: { ...DEFAULT_TIPS },
+    hints: [],               // letter positions revealed by a hint, in order
     details: null,           // { types, description, image, id }
     detailsLoading: false,
 });
@@ -85,6 +86,7 @@ export function reducer(state, action) {
                 guesses: action.guesses || [],
                 gameStatus: action.gameStatus || 'IN_PROGRESS',
                 unlockedTips: action.unlockedTips || { ...DEFAULT_TIPS },
+                hints: Array.isArray(action.hints) ? action.hints : [],
                 details: null,
                 detailsLoading: false,
             };
@@ -100,6 +102,10 @@ export function reducer(state, action) {
         case 'SET_STATUS':
             if (state.status !== 'READY') return state;
             return { ...state, gameStatus: action.gameStatus };
+        case 'ADD_HINT':
+            if (state.status !== 'READY' || state.gameStatus !== 'IN_PROGRESS') return state;
+            if (!Number.isInteger(action.position) || state.hints.includes(action.position)) return state;
+            return { ...state, hints: [...state.hints, action.position] };
         case 'UNLOCK_TIP':
             if (state.status !== 'READY') return state;
             return { ...state, unlockedTips: { ...state.unlockedTips, [action.tip]: true } };
@@ -167,6 +173,7 @@ export function useSessionGame({ userId, allowedPool, language, getDailyIndex, o
             guesses: state && state.targetId === target.id ? state.guesses : [],
             gameStatus: state && state.targetId === target.id ? state.gameStatus : 'IN_PROGRESS',
             unlockedTips: state && state.targetId === target.id ? state.unlockedTips : undefined,
+            hints: state && state.targetId === target.id ? state.hints : undefined,
         });
         if (onReady) onReady(target, key);
     }, [readSaved]);
@@ -196,6 +203,7 @@ export function useSessionGame({ userId, allowedPool, language, getDailyIndex, o
             gameStatus: session.gameStatus,
             targetId: session.target.id,
             unlockedTips: session.unlockedTips,
+            hints: session.hints,
             updatedAt: new Date().toISOString(),
         };
         const suffix = localSuffix(session.key);
@@ -265,6 +273,7 @@ export function useSessionGame({ userId, allowedPool, language, getDailyIndex, o
     const addGuess = useCallback((name) => dispatch({ type: 'ADD_GUESS', name }), []);
     const setStatus = useCallback((gameStatus) => dispatch({ type: 'SET_STATUS', gameStatus }), []);
     const unlockTip = useCallback((tip) => dispatch({ type: 'UNLOCK_TIP', tip }), []);
+    const addHint = useCallback((position) => dispatch({ type: 'ADD_HINT', position }), []);
 
-    return { session, loadSession, startRandomOngoing, addGuess, setStatus, unlockTip };
+    return { session, loadSession, startRandomOngoing, addGuess, setStatus, unlockTip, addHint };
 }

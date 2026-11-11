@@ -239,7 +239,8 @@ function Combatant({ mon, side, current, feetTable, reducedMotion }) {
     const bodyRef = useRef(null);
     const mine = side === 'mine';
     const sideId = mine ? 'p1' : 'p2';
-    const megaAt = current?.type === 'mega' && current.side === sideId ? current.lineIndex : null;
+    // A Mega Evolution and a Transform flash the same way: the body goes white and comes back changed.
+    const megaAt = (current?.type === 'mega' || current?.type === 'transform') && current.side === sideId ? current.lineIndex : null;
     useLayoutEffect(() => {
         const body = bodyRef.current;
         if (megaAt === null || reducedMotion || typeof body?.animate !== 'function') return undefined;
@@ -248,7 +249,8 @@ function Combatant({ mon, side, current, feetTable, reducedMotion }) {
     }, [megaAt, reducedMotion]);
 
     if (!mon) return null;
-    const sprite = getDsSprite(mon.species, { back: mine, shiny: mon.shiny });
+    // Transformed (Ditto, Mew's Transform, Imposter), it looks like what it copied; the box keeps its name.
+    const sprite = getDsSprite(mon.transformedInto || mon.species, { back: mine, shiny: mon.shiny });
     const attacking = current?.type === 'move' && current.side === sideId && !current.still;
     const hit = current?.type === 'hp' && current.side === sideId && !current.heal;
     const classes = [

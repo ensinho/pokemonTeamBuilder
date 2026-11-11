@@ -290,3 +290,31 @@ describe('hazards, screens, volatiles and the field (the HUD\'s condition chips)
         expect(chips(['|-weather|Snowscape']).field).toEqual(['snow']);
     });
 });
+
+describe('Transform (Ditto, Imposter)', () => {
+    const LINES = [
+        '|switch|p1a: Milotic|Milotic, L50, F|202/202',
+        '|switch|p2a: Ditto|Ditto, L50|100/100',
+        '|-transform|p2a: Ditto|p1a: Milotic|[from] ability: Imposter',
+    ];
+
+    it('keeps the name, wears the target\'s species and copies its stages', () => {
+        const field = readBattleField([
+            '|switch|p1a: Milotic|Milotic, L50, F|202/202',
+            '|-boost|p1a: Milotic|atk|2',
+            '|switch|p2a: Ditto|Ditto, L50|100/100',
+            '|-transform|p2a: Ditto|p1a: Milotic|[from] ability: Imposter',
+        ]);
+        const ditto = field.sides.p2.active;
+        expect(ditto.species).toBe('Ditto');
+        expect(ditto.transformedInto).toBe('Milotic');
+        expect(ditto.boosts).toEqual({ atk: 2 });
+        expect(sideConditions(field.sides.p2).map((c) => c.id)).toContain('transform');
+    });
+
+    it('ends when it switches out', () => {
+        const field = readBattleField([...LINES, '|switch|p2a: Ditto|Ditto, L50|100/100']);
+        expect(field.sides.p2.active.transformedInto).toBeUndefined();
+        expect(field.sides.p2.active.volatiles.transform).toBeUndefined();
+    });
+});

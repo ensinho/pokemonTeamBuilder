@@ -19,10 +19,13 @@
  *  - **Tera and Z-Moves for the player** (2026-11-09; Terastal Clause until
  *    then). The champion never uses either (`ai/options.js`). Runs keep the
  *    format they were created with, so older runs still replay.
+ *  - **Quick Thaw Mod** (2026-11-11): a frozen Pokémon thaws 1 time in 3, not
+ *    1 in 5 — our own rule, registered by `../simRules.js`, which every module
+ *    that builds a battle imports. Older runs keep the format without it.
  *  - **Sleep Clause Mod** acts in battle. Species, OHKO and Evasion Moves clauses
  *    are validator rules, so `validateTeam` enforces them instead.
  */
-export const FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod';
+export const FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Quick Thaw Mod';
 
 /** Everyone plays at 50, Cynthia included — Battle Tower rules. */
 export const LEVEL = 50;

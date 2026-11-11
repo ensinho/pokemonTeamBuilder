@@ -94,7 +94,10 @@ export function resultShareMeta({ kind, data }, language) {
         const score = `${data.won ? data.attempts : 'X'}/${data.maxAttempts}`;
         return {
             title: data.puzzleNumber ? t('puzzleTitle', { n: data.puzzleNumber, score }) : t('puzzleFreeTitle', { score }),
-            description: data.won ? t('puzzleWon', { attempts: data.attempts, max: data.maxAttempts }) : t('puzzleLost'),
+            description: [
+                data.won ? t('puzzleWon', { attempts: data.attempts, max: data.maxAttempts }) : t('puzzleLost'),
+                data.hints > 0 ? t(data.hints === 1 ? 'puzzleHint' : 'puzzleHints', { n: data.hints }) : null,
+            ].filter(Boolean).join(' '),
             score,
             cta: t('puzzleCta'),
         };
