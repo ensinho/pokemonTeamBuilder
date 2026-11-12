@@ -171,6 +171,32 @@ export function personaPicks(profile, max = 4) {
     return [...new Set(queue)].slice(0, max);
 }
 
+/** Where a trainer goes next once their own picks are already on the Home, most useful first. */
+const MORE_BY_INTEREST = {
+    competitive: ['meta', 'damageCalc', 'speedTiers', 'bestTeams', 'guides', 'types', 'tournaments'],
+    franchise: ['pokedex', 'gyms', 'types', 'moves', 'generationQuiz'],
+    minigames: ['generationQuiz', 'pokedex', 'types', 'moves', 'gyms'],
+};
+
+/**
+ * The Home's "Para você" doors (2026-11-12, "um assunto, um lugar"): the
+ * persona's picks minus what the hero and the Rota do dia already show today
+ * (`exclude`), topped up from the persona's next destinations so the row is
+ * always `max` long. A Challenger's four picks were the PokéPuzzle, the
+ * Champion and the battles — all three already above the doors.
+ */
+export function homeDoors(profile, { exclude = [], max = 4 } = {}) {
+    const interests = orderedInterests(profile);
+    if (interests.length === 0) return [];
+    const skip = new Set(exclude);
+    const queue = [
+        ...personaPicks(profile, Object.keys(PICK_DESTINATIONS).length),
+        ...interests.flatMap((interest) => MORE_BY_INTEREST[interest] || []),
+        ...Object.keys(PICK_DESTINATIONS),
+    ];
+    return [...new Set(queue)].filter((key) => !skip.has(key)).slice(0, max);
+}
+
 // ── The rail ───────────────────────────────────────────────────────────────
 
 /** The rail's folding sections, in the order the app ships them. */

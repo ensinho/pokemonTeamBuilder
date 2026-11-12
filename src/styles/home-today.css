@@ -186,8 +186,11 @@
     background-position: center;
     background-size: cover;
     mix-blend-mode: luminosity;
-    opacity: 0.22;
+    opacity: 0.16;
     pointer-events: none;
+    /* The copy's side stays the plain tint (2026-11-12): a wallpaper under
+       the words made the hero read as muddy. */
+    mask-image: linear-gradient(to right, transparent 25%, black 75%);
 }
 
 .day-hero__scene.is-changed {
@@ -293,13 +296,12 @@
     gap: var(--space-2);
 }
 
+/* A mono line on the tint (2026-11-12): a pill here was one more box. */
 .day-hero__eyebrow {
     display: inline-flex;
     align-items: center;
-    height: var(--control-h-sm);
-    padding-inline: var(--space-3);
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    min-height: var(--control-h-sm);
+    color: var(--color-fg-secondary);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     white-space: nowrap;
@@ -375,6 +377,9 @@
 /* The player bar (Poddi's mini-player): where things stand and the one
    action, round, at the thumb. Opaque enough to read on any art — phones
    never blur (design-system "Chrome is solid"). */
+/* Harmony pass (2026-11-12): the bar is the hero's foot — a hairline over
+   the tint and the words on it, never a dark box inside the hero (that was a
+   third surface, "a card inside a scene inside a card"). */
 .day-hero__bar {
     position: relative;
     z-index: 2;
@@ -382,10 +387,8 @@
     align-items: center;
     gap: var(--space-3);
     margin-top: auto;
-    padding: var(--space-3);
-    padding-inline-start: var(--space-4);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+    padding-top: var(--space-3);
+    border-top: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
 }
 
 .day-hero__extra + .day-hero__bar {
@@ -448,6 +451,126 @@
 /* The picker sits at the far end even when a hero has no eyebrow. */
 .day-hero__top .day-hero__wallpaper {
     margin-inline-start: auto;
+}
+
+/* ── The Champion's stage (layout="stage", 2026-11-12, harmony pass) ──────
+   Her ace — the lineup's last, official artwork — is the protagonist, big
+   and cut by the hero's edge; she stands on her platform in front of it. A
+   silhouette until she is beaten today (not known yet). Phones: the stage is
+   a band across the top and the words start under it, so nothing in the
+   hero ever stands on the copy. Desktop: the hero's right side. */
+.day-hero__stage {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+
+/* The band the stage takes on a phone; the copy starts under it. */
+.day-hero--stage {
+    --stage-band: 9.5rem;
+    padding-top: var(--stage-band);
+}
+
+.day-hero--stage .day-hero__art {
+    top: 0;
+    right: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
+    height: var(--stage-band);
+    aspect-ratio: auto;
+    translate: none;
+}
+
+/* Inside the band: its feet never reach the line under it. */
+.day-hero__ace {
+    position: absolute;
+    top: calc(var(--space-8) * -1);
+    right: calc(var(--space-4) * -1);
+    width: auto;
+    height: 11rem;
+    max-width: none;
+    aspect-ratio: 1;
+    object-fit: contain;
+}
+
+.day-hero__ace.is-unknown {
+    filter: brightness(0);
+    opacity: 0.5;
+}
+
+/* Her platform, in the hero's own tone — beside her ace at any width. */
+.day-hero__pad {
+    position: absolute;
+    right: 10.5rem;
+    bottom: var(--space-2);
+    width: 6.5rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--hero-type) 45%, var(--color-surface));
+}
+
+.day-hero--stage .day-hero__trainer {
+    top: auto;
+    right: 10.5rem;
+    bottom: var(--space-3);
+    left: auto;
+    width: 6.5rem;
+    height: 6.5rem;
+}
+
+.day-hero--stage .day-hero__top {
+    margin-top: calc(var(--space-2) * -1);
+}
+
+@media (min-width: 1024px) {
+    .day-hero--stage {
+        padding-top: var(--space-6);
+    }
+
+    .day-hero--stage .day-hero__art {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: auto;
+        width: 46%;
+        height: auto;
+    }
+
+    .day-hero__ace {
+        top: auto;
+        right: -10%;
+        bottom: -16%;
+        height: 122%;
+    }
+
+    .day-hero__pad {
+        right: auto;
+        bottom: 9%;
+        left: 0;
+        width: 38%;
+        height: 9%;
+    }
+
+    .day-hero--stage .day-hero__trainer {
+        right: auto;
+        bottom: 11%;
+        left: 2%;
+        width: auto;
+        height: 58%;
+        aspect-ratio: 1;
+    }
+
+    .day-hero--stage .day-hero__copy,
+    .day-hero--stage .day-hero__extra,
+    .day-hero--stage .day-hero__bar {
+        max-width: min(54%, 32rem);
+    }
+
+    .day-hero--stage .day-hero__top {
+        max-width: none;
+        margin-top: 0;
+    }
 }
 
 /* ── The hero's scenes (constants/heroScenes.js, 2026-11-12) ──────────────

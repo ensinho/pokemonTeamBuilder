@@ -345,6 +345,7 @@
 }
 
 /* Who of the trainer's friends played today. */
+/* A neutral fill (2026-11-12): on the Home only the hero is tinted. */
 .center-today__friends {
     display: flex;
     align-items: center;
@@ -355,20 +356,12 @@
     color: var(--color-fg);
     font-size: var(--text-sm);
     text-decoration: none;
-    background: color-mix(in srgb, var(--color-success) 9%, transparent);
+    background: var(--color-surface-raised);
     transition: background-color var(--duration-fast) var(--ease-out-expo);
 }
 
 .center-today__friends:hover {
-    background: color-mix(in srgb, var(--color-success) 15%, transparent);
-}
-
-.center-today__friends--invite {
-    background: color-mix(in srgb, var(--color-primary) 9%, transparent);
-}
-
-.center-today__friends--invite:hover {
-    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    background: color-mix(in srgb, var(--color-fg) 7%, var(--color-surface-raised));
 }
 
 .center-today__friends:focus-visible {
@@ -471,10 +464,9 @@
     min-width: 0;
 }
 
+/* Sentence case (2026-11-12): a label in caps was the loudest thing in the card. */
 .center-today__weekly-kicker {
-    font-size: var(--text-2xs);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -497,11 +489,54 @@
     color: var(--color-primary);
 }
 
-/* A narrow rail: the doors' numbers step down so three fit. */
+/* The rail's doors are figures, not tiles (2026-11-12, "figure + muted
+   word"): three boxes inside the card were a fourth pattern in one card. */
+.center-today--rail .center-today__doors {
+    gap: var(--space-3);
+}
+
 .center-today--rail .center-today__door {
-    padding: var(--space-2);
+    padding: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+}
+
+.center-today--rail .center-today__door:hover {
+    background: none;
+}
+
+.center-today--rail .center-today__door:hover .center-today__label {
+    color: var(--color-fg);
+}
+
+.center-today--rail .center-today__door svg {
+    display: none;
 }
 
 .center-today--rail .center-today__n {
     font-size: var(--text-lg);
+}
+
+/* In the desktop rail's narrow card, one figure per line ("142 no
+   PokéPuzzle"): three columns broke "no" away from its word. */
+@media (min-width: 1024px) {
+    .cozy-rail .center-today--rail .center-today__doors {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-1);
+    }
+
+    .cozy-rail .center-today--rail .center-today__door {
+        flex-direction: row;
+        align-items: baseline;
+        gap: var(--space-2);
+    }
+
+    .cozy-rail .center-today--rail .center-today__n {
+        min-width: 2.5rem;
+        font-size: var(--text-md);
+    }
+
+    .cozy-rail .center-today--rail .center-today__label {
+        font-size: var(--text-sm);
+    }
 }

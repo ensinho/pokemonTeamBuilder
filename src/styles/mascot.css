@@ -355,91 +355,74 @@
     color: var(--color-muted);
 }
 
-/* The note of the day on Home (home/MascotNote.jsx): the mascot, then one
-   line in his bubble — the line is the way to what it mentions, the × sends
-   him off until tomorrow. */
+/* The note of the day on Home (home/MascotNote.jsx): since the harmony pass
+   (2026-11-12) the greeting's second line — his still face, then the line,
+   which is the way to what it mentions. No band, no ×: one voice under the
+   hello instead of a question above a band that answered it. */
 .mascot-note {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    min-width: 0;
-}
-
-.mascot-note__bubble {
-    position: relative;
-    display: flex;
-    flex: 1 1 0;
-    align-items: center;
-    gap: var(--space-1);
-    min-width: 0;
-    min-height: var(--control-h-lg);
-    padding: 0 var(--space-1) 0 var(--space-3);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-}
-
-/* The tail, pointing at him (the same square as .mascot-tip__bubble's). */
-.mascot-note__bubble::before {
-    content: '';
-    position: absolute;
-    left: calc(var(--space-1) * -1);
-    top: 50%;
-    width: var(--space-2_5);
-    height: var(--space-2_5);
-    border-radius: var(--space-0_5);
-    background: inherit;
-    translate: 0 -50%;
-    rotate: 45deg;
-}
-
-.mascot-note__body {
-    position: relative;
-    display: flex;
-    flex: 1 1 0;
-    align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1_5);
     min-width: 0;
     margin: 0;
-    padding: var(--space-2) 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-muted);
+    font: inherit;
     font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
     line-height: var(--leading-snug);
-    color: var(--color-fg);
     text-align: left;
+    text-decoration: none;
 }
 
-.mascot-note__text { flex: 1 1 0; min-width: 0; }
+a.mascot-note,
+button.mascot-note {
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+a.mascot-note:hover,
+button.mascot-note:hover {
+    color: var(--color-fg);
+}
+
+a.mascot-note:focus-visible,
+button.mascot-note:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-primary);
+}
+
+.mascot-note .mascot-note__face {
+    flex-shrink: 0;
+}
+
+/* One line on a desktop; two at most where the greeting is narrow. */
+.mascot-note__text {
+    display: -webkit-box;
+    min-width: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
 
 .mascot-note__go {
     flex-shrink: 0;
-    width: 1rem;
-    height: 1rem;
-    color: var(--color-muted);
-    transition: translate var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: translate var(--duration-fast) var(--ease-smooth);
 }
 
-a.mascot-note__body:hover .mascot-note__go,
-button.mascot-note__body:hover .mascot-note__go { translate: var(--space-0_5) 0; color: var(--color-fg); }
-
-a.mascot-note__body:focus-visible,
-button.mascot-note__body:focus-visible { outline: none; border-radius: var(--radius-sm); box-shadow: var(--ring-primary); }
-
-.mascot-note__close {
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    width: var(--control-h-sm);
-    height: var(--control-h-sm);
-    border-radius: var(--radius-full);
-    color: var(--color-muted);
+a.mascot-note:hover .mascot-note__go,
+button.mascot-note:hover .mascot-note__go {
+    translate: var(--space-0_5) 0;
 }
-
-.mascot-note__close:hover { background: var(--color-surface-hover); color: var(--color-fg); }
-.mascot-note__close:focus-visible { outline: none; box-shadow: var(--ring-primary); }
-.mascot-note__close svg { width: 0.875rem; height: 0.875rem; }
 
 /* Live Pink is for what is waiting on the trainer right now: a friend's battle. */
-.mascot-note[data-note^='battle'] .mascot-note__go { color: var(--brand-live-text); }
+.mascot-note[data-note^='battle'] {
+    color: var(--brand-live-text);
+}
 
 /* The 404 (views/NotFoundView.jsx): 4, the mascot as the 0, 4 — in his own violet. */
 .mascot-404 {

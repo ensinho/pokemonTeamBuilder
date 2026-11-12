@@ -143,6 +143,20 @@ above the player bar, where the phone has its own row), the persona's blocks
 *Hoje no Centro*, the journey. No section tabs: Teams, Community and Journeys
 have routes of their own, one click away in the rail.
 
+**The harmony rules (2026-11-12, "Home em harmonia" — `styles/home-grid.css`):**
+- **Four columns** (`.home-grid`, `--page-gap`) for every block under the
+  hero: Rota 1·2·1, doors 1·1·1·1, teams 2·1·1. A block that invents its own
+  division (one big + rows, ~170/670/390px) breaks the lines the eye follows.
+- **One card** (`.home-tile`): the art on its platform in a band of one
+  height per row, then a mono kicker, the title, one line, a foot. A new card
+  on Home is a `home-tile`, not a new shape (there were 18).
+- **Only the hero is tinted**; a card's type colour lives on the platform.
+- **Every subject once**: a block never restates what another shows
+  (`homeDoors()` skips the hero's and the route's subjects; the streak is the
+  pill and the week strip, not a heading's meta).
+- **The rail stays shorter than the main column** and sticky — three cards,
+  never a second dashboard (no timeline that replays the day).
+
 ### Streak sheet — `components/rewards/StreakSheet.jsx` (+ `styles/streak-sheet.css`, its own chunk)
 - A `BottomSheet`/dialog, never a page. Title "Você está numa sequência de
   **N dias**" (one accent word, `.accent-word`), the mascot above it with the
@@ -193,3 +207,5 @@ At 390×844 and 360×740, dark and light (`/verify-ui` §2 has the harness):
 | Nine blocks stacked on "Today" | the recipe's six; the rest is a route away |
 | Every reward rendered as a card (the check-in card ~350px) | a strip; the full card lives on the Rewards tab |
 | The same team in the hero, the party row *and* a list beside them on a phone | the hero says the status, the row shows the members, the full list is `/teams` ("Ver todos") — a desktop keeps its teams panel, which has the room |
+| The day told by six narrators: the hero, the doors, a "Sua história" timeline, the route's heading and a mascot band each restating the Champion, the puzzle and the streak (2026-11-12) | one subject in one block; the mascot's line is the greeting's second line |
+| A dark box inside the hero (the "player bar" as a third surface) and three Volt buttons in one scroll | the bar is a hairline foot on the tint; the hero holds the one primary, card actions are secondary |

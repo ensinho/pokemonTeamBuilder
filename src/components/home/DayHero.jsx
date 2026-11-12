@@ -23,6 +23,11 @@ import { JourneyBar } from '../journeys/JourneyList';
  * hero turns gold on a 2/2, drains on a lost day (utils/challengeBoards.js).
  * `status` is a node beside the bar's label (the day's two boards); `reveal`
  * plays the arrival once, when the state just changed.
+ *
+ * Harmony pass (2026-11-12): the bar is the hero's foot — a hairline over the
+ * tint, no box inside the box — and `layout="stage"` gives the art the hero's
+ * whole right side: the Champion's ace, official artwork cut by the edge,
+ * with the champion on her platform in front of it.
  */
 export function DayHero({
     tone,
@@ -40,10 +45,11 @@ export function DayHero({
     reveal = false,
     scene,
     sceneControl,
+    layout,
 }) {
     return (
         <section
-            className={`day-hero ${reveal ? 'is-revealing' : ''}`}
+            className={`day-hero ${layout ? `day-hero--${layout}` : ''} ${reveal ? 'is-revealing' : ''}`}
             data-mood={mood}
             style={{ '--hero-type': tone }}
             aria-labelledby="day-hero-title"

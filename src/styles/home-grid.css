@@ -1,0 +1,887 @@
+/* ==========================================================================
+   Home · four columns, one card (2026-11-12, the harmony pass — "Home em
+   harmonia": Enzo found the Home "desconfortável… elementos genéricos e
+   desalinhados, sem padrões").
+
+   Before this, the Rota do dia split its width ~170/670/390px, the doors one
+   big + rows, the teams one wide + thirds: no vertical line ran down the page,
+   and every block wore its own tint. Now:
+   - ONE grid (`.home-grid`): four columns on `--page-gap`. Rota 1·2·1,
+     doors 1·1·1·1, teams 2·1·1 — the same lines all the way down.
+   - ONE card (`.home-tile`): the art on its platform in a band of the same
+     height across a row, then kicker (mono), title, one line, a foot with a
+     figure or an action. Neutral surface; the subject's type colour lives
+     only on the platform under the Pokémon, as in a battle.
+   - The hero is the page's only tinted surface and holds its only primary.
+   Phones: the route runs sideways ("Agora" first), the doors are 2 × 2.
+
+   Pieces: DayRoute.jsx, RouteArt.jsx, PersonaDoors.jsx, TeamDeck.jsx.
+   Loaded after home-today.css.
+   ========================================================================== */
+
+/* ── The grid ──────────────────────────────────────────────────────────── */
+.home-grid {
+    --tile-media: 7.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--page-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* A list item holds one tile and lets it stretch to the row's height. */
+.home-grid > li,
+.day-route__group > li {
+    display: flex;
+    min-width: 0;
+}
+
+.home-grid > .is-span-2 { grid-column: span 2; }
+.home-grid > .is-span-4 { grid-column: 1 / -1; }
+
+/* Every section head the same height, with or without an action in it, so
+   the gap from a heading to its cards is the same in every block. */
+.cozy-home .cozy-panel .section-head {
+    min-height: var(--control-h-sm);
+}
+
+/* ── The card ──────────────────────────────────────────────────────────── */
+.home-tile {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font: inherit;
+    text-align: left;
+}
+
+button.home-tile {
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+button.home-tile:hover { background: var(--color-surface-hover); }
+button.home-tile:active { background: var(--color-surface-active); }
+
+/* The art's band: the same height across a row, so the words start on one line. */
+.home-tile__media {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-end;
+    justify-content: center;
+    height: var(--tile-media);
+    background: var(--color-surface-raised);
+}
+
+/* The stage the art stands on, and its platform in the subject's colour. */
+.home-tile__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100%;
+    padding-bottom: var(--space-3);
+}
+
+.home-tile__stage::before {
+    content: '';
+    position: absolute;
+    bottom: var(--space-3);
+    left: 50%;
+    width: 5rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tone, var(--color-primary)) 32%, transparent);
+    box-shadow: inset 0 -0.1875rem 0 color-mix(in srgb, var(--tone, var(--color-primary)) 42%, transparent);
+    translate: -50% 0;
+}
+
+/* Art that brings its own platforms (a duel) or needs none (an emblem). */
+.home-tile__stage:has(> .route-duo, > .route-emblem, > .route-now__done)::before {
+    display: none;
+}
+
+/* Pixel sprites at their own scale, feet on the platform. Compound: <Sprite>
+   carries Tailwind's `relative inline-block`, which loads after this sheet. */
+.home-tile .home-tile__sprite,
+.home-tile .day-sprite {
+    position: relative;
+    width: 6rem;
+    height: 6rem;
+    max-width: none;
+    margin-bottom: calc(var(--space-2) * -1);
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.home-tile__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.home-tile__kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.home-tile__title {
+    margin: 0;
+    min-width: 0;
+    color: var(--color-fg);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+}
+
+/* A title that is also the card's button (a team's name). */
+.home-tile button.home-tile__title {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    text-align: left;
+    cursor: pointer;
+}
+
+.home-tile button.home-tile__title:hover {
+    color: var(--color-primary-text);
+}
+
+.home-tile__sub {
+    display: -webkit-box;
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.home-tile__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+    margin-top: auto;
+    padding-top: var(--space-2);
+}
+
+.home-tile__fig {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    min-width: 0;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.home-tile__fig strong {
+    color: var(--color-fg);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+}
+
+.home-tile__chevron {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+    transition: translate var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+button.home-tile:hover .home-tile__chevron {
+    color: var(--color-fg);
+    translate: var(--space-0_5) 0;
+}
+
+/* Done today: a seal on the art's corner. A crown is earned (gold); a
+   revealed puzzle is not. */
+.home-tile__mark {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-success);
+    color: var(--color-on-primary);
+}
+
+.home-tile__mark svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    stroke-width: 3;
+}
+
+.home-tile__mark.is-gold {
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+}
+
+.home-tile__mark.is-quiet {
+    background: var(--color-surface);
+    color: var(--color-muted);
+}
+
+/* ── Rota do dia ───────────────────────────────────────────────────────── */
+.day-route {
+    position: relative;
+}
+
+/* The Town Map path, through the gaps at the art's height (cards only). */
+.day-route.is-cards::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--tile-media) / 2);
+    right: var(--space-6);
+    left: var(--space-6);
+    border-top: 2px dashed var(--color-border-strong);
+    pointer-events: none;
+}
+
+.day-route > * {
+    position: relative;
+}
+
+.day-route__group {
+    display: grid;
+    gap: var(--page-gap);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.day-route__group.is-span-1 { grid-column: span 1; }
+.day-route__group.is-span-2 { grid-column: span 2; }
+.day-route__group.is-span-2.is-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Short rows share the row's height, whatever "Agora" holds. */
+.day-route__group.is-rows {
+    grid-auto-rows: 1fr;
+    gap: var(--space-2);
+}
+
+.route-now {
+    grid-column: span 2;
+}
+
+.day-route.is-alone .route-now {
+    grid-column: 1 / -1;
+}
+
+.route-now .home-tile__kicker {
+    color: color-mix(in srgb, var(--tone) 45%, var(--color-fg));
+}
+
+.route-now__kicker-rest {
+    color: var(--color-muted);
+}
+
+.route-now__main {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+.route-now__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.cozy-home .route-now__title {
+    font-size: var(--text-lg);
+    letter-spacing: -0.015em;
+}
+
+.cozy-home .route-now__action {
+    flex-shrink: 0;
+}
+
+.route-now .cozy-day__lineup {
+    margin-top: var(--space-2);
+}
+
+.route-now .champion-ledger {
+    margin-top: var(--space-2);
+}
+
+.route-now__done {
+    position: static;
+    width: 3rem;
+    height: 3rem;
+    margin: auto;
+}
+
+.route-now__done svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.route-now--rest .home-tile__stage {
+    align-items: center;
+    padding-bottom: 0;
+}
+
+/* The Champions in a route card: the one in focus on the platform, the
+   other a face a step behind, mirrored to face her. */
+.day-trainers {
+    position: relative;
+    display: block;
+    width: 6rem;
+    height: 6rem;
+}
+
+.day-trainers__trainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.day-trainers__rival {
+    position: absolute;
+    bottom: var(--space-2);
+    left: calc(var(--space-6) * -1);
+    width: 45%;
+    height: 45%;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    object-fit: cover;
+    object-position: 50% 0;
+    image-rendering: pixelated;
+    scale: -1 1;
+}
+
+/* The meta leader's answer from the trainer's team, a step behind it. */
+.home-tile .day-sprite--duo {
+    position: absolute;
+    bottom: var(--space-3);
+    left: calc(50% - 6rem);
+    width: 4.5rem;
+    height: 4.5rem;
+    opacity: 0.85;
+}
+
+/* ── The route's own art (RouteArt.jsx) ────────────────────────────────── */
+.route-duo {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+}
+
+.route-duo__side {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 5rem;
+}
+
+.route-duo__side::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 4.5rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tone, var(--color-primary)) 32%, transparent);
+    translate: -50% 0;
+}
+
+.route-duo__side--foe::before {
+    background: color-mix(in srgb, var(--color-fg) 10%, transparent);
+}
+
+.route-duo .home-tile__sprite {
+    width: 5.5rem;
+    height: 5.5rem;
+}
+
+.route-duo__partner {
+    scale: -1 1;
+}
+
+.route-duo__side--foe .home-tile__sprite {
+    opacity: 0.6;
+}
+
+.route-duo__vs {
+    margin-bottom: var(--space-4);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.route-duo__ask {
+    position: absolute;
+    top: var(--space-4);
+    left: 50%;
+    color: var(--color-fg-secondary);
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    translate: -50% 0;
+}
+
+.home-tile__stage:has(> .route-emblem) {
+    align-items: center;
+    padding-bottom: 0;
+}
+
+.route-emblem {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 4.75rem;
+    height: 4.75rem;
+}
+
+.route-emblem__ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    rotate: -90deg;
+}
+
+.route-emblem__track,
+.route-emblem__fill {
+    fill: none;
+    stroke-width: 5;
+}
+
+.route-emblem__track {
+    stroke: var(--color-border-strong);
+}
+
+.route-emblem__fill {
+    stroke: var(--color-primary);
+    stroke-linecap: round;
+}
+
+/* Gold only once it is earned. */
+.route-emblem.is-earned .route-emblem__fill {
+    stroke: var(--brand-gold);
+}
+
+.route-emblem__icon {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-fg);
+}
+
+.route-emblem__icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+/* ── Para você ─────────────────────────────────────────────────────────── */
+/* Doors are the page's quieter row: a shorter band than the route's. */
+.persona-doors {
+    --tile-media: 5.5rem;
+}
+
+.persona-doors .home-tile .home-tile__sprite {
+    width: 5rem;
+    height: 5rem;
+}
+
+/* ── Seus times ────────────────────────────────────────────────────────── */
+.cozy-panel__tools {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.team-party__six {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: end;
+    gap: var(--space-1);
+    padding: 0 var(--space-3) var(--space-3);
+}
+
+.team-party__slot {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Each member on a platform of its own type colour. */
+.team-party__slot::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: min(4rem, 92%);
+    height: 0.875rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tone) 34%, transparent);
+    translate: -50% 0;
+}
+
+/* An empty slot is a dashed platform: dashed means absent. */
+.team-party__slot.is-empty::before {
+    border: 1px dashed var(--color-border-strong);
+    background: none;
+}
+
+.team-party .team-party__sprite {
+    position: relative;
+    width: 5rem;
+    height: 5rem;
+    max-width: none;
+    margin-bottom: calc(var(--space-2) * -1);
+    image-rendering: pixelated;
+}
+
+.team-party__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.team-party__meta {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.team-party__actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.cozy-home .team-party__actions .btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* A PC box: its 3 × 2 box in the band, its name under it. */
+.team-box .home-tile__media {
+    align-items: center;
+}
+
+/* The name opens the team; stretched over the card, under the "⋯". */
+.team-box .team-box__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.team-box .team-box__name::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+
+.team-box:hover {
+    background: var(--color-surface-hover);
+}
+
+.team-box .cozy-team__menu {
+    position: relative;
+    z-index: 1;
+}
+
+.team-box__state {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.team-box__state .home-tile__sub {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    -webkit-line-clamp: 1;
+}
+
+.team-box__dot {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-border-strong);
+}
+
+.team-box__dot.is-ready {
+    background: var(--color-success);
+}
+
+/* The row's last column when there is one box only: an empty slot. */
+.cozy-home .team-new {
+    border-style: dashed;
+    border-color: var(--color-border-strong);
+    background: transparent;
+}
+
+.team-new .home-tile__media {
+    align-items: center;
+    background: transparent;
+}
+
+.team-new__plus {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-full);
+    color: var(--color-muted);
+}
+
+.team-new__plus svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* ── Desktop: more than one item to a route column → short rows ─────── */
+@media (min-width: 1024px) {
+    .home-tile--row {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+    }
+
+    .home-tile--row .home-tile__media {
+        width: 3.5rem;
+        height: 3.5rem;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+    }
+
+    .home-tile--row .home-tile__stage {
+        padding-bottom: 0;
+    }
+
+    .home-tile--row .home-tile__stage::before {
+        bottom: var(--space-1);
+        width: 2.75rem;
+        height: 0.625rem;
+    }
+
+    .home-tile--row .home-tile__sprite,
+    .home-tile--row .day-sprite,
+    .home-tile--row .day-trainers {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin-bottom: 0;
+    }
+
+    .home-tile--row .day-sprite--duo,
+    .home-tile--row .day-trainers__rival,
+    .home-tile--row .route-duo__vs,
+    .home-tile--row .route-duo__side--foe {
+        display: none;
+    }
+
+    .home-tile--row .route-duo__side {
+        width: 3.5rem;
+    }
+
+    .home-tile--row .route-duo__side::before {
+        width: 2.75rem;
+        height: 0.625rem;
+    }
+
+    .home-tile--row .route-emblem {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .home-tile--row .route-emblem__icon {
+        width: 1.875rem;
+        height: 1.875rem;
+    }
+
+    .home-tile--row .route-emblem__icon svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .home-tile--row .home-tile__mark {
+        top: var(--space-0_5);
+        right: var(--space-0_5);
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .home-tile--row .home-tile__mark svg {
+        width: 0.625rem;
+        height: 0.625rem;
+    }
+
+    .home-tile--row .home-tile__body {
+        gap: 0;
+        padding: 0;
+    }
+
+    .home-tile--row .home-tile__title {
+        overflow: hidden;
+        font-size: var(--text-sm);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .home-tile--row .home-tile__sub {
+        font-size: var(--text-xs);
+        -webkit-line-clamp: 1;
+    }
+
+    .home-tile--row > .home-tile__fig {
+        color: var(--color-fg);
+        font-size: var(--text-sm);
+    }
+}
+
+/* ── Phones and tablets ────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+    .home-grid {
+        --tile-media: 6.5rem;
+        gap: var(--space-3);
+    }
+
+    /* The route runs sideways: "Agora" first, then what comes next, then
+       what is done. Every card the same width, the next one peeking at the
+       edge; it bleeds into the gutter and scrolls itself, never the page. */
+    .day-route {
+        display: flex;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: var(--page-gutter);
+        margin-inline: calc(var(--page-gutter) * -1);
+        padding-inline: var(--page-gutter);
+        scrollbar-width: none;
+    }
+
+    .day-route::-webkit-scrollbar {
+        display: none;
+    }
+
+    .day-route.is-cards::before {
+        display: none;
+    }
+
+    .day-route__group {
+        display: contents;
+    }
+
+    .day-route__group > li,
+    .day-route > .route-now {
+        flex: 0 0 min(76%, 17rem);
+        scroll-snap-align: start;
+    }
+
+    .day-route > .route-now {
+        order: -1;
+        flex-basis: min(86%, 21rem);
+    }
+
+    .day-route__group.is-done > li {
+        order: 2;
+    }
+
+    /* A row's figure belongs to the desktop's short rows. */
+    .day-route .home-tile--row > .home-tile__fig,
+    .day-route .home-tile--row > .home-tile__chevron {
+        display: none;
+    }
+
+    .route-now__main {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+    }
+
+    .cozy-home .route-now__action {
+        width: 100%;
+    }
+
+    /* Four doors as two by two; the title and the figure carry them. */
+    .persona-doors {
+        --tile-media: 5rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .persona-doors .home-tile__sub {
+        display: none;
+    }
+
+    .persona-doors .home-tile__body {
+        padding: var(--space-3);
+    }
+
+    .team-deck {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .team-deck > .is-span-2,
+    .team-deck > .is-span-4 {
+        grid-column: 1 / -1;
+    }
+}
+
+/* A tablet has the room for the four doors in one row: a screen less. */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .persona-doors {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button.home-tile,
+    .home-tile__chevron {
+        transition: none;
+    }
+}

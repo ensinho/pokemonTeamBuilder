@@ -2,10 +2,9 @@ import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'rea
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
-import { ArrowLeftRight, ArrowUpRight, Check, ChevronRight, Crown, Hourglass, MoreHorizontal, Pencil, Play, Plus, RotateCcw, ShieldHalf, Sparkles, Swords, Trophy, UserPlus } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, ChevronRight, MoreHorizontal, Pencil, Play, Plus, RotateCcw, Sparkles, Swords, Trophy } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GuestAccountCard } from '../GuestAccountCard';
-import { useForumStore } from '../../store/useForumStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -34,7 +33,6 @@ import {
 } from '../../utils/homeStatus';
 import { CheckinWeek } from '../rewards/CheckinWeek';
 import { HomeGreeting } from '../home/HomeGreeting';
-import { MascotNote } from '../home/MascotNote';
 import { DayHero } from '../home/DayHero';
 import { HomeParty } from '../home/HomeParty';
 import { DayRoute } from '../home/DayRoute';
@@ -42,27 +40,26 @@ import { PersonaDoors } from '../home/PersonaDoors';
 import { TeamDeck } from '../home/TeamDeck';
 import { dayRoute, routeOrder } from '../../utils/dayRoute';
 import { promptSignIn } from '../../utils/navigation';
-import { PcBox } from '../PcBox';
 import { Sprite } from '../Sprite';
-import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { JourneyBar, JourneyTile, MissionRow } from '../journeys/JourneyList';
 import { currentJourney, journeyEmphasis, nextMission } from '../../utils/journeys';
-import { PERSONAS, PICK_DESTINATIONS, derivePersona, hasAnsweredProfile, personaDayCards, personaHero, personaHomeOrder, personaPicks, suggestedJourney } from '../../utils/trainerProfile';
+import { PERSONAS, derivePersona, hasAnsweredProfile, homeDoors, personaDayCards, personaHero, personaHomeOrder, suggestedJourney } from '../../utils/trainerProfile';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { MascotTip } from '../Mascot';
 import { defaultHeroScene, getHeroScene } from '../../constants/heroScenes';
 import { HeroScene, ScenePicker } from '../home/HeroScene';
-import { ChallengeBoards } from '../home/ChallengeBoards';
 import { challengeDayPlan, challengeLink, championAction } from '../../utils/challengeBoards';
 import { CHAMPION_IDS, CHAMPION_NAMES, difficultyLabel } from '../../utils/challengeChampions';
 import { ChampionLedger, ChampionSwitch } from '../home/ChampionDay';
+import { RouteDuo, RouteEmblem } from '../home/RouteArt';
 import { CHAMPION_FACES } from '../../utils/championFaces';
 import '../../styles/cozy-home.css';
 // After cozy-home.css: the 2026-11-09 pieces override a few of its rules.
 import '../../styles/home-today.css';
-// After home-today.css: the route, the doors and the deck (2026-11-12).
-import '../../styles/home-route.css';
+// After home-today.css: the Home's four columns and its one card anatomy —
+// the route, the doors and the deck (2026-11-12, harmony pass).
+import '../../styles/home-grid.css';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { openTeamCompare } from '../../store/useTeamCompareStore';
 
@@ -180,6 +177,9 @@ const useNow = () => {
 /** The last Champion result the Home showed, so its arrival plays once (`${dayKey}:${statuses}`). */
 const CHALLENGE_SEEN_KEY = 'ptb:challenge:seenOutcome';
 
+/** A champion's ace before the day is read: Cynthia's Garchomp; Blue's is one of his starters, by day. */
+const CHAMPION_ACE = { cynthia: 445, blue: 6 };
+
 const Panel = ({ title, meta, action, card = true, children }) => (
     <section className={`section cozy-panel ${card ? 'card' : ''}`}>
         <header className="section-head">
@@ -247,18 +247,6 @@ export function CozyHomeView({
     const puzzle = useDailyPuzzle(userId);
     const challenge = useChallengeSummary(userId, isAnonymous);
     const { awaitingMeCount } = useBattles();
-    const challengeLine = (c) => {
-        if (c.state === 'guest') return t('cozyHome.challengeGuest');
-        if (c.state === 'new') return t('cozyHome.challengeNew');
-        if (c.state === 'active') return t('cozyHome.challengeContinue');
-        if (c.state === 'won') return t('cozyHome.challengeWon', { n: c.streak });
-        if (c.state === 'lost') return t('cozyHome.challengeLost');
-        // Without a difficulty yet, never fall back to the title: every place
-        // that shows this line shows the title right above it.
-        return c.difficulty
-            ? t('cozyHome.challengeReady', { difficulty: t(`challenge.difficulty.${c.difficulty}`) })
-            : t('cozyHome.challengeWaiting');
-    };
 
     // The Pokédex index carries names and types for every id; saved slots and
     // usage rows only carry ids, so everything here resolves through it.
@@ -271,17 +259,6 @@ export function CozyHomeView({
         return () => { cancelled = true; };
     }, []);
     const typesById = useMemo(() => new Map([...indexById].map(([id, p]) => [id, p.types || []])), [indexById]);
-
-    // Forum: the same "Teams" topic the classic Home mirrors.
-    const { topics, messages, initTopicsListener, setCurrentTopicId } = useForumStore(useShallow((s) => ({
-        topics: s.topics, messages: s.messages, initTopicsListener: s.initTopicsListener, setCurrentTopicId: s.setCurrentTopicId,
-    })));
-    const teamsTopicId = useMemo(() => {
-        const byTitle = topics.find((tp) => (tp.title || '').trim().toLowerCase() === 'teams');
-        return byTitle?.id || topics.find((tp) => tp.category === 'teams')?.id || null;
-    }, [topics]);
-    useEffect(() => { initTopicsListener(); }, [initTopicsListener]);
-    useEffect(() => { if (teamsTopicId) setCurrentTopicId(teamsTopicId); }, [teamsTopicId, setCurrentTopicId]);
 
     const period = dayPeriod(now.getHours());
 
@@ -313,11 +290,12 @@ export function CozyHomeView({
         if (parts.kind === 'weeks') return parts.n === 1 ? t('cozyHome.when.weeksOne') : t('cozyHome.when.weeks', { n: parts.n });
         return shortDate(parts.date);
     };
-    const journeyDate = (iso) => {
+    // A day, not a time: "hoje", "ontem", "10 nov" — for a card's one short line.
+    const shortWhen = (iso) => {
         const parts = editedParts(iso, now);
         if (!parts) return '';
-        if (parts.kind === 'today') return t('cozyHome.jToday');
-        if (parts.kind === 'yesterday') return t('cozyHome.jYesterday');
+        if (parts.kind === 'today') return t('cozyHome.jToday').toLowerCase();
+        if (parts.kind === 'yesterday') return t('cozyHome.jYesterday').toLowerCase();
         return shortDate(parts.date);
     };
     const typeName = (type) => t(`types.${type}`);
@@ -379,93 +357,11 @@ export function CozyHomeView({
         [summary.members, metaLeader, typesById],
     );
 
-    // ── Story ───────────────────────────────────────────────────────────────
-    const latestShare = useMemo(
-        () => [...messages].reverse().find((m) => m.sharedTeam && m.createdBy !== userId) || null,
-        [messages, userId],
-    );
-
-    const journey = useMemo(() => {
-        const items = [];
-        if (nextBadge) {
-            items.push({
-                key: 'badge', when: t('cozyHome.jNext'), tone: 'accent', icon: <Sparkles />,
-                title: t('cozyHome.jBadge', { badge: badgeName(nextBadge) }),
-                sub: `${nextBadge.progress.current} / ${nextBadge.progress.target}`,
-            });
-        }
-        if (puzzle.target) {
-            const solved = puzzle.summary?.solved;
-            items.push({
-                key: 'puzzle', when: t('cozyHome.jToday'), tone: solved ? 'success' : 'warning',
-                icon: solved ? <Check /> : <Hourglass />,
-                title: t('cozyHome.jPuzzle', { n: puzzle.target.id }),
-                sub: solved ? t('cozyHome.jSolved', { n: puzzle.summary.attempts }) : t('cozyHome.jOpen'),
-                onClick: () => navigate('/pokepuzzle'),
-            });
-        }
-        if (challenge) {
-            const tone = { won: 'success', active: 'warning', lost: 'neutral' }[challenge.state] || 'accent';
-            items.push({
-                key: 'challenge', when: t('cozyHome.jToday'), tone,
-                icon: challenge.state === 'won' ? <Check /> : <Crown />,
-                title: t('cozyHome.jChallenge'),
-                sub: challengeLine(challenge),
-                onClick: () => navigate(challengeLink({ champion: 'cynthia' })),
-            });
-        }
-        if (savedTeams[0]) {
-            const team = savedTeams[0];
-            const s = team === activeTeam ? summary : summarizeTeam(team, typesById);
-            items.push({
-                key: 'team', when: journeyDate(team.updatedAt), tone: s.status === 'ready' ? 'success' : 'neutral',
-                icon: s.status === 'ready' ? <Check /> : <Pencil />,
-                title: s.status === 'ready' ? t('cozyHome.jTeamComplete', { name: team.name }) : t('cozyHome.jTeamEdited', { name: team.name }),
-                sub: s.status === 'ready' ? t('cozyHome.jTeamCompleteSub', { n: s.coverage }) : t('cozyHome.jTeamEditedSub', { n: s.size }),
-                onClick: () => handleEditTeam(team),
-            });
-        }
-        if (latestShare) {
-            items.push({
-                key: 'share', when: journeyDate(latestShare.createdAt), tone: 'sprite',
-                spriteId: latestShare.creatorAvatar || 25,
-                title: t('cozyHome.jShared', { name: latestShare.creatorName || 'Trainer', team: latestShare.sharedTeam.name || '—' }),
-                sub: t('cozyHome.jSharedSub'),
-                onClick: () => navigate(teamsTopicId ? `/feed?topic=${encodeURIComponent(teamsTopicId)}` : '/feed'),
-            });
-        }
-        return items;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [nextBadge, puzzle, challenge, savedTeams, activeTeam, summary, typesById, latestShare, language, now]);
-
     // ── Pieces ──────────────────────────────────────────────────────────────
     // The run as it stands today (a broken one reads 0), not the stored count.
     const streakCount = liveStreak(streak, localDayKey(now));
     const persona = derivePersona(trainerProfile);
     const heroKind = personaHero(trainerProfile);
-
-    const greeting = (
-        <HomeGreeting
-            name={trainerName}
-            period={period}
-            personaId={hasAnsweredProfile(trainerProfile) ? persona?.id : null}
-            uid={userId}
-            partner={{ id: partnerId, shiny: greetingPokemonIsShiny, type: partnerType, hasPartner }}
-            streakCount={streakCount}
-            // A guest's way into an account sits here on a phone; the
-            // desktop rail's guest card already offers it.
-            isAnonymous={isAnonymous && isPhone}
-            onOpenPartner={onOpenPokemonSelector}
-            onOpenStreak={() => setIsStreakOpen(true)}
-            onSignIn={() => promptSignIn('signIn')}
-        />
-    );
-
-    const badgeSegments = nextBadge ? Math.min(nextBadge.progress.target, 10) : 0;
-    // One slot per step when the target is small; tenths of the way otherwise.
-    const badgeFilled = !nextBadge ? 0
-        : nextBadge.progress.target <= 10 ? nextBadge.progress.current
-            : Math.floor(nextBadge.progress.percent / 10);
 
     // Before the summary answers, the card still stands: a neutral state, the local reset time.
     const challengeDay = challenge || { state: 'ready', difficulty: null, nextResetAt: challengeResetAt(now.getTime()) };
@@ -561,9 +457,11 @@ export function CozyHomeView({
             <img key={big} src={CHAMPION_FACES[big]} alt="" width={80} height={80} decoding="async" fetchPriority="high" className={`${prefix}__trainer`} />
         </>
     );
-    // The compact cards stacked beside the featured one: it spans all their rows.
-    // The hero's subject leaves the rail: nothing shows twice.
-
+    // The champion's ace (the lineup's last, it always closes) as the hero's
+    // protagonist — official artwork, big, cut by the hero's edge — with the
+    // champion on her platform in front of it. A silhouette until she has
+    // been beaten today ("Quem é esse Pokémon?": not known yet).
+    const aceDex = focus.lineup?.[5] || CHAMPION_ACE[focusId] || CHAMPION_ACE.cynthia;
 
     // ── The hero of the day ─────────────────────────────────────────────────
     // The team in progress: tinted by its lead's type (the partner's with no
@@ -593,15 +491,33 @@ export function CozyHomeView({
             tone={challengeMood === 'gold' ? 'var(--brand-gold)' : typeColors.dragon}
             mood={challengeMood}
             reveal={challengeReveal}
+            layout="stage"
             art={(
-                <span className="day-hero__trainers">{champArt(focusId, otherId, 'day-hero')}</span>
+                <span className="day-hero__stage">
+                    <img
+                        key={`ace-${aceDex}`}
+                        src={getPokemonArtworkSpriteUrl(aceDex)}
+                        alt=""
+                        width={240}
+                        height={240}
+                        decoding="async"
+                        className={`day-hero__ace ${lineupRevealed ? '' : 'is-unknown'}`}
+                    />
+                    <span className="day-hero__pad" />
+                    <img key={focusId} src={CHAMPION_FACES[focusId]} alt="" width={80} height={80} decoding="async" fetchPriority="high" className="day-hero__trainer" />
+                </span>
             )}
             eyebrow={t('cozyHome.challengeNextInShort', { ...resetIn, minutes: String(resetIn.minutes).padStart(2, '0') })}
             title={challengeCopy.title}
             sub={challengeCopy.sub}
-            extra={(
-                <>
-                <ChampionSwitch plan={dayPlan} focus={focusId} onFocus={setPickedChampion} showBoards={showBoards} />
+            // The two champions, each tab with its day's marks: the score is read once.
+            extra={<ChampionSwitch plan={dayPlan} focus={focusId} onFocus={setPickedChampion} showBoards={showBoards} />}
+            label={t('homeToday.herTeam')}
+            meta={[
+                difficultyLabel(t, focusId, focus.difficulty),
+                t('homeToday.challengeStreak', { n: focus.streak || 0 }),
+            ].filter(Boolean).join(' · ')}
+            status={(
                 <span className="day-hero__lineup" aria-hidden="true">
                     {herSix.map((dex, index) => (
                         <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
@@ -611,15 +527,7 @@ export function CozyHomeView({
                         </span>
                     ))}
                 </span>
-                </>
             )}
-            label={t('homeToday.herTeam')}
-            status={showBoards ? <ChallengeBoards day={boardsDay} compact={isPhone} /> : null}
-            meta={[
-                focusName,
-                difficultyLabel(t, focusId, focus.difficulty),
-                t('homeToday.challengeStreak', { n: focus.streak || 0 }),
-            ].filter(Boolean).join(' · ')}
             action={{ ...challengeCopy.action, onClick: () => navigate(challengeCopy.href) }}
         />
     ) : (
@@ -676,11 +584,12 @@ export function CozyHomeView({
     // the first one still to do in the persona's order → the big "Agora",
     // the rest → a short line. A battle that waits on the trainer jumps ahead.
     const championsDone = !isChallengeGuest && dayPlan.total > 0 && dayPlan.done >= dayPlan.total;
-    const iconArt = (icon) => <span className="day-glyph">{React.createElement(icon)}</span>;
+    // A battle's art: the partner facing a silhouette (RouteArt.jsx).
+    const duoArt = <RouteDuo partnerId={partnerId} partnerShiny={greetingPokemonIsShiny} partnerTone={typeColors[partnerType]} />;
     const routeItems = {
         battles: {
             tone: 'var(--brand-live)',
-            art: iconArt(ShieldHalf),
+            art: duoArt,
             live: true,
             kicker: t('cozyHome.dayCards.yourTurn'),
             title: awaitingMeCount === 1 ? t('cozyHome.dayCards.battlesOne') : t('cozyHome.dayCards.battles', { n: awaitingMeCount }),
@@ -690,8 +599,8 @@ export function CozyHomeView({
             onOpen: () => navigate('/battles'),
         },
         invite: {
-            tone: typeColors.fighting,
-            art: iconArt(UserPlus),
+            tone: typeColors[partnerType],
+            art: duoArt,
             kicker: 'PvP',
             title: t('cozyHome.dayCards.inviteTitle'),
             sub: t('cozyHome.dayCards.inviteSub'),
@@ -733,7 +642,7 @@ export function CozyHomeView({
             fig: showBoards ? `${dayPlan.done}/${dayPlan.total}` : null,
             extra: (
                 <>
-                    <span className="cozy-day__lineup day-now__lineup" aria-hidden="true">
+                    <span className="cozy-day__lineup" aria-hidden="true">
                         {herSix.map((dex, index) => (
                             <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
                                 {dex
@@ -742,7 +651,7 @@ export function CozyHomeView({
                             </span>
                         ))}
                     </span>
-                    <span className="day-now__ledger">
+                    <span className="route-now__ledger">
                         <ChampionLedger plan={dayPlan} info={championInfo} focus={focusId} isGuest={isChallengeGuest} onOpen={openChampion} />
                     </span>
                 </>
@@ -757,18 +666,11 @@ export function CozyHomeView({
         },
         badge: {
             tone: 'var(--brand-gold)',
-            art: iconArt(nextBadge ? nextBadge.Icon : Sparkles),
+            art: <RouteEmblem Icon={nextBadge ? nextBadge.Icon : Sparkles} percent={nextBadge ? nextBadge.progress.percent : 100} earned={!nextBadge} />,
             kicker: nextBadge ? `${nextBadge.progress.current}/${nextBadge.progress.target}` : '★',
             title: nextBadge ? badgeName(nextBadge) : t('cozyHome.allBadges'),
             sub: nextBadge ? (language === 'pt' ? nextBadge.reqPt : nextBadge.reqEn) : t('cozyHome.allBadgesSub'),
             fig: nextBadge ? `${nextBadge.progress.current}/${nextBadge.progress.target}` : null,
-            extra: nextBadge && (
-                <span className="cozy-case" aria-hidden="true">
-                    {Array.from({ length: badgeSegments }, (_, i) => (
-                        <i key={i} className={i < badgeFilled ? 'is-on' : ''} />
-                    ))}
-                </span>
-            ),
             action: { label: t('cozyHome.route.seeBadges'), onClick: () => navigate('/journeys?tab=badges') },
             onOpen: () => navigate('/journeys?tab=badges'),
         },
@@ -806,11 +708,7 @@ export function CozyHomeView({
     );
 
     const yourDay = (
-        <Panel
-            card={false}
-            title={t('cozyHome.route.title')}
-            meta={streakCount > 0 ? t('cozyHome.streakDay', { n: streakCount }) : t('cozyHome.noStreak')}
-        >
+        <Panel card={false} title={t('cozyHome.route.title')}>
             <DayRoute route={route} items={routeItems} t={t} />
         </Panel>
     );
@@ -838,6 +736,7 @@ export function CozyHomeView({
             .map((team) => ({ team, summary: summarizeTeam(team, typesById) }));
         return (
             <Panel
+                card={false}
                 title={t('cozyHome.yourTeams')}
                 meta={savedTeams.length > 0
                     ? t('cozyHome.deck.tally', { teams: savedTeams.length, complete: completeCount, favorites: favoritePokemons?.size || 0 })
@@ -870,40 +769,15 @@ export function CozyHomeView({
                         t={t}
                         status={teamStatus}
                         menu={(team) => <TeamCardMenu team={team} onOpen={() => navigate(`/teams/${team.id}`)} onEdit={() => handleEditTeam(team)} />}
+                        subline={(team, s) => [t('cozyHome.ofSix', { n: s.size }), team.updatedAt ? shortWhen(team.updatedAt) : null].filter(Boolean).join(' · ')}
                         onContinue={() => handleEditTeam(activeTeam)}
                         onEdit={handleEditTeam}
+                        onNew={startNewTeam}
                     />
                 )}
             </Panel>
         );
     };
-
-    const journeyPanel = (
-        <Panel
-            title={t('cozyHome.journey')}
-            meta={streakCount > 0 ? t('cozyHome.journeyDay', { n: streakCount }) : null}
-        >
-            <ol className="cozy-journey">
-                {journey.map((item) => {
-                    const Tag = item.onClick ? 'button' : 'div';
-                    return (
-                        <li key={item.key}>
-                            <Tag {...(item.onClick ? { type: 'button', onClick: item.onClick } : {})} className="cozy-journey__row">
-                                <span className="cozy-journey__when">{item.when}</span>
-                                <span className={`cozy-journey__node cozy-journey__node--${item.tone}`} aria-hidden="true">
-                                    {item.spriteId ? <Sprite src={dexSprite(item.spriteId)} className="cozy-journey__sprite" /> : item.icon}
-                                </span>
-                                <span className="cozy-journey__text">
-                                    <span className="cozy-journey__title">{item.title}</span>
-                                    <span className="cozy-journey__sub">{item.sub}</span>
-                                </span>
-                            </Tag>
-                        </li>
-                    );
-                })}
-            </ol>
-        </Panel>
-    );
 
     // ── The journey ─────────────────────────────────────────────────────────
     // The level being played and what is left in it, each mission a button
@@ -919,7 +793,16 @@ export function CozyHomeView({
     // An active trainer's next step follows what they came for (the trainer
     // profile): a competitive one is pointed at Strategy before the League.
     const suggested = suggestedJourney(journeys, trainerProfile) || level;
-    const upNext = nextMission(suggested);
+    // Its one mission is the first that is not already a card of the route
+    // ("Desafie um amigo" twice, a block apart, was the same door twice).
+    const routePaths = new Set([
+        routeStates.battles || routeStates.invite ? '/battles' : null,
+        routeStates.puzzle ? '/pokepuzzle' : null,
+        routeStates.champion ? '/challenge' : null,
+        routeStates.meta ? '/meta' : null,
+    ].filter(Boolean));
+    const openMissions = suggested?.missions.filter((m) => !m.done) || [];
+    const upNext = openMissions.find((m) => !routePaths.has((m.to || '').split('?')[0])) || nextMission(suggested);
     const seeJourneys = (
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/journeys')}>
             {t('journeys.home.seeAll')} <ChevronRight aria-hidden="true" />
@@ -969,7 +852,19 @@ export function CozyHomeView({
     // "Para você" (2026-11-05): where this trainer's profile says to look
     // first — a few destinations, each a line saying why. Without a profile
     // it is an invitation to make one, small, in the rail.
-    const picks = personaPicks(trainerProfile, 4);
+    const picks = homeDoors(trainerProfile, {
+        exclude: [
+            // The Champion is the hero or a card of the route, every persona.
+            'challenge',
+            routeStates.puzzle ? 'pokepuzzle' : null,
+            routeStates.battles || routeStates.invite ? 'battles' : null,
+            routeStates.meta ? 'meta' : null,
+            // The team in progress is the hero or the teams block.
+            activeTeam ? 'builder' : null,
+            // The Traveler's hero is the next gym leader.
+            heroKind === 'badges' ? 'gyms' : null,
+        ].filter(Boolean),
+    });
     // Each door's live reading, where the Home already has it (PersonaDoors).
     const doorLive = {
         meta: metaLeader ? { dex: metaLeader.id, type: metaLeaderType, fig: `${metaLeader.count}%`, label: displayName(metaLeader.name) } : null,
@@ -980,9 +875,11 @@ export function CozyHomeView({
         battles: awaitingMeCount > 0 ? { fig: String(awaitingMeCount), label: t('cozyHome.doors.battles') } : null,
         builder: activeTeam && summary.members[0] ? { dex: summary.members[0].id, type: summary.members[0].types?.[0], fig: `${summary.size}/6`, label: activeTeam.name } : null,
         pokedex: { fig: '1025', label: 'Pokémon' },
+        types: { fig: '18', label: t('cozyHome.doors.types') },
     };
     const forYouPanel = hasAnsweredProfile(trainerProfile) && persona && picks.length > 0 && (
         <Panel
+            card={false}
             title={t('onboarding.home.title')}
             meta={t(`onboarding.personas.${persona.id}.name`)}
             action={(
@@ -1035,7 +932,24 @@ export function CozyHomeView({
         puzzle: puzzle.isLoading ? null : (puzzle.summary && (puzzle.summary.solved || puzzle.summary.attempts >= 8)) ? 'done' : 'open',
         challenge: !challenge ? null : challenge.state === 'guest' ? 'none' : ['won', 'lost'].includes(challenge.state) ? 'done' : 'open',
     });
-    const mascotNote = <MascotNote note={note} onOpenStreak={() => setIsStreakOpen(true)} />;
+    const greeting = (
+        <HomeGreeting
+            name={trainerName}
+            period={period}
+            personaId={hasAnsweredProfile(trainerProfile) ? persona?.id : null}
+            uid={userId}
+            partner={{ id: partnerId, shiny: greetingPokemonIsShiny, type: partnerType, hasPartner }}
+            streakCount={streakCount}
+            // The mascot's note of the day is the greeting's second line.
+            note={note}
+            // A guest's way into an account sits here on a phone; the
+            // desktop rail's guest card already offers it.
+            isAnonymous={isAnonymous && isPhone}
+            onOpenPartner={onOpenPokemonSelector}
+            onOpenStreak={() => setIsStreakOpen(true)}
+            onSignIn={() => promptSignIn('signIn')}
+        />
+    );
     // The daily check-in as the week strip (rewards, 2026-10-17 → 2026-11-09):
     // the day's first thing to do. Reads recorded stores only.
     const checkinWeek = (
@@ -1050,7 +964,8 @@ export function CozyHomeView({
     const homeBlocks = {
         forYou: forYouPanel,
         yourDay,
-        teams: isPhone ? null : teamsPanel(3),
+        // The party takes two of the four columns, two PC boxes the rest.
+        teams: isPhone ? null : teamsPanel(2),
         badges: homeOrder.includes('badges') ? <Suspense fallback={null}><BadgeCase /></Suspense> : null,
     };
     const ordered = homeOrder.map((id) => <React.Fragment key={id}>{homeBlocks[id]}</React.Fragment>);
@@ -1073,7 +988,6 @@ export function CozyHomeView({
             <div className="cozy-layout">
                 <div className="cozy-main">
                     {greeting}
-                    {mascotNote}
                     {isPhone && checkinWeek}
                     {hero}
                     {isPhone ? (
@@ -1097,7 +1011,6 @@ export function CozyHomeView({
                         {centerToday('rail')}
                         {forYouSetup}
                         {journeyFocus || journeyCompact}
-                        {journeyPanel}
                     </aside>
                 )}
             </div>
