@@ -34,7 +34,7 @@ export function EmptyState({ title, message, action, secondaryAction, spriteSrc,
 
     return (
         <div className={`empty-state ${compact ? 'is-compact' : ''}`}>
-            <div className="empty-state__illustration-container">
+            <div className="empty-state__illustration-container" data-pose={spriteSrc ? undefined : face.pose}>
                 {spriteSrc ? (
                     <img
                         src={spriteSrc}

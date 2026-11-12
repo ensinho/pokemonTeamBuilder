@@ -53,6 +53,33 @@ at low alpha. No amber in chrome.
 - **The game exception**: `.ds-screen` keeps its unit, its face and its field; its HUD wears this theme through `--hud-*` (2026-11-10).
 
 
+## Taste pass (2026-11-11): colour that means something, figures not boxes
+
+Enzo's reference was the classic "before/after" of a product sidebar: grey
+outline icons, counts in pills, identical boxes → coloured filled icons, plain
+numerals, a breadcrumb. Four moves, each from Pokémon's own vocabulary
+(taste-skill + Impeccable are installed as user plugins for audits —
+`/impeccable critique|audit|polish <target>`; their marketing-site rules do not
+override this skill):
+
+- **A destination has a tone.** Rail and dock icons sit in a tile washed in the
+  type colour of their world (`utils/navHue.js` → `--nav-hue`; 14% tile, 55%
+  glyph toward `--color-fg`, 30% when current). The current row is the neutral
+  `--color-surface-active` — the tone is the signal, Volt is not repeated. A new
+  nav entry gets a tone in that table, never inline.
+- **A count is a figure, not a box.** `.count-badge` and
+  `.team-builder-panel__meta` are mono muted numerals with no fill or edge.
+  Live counts (`.app-shell__nav-badge`, Live Pink) keep their pill — they are
+  the brand layer's "new", not a count.
+- **A party is pips.** The builder's "0/6" is six `.party-pips` that fill as the
+  team does, with the figure after them.
+- **A sprite stands on its platform.** `.pokemon-card__media::before` is the
+  battle base, toned in the first type (`--card-type`). Static, behind the
+  sprite; never animate it.
+- **Where before what.** The desktop header shows the rail section before the
+  title (`.app-shell__crumb`, "Competitivo / Meta & uso"); pinned pages have no
+  crumb.
+
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
 few values, used everywhere, landing on a grid. Every rule below exists because
 breaking it produced a UI that read as *mole, solto e desconexo* (soft, loose,
