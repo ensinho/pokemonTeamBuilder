@@ -30,7 +30,7 @@ export function NotFoundView({ navigate, onOpenSearch }) {
                 takes the whole playground: pet it, hold it, drag it, leave it be. */}
             <div className="mascot-404">
                 <span className="mascot-404__digit" aria-hidden="true">4</span>
-                <Mascot size="hero" framing="body" mood="perdido" pose="pataNoQueixo" loop="float" playground stage label={t('mascot.label')} />
+                <Mascot size="hero" framing="head" mood="perdido" pose="pataNoQueixo" loop="float" playground stage label={t('mascot.label')} />
                 <span className="mascot-404__digit" aria-hidden="true">4</span>
             </div>
             <h1 className="text-2xl font-bold mb-2 text-fg">

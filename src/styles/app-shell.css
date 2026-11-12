@@ -2586,6 +2586,15 @@
     margin-bottom: var(--space-4);
 }
 
+/* The meta hub's analyst beside the switch (HubSwitch, 2026-11-11). */
+.hub-switch--mascot {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+.hub-switch--mascot .hub-switch__track { flex: 1 1 auto; min-width: 0; }
+.hub-switch__mascot { flex-shrink: 0; }
+
 @media (min-width: 1024px) {
     .hub-switch__track.segmented--block {
         display: inline-flex;
@@ -2602,6 +2611,8 @@
     .hub-switch {
         margin-bottom: var(--space-3);
     }
+
+    .hub-switch__mascot { width: 2.75rem; height: 2.75rem; }
 
     /* Labels of unequal length ("Uso" / "Times de torneio"): each takes
        what it needs, so the longest still fits a 360px phone. */

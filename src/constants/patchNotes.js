@@ -34,6 +34,31 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // The mascot with a body (2026-11-11): the icon's ghost as a 3D bot,
+        // everywhere he was, and now playing along in the games and the forum.
+        // The featured visual introduces him gently: the line drawing gives
+        // way to the body, which waves once.
+        notes: [
+            {
+                key: 'mascot-3d',
+                featured: true,
+                icon: 'sparkles',
+                visual: 'mascotBot',
+                title: 'patchNotes.mascotBotTitle',
+                description: 'patchNotes.mascotBotDesc',
+                cta: 'patchNotes.mascotBotCta',
+                path: '/profile?tab=appearance',
+            },
+            { key: 'mascot-games', icon: 'puzzle', title: 'patchNotes.mascotGamesTitle', description: 'patchNotes.mascotGamesDesc', cta: 'patchNotes.mascotGamesCta', path: '/pokepuzzle' },
+            { key: 'mascot-forum', icon: 'message', title: 'patchNotes.mascotForumTitle', description: 'patchNotes.mascotForumDesc', cta: 'patchNotes.mascotForumCta', path: '/feed' },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+        ],
+    },
+    {
+        version: '1.23.0',
+        month: '2026-11',
+        thanks: false,
         // The desktop Pokédex entry rebuilt in the phone's language, and the
         // quick look a battle opens from ⌘K. The CTA lands on an entry, not the
         // list, so the first click shows what changed.

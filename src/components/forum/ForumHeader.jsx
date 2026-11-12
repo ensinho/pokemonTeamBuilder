@@ -1,6 +1,7 @@
 import React from 'react';
 import { SearchIcon, CloseIcon, PlusIcon, MenuIcon } from '../icons';
 import { FORUM_SORTS, FORUM_CATEGORIES } from './forumNav';
+import { MascotCompanion } from '../MascotCompanion';
 
 /**
  * The top of the feed. On a phone it is the Reddit app's two lines
@@ -45,6 +46,10 @@ export function ForumHeader({
                 >
                     <MenuIcon className="w-5 h-5" />
                 </button>
+
+                {/* The Centro's host (2026-11-11): alive beside the search, he
+                    celebrates the trainer's post and nods at a like or a comment. */}
+                <MascotCompanion listen rest="feliz" size="sm" className="forum-host" />
 
                 <div className="forum-feed-head__id">
                     <h2 className="forum-feed-head__title">{t('forum.title')}</h2>

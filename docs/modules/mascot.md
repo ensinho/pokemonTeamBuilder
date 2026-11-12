@@ -141,6 +141,123 @@ shape is what a colour-blind reader has), a floating always-on companion (the
 JourneyCoach already holds that corner), mascot stickers as free-form forum
 content (a new field, rules and moderation — its own change).
 
+## The bot (2026-11-11)
+
+Enzo, pointing at [open-bot-avatar](https://github.com/DominikScholz/open-bot-avatar):
+"use tudo dele para criar NOSSO AVATAR com base no mascote … quero ELE EXATO,
+só que em formato de mascote roxinho animado". The bot is the same ghost with
+a body: the icon's outline turned into a solid, alive on screen, looking at
+the pointer with its whole body. Every mood, pose, prop, hat, costume, tone and
+reaction of the line mascot is also the bot's, because the face and the
+dressing are the rig's own pieces.
+
+| File | What it is |
+|---|---|
+| `src/vendor/open-bot-avatar/` | The engine (v0.2.1, MIT, Dominik Scholz), vendored from the package's `dist/` — the volume (stacked cross-sections inferred from a flat outline), the deterministic pose (breathing, sway, blinks, eye wander, the three moods), pointer following and the mood easing. Vendored, not installed, because the bot needs internals the package does not export (the volume, `planeMatrix`, `viewBasis`). **Never edit it**; the README there says how to upgrade. |
+| `scripts/lib/mascotBot.mjs` → `npm run mascot:bot` | Turns the rig into an open-bot-avatar v1 definition: `headPath()` turned by the icon's 8° tilt and fitted into 0 0 100 100; the cheek barbs and the two "!" sparks are their own subpaths, so each gets its own volume. Writes `src/utils/mascot/bot/definition.js` and `public/mascot-bot.json` (paste it into the open-bot-avatar editor's Import to see him there). |
+| `src/utils/mascot/bot/frame.js` | `botInner(pose, life)`: one frame as markup in **rig space** (so the stage, its zones and the views apply unchanged). The engine gives the cross-sections and the face plane; the rig's `mascotPieces(pose)` gives the face (clipped to the head's silhouette), the hat, the paws, the prop and the effects. `botMotion(mood, pose)` maps a mood to the engine's body language (joy → hop, thought → tilt and look up). Pure, Node-safe. |
+| `src/components/mascot/botStage.js` | `BotStage extends MascotStage`: the same taps, Shadow Ball, petting, drag, sleep, shiny and reactions; it overrides `draw()` and the look. Alive while on screen (≤ 60 fps on the shared ticker), follows the pointer anywhere on the page for 3.5 s after it last moved, leans into a drag. |
+| `src/components/mascot/botEngine.js` | The lazy chunk (≈ 17 KB gz), loaded by `useMascotBot` only where a bot is drawn. |
+
+**How he is painted.** The engine paints every cross-section in one flat
+colour; the bot shades them in eleven steps (`.bs0`…`.bs10`, mascot.css): the
+far walls a deeper violet, the silhouette the line's violet, and from about
+the line's width inside the outline (`LINE` in frame.js) the front plateau in
+the icon's dark tile. Straight on he IS the icon — a violet line around a dark
+face — and turned, the line becomes the side of a solid. Eyes and fangs stay
+white in every theme (they sit on the dark front); a tone recolours the body
+like it recolours the line.
+
+**Where: everywhere the mascot was** (Enzo, same day: "use all references of
+this new 3d mascot all of the website where it was previous used, and make it
+a little more present"). Every `<Mascot>` and `<MascotFace>` is the bot unless
+the trainer picked the line (Profile → Mascote → Formato, `prefs.form`, `bot`
+by default, in `ptb:mascot`) or the caller passes `bot={false}`. Two kinds:
+
+- **A still** (`botStill`, one frame with its own sections): a mascot that only
+  shows a face — loaders (their props keep the CSS loops: the ball rocks, the
+  page turns), empty-state figures that are not interactive, modals, banners,
+  the battle face, the forum's reaction stickers (one still per mood, cached).
+  Sections closer than a pixel apart are dropped by size; below 40 px the line
+  band thickens like the line mascot's stroke (`strokeK`).
+- **Alive** (`BotStage`): `interactive`, `stage`, `playground`, or a bot asked
+  to `play`/`cheer`/cover its eyes. 60 fps from 120 px up, 30 fps below; stops
+  off screen, in a background tab and under reduced motion.
+
+The boot splash keeps the line icon (`MascotIcon`): it is the app icon itself,
+drawn before any chunk, and a bot still would add ~5 KB gz to the entry. So
+does any mascot in the instant before the bot chunk lands — AppLayout's idle
+warm-up loads it right after the line engine (`warmMascotBot`) and builds the
+volume (~100 ms, once) in an idle slot, so in practice the line never shows.
+
+More present (2026-11-11):
+
+- **Landing**: he says the stage's bubble ("Quem entra no seu time?") — xl,
+  alive, the first thing on the site that looks back at the visitor
+  (`.landing-speaker`). Calm (`feliz`): a landing that hops forever is noise;
+  he hops when touched.
+- **Recado do dia**: md → lg (at 48 px the face reads, the body does not).
+- **404**: `head` framing, so the playground's ghost fills the stage between
+  the digits.
+
+Traps found while building it:
+
+- **The engine culls the front sections in flat colour** (they never leave the
+  core's outline, so they add nothing to a one-colour silhouette). Shaded,
+  they are the face — `drawn()` in frame.js keeps them and culls only the
+  hidden back ones.
+- **A custom property resolves where it is declared.** `--bot-rim: var(--m-line)`
+  on the `<svg>` ignored the tone set on the body's `<g>` (the fire bot kept a
+  violet body around an orange mouth); the `--bot-*` tokens live on `.bot-root`.
+- **Blink only open eyes.** Scaling an arc eye (happy, calm, sleepy) does not
+  close it, it only fades it — `BLINKS` in frame.js; the line's ambient blink
+  is off on the bot, the engine blinks.
+- **The engine rolls the body for a mood**: the rig's mood tilt adds only half
+  on top (`TILT_SHARE`), or "pensando" leans ~20°.
+- The ears and the crest do not move on the bot (the outline is one cached
+  volume, ~100 ms to build); the body's squash, roll and turn carry it.
+
+## The companion (2026-11-11)
+
+Enzo, after the bot: "improve its presence by showing interactions on
+minigames, such as champion challenge, pokepuzzle, quiz and foruns", then
+"add him on guides too, meta and tournaments and a little on pokedex". A
+place says what just happened — a **beat** — and one pure table says his face
+and gesture (`GAME_BEATS` / `gameBeat` in `utils/mascot/assistant.js`, tested):
+
+| Beat | Face · gesture | Emitted by |
+|---|---|---|
+| `start` | determinado · nod | a quiz starting; the meta hub's page or rating cut changing |
+| `found` | animado · hop → from 3 in a row empolgado · jump → every 5th brilhando · spin | a right answer (quizzes) |
+| `close` / `miss` | curioso · nod / preocupado · shake | a PokéPuzzle guess with / without a letter in place; a quiz miss |
+| `repeat` / `invalid` | desconfiado / confuso · shake | already found; not a Pokémon |
+| `hint` | travesso · sparks | PokéPuzzle's hint |
+| `win` / `perfect` / `lose` | radiante / empolgado · celebrate, triste · oops | the end of a game (an end holds; a passing face goes back after `hold`) |
+| `posted` / `commented` / `liked` / `reacted` | radiante · celebrate / animado · nod / apaixonado · nod / brilhando · sparks | the forum store's actions; `liked` also a new favourite Pokémon |
+
+- **`useMascotBeat()`** gives a view `[beat, emit]` and counts the streak;
+  **`<MascotCompanion beat rest restPose listen>`** draws him alive (stage by
+  default). `listen` also takes the app's beats — `useMascotStore.emitBeat(kind)`
+  from a store — only those after he mounted.
+- **Battles** (`DsBattleStage`): the face beside the message is alive now and
+  gestures at the big moments only (`battleBeat`: a knock-out, a big hit, the
+  trainer's gimmick, the end).
+- **Where:** PokéPuzzle (beside the tries; the result's medal is him, the burst
+  behind a win), the Generation and Category quizzes (the feedback line), the
+  forum (the feed's header, the comment composer), the guides (the index's
+  professor in a mortarboard; the end of a guide, where he hops once it is
+  read), the meta hub's switch (a pose per page: clipboard, pointing, the lens),
+  the Pokédex's title (curious while searching).
+- **Only the trainer's own act** moves him: a run or a day that loads finished
+  shows his resting face, never a replayed celebration. `celebrate` is only
+  for an end (a win, a post) — a test pins that list.
+- **Trap:** the PokéPuzzle medal had `.pokepuzzle-result-badge svg { 1.5rem }`
+  for its icon, which shrank the mascot's own `<svg>` to a dot in the corner of
+  the burst — scope a container's icon rule (`:not(.has-mascot)`) before
+  putting a mascot inside it.
+- The 1.24.0 patch notes introduce him (`MascotBotVisual`): the line drawing
+  gives way to the body, which rises with the pop spring and waves once.
+
 ## Rules (from the creative direction and the design system)
 
 - **One per screen.** The stage is held by the most recently mounted `stage`
@@ -186,6 +303,9 @@ project dependency. Output goes to `mascot-export/` (git-ignored).
 
 ## Tests
 
+`bot/bot.test.js` (the definition validates, matches the rig and the
+shipped JSON; every mood and pose draws without NaN; the face hides when the
+front turns away; the line and tile shades are there; sparks follow the mood),
 `rig.test.js` (outline pinned, every part/mood/pose/effect draws without NaN,
 sanitising, tones), `motion.test.js` (springs, every sequence finite and ending
 at rest, responses short, a key frame for reduced motion), `catalog.test.js`

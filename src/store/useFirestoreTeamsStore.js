@@ -8,6 +8,7 @@ import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/teamDuplication';
 import { useLandingStore } from './useLandingStore';
+import { useMascotStore } from './useMascotStore';
 
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
@@ -253,6 +254,7 @@ export const useFirestoreTeamsStore = create((set, get) => {
                     toast.info(t('toast.favoriteRemoved'));
                 } else {
                     newFavorites.add(id);
+                    useMascotStore.getState().emitBeat('liked'); // the Pokédex's mascot, if on screen
                     toast.success(t('toast.favoriteAdded'));
                 }
 

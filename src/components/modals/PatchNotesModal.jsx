@@ -730,6 +730,18 @@ const PokedexDeskVisual = ({ language }) => {
     );
 };
 
+// 1.24.0: the mascot gets his body. The icon's line drawing is there first;
+// it gives way to the 3D bot, who rises gently and waves once — then stays
+// alive (breathing, looking at the pointer) with room around him to move.
+// Under reduced motion the bot is simply there (mascot.css).
+const MascotBotVisual = () => (
+    <div className="patch-bot" aria-hidden="true">
+        <span className="patch-bot__glow" />
+        <span className="patch-bot__line"><Mascot size="xl" framing="head" bot={false} seasonal={false} /></span>
+        <span className="patch-bot__body"><Mascot size="xl" framing="head" mood="feliz" play="wave" interactive seasonal={false} /></span>
+    </div>
+);
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -774,6 +786,7 @@ const NOTE_VISUALS = {
     support: SupportVisual,
     social: SocialVisual,
     pokedexDesk: PokedexDeskVisual,
+    mascotBot: MascotBotVisual,
 };
 
 // One "what's new" card. The featured one carries its illustration and grows to

@@ -10,6 +10,7 @@ import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
 import { TOUR_BAND, cutoffLabel, filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
 import { MonSprite, SourceCredit } from './metaShared';
+import { useMascotStore } from '../../store/useMascotStore';
 import { pretty } from '../../utils/metaFormat';
 import { CutoffSelect, FormatPicker, TypeFilter } from './metaControls';
 import '../../styles/meta-view.css';
@@ -219,7 +220,8 @@ export function MetaUsageView() {
         p.delete('cut');
         return p;
     }, { replace: true });
-    const setCutoff = (c) => setParams((prev) => {
+    const setCutoff = (c) => { useMascotStore.getState().emitBeat('start'); setCutoffParam(c); };
+    const setCutoffParam = (c) => setParams((prev) => {
         const p = new URLSearchParams(prev);
         if (c === detailCutoff) p.delete('cut'); else p.set('cut', String(c));
         return p;

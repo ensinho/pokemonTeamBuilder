@@ -35,7 +35,8 @@ export function MascotNote({ note, onOpenStreak }) {
 
     return (
         <aside className="mascot-note" data-note={note.id} aria-label={t('mascot.note.label')}>
-            <Mascot size="md" mood={note.mood} seasonal={false} interactive stage />
+            {/* lg since the 3D body (2026-11-11): at 48 px the face reads, the body does not */}
+            <Mascot size="lg" mood={note.mood} seasonal={false} interactive stage />
             <div className="mascot-note__bubble">
                 {note.to ? (
                     <Link to={note.to} className="mascot-note__body">{text}{go}</Link>

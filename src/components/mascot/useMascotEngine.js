@@ -24,3 +24,37 @@ export function useMascotEngine() {
     }, [mod]);
     return mod;
 }
+
+let bot = null;
+let botPending = null;
+
+/** Load the bot chunk once (the 3D body, `botEngine.js`). */
+export function loadMascotBot() {
+    if (!botPending) {
+        botPending = import('./botEngine.js')
+            .then((mod) => { bot = mod; return mod; })
+            .catch((error) => { botPending = null; throw error; });
+    }
+    return botPending;
+}
+
+/** The bot module once `enabled` asks for it and it has arrived; null meanwhile (the line mascot stands in). */
+export function useMascotBot(enabled) {
+    const [mod, setMod] = useState(enabled ? bot : null);
+    useEffect(() => {
+        if (!enabled || mod) return undefined;
+        let alive = true;
+        loadMascotBot().then((m) => { if (alive) setMod(m); }).catch(() => { /* offline: the line mascot stays */ });
+        return () => { alive = false; };
+    }, [enabled, mod]);
+    return enabled ? mod : null;
+}
+
+/** The idle warm-up (AppLayout): the bot chunk, then its volume (~100 ms, once) in an idle slot. */
+export function warmMascotBot() {
+    return loadMascotBot().then((mod) => {
+        const idle = typeof window !== 'undefined' && window.requestIdleCallback ? window.requestIdleCallback : (fn) => setTimeout(fn, 200);
+        idle(() => { try { mod.botVolume(); } catch { /* drawn on first use instead */ } });
+        return mod;
+    });
+}

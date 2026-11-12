@@ -24,6 +24,10 @@ import { track } from '../services/analytics';
 import { notifySocial } from '../services/socialNotify';
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
+import { useMascotStore } from './useMascotStore';
+
+// The forum host (MascotCompanion listen) answers the trainer's own acts.
+const forumBeat = (kind) => useMascotStore.getState().emitBeat(kind);
 import { useRewardsStore } from './useRewardsStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
@@ -293,6 +297,7 @@ export const useForumStore = create((set, get) => ({
             if (topicData.category === 'questions') markJourney('questionAsked');
             if (sharedBadgeCase) markJourney('badgeCaseShared');
 
+            forumBeat('posted');
             toast.success(t('toast.topicCreated'), {
                 description: cleanTitle,
                 // The open topic is the URL's ?topic= (FeedView follows it).
@@ -429,6 +434,7 @@ export const useForumStore = create((set, get) => ({
             if (replyRef || cleanText.includes('@') || (topic && topic.createdBy !== authState.userId && topic.createdBy !== 'system')) {
                 notifySocial({ kind: 'forumMessage', topicId, messageId: messageRef.id });
             }
+            forumBeat('commented');
             track(replyRef ? 'forum_reply' : 'forum_post', {
                 kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : battleInvite ? 'invite' : 'text',
             });
@@ -526,6 +532,7 @@ export const useForumStore = create((set, get) => ({
         const path = messageId
             ? doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, messageId)
             : doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
+        if (kind) forumBeat('reacted');
         try {
             await updateDoc(path, { [`reactions.${uid}`]: kind || deleteField() });
             if (kind) {
@@ -595,6 +602,7 @@ export const useForumStore = create((set, get) => ({
 
         const msg = get().messages.find((m) => m.id === messageId);
         const alreadyLiked = Array.isArray(msg?.likedBy) && msg.likedBy.includes(uid);
+        if (!alreadyLiked) forumBeat('liked');
 
         const messageRef = doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, messageId);
         try {
@@ -631,6 +639,7 @@ export const useForumStore = create((set, get) => ({
         const inTopic = Array.isArray(topic?.likedBy) && topic.likedBy.includes(uid);
         const inOp = Array.isArray(opMessage?.likedBy) && opMessage.likedBy.includes(uid);
         const liked = inTopic || inOp;
+        if (!liked) forumBeat('liked');
         try {
             const writes = [];
             if (!liked || inTopic) {

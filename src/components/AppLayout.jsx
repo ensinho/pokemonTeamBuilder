@@ -33,7 +33,7 @@ import { storedFormFields, withUniqueInstanceIds } from '../utils/teamSerializat
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { MascotIcon } from './Mascot';
 import { Loader } from './Loader';
-import { loadMascotEngine } from './mascot/useMascotEngine';
+import { loadMascotEngine, warmMascotBot } from './mascot/useMascotEngine';
 import { useMascotReactions } from '../hooks/useMascotReactions';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
@@ -144,8 +144,8 @@ const AbilityDialog = lazy(() => import('./AbilityDialog').then((m) => ({ defaul
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
-// The mascot's drawing goes first: it is small and almost every screen has one.
-const MOBILE_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadChampionChallengeView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
+// The mascot's drawing goes first, then his body (the 3D bot): almost every screen has one.
+const MOBILE_PREFETCH = [loadMascotEngine, warmMascotBot, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadChampionChallengeView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
 // Desktop had no warm-up at all, so the first click on Construtor downloaded a
 // 107 KB chunk behind the route fallback. Same idea, the rail's main entries.
 // Hovering or focusing a rail entry fetches its chunk: the half second between
@@ -181,7 +181,7 @@ const readLocalStorage = () => {
 // added at the render site (it lives under 'home', whose dashboard has none).
 // Home's h1 is its greeting ("Boa noite, Enzo" — components/home/HomeGreeting.jsx).
 const VIEWS_WITH_OWN_H1 = new Set(['home', 'guides', 'sitePage', 'types', 'bestTeams', 'sharedTeam', 'notFound']);
-const DESKTOP_PREFETCH = [loadMascotEngine, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
+const DESKTOP_PREFETCH = [loadMascotEngine, warmMascotBot, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
 
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
 

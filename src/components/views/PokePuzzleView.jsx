@@ -29,6 +29,8 @@ import { PuzzleDayPanel } from '../pokepuzzle/PuzzleDayPanel';
 import { renderPuzzleShareBlob } from '../pokepuzzle/drawPuzzleShare';
 import { SITE_URL } from '../../utils/seoPages';
 import { Loader } from '../Loader';
+import { MascotCompanion } from '../MascotCompanion';
+import { useMascotBeat } from '../../hooks/useMascotBeat';
 import { DecryptText } from '../DecryptText';
 import { TypeChip } from '../TypeChip';
 import { GameHistoryDialog } from '../GameHistoryDialog';
@@ -198,6 +200,8 @@ export default function PokePuzzleView() {
     // still for a day that was already solved (a reward is never replayed).
     const [solvedNow, setSolvedNow] = useState(false);
     useEffect(() => { setSolvedNow(false); }, [targetPokemon?.id]);
+    // The mascot plays along (2026-11-11): every guess, hint and the end is a beat.
+    const [mascotBeat, emitBeat] = useMascotBeat();
 
     // Past daily dates available in the History drawer.
     const pastDates = useMemo(() => getPastDates(), []);
@@ -547,6 +551,7 @@ export default function PokePuzzleView() {
     const requestHint = () => {
         if (nextHint < 0) return;
         addHint(nextHint);
+        emitBeat('hint');
         setHintNote(t('pokepuzzle.hint.revealed', { pos: nextHint + 1, letter: targetNormalized[nextHint].toUpperCase() }));
         track('puzzle_hint', { mode, n: hints.length + 1 });
     };
@@ -592,6 +597,7 @@ export default function PokePuzzleView() {
     // under reduced motion (the message above the keyboard still says why).
     const rejectGuess = (message) => {
         setInvalidMessage(message);
+        emitBeat('invalid');
         const row = activeRowRef.current;
         if (!row?.animate || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
         const easing = getComputedStyle(document.documentElement).getPropertyValue('--ease-out').trim() || 'linear';
@@ -617,6 +623,11 @@ export default function PokePuzzleView() {
         setInvalidMessage('');
         setHintNote('');
         setSubmitTick((n) => n + 1);
+
+        // his beat: the end, or how warm the guess was (letters already in place)
+        if (norm === targetNormalized) emitBeat(nextCount === 1 ? 'perfect' : 'win');
+        else if (nextCount >= MAX_ATTEMPTS) emitBeat('lose');
+        else emitBeat([...norm].some((c, i) => c === targetNormalized[i]) ? 'close' : 'miss');
 
         if (norm === targetNormalized) {
             setSolvedNow(true);
@@ -1125,6 +1136,9 @@ export default function PokePuzzleView() {
                                         ))}
                                     </div>
                                     <span className="pokepuzzle-tip-meta">
+                                        {gameStatus === 'IN_PROGRESS' && (
+                                            <MascotCompanion beat={mascotBeat} rest="pensando" size="md" className="pokepuzzle-companion" />
+                                        )}
                                         <span>{t('games.genShort', { gen: getGenerationByPokemonId(targetPokemon.id) })}</span>
                                         <span aria-hidden="true">·</span>
                                         <span
@@ -1356,8 +1370,10 @@ export default function PokePuzzleView() {
                                     {/* Head and entry are layout groups for the two-column
                                         desktop card only (`display: contents` below lg). */}
                                     <div className="pokepuzzle-result-head">
-                                        <div className={`pokepuzzle-result-badge ${isWon ? 'is-win spark-host' : 'is-lose'}`} aria-hidden="true">
-                                            {isWon ? <Award /> : <Frown />}
+                                        {/* The mascot takes the medal's place: he celebrates the win
+                                            the trainer just made (a day loaded solved only smiles). */}
+                                        <div className={`pokepuzzle-result-badge has-mascot ${isWon ? 'is-win spark-host' : 'is-lose'}`} aria-hidden="true">
+                                            <MascotCompanion beat={endedNow ? mascotBeat : null} rest={isWon ? 'radiante' : 'triste'} size="lg" />
                                         </div>
 
                                         <h2 id="pokepuzzle-result-title" className={`pokepuzzle-result-title ${isWon ? 'is-win' : 'is-lose'}`}>

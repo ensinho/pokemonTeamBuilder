@@ -26,7 +26,7 @@ export { VIEWS };
 
 export const STROKE = 27.75;            // outline stroke (4.7% of the head's width)
 const EYE_W = 24;
-const HEAD_PIVOT = [6, 10];             // where the head tilts
+export const HEAD_PIVOT = [6, 10];      // where the head tilts
 export const FOOT = 290;                // squash pivot (bottom of the jowl)
 const SPARK_C = [138, -248];            // where the two "!" wedges converge
 const T = typeColors;
@@ -97,7 +97,7 @@ function barbPath(base, tip) {
     const dx = tip[0] - base[0], dy = tip[1] - base[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
     return `M${f(base[0] + (nx * STROKE) / 2)} ${f(base[1] + (ny * STROKE) / 2)}L${f(tip[0] + nx * 1.5)} ${f(tip[1] + ny * 1.5)}L${f(tip[0] - nx * 1.5)} ${f(tip[1] - ny * 1.5)}L${f(base[0] - (nx * STROKE) / 2)} ${f(base[1] - (ny * STROKE) / 2)}Z`;
 }
-const BARBS = barbPath(BASE.JR, BASE.TR) + barbPath(BASE.JL, BASE.TL);
+export const BARBS = barbPath(BASE.JR, BASE.TR) + barbPath(BASE.JL, BASE.TL);
 
 /* ---------- eyes (the LEFT eye around 0,0; the right one is its mirror) ---------- */
 const S = (d, w = EYE_W) => `<path d="${d}" fill="none" stroke="var(--m-eye)" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -128,7 +128,7 @@ export const EYES = {
     teary: F(MOON) + '<path d="M8 36C8 36-6 54-6 62C-6 70 0 74 6 74C12 74 18 70 18 62C18 54 8 36 8 36Z" fill="var(--m-tear)"/>',
     none: '',
 };
-const EYE_C = [115.5, 30];
+export const EYE_C = [115.5, 30];
 /** Where the eyes go while a loader loops (mascot.css): reading lines, or following the lens. */
 export const GAZES = { none: 1, read: 1, follow: 1 };
 function eyesSVG(spec) {
@@ -442,43 +442,63 @@ function fxList(list, t) {
 }
 const scaleStroke = (html, K) => (K === 1 ? html : html.replace(/stroke-width="([\d.]+)"/g, (m, v) => `stroke-width="${f(v * K)}"`));
 
-/** The rig's markup (no <svg> wrapper), for a pose. */
-export function mascotInner(pose) {
+/**
+ * The drawing's pieces for a pose, each as markup in rig space: what
+ * `mascotInner` assembles around the outline, and what the bot (2026-11-11,
+ * `bot/frame.js`) paints on its 3D body's face plane instead.
+ */
+export function mascotPieces(pose) {
     const p = sanitizePose(pose);
     const K = p.strokeK;
-    const head = headPath(p);
-    const bodyT = `translate(0 ${FOOT}) scale(${f3(p.sx)} ${f3(p.sy)}) translate(0 ${-FOOT})`;
     const eyesT = `translate(0 ${EYE_C[1]}) scale(1 ${f3(p.eyeSY)}) translate(0 ${-EYE_C[1]})`;
     const held = HELD.has(p.prop) ? ' transform="translate(0 350) scale(1.22) translate(0 -350)"' : '';
     // a tone recolours the line, the mouth and the blush from inside the drawing,
     // so a pose can change it mid-sequence (the shiny easter egg)
     const tone = toneColor(p.tone);
-    const toneAttr = tone ? ` style="--m-line:${tone};--m-mouth:${tone};--m-blush:${tone}"` : '';
+    return {
+        p,
+        tone: tone ? `--m-line:${tone};--m-mouth:${tone};--m-blush:${tone}` : '',
+        behind: `<g>${PROPS[p.behind](p)}</g>`,
+        blush: `<g opacity="${f3(p.blushO)}">${blushSVG(p.blush)}</g>`,
+        eyes: `<g transform="${eyesT}" class="m-eyes">${p.gaze === 'none' ? scaleStroke(eyesSVG(p.eyes), K) : atRest(p, `gaze-${p.gaze}`, scaleStroke(eyesSVG(p.eyes), K))}</g>`,
+        mouth: `<g>${scaleStroke(mouthSVG(p.mouth, p.fangs), K)}</g>`,
+        sparks: `<g opacity="${f3(p.sparkO)}" class="m-sparks">${SPARKS[p.sparks](p.sparkS)}</g>`,
+        hat: `<g>${HATS[p.hat](p)}</g>`,
+        fxHead: `<g>${fxList(p.fxHead, p.t)}</g>`,
+        paws: `<g transform="translate(${f(p.pawX)} ${f(p.pawY)})" opacity="${f3(p.pawO)}">${PAWS[p.paws](p)}</g>`,
+        prop: `<g${held}>${PROPS[p.prop](p)}</g>`,
+        fx: `<g>${fxList(p.fx, p.t)}</g>`,
+    };
+}
+
+/** The rig's markup (no <svg> wrapper), for a pose. */
+export function mascotInner(pose) {
+    const P = mascotPieces(pose);
+    const { p } = P;
+    const K = p.strokeK;
+    const head = headPath(p);
+    const bodyT = `translate(0 ${FOOT}) scale(${f3(p.sx)} ${f3(p.sy)}) translate(0 ${-FOOT})`;
+    const toneAttr = P.tone ? ` style="${P.tone}"` : '';
     const sil = p.silhouette > 0
         ? `<g opacity="${f3(p.silhouette)}"><path d="${head}" fill="var(--m-sil)" stroke="var(--m-sil)" stroke-width="${f(STROKE * K + 6)}" stroke-linejoin="miter" stroke-miterlimit="10"/><path d="${BARBS}" fill="var(--m-sil)"/></g>`
         : '';
     return (p.shadow ? `<ellipse cx="${f(p.x)}" cy="${FOOT + 70}" rx="${f(210 * p.scale * clamp(1 + p.y / 600, 0.45, 1.1))}" ry="${f(26 * p.scale)}" fill="var(--m-shadow)" opacity="${f3(p.opacity)}"/>` : '')
         + `<g class="m-root" transform="translate(${f(p.x)} ${f(p.y)}) rotate(${f(p.rot)}) scale(${f3(p.scale)})" opacity="${f3(p.opacity)}"${toneAttr}>`
         + `<g transform="${bodyT}">`
-        + `<g>${PROPS[p.behind](p)}</g>`
+        + P.behind
         + `<g transform="rotate(${f(p.tilt)} ${HEAD_PIVOT[0]} ${HEAD_PIVOT[1]})">`
         + `<path d="${head}" fill="var(--m-fill)"/>`
         + `<path d="${head}" fill="none" stroke="var(--m-line)" stroke-width="${f(STROKE * K)}" stroke-linejoin="miter" stroke-miterlimit="10"/>`
         + `<path d="${BARBS}" fill="var(--m-line)"/>`
         + `<g transform="translate(${f(p.faceX)} ${f(p.faceY)})">`
-        + `<g opacity="${f3(p.blushO)}">${blushSVG(p.blush)}</g>`
-        + `<g transform="${eyesT}" class="m-eyes">${p.gaze === 'none' ? scaleStroke(eyesSVG(p.eyes), K) : atRest(p, `gaze-${p.gaze}`, scaleStroke(eyesSVG(p.eyes), K))}</g>`
-        + `<g>${scaleStroke(mouthSVG(p.mouth, p.fangs), K)}</g>`
+        + P.blush + P.eyes + P.mouth
         + '</g>'
-        + `<g opacity="${f3(p.sparkO)}" class="m-sparks">${SPARKS[p.sparks](p.sparkS)}</g>`
-        + `<g>${HATS[p.hat](p)}</g>`
-        + `<g>${fxList(p.fxHead, p.t)}</g>`
+        + P.sparks + P.hat + P.fxHead
         + sil
         + '</g>'
-        + `<g transform="translate(${f(p.pawX)} ${f(p.pawY)})" opacity="${f3(p.pawO)}">${PAWS[p.paws](p)}</g>`
-        + `<g${held}>${PROPS[p.prop](p)}</g>`
+        + P.paws + P.prop
         + '</g>'
-        + `<g>${fxList(p.fx, p.t)}</g>`
+        + P.fx
         + '</g>';
 }
 

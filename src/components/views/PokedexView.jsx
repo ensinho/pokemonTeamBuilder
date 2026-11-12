@@ -1,4 +1,5 @@
 import React, { useCallback, useDeferredValue, useEffect, useState, useMemo, useRef } from 'react';
+import { MascotCompanion } from '../MascotCompanion';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Search, Star, X, SlidersHorizontal } from 'lucide-react';
@@ -593,6 +594,9 @@ export function PokedexView({
                         <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
                             <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('nav.pokedex')}</h2>
                             <span className="team-builder-panel__meta team-builder-panel__meta--compact">{filteredTotal}</span>
+                            {/* A little mascot (2026-11-11): curious while the trainer
+                                searches, a loving nod for a new favourite. */}
+                            <MascotCompanion listen rest={searchInput ? 'curioso' : 'feliz'} size="sm" stage={false} className="pokedex-mascot" />
                         </div>
                     </div>
 

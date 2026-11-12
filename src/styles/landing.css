@@ -195,11 +195,20 @@
 
 /* The bubble the product speaks in (the references' chat bubble): a held
    object, so a sticker; its tail is the one square corner. */
-.landing-bubble {
+/* The mascot says the bubble: he stands at the stage's corner, the bubble's
+   tail points back at him. */
+.landing-speaker {
     position: absolute;
     z-index: 2;
-    top: var(--space-4);
+    top: var(--space-2);
     left: var(--space-2);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+}
+.landing-speaker__mascot { margin-top: var(--space-4); }
+.landing-bubble {
+    position: relative;
     max-width: 12rem;
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
@@ -837,7 +846,9 @@
     /* The bubble gets a band of its own above the party, paid for by a
        smaller party: the actions must still clear a 360×740 screen. */
     .landing-stage { padding-top: var(--space-8); }
-    .landing-bubble { top: 0; left: 0; max-width: none; font-size: var(--text-xs); white-space: nowrap; }
+    .landing-speaker { top: 0; left: 0; }
+    .landing-speaker__mascot { width: 4rem; height: 4rem; margin-top: 0; }
+    .landing-bubble { max-width: none; font-size: var(--text-xs); white-space: nowrap; }
 }
 @media (max-width: 640px) {
     .landing-title { font-size: var(--text-3xl); max-width: none; }
