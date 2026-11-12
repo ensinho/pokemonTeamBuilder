@@ -16,13 +16,54 @@ the builder's first regulation. The plan and the proposals still open are in
 |---|---|
 | `src/utils/trainerProfile.js` | **The source of truth.** Constants (`INTERESTS`, `COMPETITIVE_LEVELS`, `BATTLE_FORMATS`, `PERSONAS`), `normalizeTrainerProfile`, `mergeTrainerProfiles`, `needsTrainerProfile`, and every derivation: `derivePersona`, `personaPicks`, `personaNavOrder`/`sortNavGroups`, `personaDockSlot`, `recommendedJourneyIds`/`suggestedJourney`, `builderRegulationSeed`. Pure, tested in `trainerProfile.test.js`. |
 | `src/store/useAuthStore.js` | `trainerProfile` + `setTrainerProfile(answers)`. localStorage `ptb:trainerProfile` + the preferences doc (`trainerProfile` field). Hydration merges by **the copy touched last wins, whole** (answers are a set — a union would invent a third). |
-| `src/store/useOnboardingStore.js` | `isOpen` + `source` (`landing`, `auto`, `home`, `profile`). |
-| `src/components/onboarding/TrainerOnboarding.jsx` + `src/styles/onboarding.css` | The dialog: a lazy chunk, mounted by AppLayout while open. |
-| `HomeEntry.jsx` | Every way off the landing opens it (`landing`) — over wherever the CTA went. |
+| `src/store/useOnboardingStore.js` | `isOpen` + `source` (`landing`, `auto`, `home`, `profile`) + `entry` (`welcome`, `redo`, `signIn`; null lets the journey pick). |
+| `src/utils/firstJourney.js` | **The Primeira Jornada's rules** (2026-11-12): which screens for which answers and entry (`journeySteps`), progress, the tour, the mascot's look per screen, the persona's costume, the real XP figures. Pure, tested in `firstJourney.test.js`. |
+| `src/components/onboarding/FirstJourney.jsx` + `src/styles/first-journey.css` | The journey: a full-screen lazy chunk, mounted by AppLayout while open (replaced the `TrainerOnboarding` dialog). |
+| `public/onboarding/tour-*.webp` | The tour's four phone captures (Construtor, Pokédex, PokéPuzzle, Meta), ~20 KB each, **outside the precache** (`vite.config.js` globIgnores). Retake them when those screens change a lot: 390×844, dark, a fresh guest. |
+| `HomeEntry.jsx` | Every way off the landing opens it (`landing`) — over wherever the CTA went; "Já tem conta? Entrar" opens it on the account screen (`entry: 'signIn'`). |
 | `AppLayout.jsx` | Auto-offers it (`auto`) on Home only, once per session; sorts `navigationGroups`; picks the dock's fourth tab. |
 | `CozyHomeView.jsx` | "Para você" panel (answered) or the setup card (not answered); the compact journey card follows `suggestedJourney`. |
 | `JourneyList.jsx` | The "Para você" tag on recommended journeys. |
 | `ProfileView.jsx` | Preferences → "Perfil de treinador": the persona, its tags, Configurar/Refazer. |
+
+## The Primeira Jornada (2026-11-12)
+
+Enzo approved the proposal (artifact "Primeira Jornada", built from a
+reference video's three frames) with "QUE INCRÍVEL" and asked for it shipped.
+The onboarding and the account became one conversation with the 3D mascot,
+in the order the market uses (Duolingo): value first, the questions next, the
+account last and optional.
+
+| Screen | What happens | The mascot |
+|---|---|---|
+| `peek` | dark scene, a hint; 2.6 s or a tap | cut by the bottom edge, only the eyes out, following the pointer |
+| `hello` | "Monte times Pokémon **sem pontos cegos.**", Começar, "Já tem conta? Entrar" | rises to the centre on the glide spring, waves |
+| `tour` | four real screens as stories (a card turning in in 3D, a caption; auto every 3.2 s, taps on either half) | beside the caption, a pose per screen (clipboard, Pokédex, thinking, lens) |
+| `interests` | the three interests as pills; picked = the reference's white pill with a check | each pick's Pokémon flies from the pill into orbit around him; his face per interest; the glow takes its type |
+| `level` (competitive only) | the levels as Gible → Gabite → Garchomp, with the games' white silhouette and flash; the format | beside the action, confident at "Ranqueada" |
+| `xp` | the glowing Electric bolt; the real rules (`XP_RULES`: a mission 40, a journey 120, a badge 80) and one mission filling level 1 | starry eyes under the bolt, a hop |
+| `persona` | the card turns in; **the answers are saved here** (so leaving at the account keeps them) | the persona's costume (`PERSONA_COSTUME`), a celebration with confetti |
+| `account` (guests only) | the Trainer Card filling live (name, persona, format), name · email · password; Entrar / Criar conta / Esqueceu a senha in place; "Continuar como convidado" | covers his eyes at the password (`coverable`), peeks when shown; shakes at an error |
+| `done` | "Valeu, **Nome!**", the answers as white pills with checks, two picks, Bora! | jumps; the layer rises away and he shrinks toward the corner |
+
+- **Entries:** `welcome` (first run), `redo` (a trainer with answers, from Home
+  or Profile: interests → level → persona → done), `signIn` (account → done).
+- **Skip** (Pular, Escape) records `skippedAt` only on a first run with no
+  answers — the journey never comes back uninvited. Signing in never does.
+- **The name** is `displayName`, kept at once and saved quietly
+  (`savePreferences`; the preferences sync carries it if that save cannot
+  happen yet) — `setDisplayName`'s error toast would land mid-celebration.
+- **The account** is `useAuthStore.handleSignUp` (a guest is upgraded in
+  place — `linkWithCredential`, the uid and everything under it stay),
+  `handleSignIn`, `sendPasswordReset`; errors through `prettifyAuthError`.
+  Elsewhere in the app `promptSignIn` still opens the `AuthModal`.
+- **The scene is dark in every theme:** `.fj` redefines the colour tokens from
+  the brand layer (`--mascot-white`, `--brand-ink`, `--brand-black`), like
+  `.ds-screen` keeps its own room; the theme's primary stays the accent.
+- **Motion:** one shared element — the mascot travels to each screen's
+  `[data-slot]` (WAAPI, `--ease-glide`, 720 ms) while the screen leaves up
+  (200 ms) and the next arrives in a 70 ms cascade, the headline word by word
+  out of a mask (`.fj-w`). Reduced motion: every state changes, nothing travels.
 
 ## Personas
 

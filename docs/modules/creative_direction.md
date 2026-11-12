@@ -47,7 +47,7 @@ built; this file says what they should *feel* like.
 
 | Piece | Where | The device |
 |---|---|---|
-| Trainer-profile onboarding | `components/onboarding/TrainerOnboarding.jsx`, `styles/onboarding.css` | Scene that answers; evolution line as a level; silhouette until picked; persona on the gold burst ([trainer_profile.md](./trainer_profile.md)) |
+| Primeira Jornada (onboarding + account, 2026-11-12; replaced the trainer-profile dialog) | `components/onboarding/FirstJourney.jsx`, `styles/first-journey.css` | The 3D mascot as the one element that never leaves; picks orbit him; evolution line as a level; the persona's card turns in and he wears its costume ([trainer_profile.md](./trainer_profile.md)) |
 | "Para você" tiles | `CozyHomeView.jsx`, `styles/cozy-home.css` (`data-motion`) | One row of four doors; each icon animates its own SVG parts on hover |
 | Trainer card | `components/trainerCard/TrainerCardDialog.jsx`, `styles/trainer-card.css`, `utils/trainerCardPattern.js` | Per-trainer pixel banner in the persona's type colour, partner standing in it, streak/level/wins as "bold figure + muted word", "Treinando desde" signed with one gold pixel |
 | Badge Case | `components/home/BadgeCase.jsx`, `styles/badge-case.css` | The games' badge case on the Traveler's Home: leaders as silhouettes until their badge is tapped, a gem of their type lights, the full case turns gold |
