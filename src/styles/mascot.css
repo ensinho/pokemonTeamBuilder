@@ -461,3 +461,45 @@ button.mascot-note__body:focus-visible { outline: none; border-radius: var(--rad
 
 /* The boot splash's ghosts are sized and recoloured in app-shell.css
    (.boot-screen__ghost): huge, cropped, white on the Volt ground. */
+
+/* The patch notes' introduction (1.24.0, PatchNotesModal → MascotBotVisual):
+   the line drawing gives way to the 3D bot. Both stand in one cell; the line
+   fades and settles back while the body rises in with the pop spring, once.
+   Generous room so the waving paws and the hop never touch the card's edge. */
+.patch-bot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 15rem;
+    height: 100%;
+    padding: var(--space-8) var(--space-6);
+    background: var(--color-bg);
+    overflow: hidden;
+}
+.patch-bot > * { grid-area: 1 / 1; }
+.patch-bot__glow {
+    width: 12rem;
+    height: 12rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--mascot-brand) 28%, transparent), transparent);
+}
+.patch-bot__line { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+    .patch-bot__line { animation: patch-bot-line 1.1s var(--ease-smooth) 0.2s both; }
+    .patch-bot__body { animation: patch-bot-body 0.9s var(--ease-pop) 0.75s both; }
+    .patch-bot__glow { animation: patch-bot-glow 1.4s var(--ease-smooth) 0.6s both; }
+}
+@keyframes patch-bot-line {
+    0% { opacity: 0; transform: scale(0.96); }
+    30% { opacity: 1; transform: scale(1); }
+    70% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.9); }
+}
+@keyframes patch-bot-body {
+    from { opacity: 0; transform: translateY(var(--space-4)) scale(0.82); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes patch-bot-glow {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: none; }
+}
