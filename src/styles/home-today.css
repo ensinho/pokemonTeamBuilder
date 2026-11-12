@@ -617,31 +617,8 @@
 }
 
 /* The day's whole count beside the countdown: n/4 across both champions. */
-.cozy-day__daycount {
-    color: var(--color-muted);
-}
 
 /* The card's title opens the champion in focus; it still reads as the title. */
-.cozy-day__title-link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: inherit;
-    text-align: start;
-    cursor: pointer;
-}
-
-.cozy-day__title-link:hover {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.2em;
-}
-
-.cozy-day__title-link:focus-visible {
-    outline: none;
-    border-radius: var(--radius-sm);
-    box-shadow: var(--ring-primary);
-}
 
 /* A phone's rail card has no room for the chevron: the whole row is the button. */
 @media (max-width: 1023px) {
