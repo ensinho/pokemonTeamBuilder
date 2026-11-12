@@ -637,6 +637,7 @@ export default {
         about: 'Sobre o app',
         more: 'Mais',
         moreSheetLabel: 'Mais destinos',
+        sectionMenu: 'Páginas de {{section}}',
         likeApp: 'Curtir o app',
         support: 'Apoie o projeto',
         textSizeShort: 'Texto',

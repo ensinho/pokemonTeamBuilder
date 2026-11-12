@@ -92,6 +92,7 @@ import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { glyphMotion } from '../utils/glyphMotion';
 import { navHue } from '../utils/navHue';
+import { HeaderCrumb } from './HeaderCrumb';
 import { isCrawler } from '../utils/crawler';
 import { SUPPORT_URL } from '../constants/support';
 import { SOCIAL_HANDLE, SOCIAL_LINKS } from '../constants/social';
@@ -1087,9 +1088,11 @@ export default function AppLayout() {
     // The section the current page lives in, for the header's breadcrumb
     // ("Competitivo / Meta e torneios"). Pages pinned at the top of the rail
     // belong to no section and show their title alone.
+    // The whole group, not just its title (2026-11-12): the crumb opens the
+    // section's other pages (HeaderCrumb).
     const pageSection = useMemo(() => navigationGroups.find((group) => group.items.some(
         (item) => item.key === currentPage || item.members?.includes(currentPage),
-    ))?.title || null, [navigationGroups, currentPage]);
+    )) || null, [navigationGroups, currentPage]);
 
     // The phone's bottom tab bar. One definition, read by the bar itself and by
     // the Mais sheet, which leaves out whatever the bar already shows.
@@ -1761,10 +1764,7 @@ export default function AppLayout() {
                                         {/* Where the page sits, before what it is called
                                             (2026-11-11): the rail's section heading, quiet. */}
                                         {!isMobile && !isLandingOpen && pageSection && (
-                                            <span className="app-shell__crumb" aria-hidden="true">
-                                                {pageSection}
-                                                <span className="app-shell__crumb-sep">/</span>
-                                            </span>
+                                            <HeaderCrumb section={pageSection} currentPage={currentPage} onIntent={prefetchRoute} />
                                         )}
                                         {React.createElement(
                                             isLandingOpen || VIEWS_WITH_OWN_H1.has(currentPage) ? 'p' : 'h1',

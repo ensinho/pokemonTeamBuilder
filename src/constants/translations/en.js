@@ -672,6 +672,7 @@ export default {
         about: 'About',
         more: 'More',
         moreSheetLabel: 'More destinations',
+        sectionMenu: 'Pages in {{section}}',
         likeApp: 'Like the app',
         support: 'Support the project',
         textSizeShort: 'Text size',

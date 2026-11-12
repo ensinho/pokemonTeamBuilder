@@ -6,6 +6,7 @@ import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../../util
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons } from '../../constants/types';
 import { writeLocal } from '../../utils/safeStorage';
+import { PartyPips } from '../PartyPips';
 
 // Sample Pokémon for the simulated demo grid. Megas appear in BASE FORM in grid
 // and MORPH into Mega form when added to the team roster.
@@ -165,7 +166,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                 <div className="mb-3 flex items-center justify-between gap-2">
                                     <h3 className="flex items-center gap-2 text-sm font-semibold text-fg">
                                         {pt ? 'Meu time atual' : 'Current team'}
-                                        <span className="count-badge">{simulatedTeam.length}/6</span>
+                                        <PartyPips team={simulatedTeam} />
                                     </h3>
                                     {simulatedTeam.length > 0 && (
                                         <button

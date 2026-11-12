@@ -1469,6 +1469,12 @@
     padding: var(--space-0_5);
 }
 
+/* The sprite's platform (index.css, .type-platform) in the card's own type —
+   the same oval the desktop card stands its sprite on (2026-11-12). */
+.team-builder-mobile-card__media .type-platform {
+    --card-type: var(--type-a);
+}
+
 .team-builder-mobile-card__name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3485,34 +3491,4 @@
 
 .team-builder-mobile-card__info:focus-visible {
     box-shadow: var(--ring-logo-inset);
-}
-
-/* The party's six pips beside the team name (2026-11-11). A filled pip is a
-   member; the figure after them is the same count for anyone who reads
-   numbers first. */
-.party-pips {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-}
-
-.party-pips > i {
-    width: 0.4375rem;
-    height: 0.4375rem;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 1px var(--color-border-strong);
-    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
-}
-
-.party-pips > i.is-filled {
-    background: var(--color-primary);
-    box-shadow: none;
-}
-
-.party-pips__figure {
-    margin-inline-start: var(--space-1);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-variant-numeric: tabular-nums;
-    color: var(--color-muted);
 }

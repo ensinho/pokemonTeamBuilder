@@ -25,6 +25,14 @@ import { Loader } from '../Loader';
 import { DataNotes } from '../DataNotes';
 import { metaNotes } from '../../utils/dataNotes';
 import { useUrlParam } from '../../hooks/useUrlParam';
+import { typeColors } from '../../constants/types';
+
+// --card-type for `.type-platform`: the Pokémon's first type, when the index
+// knows it (a forme the index does not list simply stands on nothing).
+const platformStyle = (typesById, id) => {
+    const tone = typeColors[typesById.get(id)?.[0]];
+    return tone ? { '--card-type': tone } : undefined;
+};
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 // `unit` names what `count` counts — tournament teams, or weighted ladder games
@@ -251,7 +259,7 @@ export function MetaUsageView() {
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
 
     const sortControl = (variant) => (
-        <div className={`segmented ${variant}`} role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
+        <div className={`segmented segmented--quiet ${variant}`} role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
             {[
                 { id: 'usage', label: pt ? 'Uso' : 'Usage' },
                 ...(hasWinRates ? [{ id: 'wr', label: pt ? 'Vitórias' : 'Win rate' }] : []),
@@ -325,7 +333,10 @@ export function MetaUsageView() {
             {!isTier && (
                 <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="tabs mb-4">
                     {[
-                        { id: 'usage', label: pt ? 'Uso' : 'Usage' },
+                        // "Pokémon", not "Uso" (2026-11-12): the hub switcher above
+                        // already says Uso, and so does the sort below — the same
+                        // word three times named three different things.
+                        { id: 'usage', label: 'Pokémon' },
                         { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
                     ].map((tb) => (
                         <button
@@ -374,7 +385,7 @@ export function MetaUsageView() {
                             {changedFilters > 0 && <span className="count-badge">{changedFilters}</span>}
                         </button>
                     ) : (
-                        <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} />
+                        <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} className="segmented--quiet" />
                     )}
                 </div>
             )}
@@ -384,7 +395,7 @@ export function MetaUsageView() {
                         {cutoffs.length > 1 && (
                             <section>
                                 <h3 className="meta-filters-sheet__label">{pt ? 'Rating mínimo' : 'Rating floor'}</h3>
-                                <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} className="segmented--block" />
+                                <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} className="segmented--quiet segmented--block" />
                             </section>
                         )}
                         <section>
@@ -461,7 +472,7 @@ export function MetaUsageView() {
                                     className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none"
                                 >
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="figure flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs text-muted">#{i + 1}</span>
+                                        <span className="figure text-2xs text-muted">#{i + 1}</span>
                                         <span className="text-right">
                                             <span className="figure text-sm font-semibold text-primary">{tm.count}</span>
                                             <span className="ml-1 text-2xs text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · <span className="figure">{tm.pct}%</span></span>
@@ -509,8 +520,13 @@ export function MetaUsageView() {
                                         state={linkState}
                                         className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none"
                                     >
-                                        <span className="figure absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs text-muted">{rank}</span>
-                                        <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
+                                        {/* The rank is a figure, not a chip (2026-11-12) — "#1", as the
+                                            pairs beside it write theirs; the sprite stands on its
+                                            type's platform, as on a Pokémon card. */}
+                                        <span className="figure absolute left-2.5 top-2 text-2xs text-muted">#{rank}</span>
+                                        <span className="type-platform inline-flex" style={platformStyle(typesById, mon.id)}>
+                                            <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
+                                        </span>
                                         <span className="w-full truncate text-xs font-semibold capitalize text-fg">{pretty(mon.name)}</span>
                                         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
                                             <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(mon.pct, 3)}%` }} />

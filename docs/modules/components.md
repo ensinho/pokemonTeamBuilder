@@ -284,6 +284,16 @@ to exist; the phone hero paints from the index entry at once, the desktop panel'
 waits for the detail record, so a slow desktop load degrades to a cross-fade.
 Plain `navigate` with no View Transitions or under reduced motion.
 
+### HeaderCrumb, PartyPips, `.type-platform` — the taste pass's shared pieces (2026-11-12)
+**Files:** `src/components/HeaderCrumb.jsx`, `src/components/PartyPips.jsx`, `src/index.css` (`.party-pips`, `.type-platform`, `.segmented--quiet`), `src/utils/navHue.js`
+
+- **`<HeaderCrumb section currentPage onIntent>`** — the desktop header's section word is a button that opens that rail group's pages (`role="menu"`, arrows/Home/End, Escape returns the focus, a route change closes it). It takes the rail's own group object from `navigationGroups`, so labels, icons, badges and tones are never restated. AppLayout renders it only off phones and only for pages inside a section.
+- **`<PartyPips team | count>`** — a team's size as six pips, each filled one in its member's first type. The builder's name row, the builder guide's roster and the forum composer's attached team use it; anything that would write "3/6" should.
+- **`.type-platform`** — wrapper class that stands a sprite on its type's oval (`--card-type`), the same rule as the Pokémon card's. The meta ranking and the phone picker use it.
+- **`--nav-hue`** now also tones the Mais sheet's tiles (`MobileMoreSheet`) and the search's page rows (`CommandPalette`).
+
+The rules behind them are in the `/design-system` skill, "Taste pass".
+
 ### CommandPalette — global search (2026-09-24)
 **Files:** `src/components/CommandPalette.jsx`, `src/styles/command-palette.css`, `src/utils/globalSearch.js` (+ test)
 

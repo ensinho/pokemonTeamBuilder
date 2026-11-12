@@ -137,8 +137,11 @@
     width: 2.25rem;
     height: 2.25rem;
     border-radius: var(--radius-sm);
-    background: var(--color-surface-raised);
-    color: var(--color-muted);
+    /* A page wears its destination's tone (--nav-hue, utils/navHue.js); a
+       result with none keeps the neutral box. */
+    --nav-tone: var(--nav-hue, var(--color-muted));
+    background: color-mix(in srgb, var(--nav-tone) 14%, var(--color-surface-raised));
+    color: color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg));
 }
 
 .command-palette__thumb svg {
