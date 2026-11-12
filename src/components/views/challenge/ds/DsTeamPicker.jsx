@@ -27,15 +27,19 @@ import { DsTeamSheet } from './DsTeamSheet';
  * Without `dailyMembers` (a friend battle) it opens on "My teams", on
  * `preferredTeamId` (the team used last) when that one is ready; `title`,
  * `startLabel` and `showPrivacy` replace the challenge's copy; `headAction`
- * (a node) joins the head — the friend battle's "decline".
+ * (a node) joins the head — the friend battle's "decline". `initialBoard`
+ * opens on the Time do dia ('daily') or the trainer's own teams ('free').
  */
 export function DsTeamPicker({
     savedTeams, dailyMembers = [], practice, championName, isStarting, teamErrors, onStart, onCancel, inputRef,
     title = null, startLabel: startLabelProp = null, preferredTeamId = null, showPrivacy = true, headAction = null,
+    initialBoard = null,
 }) {
     const { t } = useTranslation();
     const hasDaily = dailyMembers.length > 0;
-    const [view, setView] = useState(hasDaily ? 'daily' : 'mine');
+    // `initialBoard` ('daily' | 'free'): a link that asked for one board
+    // (`/challenge?board=free`, utils/challengeBoards.js challengeLink) opens on it.
+    const [view, setView] = useState(initialBoard === 'free' || !hasDaily ? 'mine' : 'daily');
     const [completed, setCompleted] = useState({});
     const [isCompleting, setIsCompleting] = useState(false);
     const [localErrors, setLocalErrors] = useState(null);

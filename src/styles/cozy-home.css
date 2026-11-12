@@ -592,6 +592,27 @@
     }
 }
 
+/* The Champion card by result (2026-11-12, the hero's moods): a perfect day
+   earns her six a gold edge; a lost one sets her back on a drained band. */
+.cozy-day__card--feature[data-mood='gold'] .cozy-day__mini {
+    box-shadow: inset 0 0 0 2px var(--brand-gold);
+}
+
+.cozy-day__card--feature[data-mood='down'] .cozy-day__trainer {
+    opacity: 0.7;
+}
+
+/* The ledger closes the card: the full width of its foot. */
+.cozy-day__card--feature .champion-ledger {
+    flex: 1 1 100%;
+    margin-top: var(--space-2);
+}
+
+/* In a ledger row the slots speak; the count is the row's label. */
+.champion-ledger .challenge-boards__count {
+    display: none;
+}
+
 /* ── 4. Panels (section + card) ────────────────────────────────────────── */
 
 .cozy-home .cozy-panel .section-head {

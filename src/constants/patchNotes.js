@@ -34,6 +34,31 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // The Home that answers (2026-11-12): the champions' day as 0/2 · 1/2 ·
+        // 2/2 per champion, each row a link straight to that battle; the
+        // banner's scenes; the Home by what the trainer came for. The CTA lands
+        // on the Home itself — that is where it changed.
+        notes: [
+            {
+                key: 'champions-day',
+                featured: true,
+                icon: 'crown',
+                visual: 'championsDay',
+                title: 'patchNotes.championsDayTitle',
+                description: 'patchNotes.championsDayDesc',
+                cta: 'patchNotes.championsDayCta',
+                path: '/',
+            },
+            { key: 'hero-scenes', icon: 'sparkles', title: 'patchNotes.heroScenesTitle', description: 'patchNotes.heroScenesDesc', cta: 'patchNotes.heroScenesCta', path: '/' },
+            { key: 'home-personas', icon: 'heart', title: 'patchNotes.homePersonasTitle', description: 'patchNotes.homePersonasDesc', cta: 'patchNotes.homePersonasCta', path: '/' },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+        ],
+    },
+    {
+        version: '1.24.0',
+        month: '2026-11',
+        thanks: false,
         // The mascot with a body (2026-11-11): the icon's ghost as a 3D bot,
         // everywhere he was, and now playing along in the games and the forum.
         // The featured visual introduces him gently: the line drawing gives

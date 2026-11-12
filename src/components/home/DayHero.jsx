@@ -1,5 +1,4 @@
 import React from 'react';
-import { Palette } from 'lucide-react';
 import { JourneyBar } from '../journeys/JourneyList';
 
 /**
@@ -16,6 +15,14 @@ import { JourneyBar } from '../journeys/JourneyList';
  * Content is the caller's (`art`, `eyebrow`, `title`, `sub`, the bar's
  * `label`/`meta`/`percent`/`extra`, `action`) — which subject leads is
  * `personaHero()`'s call (utils/trainerProfile.js), never the view's.
+ *
+ * 2026-11-12: the scene is the caller's too (`scene`, a <HeroScene>, and
+ * `sceneControl`, the <ScenePicker>), so a trainer's own scenes — their
+ * partner, their Trainer ID — reach every hero. `mood` ('calm' | 'live' |
+ * 'gold' | 'down') lets the subject's state change the room: the Champion's
+ * hero turns gold on a 2/2, drains on a lost day (utils/challengeBoards.js).
+ * `status` is a node beside the bar's label (the day's two boards); `reveal`
+ * plays the arrival once, when the state just changed.
  */
 export function DayHero({
     tone,
@@ -28,32 +35,26 @@ export function DayHero({
     percent,
     extra,
     action,
-    wallpaper,
-    wallpaperChanged = false,
-    onChangeWallpaper,
-    wallpaperLabel,
+    status,
+    mood = 'calm',
+    reveal = false,
+    scene,
+    sceneControl,
 }) {
     return (
-        <section className="day-hero" style={{ '--hero-type': tone }} aria-labelledby="day-hero-title">
-            {wallpaper && (
-                <span
-                    key={wallpaper.id}
-                    className={`day-hero__scene ${wallpaperChanged ? 'is-changed' : ''}`}
-                    style={{ backgroundImage: `url(${wallpaper.url})` }}
-                    aria-hidden="true"
-                />
-            )}
+        <section
+            className={`day-hero ${reveal ? 'is-revealing' : ''}`}
+            data-mood={mood}
+            style={{ '--hero-type': tone }}
+            aria-labelledby="day-hero-title"
+        >
+            {scene}
             <span className="day-hero__disc" aria-hidden="true" />
             {art && <span className="day-hero__art" aria-hidden="true">{art}</span>}
 
             <div className="day-hero__top">
                 {eyebrow && <span className="day-hero__eyebrow">{eyebrow}</span>}
-                {onChangeWallpaper && (
-                    <button type="button" className="btn btn-icon btn-sm day-hero__wallpaper" onClick={onChangeWallpaper}
-                        aria-label={wallpaperLabel} title={wallpaperLabel}>
-                        <Palette aria-hidden="true" />
-                    </button>
-                )}
+                {sceneControl}
             </div>
 
             <div className="day-hero__copy">
@@ -67,6 +68,7 @@ export function DayHero({
                 <span className="day-hero__now">
                     <span className="day-hero__label">{label}</span>
                     {meta && <span className="day-hero__meta">{meta}</span>}
+                    {status}
                     {typeof percent === 'number' && <JourneyBar percent={percent} />}
                 </span>
                 {action && (

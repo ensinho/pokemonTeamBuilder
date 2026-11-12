@@ -1,0 +1,246 @@
+/*
+ * The champions' day (2026-11-12): the two boards of a champion
+ * (ChallengeBoards) and the champions themselves (ChampionDay — face, the
+ * hero's switch, the "Seu dia" ledger). Its own sheet, imported by those
+ * components and by the patch notes' 1.25.0 visual, so they look the same
+ * wherever they are drawn. Home-only placement stays in home-today.css.
+ */
+
+/* ── The Champion's two boards (ChallengeBoards, 2026-11-12) ───────────────
+   0/2 · 1/2 · 2/2, each slot its result: a crown earned in gold, an ✕ in the
+   muted ink, the live swords in pink while a battle runs, a dashed ball for
+   "not played" (dashed is absent, the app's one meaning for it). */
+.challenge-boards {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.challenge-boards__count {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+}
+
+.challenge-boards__slot {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    height: 1.5rem;
+    padding-inline: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg-secondary);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.challenge-boards.is-compact .challenge-boards__slot {
+    padding-inline: var(--space-0_5);
+}
+
+.challenge-boards__mark {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-full);
+}
+
+.challenge-boards__mark svg {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.challenge-boards__rim {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-dasharray: 2 2;
+}
+
+.challenge-boards__slot.is-pending {
+    color: var(--color-muted);
+}
+
+.challenge-boards__slot.is-won .challenge-boards__mark {
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+}
+
+.challenge-boards__slot.is-won {
+    color: var(--color-fg);
+}
+
+.challenge-boards__slot.is-lost .challenge-boards__mark {
+    background: color-mix(in srgb, var(--color-muted) 30%, transparent);
+    color: var(--color-fg-secondary);
+}
+
+.challenge-boards__slot.is-active .challenge-boards__mark {
+    background: var(--brand-live);
+    color: var(--brand-on-live);
+}
+
+/* ── The two champions (ChampionDay, 2026-11-12) ──────────────────────────
+   Cynthia and Blue, each with a ranking of their own: a face cropped from
+   the battle sprite, the name, the day as n/2. In the hero a segmented pair
+   (the tab picked is who the hero shows); in "Seu dia" a ledger of rows,
+   each going straight to that champion's next battle. */
+.champion-face {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--hero-type, var(--day-tone, var(--color-primary))) 30%, var(--color-surface-raised));
+}
+
+/* The sprite at 2.4× with its head in the disc: the champions' heads sit in
+   the top third of Showdown's 80px canvas. */
+.champion-face__img {
+    position: absolute;
+    top: -12%;
+    left: 50%;
+    width: 240%;
+    height: 240%;
+    max-width: none;
+    translate: -50% 0;
+    object-fit: contain;
+    object-position: 50% 0;
+    image-rendering: pixelated;
+}
+
+.champion-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+    margin-bottom: var(--space-2);
+}
+
+.champion-switch__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    height: 2.25rem;
+    padding-inline: var(--space-1) var(--space-3);
+    border: none;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+    color: var(--color-fg-secondary);
+    font: inherit;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out), scale var(--duration-press) var(--ease-out);
+}
+
+.champion-switch__tab:hover {
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    color: var(--color-fg);
+}
+
+.champion-switch__tab:active {
+    scale: var(--press-scale);
+}
+
+.champion-switch__tab.is-on {
+    background: var(--color-surface);
+    color: var(--color-fg);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--hero-type) 70%, var(--color-fg));
+}
+
+.champion-switch__tab:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.champion-switch__count {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-medium);
+}
+
+.champion-switch__count.is-gold {
+    color: var(--color-accent);
+}
+
+.champion-ledger {
+    display: grid;
+    gap: var(--space-1_5);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.champion-ledger__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-1_5) var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    color: var(--color-fg);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out), scale var(--duration-press) var(--ease-out);
+}
+
+.champion-ledger__row:hover {
+    background: var(--color-surface-hover);
+}
+
+.champion-ledger__row:active {
+    scale: var(--press-scale);
+}
+
+.champion-ledger__row:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+/* The champion the card's title speaks about. */
+.champion-ledger__row.is-focus {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--day-tone) 60%, transparent);
+}
+
+.champion-ledger__row .champion-face {
+    width: 2rem;
+    height: 2rem;
+}
+
+.champion-ledger__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.champion-ledger__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.champion-ledger__line {
+    overflow: hidden;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.champion-ledger__chevron {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+}
+
