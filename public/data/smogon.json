@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T15:29:20.392Z",
+  "generatedAt": "2026-11-12T16:05:30.884Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -23966,7 +23966,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Choice Specs Magnezone is a high-voltage wallbreaker that takes advantage of the lack of special tanks in RU to blast holes in teams. Volt Switch lets it keep momentum flowing against switch-ins like Hisuian Goodra, Wo-Chien, and Umbreon. Tri Attack Analytic lets Flash Cannon OHKO Krookodile while also amping up Volt…",
+          "description": "Choice Specs Magnezone is a high-voltage wallbreaker that takes advantage of the lack of special tanks in RU to blast holes in teams. Volt Switch lets it keep momentum flowing against switch-ins like Hisuian Goodra, Wo-Chien, and Umbreon. Analytic lets Flash Cannon OHKO Krookodile while also amping up Volt Switch to…",
           "source": "RU"
         },
         {
@@ -37985,7 +37985,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Hawlucha excels as one of Psychic Terrain's most prominent sweepers as a result of an excellent STAB combination alongside the Speed boost from Unburden. Taunt allows Hawlucha to set up against walls such as Toxapex, Clodsire, and Skeledirge by disabling the use of status as well as recovery moves. 124 Speed EVs allow…",
           "source": "UU"
         },
         {
