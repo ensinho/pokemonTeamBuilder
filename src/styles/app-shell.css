@@ -699,7 +699,7 @@
    Neon Sticker: the fill is a breath of Volt and the glyph takes the Volt ink,
    so "you are here" is the rail's one accent. */
 .app-shell__nav-link.is-active {
-    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+    background: var(--color-surface-active);
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav,
@@ -727,31 +727,40 @@
     padding: 0;
 }
 
-/* The icon is the quiet half of the row. Muted at rest so the column of glyphs
-   sits behind the column of labels rather than competing with it — twenty
-   full-strength icons in a 248px rail is a texture, not a wayfinding aid. It
-   comes up to foreground on hover and on the active row, which is what makes
-   those two states read without touching the label at all. */
+/* The icon is a tile in its destination's type tone (2026-11-11, the taste
+   pass — utils/navHue.js). Twenty identical grey outlines read as the
+   template's rail; a tone per place lets the column be read by colour first,
+   the way the Pokédex is read by type, while the labels stay at foreground.
+   The canon colour is only ever mixed (the .type-chip recipe): a 14% wash for
+   the tile, 55% toward the foreground for the glyph, so every tone clears the
+   3:1 a non-text glyph needs on both light and dark. No --nav-hue (a control
+   that has no destination) falls back to the muted ink. */
 .app-shell__nav-icon {
+    --nav-tone: var(--nav-hue, var(--color-muted));
     display: inline-flex;
-    height: 1.25rem;
-    width: 1.25rem;
+    height: 1.5rem;
+    width: 1.5rem;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    color: var(--color-muted);
-    transition: color var(--duration-fast) var(--ease-smooth);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--nav-tone) 14%, transparent);
+    color: color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg));
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
     /* Anchors the collapsed-rail notification dot. */
     position: relative;
 }
 
 .app-shell__nav-link:hover .app-shell__nav-icon,
 .app-shell__account-button:hover .app-shell__nav-icon {
-    color: var(--color-fg);
+    background: color-mix(in srgb, var(--nav-tone) 22%, transparent);
 }
 
+/* "You are here": the row takes the neutral selected fill and the tile its
+   full tone — the place's own colour is the signal, not a second accent. */
 .app-shell__nav-link.is-active .app-shell__nav-icon {
-    color: var(--color-primary-text);
+    background: color-mix(in srgb, var(--nav-tone) 30%, transparent);
+    color: color-mix(in srgb, var(--nav-tone) 40%, var(--color-fg));
 }
 
 /* Pending-count badge on a nav entry (e.g. incoming friend requests). */
@@ -793,6 +802,12 @@
     display: block;
     height: 1rem;
     width: 1rem;
+}
+
+/* Inside a tile the glyph is drawn heavier, so it reads as a solid mark
+   on its wash rather than a hairline floating in it. */
+.app-shell__nav-icon>svg {
+    stroke-width: 2.25;
 }
 
 .app-shell__nav-text {
@@ -1574,6 +1589,28 @@
     text-overflow: ellipsis;
 }
 
+/* The breadcrumb's section (2026-11-11): the rail's own heading, in the label
+   voice and muted, so the title after the slash stays the loudest word in
+   the band. Never truncates the title — it gives way first. */
+.app-shell__crumb {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1_5);
+    min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-muted);
+}
+
+.app-shell__crumb-sep {
+    color: var(--color-border-strong);
+}
+
 .app-shell__header-subtitle,
 .app-shell__footer-credit,
 .app-shell__footer-copy {
@@ -2015,6 +2052,17 @@
     margin-bottom: var(--space-3);
 }
 
+/* "Espiando" leans over a ledge the rig draws below its own box (~0.17 of
+   the mascot's height overflows the SVG), so the gap to the title is
+   reserved here — it used to cut through "Nenhum time salvo" (2026-11-11). */
+.empty-state__illustration-container[data-pose='espiando'] {
+    margin-bottom: var(--space-8);
+}
+
+.empty-state.is-compact .empty-state__illustration-container[data-pose='espiando'] {
+    margin-bottom: var(--space-6);
+}
+
 .empty-state__illustration {
     position: relative;
     z-index: 1;
@@ -2228,6 +2276,10 @@
    word side by side; the rest are glyphs, named by their aria-label. That is
    what lets "Construtor" read whole at 360px instead of "Constr…". The
    lozenge says where you are in shape as well as colour (WCAG 1.4.1). */
+.app-shell__tab.is-active .app-shell__tab-icon {
+    color: inherit;
+}
+
 .app-shell__tab.is-active {
     flex-grow: 2.4;
     padding-inline: var(--space-3);
@@ -2237,6 +2289,9 @@
 
 .app-shell__tab-icon {
     display: inline-flex;
+    /* Its destination's tone at rest (utils/navHue.js); the current tab is
+       the Volt lozenge and takes its ink. */
+    color: color-mix(in srgb, var(--nav-hue, var(--color-muted)) 50%, var(--color-muted));
     flex-shrink: 0;
     align-items: center;
     justify-content: center;

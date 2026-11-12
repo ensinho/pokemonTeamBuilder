@@ -91,6 +91,7 @@ import { useQuickLookStore } from '../store/useQuickLookStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
 import { glyphMotion } from '../utils/glyphMotion';
+import { navHue } from '../utils/navHue';
 import { isCrawler } from '../utils/crawler';
 import { SUPPORT_URL } from '../constants/support';
 import { SOCIAL_HANDLE, SOCIAL_LINKS } from '../constants/social';
@@ -273,7 +274,7 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size 
 
 // A real link, not a button that calls navigate(): Cmd/Ctrl-click, middle-click
 // and long-press "open in new tab" all work, and the browser shows the URL.
-const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent, glyph = 'nudge' }) => {
+const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent, glyph = 'nudge', hue }) => {
     const buttonRef = useRef(null);
     // Styled hover tooltip for the collapsed rail. Rendered via a portal with
     // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
@@ -299,7 +300,8 @@ const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0
             className={`app-shell__nav-link ${active ? 'is-active' : ''}  ${collapsed ? 'is-collapsed' : ''}`}
         >
             {/* data-glyph: the icon plays its own motion on hover (utils/glyphMotion.js). */}
-            <span className="app-shell__nav-icon" aria-hidden="true" data-glyph={glyph}>
+            {/* --nav-hue: the destination's type tone (utils/navHue.js). */}
+            <span className="app-shell__nav-icon" aria-hidden="true" data-glyph={glyph} style={hue ? { '--nav-hue': hue } : undefined}>
                 {icon}
                 {/* Collapsed rail has no room for the count, so it degrades to a dot. */}
                 {badge > 0 && collapsed && <span className="app-shell__nav-dot" aria-hidden="true" />}
@@ -1082,6 +1084,13 @@ export default function AppLayout() {
         return ordered;
     }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe, trainerProfile]);
 
+    // The section the current page lives in, for the header's breadcrumb
+    // ("Competitivo / Meta e torneios"). Pages pinned at the top of the rail
+    // belong to no section and show their title alone.
+    const pageSection = useMemo(() => navigationGroups.find((group) => group.items.some(
+        (item) => item.key === currentPage || item.members?.includes(currentPage),
+    ))?.title || null, [navigationGroups, currentPage]);
+
     // The phone's bottom tab bar. One definition, read by the bar itself and by
     // the Mais sheet, which leaves out whatever the bar already shows.
     const mobileTabs = useMemo(() => {
@@ -1618,6 +1627,7 @@ export default function AppLayout() {
                                                 label={item.label}
                                                 icon={item.icon}
                                                 glyph={glyphMotion(item.key)}
+                                                hue={navHue(item.key)}
                                                 badge={item.badge || 0}
                                                 onIntent={() => prefetchRoute(item.key)}
                                                 to={item.path}
@@ -1644,6 +1654,7 @@ export default function AppLayout() {
                                                         label={item.label}
                                                         icon={item.icon}
                                                         glyph={glyphMotion(item.key)}
+                                                        hue={navHue(item.key)}
                                                         badge={item.badge || 0}
                                                         onIntent={() => prefetchRoute(item.prefetchKey || item.key)}
                                                         to={item.path}
@@ -1683,6 +1694,7 @@ export default function AppLayout() {
                                                 label={t('nav.profile')}
                                                 icon={<SettingsGlyph />}
                                                 glyph="turn"
+                                                hue={navHue('profile')}
                                                 onIntent={() => prefetchRoute('profile')}
                                                 to="/profile"
                                             />
@@ -1746,6 +1758,14 @@ export default function AppLayout() {
                                     title — the same edge as the page under it. */}
                                 <div className="app-shell__header-copy">
                                     <div className="app-shell__header-title-row">
+                                        {/* Where the page sits, before what it is called
+                                            (2026-11-11): the rail's section heading, quiet. */}
+                                        {!isMobile && !isLandingOpen && pageSection && (
+                                            <span className="app-shell__crumb" aria-hidden="true">
+                                                {pageSection}
+                                                <span className="app-shell__crumb-sep">/</span>
+                                            </span>
+                                        )}
                                         {React.createElement(
                                             isLandingOpen || VIEWS_WITH_OWN_H1.has(currentPage) ? 'p' : 'h1',
                                             { className: 'app-shell__header-title' },
@@ -2241,7 +2261,7 @@ export default function AppLayout() {
                                     // by its full label, shown or not.
                                     aria-label={tab.label}
                                 >
-                                    <span className="app-shell__tab-icon" aria-hidden="true" data-glyph={glyphMotion(tab.key)}>{tab.icon}</span>
+                                    <span className="app-shell__tab-icon" aria-hidden="true" data-glyph={glyphMotion(tab.key)} style={{ '--nav-hue': navHue(tab.key) }}>{tab.icon}</span>
                                     <span className="app-shell__tab-label">{tab.shortLabel || tab.label}</span>
                                 </button>
                             ));
