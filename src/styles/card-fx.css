@@ -151,8 +151,8 @@
     .team-party.is-fx-on .team-party__slot:nth-child(6) .team-party__sprite { animation-delay: 300ms; }
 
     /* The band's motif comes alive under the pointer, one card at a time.
-       The rays (the default motif) stay still: spun, the "sun" drifted off
-       its platform and read wrong (Enzo, 2026-11-12). */
+       The default motif (the map grid) stays still, as the rays it replaced
+       did (Enzo, 2026-11-12: spun, the "sun" read wrong). */
     :is(.home-grid, .day-route__group) > li:nth-child(4n+2) .is-fx-on > .home-tile__media::before {
         animation: fx-drift 2.4s linear infinite;
     }
@@ -176,9 +176,9 @@
     40% { translate: 0 -0.625rem; }
 }
 
-@keyframes fx-rays {
-    from { rotate: 0deg; }
-    to { rotate: 360deg; }
+@keyframes fx-breathe {
+    from { scale: 1; opacity: 0.85; }
+    to { scale: 1.06; opacity: 0.55; }
 }
 
 @keyframes fx-drift {
@@ -290,7 +290,11 @@
     transition-duration: 220ms;
 }
 
-/* The aura: slow rays behind the protagonist, in the hero's type. */
+/* The aura: rings spreading from the protagonist, in the hero's type — the
+   ripple a Poké Ball leaves when it opens. They breathe; they do not turn.
+   (It was a fan of rays turning behind the art until the hearth pass: on a
+   Fire- or Fighting-led hero that is a red field with a sunburst, a
+   rising-sun flag at banner size. No rays on the Home.) */
 .fx-aura {
     position: absolute;
     z-index: -1;
@@ -299,9 +303,10 @@
     width: 170%;
     aspect-ratio: 1;
     translate: -50% -50%;
-    background: repeating-conic-gradient(
-        color-mix(in srgb, var(--hero-type) 30%, transparent) 0deg 6deg,
-        transparent 6deg 18deg
+    background: repeating-radial-gradient(
+        circle,
+        transparent 0 1.375rem,
+        color-mix(in srgb, var(--hero-type) 30%, transparent) 1.375rem 1.5rem
     );
     -webkit-mask-image: radial-gradient(closest-side, var(--color-fg) 15%, transparent 70%);
     mask-image: radial-gradient(closest-side, var(--color-fg) 15%, transparent 70%);
@@ -378,7 +383,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
     .fx-aura {
-        animation: fx-rays 40s linear infinite;
+        animation: fx-breathe 7s var(--ease-smooth) infinite alternate;
     }
 
     .fx-motes i {

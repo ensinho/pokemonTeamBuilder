@@ -11,9 +11,10 @@
    - ONE card (`.home-tile`): the art on its platform in a band of the same
      height across a row, then kicker (mono), title, one line, a foot with a
      figure or an action. Neutral surface; the subject's type colour is the
-     platform under the Pokémon and a wash of the art's band (`--tone`;
-     Enzo, 2026-11-12: "um tico de personalidade… cores nos cards") — a flat
-     mix into the surface, never a gradient; a tile with no tone stays neutral.
+     platform under the Pokémon and the light it throws on the band (`--tone`;
+     Enzo, 2026-11-12: "um tico de personalidade… cores nos cards"). Since the
+     hearth pass the band itself is one neutral surface in every card and the
+     colour is a lamp under the platform — see "The band is lit, not painted".
    - The hero is the page's only fully tinted surface and holds its only primary.
    Phones: the route runs sideways ("Agora" first), the doors are 2 × 2.
 
@@ -83,16 +84,27 @@ button.home-tile:active { background: var(--color-surface-active); }
     align-items: flex-end;
     justify-content: center;
     height: var(--tile-media);
-    /* The subject's colour, washed into the band; neutral with no `--tone`. */
-    background: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 16%, var(--color-surface-raised));
+    /* The band is lit, not painted (the hearth pass, 2026-11-12). A flat wash
+       of each subject's colour gave one screen eight fills, and on the dark
+       themes a warm type mixed into the violet surface — its complement —
+       came out khaki (Electric, Ground, Rock, the gold of a badge). Now every
+       band is the same raised surface and the subject's colour is light: a
+       pool rising from the platform, bright where it is small. One family
+       down the page, each card with its own lamp. No `--tone` → no lamp. */
+    background:
+        radial-gradient(62% 95% at 50% 100%, color-mix(in srgb, var(--tone, transparent) 30%, transparent), transparent 74%),
+        var(--color-surface-raised);
 }
 
 /* ── Personality in the band (2026-11-12, Enzo: "leves efeitos / elementos
    nos fundos dos cards para gerar mais personalidade") ──────────────────
    Two of the franchise's own devices, in the subject's colour, static (they
    repeat across the grid — nothing loops, the taste gate's "fifty cards"):
-   - rays fanning up from the platform, the "Quem é esse Pokémon?" burst,
-     faded out before the band's edges so the sprite stays the subject;
+   - the Town Map's grid behind the Pokémon, faded out before the band's
+     edges so the sprite stays the subject. (It was a fan of rays from the
+     platform until the hearth pass: on a red band that is a rising-sun
+     flag, and Enzo had already read it as "sol" — rays are out of the
+     Home's cards for good.)
    - a Poké Ball in line art, cropped by the band's corner, like a TCG card's
      watermark. The mask is alpha only (the SVG's ink never shows).
    A tile with no `--tone` keeps the layers in the primary, very faint. */
@@ -104,15 +116,14 @@ button.home-tile:active { background: var(--color-surface-active); }
 .home-tile__media::before {
     content: '';
     position: absolute;
-    inset: -40% -10% 0;
+    inset: 0;
     z-index: -1;
-    background: repeating-conic-gradient(
-        from -90deg at 50% 100%,
-        color-mix(in srgb, var(--tone, var(--color-primary)) 22%, transparent) 0deg 5deg,
-        transparent 5deg 15deg
-    );
-    -webkit-mask-image: radial-gradient(80% 110% at 50% 100%, var(--color-fg) 20%, transparent 78%);
-    mask-image: radial-gradient(80% 110% at 50% 100%, var(--color-fg) 20%, transparent 78%);
+    --grid-line: color-mix(in srgb, var(--tone, var(--color-primary)) 22%, transparent);
+    background:
+        linear-gradient(to right, var(--grid-line) 0.0625rem, transparent 0.0625rem) 50% 0 / 1.25rem 1.25rem,
+        linear-gradient(to bottom, var(--grid-line) 0.0625rem, transparent 0.0625rem) 50% 0 / 1.25rem 1.25rem;
+    -webkit-mask-image: radial-gradient(75% 105% at 50% 100%, var(--color-fg) 15%, transparent 76%);
+    mask-image: radial-gradient(75% 105% at 50% 100%, var(--color-fg) 15%, transparent 76%);
     pointer-events: none;
 }
 
@@ -128,13 +139,13 @@ button.home-tile:active { background: var(--color-surface-active); }
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23000' stroke-width='5'%3E%3Ccircle cx='50' cy='50' r='44'/%3E%3Cpath d='M6 50h29M65 50h29'/%3E%3Ccircle cx='50' cy='50' r='14'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23000'/%3E%3C/svg%3E") center / contain no-repeat;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23000' stroke-width='5'%3E%3Ccircle cx='50' cy='50' r='44'/%3E%3Cpath d='M6 50h29M65 50h29'/%3E%3Ccircle cx='50' cy='50' r='14'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23000'/%3E%3C/svg%3E") center / contain no-repeat;
     rotate: 18deg;
-    opacity: 0.6;
+    opacity: 0.45;
     pointer-events: none;
 }
 
 /* Four motifs, so a row never repeats one (Enzo: "diferenciar alguns
    elementos visuais para não serem todos iguais"): by the tile's place in
-   its list — 1 rays from the platform, 2 a halftone of dots from a corner,
+   its list — 1 the Town Map's grid, 2 a halftone of dots from a corner,
    3 rings around the sprite, 4 speed lines — and the Poké Ball changes
    corner and angle with them. Still static, still the subject's colour. */
 :is(.home-grid, .day-route__group) > li:nth-child(4n+2) .home-tile__media::before {
@@ -395,13 +406,15 @@ button.home-tile:hover .home-tile__chevron {
 }
 
 /* A route card's band is a battle field (Enzo, 2026-11-12: "um pouco de
-   personalidade nesses cards do meio"): the sky and, from the horizon down,
-   the ground the platforms stand on — two flat mixes of the subject's tone
-   with a hard stop between them, not a fade. No `--tone` → neutral. */
+   personalidade nesses cards do meio"): the sky and, from a hard horizon
+   down, the ground the platforms stand on. Lit like every other band (the
+   hearth pass): the ground is the surface a step lighter, the subject's
+   colour the lamp over it. */
 .day-route .home-tile--card .home-tile__media {
-    --field-sky: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 14%, var(--color-surface-raised));
-    --field-ground: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 30%, var(--color-surface-raised));
-    background: linear-gradient(to bottom, var(--field-sky) 62%, var(--field-ground) 62%);
+    background:
+        radial-gradient(62% 95% at 50% 100%, color-mix(in srgb, var(--tone, transparent) 30%, transparent), transparent 74%),
+        linear-gradient(to bottom, transparent 62%, color-mix(in srgb, var(--color-fg) 5%, transparent) 62%),
+        var(--color-surface-raised);
 }
 
 .day-route__group {

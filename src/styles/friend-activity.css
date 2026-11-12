@@ -513,16 +513,19 @@
 }
 
 /* Each challenge one button (2026-11-12, Enzo: "deixar claro… que o nome
-   acompanha o ícone"): a fill in its own tone holds the icon, the figure and
-   the word together. */
+   acompanha o ícone"): one fill holds the icon, the figure and the word
+   together. The fill is the card's own raised surface since the hearth pass
+   — three rows in three tints were three more colours on a page that already
+   had its share — and the challenge's tone is its icon tile, washing into
+   the row only under the pointer. */
 .center-today--rail .center-today__door {
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 9%, var(--color-surface-raised));
+    background: var(--color-surface-raised);
 }
 
 .center-today--rail .center-today__door:hover {
-    background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 16%, var(--color-surface-raised));
+    background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 14%, var(--color-surface-raised));
 }
 
 .center-today--rail .center-today__door:hover .center-today__label {
@@ -551,7 +554,7 @@
     }
 
     .cozy-rail .center-today--rail .center-today__door:hover {
-        background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 16%, var(--color-surface-raised));
+        background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 14%, var(--color-surface-raised));
     }
 
     .cozy-rail .center-today--rail .center-today__go { display: block; }
