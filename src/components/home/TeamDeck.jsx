@@ -30,8 +30,9 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
         <ul className="team-deck home-grid">
             <li className={partySpan}>
                 {/* the lead's colour washes the band, rays and watermark (2026-11-12) */}
-                <article className="home-tile home-tile--card team-party" style={toneOf(summary.members[0]) ? { '--tone': toneOf(summary.members[0]) } : undefined}>
+                <article className="home-tile home-tile--card team-party" style={toneOf(summary.members[0]) ? { '--tone': toneOf(summary.members[0]) } : undefined} data-fx>
                     <span className="home-tile__media team-party__six" role="img" aria-label={t('cozyHome.ofSix', { n: summary.size })}>
+                        <span className="fx-holo" aria-hidden="true" />
                         {Array.from({ length: TEAM_SIZE }, (_, i) => {
                             const member = summary.members[i];
                             return (
@@ -69,8 +70,9 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
 
             {others.map(({ team: other, summary: s }) => (
                 <li key={other.id}>
-                    <article className="home-tile home-tile--card team-box" style={toneOf(s.members[0]) ? { '--tone': toneOf(s.members[0]) } : undefined}>
+                    <article className="home-tile home-tile--card team-box" style={toneOf(s.members[0]) ? { '--tone': toneOf(s.members[0]) } : undefined} data-fx>
                         <span className="home-tile__media" aria-hidden="true">
+                            <span className="fx-holo" />
                             <PcBox members={s.members} columns={3} size="sm" className="team-box__box" />
                         </span>
                         <span className="home-tile__body">
@@ -89,8 +91,9 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
 
             {others.length === 1 && onNew && (
                 <li>
-                    <button type="button" className="home-tile home-tile--card team-new" onClick={onNew}>
+                    <button type="button" className="home-tile home-tile--card team-new" onClick={onNew} data-fx>
                         <span className="home-tile__media" aria-hidden="true">
+                            <span className="fx-holo" />
                             <span className="team-new__plus"><Plus /></span>
                         </span>
                         <span className="home-tile__body">

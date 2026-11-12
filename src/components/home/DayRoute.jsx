@@ -36,8 +36,10 @@ function RouteTile({ item, isDone, variant }) {
             className={`home-tile home-tile--${variant} route-tile ${isDone ? 'is-done' : ''}`}
             style={{ '--tone': item.tone }}
             onClick={item.onOpen}
+            data-fx
         >
             <span className="home-tile__media" aria-hidden="true">
+                <span className="fx-holo" />
                 <span className="home-tile__stage">{item.art}</span>
                 {isDone && <Mark stamp={item.stamp} />}
             </span>
@@ -89,8 +91,9 @@ export function DayRoute({ route, items, t }) {
             {done.length > 0 && <Group ids={done} items={items} isDone span={span} label={t('cozyHome.route.done')} />}
 
             {current ? (
-                <article className={`home-tile home-tile--card route-now ${current.live ? 'is-live' : ''}`} style={{ '--tone': current.tone }} aria-label={t('cozyHome.route.now')}>
+                <article className={`home-tile home-tile--card route-now ${current.live ? 'is-live' : ''}`} style={{ '--tone': current.tone }} aria-label={t('cozyHome.route.now')} data-fx>
                     <span className="home-tile__media" aria-hidden="true">
+                        <span className="fx-holo" />
                         <span className="home-tile__stage">{current.art}</span>
                     </span>
                     <div className="home-tile__body route-now__body">

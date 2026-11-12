@@ -1,0 +1,415 @@
+/* ==========================================================================
+   The Carta Holo (2026-11-12) — the Home's cards as holo-rares.
+   Enzo: "traga unicidade para estes cards, adicionando animações, efeitos de
+   leve ao passar mouse, clicar… algo que grite design UAU", with ruixen.com
+   (spring stacks, the confetti press) and obsidianui.dev (the sweep fill with
+   its arrow, the live ping, prism light) as references — rebuilt in the
+   franchise's own object: the trading card's holo foil.
+
+   The motor is hooks/useCardFx.js (one delegated listener, rAF): it writes
+   --fx-x/--fx-y (pointer %) and .is-fx-on on the card under a mouse;
+   --fx-px/--fx-py (-1…1) and .is-fx-hero-on on the hero; and drops a
+   capture burst (.fx-burst) at a press.
+
+   An evolution of the design system's taste gate, at Enzo's call (the
+   2026-09-24 survey had declined glare/tilt on grids): it is OURS (the TCG
+   holo, a Poké Ball ring, type-colour sparks), it answers the pointer or the
+   trainer's own press, loops only while hovered (one card at a time) or on
+   the hero (the page's one loud moment), and it is transform/opacity on a
+   phone. Glare and foil need a fine pointer (the 3D tilt was cut on
+   2026-11-12); reduced motion keeps every state and drops the travel.
+   ========================================================================== */
+
+@property --fx-beam {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+/* ── The card lifts into its own light ──────────────────────────────────
+   No 3D tilt: it was cut at Enzo's call ("tire só o efeito do card se
+   mexendo no 3D") — the light, the foil and the press carry it. */
+.home-tile[data-fx] {
+    transition: box-shadow var(--duration-slow) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.home-tile[data-fx].is-fx-on {
+    z-index: 1;
+    box-shadow:
+        0 1.25rem 2rem -1.5rem color-mix(in srgb, var(--tone, var(--color-primary)) 35%, transparent),
+        var(--shadow-md);
+}
+
+/* A press sinks it, like a card pushed onto the table. */
+.home-tile[data-fx]:active {
+    scale: 0.985;
+}
+
+/* The glare: a soft light where the pointer is, over the whole card. */
+.home-tile[data-fx]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    background: radial-gradient(
+        farthest-corner circle at var(--fx-x, 50%) var(--fx-y, 0%),
+        color-mix(in srgb, var(--mascot-glint) 12%, transparent) 0%,
+        color-mix(in srgb, var(--mascot-glint) 3%, transparent) 28%,
+        transparent 58%
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.home-tile[data-fx].is-fx-on::after {
+    opacity: 1;
+}
+
+/* ── The foil, in the art's window ────────────────────────────────────────
+   A reverse holo, quiet: a sheen of the card's own colour and light that
+   moves with the pointer behind the Pokémon, never over the sprite. (The
+   first cut was a rainbow of six types — Enzo: "o arco-íris deixou mt
+   forte". One hue, faint.) */
+.fx-holo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        repeating-linear-gradient(
+            115deg,
+            transparent 0%,
+            color-mix(in srgb, var(--tone, var(--color-primary)) 60%, var(--mascot-glint)) 8%,
+            transparent 16%
+        );
+    background-size: 260% 260%;
+    background-position: var(--fx-x, 50%) var(--fx-y, 50%);
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-slow) var(--ease-smooth);
+    -webkit-mask-image: radial-gradient(70% 90% at var(--fx-x, 50%) var(--fx-y, 50%), var(--color-fg) 10%, transparent 75%);
+    mask-image: radial-gradient(70% 90% at var(--fx-x, 50%) var(--fx-y, 50%), var(--color-fg) 10%, transparent 75%);
+}
+
+.is-fx-on .fx-holo {
+    opacity: 0.35;
+}
+
+/* ── The art answers ──────────────────────────────────────────────────── */
+/* The Pokémon steps out of the card, its platform lights up. */
+.home-tile[data-fx] :is(.home-tile__sprite, .day-sprite, .team-party__sprite, .route-duo__partner) {
+    transition: translate var(--duration-pop) var(--ease-pop), scale var(--duration-pop) var(--ease-pop);
+}
+
+.home-tile[data-fx].is-fx-on :is(.home-tile__sprite, .day-sprite, .route-duo__partner) {
+    translate: 0 -0.25rem;
+    scale: 1.05;
+}
+
+.home-tile[data-fx] .home-tile__stage::before {
+    transition: scale var(--duration-pop) var(--ease-pop), box-shadow var(--duration-slow) var(--ease-smooth);
+}
+
+.home-tile[data-fx].is-fx-on .home-tile__stage::before {
+    scale: 1.08;
+    box-shadow:
+        inset 0 -0.1875rem 0 color-mix(in srgb, var(--tone, var(--color-primary)) 60%, transparent),
+        0 0 0.625rem color-mix(in srgb, var(--tone, var(--color-primary)) 30%, transparent);
+}
+
+/* The arrow: a disc sweeps in under it and it nudges on (obsidian's button). */
+.home-tile[data-fx] .home-tile__chevron {
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone, var(--color-primary)) 30%, var(--color-surface));
+    transition: translate var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-slow) var(--ease-glide),
+                background-color var(--duration-slow) var(--ease-glide);
+}
+
+.home-tile[data-fx].is-fx-on .home-tile__chevron {
+    background-color: color-mix(in srgb, var(--tone, var(--color-primary)) 30%, var(--color-surface));
+    box-shadow: 0 0 0 0.375rem color-mix(in srgb, var(--tone, var(--color-primary)) 30%, var(--color-surface));
+    color: var(--color-fg);
+}
+
+/* The party cheers: a hop runs along the six, once per hover. */
+@media (prefers-reduced-motion: no-preference) {
+    .team-party.is-fx-on .team-party__slot .team-party__sprite {
+        animation: fx-hop 620ms var(--ease-pop) both;
+    }
+
+    .team-party.is-fx-on .team-party__slot:nth-child(2) .team-party__sprite { animation-delay: 60ms; }
+    .team-party.is-fx-on .team-party__slot:nth-child(3) .team-party__sprite { animation-delay: 120ms; }
+    .team-party.is-fx-on .team-party__slot:nth-child(4) .team-party__sprite { animation-delay: 180ms; }
+    .team-party.is-fx-on .team-party__slot:nth-child(5) .team-party__sprite { animation-delay: 240ms; }
+    .team-party.is-fx-on .team-party__slot:nth-child(6) .team-party__sprite { animation-delay: 300ms; }
+
+    /* The band's motif comes alive under the pointer, one card at a time.
+       The rays (the default motif) stay still: spun, the "sun" drifted off
+       its platform and read wrong (Enzo, 2026-11-12). */
+    :is(.home-grid, .day-route__group) > li:nth-child(4n+2) .is-fx-on > .home-tile__media::before {
+        animation: fx-drift 2.4s linear infinite;
+    }
+
+    :is(.home-grid, .day-route__group) > li:nth-child(4n+3) .is-fx-on > .home-tile__media::before {
+        animation: fx-pulse 1.8s var(--ease-smooth) infinite alternate;
+    }
+
+    :is(.home-grid, .day-route__group) > li:nth-child(4n+4) .is-fx-on > .home-tile__media::before,
+    .route-now.is-fx-on > .home-tile__media::before {
+        animation: fx-slide 2.6s var(--ease-smooth) infinite alternate;
+    }
+
+    .is-fx-on > .home-tile__media::after {
+        animation: fx-roll 9s linear infinite;
+    }
+}
+
+@keyframes fx-hop {
+    0%, 100% { translate: 0 0; }
+    40% { translate: 0 -0.625rem; }
+}
+
+@keyframes fx-rays {
+    from { rotate: 0deg; }
+    to { rotate: 360deg; }
+}
+
+@keyframes fx-drift {
+    from { translate: 0 0; }
+    to { translate: 0.625rem -0.625rem; }
+}
+
+@keyframes fx-pulse {
+    from { scale: 1; opacity: 1; }
+    to { scale: 1.08; opacity: 0.7; }
+}
+
+@keyframes fx-slide {
+    from { translate: -1.25rem 0; }
+    to { translate: 1.25rem 0; }
+}
+
+@keyframes fx-roll {
+    to { rotate: 378deg; }
+}
+
+/* ── "Agora": the live card wears a beam of light round its edge ───────── */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .route-now[data-fx]::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        padding: 1px;
+        border-radius: inherit;
+        background: conic-gradient(
+            from var(--fx-beam),
+            transparent 0deg 250deg,
+            color-mix(in srgb, var(--tone, var(--color-primary)) 85%, var(--mascot-glint)) 320deg,
+            transparent 360deg
+        );
+        -webkit-mask: linear-gradient(var(--color-fg), var(--color-fg)) content-box, linear-gradient(var(--color-fg), var(--color-fg));
+        -webkit-mask-composite: xor;
+        mask: linear-gradient(var(--color-fg), var(--color-fg)) content-box exclude, linear-gradient(var(--color-fg), var(--color-fg));
+        animation: fx-beam 4.5s linear infinite;
+        pointer-events: none;
+    }
+}
+
+@keyframes fx-beam {
+    to { --fx-beam: 360deg; }
+}
+
+/* ── The press: a Poké Ball's capture ring and a burst of type sparks ──── */
+.fx-burst {
+    position: absolute;
+    z-index: 5;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.fx-burst__ring {
+    position: absolute;
+    top: -1.5rem;
+    left: -1.5rem;
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid color-mix(in srgb, var(--tone, var(--color-primary)) 75%, var(--mascot-glint));
+    border-radius: 50%;
+    background: linear-gradient(
+        transparent calc(50% - 1px),
+        color-mix(in srgb, var(--tone, var(--color-primary)) 75%, var(--mascot-glint)) calc(50% - 1px) calc(50% + 1px),
+        transparent calc(50% + 1px)
+    );
+    opacity: 0;
+    animation: fx-ring 640ms var(--ease-out) forwards;
+}
+
+.fx-burst__spark {
+    position: absolute;
+    top: -0.1875rem;
+    left: -0.1875rem;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: 0 0 0.5rem var(--c);
+    animation: fx-spark 720ms var(--ease-out) forwards;
+}
+
+@keyframes fx-ring {
+    0% { opacity: 1; scale: 0.2; rotate: -40deg; }
+    100% { opacity: 0; scale: 2.2; rotate: 0deg; }
+}
+
+@keyframes fx-spark {
+    from { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1); }
+    to { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(0.2); }
+}
+
+/* ==========================================================================
+   The hero: depth, an aura, motes of its type, its own light.
+   ========================================================================== */
+/* Parallax: the layers drift at their own depth with the pointer. */
+.day-hero[data-fx-hero] .day-hero__art {
+    transform: translate3d(calc(var(--fx-px, 0) * 1.1rem), calc(var(--fx-py, 0) * 0.6rem), 0);
+    transition: transform 900ms var(--ease-glide);
+}
+
+.day-hero[data-fx-hero] .day-hero__disc {
+    translate: calc(var(--fx-px, 0) * 1.75rem) calc(var(--fx-py, 0) * 1rem);
+    transition: translate 900ms var(--ease-glide);
+}
+
+.day-hero[data-fx-hero].is-fx-hero-on .day-hero__art,
+.day-hero[data-fx-hero].is-fx-hero-on .day-hero__disc {
+    transition-duration: 220ms;
+}
+
+/* The aura: slow rays behind the protagonist, in the hero's type. */
+.fx-aura {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    width: 170%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    background: repeating-conic-gradient(
+        color-mix(in srgb, var(--hero-type) 30%, transparent) 0deg 6deg,
+        transparent 6deg 18deg
+    );
+    -webkit-mask-image: radial-gradient(closest-side, var(--color-fg) 15%, transparent 70%);
+    mask-image: radial-gradient(closest-side, var(--color-fg) 15%, transparent 70%);
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+/* On the Champion's stage the aura stands behind her ace, on the right. */
+.day-hero--stage .fx-aura {
+    top: 55%;
+    left: 72%;
+    width: 90%;
+}
+
+/* Motes of the hero's type, rising through it. */
+.fx-motes {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.fx-motes i {
+    position: absolute;
+    bottom: -0.5rem;
+    left: var(--x);
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--hero-type) 70%, var(--mascot-glint));
+    box-shadow: 0 0 0.625rem color-mix(in srgb, var(--hero-type) 80%, transparent);
+    opacity: 0;
+}
+
+/* The hero's own glare, following the pointer across it. */
+.fx-glare {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    background: radial-gradient(
+        40rem circle at var(--fx-x, 80%) var(--fx-y, 20%),
+        color-mix(in srgb, var(--mascot-glint) 12%, transparent),
+        transparent 55%
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.is-fx-hero-on .fx-glare {
+    opacity: 1;
+}
+
+/* The hero's action: a sheen sweeps across it when pointed at. */
+.cozy-home .day-hero[data-fx-hero] .day-hero__play {
+    background-image: linear-gradient(
+        110deg,
+        transparent 35%,
+        color-mix(in srgb, var(--mascot-glint) 38%, transparent) 50%,
+        transparent 65%
+    );
+    background-repeat: no-repeat;
+    background-size: 250% 100%;
+    background-position: 130% 0;
+    transition: background-position 700ms var(--ease-out), background-color var(--duration-fast) var(--ease-smooth), translate var(--duration-press) var(--ease-out);
+}
+
+.cozy-home .day-hero[data-fx-hero] .day-hero__play:hover {
+    background-position: -30% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .fx-aura {
+        animation: fx-rays 40s linear infinite;
+    }
+
+    .fx-motes i {
+        animation: fx-mote var(--t) linear var(--delay) infinite;
+    }
+
+    /* The protagonist breathes on the stage it stands on. */
+    .day-hero[data-fx-hero] .hero-sprite {
+        animation: fx-idle 3.2s var(--ease-smooth) infinite;
+        transform-origin: 50% 100%;
+    }
+}
+
+@keyframes fx-mote {
+    0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.6); }
+    15% { opacity: 0.9; }
+    100% { opacity: 0; transform: translate3d(var(--dx), -16rem, 0) scale(1); }
+}
+
+@keyframes fx-idle {
+    0%, 100% { scale: 1 1; }
+    50% { scale: 1.02 0.98; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fx-burst__ring {
+        animation-duration: 1ms;
+        opacity: 0.6;
+    }
+}

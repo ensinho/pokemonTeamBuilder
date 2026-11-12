@@ -35,6 +35,8 @@ import { CheckinWeek } from '../rewards/CheckinWeek';
 import { HomeGreeting } from '../home/HomeGreeting';
 import { DayHero } from '../home/DayHero';
 import { HeroSprite } from '../home/HeroSprite';
+import { useCardFx } from '../../hooks/useCardFx';
+import '../../styles/card-fx.css';
 import { HomeParty } from '../home/HomeParty';
 import { DayRoute } from '../home/DayRoute';
 import { PersonaDoors } from '../home/PersonaDoors';
@@ -232,6 +234,9 @@ export function CozyHomeView({
     onChangeHeroBackground,
 }) {
     const { t, language } = useTranslation();
+    // The Carta Holo: one delegated motor for every card and the hero (styles/card-fx.css).
+    const fxRootRef = useRef(null);
+    useCardFx(fxRootRef);
     const isPhone = useMediaQuery(maxWidthBelow('lg'));
     // Every sprite on this page is the Pokédex's own: the pixel front sprite
     // through <Sprite> (placeholder, fade-in, artwork fallback for forms).
@@ -987,7 +992,7 @@ export function CozyHomeView({
     );
 
     return (
-        <main className="cozy-home">
+        <main className="cozy-home" ref={fxRootRef}>
             <div className="cozy-layout">
                 <div className="cozy-main">
                     {greeting}

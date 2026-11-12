@@ -30,8 +30,10 @@ export function PersonaDoors({ picks, live = {}, t, onOpen }) {
                             className="home-tile home-tile--card door"
                             style={{ '--tone': typeColors[look.type] || typeColors.normal }}
                             onClick={() => onOpen(PICK_DESTINATIONS[key].path)}
+                            data-fx
                         >
                             <span className="home-tile__media" aria-hidden="true">
+                                <span className="fx-holo" />
                                 <span className="home-tile__stage">
                                     <Sprite src={getPokemonFrontSpriteUrl(look.dex)} className={`home-tile__sprite ${info.silhouette ? 'pokepuzzle-silhouette' : ''}`} />
                                 </span>
