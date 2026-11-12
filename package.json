@@ -2,6 +2,7 @@
   "name": "pokemonbuilder",
   "homepage": "https://ensinho.github.io/pokemonTeamBuilder",
   "private": true,
+  "license": "UNLICENSED",
   "version": "0.0.0",
   "type": "module",
   "engines": {
