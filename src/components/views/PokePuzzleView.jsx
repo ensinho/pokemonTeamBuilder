@@ -1376,10 +1376,6 @@ export default function PokePuzzleView() {
                                     </section>
                                 </div>
                             )}
-
-                            {/* Two columns: the day fills the space under the board
-                                instead of stretching the result card beside it. */}
-                            {isTwoColumn && gameStatus !== 'IN_PROGRESS' && hasDay && <PuzzleDayCard data={dayData} t={t} section="today" />}
                         </div>
 
                         {/* Result: one next step, one share. */}
@@ -1496,14 +1492,17 @@ export default function PokePuzzleView() {
                                         )}
                                     </div>
                                 </section>
-                                {/* Desktop: the trainer's record and the week's league sit
-                                    under the result, in the column that used to end there. */}
-                                {isTwoColumn && hasDay && (
-                                    <>
-                                        <PuzzleDayCard data={dayData} t={t} section="you" />
-                                        <PuzzleDayCard data={dayData} t={t} section="week" />
-                                    </>
-                                )}
+                            </div>
+                        )}
+                        {/* Desktop: the three readings in one row under the board and
+                            the result (2026-11-12, Enzo: "muita rolagem… algo mais
+                            horizontal"). Stacked in the side column they made the
+                            page three screens tall. */}
+                        {isTwoColumn && gameStatus !== 'IN_PROGRESS' && hasDay && (
+                            <div className="pokepuzzle-standings">
+                                <PuzzleDayCard data={dayData} t={t} section="today" />
+                                <PuzzleDayCard data={dayData} t={t} section="you" />
+                                <PuzzleDayCard data={dayData} t={t} section="week" />
                             </div>
                         )}
                     </div>
