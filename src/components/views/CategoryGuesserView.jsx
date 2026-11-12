@@ -54,6 +54,9 @@ import { CloseIcon, PokeballIcon } from '../icons';
 import { QuizCelebrationModal } from '../modals/QuizCelebrationModal';
 import { GameHistoryDialog } from '../GameHistoryDialog';
 import { Loader } from '../Loader';
+import { MascotCompanion } from '../MascotCompanion';
+import { useMascotBeat } from '../../hooks/useMascotBeat';
+import { feedbackBeat } from '../../utils/mascot/assistant';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { toast } from '../../store/useToastStore';
 import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
@@ -180,6 +183,15 @@ export function CategoryGuesserView({ showDetails }) {
     const [celebrationPokemon, setCelebrationPokemon] = useState(null);
     const runDeletes = useDeferredDelete();
     const celebrateTimerRef = useRef(0);
+    // The mascot reads the feedback line (2026-11-11): each new line is a beat
+    // — a find hops (a streak climbs), a miss shakes his head, the last one wins.
+    const [mascotBeat, emitBeat] = useMascotBeat();
+    const wonRef = useRef(false);
+    useEffect(() => {
+        const kind = feedbackBeat(feedback.tone, { complete: wonRef.current });
+        wonRef.current = false;
+        if (kind) emitBeat(kind);
+    }, [feedback, emitBeat]);
     useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
 
     // Never after "Play again" (the user is already in the next run); held in
@@ -359,6 +371,7 @@ export function CategoryGuesserView({ showDetails }) {
     // The last correct guess ends the run: celebrate from that event. The old
     // effect on `isComplete` also opened for a run that loaded finished.
     const celebrate = useCallback(() => {
+        wonRef.current = true;
         setFeedback({
             tone: 'success',
             message: language === 'pt' ? 'Quiz concluído! Todos os Pokémon desta lista foram encontrados.' : 'Quiz complete! Every Pokémon in this category has been found.',
@@ -704,7 +717,8 @@ export function CategoryGuesserView({ showDetails }) {
                             </div>
 
                             {/* Console Feedback */}
-                            <div className="w-full">
+                            <div className="w-full quiz-companion-line">
+                                <MascotCompanion beat={mascotBeat} rest="determinado" size="md" className="quiz-companion" />
                                 <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
                                     {feedback.message}
                                 </p>

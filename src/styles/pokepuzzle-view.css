@@ -579,7 +579,7 @@
     border-radius: 50%;
 }
 
-.pokepuzzle-result-badge svg {
+.pokepuzzle-result-badge:not(.has-mascot) svg {
     width: 1.5rem;
     height: 1.5rem;
 }
@@ -596,6 +596,20 @@
     background: color-mix(in srgb, var(--color-danger) 15%, transparent);
     color: var(--color-danger);
 }
+
+/* The mascot in the medal's place (2026-11-11): no disc, the burst stays
+   behind a win, just past his ears (the medal's -28% swallowed him). */
+.pokepuzzle-result-badge.has-mascot {
+    --spark-inset: -14%;
+    width: 4.5rem;
+    height: 4.5rem;
+    background: none;
+    box-shadow: none;
+}
+.pokepuzzle-result-badge.has-mascot .mascot { width: 100%; height: 100%; }
+
+/* 48 px so the face reads; it overhangs the row instead of growing it */
+.pokepuzzle-companion { margin-block: calc(-1 * var(--space-2)); }
 
 .pokepuzzle-result-title {
     font-size: var(--text-xl);
