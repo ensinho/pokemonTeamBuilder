@@ -203,6 +203,9 @@ input[type="number"] {
 
 /* ---- speed tiers ---- */
 .spd-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-3_5); }
+/* The search moved to the hub's row (2026-11-12); the generation select
+   keeps its own width beside the spread instead of stretching into the gap. */
+.spd-controls .team-builder-select-wrap { flex: 0 0 auto; min-width: 12rem; }
 .spd-note { font-size: var(--text-xs); color: var(--color-muted); margin-bottom: var(--space-3); }
 
 .spd-list { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); overflow: hidden; }
@@ -312,21 +315,6 @@ input[type="number"] {
 .spd-chip__sprite { width: 1.25rem; height: 1.25rem; image-rendering: pixelated; }
 
 /* ---- tournaments ---- */
-.trn-toolbar { margin-bottom: var(--space-5); }
-.trn-search-wrap { position: relative; max-width: 420px; }
-.trn-search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 1.05rem; height: 1.05rem; color: var(--color-muted); pointer-events: none; }
-.trn-search-input {
-    width: 100%;
-    padding: var(--space-2_5) var(--space-10) var(--space-2_5) var(--space-10);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-fg);
-    font-size: var(--text-base);
-}
-.trn-search-input:focus { outline: none; border-color: var(--color-primary); }
-.trn-search-clear { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); display: flex; padding: var(--space-1); border: none; background: none; color: var(--color-muted); cursor: pointer; border-radius: var(--radius-sm); }
-.trn-search-clear:hover { color: var(--color-fg); }
 .trn-section + .trn-section { margin-top: var(--space-8); }
 .trn-section__title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3_5); }
 /* A win: the placement in Shiny Gold, as a word (--color-accent). */
@@ -473,9 +461,8 @@ input[type="number"] {
         padding-inline: var(--space-1);
     }
 
-    /* Search and generation each take a full row: as two halves of 358px the
-       select read "Todas as" and the placeholder was cut mid-word. */
-    .spd-controls .team-builder-search-wrap,
+    /* Generation takes a full row: as half of 358px the select read
+       "Todas as". (The search lives on the hub's row since 2026-11-12.) */
     .spd-controls .team-builder-select-wrap {
         flex: 1 1 100%;
         margin-left: 0 !important;
@@ -486,14 +473,6 @@ input[type="number"] {
    TOURNAMENTS — phones (< lg)
    ============================================================ */
 @media (max-width: 1023px) {
-    .trn-toolbar {
-        margin-bottom: var(--space-4);
-    }
-
-    .trn-search-wrap {
-        max-width: none;
-    }
-
     /* A section heading is the body face (Neon Sticker type rule). */
     .trn-section__title {
         font-family: var(--font-body);

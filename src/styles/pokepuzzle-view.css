@@ -842,22 +842,54 @@
         justify-content: flex-start;
     }
 
-    /* The three readings: one row under the board and the result, equal
-       columns, each a card of the page like the hints. */
-    .pokepuzzle-standings {
-        grid-column: 1 / -1;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--space-4);
-        align-items: stretch;
+    /* The competitive half beside the board (2026-11-12, Enzo: "dividir a
+       parte de competitivo para colunas laterais… só o quiz no centro").
+       Three columns once the day's readings exist: the trainer's record and
+       the league on the left, the board alone in the centre, the result and
+       the day's distribution on the right. Each reading is a card of the
+       page, like the hints. The columns scroll with the page (no sticky:
+       a side column taller than the screen would hide its own end). */
+    .pokepuzzle-view.has-standings {
+        max-width: 92rem;
     }
 
-    .pokepuzzle-standings > .puzzle-day {
-        height: 100%;
+    .pokepuzzle-game-container.has-standings {
+        grid-template-columns: var(--page-rail-width, 19rem) minmax(0, 1fr) 21rem;
+        grid-template-areas: "left main right";
+        gap: var(--page-gap, var(--space-6));
+    }
+
+    .pokepuzzle-game-container.has-standings > .pokepuzzle-game-main {
+        grid-area: main;
+    }
+
+    .pokepuzzle-game-container.has-standings > .pokepuzzle-game-sidebar {
+        grid-area: right;
+        position: static;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .pokepuzzle-standings {
+        grid-area: left;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        animation: slide-in-left var(--duration-fast) var(--ease-out-expo) forwards;
+    }
+
+    .pokepuzzle-standings > .puzzle-day,
+    .pokepuzzle-game-sidebar > .puzzle-day {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
         background: var(--color-surface);
     }
+}
+
+@keyframes slide-in-left {
+    from { opacity: 0; transform: translateX(-2.5rem); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slide-in-right {
@@ -1551,4 +1583,122 @@
 .puzzle-medal__need {
     font-size: var(--text-xs);
     color: var(--color-muted);
+}
+
+/* ============================================================
+   STANDINGS ON A PHONE (2026-11-12) — a button under the result,
+   a drawer from the right edge (PuzzleStandingsDrawer).
+   ============================================================ */
+.pokepuzzle-standings-open {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--control-h-lg);
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-standings-open:hover {
+    background: var(--color-surface-hover);
+}
+
+.pokepuzzle-standings-open > span {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.pokepuzzle-standings-open > svg {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--color-primary-text);
+}
+
+.pokepuzzle-standings-open > svg:last-child {
+    color: var(--color-muted);
+}
+
+/* The drawer: full height on the right, its own scroll, the page's stays. */
+.modal-scrim.pp-drawer-scrim {
+    align-items: stretch;
+    justify-content: flex-end;
+    padding: 0;
+}
+
+.pp-drawer {
+    display: flex;
+    flex-direction: column;
+    width: min(26rem, 88%);
+    height: 100%;
+    padding-top: env(safe-area-inset-top, 0px);
+    border-left: 1px solid var(--color-border);
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-xl);
+    animation: pp-drawer-in var(--duration-entrance) var(--ease-drawer);
+}
+
+.pp-drawer:focus {
+    outline: none;
+}
+
+.pp-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-3) var(--space-2) var(--space-4);
+}
+
+.pp-drawer__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.pp-drawer__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+}
+
+/* Inside the drawer the panel is the drawer: no second card around it. */
+.pp-drawer__body > .puzzle-day {
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+.modal-scrim.pp-drawer-scrim.is-exiting > .pp-drawer {
+    animation: pp-drawer-out var(--duration-fast) var(--ease-smooth) forwards;
+}
+
+@keyframes pp-drawer-in {
+    from { transform: translateX(100%); }
+    to { transform: none; }
+}
+
+@keyframes pp-drawer-out {
+    from { transform: none; }
+    to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pp-drawer,
+    .modal-scrim.pp-drawer-scrim.is-exiting > .pp-drawer {
+        animation: none;
+    }
 }

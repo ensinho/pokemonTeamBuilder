@@ -1097,7 +1097,118 @@
     color: var(--color-muted);
 }
 
-/* Recent teams: a section on the canvas, each team one card. */
+/* Recent teams (2026-11-12): a card on the Pokédex's header row, beside
+   the game cover and of its height and fill (RecentTeams.jsx), opening a
+   dialog of team cards. The leads of the last three teams fan out on the
+   left, the way a trainer card shows a party. */
+.tb-recent-trigger {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--space-3);
+    align-self: stretch;
+    min-width: 0;
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.tb-recent-trigger:hover {
+    background: var(--color-surface-hover);
+}
+
+.tb-recent-trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.tb-recent-trigger__fan {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Each lead on a token of the panel's own surface, overlapping the last. */
+.tb-recent-trigger__lead {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: var(--space-0_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 2px var(--color-surface-raised);
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.tb-recent-trigger__lead + .tb-recent-trigger__lead {
+    margin-left: calc(var(--space-3) * -1);
+}
+
+.tb-recent-trigger__fan.is-empty .tb-recent-trigger__lead {
+    opacity: 0.5;
+}
+
+.tb-recent-trigger__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.tb-recent-trigger__eyebrow {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.tb-recent-trigger__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.tb-recent-trigger__chevron {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+}
+
+/* Narrow desktop column: the fan alone carries it. */
+@media (max-width: 1279px) {
+    .tb-recent-trigger__text,
+    .tb-recent-trigger__chevron {
+        display: none;
+    }
+}
+
+.tb-recent-dialog__heading,
+.tb-recent-dialog__tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.tb-recent-dialog__tools {
+    margin-left: auto;
+}
+
+/* Inside the dialog the cards are fills — the panel owns the edge. */
+.tb-recent-dialog .tb-recent-card {
+    border: none;
+    background: var(--color-surface-raised);
+}
+
+/* Recent teams: each team one card. */
 .tb-recent__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));

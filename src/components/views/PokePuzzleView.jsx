@@ -12,7 +12,7 @@ import { showDailyPuzzleNotification } from '../../services/pushNotifications';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { RefreshIcon, CloseIcon } from '../icons';
-import { Lock, Frown, Award, Image, Delete, CornerDownLeft, Share2, MessageSquare, Lightbulb } from 'lucide-react';
+import { Lock, Frown, Award, Image, Delete, CornerDownLeft, Share2, MessageSquare, Lightbulb, ChartColumn, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
@@ -38,6 +38,7 @@ import { DecryptText } from '../DecryptText';
 import { TypeChip } from '../TypeChip';
 import { GameHistoryDialog } from '../GameHistoryDialog';
 import { ReminderOffer } from '../ReminderOffer';
+import { PuzzleStandingsDrawer } from '../pokepuzzle/PuzzleStandingsDrawer';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -166,6 +167,7 @@ export default function PokePuzzleView() {
 
     const [selectedDate, setSelectedDate] = useState(() => getTodayDateString());
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isStandingsOpen, setIsStandingsOpen] = useState(false);
     const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(10);
     // Bumped to force the anonymous (localStorage) history fallback to re-read,
     // e.g. after a local delete. Logged-in users update via the Firestore listener.
@@ -1049,13 +1051,21 @@ export default function PokePuzzleView() {
         pastDates,
         hints: hints.length,
     });
-    const dayPanel = hasDay ? <PuzzleDayPanel data={dayData} t={t} /> : null;
+    // The day's readings are the game's competitive half (2026-11-12, Enzo):
+    // on a desktop they are the columns either side of the board — the
+    // trainer's record and the league on the left, the result and the day on
+    // the right — so the puzzle alone holds the centre and the page stops
+    // scrolling past it. On a phone they wait in a side drawer, one button
+    // under the result, instead of stacking under a board that can already
+    // be eight rows tall.
+    const showStandings = gameStatus !== 'IN_PROGRESS' && hasDay;
+    const isThreeColumn = isTwoColumn && showStandings;
 
     return (
         <>
             <main
                 ref={viewRef}
-                className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${isArchive ? 'is-archive-mode' : ''}`}
+                className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${isThreeColumn ? 'has-standings' : ''} ${isArchive ? 'is-archive-mode' : ''}`}
             >
                 {/* Header Area with Tabs and History button */}
                 <div className="pokepuzzle-header-row">
@@ -1131,7 +1141,7 @@ export default function PokePuzzleView() {
                 {isLoadingIndex && <Loader scene="think" block />}
 
                 {!isLoadingIndex && targetPokemon && (
-                    <div className={`pokepuzzle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
+                    <div className={`pokepuzzle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${isThreeColumn ? 'has-standings' : ''}`}>
                         <div className="pokepuzzle-game-main">
                             {/* Hints: three tabs, with the generation and the tries
                                 used folded into the same row — the separate
@@ -1456,7 +1466,18 @@ export default function PokePuzzleView() {
                                         </div>
                                     )}
 
-                                    {!isTwoColumn && dayPanel}
+                                    {!isTwoColumn && showStandings && (
+                                        <button
+                                            type="button"
+                                            className="pokepuzzle-standings-open"
+                                            onClick={() => setIsStandingsOpen(true)}
+                                            aria-haspopup="dialog"
+                                        >
+                                            <ChartColumn aria-hidden="true" />
+                                            <span>{t('pokepuzzle.day.open')}</span>
+                                            <ChevronRight aria-hidden="true" />
+                                        </button>
+                                    )}
 
                                     {/* After a daily win: the one moment "come back tomorrow" is worth asking. */}
                                     <ReminderOffer topic="puzzle" active={mode === 'daily' && isWon} />
@@ -1492,22 +1513,24 @@ export default function PokePuzzleView() {
                                         )}
                                     </div>
                                 </section>
+                                {isThreeColumn && <PuzzleDayCard data={dayData} t={t} section="today" />}
                             </div>
                         )}
-                        {/* Desktop: the three readings in one row under the board and
-                            the result (2026-11-12, Enzo: "muita rolagem… algo mais
-                            horizontal"). Stacked in the side column they made the
-                            page three screens tall. */}
-                        {isTwoColumn && gameStatus !== 'IN_PROGRESS' && hasDay && (
-                            <div className="pokepuzzle-standings">
-                                <PuzzleDayCard data={dayData} t={t} section="today" />
+                        {isThreeColumn && (
+                            <aside className="pokepuzzle-standings" aria-label={t('pokepuzzle.day.open')}>
                                 <PuzzleDayCard data={dayData} t={t} section="you" />
                                 <PuzzleDayCard data={dayData} t={t} section="week" />
-                            </div>
+                            </aside>
                         )}
                     </div>
                 )}
             </main>
+
+            {isStandingsOpen && showStandings && !isTwoColumn && (
+                <PuzzleStandingsDrawer onClose={() => setIsStandingsOpen(false)} t={t}>
+                    <PuzzleDayPanel data={dayData} t={t} />
+                </PuzzleStandingsDrawer>
+            )}
 
             {isHistoryOpen && (
                 <GameHistoryDialog

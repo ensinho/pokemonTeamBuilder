@@ -1260,7 +1260,9 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--page-rail-width, 19rem);
     gap: var(--page-gap, var(--space-4));
-    align-items: start;
+    /* The panel stands as tall as the regions, its start button on the
+       floor, so the picker is one block with no hole under either side. */
+    align-items: stretch;
     margin-top: var(--space-4);
 }
 
@@ -1279,18 +1281,36 @@
 
 .quiz-picker__regions {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--space-4);
+}
+
+/* Desktop (2026-11-12, Enzo: "um pouco maior e mais preenchida, menos
+   cards por linha"): four a row. Nine regions fill two rows and Paldea
+   opens the third; the marathon takes the rest of that row as one wide
+   card — the biggest run looks the biggest, and no cell is left empty
+   (six a row had four empty cells and a band of nothing under the grid). */
+@media (min-width: 1280px) {
+    .quiz-picker__regions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .quiz-picker__regions > .quiz-region--all {
+        grid-column: span 3;
+    }
 }
 
 /* A region card: a fill inside the panel, never a second outline. Selected
    is an inset ring, so nothing shifts when the choice moves. */
 .quiz-region {
+    /* The starters are sized from the card's own width (cqi), so three of
+       them always share it, from a 3-up phone grid to a 5-up desktop. */
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-3);
     min-width: 0;
-    padding: var(--space-3);
+    padding: var(--space-4);
     border: none;
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -1315,34 +1335,96 @@
 }
 
 .quiz-region__starters {
+    /* Wider than a third of the card: a sprite is half empty canvas, so the
+       frames overlap while the Pokémon stand apart, each over its platform
+       — the outer frames spill only into the card's padding. */
+    --starter: min(48cqi, 7.5rem);
     display: flex;
     justify-content: center;
-    height: 3.5rem;
+    align-items: flex-end;
+    height: calc(var(--starter) + var(--space-1));
 }
 
-.quiz-region__starters > img {
-    width: 3.5rem;
-    height: 3.5rem;
-    margin-inline: calc(var(--space-2) * -1);
+/* The starter's choice, as the games stage it: each one on a battle
+   platform in its own type colour (grass, fire, water — STARTER_TYPES). */
+.quiz-region__starter {
+    position: relative;
+    display: grid;
+    place-items: end center;
+    /* A 1fr track never grows to the sprite, so the sprite overflows the
+       slot (the overlap) instead of widening it. */
+    grid-template-columns: minmax(0, 1fr);
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+}
+
+.quiz-region__starter::before {
+    content: '';
+    position: absolute;
+    inset: auto 8% 0;
+    height: 0.875rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--type) 30%, transparent);
+    box-shadow: inset 0 -0.125rem 0 color-mix(in srgb, var(--type) 45%, transparent);
+}
+
+.quiz-region__starter > img {
+    position: relative;
+    width: var(--starter);
+    height: var(--starter);
+    max-width: none;
+    margin-bottom: var(--space-1);
     object-fit: contain;
 }
 
 /* Not played yet: who's that Pokémon? The PokéPuzzle's silhouette — the
-   sprite in black, haloed in the theme's primary so it reads on dark too. */
-.quiz-region.is-unknown .quiz-region__starters > img {
+   sprite in black, haloed in the theme's primary so it reads on dark too —
+   and the platforms wait uncoloured. */
+.quiz-region.is-unknown .quiz-region__starter > img {
     filter: brightness(0) drop-shadow(0 0 0.375rem color-mix(in srgb, var(--color-primary) 55%, transparent));
+}
+
+.quiz-region.is-unknown .quiz-region__starter::before {
+    background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+    box-shadow: none;
 }
 
 .quiz-region__all {
     display: grid;
     place-items: center;
-    height: 3.5rem;
+    height: 4rem;
     border: 1px dashed var(--color-border-strong);
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);
-    font-size: var(--text-lg);
+    font-size: var(--text-2xl);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
+}
+
+/* The marathon card spans the rest of its row: the count as its emblem on
+   the left, name and line on the right. */
+.quiz-region--all {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: var(--space-4);
+    grid-column: 1 / -1;
+}
+
+.quiz-region--all .quiz-region__all {
+    grid-row: span 2;
+    padding-inline: var(--space-6);
+}
+
+.quiz-region--all .quiz-region__head {
+    align-self: end;
+    justify-content: flex-start;
+}
+
+.quiz-region--all .quiz-region__figure {
+    align-self: start;
 }
 
 .quiz-region__head {
@@ -1354,7 +1436,7 @@
 
 .quiz-region__name {
     overflow: hidden;
-    font-size: var(--text-sm);
+    font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1362,7 +1444,7 @@
 
 .quiz-region__bar {
     display: block;
-    height: var(--space-1_5);
+    height: var(--space-2);
     overflow: hidden;
     border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--color-fg) 10%, transparent);
@@ -1477,6 +1559,7 @@
 
 .generation-quiz .quiz-picker__start {
     width: 100%;
+    margin-top: auto;
 }
 
 /* ---- In a run: the streak, the clock, how a mode run ended ---- */
@@ -1564,15 +1647,24 @@
         background: var(--color-surface);
     }
 
-    .quiz-region__starters,
-    .quiz-region__all {
-        height: 2.5rem;
+    .quiz-region {
+        gap: var(--space-2);
     }
 
-    .quiz-region__starters > img {
-        width: 2.5rem;
-        height: 2.5rem;
-        margin-inline: calc(var(--space-2_5) * -1);
+    .quiz-region__all {
+        font-size: var(--text-lg);
+    }
+
+    .quiz-region__starter::before {
+        height: 0.5rem;
+    }
+
+    .quiz-region__starter > img {
+        margin-bottom: 0;
+    }
+
+    .quiz-region__name {
+        font-size: var(--text-sm);
     }
 
     .quiz-region__head {

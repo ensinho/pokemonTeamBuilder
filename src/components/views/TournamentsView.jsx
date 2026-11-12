@@ -14,6 +14,7 @@ import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
 import { Loader } from '../Loader';
 import { useUrlParam } from '../../hooks/useUrlParam';
+import { HubSlot } from '../HubSwitch';
 
 // Match a team against the search term across its Pokémon, title/player,
 // tournament name, placement, format and date — so any of those finds it.
@@ -71,27 +72,30 @@ export function TournamentsView({ onOpenTeam }) {
 
     return (
         <div>
-            <div className="trn-toolbar">
-                <div className="trn-search-wrap">
-                    <span className="trn-search-icon" aria-hidden="true">
+            <HubSlot>
+                <div className="team-builder-search-wrap">
+                    <span className="team-builder-search-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                         </svg>
                     </span>
                     <input
                         type="text"
+                        inputMode="search"
+                        enterKeyHint="search"
                         placeholder={t('tools.searchTournaments')}
+                        aria-label={t('tools.searchTournaments')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="trn-search-input"
+                        className="team-builder-field team-builder-field--compact team-builder-search-input"
                     />
                     {search && (
-                        <button type="button" onClick={() => setSearch('')} className="trn-search-clear" aria-label={t('common.clear')}>
+                        <button type="button" onClick={() => setSearch('')} className="team-builder-search-clear" aria-label={t('common.clear')}>
                             <ClearIcon className="w-4 h-4" />
                         </button>
                     )}
                 </div>
-            </div>
+            </HubSlot>
 
             {noMatches && (
                 <EmptyState
