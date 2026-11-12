@@ -3237,7 +3237,7 @@ a.data-list__row:hover,
    controls a --space-2 gap apart meet without overlapping.
 
    It sets `position: relative`, so do not put it on an absolutely positioned
-   element — give that one its own ::after instead (see home-view.css). */
+   element — give that one its own ::after instead. */
 @media (pointer: coarse) {
     .touch-target {
         position: relative;

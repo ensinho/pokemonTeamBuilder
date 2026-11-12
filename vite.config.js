@@ -5,6 +5,14 @@ import { challengeDevApi } from './scripts/lib/challengeDevApi.mjs'
 import { prerenderHome } from './scripts/lib/prerenderHome.mjs'
 import { fontPreload } from './scripts/lib/fontPreload.mjs'
 import { i18nPreload } from './scripts/lib/i18nPreload.mjs'
+import { readdirSync } from 'node:fs'
+
+// The game covers (src/assets/gameLogos): ~650 KB of WebP that only the gyms,
+// game covers and patch notes show. Out of the precache, into the runtime
+// cache below (2026-11-12) — read from the folder so a new cover follows.
+const gameCoverGlobs = readdirSync(new URL('./src/assets/gameLogos', import.meta.url))
+  .filter((file) => file.endsWith('.webp'))
+  .map((file) => `**/assets/${file.replace(/\.webp$/, '')}-*.webp`)
 
 // Unique id for this build, used to cache-bust static /data/*.json files on every
 // deploy (see src/services/pokemonDataCache.js). Overridable via VITE_BUILD_ID
@@ -81,6 +89,7 @@ export default defineConfig({
           // Kept in public/ for clients still on that build (they update only
           // when they accept the prompt); the current build uses the SVG.
           '**/logo-wordmark*.webp',
+          ...gameCoverGlobs,
         ],
         // Web Push lives in the *generated* worker rather than a second
         // registration of its own — a second service worker is what caused the
@@ -88,6 +97,19 @@ export default defineConfig({
         // resolved relative to `sw.js`, so it follows `base` on both deploys.
         importScripts: ['push-sw.js'],
         runtimeCaching: [
+          {
+            // The app's own images left out of the precache (game covers,
+            // support covers…): cached the first time a screen shows one.
+            // Hashed names under /assets/ never change content, so CacheFirst
+            // is safe there; the support covers keep their names and are
+            // refreshed by expiry.
+            urlPattern: /\/(assets\/[^/]+|support-cover-[a-z]+)\.(?:webp|png|jpe?g|svg)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'app-images',
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
           {
             // Pokémon sprites. `raw.githubusercontent.com` is the legacy host —
             // src/utils/pokemonSprites.js now serves everything from jsDelivr, so
@@ -153,6 +175,10 @@ export default defineConfig({
           // every visitor ~40 KB gz for a feature most never open. Their own chunk
           // means Rollup loads them with the lazy battle view instead.
           if (normalizedId.includes('/@pkmn/')) return 'pkmn'
+          // The QR code only the PokéPuzzle share image draws
+          // (components/pokepuzzle/drawPuzzleShare.js). In `vendor` it rode the
+          // boot path for every visitor, ~25 KB raw (2026-11-12).
+          if (/\/node_modules\/(qrcode|dijkstrajs)\//.test(normalizedId)) return 'qrcode'
           return 'vendor'
         },
       },

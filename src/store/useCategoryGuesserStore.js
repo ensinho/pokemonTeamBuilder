@@ -4,7 +4,10 @@ import { db } from '../services/firebase';
 import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
-import { CATEGORY_LISTS } from '../data/categoryListsData';
+// The category lists (data/categoryListsData.js, ~35 KB) are NOT imported
+// here: useTrainerBadges reads this store at boot for the quiz history, and
+// the import put every list in the entry chunk (2026-11-12). The quiz view
+// owns the lists and hands them in.
 
 const LOCAL_STORAGE_PREFIX = 'pokeQuizRun:';
 const ACTIVE_RUN_KEY = 'pokeQuizActiveRunId';
@@ -106,7 +109,7 @@ export const useCategoryGuesserStore = create((set, get) => {
             }
         },
 
-        getRandomUnplayedListId: (customList = CATEGORY_LISTS) => {
+        getRandomUnplayedListId: (customList = []) => {
             const { quizRuns, recentListIds, activeRunId } = get();
 
             // Candidates excluding currently active run
@@ -126,7 +129,7 @@ export const useCategoryGuesserStore = create((set, get) => {
             }
 
             const picked = freshCandidates[Math.floor(Math.random() * freshCandidates.length)];
-            return picked ? picked.id : CATEGORY_LISTS[0].id;
+            return picked ? picked.id : (customList[0]?.id ?? null);
         },
 
         startNewRun: (listId, fullPokemonNames) => {
@@ -137,13 +140,7 @@ export const useCategoryGuesserStore = create((set, get) => {
             const bestAccuracy = existing ? existing.bestAccuracy : 100;
 
             // Resolve full pool of pokemon for the category
-            let pool = [];
-            if (Array.isArray(fullPokemonNames) && fullPokemonNames.length > 0) {
-                pool = [...fullPokemonNames];
-            } else {
-                const categoryObj = CATEGORY_LISTS.find((c) => c.id === listId);
-                pool = categoryObj ? [...categoryObj.pokemonNames] : [];
-            }
+            const pool = Array.isArray(fullPokemonNames) ? [...fullPokemonNames] : [];
 
             // Shuffle pool and sample up to 20
             for (let i = pool.length - 1; i > 0; i--) {
@@ -195,13 +192,8 @@ export const useCategoryGuesserStore = create((set, get) => {
         rerunRun: (listId, fullPokemonNames) => {
             const run = get().quizRuns.find((r) => r.id === listId);
             if (run) {
-                let pool = [];
-                if (Array.isArray(fullPokemonNames) && fullPokemonNames.length > 0) {
-                    pool = [...fullPokemonNames];
-                } else {
-                    const categoryObj = CATEGORY_LISTS.find((c) => c.id === listId);
-                    pool = categoryObj ? [...categoryObj.pokemonNames] : [];
-                }
+                // No names handed in: replay the same twenty.
+                const pool = Array.isArray(fullPokemonNames) ? [...fullPokemonNames] : [];
 
                 if (pool.length > 0) {
                     for (let i = pool.length - 1; i > 0; i--) {

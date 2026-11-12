@@ -113,12 +113,15 @@ def build_icons(src_path=None):
     im128 = master.resize((128, 128), Image.Resampling.LANCZOS)
     im128.save(os.path.join(pub_dir, "logo-mark-128.webp"), "WEBP", quality=90)
 
-    # 10. favicon.svg
+    # 10. favicon.svg — the first icon index.html declares, so every first
+    # visit downloads it. A tab draws it at 16 CSS px: 64 px covers a 4x
+    # screen. It embedded the 256 px PNG (85 KB) until 2026-11-12.
+    im64 = master.resize((64, 64), Image.Resampling.LANCZOS)
     buf = io.BytesIO()
-    im256.save(buf, format="PNG", optimize=True)
+    im64.save(buf, format="PNG", optimize=True)
     b64_png = base64.b64encode(buf.getvalue()).decode("utf-8")
-    svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
-  <image width="256" height="256" href="data:image/png;base64,{b64_png}"/>
+    svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <image width="64" height="64" href="data:image/png;base64,{b64_png}"/>
 </svg>
 """
     with open(os.path.join(pub_dir, "favicon.svg"), "w", encoding="utf-8") as f:
