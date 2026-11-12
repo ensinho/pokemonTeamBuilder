@@ -72,8 +72,7 @@
 
 /* Trainer sprites are pixel art — upscaling them must not be smoothed. */
 .profile-avatar-button__sprite--pixel,
-.profile-thumb__sprite.is-pixel,
-.profile-avatar-choice img.is-pixel {
+.profile-thumb__sprite.is-pixel {
     image-rendering: pixelated;
 }
 
@@ -235,13 +234,13 @@
 
 /* ---- Tabs and sections -------------------------------------------------------- */
 
-.profile-tabs { margin-top: var(--space-8); }
+.profile-tabs { margin-top: var(--space-6); }
 
 .profile-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--space-10);
-    margin-top: var(--space-6);
+    gap: var(--space-8);
+    margin-top: var(--space-5);
 }
 
 .profile-panel > .section + .section { margin-top: 0; }
@@ -272,7 +271,6 @@
     box-shadow: inset 0 1px 0 var(--color-border);
 }
 
-.profile-section__body > .profile-badges { padding-block: var(--space-3); }
 
 .profile-link {
     display: inline-flex;
@@ -470,13 +468,6 @@
     color: var(--color-muted);
 }
 
-.profile-avatar-choice .segmented__item { gap: var(--space-1_5); }
-
-.profile-avatar-choice img {
-    width: 1.25rem;
-    height: 1.25rem;
-    object-fit: contain;
-}
 
 /* ---- Themes ------------------------------------------------------------------- */
 
@@ -612,6 +603,143 @@
 
 /* ---- Phones (< 1024px): the page is the panel ------------------------------------ */
 
+/* ---- Desktop: the trainer card is one row (2026-11-12, "menos rolagem") -----------
+   Face · name · the three figures at the right edge, each figure split from
+   the next by a hairline — the card loses the second band it used to stack
+   the figures in, about 9rem of page. */
+@media (min-width: 1024px) {
+    .profile-hero {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: var(--space-5);
+        padding: var(--space-5);
+    }
+
+    .profile-stats {
+        grid-column: auto;
+        grid-template-columns: repeat(3, minmax(6rem, auto));
+        padding-top: 0;
+        box-shadow: none;
+    }
+
+    .profile-stat {
+        padding-right: var(--space-3);
+    }
+
+    .profile-stat + .profile-stat,
+    .profile-stat:first-child {
+        padding-left: var(--space-4);
+        box-shadow: inset 1px 0 0 var(--color-border);
+    }
+}
+
+/* ---- The two faces (FaceTile) -------------------------------------------------- */
+
+.profile-faces {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+}
+
+.profile-face {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    transition: box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-face.is-main {
+    box-shadow: var(--ring-primary);
+}
+
+.profile-face__choose {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    border-radius: var(--radius-sm);
+    text-align: left;
+}
+
+button.profile-face__choose { cursor: pointer; }
+button.profile-face__choose:focus-visible { outline: none; box-shadow: var(--ring-logo); }
+
+.profile-face .profile-thumb,
+.profile-face .profile-thumb--static:hover {
+    background: var(--color-surface);
+}
+
+.profile-face .profile-thumb:not(.profile-thumb--static):hover {
+    background: var(--color-surface-hover);
+}
+
+.profile-face__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.profile-face__state {
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.profile-face__state.is-main { color: var(--color-primary-text); }
+
+.profile-face__actions {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    gap: var(--space-1);
+}
+
+/* Half a phone: the picker goes under the face, at the tile's right edge. */
+@media (max-width: 767px) {
+    .profile-face {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ---- Badges, emblems only ------------------------------------------------------- */
+
+.profile-badges {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+}
+
+.profile-badges__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.25rem, 1fr));
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.badge-tile.profile-badges__tile {
+    padding: var(--space-1_5);
+}
+
+.profile-badges__tile .badge-tile__emblem {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.profile-badges__shown {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
 @media (max-width: 1023px) {
     .profile-hero,
     .card.profile-section__body {
@@ -625,9 +753,9 @@
 
     .card.profile-section__body { padding-inline: var(--space-4); }
 
-    .profile-tabs { margin-top: var(--space-6); }
+    .profile-tabs { margin-top: var(--space-5); }
 
-    .profile-panel { gap: var(--space-8); }
+    .profile-panel { gap: var(--space-6); }
 }
 
 @media (max-width: 640px) {
@@ -740,4 +868,9 @@
 @media (max-width: 639px) {
     .profile-mascot { grid-template-columns: minmax(0, 1fr); }
     .profile-mascot__stage { width: min(100%, 16rem); margin-inline: auto; }
+}
+
+/* The narrowest phones: the two faces stack, so each keeps its two buttons on one line. */
+@media (max-width: 379px) {
+    .profile-faces { grid-template-columns: minmax(0, 1fr); }
 }

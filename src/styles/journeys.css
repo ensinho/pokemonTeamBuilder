@@ -39,9 +39,8 @@
 }
 
 .journeys-view__progress {
-    margin: 0;
-    font-size: var(--text-sm);
     color: var(--color-muted);
+    white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
 
@@ -638,4 +637,49 @@ button.mission:active { background: var(--color-surface-active); }
 .journey.is-locked .journey__tile {
     filter: brightness(0);
     opacity: 0.35;
+}
+
+/* ---- Less scroll (2026-11-12, Enzo: "journeys com menos rolagem") ------------
+   A closed level is one compact line: a smaller tile, a step less padding,
+   and its subtitle only while there is something left to do in it. On a
+   desktop the closed levels sit two to a row; an opened one takes the whole
+   row, so its missions keep the full width. Order is the levels' — a hole is
+   better than a level read out of sequence. */
+.journey:not(.is-open) .journey__head {
+    padding: var(--space-3) var(--space-4);
+}
+
+.journey:not(.is-open) .journey__tile {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.journey:not(.is-open) .journey__tile.is-earned svg {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.journey.is-complete:not(.is-open) .journey__sub {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .journey-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .journey-list > .journey.is-open,
+    .journey-list > .journey-list__section {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Closed and still pending: the subtitle stays, on one line — the level
+   opens for the rest. */
+.journey:not(.is-open) .journey__sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

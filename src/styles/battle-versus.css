@@ -132,11 +132,14 @@
 
 /* Square sprites, centred on a quarter of the band each and never wider than
    their half of it. Trainer sprites are 80 × 80 with the trainer standing on
-   the bottom edge: drawn tall and cut at the waist by the band. */
+   the bottom edge: drawn tall and cut at the thighs by the band — and the head
+   always inside it. What shows is 0.7 of the sprite, 0.95 of the band (1.95 /
+   −0.34 showed 1.29 bands: every trainer lost the top of their head,
+   2026-11-12). */
 .ds-vs__portrait {
-    --vs-portrait: min(calc(var(--vs-band-h) * 1.95), 60vw);
+    --vs-portrait: min(calc(var(--vs-band-h) * 1.36), 60vw);
     position: absolute;
-    bottom: calc(var(--vs-portrait) * -0.34);
+    bottom: calc(var(--vs-portrait) * -0.3);
     width: var(--vs-portrait);
     height: var(--vs-portrait);
     margin-left: calc(var(--vs-portrait) / -2);
@@ -147,8 +150,8 @@
 
 /* Pokémon sprites are 96 × 96 with padding around the creature. */
 .ds-vs__portrait.is-pokemon {
-    --vs-portrait: min(calc(var(--vs-band-h) * 1.5), 52vw);
-    bottom: calc(var(--vs-portrait) * -0.16);
+    --vs-portrait: min(calc(var(--vs-band-h) * 1.3), 52vw);
+    bottom: calc(var(--vs-portrait) * -0.12);
 }
 
 /* You face right, toward the VS; they face left, as the sprites are drawn. */
@@ -221,19 +224,23 @@
 
 /* ── Names and badges ────────────────────────────────────────────────── */
 
+/* Each plate is centred under its own portrait (26% / 74%), not on a padded
+   half of the screen — the grid it replaced put the names ~2% off their
+   trainers, toward the outside on one side and the inside on the other. It
+   starts one step below the band's bottom edge. */
 .ds-vs__plates {
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(50% + var(--vs-band-h) * 0.38 + var(--vs-edge));
+    top: calc(50% + var(--vs-band-h) * 0.38 + var(--vs-edge) + var(--space-3));
     z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding-inline: clamp(1rem, 5vw, 5rem);
-    gap: var(--space-4);
 }
 
 .ds-vs__plate {
+    --vs-plate-w: 40%;
+    position: absolute;
+    top: 0;
+    width: var(--vs-plate-w);
     display: grid;
     justify-items: center;
     align-content: start;
@@ -243,7 +250,12 @@
     animation: ds-vs-rise 380ms var(--ease-out-expo) 720ms both;
 }
 
+.ds-vs__plate.is-left {
+    left: calc(26% - var(--vs-plate-w) / 2);
+}
+
 .ds-vs__plate.is-right {
+    left: calc(74% - var(--vs-plate-w) / 2);
     animation-delay: 800ms;
 }
 

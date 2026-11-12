@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeftRight, ChevronLeft, IdCard } from 'lucide-react';
+import { ArrowLeftRight, ChevronLeft, ChevronRight, IdCard, Trophy } from 'lucide-react';
 
 import { useModalA11y } from '../../../hooks/useModalA11y';
 import { useTrainerCosmetics } from '../../../hooks/useTrainerCosmetics';
@@ -12,6 +12,7 @@ import { championArt } from '../../../utils/challengeArt';
 import { CHAMPION_IDS, CHAMPION_NAMES } from '../../../utils/challengeChampions';
 import { boardAfterSwitch, rankingStart } from '../../../utils/challengeView';
 import { AvatarSprite } from '../../AvatarSprite';
+import { openWeekCard } from './openWeekCard';
 import { CloseIcon, PokeballIcon } from '../../icons';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
 import { TrainerTitle } from '../../rewards/TrainerTitle';
@@ -57,7 +58,7 @@ function RankAvatar({ face, name, size }) {
     );
 }
 
-function RankRow({ entry, place, onOpen }) {
+export function RankRow({ entry, place, onOpen }) {
     const { t } = useTranslation();
     const face = useRowFace(entry);
     return (
@@ -95,7 +96,7 @@ function RankRow({ entry, place, onOpen }) {
  * second · first · third, the winner raised and the only gold on the board.
  * Each step opens the same detail its row would.
  */
-function PodiumStep({ entry, place, onOpen }) {
+export function PodiumStep({ entry, place, onOpen }) {
     const { t } = useTranslation();
     const face = useRowFace(entry);
     return (
@@ -117,8 +118,9 @@ function PodiumStep({ entry, place, onOpen }) {
 
 const championName = (id) => CHAMPION_NAMES[id] || CHAMPION_NAMES.cynthia;
 
+
 /** A champion's face, cropped from their battle sprite. */
-const ChampionFace = ({ championId, size = 'md' }) => (
+export const ChampionFace = ({ championId, size = 'md' }) => (
     <span className={`challenge-rank__champ is-${championId || 'cynthia'} is-${size}`} aria-hidden="true">
         <img src={championArt(championId).versus} alt="" width={80} height={80} decoding="async" />
     </span>
@@ -276,7 +278,7 @@ function RankDetail({ entry, place, board, onBack, championId, dayKey }) {
  * Two homes: a desktop's side rail, where it also carries your record
  * (`stats`), and `ChallengeRankingSheet` where there is no room for a rail.
  */
-export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = 'daily', stats = null, showTitle = true, note = null }) {
+export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = 'daily', stats = null, showTitle = true, note = null, onOpenRecap = null }) {
     const { t } = useTranslation();
     const preferred = BOARDS.includes(defaultBoard) ? defaultBoard : 'daily';
     // Until the trainer picks, the panel follows the data to a ranking with
@@ -307,19 +309,6 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
         setPicked({ championId: nextId, board: boardAfterSwitch(ranksByChampion, nextId, board) });
     };
     const pickBoard = (key) => setPicked({ championId: shownId, board: key });
-    // A season row has no single attempt to open: it is the trainer.
-    const openWeekCard = (entry) => {
-        if (!entry.uid) return;
-        openTrainerCard({
-            userId: entry.uid,
-            name: entry.name,
-            avatar: entry.profile?.avatarPokemonId,
-            isShiny: entry.profile?.avatarIsShiny,
-            trainerSprite: entry.profile?.trainerSprite,
-            frameId: entry.profile?.frameId,
-            titleId: entry.profile?.titleId,
-        });
-    };
 
     if (opened) {
         return (
@@ -388,6 +377,16 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
                 {t('challenge.ranking.counts', { wins: ranks?.wins?.[board] || 0, played: ranks?.played?.[board] || 0 })}
                 {mine ? ` · ${t('challenge.ranking.you', { place: mine })}` : ''}
             </p>}
+            {/* Last week's podium (2026-11-12): it opens by itself once, at the
+                week's turn; after that it is this quiet line, on every board —
+                early on a Monday the Week board has nobody on it yet. */}
+            {onOpenRecap && (
+                <button type="button" className="challenge-rank__recap" onClick={onOpenRecap}>
+                    <Trophy aria-hidden="true" />
+                    <span className="truncate">{t('challenge.recap.open')}</span>
+                    <ChevronRight aria-hidden="true" />
+                </button>
+            )}
             {/* Your record is the room champion's: shown on their board only. */}
             {stats && isRoomChampion && (
                 <Figures
@@ -412,7 +411,7 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
  * its own: the sheet was as tall as the page, so nothing in it scrolled, and
  * the dock drew over its bottom (2026-10-29).
  */
-export function ChallengeRankingSheet({ ranksByChampion, championId, note, defaultBoard, stats, onClose }) {
+export function ChallengeRankingSheet({ ranksByChampion, championId, note, defaultBoard, stats, onClose, onOpenRecap = null }) {
     const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     return createPortal(
@@ -432,7 +431,7 @@ export function ChallengeRankingSheet({ ranksByChampion, championId, note, defau
                     </button>
                 </div>
                 <div className="modal-body">
-                    <ChallengeRanking key={championId} ranksByChampion={ranksByChampion} championId={championId} note={note} defaultBoard={defaultBoard} stats={stats} showTitle={false} />
+                    <ChallengeRanking key={championId} ranksByChampion={ranksByChampion} championId={championId} note={note} defaultBoard={defaultBoard} stats={stats} showTitle={false} onOpenRecap={onOpenRecap} />
                 </div>
             </div>
         </div>,

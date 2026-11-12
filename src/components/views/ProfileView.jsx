@@ -409,6 +409,38 @@ const AvatarThumb = ({ src, pixel = false, onClick, label }) => (
     </button>
 );
 
+/**
+ * One of the trainer's two faces (2026-11-12): the picture, its name, and its
+ * picker. Once both faces exist the tile is also the choice of which one other
+ * trainers see — a radio, ringed when chosen — so no separate switch is needed.
+ */
+const FaceTile = ({ label, src, pixel = false, isMain, mainLabel, canChoose, onChoose, onPick, pickLabel, pickText, onRemove = null, removeText }) => (
+    <div className={`profile-face ${isMain ? 'is-main' : ''}`}>
+        {canChoose ? (
+            <button type="button" role="radio" aria-checked={isMain} className="profile-face__choose" onClick={onChoose}>
+                <span className="profile-thumb profile-thumb--static" aria-hidden="true">
+                    {src ? <Sprite src={src} alt="" className={`profile-thumb__sprite ${pixel ? 'is-pixel' : ''}`} /> : null}
+                </span>
+                <span className="profile-face__text">
+                    <span className="profile-row__label">{label}</span>
+                    <span className={`profile-face__state ${isMain ? 'is-main' : ''}`}>{isMain ? mainLabel : '\u00a0'}</span>
+                </span>
+            </button>
+        ) : (
+            <div className="profile-face__choose">
+                <AvatarThumb src={src} pixel={pixel} onClick={onPick} label={pickLabel} />
+                <span className="profile-face__text">
+                    <span className="profile-row__label">{label}</span>
+                </span>
+            </div>
+        )}
+        <div className="profile-face__actions">
+            {onRemove && <button type="button" onClick={onRemove} className="btn btn-ghost btn-sm">{removeText}</button>}
+            <button type="button" onClick={onPick} className="btn btn-secondary btn-sm" aria-label={pickLabel}>{pickText}</button>
+        </div>
+    </div>
+);
+
 export function ProfileView({
     // identity
     userEmail,
@@ -465,6 +497,7 @@ export function ProfileView({
     const earnedBadges = useMemo(() => badges
         .filter((badge) => badge.isUnlocked)
         .sort((a, b) => Number(b.isEquipped) - Number(a.isEquipped)), [badges]);
+    const equippedBadge = earnedBadges.find((badge) => badge.isEquipped) || null;
     const [nameDraft, setNameDraft] = useState(displayName || '');
     const [editingName, setEditingName] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -510,6 +543,7 @@ export function ProfileView({
     const streakLongest = Math.max(streak?.longest || 0, streakCount);
     const partnerSrc = greetingPokemonId ? getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny }) : null;
     const trainerSrc = trainerSprite ? trainerSpriteUrl(trainerSprite) : null;
+    const bothFaces = Boolean(trainerSprite && greetingPokemonId);
     const cosmeticName = (id) => (id ? t(`rewards.items.${id}.name`) : t('profile.noneEquipped'));
 
     return (
@@ -654,78 +688,45 @@ export function ProfileView({
             >
                 {activeTab === 'trainer' && (
                     <>
-                        {/* Both faces, and — once both exist — which one is public. */}
+                        {/* Both faces side by side (2026-11-12, "menos rolagem"): each
+                            tile is the face, its picker, and — once both exist — the
+                            choice of which one is public (the ring). It replaced two
+                            rows plus a third "main avatar" switch; frame and title,
+                            which dress the same face, joined as one row. */}
                         <Section title={t('profile.sectionAvatar')} description={t('profile.sectionAvatarDesc')}>
+                            <div className="profile-faces" role={bothFaces ? 'radiogroup' : undefined} aria-label={bothFaces ? t('profile.avatarChoiceLabel') : undefined}>
+                                <FaceTile
+                                    label={t('profile.avatarChoicePokemon')}
+                                    src={partnerSrc}
+                                    isMain={bothFaces && avatarPreference !== 'trainer'}
+                                    mainLabel={t('profile.avatarMain')}
+                                    canChoose={bothFaces}
+                                    onChoose={() => onChangeAvatarPreference('pokemon')}
+                                    onPick={onOpenPokemonSelector}
+                                    pickLabel={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
+                                    pickText={greetingPokemonId ? t('profile.changeShort') : t('profile.pickShort')}
+                                    onRemove={greetingPokemonId ? onClearLocalGreeting : null}
+                                    removeText={t('profile.removeAvatarBtn')}
+                                />
+                                <FaceTile
+                                    label={t('profile.avatarChoiceTrainer')}
+                                    src={trainerSrc}
+                                    pixel
+                                    isMain={bothFaces && avatarPreference === 'trainer'}
+                                    mainLabel={t('profile.avatarMain')}
+                                    canChoose={bothFaces}
+                                    onChoose={() => onChangeAvatarPreference('trainer')}
+                                    onPick={onOpenTrainerSelector}
+                                    pickLabel={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
+                                    pickText={trainerSprite ? t('profile.changeShort') : t('profile.pickShort')}
+                                />
+                            </div>
                             <SettingRow
-                                label={t('profile.avatarChoicePokemon')}
-                                leading={(
-                                    <AvatarThumb
-                                        src={partnerSrc}
-                                        onClick={onOpenPokemonSelector}
-                                        label={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
-                                    />
-                                )}
+                                label={t('profile.styleLabel')}
+                                description={`${cosmeticName(equipped.frame)} · ${cosmeticName(equipped.title)}`}
                             >
-                                {greetingPokemonId && (
-                                    <button type="button" onClick={onClearLocalGreeting} className="btn btn-ghost btn-sm">
-                                        {t('profile.removeAvatarBtn')}
-                                    </button>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={onOpenPokemonSelector}
-                                    className="btn btn-secondary btn-sm"
-                                    aria-label={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
-                                >
-                                    {greetingPokemonId ? t('profile.changeShort') : t('profile.pickShort')}
-                                </button>
+                                <Link to="/journeys?tab=rewards" className="btn btn-secondary btn-sm">{t('rewards.customize')}</Link>
                             </SettingRow>
-                            <SettingRow
-                                label={t('profile.avatarChoiceTrainer')}
-                                description={t('profile.sectionTrainerDesc')}
-                                leading={(
-                                    <AvatarThumb
-                                        src={trainerSrc}
-                                        pixel
-                                        onClick={onOpenTrainerSelector}
-                                        label={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
-                                    />
-                                )}
-                            >
-                                <button
-                                    type="button"
-                                    onClick={onOpenTrainerSelector}
-                                    className="btn btn-secondary btn-sm"
-                                    aria-label={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
-                                >
-                                    {trainerSprite ? t('profile.changeShort') : t('profile.pickShort')}
-                                </button>
-                            </SettingRow>
-                            {trainerSprite && greetingPokemonId && (
-                                <div className="profile-row profile-row--stacked">
-                                    <span className="profile-row__label">{t('profile.avatarChoiceLabel')}</span>
-                                    <div className="segmented segmented--block profile-avatar-choice" role="group" aria-label={t('profile.avatarChoiceLabel')}>
-                                        <button
-                                            type="button"
-                                            onClick={() => onChangeAvatarPreference('pokemon')}
-                                            aria-pressed={avatarPreference !== 'trainer'}
-                                            className="segmented__item"
-                                        >
-                                            <img src={partnerSrc} alt="" aria-hidden="true" />
-                                            <span>{t('profile.avatarChoicePokemon')}</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => onChangeAvatarPreference('trainer')}
-                                            aria-pressed={avatarPreference === 'trainer'}
-                                            className="segmented__item"
-                                        >
-                                            <img src={trainerSrc} alt="" aria-hidden="true" className="is-pixel" />
-                                            <span>{t('profile.avatarChoiceTrainer')}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </Section>
 
                         <Section
@@ -739,35 +740,39 @@ export function ProfileView({
                             )}
                         >
                             {earnedBadges.length ? (
-                                <ul className="badge-group__grid profile-badges">
-                                    {earnedBadges.map((badge) => (
-                                        <li key={badge.id}>
-                                            <button
-                                                type="button"
-                                                className={`badge-tile is-unlocked ${badge.isEquipped ? 'is-equipped' : ''}`}
-                                                onClick={() => toggleEquip(badge.id)}
-                                                aria-pressed={badge.isEquipped}
-                                            >
-                                                <span className="badge-tile__emblem" aria-hidden="true"><badge.Icon /></span>
-                                                <span className="badge-tile__name">{language === 'pt' ? badge.namePt : badge.nameEn}</span>
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
+                                /* Emblems only: the name is the tile's label and tooltip,
+                                   and the one being shown is named under the grid. */
+                                <div className="profile-badges">
+                                    <ul className="profile-badges__grid">
+                                        {earnedBadges.map((badge) => {
+                                            const name = language === 'pt' ? badge.namePt : badge.nameEn;
+                                            return (
+                                                <li key={badge.id}>
+                                                    <button
+                                                        type="button"
+                                                        className={`badge-tile profile-badges__tile is-unlocked ${badge.isEquipped ? 'is-equipped' : ''}`}
+                                                        onClick={() => toggleEquip(badge.id)}
+                                                        aria-pressed={badge.isEquipped}
+                                                        aria-label={name}
+                                                        title={name}
+                                                    >
+                                                        <span className="badge-tile__emblem" aria-hidden="true"><badge.Icon /></span>
+                                                    </button>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                    <p className="profile-badges__shown">
+                                        {equippedBadge
+                                            ? t('profile.badgeShown', { name: language === 'pt' ? equippedBadge.namePt : equippedBadge.nameEn })
+                                            : t('profile.badgeNoneShown')}
+                                    </p>
+                                </div>
                             ) : (
                                 <SettingRow label={t('profile.badgesEmpty')}>
                                     <Link to="/journeys" className="btn btn-secondary btn-sm">{t('journeys.tabs.journeys')}</Link>
                                 </SettingRow>
                             )}
-                        </Section>
-
-                        <Section title={t('profile.sectionStyle')} description={t('profile.sectionStyleDesc')}>
-                            <SettingRow label={t('profile.frameLabel')} description={cosmeticName(equipped.frame)}>
-                                <Link to="/journeys?tab=rewards" className="btn btn-secondary btn-sm">{t('rewards.customize')}</Link>
-                            </SettingRow>
-                            <SettingRow label={t('profile.titleLabel')} description={cosmeticName(equipped.title)}>
-                                <Link to="/journeys?tab=rewards" className="btn btn-secondary btn-sm">{t('rewards.customize')}</Link>
-                            </SettingRow>
                         </Section>
                     </>
                 )}

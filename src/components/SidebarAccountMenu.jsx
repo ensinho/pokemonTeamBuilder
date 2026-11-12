@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ChevronRight, LogOut } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronRight, LogOut, Sparkles, UserRound } from 'lucide-react';
 import { AnchoredPopover } from './AnchoredPopover';
-import { FlowerIcon, MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
+import { MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
 import { originFromEvent } from '../utils/themeTransition';
 import { TrainerBadge } from './TrainerBadge';
 import { useTranslation } from '../hooks/useTranslation';
@@ -13,6 +13,35 @@ import { TrainerTitle } from './rewards/TrainerTitle';
 import { useShallow } from 'zustand/react/shallow';
 import { useRewardsStore, isThemeUnlocked } from '../store/useRewardsStore';
 import { frameProps } from '../utils/rewards';
+
+/**
+ * The unlocked themes as one row of swatches — the dark family, a hairline,
+ * the light family — each family led by its moon/sun so no label is needed.
+ * Wraps to a second line only when rewards unlock more than fit.
+ */
+function ThemeSwatches({ groups, currentTheme, onPick, label }) {
+    return (
+        <div className="theme-swatches" role="group" aria-label={label}>
+            {groups.filter((group) => group.items.length).map((group) => (
+                <span key={group.key} className="theme-swatches__family">
+                    <span className="theme-swatches__icon" aria-hidden="true" title={group.label}>{group.icon}</span>
+                    {group.items.map((theme) => (
+                        <button
+                            key={theme.id}
+                            type="button"
+                            onClick={(event) => onPick(theme.id, event)}
+                            aria-pressed={currentTheme === theme.id}
+                            aria-label={theme.label}
+                            title={theme.label}
+                            className="theme-swatches__swatch"
+                            style={{ '--swatch': theme.swatch }}
+                        />
+                    ))}
+                </span>
+            ))}
+        </div>
+    );
+}
 
 export function SidebarAccountMenu({
     collapsed = false,
@@ -264,30 +293,8 @@ export function SidebarAccountMenu({
                             <ChevronRight className="account-quick__chevron" aria-hidden="true" />
                         </button>
 
-                        <div className="account-quick__theme" role="group" aria-label={t('accountMenu.themeShort')}>
-                            <span className="account-quick__label">{t('accountMenu.themeShort')}</span>
-                            <div className="account-quick__swatches">
-                                {themeGroups.map((group, groupIndex) => (
-                                    <React.Fragment key={group.key}>
-                                        {groupIndex > 0 && <span className="account-quick__divider" aria-hidden="true" />}
-                                        {group.items.map((theme) => {
-                                            const isActive = currentTheme === theme.id;
-                                            return (
-                                                <button
-                                                    key={theme.id}
-                                                    type="button"
-                                                    onClick={(event) => handleThemeChange(theme.id, event)}
-                                                    aria-pressed={isActive}
-                                                    aria-label={theme.label}
-                                                    title={theme.label}
-                                                    className="account-quick__swatch"
-                                                    style={{ '--swatch': theme.swatch }}
-                                                />
-                                            );
-                                        })}
-                                    </React.Fragment>
-                                ))}
-                            </div>
+                        <div className="account-quick__theme">
+                            <ThemeSwatches groups={themeGroups} currentTheme={currentTheme} onPick={handleThemeChange} label={t('accountMenu.themeShort')} />
                         </div>
 
                         <button type="button" onClick={handleSignOut} className="account-quick__signout">
@@ -296,130 +303,71 @@ export function SidebarAccountMenu({
                         </button>
                     </div>
                 ) : (
-                <div className="app-shell__account-popover-body">
-                    <div className="app-shell__account-popover-head">
-                        <span className="app-shell__account-popover-avatar" {...avatarFrame}>{avatar}</span>
-                        <div className="app-shell__account-popover-copy">
-                            <p className="app-shell__account-popover-name flex items-center gap-1.5">
+                /* The account menu (2026-11-12, Enzo: "não parece muito menu de
+                   usuário"): who you are, where to go, the few settings worth a
+                   shortcut, then leave — the shape every account menu has. Rows
+                   are one line each; a preference is its name on the left and
+                   its control on the right; three hairlines group it, no caps
+                   headings, no notes (the Tera switch's explanation lives on
+                   Profile → Preferences, beside the same switch). */
+                <div className="account-menu">
+                    <div className="account-menu__identity">
+                        <span className="account-menu__avatar" {...avatarFrame}>{avatar}</span>
+                        <span className="account-menu__who">
+                            <span className="account-menu__name">
                                 <span className="truncate">{accountName}</span>
                                 {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
-                            </p>
-                            {email ? (
-                                <p className="app-shell__account-popover-email" title={email}>
-                                    {email}
-                                </p>
-                            ) : null}
-                        </div>
+                            </span>
+                            <span className="account-menu__sub" title={email || undefined}>
+                                {t('rewards.levelShort', { n: trainerLevel })}
+                                {email ? ` · ${email}` : ''}
+                            </span>
+                        </span>
                     </div>
 
-                    {/* Grouped like the reference's settings (2026-11-05): Conta,
-                        Preferências, Novidades — then sign out, alone, last. */}
-                    <p className="app-shell__account-group">{t('accountMenu.groupAccount')}</p>
-                    <div className="app-shell__account-popover-section">
-                        <button type="button" onClick={handleOpenProfile} className="app-shell__account-menu-item">
-                            <span className="app-shell__account-menu-item-icon">
-                                <PokeballIcon />
-                            </span>
-                            <span className="app-shell__account-menu-item-copy">
-                                <span className="app-shell__account-menu-item-label">{t('accountMenu.profileLabel')}</span>
-                                <span className="app-shell__account-menu-item-note">{t('accountMenu.profileNote')}</span>
-                            </span>
+                    <div className="account-menu__group">
+                        <button type="button" onClick={handleOpenProfile} className="account-menu__item">
+                            <UserRound aria-hidden="true" />
+                            <span>{t('accountMenu.profileLabel')}</span>
                         </button>
-                    </div>
-
-                    <p className="app-shell__account-group">{t('accountMenu.groupPreferences')}</p>
-                    <div className="app-shell__account-popover-section">
-                        <p className="app-shell__account-popover-label">{t('accountMenu.themeLabel')}</p>
-                        <div className="app-shell__account-theme-groups">
-                            {themeGroups.map((group) => (
-                                <div key={group.key} className="app-shell__account-theme-group">
-                                    <span className={`app-shell__account-theme-group-tag app-shell__account-theme-group-tag--${group.key}`}>
-                                        <span className="app-shell__account-theme-group-icon" aria-hidden="true">{group.icon}</span>
-                                        {group.label}
-                                    </span>
-                                    <div className="app-shell__account-theme-dots">
-                                        {group.items.map((theme) => {
-                                            const isActive = currentTheme === theme.id;
-                                            return (
-                                                <button
-                                                    key={theme.id}
-                                                    type="button"
-                                                    onClick={(event) => handleThemeChange(theme.id, event)}
-                                                    aria-pressed={isActive}
-                                                    className={`app-shell__account-theme-dot ${isActive ? 'is-active' : ''}`}
-                                                    style={{ backgroundColor: theme.swatch }}
-                                                    title={theme.label}
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="app-shell__account-popover-section">
-                        <p className="app-shell__account-popover-label">{t('accountMenu.textSizeLabel')}</p>
-                        <TextSizeControl variant="menu" />
-                    </div>
-
-                    <div className="app-shell__account-popover-section">
-                        <p className="app-shell__account-popover-label">{t('accountMenu.languageLabel')}</p>
-                        <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('accountMenu.languageLabel')}>
-                            <button
-                                type="button"
-                                onClick={() => handleLanguageChange('en')}
-                                aria-pressed={language === 'en'}
-                                className="segmented__item"
-                            >
-                                English
+                        {typeof onOpenPatchNotes === 'function' && (
+                            <button type="button" onClick={handleOpenPatchNotes} className="account-menu__item">
+                                <Sparkles aria-hidden="true" />
+                                <span>{t('accountMenu.patchNotesLabel')}</span>
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => handleLanguageChange('pt')}
-                                aria-pressed={language === 'pt'}
-                                className="segmented__item"
-                            >
-                                Português
-                            </button>
-                        </div>
+                        )}
                     </div>
 
-                    <div className="app-shell__account-popover-section">
+                    <div className="account-menu__group">
+                        <div className="account-menu__pref is-stacked">
+                            <span className="account-menu__pref-label">{t('accountMenu.themeShort')}</span>
+                            <ThemeSwatches groups={themeGroups} currentTheme={currentTheme} onPick={handleThemeChange} label={t('accountMenu.themeShort')} />
+                        </div>
+                        <div className="account-menu__pref">
+                            <span className="account-menu__pref-label">{t('accountMenu.textSizeLabel')}</span>
+                            <TextSizeControl variant="inline" />
+                        </div>
+                        <div className="account-menu__pref">
+                            <span className="account-menu__pref-label">{t('accountMenu.languageLabel')}</span>
+                            <div className="segmented segmented--sm" role="group" aria-label={t('accountMenu.languageLabel')}>
+                                <button type="button" onClick={() => handleLanguageChange('en')} aria-pressed={language === 'en'} className="segmented__item" title="English">EN</button>
+                                <button type="button" onClick={() => handleLanguageChange('pt')} aria-pressed={language === 'pt'} className="segmented__item" title="Português">PT</button>
+                            </div>
+                        </div>
                         <Switch
                             variant="row"
                             size="sm"
                             checked={showTeraType}
                             onChange={handleTeraTypeChange}
                             label={t('accountMenu.teraTypeSwitch')}
-                            className="app-shell__account-switch"
+                            className="account-menu__pref account-menu__switch"
                         />
-                        <p className="app-shell__account-popover-note">{t('accountMenu.teraTypeNote')}</p>
                     </div>
 
-                    {typeof onOpenPatchNotes === 'function' && (
-                        <>
-                        <p className="app-shell__account-group">{t('accountMenu.groupNews')}</p>
-                        <div className="app-shell__account-popover-section">
-                            <button type="button" onClick={handleOpenPatchNotes} className="app-shell__account-menu-item">
-                                <span className="app-shell__account-menu-item-icon">
-                                    <FlowerIcon />
-                                </span>
-                                <span className="app-shell__account-menu-item-copy">
-                                    <span className="app-shell__account-menu-item-label">{t('accountMenu.patchNotesLabel')}</span>
-                                    <span className="app-shell__account-menu-item-note">{t('accountMenu.patchNotesNote')}</span>
-                                </span>
-                            </button>
-                        </div>
-                        </>
-                    )}
-
-                    <div className="app-shell__account-popover-section">
-                        <button type="button" onClick={handleSignOut} className="app-shell__account-menu-item app-shell__account-menu-item--danger">
-                            <span className="app-shell__account-menu-item-copy">
-                                <span className="app-shell__account-menu-item-label">{t('accountMenu.signOutLabel')}</span>
-                                <span className="app-shell__account-menu-item-note">{t('accountMenu.signOutNote')}</span>
-                            </span>
+                    <div className="account-menu__group">
+                        <button type="button" onClick={handleSignOut} className="account-menu__item is-danger">
+                            <LogOut aria-hidden="true" />
+                            <span>{t('accountMenu.signOutLabel')}</span>
                         </button>
                     </div>
                 </div>

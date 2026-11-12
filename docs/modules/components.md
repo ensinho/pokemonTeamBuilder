@@ -134,6 +134,8 @@ Like counter, "Have a suggestion?" form (submits to Firestore) and fan disclaime
 
 Account section at the bottom of the sidebar. Shows: greeting Pokémon avatar, trainer name/status, streak badge, and action buttons (sign in / profile / sign out). Consumes `useAuthStore`.
 
+The popover is an **account menu, not a settings page** (2026-11-12, Enzo: "não parece muito menu de usuário"): identity (name, badge, level · email) as a plain header, then three hairline-split groups — go (Profile, What's new), set (theme swatches, text size, language EN/PT, Tera switch — each its name left, its control right, one line), leave (Sign out). No caps group headings and no notes; the Tera explanation lives on Profile → Preferences. The phone's gear menu (`variant="header"`) stays three rows: identity → profile, the swatches, sign out. Both draw the swatches through one `ThemeSwatches` (moon + dark family, sun + light family). Desktop popover ~370px tall (was ~830).
+
 ---
 
 ### Forum message attachments

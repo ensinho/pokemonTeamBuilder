@@ -19,7 +19,7 @@ import { trainerSpriteUrl } from './challengeView';
  *   where Cynthia's do; the sheet has no ground shadow, so the room draws one.
  *
  * - **Blue**: his HeartGold & SoulSilver overworld frames and battle pose, from
- *   the rip Enzo supplied on 2026-11-04 (`public/blueSprite.png`, "ripped by
+ *   the rip Enzo supplied on 2026-11-04 (`assets-src/challenge/blueSprite.png`, "ripped by
  *   ChrisX698"). The rip has three frames per row (down, up, right, left);
  *   `blue-overworld.png` is them laid out as Cynthia's sheet — her rows, her
  *   stand/step/stand/step columns, her ground shadow, drawn 2× — so it shares

@@ -3568,3 +3568,75 @@
 .win-story__low {
     fill: var(--brand-gold);
 }
+
+/* ── Last week's podium (WeeklyRecapDialog, 2026-11-12) ───────────────────
+   The ranking's quiet way back to it: a text line, muted until hovered — it
+   opened by itself once already, so here it only has to be findable. */
+.challenge-rank__recap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1_5);
+    flex-shrink: 0;
+    min-width: 0;
+    height: var(--control-h-sm);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-full);
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.challenge-rank__recap:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.challenge-rank__recap > svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.challenge-rank__recap > svg:last-child {
+    opacity: 0.6;
+}
+
+.weekly-recap__eyebrow {
+    margin: 0 0 var(--space-0_5);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.weekly-recap__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.weekly-recap .segmented__item {
+    gap: var(--space-1_5);
+}
+
+/* A taller podium than the rail's: here it is the whole point. */
+.weekly-recap__podium {
+    margin: 0;
+    padding-top: var(--space-2);
+}
+
+.weekly-recap__podium .challenge-podium__block { height: 2.5rem; }
+.weekly-recap__podium .is-2 .challenge-podium__block { height: 3.25rem; }
+.weekly-recap__podium .is-1 .challenge-podium__block { height: 4.25rem; }
+
+.weekly-recap__podium .challenge-podium__name {
+    font-size: var(--text-sm);
+}
+
+/* The dialog's body scrolls, not the list. */
+.weekly-recap__list {
+    overflow: visible;
+    flex: none;
+}

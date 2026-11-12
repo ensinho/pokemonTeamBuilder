@@ -48,7 +48,11 @@ export function JourneysView() {
             {/* One mascot per screen: when every journey is done, the lead itself says so,
                 crowned (gold: earned) but still — it never celebrates data that merely loaded. */}
             <MascotTip size="lg" className="journeys-view__lead" mood={allDone ? 'radiante' : undefined} pose={allDone ? 'campeao' : undefined}>
-                {allDone ? <><strong>{t('journeys.allDoneTitle')}</strong>{t('journeys.allDoneSub')}</> : t('journeys.subtitle')}
+                {/* The missions' count rides in the bubble (2026-11-12, "menos
+                    rolagem"): it was a line of its own between the tabs and the list. */}
+                {allDone
+                    ? <><strong>{t('journeys.allDoneTitle')}</strong>{t('journeys.allDoneSub')}</>
+                    : <>{t('journeys.subtitle')} <span className="journeys-view__progress">{t('journeys.missionsProgress', { done: totals.missionsDone, total: totals.missionsTotal })}</span></>}
             </MascotTip>
 
             <div className="segmented segmented--block journeys-view__tabs" role="tablist" aria-label={t('journeys.tabsLabel')}>
@@ -62,12 +66,7 @@ export function JourneysView() {
             </div>
 
             {tab === 'journeys' ? (
-                <>
-                    <p className="journeys-view__progress">
-                        {t('journeys.missionsProgress', { done: totals.missionsDone, total: totals.missionsTotal })}
-                    </p>
-                    <JourneyList journeys={journeys} personaJourneys={personaJourneys} />
-                </>
+                <JourneyList journeys={journeys} personaJourneys={personaJourneys} />
             ) : tab === 'badges' ? (
                 <BadgeGallery badges={badges} journeys={journeys} selectedBadgeId={selectedBadgeId} onToggleEquip={toggleEquip} />
             ) : (

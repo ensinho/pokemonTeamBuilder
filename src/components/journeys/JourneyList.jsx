@@ -84,7 +84,7 @@ function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
     const badge = getBadgeById(journey.badgeId);
 
     return (
-        <section className={`card card--flush journey ${isCurrent ? 'is-current' : ''} ${journey.isComplete ? 'is-complete' : ''}`}>
+        <section className={`card card--flush journey ${isCurrent ? 'is-current' : ''} ${journey.isComplete ? 'is-complete' : ''} ${isOpen ? 'is-open' : ''}`}>
             <button type="button" className="journey__head" aria-expanded={isOpen} aria-controls={bodyId} onClick={onToggle}>
                 <JourneyTile journey={journey} isCurrent={isCurrent} />
                 <span className="journey__text">
