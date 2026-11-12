@@ -33,7 +33,7 @@ export const validateTeam = (showdownText) => {
     const errors = [];
     const seen = new Set();
     sets.forEach((set, slot) => {
-        // A Mega saved as its Mega forme starts as its base, and Mega Evolves in battle with its stone.
+        // A Mega saved as its Mega forme starts as its base holding its stone, and Mega Evolves in battle.
         toStartingForme(set);
         const species = Dex.species.get(set.species);
         if (!species.exists) {

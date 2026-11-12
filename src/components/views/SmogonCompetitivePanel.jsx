@@ -4,6 +4,7 @@ import { Sparkles, Swords, Shield, Zap, BookOpen, TrendingUp, Package, ArrowUpRi
 
 import { typeColors, typeIcons } from '../../constants/types';
 import { useSmogonData } from '../../hooks/useSmogonData';
+import { useBaseIdOf } from '../../hooks/useBaseIdOf';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useTournamentData } from '../../hooks/useTournamentData';
@@ -191,7 +192,11 @@ function RecentTournamentTeams({ pokemonId }) {
  * actually run right now) on top, then Smogon's expert-curated VGC sets + the
  * written reasoning behind each (also used by the editor's one-click "apply set").
  */
-export function SmogonCompetitivePanel({ pokemonId }) {
+export function SmogonCompetitivePanel({ pokemonId: shownId }) {
+    // Every dataset here is keyed by base species. A Mega's or a regional
+    // form's page asks for its species' — its own id finds nothing.
+    const baseIdOf = useBaseIdOf();
+    const pokemonId = (shownId && baseIdOf(shownId)) || shownId;
     const { language } = useTranslation();
     const { goToMove, goToAbility, goToItem } = useEntityNavigate();
     const { smogonFor, status } = useSmogonData();

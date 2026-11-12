@@ -12,7 +12,7 @@ import { newInstanceId, serializeTeam } from '../utils/teamSerialization';
 import { speciesIdOf, wouldDuplicateSpecies } from '../utils/teamUniqueness';
 import { convertSpread } from '../utils/statPoints';
 import { isPlaythroughMode } from '../constants/regulations';
-import { competitivePresetFor } from '../utils/loadCompetitivePreset';
+import { competitivePresetFor, megaStoneOfForme } from '../utils/loadCompetitivePreset';
 import { markJourney, useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
@@ -110,6 +110,24 @@ const createTeamMember = (fullPokemon, preset = null, scale = 'ev') => {
         instanceId: newInstanceId(fullPokemon.id),
         customization,
     };
+};
+
+// The competitive preset of a Pokémon as it is added. A form (a Mega, a
+// regional, Rotom-Wash) has no entry of its own in the mined data — it is keyed
+// by base species — so the lookup falls back to its species, and a Mega forme
+// arrives holding the stone that makes it one. Never throws: no preset is a
+// blank member, not a failed add.
+const presetForAdd = async (pokemon) => {
+    try {
+        const [{ baseIdOf }, megaStones] = await Promise.all([ensureSpeciesIndex(), getMegaStones()]);
+        const baseId = Number(pokemon.baseId) || baseIdOf(pokemon.id) || null;
+        return await competitivePresetFor(pokemon.id, {
+            baseId: baseId && baseId !== Number(pokemon.id) ? baseId : null,
+            megaStone: megaStoneOfForme(pokemon.id, megaStones),
+        });
+    } catch (_) {
+        return null;
+    }
 };
 
 // A team is in Stat Points when every member already on it is.
@@ -324,7 +342,7 @@ export const useActiveTeamStore = create((set, get) => ({
 
         // Kick off the competitive-set lookup in parallel with the detail resolve
         // so a freshly added member arrives pre-filled with the most-used build.
-        const setPromise = competitivePresetFor(pokemon.id).catch(() => null);
+        const setPromise = presetForAdd(pokemon);
 
         // Optimistic: the slot fills on the tap, from the list entry alone (it
         // already has id, name, types and sprite — all the slot and the type
@@ -432,7 +450,7 @@ export const useActiveTeamStore = create((set, get) => ({
             }
 
             const resolved = await Promise.all(picks.map(async (pokemon) => {
-                const setPromise = competitivePresetFor(pokemon.id).catch(() => null);
+                const setPromise = presetForAdd(pokemon);
                 let full = pokemon;
                 if (!pokemon.abilities?.length || !pokemon.moves?.length) {
                     const detail = await resolvePokemonDetail(pokemon.id);

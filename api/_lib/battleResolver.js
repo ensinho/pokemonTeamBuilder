@@ -60,13 +60,19 @@ export class BattleResolveError extends Error {
  * (`Charizard-Mega-X`, `Darmanitan-Zen`) goes out as the Pokémon it comes from,
  * as Showdown's validator does — no validator runs here. Without this a Mega
  * would start the battle Mega Evolved and never Mega Evolve; with it, it does
- * so in battle when it holds its stone, and fights as itself when it doesn't.
+ * so in battle.
+ *
+ * A Mega forme goes out **holding its stone** (2026-11-12), whatever the set
+ * said: the trainer put a Mega on the team, and a set saved without the stone
+ * (the builder used to add a Mega with no item) fought as its base to the end.
+ * Mega Rayquaza has no stone — it needs Dragon Ascent, which is the set's own.
  *
  * @returns {boolean} whether the set changed
  */
 export const toStartingForme = (set) => {
     const species = Dex.species.get(set?.species);
     if (!species.exists || typeof species.battleOnly !== 'string') return false;
+    if (species.isMega && species.requiredItem) set.item = species.requiredItem;
     set.species = species.battleOnly;
     return true;
 };

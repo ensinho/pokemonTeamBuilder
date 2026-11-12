@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { Battle, Teams } from '@pkmn/sim';
 
-import { QUICK_THAW_RULE } from './simRules.js';
+import { MULTI_MEGA_RULE, QUICK_THAW_RULE } from './simRules.js';
 import { FORMAT } from './challenge/constants.js';
 import { PVP_FORMAT } from './pvpState.js';
 
 const OLD_FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod';
+const THAW_FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Quick Thaw Mod';
 const frozenTeam = Teams.pack(Teams.import('Iron Hands\nAbility: Quark Drive\n- Drain Punch'));
 const foeTeam = Teams.pack(Teams.import('Blissey\nAbility: Natural Cure\n- Soft-Boiled'));
 
@@ -54,5 +55,53 @@ describe('Quick Thaw Mod', () => {
     it('never joins a battle whose format does not name it (old battles replay as they were)', () => {
         expect(new Battle({ formatid: OLD_FORMAT, seed: [3, 1, 4, 1] }).ruleTable.has('quickthawmod')).toBe(false);
         expect(new Battle({ formatid: FORMAT, seed: [3, 1, 4, 1] }).ruleTable.has('quickthawmod')).toBe(true);
+    });
+});
+
+describe('Multi Mega Mod', () => {
+    const megas = Teams.pack(Teams.import([
+        'Heracross @ Heracronite\nAbility: Guts\n- Swords Dance',
+        'Scizor @ Scizorite\nAbility: Technician\n- Swords Dance',
+        'Blissey @ Leftovers\nAbility: Natural Cure\n- Soft-Boiled',
+    ].join('\n\n')));
+    const wall = Teams.pack(Teams.import('Blissey\nAbility: Natural Cure\n- Soft-Boiled'));
+
+    const start = (formatid) => {
+        const battle = new Battle({ formatid, seed: [1, 2, 3, 4] });
+        battle.setPlayer('p1', { team: megas });
+        battle.setPlayer('p2', { team: wall });
+        return battle;
+    };
+    const megaLines = (battle) => battle.log.filter((line) => line.startsWith('|-mega|p1a'));
+
+    it('is the Champion Challenge\'s rule only', () => {
+        expect(FORMAT).toContain(MULTI_MEGA_RULE);
+        expect(PVP_FORMAT).not.toContain(MULTI_MEGA_RULE);
+    });
+
+    it('lets a second Pokémon Mega Evolve after the first', () => {
+        const battle = start(FORMAT);
+        battle.makeChoices('move 1 mega', 'move 1');
+        expect(battle.p1.active[0].species.name).toBe('Heracross-Mega');
+        battle.makeChoices('switch 2', 'move 1');
+        expect(battle.p1.active[0].getMoveRequestData().canMegaEvo).toBe(true);
+        battle.makeChoices('move 1 mega', 'move 1');
+        expect(battle.p1.active[0].species.name).toBe('Scizor-Mega');
+        expect(megaLines(battle)).toHaveLength(2);
+    });
+
+    it('never offers it again to one that is already Mega, or to one with no stone', () => {
+        const battle = start(FORMAT);
+        battle.makeChoices('move 1 mega', 'move 1');
+        expect(battle.p1.active[0].getMoveRequestData().canMegaEvo).toBeUndefined();
+        expect(battle.p1.pokemon.find((mon) => mon.species.name === 'Blissey').canMegaEvo).toBeFalsy();
+        expect(battle.choose('p1', 'move 1 mega')).toBe(false);
+    });
+
+    it('keeps the games\' one Mega a battle without the rule', () => {
+        const battle = start(THAW_FORMAT);
+        battle.makeChoices('move 1 mega', 'move 1');
+        battle.makeChoices('switch 2', 'move 1');
+        expect(battle.p1.active[0].getMoveRequestData().canMegaEvo).toBeUndefined();
     });
 });
