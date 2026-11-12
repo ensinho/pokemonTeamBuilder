@@ -733,7 +733,14 @@ export function TeamBuilderView({
                                     </button>
                                 )
                             )}
-                            <span className="badge badge--figure shrink-0" aria-label={`${currentTeam.length} / 6`}>{currentTeam.length}/6</span>
+                            {/* The party, not a "0/6" chip (2026-11-11): six pips that fill as the
+                                team does, the party row of the games' own menus. */}
+                            <span className="party-pips shrink-0" role="img" aria-label={`${currentTeam.length} / 6`}>
+                                {Array.from({ length: 6 }, (_, i) => (
+                                    <i key={i} className={i < currentTeam.length ? 'is-filled' : undefined} />
+                                ))}
+                                <span className="party-pips__figure" aria-hidden="true">{currentTeam.length}/6</span>
+                            </span>
                         </div>
                         {nameError && (
                             <p id="team-builder-name-error" className="tb-team__name-error" role="alert">
