@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { typeColors } from '../../constants/types';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { Sprite } from '../Sprite';
+import { Mascot } from '../Mascot';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { RollingNumber } from '../RollingNumber';
 import { CHECKED_IN_EVENT } from '../../utils/dailyCheckin';
@@ -53,27 +54,32 @@ export function HomeGreeting({
 
     return (
         <header className="home-greet">
-            <FramedAvatar
-                as="button"
-                type="button"
-                uid={uid}
-                className={`home-greet__avatar ${partner.hasPartner ? '' : 'is-unchosen'}`}
-                style={partner.hasPartner ? { '--avatar-tone': typeColors[partner.type] } : undefined}
-                onClick={onOpenPartner}
-                aria-label={t(partner.hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
-                title={t(partner.hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
-            >
-                {/* The face clips the sprite; the avatar itself stays unclipped
-                    so a reward frame drawn around it is never cut. */}
-                <span className="home-greet__face">
-                    <Sprite src={getPokemonFrontSpriteUrl(partner.id, { shiny: partner.shiny })} className="home-greet__sprite" eager />
-                </span>
-            </FramedAvatar>
+            {/* The mascot in the trainer's circle (2026-11-12, Enzo: "usar o
+                mascote dentro do círculo para ser mais chamativo"): alive, his
+                face the day's note's, still wearing the trainer's frame. The
+                partner rides on the circle as a badge — a tap changes it. */}
+            <span className="home-greet__badge-host">
+                <FramedAvatar uid={uid} className="home-greet__avatar home-greet__avatar--mascot">
+                    <span className="home-greet__face home-greet__face--mascot">
+                        <Mascot bot size="fill" framing="head" mood={note?.mood || 'feliz'} seasonal={false} interactive stage className="home-greet__mascot" />
+                    </span>
+                </FramedAvatar>
+                <button
+                    type="button"
+                    className={`home-greet__partner ${partner.hasPartner ? '' : 'is-unchosen'}`}
+                    style={partner.hasPartner ? { '--avatar-tone': typeColors[partner.type] } : undefined}
+                    onClick={onOpenPartner}
+                    aria-label={t(partner.hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
+                    title={t(partner.hasPartner ? 'cozyHome.changePartner' : 'cozyHome.choosePartner')}
+                >
+                    <Sprite src={getPokemonFrontSpriteUrl(partner.id, { shiny: partner.shiny })} className="home-greet__partner-sprite" eager />
+                </button>
+            </span>
 
             <div className="home-greet__text">
                 <h1 className="home-greet__hello">{hello}</h1>
                 {note
-                    ? <MascotNote note={note} onOpenStreak={onOpenStreak} />
+                    ? <MascotNote note={note} onOpenStreak={onOpenStreak} face={false} />
                     : <p className="home-greet__ask">{ask}</p>}
             </div>
 
