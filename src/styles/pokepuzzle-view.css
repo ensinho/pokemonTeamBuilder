@@ -49,6 +49,28 @@
     max-width: none;
 }
 
+/* The countdown in the row is the desktop's; a phone keeps it below. */
+/* doubled classes: the base .pokepuzzle-header-countdown rule comes later in this file */
+.pokepuzzle-header-countdown.pokepuzzle-header-countdown--inline { display: none; }
+
+@media (min-width: 1024px) {
+    /* One organised line: the mode, the history, the next puzzle's clock. */
+    .pokepuzzle-header-row:has(.pokepuzzle-header-countdown--inline) {
+        max-width: 46rem;
+    }
+
+    .pokepuzzle-header-row .pokepuzzle-header-countdown.pokepuzzle-header-countdown--inline {
+        display: inline-flex;
+        flex-shrink: 0;
+        height: var(--control-h-lg);
+        margin: 0;
+        padding-inline: var(--space-4);
+        border-radius: var(--radius-md);
+    }
+
+    .pokepuzzle-header-countdown.pokepuzzle-header-countdown--below { display: none; }
+}
+
 /* Same height and type as the segmented control beside it. */
 .pokepuzzle-header-row .pokepuzzle-history-toggle {
     --btn-h: var(--control-h-lg);
