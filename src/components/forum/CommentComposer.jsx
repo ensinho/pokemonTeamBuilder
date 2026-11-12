@@ -6,6 +6,7 @@ import { activeMention, insertMention, mentionSuggestions } from '../../utils/fo
 import { SendHorizontal } from 'lucide-react';
 import { CloseIcon, SwordsIcon, ClipIcon, StarIcon, ReplyIcon } from '../icons';
 import { AttachMenuPopover } from './AttachMenuPopover';
+import { PartyPips } from '../PartyPips';
 
 /**
  * The docked composer: one row — attach, the field, post — that grows only
@@ -138,8 +139,9 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                 <div className="comment-composer__banner">
                     <ClipIcon className="w-3.5 h-3.5 text-primary shrink-0" />
                     <span className="comment-composer__banner-text">
-                        {attachedTeam.name} ({attachedTeam.pokemons?.length || 0}/6)
+                        {attachedTeam.name}
                     </span>
+                    <PartyPips team={attachedTeam.pokemons} className="shrink-0" />
                     <button
                         type="button"
                         onClick={onRemoveAttachedTeam}

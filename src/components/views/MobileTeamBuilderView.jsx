@@ -147,7 +147,7 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
                 >
                     <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
                 </button>
-                <div className="mx-auto aspect-square w-full max-w-[96px]">
+                <div className="type-platform mx-auto aspect-square w-full max-w-[96px]">
                     <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>

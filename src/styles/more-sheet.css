@@ -113,8 +113,12 @@
     width: 3rem;
     height: 3rem;
     border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    color: var(--color-fg);
+    /* The destination's type tone (2026-11-12, utils/navHue.js) — the rail's
+       tile at the sheet's size: a 14% wash, the glyph 55% toward the
+       foreground. No --nav-hue falls back to the neutral box it was. */
+    --nav-tone: var(--nav-hue, var(--color-muted));
+    background: color-mix(in srgb, var(--nav-tone) 14%, var(--color-surface-raised));
+    color: color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg));
     transition: background-color var(--duration-press) var(--ease-out),
                 color var(--duration-press) var(--ease-out),
                 scale var(--duration-press) var(--ease-out);
@@ -126,18 +130,20 @@
 }
 
 .more-tile:hover .more-tile__icon {
-    background: var(--color-surface-hover);
+    background: color-mix(in srgb, var(--nav-tone) 22%, var(--color-surface-raised));
 }
 
 /* After the hover rule on purpose: the build copies hover fills onto :active
    for touch, and this press — fill plus the shared sink — must be the one that
    wins. */
 .more-tile:active .more-tile__icon {
-    background: var(--color-surface-active);
+    background: color-mix(in srgb, var(--nav-tone) 30%, var(--color-surface-raised));
     scale: var(--press-scale);
 }
 
-/* Where you are. The page's one accent in the sheet. */
+/* Where you are. The page's one accent in the sheet — Volt, like the dock's
+   lozenge under it, not the tile's own tone: on a phone "you are here" is
+   one colour everywhere. */
 .more-tile.is-active .more-tile__icon {
     background: var(--color-primary-soft);
     color: var(--color-primary-text);

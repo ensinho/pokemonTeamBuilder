@@ -55,6 +55,7 @@ import { useActiveTeamStore, selectIsTeamDirty, defaultTeamName } from '../../st
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { usePokedexStore } from '../../store/usePokedexStore';
 import { TeamShareRow } from '../TeamShareRow';
+import { PartyPips } from '../PartyPips';
 
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
@@ -735,12 +736,7 @@ export function TeamBuilderView({
                             )}
                             {/* The party, not a "0/6" chip (2026-11-11): six pips that fill as the
                                 team does, the party row of the games' own menus. */}
-                            <span className="party-pips shrink-0" role="img" aria-label={`${currentTeam.length} / 6`}>
-                                {Array.from({ length: 6 }, (_, i) => (
-                                    <i key={i} className={i < currentTeam.length ? 'is-filled' : undefined} />
-                                ))}
-                                <span className="party-pips__figure" aria-hidden="true">{currentTeam.length}/6</span>
-                            </span>
+                            <PartyPips team={currentTeam} className="shrink-0" />
                         </div>
                         {nameError && (
                             <p id="team-builder-name-error" className="tb-team__name-error" role="alert">

@@ -691,6 +691,20 @@
         min-height: 1.75rem;
         padding-block: var(--space-0_5);
     }
+
+    /* The tile steps down with its row (2026-11-12). A 1.5rem tile in a 1.75rem
+       row left under 2px above and below — the column read as one coloured
+       stripe, not as tiles. At 1.25rem it keeps the 4px inset it has in the
+       full-height row, and the glyph keeps its 3px of wash on each side. */
+    .app-shell__sidebar:not(.is-collapsed) .app-shell__nav .app-shell__nav-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .app-shell__sidebar:not(.is-collapsed) .app-shell__nav .app-shell__nav-icon > svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
 }
 
 /* Active is a fill and nothing else — no accent bar, no weight bump, no border.
@@ -1591,24 +1605,81 @@
 
 /* The breadcrumb's section (2026-11-11): the rail's own heading, in the label
    voice and muted, so the title after the slash stays the loudest word in
-   the band. Never truncates the title — it gives way first. */
-.app-shell__crumb {
+   the band. Never truncates the title — it gives way first.
+   A button since 2026-11-12 (HeaderCrumb): it opens the section's other
+   pages. The chevron is always there — a control that only shows it is one
+   on hover is invisible to a keyboard and to touch. */
+.app-shell__crumb-wrap {
+    position: relative;
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     gap: var(--space-1_5);
     min-width: 0;
     flex-shrink: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+}
+
+.app-shell__crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+    /* The hit area is the band's control height; the fill stays a hair
+       outside the word so the label keeps the title row's left edge. */
+    min-height: var(--control-h-sm);
+    margin-inline: calc(var(--space-1_5) * -1) 0;
+    padding: 0 var(--space-1_5);
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
     font-family: var(--font-body);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
     color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__crumb:hover,
+.app-shell__crumb[aria-expanded='true'] {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.app-shell__crumb-label {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.app-shell__crumb-chevron {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    transition: rotate var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__crumb[aria-expanded='true'] .app-shell__crumb-chevron {
+    rotate: 180deg;
 }
 
 .app-shell__crumb-sep {
     color: var(--color-border-strong);
+    font-size: var(--text-sm);
+}
+
+/* The section's pages, under the word that names it. */
+.app-shell__crumb-menu {
+    position: absolute;
+    top: calc(100% + var(--space-1));
+    left: calc(var(--space-1_5) * -1);
+    z-index: var(--z-dropdown);
+    min-width: 13rem;
+}
+
+.app-shell__crumb-menu .menu-item {
+    text-decoration: none;
+    font-size: var(--text-sm);
 }
 
 .app-shell__header-subtitle,

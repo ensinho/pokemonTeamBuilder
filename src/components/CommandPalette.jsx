@@ -15,6 +15,7 @@ import { useQuickLookStore } from '../store/useQuickLookStore';
 import { personaQuickLinks } from '../utils/trainerProfile';
 import { Mascot } from './Mascot';
 import '../styles/command-palette.css';
+import { navHue } from '../utils/navHue';
 
 const LIMITS = { pokemon: 6, pages: 4, moves: 4, abilities: 3, items: 3 };
 const QUICK_LINKS = 6;
@@ -131,7 +132,7 @@ export function CommandPalette({ onClose, destinations = [] }) {
                         thumb: <SpriteThumb src={getPokemonDisplaySprite(item)} fallback={<PokeballIcon />} />,
                     };
                 case 'pages':
-                    return { key: `page-${item.key}`, href: item.path, title: item.label, meta: t('search.kindPage'), thumb: item.icon };
+                    return { key: `page-${item.key}`, href: item.path, title: item.label, meta: t('search.kindPage'), thumb: item.icon, hue: navHue(item.key) };
                 case 'moves':
                     return { key: `move-${item.name}`, href: `/moves/${item.name}`, title: prettyName(item.name), meta: t('search.kindMove'), thumb: <Swords />, peek: { kind: 'move', key: item.name } };
                 case 'abilities':
@@ -290,7 +291,7 @@ export function CommandPalette({ onClose, destinations = [] }) {
                                         onMouseMove={() => { if (!isActive) setActiveIndex(index); }}
                                         onClick={() => open(option)}
                                     >
-                                        <span className="command-palette__thumb" aria-hidden="true">{option.thumb}</span>
+                                        <span className="command-palette__thumb" aria-hidden="true" style={option.hue ? { '--nav-hue': option.hue } : undefined}>{option.thumb}</span>
                                         <span className="command-palette__text">
                                             <span className="command-palette__title">{option.title}</span>
                                             <span className="command-palette__meta">

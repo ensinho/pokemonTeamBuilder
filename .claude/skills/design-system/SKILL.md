@@ -71,14 +71,40 @@ override this skill):
   `.team-builder-panel__meta` are mono muted numerals with no fill or edge.
   Live counts (`.app-shell__nav-badge`, Live Pink) keep their pill — they are
   the brand layer's "new", not a count.
-- **A party is pips.** The builder's "0/6" is six `.party-pips` that fill as the
-  team does, with the figure after them.
-- **A sprite stands on its platform.** `.pokemon-card__media::before` is the
-  battle base, toned in the first type (`--card-type`). Static, behind the
-  sprite; never animate it.
-- **Where before what.** The desktop header shows the rail section before the
-  title (`.app-shell__crumb`, "Competitivo / Meta & uso"); pinned pages have no
-  crumb.
+- **A party is pips.** `<PartyPips team>` (2026-11-12, one component): six
+  0.5rem pips, a filled one in its member's first type (`--pip`, mixed 72%
+  toward the foreground), an absent one a dim dot. Use it wherever a team is
+  counted and its slots are not on screen — never write "3/6" as text.
+- **A sprite stands on its platform.** `.pokemon-card__media::before` and
+  `.type-platform::before` (index.css, one rule) are the battle base, toned in
+  the first type (`--card-type`). Static, behind the sprite; never animate it.
+  A sprite outside a PokemonCard takes `.type-platform` on its wrapper (the
+  meta ranking, the phone picker).
+- **Where before what — and a way there.** The desktop header shows the rail
+  section before the title; since 2026-11-12 it is a button (`HeaderCrumb`)
+  that opens the section's other pages in a `.menu-surface`, each with its
+  rail tile. Pinned pages have no crumb; a phone has the dock.
+
+**Second pass (2026-11-12) — the same moves, everywhere they apply:**
+
+- **The tone follows the destination.** `--nav-hue` also tones the Mais
+  sheet's tiles and the search's page rows. On a phone "you are here" stays
+  Volt (the dock's lozenge, the sheet's current tile); on the rail it is the
+  tile's own tone on the neutral row.
+- **The tile keeps its inset.** In the compact rail rows (screens up to
+  1200px tall — every laptop) the tile is 1.25rem in a 1.75rem row: the same
+  4px above and below it has in the 2rem row. A tile that fills its row reads
+  as a stripe.
+- **A rank is a figure too.** "#1" in the muted mono, never a chip.
+- **A cue is not a row.** The picker card's "+ Adicionar" bar is gone: the
+  whole card adds, and the cue is `.pokemon-card__add`, a round "+" at the
+  sprite's corner — Volt on hover/focus with a pointer, a quiet edged dot on
+  touch (nothing lives only on hover). One word repeated on seventy cards is
+  the same tell as seventy count pills.
+- **A filter is quieter than a place.** `.segmented--quiet` (lifted neutral
+  thumb, foreground ink) for a segmented control that narrows or orders the
+  list under it; the Volt thumb is for "which page of this hub". One Volt
+  selection per screen — /meta had four, and the word "Uso" three times.
 
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
 few values, used everywhere, landing on a grid. Every rule below exists because
@@ -591,6 +617,9 @@ eight segmented controls before this list existed (2026-09-22).
 | 2–5 exclusive options, all visible | `.segmented` > `.segmented__item[aria-pressed]` (`--sm` / `--lg` / `--block`) |
 | sections of one object | `.tabs` > `.tabs__item[aria-selected]` |
 | a count in a tab or segment | `.count-badge` |
+| a filter or a sort (2–5 options) under a hub's own switcher | `.segmented.segmented--quiet` |
+| a team's size where its slots are not on screen | `<PartyPips team>` (or `count`) |
+| a sprite outside a PokemonCard | wrapper `.type-platform` + `--card-type` |
 | a dialog | `.modal-scrim` > `.modal-panel` with `ref={useModalA11y(onClose)}`; `.modal-header` / `.modal-title` / `.modal-subtitle` / `.modal-close` / `.modal-body` / `.modal-footer` (`--ruled` when the body scrolls under it). Phones get a draggable sheet and every dialog an exit animation for free |
 | a form row | `.field` > `.field-label` + `.input-clean` / `.select-clean` / `.textarea-clean` |
 | a short form that IS the screen (sign in, a code) | `.field.field--filled` — no edge, a fill, `--control-h-lg`; a leading icon is `.field__control` > `.field__icon` + the input (2026-11-09) |

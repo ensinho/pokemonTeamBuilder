@@ -2,6 +2,7 @@ import React from 'react';
 import { BottomSheet } from './BottomSheet';
 import { useTranslation } from '../hooks/useTranslation';
 import '../styles/more-sheet.css';
+import { navHue } from '../utils/navHue';
 
 /**
  * MobileMoreSheet — what the phone's "Mais" tab opens.
@@ -82,7 +83,9 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                                 onPointerDown={() => onIntent?.(item.prefetchKey || item.key)}
                                                 onClick={() => onNavigate(item.path)}
                                             >
-                                                <span className="more-tile__icon">
+                                                {/* --nav-hue: the destination's type tone, as in the
+                                                    rail and the dock (utils/navHue.js). */}
+                                                <span className="more-tile__icon" style={{ '--nav-hue': navHue(item.key) }}>
                                                     {item.icon}
                                                     {item.badge > 0 && (
                                                         <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
