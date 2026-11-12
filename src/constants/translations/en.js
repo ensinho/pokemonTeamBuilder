@@ -1462,6 +1462,10 @@ export default {
     profile: {
         sectionMascot: 'Mascot',
         sectionMascotDesc: 'The little ghost from the icon. Its colour and reactions apply to this device.',
+        mascotForm: 'Mascot form',
+        mascotForm_bot: '3D',
+        mascotForm_line: 'Line',
+        mascotTryBot: 'Try it: it follows your pointer around the page. Click, double-click, hold for a Shadow Ball, rub the top of its head, drag it (it leans into it), or tap the sparks three times.',
         mascotTry: 'Try it: click, double-click, hold for a Shadow Ball, rub the top of its head, drag it, or tap the sparks three times.',
         mascotMoods: 'Mascot moods',
         mascotTone: 'Mascot colour',

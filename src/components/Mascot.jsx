@@ -7,7 +7,7 @@ import { derivePersona } from '../utils/trainerProfile';
 import { ICON_INNER, ICON_INNER_SMALL } from '../utils/mascot/icon';
 import { MASCOT_SIZES, VIEWS } from '../utils/mascot/constants';
 import { costumeHat } from '../utils/mascot/assistant';
-import { useMascotEngine } from './mascot/useMascotEngine';
+import { useMascotBot, useMascotEngine } from './mascot/useMascotEngine';
 
 /**
  * The app's mascot — the ghost of the icon, drawn live (2026-11-06; before,
@@ -31,6 +31,10 @@ import { useMascotEngine } from './mascot/useMascotEngine';
  * - `coverable`: covers its eyes while a password field has focus.
  * - What he wears: the caller's `hat`, else the season's (on its dates), else
  *   the trainer's costume (Profile → Mascote) — from 48 px up, where a hat reads.
+ * - `bot`: the 3D body (2026-11-11, `utils/mascot/bot/`, the open-bot-avatar
+ *   engine): alive while on screen, looks at the pointer with its whole body.
+ *   A playground is a bot unless the trainer chose the line (Profile →
+ *   Mascote → Formato); anything else is the line unless it asks.
  */
 const toneOf = (prefs, profile) => {
     if (prefs.tone === 'brand') return null;
@@ -46,11 +50,13 @@ const COVER_POSE = {
 
 export function Mascot({
     size = 'md', mood, pose, hat, extra, tone: toneProp, framing, loop, play, playKey, cheer = false,
-    interactive = false, stage = false, playground = false, coverable = false, seasonal, label, className = '', idleMs,
+    interactive = false, stage = false, playground = false, coverable = false, seasonal, label, className = '', idleMs, bot,
 }) {
     const engine = useMascotEngine();
     const { t } = useTranslation();
     const prefs = useMascotStore((s) => s.prefs);
+    const isBot = bot ?? (playground && prefs.form !== 'line');
+    const botMod = useMascotBot(isBot);
     const cover = useMascotStore((s) => (coverable ? s.cover : null));
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const svgRef = useRef(null);
@@ -62,7 +68,9 @@ export function Mascot({
     const px = MASCOT_SIZES[size] ?? (size === 'fill' ? 240 : 48);
     const view = VIEWS[framing] || (playground ? VIEWS.wide : px <= 64 ? VIEWS.head : VIEWS.body);
     const tone = toneProp ?? toneOf(prefs, trainerProfile);
-    const live = interactive || stage || playground;
+    const live = interactive || stage || playground || isBot;
+    const motionRef = useRef({ mood, pose });
+    motionRef.current = { mood, pose };
     const extraKey = extra ? JSON.stringify(extra) : '';
 
     const base = useMemo(() => {
@@ -92,8 +100,10 @@ export function Mascot({
     useEffect(() => {
         if (!engine || !live || !svgRef.current || !wrapRef.current) return undefined;
         let bubbleTimer = 0;
-        const ctl = new engine.MascotStage({
+        const Stage = botMod ? botMod.BotStage : engine.MascotStage;
+        const ctl = new Stage({
             wrapper: wrapRef.current, svg: svgRef.current, view, playground,
+            getMotion: botMod ? () => botMod.botMotion(motionRef.current.mood, motionRef.current.pose) : undefined,
             idleMs: idleMs ?? (engine.isNight() ? 12000 : 25000),
             getBase: () => baseRef.current || {},
             onShiny: () => useMascotStore.getState().foundShiny(),
@@ -102,7 +112,7 @@ export function Mascot({
         stageRef.current = ctl;
         ctl.renderStill();
         return () => { clearTimeout(bubbleTimer); ctl.destroy(); stageRef.current = null; };
-    }, [engine, live, playground, view, idleMs]);
+    }, [engine, botMod, live, playground, view, idleMs]);
 
     // the app's reactions go to the one mascot holding the stage
     useEffect(() => {
@@ -132,7 +142,8 @@ export function Mascot({
         return engine.playSequence(svgRef.current, () => baseRef.current || {}, 'cover');
     }, [engine, coverable, cover]);
 
-    const loopClass = loop && prefs.reactions ? ` is-${loop}` : '';
+    // the bot breathes and sways on its own (the engine): the CSS loops are the line's
+    const loopClass = loop && prefs.reactions && !isBot ? ` is-${loop}` : '';
     const sizeClass = size === 'fill' ? 'mascot--fill' : `mascot--${MASCOT_SIZES[size] ? size : 'md'}`;
     // a playground is focusable, so it is never hidden from assistive tech
     const name = label || (playground ? t('mascot.label') : null);
@@ -141,7 +152,7 @@ export function Mascot({
     return (
         <span
             ref={wrapRef}
-            className={`mascot ${sizeClass}${loopClass}${live ? ' is-interactive' : ''}${playground ? ' is-playground' : ''} ${className}`}
+            className={`mascot ${sizeClass}${loopClass}${live ? ' is-interactive' : ''}${playground ? ' is-playground' : ''}${botMod ? ' mascot--bot' : ''} ${className}`}
             {...a11y}
             tabIndex={playground ? 0 : undefined}
         >

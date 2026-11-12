@@ -61,6 +61,38 @@
     --m-tone-mix: var(--color-fg);
 }
 
+/* The bot (2026-11-11, utils/mascot/bot/frame.js): the same ghost with a body.
+   Its cross-sections are painted back to front in eleven shades — the far
+   walls a deeper violet (.bs0), the silhouette the line's violet (.bs5), the
+   front plateau the icon's dark tile (.bs10) — so straight on it is the icon
+   and turned the line becomes the side of a solid. A tone recolours it like
+   it recolours the line (the rim is --m-line). The face sits on the dark
+   front in every theme, so its eyes and fangs stay the icon's white. */
+.mascot--bot .mascot__svg {
+    --m-eye: var(--mascot-white);
+    --m-fang: var(--mascot-white);
+    --m-fang-edge: transparent;
+}
+/* resolved on the body's own group, where a tone sets --m-line */
+.mascot--bot .bot-root {
+    --bot-rim: var(--m-line);
+    --bot-face: color-mix(in srgb, var(--m-line) 12%, var(--mascot-tile));
+    --bot-back: color-mix(in srgb, var(--m-line) 55%, var(--brand-ink));
+    --m-bg: var(--bot-face);
+}
+.mascot--bot .bs0 { fill: color-mix(in srgb, var(--bot-rim) 0%, var(--bot-back)); }
+.mascot--bot .bs1 { fill: color-mix(in srgb, var(--bot-rim) 20%, var(--bot-back)); }
+.mascot--bot .bs2 { fill: color-mix(in srgb, var(--bot-rim) 40%, var(--bot-back)); }
+.mascot--bot .bs3 { fill: color-mix(in srgb, var(--bot-rim) 60%, var(--bot-back)); }
+.mascot--bot .bs4 { fill: color-mix(in srgb, var(--bot-rim) 80%, var(--bot-back)); }
+.mascot--bot .bs5 { fill: color-mix(in srgb, var(--bot-rim) 100%, var(--bot-back)); }
+.mascot--bot .bs6 { fill: color-mix(in srgb, var(--bot-face) 20%, var(--bot-rim)); }
+.mascot--bot .bs7 { fill: color-mix(in srgb, var(--bot-face) 40%, var(--bot-rim)); }
+.mascot--bot .bs8 { fill: color-mix(in srgb, var(--bot-face) 60%, var(--bot-rim)); }
+.mascot--bot .bs9 { fill: color-mix(in srgb, var(--bot-face) 80%, var(--bot-rim)); }
+.mascot--bot .bs10 { fill: color-mix(in srgb, var(--bot-face) 100%, var(--bot-rim)); }
+.mascot--bot .bot-shadow { fill: var(--m-shadow); }
+
 .mascot.is-interactive { cursor: pointer; touch-action: manipulation; }
 .mascot.is-playground { cursor: grab; touch-action: none; }
 .mascot.is-playground:active { cursor: grabbing; }
@@ -92,8 +124,8 @@
 
 @media (prefers-reduced-motion: no-preference) {
     .mascot.is-breathe .mascot__svg,
-    .mascot[data-mode='sleep'] .mascot__svg { transform-origin: 50% 85%; animation: mascot-breathe 3.2s var(--ease-smooth) infinite; }
-    .mascot[data-mode='sleep'] .mascot__svg { animation-duration: 2.6s; }
+    .mascot:not(.mascot--bot)[data-mode='sleep'] .mascot__svg { transform-origin: 50% 85%; animation: mascot-breathe 3.2s var(--ease-smooth) infinite; }
+    .mascot:not(.mascot--bot)[data-mode='sleep'] .mascot__svg { animation-duration: 2.6s; }
     .mascot.is-float .mascot__svg { animation: mascot-float 2.4s var(--ease-smooth) infinite; }
 
     /* The effects the rig draws at rest (`m-loop`): Zzz, thinking dots, sparkles, hearts, the loader's ball. */

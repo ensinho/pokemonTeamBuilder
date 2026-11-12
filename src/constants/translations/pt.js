@@ -1428,6 +1428,10 @@ export default {
     profile: {
         sectionMascot: 'Mascote',
         sectionMascotDesc: 'O fantasminha do ícone. A cor e as reações valem para este aparelho.',
+        mascotForm: 'Formato do mascote',
+        mascotForm_bot: '3D',
+        mascotForm_line: 'Traço',
+        mascotTryBot: 'Experimente: ele segue o seu ponteiro pela página. Clique, dê dois cliques, segure para uma Shadow Ball, esfregue o topo da cabeça, arraste (ele se inclina junto), ou toque três vezes nas faíscas.',
         mascotTry: 'Experimente: clique, dê dois cliques, segure para uma Shadow Ball, esfregue o topo da cabeça, arraste, ou toque três vezes nas faíscas.',
         mascotMoods: 'Humores do mascote',
         mascotTone: 'Cor do mascote',

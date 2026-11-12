@@ -31,7 +31,7 @@ import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
 import { Mascot } from '../Mascot';
-import { useMascotStore, MASCOT_COSTUME_CHOICES } from '../../store/useMascotStore';
+import { useMascotStore, MASCOT_COSTUME_CHOICES, MASCOT_FORM_CHOICES } from '../../store/useMascotStore';
 import { costumeHat } from '../../utils/mascot/assistant';
 import { TONES as MASCOT_TONES } from '../../utils/mascot/constants';
 import { typeColors } from '../../constants/typeChart';
@@ -188,7 +188,7 @@ const MASCOT_MOODS = ['feliz', 'animado', 'travesso', 'apaixonado', 'pensando', 
 /**
  * The mascot's room (2026-11-06): the full playground — pet it, hold it for a
  * Shadow Ball, drag it, tap the sparks three times — plus what this device
- * keeps: his colour (the icon's violet, the persona's type, any of the 18
+ * keeps: his form (the 3D bot or the icon's line, 2026-11-11), his colour (the icon's violet, the persona's type, any of the 18
  * types, or shiny once found) and whether he reacts and celebrates on his own.
  */
 const MascotSection = () => {
@@ -214,7 +214,14 @@ const MascotSection = () => {
                     <Mascot size="fill" mood={mood} playground stage loop="breathe" label={t('mascot.label')} />
                 </div>
                 <div className="profile-mascot__side">
-                    <p className="profile-mascot__try">{t('profile.mascotTry')}</p>
+                    <div className="segmented segmented--block" role="group" aria-label={t('profile.mascotForm')}>
+                        {MASCOT_FORM_CHOICES.map((k) => (
+                            <button key={k} type="button" className="segmented__item" aria-pressed={prefs.form === k} onClick={() => setPrefs({ form: k })}>
+                                {t(`profile.mascotForm_${k}`)}
+                            </button>
+                        ))}
+                    </div>
+                    <p className="profile-mascot__try">{t(prefs.form === 'bot' ? 'profile.mascotTryBot' : 'profile.mascotTry')}</p>
                     <div className="profile-mascot__moods" role="group" aria-label={t('profile.mascotMoods')}>
                         {MASCOT_MOODS.map((m) => (
                             <button key={m} type="button" className="profile-mascot__mood" aria-pressed={mood === m} onClick={() => setMood(m)} title={t(`mascot.moods.${m}`)}>

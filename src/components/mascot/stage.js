@@ -106,7 +106,7 @@ export class MascotStage {
         }
         if (this.shiny) L.push({ tone: 'shiny' });
         if (still) return L;
-        if (this.look.x || this.look.y || this.look.tilt) L.push({ faceX: this.look.x, faceY: this.look.y, tilt: this.look.tilt, earL: this.look.ears, earR: this.look.ears });
+        L.push(this.lookLayer());
         if (t - this.blinkT0 < 220) L.push(evalSeq('blink', t - this.blinkT0));
         if (t - this.earT0 < 460) L.push(evalSeq('ear', t - this.earT0));
         if (this.reaction) {
@@ -116,7 +116,14 @@ export class MascotStage {
         L.push({ t, x: this.pos.x, y: this.pos.y });
         return L;
     }
-    renderStill() { if (!this.destroyed) this.svg.innerHTML = mascotInner(merge(this.getBase(), ...this.layers(now(), true))); }
+    /** The face toward the pointer (the bot looks with its whole body instead: `BotStage`). */
+    lookLayer() {
+        const k = this.look;
+        return k.x || k.y || k.tilt ? { faceX: k.x, faceY: k.y, tilt: k.tilt, earL: k.ears, earR: k.ears } : null;
+    }
+    /** Write a frame (`t` null: at rest). The bot overrides this one method to paint its body. */
+    draw(pose) { this.svg.innerHTML = mascotInner(pose); }
+    renderStill() { if (!this.destroyed) this.draw(merge(this.getBase(), ...this.layers(now(), true)), null); }
 
     busy(t) {
         const lookTarget = this.ptr.in && !this.down && LOOKABLE.has(this.mode);
@@ -152,7 +159,7 @@ export class MascotStage {
 
         if (!this.visible || document.hidden) { this.stopJob = null; this.renderStill(); return false; }
         if (!this.busy(t)) { this.stopJob = null; this.renderStill(); return false; }
-        this.svg.innerHTML = mascotInner(merge(this.getBase(), ...this.layers(t, false)));
+        this.draw(merge(this.getBase(), ...this.layers(t, false)), t);
         return true;
     }
 
