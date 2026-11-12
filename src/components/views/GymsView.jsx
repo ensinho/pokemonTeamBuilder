@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Swords, Trophy, ChevronRight, X } from 'lucide-react';
+import { Swords, Trophy, ChevronRight, X, Check, ListTree } from 'lucide-react';
 
-import { typeColors, typeIcons } from '../../constants/types';
+import { typeColors, typeIcons, typeChart } from '../../constants/types';
 import { useGymLeaders } from '../../hooks/useGymLeaders';
 import { gymTeamForImport } from '../../utils/gymTeam';
 import { useReferenceStore } from '../../store/useReferenceStore';
@@ -10,12 +10,14 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { maxWidthBelow } from '../../constants/breakpoints';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getGameLogo, getGameAccent } from '../../assets/gameLogos';
 import { toneInk, toneWash } from '../../utils/toneInk';
+import { useAuthStore } from '../../store/useAuthStore';
+import { caseLeaders, nextLeader, toggleBadge } from '../../utils/badgeCase';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
+import { TypeChip } from '../TypeChip';
 import '../../styles/game-cover.css';
 import '../../styles/gyms-view.css';
 import { SHOWDOWN_SPRITES_BASE } from '../../utils/assetHost';
@@ -284,103 +286,118 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
 
 // Trainer portrait from the Pokémon Showdown sprite CDN, falling back to a
 // type-coloured medallion when no sprite exists (e.g. custom hack-ROM leaders).
-function TrainerAvatar({ sprite, type, order, accent }) {
+function TrainerAvatar({ sprite, type, size = 'md' }) {
     const [failed, setFailed] = useState(!sprite);
+    React.useEffect(() => { setFailed(!sprite); }, [sprite]);
     return (
-        <span className="relative h-16 w-16 shrink-0">
-            <span
-                className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl"
-                style={{ backgroundColor: toneWash(accent), border: `1px solid ${toneWash(accent, 45)}` }}
-            >
-                {failed ? (
-                    typeIcons[type] ? <img src={typeIcons[type]} alt={type} className="h-7 w-7" /> : <Trophy className="h-7 w-7 text-muted" />
-                ) : (
-                    <img
-                        src={`${TRAINER_SPRITE_BASE}${sprite}.png`}
-                        onError={() => setFailed(true)}
-                        alt=""
-                        className="h-full w-full object-contain"
-                        loading="lazy"
-                    />
-                )}
-            </span>
-            <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-surface font-mono text-2xs font-semibold text-fg z-10">{order}</span>
+        <span className={`gyms-avatar gyms-avatar--${size}`} aria-hidden="true">
+            {failed ? (
+                typeIcons[type] ? <img src={typeIcons[type]} alt="" className="gyms-avatar__type" /> : <Trophy className="gyms-avatar__type" />
+            ) : (
+                <img
+                    src={`${TRAINER_SPRITE_BASE}${sprite}.png`}
+                    onError={() => setFailed(true)}
+                    alt=""
+                    className="gyms-avatar__sprite"
+                    loading="lazy"
+                />
+            )}
         </span>
     );
 }
 
-function TeamMon({ mon, entry, accent, levelCap, onClick, pt }) {
+// One member on the stage: the sprite on its type's platform, the name, the
+// level as a figure and the types as icons — the three-letter "Roc" / "Gro"
+// pills are gone (2026-11-12).
+function TeamMon({ mon, entry, levelCap, onClick, pt }) {
     const id = entry?.id;
     const types = entry?.types || [];
-    const handleMonClick = (e) => {
-        e.stopPropagation();
-        if (id && onClick) onClick();
-    };
+    const tone = typeColors[types[0]];
     return (
         <button
             type="button"
-            onClick={handleMonClick}
+            onClick={() => { if (id && onClick) onClick(); }}
             disabled={!id}
             title={mon.pool ? `${pretty(mon.name)} — ${pt ? 'pode ser sorteado' : 'may be picked at random'}` : pretty(mon.name)}
             // Dashed = may be absent: a hack ROM leader's random pick.
-            className={`gyms-mon group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-hover p-3 text-center transition-colors focus:outline-none w-full ${mon.pool ? 'border-dashed border-border-strong' : ''}`}
+            className={`gyms-mon ${mon.pool ? 'is-pool' : ''}`}
         >
-            <div className="relative">
-                <div
-                    className="gyms-mon__disc h-16 w-16 flex items-center justify-center tb-type-disc"
-                    style={{
-                        '--type-a': types[0] ? typeColors[types[0]] : accent,
-                        '--type-b': types[1] ? typeColors[types[1]] : (types[0] ? typeColors[types[0]] : accent)
-                    }}
-                >
-                    <img
-                        src={id ? getPokemonFrontSpriteUrl(id) : POKEBALL_PLACEHOLDER_URL}
-                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                        alt=""
-                        className="h-12 w-12 image-pixelated"
-                        loading="lazy"
-                    />
-                </div>
-                {/* The level on the surface, in the leader's tone as ink: white
-                    on Electric or Ice yellow was 1.3:1. */}
-                <span className="absolute -right-1.5 -top-1.5 rounded-md border bg-surface px-1.5 py-0.5 font-mono text-2xs font-semibold" style={{ color: toneInk(accent), borderColor: toneWash(accent, 45) }}>
-                    Lv{mon.level || levelCap || '?'}
-                </span>
-            </div>
+            <span className="gyms-mon__sprite type-platform" style={tone ? { '--card-type': tone } : undefined}>
+                <img
+                    src={id ? getPokemonFrontSpriteUrl(id) : POKEBALL_PLACEHOLDER_URL}
+                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                    alt=""
+                    className="image-pixelated"
+                    loading="lazy"
+                />
+            </span>
+            <span className="gyms-mon__name">{pretty(mon.name)}</span>
+            <span className="gyms-mon__meta">
+                <span className="gyms-mon__level">Lv {mon.level || levelCap || '?'}</span>
+                {types.map((tp) => (typeIcons[tp]
+                    ? <img key={tp} src={typeIcons[tp]} alt={cap(tp)} title={cap(tp)} className="gyms-mon__type" />
+                    : null))}
+            </span>
+            {mon.pool && <span className="gyms-mon__pool">{pt ? 'sorteio' : 'random pick'}</span>}
+        </button>
+    );
+}
 
-            <div className="flex flex-col items-center min-w-0 w-full mt-1.5">
-                <span className="w-full truncate text-xs font-semibold capitalize text-fg leading-tight">{pretty(mon.name)}</span>
-                <div className="gyms-mon__types flex flex-wrap justify-center gap-1 mt-1.5">
-                    {types.map((tp) => (
-                        <span
-                            key={tp}
-                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-semibold capitalize border"
-                            style={{
-                                color: toneInk(typeColors[tp]),
-                                backgroundColor: toneWash(typeColors[tp], 8),
-                                borderColor: toneWash(typeColors[tp], 20)
-                            }}
-                        >
-                            {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-2.5 w-2.5 shrink-0 object-contain" />}
-                            {tp.slice(0, 3)}
-                        </span>
-                    ))}
-                </div>
-                {mon.pool && <span className="mt-1 text-2xs text-muted">{pt ? 'sorteio' : 'random pick'}</span>}
-            </div>
+const leaderKey = (leader) => `${leader.order}-${slugify(leader.name)}`;
+const isLeague = (leader) => leader.gym === 'Elite Four' || leader.gym === 'Champion';
+// The level to be ready for: the hack ROM's cap, else the ace's level.
+const aceLevel = (leader) => leader.levelCap
+    || leader.team.reduce((top, mon) => Math.max(top, Number(mon.level) || 0), 0)
+    || null;
+// What beats the leader's speciality, from the type chart: super effective
+// first, then anything the type cannot touch at all.
+const countersOf = (type) => {
+    const row = typeChart[type];
+    if (!row) return { strong: [], immune: [] };
+    return {
+        strong: Object.entries(row.damageTaken).filter(([, m]) => m > 1).map(([name]) => name.toLowerCase()),
+        immune: Object.entries(row.damageDealt).filter(([, m]) => m === 0).map(([name]) => name.toLowerCase()),
+    };
+};
+
+// One row of the route: who, where, their type, how big the team is and the
+// level of its ace. A beaten leader's dot becomes their badge.
+function RouteRow({ leader, active, beaten, onSelect }) {
+    const tone = typeColors[leader.type] || 'var(--color-muted)';
+    const level = aceLevel(leader);
+    return (
+        <button
+            type="button"
+            onClick={onSelect}
+            aria-current={active ? 'true' : undefined}
+            className={`gyms-route__row ${active ? 'is-active' : ''} ${beaten ? 'is-beaten' : ''}`}
+            style={{ '--gym-tone': tone }}
+        >
+            <span className="gyms-route__order">{leader.gym === 'Champion' ? '★' : leader.order}</span>
+            <TrainerAvatar sprite={leader.sprite} type={leader.type} size="sm" />
+            <span className="gyms-route__who">
+                <span className="gyms-route__name">{leader.name}</span>
+                <span className="gyms-route__place">{leader.city || leader.gym}</span>
+            </span>
+            <span className="gyms-route__facts">
+                <i className={beaten ? 'gyms-badge is-earned' : 'gyms-route__dot'} aria-hidden="true" />
+                {leader.team.length > 0 && <span>{leader.team.length}{level ? ` · Lv ${level}` : ''}</span>}
+            </span>
         </button>
     );
 }
 
 /**
- * Gyms & Trainers — browse each game's gym leaders and the exact teams they
- * battle with. Covers official games and famous hack ROMs. Species resolve to
- * sprites/types from the pokémon index; teams can carry levels, items and moves.
+ * Gyms & Trainers — a route and a stage (2026-11-12; it was a jump list beside
+ * thirteen stacked cards, each leader on screen twice). The route lists every
+ * leader of the game in one quiet row each; the stage shows the chosen one:
+ * portrait, team on type platforms, what to bring, and the badge to mark when
+ * they are beaten — the same Badge Case the Home shows (utils/badgeCase.js).
+ * Covers official games and famous hack ROMs.
  */
 export function GymsView({ showDetails, onUseTeam }) {
-    const { language } = useTranslation();
+    const { language, t } = useTranslation();
     const pt = language === 'pt';
-    const isMobile = useMediaQuery(maxWidthBelow('lg'));
     useDocumentMeta({
         title: 'Gym Leaders',
         description: 'Gym leaders and their teams across every Pokémon game, region by region.',
@@ -390,12 +407,15 @@ export function GymsView({ showDetails, onUseTeam }) {
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+    const badgeCase = useAuthStore((s) => s.badgeCase);
+    const setBadgeCase = useAuthStore((s) => s.setBadgeCase);
+    const shiny = useShinyBurst();
 
     const [searchParams, setSearchParams] = useSearchParams();
     const selectedKey = searchParams.get('game') || (games[0]?.key || null);
     const [pickerOpen, setPickerOpen] = useState(false);
     const [modalLeader, setModalLeader] = useState(null);
-    const [activeLeaderId, setActiveLeaderId] = useState(null);
+    const [pickedLeader, setPickedLeader] = useState(null);
 
     React.useEffect(() => {
         if (status === 'ready' && games.length > 0 && !searchParams.get('game')) {
@@ -432,164 +452,66 @@ export function GymsView({ showDetails, onUseTeam }) {
     const official = games.filter((g) => g.kind !== 'hackrom');
     const hacks = games.filter((g) => g.kind === 'hackrom');
     const selected = games.find((g) => g.key === selectedKey) || games[0] || null;
+    const leaders = useMemo(() => selected?.leaders || [], [selected]);
+    const gymLeaders = leaders.filter((l) => !isLeague(l));
+    const league = leaders.filter(isLeague);
+    const earned = (selected && badgeCase?.earned?.[selected.key]) || [];
+    const badgeLeaders = selected ? caseLeaders(selected) : [];
 
-    // Initialize active leader sidebar element
-    React.useEffect(() => {
-        if (selected && selected.leaders && selected.leaders.length > 0) {
-            const first = selected.leaders[0];
-            setActiveLeaderId(`leader-${first.order}-${slugify(first.name)}`);
-        } else {
-            setActiveLeaderId(null);
-        }
-    }, [selected]);
-
-    // Scrollspy effect. Desktop only: what it drives — the sticky jump nav and
-    // the active card's outline — does not exist below lg (the nav is
-    // `hidden lg:block`, and the phone card has no outline). On a phone each
-    // leader crossing the band re-rendered the whole view, 13 leaders and ~160
-    // sprites, mid-scroll: most of the page's dropped frames.
-    React.useEffect(() => {
-        if (isMobile) return;
-        if (status !== 'ready' || !selected || !selected.leaders || !selected.leaders.length) return;
-
-        const observerOptions = {
-            root: null,
-            rootMargin: '-80px 0px -60% 0px',
-            threshold: 0,
-        };
-
-        const observerCallback = (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    setActiveLeaderId(entry.target.id);
-                }
-            });
-        };
-
-        const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-        selected.leaders.forEach((leader) => {
-            const id = `leader-${leader.order}-${slugify(leader.name)}`;
-            const el = document.getElementById(id);
-            if (el) observer.observe(el);
-        });
-
-        return () => observer.disconnect();
-    }, [selected, status, isMobile]);
-
-    const scrollToLeader = (leader) => {
-        const id = `leader-${leader.order}-${slugify(leader.name)}`;
-        const el = document.getElementById(id);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setActiveLeaderId(id);
-        }
-    };
+    // The stage opens on the trainer's next leader — the first one not beaten —
+    // and follows their pick from there. A new game starts over.
+    const gameKey = selected?.key || null;
+    React.useEffect(() => { setPickedLeader(null); }, [gameKey]);
+    const current = leaders.find((l) => leaderKey(l) === pickedLeader)
+        || nextLeader(leaders, earned)
+        || leaders[0]
+        || null;
 
     // The whole roster opens in the builder — moves, items, abilities and
-    // levels included — and the layout takes the trainer there. Adding the
-    // Pokémon one by one left them on this page with nothing to see.
+    // levels included — and the layout takes the trainer there.
     const buildTeam = (leader) => {
         if (!onUseTeam) return;
         onUseTeam(gymTeamForImport(leader, resolve, { gameLabel: selected?.label }));
     };
 
-    const gymLeaders = selected ? selected.leaders.filter(l => l.gym !== 'Elite Four' && l.gym !== 'Champion') : [];
-    const eliteFourAndChamp = selected ? selected.leaders.filter(l => l.gym === 'Elite Four' || l.gym === 'Champion') : [];
-
-    const renderLeaderCard = (leader) => {
-        const accent = typeColors[leader.type] || 'var(--color-primary)';
-        const isChamp = leader.gym === 'Champion';
-        const active = activeLeaderId === `leader-${leader.order}-${slugify(leader.name)}`;
-
-        return (
-            <article
-                key={`${leader.order}-${leader.name}`}
-                id={`leader-${leader.order}-${slugify(leader.name)}`}
-                onClick={() => setModalLeader(leader)}
-                // The champion is the league's last leader, not something the
-                // trainer earned: it keeps its type's rail like every other
-                // leader (Shiny Gold is for earned things only).
-                className={`gyms-leader team-builder-panel p-4 flex flex-col gap-4 border border-border border-l-4 transition-colors duration-200 cursor-pointer relative overflow-hidden group/card animate-fade-in-up ${active ? 'border-primary' : 'hover:border-border-strong'}`}
-                style={{
-                    borderLeftColor: accent,
-                    background: 'var(--color-surface)',
-                    scrollMarginTop: '1.5rem',
-                }}
-            >
-                <div className="gyms-leader__head flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-                    <div className="flex items-center gap-3">
-                        <TrainerAvatar sprite={leader.sprite} type={leader.type} order={isChamp ? '★' : leader.order} accent={accent} />
-                        <div className="min-w-0">
-                            <h2 className="text-lg font-semibold text-fg leading-none flex items-center gap-1.5">
-                                {leader.name}
-                                {isChamp && <Trophy className="gyms-leader__sparkle h-4 w-4 text-primary shrink-0" aria-hidden="true" />}
-                            </h2>
-                            <p className="text-xs text-muted mt-1.5">
-                                {[leader.gym, leader.city].filter(Boolean).join(' · ')}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="opacity-0 group-hover/card:opacity-100 transition-opacity text-xs font-semibold mr-1 hidden sm:inline text-primary">
-                            {pt ? 'Ver time completo' : 'View full team'} ➔
-                        </span>
-                        <span
-                            className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-2xs font-semibold capitalize"
-                            style={{
-                                color: toneInk(accent),
-                                borderColor: toneWash(accent, 45),
-                                backgroundColor: toneWash(accent)
-                            }}
-                        >
-                            {typeIcons[leader.type] && <img src={typeIcons[leader.type]} alt="" className="h-3.5 w-3.5 object-contain" />}
-                            {isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
-                        </span>
-                        {leader.badge && (
-                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-muted">{leader.badge}</span>
-                        )}
-                        {leader.levelCap && (
-                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} <span className="font-mono">{leader.levelCap}</span></span>
-                        )}
-                        {onUseTeam && leader.team.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    buildTeam(leader);
-                                }}
-                                className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-2xs font-semibold transition-colors duration-200 bg-transparent border-border text-primary hover:bg-primary hover:text-on-primary hover:border-primary"
-                                title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
-                            >
-                                <Swords className="h-3 w-3" /> {pt ? 'Usar time' : 'Use team'}
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {leader.team.length > 0 && <div className="gyms-leader__team grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
-                    {leader.team.map((mon, i) => {
-                        const entry = resolve(mon.name);
-                        return (
-                            <TeamMon
-                                key={`${mon.name}-${i}`}
-                                mon={mon}
-                                entry={entry}
-                                accent={accent}
-                                levelCap={leader.levelCap}
-                                onClick={() => entry && showDetails?.({ id: entry.id, name: entry.name })}
-                                pt={pt}
-                            />
-                        );
-                    })}
-                </div>}
-                {leaderNote(leader, pt) && <p className="gyms-leader__note text-xs text-muted">{leaderNote(leader, pt)}</p>}
-            </article>
-        );
+    const toggleBeaten = (leader) => {
+        if (!selected) return;
+        const was = earned.includes(leader.order);
+        setBadgeCase(toggleBadge(badgeCase, selected.key, leader.order));
+        // The trainer's own act, and only the winning half of it.
+        if (!was) shiny.fire();
     };
 
+    const typeName = (tp) => t(`types.${tp}`, { defaultValue: cap(tp) });
+    const tone = current ? (typeColors[current.type] || 'var(--color-primary)') : 'var(--color-primary)';
+    const beaten = current ? earned.includes(current.order) : false;
+    const counters = current ? countersOf(current.type) : { strong: [], immune: [] };
+    const level = current ? aceLevel(current) : null;
+    const eyebrow = !current ? ''
+        : current.gym === 'Champion' ? (pt ? 'Campeão' : 'Champion')
+            : current.gym === 'Elite Four' ? (pt ? 'Elite dos Quatro' : 'Elite Four')
+                : `${pt ? 'Ginásio' : 'Gym'} ${current.order}`;
+    const hasDetails = current ? current.team.some((mon) => mon.moves?.length || mon.item || mon.ability) : false;
+
+    const routeGroup = (title, items, icon = null) => items.length > 0 && (
+        <div className="gyms-route__group">
+            <p className="gyms-route__title">{icon}{title} <span className="count-badge">{items.length}</span></p>
+            <div className="gyms-route__rows">
+                {items.map((leader) => (
+                    <RouteRow
+                        key={leaderKey(leader)}
+                        leader={leader}
+                        active={current ? leaderKey(current) === leaderKey(leader) : false}
+                        beaten={earned.includes(leader.order)}
+                        onSelect={() => setPickedLeader(leaderKey(leader))}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+
     return (
-        <div className="gyms-view mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
+        <div className="gyms-view">
             <GymGamePickerModal
                 open={pickerOpen}
                 onClose={() => setPickerOpen(false)}
@@ -600,181 +522,146 @@ export function GymsView({ showDetails, onUseTeam }) {
                 pt={pt}
             />
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                {/* Left Column: Sticky Navigation Sidebar */}
-                <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-5 lg:self-start max-h-[calc(100vh-40px)] overflow-y-auto pr-1 custom-scrollbar">
-                    {/* Game Cover Card */}
-                    {selected && (
-                        <button
-                            type="button"
-                            onClick={() => setPickerOpen(true)}
-                            className="game-cover w-full m-0"
-                            style={{ '--cover-accent': accentFor(selected) }}
-                            aria-haspopup="dialog"
-                            title={pt ? 'Trocar jogo' : 'Change game'}
+            {selected && (
+                <header className="gyms-bar">
+                    <button
+                        type="button"
+                        onClick={() => setPickerOpen(true)}
+                        className="game-cover gyms-bar__game"
+                        style={{ '--cover-accent': accentFor(selected) }}
+                        aria-haspopup="dialog"
+                        title={pt ? 'Trocar jogo' : 'Change game'}
+                    >
+                        <span className="game-cover__art">
+                            <img src={logoFor(selected)} alt="" className="game-cover__logo" />
+                        </span>
+                        <span className="game-cover__meta">
+                            <span className="game-cover__eyebrow">
+                                {selected.kind === 'hackrom' ? 'Hack ROM' : (pt ? 'Jogo' : 'Game')} · {selected.region}
+                            </span>
+                            <span className="game-cover__label text-left">{selected.label}</span>
+                            <span className="game-cover__hint text-left">{pt ? 'Trocar jogo' : 'Change game'}</span>
+                        </span>
+                    </button>
+                    {badgeLeaders.length > 0 && (
+                        <div
+                            className="gyms-badges"
+                            role="img"
+                            aria-label={pt
+                                ? `${badgeLeaders.filter((l) => earned.includes(l.order)).length} de ${badgeLeaders.length} insígnias`
+                                : `${badgeLeaders.filter((l) => earned.includes(l.order)).length} of ${badgeLeaders.length} badges`}
                         >
-                            <span className="game-cover__art">
-                                <img src={logoFor(selected)} alt="" className="game-cover__logo" />
+                            {badgeLeaders.map((leader) => (
+                                <i
+                                    key={leaderKey(leader)}
+                                    className={`gyms-badge ${earned.includes(leader.order) ? 'is-earned' : ''}`}
+                                    style={{ '--gym-tone': typeColors[leader.type] || 'var(--color-muted)' }}
+                                    title={leader.badge || leader.name}
+                                />
+                            ))}
+                            <span className="gyms-badges__figure" aria-hidden="true">
+                                {badgeLeaders.filter((l) => earned.includes(l.order)).length}/{badgeLeaders.length}
                             </span>
-                            <span className="game-cover__meta">
-                                <span className="game-cover__eyebrow">
-                                    {selected.kind === 'hackrom' ? (pt ? 'Hack ROM' : 'Hack ROM') : (pt ? 'Jogo' : 'Game')} · {selected.region}
-                                </span>
-                                <span className="game-cover__label text-left">{selected.label}</span>
-                                <span className="game-cover__hint text-left">{pt ? 'Trocar jogo' : 'Change game'}</span>
-                            </span>
-                        </button>
+                        </div>
                     )}
+                </header>
+            )}
 
-                    {/* Timeline Navigation — desktop sticky-sidebar jump nav. Hidden on
-                        mobile, where it just duplicated the detailed cards below and
-                        added a full screen of scrolling. */}
-                    {selected && selected.leaders && selected.leaders.length > 0 && (
-                        <nav className="team-builder-panel p-3.5 space-y-4 hidden lg:block">
-                            {gymLeaders.length > 0 && (
-                                <div>
-                                    <p className="text-2xs font-semibold text-muted px-2.5 mb-2.5">
-                                        {pt ? 'Líderes de Ginásio' : 'Gym Leaders'}
-                                    </p>
-                                    <div className="space-y-1">
-                                        {gymLeaders.map((leader) => {
-                                            const leaderId = `leader-${leader.order}-${slugify(leader.name)}`;
-                                            const active = activeLeaderId === leaderId;
-                                            const accent = typeColors[leader.type] || 'var(--color-primary)';
-                                            return (
-                                                <button
-                                                    key={`${leader.order}-${leader.name}`}
-                                                    type="button"
-                                                    onClick={() => scrollToLeader(leader)}
-                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-colors duration-200 ${active
-                                                            ? 'bg-surface-active border border-primary text-fg font-semibold'
-                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-hover'
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center gap-2.5 min-w-0">
-                                                        <span
-                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full font-mono text-2xs font-semibold ${active
-                                                                    ? 'bg-primary text-on-primary'
-                                                                    : 'bg-surface-raised border border-border text-muted'
-                                                                }`}
-                                                        >
-                                                            {leader.order}
-                                                        </span>
-                                                        <span className="truncate text-xs capitalize leading-tight">{leader.name}</span>
-                                                    </div>
-                                                    <span
-                                                        className="h-2 w-2 shrink-0 rounded-full transition-all duration-200"
-                                                        style={{
-                                                            backgroundColor: accent,
-                                                            transform: active ? 'scale(1.2)' : 'none'
-                                                        }}
-                                                        title={cap(leader.type)}
-                                                    />
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
+            {selected && current && (
+                <div className="gyms-body">
+                    <nav className="gyms-route" aria-label={pt ? 'Líderes deste jogo' : 'Leaders of this game'}>
+                        {routeGroup(pt ? 'Líderes de ginásio' : 'Gym leaders', gymLeaders)}
+                        {routeGroup(pt ? 'Liga Pokémon' : 'Pokémon League', league, <Trophy aria-hidden="true" />)}
+                    </nav>
 
-                            {eliteFourAndChamp.length > 0 && (
-                                <div>
-                                    <p className="text-2xs font-semibold text-primary px-2.5 mb-2.5 flex items-center gap-1.5">
-                                        <Trophy className="h-3.5 w-3.5 text-primary" />
-                                        <span>{pt ? 'Liga Pokémon' : 'Pokémon League'}</span>
-                                    </p>
-                                    <div className="space-y-1">
-                                        {eliteFourAndChamp.map((leader) => {
-                                            const leaderId = `leader-${leader.order}-${slugify(leader.name)}`;
-                                            const active = activeLeaderId === leaderId;
-                                            const accent = typeColors[leader.type] || 'var(--color-primary)';
-                                            const isChamp = leader.gym === 'Champion';
-                                            return (
-                                                <button
-                                                    key={`${leader.order}-${leader.name}`}
-                                                    type="button"
-                                                    onClick={() => scrollToLeader(leader)}
-                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-colors duration-200 ${active
-                                                            ? 'bg-surface-active border border-primary text-fg font-semibold'
-                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-hover'
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center gap-2.5 min-w-0">
-                                                        <span
-                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full font-mono text-2xs font-semibold ${active
-                                                                    ? 'bg-primary text-on-primary'
-                                                                    : 'bg-surface-raised border border-border text-muted'
-                                                                }`}
-                                                        >
-                                                            {isChamp ? '★' : leader.order}
-                                                        </span>
-                                                        <span className="truncate text-xs capitalize leading-tight flex items-center gap-1">
-                                                            {leader.name}
-                                                            {isChamp && <Trophy className="h-3 w-3 text-primary shrink-0" aria-hidden="true" />}
-                                                        </span>
-                                                    </div>
-                                                    <span
-                                                        className="h-2 w-2 shrink-0 rounded-full transition-all duration-200"
-                                                        style={{
-                                                            backgroundColor: accent,
-                                                            transform: active ? 'scale(1.2)' : 'none'
-                                                        }}
-                                                        title={isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
-                                                    />
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-                        </nav>
-                    )}
-                </aside>
+                    <section className="gyms-stage" style={{ '--gym-tone': tone }} aria-live="polite">
+                        <div className="gyms-stage__head">
+                            <TrainerAvatar sprite={current.sprite} type={current.type} size="lg" />
+                            <div className="gyms-stage__who">
+                                <span className="gyms-stage__eyebrow">{eyebrow}</span>
+                                <h2 className="gyms-stage__name">{current.name}</h2>
+                                <p className="gyms-stage__place">
+                                    {[current.gym !== 'Elite Four' && current.gym !== 'Champion' ? current.gym : null, current.city, current.badge].filter(Boolean).join(' · ')}
+                                </p>
+                                {current.type && <TypeChip type={current.type} />}
+                            </div>
+                        </div>
 
-                {/* Right Column: Gym Leaders Stack */}
-                <main className="lg:col-span-9 space-y-8">
-                    {selected && (
-                        <>
-                            {/* Gym Leaders Section */}
-                            {gymLeaders.length > 0 && (
-                                <div className="space-y-4">
-                                    <div className="gyms-section-head border-b border-border pb-2">
-                                        <h2 className="text-sm font-bold text-muted flex items-center gap-2">
-                                            <span>{pt ? 'Líderes de Ginásio' : 'Gym Leaders'}</span>
-                                            <span className="font-mono text-xs font-normal text-muted">({gymLeaders.length})</span>
-                                        </h2>
-                                    </div>
-                                    <div className="space-y-4">
-                                        {gymLeaders.map((leader) => renderLeaderCard(leader))}
-                                    </div>
-                                </div>
-                            )}
+                        {current.team.length > 0 && (
+                            <div className="gyms-stage__team">
+                                {current.team.map((mon, i) => {
+                                    const entry = resolve(mon.name);
+                                    return (
+                                        <TeamMon
+                                            key={`${mon.name}-${i}`}
+                                            mon={mon}
+                                            entry={entry}
+                                            levelCap={current.levelCap}
+                                            onClick={() => entry && showDetails?.({ id: entry.id, name: entry.name })}
+                                            pt={pt}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {leaderNote(current, pt) && <p className="gyms-stage__note">{leaderNote(current, pt)}</p>}
 
-                            {/* Pokémon League Section */}
-                            {eliteFourAndChamp.length > 0 && (
-                                <div className="space-y-4 pt-4">
-                                    <div className="gyms-section-head border-b border-border pb-2">
-                                        <h2 className="text-sm font-bold text-primary flex items-center gap-2">
-                                            <Trophy className="h-4 w-4 text-primary" />
-                                            <span>{pt ? 'Elite dos Quatro & Campeão' : 'Elite Four & Champion'}</span>
-                                            <span className="font-mono text-xs font-normal text-primary">({eliteFourAndChamp.length})</span>
-                                        </h2>
+                        <div className="gyms-stage__foot">
+                            <dl className="gyms-stage__facts">
+                                {level && (
+                                    <div>
+                                        <dd>{level}</dd>
+                                        <dt>{current.levelCap ? (pt ? 'nível máximo' : 'level cap') : (pt ? 'nível do ás' : 'ace level')}</dt>
                                     </div>
-                                    <div className="space-y-4">
-                                        {eliteFourAndChamp.map((leader) => renderLeaderCard(leader))}
+                                )}
+                                {(counters.strong.length > 0 || counters.immune.length > 0) && (
+                                    <div>
+                                        <dd className="gyms-stage__counters">
+                                            {[...new Set([...counters.immune, ...counters.strong])].map((tp) => (typeIcons[tp]
+                                                ? <img key={tp} src={typeIcons[tp]} alt={typeName(tp)} title={typeName(tp)} />
+                                                : null))}
+                                        </dd>
+                                        <dt>{pt ? `leve contra ${typeName(current.type)}` : `bring against ${typeName(current.type)}`}</dt>
                                     </div>
-                                </div>
-                            )}
-                        </>
-                    )}
+                                )}
+                            </dl>
+                            <div className="gyms-stage__actions">
+                                <button
+                                    type="button"
+                                    onClick={() => toggleBeaten(current)}
+                                    aria-pressed={beaten}
+                                    className={`btn btn-ghost gyms-stage__beat ${beaten ? 'is-beaten' : ''} ${shiny.isBursting ? 'is-bursting' : ''}`}
+                                >
+                                    {beaten ? <Check aria-hidden="true" /> : <i className="gyms-badge" aria-hidden="true" />}
+                                    {beaten ? (pt ? 'Vencido' : 'Beaten') : (pt ? 'Marcar como vencido' : 'Mark as beaten')}
+                                    {shiny.burst}
+                                </button>
+                                {hasDetails && (
+                                    <button type="button" className="btn btn-secondary" onClick={() => setModalLeader(current)}>
+                                        <ListTree aria-hidden="true" /> {pt ? 'Golpes e itens' : 'Moves and items'}
+                                    </button>
+                                )}
+                                {onUseTeam && current.team.length > 0 && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        onClick={() => buildTeam(current)}
+                                        title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
+                                    >
+                                        <Swords aria-hidden="true" /> {pt ? 'Usar este time' : 'Use this team'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            )}
 
-                    {selected?.source && (
-                        <p className="flex items-center gap-1 text-2xs text-muted">
-                            <ChevronRight className="h-3 w-3" /> {pt ? 'Fonte' : 'Source'}: {selected.source}
-                        </p>
-                    )}
-                </main>
-            </div>
+            {selected?.source && (
+                <p className="gyms-source">
+                    <ChevronRight aria-hidden="true" /> {pt ? 'Fonte' : 'Source'}: {selected.source}
+                </p>
+            )}
 
             <LeaderTeamModal
                 open={!!modalLeader}
