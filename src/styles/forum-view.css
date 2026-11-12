@@ -436,16 +436,6 @@
     padding-block: var(--space-3);
 }
 
-/* A continuation (same trainer, moments later — utils/forumThread) tucks under
-   the line above: no avatar, no byline, and the gap between them closes. */
-.forum-message-item:has(+ .forum-message-item--continued) {
-    padding-bottom: var(--space-0_5);
-}
-
-.forum-message-item.forum-message-item--continued {
-    padding-top: 0;
-}
-
 /* A message that arrived while you were reading rises in, once, on mount —
    it answers something (a post landing, often your own). Rows present when
    the thread opened never animate. Transform and opacity only; `backwards`
@@ -1333,47 +1323,6 @@
 /* --------------------------------------------------------------------------
    Teams-topic notice — a self-dismissing heads-up in the topic list.
    -------------------------------------------------------------------------- */
-.teams-topic-notice {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    padding: var(--space-4) var(--space-3);
-    border-radius: var(--radius-lg);
-    background: var(--color-primary-soft);
-}
-
-.teams-topic-notice__emote {
-    font-size: 1.25rem;
-    font-weight: var(--weight-semibold);
-    line-height: 1;
-    color: var(--color-primary-text);
-}
-
-.teams-topic-notice__text {
-    margin: 0;
-    font-size: var(--text-xs);
-    line-height: 1.5;
-    color: var(--color-fg);
-}
-
-.teams-topic-notice__close {
-    position: absolute;
-    top: var(--space-1_5);
-    right: var(--space-1_5);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-muted);
-    transition: color var(--duration-fast) var(--ease-smooth);
-}
-
-.teams-topic-notice__close:hover {
-    color: var(--color-fg);
-}
 
 /* --------------------------------------------------------------------------
    Home timeline reuse. The Home rail renders its own row markup but shares this
@@ -3380,7 +3329,6 @@ summary.forum-explorer__heading:focus-visible {
         color: var(--color-muted);
     }
 
-
     .forum-search__input,
     .comment-composer__field {
         font-size: 16px;
@@ -4306,7 +4254,6 @@ summary.forum-explorer__heading:focus-visible {
         padding-right: var(--space-1);
     }
 }
-
 
 /* ==========================================================================
    Calm pass (2026-11-09) — "muito texto e informação"

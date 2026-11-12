@@ -177,11 +177,11 @@ may lower a baseline, never raise it without saying so.
 | **CLS** | ≤ 0.1 p75; **0** for in-app transitions | builder grid was 0.2 → 0 (2026-10-06) |
 | Long frames during an interaction or scroll | none > 50 ms on tap; ≤ 2 per 200 scroll frames | 50 ms = long task (web.dev); builder scroll baseline 2 janky frames |
 | Mutation round-trip (`/api/*`, Firestore write ack) | < 500 ms, and UI already updated | Vercel WIG |
-| **Boot JS (gzip)** | **do not grow**; target ≤ 365 KB | 2026-10-06: 386 KB → **≈ 359 KB** (entry 175 → 147 by lazy dialogs; firebase 115, react-vendor 58, vendor 39). Russell 2024: 365 KB for a 3 s first load on a p75 Android; web.dev's classic critical-path budget is 170 KB |
-| Boot CSS (gzip) | do not grow | ≈ **80 KB** (single `index-*.css`) |
+| **Boot JS (gzip)** | **do not grow**; target ≤ 365 KB | 2026-10-06: 386 KB → ≈ 359 KB (entry 175 → 147 by lazy dialogs). It crept back to 379 KB by 2026-11-12, then **≈ 356 KB** (entry 172 → 160 without the quiz lists; vendor 40 → 30 with `qrcode` in its own chunk; firebase 108, react-vendor 58) — plus the visitor's translation chunk, ≈ 55 KB. Russell 2024: 365 KB for a 3 s first load on a p75 Android; web.dev's classic critical-path budget is 170 KB |
+| Boot CSS (gzip) | do not grow | ≈ **89 KB** (single `index-*.css`; was 80 on 2026-10-06 — Home and landing grew it) |
 | New dependency | its gzip cost stated in the PR; lazy unless on every route | check with the bundle snippet |
 | New route/view | `React.lazy` chunk; never in the barrel's eager path | wound 2026-06-18 |
-| Precache | per-file ceiling 1.5 MB (`vite.config.js`); total reported per release; baseline **3.8 MB** (was 13.7 MB: a client-side `@pkmn/sim` + 3.3 MB of PNG covers) | every precached byte is downloaded by every first visit (Workbox: precache the shell, runtime-cache the rest) |
+| Precache | per-file ceiling 1.5 MB (`vite.config.js`); total reported per release; baseline **4.19 MB** (was 13.7 MB: a client-side `@pkmn/sim` + 3.3 MB of PNG covers; 3.8 MB on 2026-10-06, 4.94 MB by 2026-11-12 until the game covers left it) | every precached byte is downloaded by every first visit (Workbox: precache the shell, runtime-cache the rest) |
 | **Time to shell** (4× CPU, ~Fast 4G, `serviceWorkers: 'block'`, median of 3) | do not grow | 2026-10-06: first visit desktop 4.63 → **2.05 s**, phone 4.36 → **2.22 s**; returning phone 2.67 → **0.82 s** |
 | Mounted list items | ≤ 60–120 on first paint; rows `memo` | `useInfiniteReveal` 60/page; 980 cards was the wound |
 | DOM nodes | warn > 800, fail > 1,400; depth ≤ 32; ≤ 60 children/parent | Lighthouse DOM-size audit |

@@ -28,26 +28,6 @@
    Neon Sticker: the actions are the primary — Volt on its lip, the same
    object as .btn-primary — in this page's round shape. */
 
-.cozy-home .cozy-ink {
-    border-color: transparent;
-    border-radius: var(--radius-full);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-    font-weight: var(--weight-semibold);
-    box-shadow: 0 3px 0 0 var(--color-primary-lip);
-}
-
-.cozy-home .cozy-ink:hover:not(:disabled) {
-    background: var(--color-primary-fill-hover);
-}
-
-.cozy-home .cozy-ink:active:not(:disabled) {
-    scale: none;
-    translate: 0 2px;
-    box-shadow: 0 1px 0 0 var(--color-primary-lip);
-}
-
-.cozy-home .cozy-ink svg,
 .cozy-home .cozy-round svg,
 .cozy-home .section-action .btn svg {
     width: 1rem;
@@ -267,35 +247,15 @@
     margin-top: 0;
 }
 
-.cozy-home .cozy-panel__more {
-    align-self: flex-start;
-}
-
-.cozy-journey,
-.cozy-posts,
-.cozy-meta {
+.cozy-journey {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.cozy-posts {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
 /* Rows inside a card are .card--inset (fill, no line). Their hover mixes
    toward the ink from the raised fill, as the skill prescribes for children
    of a bordered panel. */
-.cozy-home .cozy-post:hover {
-    background: color-mix(in srgb, var(--color-fg) 7%, var(--color-surface-raised));
-}
-
-.cozy-home .cozy-post:focus-visible {
-    outline: none;
-    box-shadow: var(--ring-primary);
-}
 
 /* Teams */
 
@@ -443,127 +403,11 @@ button.cozy-journey__row:hover {
 }
 
 /* Community */
-.cozy-post {
-    display: grid;
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-    gap: var(--space-3);
-    width: 100%;
-    color: var(--color-fg);
-    font: inherit;
-}
-
-.cozy-post__avatar {
-    display: grid;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    overflow: hidden;
-    border-radius: 50%;
-    background: var(--color-surface);
-}
-
-.cozy-post__avatar-slot {
-    width: 2.25rem;
-    height: 2.25rem;
-}
 
 /* The author's avatar sits over its slot as its own button (a button can't
    hold another): it opens the trainer card, the row opens the forum. */
-.cozy-post-item {
-    position: relative;
-}
-
-.cozy-post__who {
-    position: absolute;
-    top: var(--space-3);
-    left: var(--space-3);
-    padding: 0;
-    transition: transform var(--duration-fast) var(--ease-spring);
-}
-
-.cozy-post__who:hover {
-    transform: scale(1.06);
-}
-
-.cozy-post__who:focus-visible {
-    outline: none;
-    box-shadow: var(--ring-primary);
-}
-
-.cozy-post__sprite {
-    width: 3rem;
-    height: 3rem;
-    flex-shrink: 0;
-}
-
-.cozy-post__body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-0_5);
-    min-width: 0;
-}
-
-.cozy-post__meta {
-    font-size: var(--text-xs);
-    color: var(--color-muted);
-}
-
-.cozy-post__meta strong {
-    color: var(--color-fg);
-    font-weight: var(--weight-semibold);
-}
-
-.cozy-post__text {
-    display: -webkit-box;
-    overflow: hidden;
-    font-size: var(--text-sm);
-    overflow-wrap: anywhere;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
 
 /* Meta: a .data-list; the bar encodes the value, so it may wear the type. */
-.cozy-meta__row {
-    grid-template-columns: 1.25rem 2.5rem minmax(0, 1fr) minmax(4rem, 30%) 2.75rem;
-}
-
-.cozy-meta__rank {
-    font-size: var(--text-xs);
-    color: var(--color-muted);
-    text-align: left;
-}
-
-.cozy-meta__pct {
-    font-size: var(--text-xs);
-    color: var(--color-muted);
-}
-
-.cozy-meta__sprite {
-    width: 2.5rem;
-    height: 2.5rem;
-}
-
-.cozy-meta__name {
-    overflow: hidden;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.cozy-meta__bar {
-    height: 0.5rem;
-    overflow: hidden;
-    border-radius: var(--radius-full);
-    background: var(--color-surface-raised);
-}
-
-.cozy-meta__bar i {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: color-mix(in srgb, var(--row-type) 75%, var(--color-surface));
-}
 
 /* ── 5. Layout ─────────────────────────────────────────────────────────── */
 
@@ -648,14 +492,6 @@ button.cozy-journey__row:hover {
     .cozy-journey {
         --when-w: 3rem;
     }
-
-    .cozy-meta__row {
-        grid-template-columns: 1.25rem 2.5rem minmax(0, 1fr) 2.75rem;
-    }
-
-    .cozy-meta__bar {
-        display: none;
-    }
 }
 
 /* ============================================================
@@ -664,87 +500,6 @@ button.cozy-journey__row:hover {
    in a box. The icon tile takes the persona's type colour, mixed
    into the surface (canon colour as a token, never raw ink).
    ============================================================ */
-
-/* Phones: still one row — it scrolls sideways and snaps, the next tile
-   peeking at the edge to say there is more. */
-
-/* ---- The icons move their own parts (Enzo, 2026-11-05) --------------------
-   Not the tile bouncing: each icon does what it draws. The trend line redraws
-   itself, the gauge's needle sweeps, the swords clash, the lens scans, the
-   puzzle piece turns into place, the crown is lifted… One play per hover
-   (no loop), under 600 ms, on the svg's own children (Lucide's element order,
-   noted per icon). Touch gets it on press via the build's hover gate.
-   Reduced motion: nothing moves; the tile's fill still answers. */
-
-@keyframes fy-draw { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }
-@keyframes fy-write { from { stroke-dashoffset: 6; } to { stroke-dashoffset: 0; } }
-@keyframes fy-pop {
-    0%, 45% { opacity: 0; transform: translate(-0.125rem, 0.125rem) scale(0.4); }
-    100% { opacity: 1; transform: none; }
-}
-@keyframes fy-needle {
-    0% { transform: rotate(-135deg); }
-    70% { transform: rotate(12deg); }
-    100% { transform: rotate(0); }
-}
-@keyframes fy-clash-a {
-    0%, 100% { transform: none; }
-    45% { transform: rotate(-14deg); }
-}
-@keyframes fy-clash-b {
-    0%, 100% { transform: none; }
-    45% { transform: rotate(14deg); }
-}
-@keyframes fy-scan {
-    0%, 100% { transform: none; }
-    25% { transform: translate(-0.125rem, -0.0625rem); }
-    50% { transform: translate(0, -0.1875rem); }
-    75% { transform: translate(0.125rem, -0.0625rem); }
-}
-@keyframes fy-snap {
-    0% { transform: none; }
-    60% { transform: rotate(100deg) scale(0.9); }
-    100% { transform: rotate(90deg); }
-}
-@keyframes fy-turn {
-    from { transform: none; }
-    to { transform: rotate(120deg); }
-}
-@keyframes fy-lift {
-    0%, 100% { transform: none; }
-    45% { transform: translateY(-0.1875rem) rotate(-8deg); }
-}
-@keyframes fy-hop {
-    0%, 100% { transform: none; }
-    40% { transform: translateY(-0.1875rem); }
-    70% { transform: translateY(0.0625rem); }
-}
-@keyframes fy-swing {
-    0%, 100% { transform: none; }
-    25% { transform: rotate(12deg); }
-    60% { transform: rotate(-8deg); }
-    85% { transform: rotate(3deg); }
-}
-@keyframes fy-key {
-    0%, 100% { opacity: 1; }
-    40% { opacity: 0.2; }
-}
-@keyframes fy-open {
-    0% { transform: none; }
-    50% { transform: scaleX(1.18); }
-    100% { transform: none; }
-}
-@keyframes fy-wobble {
-    0%, 100% { transform: none; }
-    25% { transform: rotate(-14deg); }
-    55% { transform: rotate(10deg); }
-    80% { transform: rotate(-4deg); }
-}
-@keyframes fy-brace {
-    0%, 100% { transform: none; }
-    35% { transform: scale(0.86); }
-    65% { transform: scale(1.06); }
-}
 
 /* The invitation, for a trainer with no profile yet. */
 .for-you-setup {

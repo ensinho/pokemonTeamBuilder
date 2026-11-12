@@ -265,7 +265,7 @@ export function CategoryGuesserView({ showDetails }) {
 
     useEffect(() => {
         if (!isLoadingIndex && pokemonIndex.length > 0 && !activeRun) {
-            const initialListId = getRandomUnplayedListId();
+            const initialListId = getRandomUnplayedListId(CATEGORY_LISTS);
             const listObj = categoryListMap.get(initialListId) || CATEGORY_LISTS[0];
             startNewRun(listObj.id, listObj.pokemonNames);
         }
@@ -506,7 +506,7 @@ export function CategoryGuesserView({ showDetails }) {
     const handleRerollChallenge = useCallback(({ undoable = true } = {}) => {
         const previousId = activeRun?.id || null;
         const previousHadProgress = (activeRun?.foundNames?.length || 0) > 0;
-        const nextId = getRandomUnplayedListId();
+        const nextId = getRandomUnplayedListId(CATEGORY_LISTS);
         const nextObj = categoryListMap.get(nextId) || CATEGORY_LISTS[0];
         startNewRun(nextObj.id, nextObj.pokemonNames);
         setAnswerInput('');
