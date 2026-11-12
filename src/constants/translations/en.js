@@ -1165,6 +1165,19 @@ export default {
     },
     checkinWeek: {
         tapToday: 'tap today: +{{xp}} XP',
+        streak: {
+            day: 'day in a row',
+            days: 'days in a row',
+            open: 'see your streak',
+            toGoal: '{{n}} to {{goal}} days',
+        },
+        heat: {
+            h0: 'Light it today',
+            h1: 'A spark',
+            h2: 'Warming up',
+            h3: 'On fire',
+            h4: 'Legendary flame',
+        },
         states: {
             caught: 'in the streak',
             shielded: 'covered by a shield',

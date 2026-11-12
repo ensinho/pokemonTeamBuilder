@@ -36,8 +36,10 @@ function RouteTile({ item, isDone, variant }) {
             className={`home-tile home-tile--${variant} route-tile ${isDone ? 'is-done' : ''}`}
             style={{ '--tone': item.tone }}
             onClick={item.onOpen}
+            data-fx
         >
             <span className="home-tile__media" aria-hidden="true">
+                <span className="fx-holo" />
                 <span className="home-tile__stage">{item.art}</span>
                 {isDone && <Mark stamp={item.stamp} />}
             </span>
@@ -75,6 +77,12 @@ function Group({ ids, items, isDone, span, label }) {
     );
 }
 
+/** A card-wide click that leaves the card's own controls to themselves. */
+const cardClick = (open) => (e) => {
+    if (e.target instanceof Element && e.target.closest('button, a, input, [role="menu"], [aria-haspopup]')) return;
+    open();
+};
+
 export function DayRoute({ route, items, t }) {
     const { done, now, next } = route;
     const current = now ? items[now] : null;
@@ -89,8 +97,17 @@ export function DayRoute({ route, items, t }) {
             {done.length > 0 && <Group ids={done} items={items} isDone span={span} label={t('cozyHome.route.done')} />}
 
             {current ? (
-                <article className={`home-tile home-tile--card route-now ${current.live ? 'is-live' : ''}`} style={{ '--tone': current.tone }} aria-label={t('cozyHome.route.now')}>
+                // The whole card answers a click (Enzo, 2026-11-12); its button
+                // stays the keyboard's way in, so the card is not a second tab stop.
+                <article
+                    className={`home-tile home-tile--card route-now ${current.live ? 'is-live' : ''} ${current.action ? 'is-clickable' : ''}`}
+                    style={{ '--tone': current.tone }}
+                    aria-label={t('cozyHome.route.now')}
+                    data-fx
+                    onClick={current.action ? cardClick(current.action.onClick) : undefined}
+                >
                     <span className="home-tile__media" aria-hidden="true">
+                        <span className="fx-holo" />
                         <span className="home-tile__stage">{current.art}</span>
                     </span>
                     <div className="home-tile__body route-now__body">

@@ -53,12 +53,74 @@
     max-width: none;
 }
 
-/* No partner chosen yet: the period's visitor as a silhouette. */
-.home-greet__avatar.is-unchosen .home-greet__face {
+/* The mascot in the circle (2026-11-12): bigger than the partner was, on the
+   brand's tile, so the first thing on the Home is him, alive. */
+.home-greet__badge-host {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.home-greet__avatar--mascot {
+    display: block;
+    cursor: default;
+}
+
+.home-greet__face--mascot {
+    width: 3.5rem;
+    height: 3.5rem;
+    background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--mascot-brand) 34%, var(--mascot-tile)), var(--mascot-tile));
+}
+
+/* Compound: .mascot--fill (mascot.css) sets its own width/height/max-width.
+   The box stays the circle's square; he sits a little inside the ring so
+   his face reads whole (Enzo: "um tico menor dentro do círculo para ver o
+   mascote com mais nitidez"). */
+.home-greet .home-greet__mascot {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    aspect-ratio: 1;
+    margin: 0;
+    scale: 0.96;
+    translate: 0 3%;
+}
+
+/* The partner, a badge on the circle's corner: a tap changes it. */
+.home-greet__partner {
+    --avatar-tone: var(--color-primary);
+    position: absolute;
+    right: calc(-1 * var(--space-1));
+    bottom: calc(-1 * var(--space-1));
+    display: grid;
+    place-items: center;
+    width: 1.625rem;
+    height: 1.625rem;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid var(--color-bg);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--avatar-tone) 36%, var(--color-surface));
+    cursor: pointer;
+    transition: scale var(--duration-press) var(--ease-out);
+}
+
+.home-greet__partner:active { scale: var(--press-scale); }
+.home-greet__partner:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+
+.home-greet .home-greet__partner-sprite {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    max-width: none;
+    image-rendering: pixelated;
+}
+
+/* No partner chosen yet: the badge is a silhouette asking for one. */
+.home-greet__partner.is-unchosen {
     background: color-mix(in srgb, var(--color-fg) 18%, var(--color-surface));
 }
 
-.home-greet__avatar.is-unchosen .home-greet__sprite {
+.home-greet__partner.is-unchosen .home-greet__partner-sprite {
     filter: brightness(0);
     opacity: 0.7;
 }
@@ -233,6 +295,44 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+/* Sprites on the hero (HeroSprite, 2026-11-12): the battle sprite, pixels
+   square, feet on its platform in the hero's tone. The official artwork is
+   only the last fallback, drawn smooth. */
+.hero-sprite {
+    image-rendering: pixelated;
+    object-position: 50% 100%;
+}
+
+.hero-sprite.is-artwork {
+    image-rendering: auto;
+    object-position: center;
+}
+
+.day-hero__sprite-stage {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.day-hero__sprite-stage .day-hero__artwork {
+    position: relative;
+    z-index: 1;
+    height: 88%;
+}
+
+.day-hero__sprite-pad {
+    position: absolute;
+    bottom: 6%;
+    left: 50%;
+    width: 72%;
+    height: 14%;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--hero-type) 45%, var(--color-surface));
+    box-shadow: inset 0 -0.25rem 0 color-mix(in srgb, var(--hero-type) 62%, var(--color-surface));
+    translate: -50% 0;
 }
 
 /* Nothing chosen and nothing built: the visitor as a silhouette. */
@@ -486,14 +586,23 @@
    off): never pushed past the top or the side, feet above the line. */
 .day-hero__ace {
     position: absolute;
-    top: var(--space-2);
-    right: 0;
+    z-index: 1;
+    top: auto;
+    right: var(--space-2);
+    bottom: var(--space-3);
     width: auto;
     /* Ends where the eyebrow row (and the palette button) starts. */
-    height: 9.5rem;
+    height: 9rem;
     max-width: none;
     aspect-ratio: 1;
     object-fit: contain;
+}
+
+/* The ace's own platform, under its feet (the sprite stands; the artwork flew). */
+.day-hero__pad--ace {
+    right: var(--space-4);
+    bottom: var(--space-2);
+    width: 8rem;
 }
 
 .day-hero__ace.is-unknown {
@@ -525,6 +634,51 @@
     margin-top: calc(var(--space-2) * -1);
 }
 
+/* Phones (Enzo: "melhorar hierarquia de título e ícones"): the palette leaves
+   the eyebrow's row for the stage's corner, the eyebrow sits right on the
+   title, the title is the hero's loudest line, and the action is a full pill
+   that says its name under her team — not a lone round icon. */
+@media (max-width: 1023px) {
+    .day-hero--stage .day-hero__top .day-hero__wallpaper {
+        position: absolute;
+        top: calc(-1 * var(--stage-band) + var(--space-3));
+        right: var(--space-3);
+    }
+
+    .day-hero--stage .day-hero__top {
+        margin-bottom: calc(-1 * var(--space-2));
+    }
+
+    .cozy-home .day-hero--stage .day-hero__title {
+        font-size: var(--text-3xl);
+    }
+
+    .day-hero--stage .day-hero__bar {
+        flex-wrap: wrap;
+    }
+
+    .cozy-home .day-hero--stage .day-hero__play {
+        width: 100%;
+        height: var(--control-h-lg);
+        gap: var(--space-2);
+        padding-inline: var(--space-5);
+    }
+
+    .day-hero--stage .day-hero__play-label {
+        display: inline;
+    }
+
+    .cozy-home .day-hero--stage .day-hero__lineup .cozy-day__mini {
+        width: 2.375rem;
+        height: 2.375rem;
+    }
+
+    .cozy-home .day-hero--stage .day-hero__lineup .cozy-day__mini-sprite {
+        width: 2.875rem;
+        height: 2.875rem;
+    }
+}
+
 @media (min-width: 1024px) {
     .day-hero--stage {
         padding-top: var(--space-6);
@@ -541,26 +695,56 @@
 
     .day-hero__ace {
         top: auto;
-        right: -6%;
-        bottom: -10%;
-        height: 106%;
+        right: 4%;
+        bottom: 9%;
+        height: 82%;
     }
 
+    .day-hero--stage .day-hero__pad--ace {
+        right: 6%;
+        bottom: 7%;
+        left: auto;
+        width: 44%;
+        height: 10%;
+    }
+
+    /* She stands a step from her ace (Enzo: "mais próxima do pokémon"). */
     .day-hero__pad {
         right: auto;
         bottom: 9%;
-        left: 0;
-        width: 38%;
+        left: 14%;
+        width: 34%;
         height: 9%;
     }
 
     .day-hero--stage .day-hero__trainer {
         right: auto;
         bottom: 11%;
-        left: 2%;
+        left: 16%;
         width: auto;
         height: 58%;
         aspect-ratio: 1;
+    }
+
+    /* The action sits on the team's line, at the column's edge — not floating
+       halfway up the bar (Enzo: "cta ta meio perdido"). */
+    .day-hero--stage .day-hero__bar {
+        align-items: flex-end;
+    }
+
+    /* Her six, big enough to read (Enzo: "aumentar o time dela"). */
+    .cozy-home .day-hero--stage .day-hero__lineup {
+        gap: var(--space-1_5);
+    }
+
+    .cozy-home .day-hero--stage .day-hero__lineup .cozy-day__mini {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .cozy-home .day-hero--stage .day-hero__lineup .cozy-day__mini-sprite {
+        width: 3.25rem;
+        height: 3.25rem;
     }
 
     .day-hero--stage .day-hero__copy,
@@ -596,6 +780,7 @@
 }
 
 .day-hero__scene-partner {
+    image-rendering: pixelated;
     position: absolute;
     top: 50%;
     left: 30%;
@@ -930,7 +1115,8 @@
    one of the rail's cards, so its plain discs take the raised fill inside it. */
 
 .cozy-rail .checkin-week {
-    padding: var(--space-4);
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-4) var(--space-4);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
@@ -943,9 +1129,15 @@
 /* ── Desktop ──────────────────────────────────────────────────────────── */
 
 @media (min-width: 1024px) {
-    .home-greet__face {
-        width: 3.5rem;
-        height: 3.5rem;
+    .home-greet__face,
+    .home-greet__face--mascot {
+        width: 4.25rem;
+        height: 4.25rem;
+    }
+
+    .home-greet__partner {
+        width: 1.875rem;
+        height: 1.875rem;
     }
 
     .home-greet .home-greet__sprite {

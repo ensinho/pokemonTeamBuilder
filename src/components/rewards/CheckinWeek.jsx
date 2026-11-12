@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronRight, Plus, Shield } from 'lucide-react';
+import { ChevronRight, Flame, Plus, Shield } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useRewardsStore, selectUnseenCount } from '../../store/useRewardsStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
-import { CHECKED_IN_EVENT, checkinCalendar, checkinWeek, localDayKey, weekStartFor } from '../../utils/dailyCheckin';
+import { CHECKED_IN_EVENT, checkinCalendar, checkinWeek, liveStreak, localDayKey, streakHeat, weekStartFor } from '../../utils/dailyCheckin';
 import { levelForXp } from '../../utils/trainerLevel';
 import { getCosmetic } from '../../constants/cosmetics';
 import { Mascot } from '../Mascot';
@@ -40,6 +40,12 @@ export function DayBall({ state }) {
  * what the next check-in pays. The full card (cycle, shields, collection)
  * stays on the Rewards tab (`CheckinCard variant="full"`).
  *
+ * Above the days, the run itself (2026-11-12, Enzo: "mais atrativo com a
+ * streak do user… talvez foguinho"): a flame that grows with the run's heat
+ * (`streakHeat`: a spark, three days, a week, a month), the count as the
+ * strip's figure, and how far the next flame is. Earned, so gold. It opens
+ * the streak sheet.
+ *
  * Reads only recorded stores, so it paints at once — no listener, no loader.
  */
 export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
@@ -59,6 +65,9 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
     );
     const calendar = useMemo(() => checkinCalendar(checkin, today), [checkin, today]);
     const progress = levelForXp(xp);
+    const run = liveStreak(streak, today);
+    const { heat, goal, from } = streakHeat(run);
+    const toGoal = goal ? Math.min(1, (run - from) / (goal - from)) : 1;
     const locale = language === 'pt' ? 'pt-BR' : 'en-GB';
     const weekdayName = useMemo(() => {
         const format = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
@@ -101,7 +110,26 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
     const stateLabel = (state) => t(`checkinWeek.states.${state === 'today-done' ? 'todayDone' : state}`);
 
     return (
-        <section className="checkin-week" aria-label={t('rewards.checkin.title')}>
+        <section className="checkin-week" data-heat={heat} aria-label={t('rewards.checkin.title')}>
+            <button type="button" className="checkin-week__head" onClick={onOpenStreak} aria-label={`${run} ${run === 1 ? t('checkinWeek.streak.day') : t('checkinWeek.streak.days')} · ${t(`checkinWeek.heat.h${heat}`)} · ${t('checkinWeek.streak.open')}`}>
+                <span className="checkin-week__fire" aria-hidden="true">
+                    <Flame className="checkin-week__flame" />
+                    {heat >= 3 && <Flame className="checkin-week__flame checkin-week__flame--echo" />}
+                </span>
+                <span className="checkin-week__run" aria-hidden="true">
+                    <span className="checkin-week__count">{run}</span>
+                    <span className="checkin-week__unit">{run === 1 ? t('checkinWeek.streak.day') : t('checkinWeek.streak.days')}</span>
+                </span>
+                <span className="checkin-week__heat" aria-hidden="true">
+                    <span className="checkin-week__heat-word">{t(`checkinWeek.heat.h${heat}`)}</span>
+                    {heat > 0 && goal && (
+                        <>
+                            <span className="checkin-week__meter" style={{ '--fill': toGoal }}><i /></span>
+                            <span className="checkin-week__goal">{t('checkinWeek.streak.toGoal', { n: goal - run, goal })}</span>
+                        </>
+                    )}
+                </span>
+            </button>
             <ol className="checkin-week__days" aria-label={t('rewards.checkin.calendarLabel')}>
                 {week.days.map((day) => {
                     const isToday = day.state === 'today' || day.state === 'today-done';

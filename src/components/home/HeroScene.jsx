@@ -3,7 +3,7 @@ import { Check, Palette } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { HERO_SCENE_GROUPS, getHeroScene } from '../../constants/heroScenes';
 import { trainerPixels } from '../../utils/trainerCardPattern';
-import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { AnchoredPopover } from '../AnchoredPopover';
 
 const PIXEL_COLS = 48;
@@ -38,12 +38,13 @@ export function HeroScene({ scene, owner = {}, changed = false, className = '' }
     if (scene.kind === 'partner') {
         return (
             <span className={base} aria-hidden="true">
+                {/* the partner as a sprite too (2026-11-12: "sempre priorizar o sprite") */}
                 {owner.partnerId && (
                     <img
-                        src={getPokemonArtworkSpriteUrl(owner.partnerId, { shiny: Boolean(owner.partnerShiny) })}
+                        src={getPokemonFrontSpriteUrl(owner.partnerId, { shiny: Boolean(owner.partnerShiny) })}
                         alt=""
-                        width={480}
-                        height={480}
+                        width={96}
+                        height={96}
                         decoding="async"
                         loading="lazy"
                         className="day-hero__scene-partner"

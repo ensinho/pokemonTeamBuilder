@@ -1,6 +1,18 @@
 import React from 'react';
 import { JourneyBar } from '../journeys/JourneyList';
 
+/** The hero's motes: fixed, so a render never reshuffles them. */
+const MOTES = [
+    { x: 52, s: 0.375, t: 7.5, delay: 0, dx: -1 },
+    { x: 61, s: 0.25, t: 9, delay: 1.8, dx: 1.5 },
+    { x: 70, s: 0.5, t: 8.2, delay: 3.1, dx: -0.5 },
+    { x: 78, s: 0.3125, t: 10, delay: 0.9, dx: 2 },
+    { x: 86, s: 0.4375, t: 7.8, delay: 4.4, dx: -1.5 },
+    { x: 93, s: 0.25, t: 9.4, delay: 2.6, dx: 0.5 },
+    { x: 66, s: 0.3125, t: 11, delay: 5.6, dx: 1 },
+    { x: 82, s: 0.375, t: 8.6, delay: 6.3, dx: -2 },
+].map((m) => ({ '--x': `${m.x}%`, '--s': `${m.s}rem`, '--t': `${m.t}s`, '--delay': `${m.delay}s`, '--dx': `${m.dx}rem` }));
+
 /**
  * The Home's one hero (2026-11-09, Poddi's "Podcast of the day" — .claude/
  * skills/app-screens): ONE surface tinted by its subject's type (`tone`),
@@ -51,12 +63,20 @@ export function DayHero({
         <section
             className={`day-hero ${layout ? `day-hero--${layout}` : ''} ${reveal ? 'is-revealing' : ''}`}
             data-mood={mood}
+            data-fx-hero
             style={{ '--hero-type': tone }}
             aria-labelledby="day-hero-title"
         >
             {scene}
             <span className="day-hero__disc" aria-hidden="true" />
-            {art && <span className="day-hero__art" aria-hidden="true">{art}</span>}
+            {/* The Carta Holo's hero (2026-11-12, styles/card-fx.css): its motes
+                rise, an aura turns behind the protagonist, the layers drift
+                with the pointer and its light follows it. */}
+            <span className="fx-motes" aria-hidden="true">
+                {MOTES.map((m, i) => <i key={i} style={m} />)}
+            </span>
+            {art && <span className="day-hero__art" aria-hidden="true"><span className="fx-aura" />{art}</span>}
+            <span className="fx-glare" aria-hidden="true" />
 
             <div className="day-hero__top">
                 {eyebrow && <span className="day-hero__eyebrow">{eyebrow}</span>}

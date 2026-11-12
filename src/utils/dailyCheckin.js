@@ -300,3 +300,20 @@ export const weekStartFor = (language) => (language === 'pt' ? 0 : 1);
  * (HomeGreeting). A signal, not state — the streak itself is the store's.
  */
 export const CHECKED_IN_EVENT = 'ptb:checked-in';
+
+/**
+ * How hot a run is (2026-11-12, Enzo: "intensidade de streak contínua… talvez
+ * foguinho"): the week strip's flame grows with it. Tiers on the franchise's
+ * own rhythm — a spark, three days, a week, a month, a hundred days — and the
+ * next milestone, so the strip can show how far the next flame is.
+ * Returns `{ heat: 0…4, goal, from }`: heat 1 from a day, 2 from three, 3
+ * from a week, 4 from a month; `goal` is the next tier (null from 100).
+ */
+export const STREAK_TIERS = [1, 3, 7, 30, 100];
+
+export const streakHeat = (count = 0) => {
+    const n = Math.max(0, Math.floor(Number(count) || 0));
+    const reached = STREAK_TIERS.filter((tier) => n >= tier).length;
+    const goal = STREAK_TIERS[reached] ?? null;
+    return { heat: Math.min(reached, 4), goal, from: reached > 0 ? STREAK_TIERS[reached - 1] : 0 };
+};

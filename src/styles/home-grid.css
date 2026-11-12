@@ -87,6 +87,117 @@ button.home-tile:active { background: var(--color-surface-active); }
     background: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 16%, var(--color-surface-raised));
 }
 
+/* ── Personality in the band (2026-11-12, Enzo: "leves efeitos / elementos
+   nos fundos dos cards para gerar mais personalidade") ──────────────────
+   Two of the franchise's own devices, in the subject's colour, static (they
+   repeat across the grid — nothing loops, the taste gate's "fifty cards"):
+   - rays fanning up from the platform, the "Quem é esse Pokémon?" burst,
+     faded out before the band's edges so the sprite stays the subject;
+   - a Poké Ball in line art, cropped by the band's corner, like a TCG card's
+     watermark. The mask is alpha only (the SVG's ink never shows).
+   A tile with no `--tone` keeps the layers in the primary, very faint. */
+.home-tile__media {
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.home-tile__media::before {
+    content: '';
+    position: absolute;
+    inset: -40% -10% 0;
+    z-index: -1;
+    background: repeating-conic-gradient(
+        from -90deg at 50% 100%,
+        color-mix(in srgb, var(--tone, var(--color-primary)) 22%, transparent) 0deg 5deg,
+        transparent 5deg 15deg
+    );
+    -webkit-mask-image: radial-gradient(80% 110% at 50% 100%, var(--color-fg) 20%, transparent 78%);
+    mask-image: radial-gradient(80% 110% at 50% 100%, var(--color-fg) 20%, transparent 78%);
+    pointer-events: none;
+}
+
+.home-tile__media::after {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--space-6));
+    right: calc(-1 * var(--space-6));
+    z-index: -1;
+    width: 6.5rem;
+    aspect-ratio: 1;
+    background: color-mix(in srgb, var(--tone, var(--color-fg)) 34%, transparent);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23000' stroke-width='5'%3E%3Ccircle cx='50' cy='50' r='44'/%3E%3Cpath d='M6 50h29M65 50h29'/%3E%3Ccircle cx='50' cy='50' r='14'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23000'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23000' stroke-width='5'%3E%3Ccircle cx='50' cy='50' r='44'/%3E%3Cpath d='M6 50h29M65 50h29'/%3E%3Ccircle cx='50' cy='50' r='14'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23000'/%3E%3C/svg%3E") center / contain no-repeat;
+    rotate: 18deg;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Four motifs, so a row never repeats one (Enzo: "diferenciar alguns
+   elementos visuais para não serem todos iguais"): by the tile's place in
+   its list — 1 rays from the platform, 2 a halftone of dots from a corner,
+   3 rings around the sprite, 4 speed lines — and the Poké Ball changes
+   corner and angle with them. Still static, still the subject's colour. */
+:is(.home-grid, .day-route__group) > li:nth-child(4n+2) .home-tile__media::before {
+    inset: 0;
+    background: radial-gradient(circle, color-mix(in srgb, var(--tone, var(--color-primary)) 34%, transparent) 0.09rem, transparent 0.12rem) 0 0 / 0.625rem 0.625rem;
+    -webkit-mask-image: radial-gradient(90% 120% at 0% 100%, var(--color-fg) 10%, transparent 70%);
+    mask-image: radial-gradient(90% 120% at 0% 100%, var(--color-fg) 10%, transparent 70%);
+}
+
+:is(.home-grid, .day-route__group) > li:nth-child(4n+2) .home-tile__media::after {
+    top: auto;
+    right: auto;
+    bottom: calc(-1 * var(--space-8));
+    left: calc(-1 * var(--space-5));
+    rotate: -24deg;
+}
+
+:is(.home-grid, .day-route__group) > li:nth-child(4n+3) .home-tile__media::before {
+    inset: 0;
+    background: repeating-radial-gradient(
+        circle at 50% 92%,
+        transparent 0 0.875rem,
+        color-mix(in srgb, var(--tone, var(--color-primary)) 24%, transparent) 0.875rem 1rem
+    );
+    -webkit-mask-image: radial-gradient(70% 100% at 50% 100%, var(--color-fg) 15%, transparent 72%);
+    mask-image: radial-gradient(70% 100% at 50% 100%, var(--color-fg) 15%, transparent 72%);
+}
+
+:is(.home-grid, .day-route__group) > li:nth-child(4n+3) .home-tile__media::after {
+    top: calc(-1 * var(--space-5));
+    right: auto;
+    left: calc(-1 * var(--space-6));
+    width: 5.5rem;
+    rotate: -8deg;
+}
+
+:is(.home-grid, .day-route__group) > li:nth-child(4n+4) .home-tile__media::before,
+.route-now .home-tile__media::before {
+    inset: 0;
+    background: repeating-linear-gradient(
+        115deg,
+        transparent 0 0.875rem,
+        color-mix(in srgb, var(--tone, var(--color-primary)) 20%, transparent) 0.875rem 1.125rem
+    );
+    -webkit-mask-image: linear-gradient(90deg, transparent 5%, var(--color-fg) 50%, transparent 95%);
+    mask-image: linear-gradient(90deg, transparent 5%, var(--color-fg) 50%, transparent 95%);
+}
+
+:is(.home-grid, .day-route__group) > li:nth-child(4n+4) .home-tile__media::after {
+    top: auto;
+    bottom: calc(-1 * var(--space-6));
+    right: calc(-1 * var(--space-4));
+    width: 5rem;
+    rotate: 40deg;
+}
+
+/* A short row (a phone's rows, the done list): the watermark shrinks with it. */
+.home-tile--row .home-tile__media::after {
+    width: 4rem;
+    top: calc(-1 * var(--space-4));
+    right: calc(-1 * var(--space-4));
+}
+
 /* The stage the art stands on, and its platform in the subject's colour. */
 .home-tile__stage {
     position: relative;
@@ -641,8 +752,14 @@ button.home-tile:hover .home-tile__chevron {
     inset: 0;
 }
 
-.team-box:hover {
+.team-box:hover,
+.home-tile.is-clickable:hover {
     background: var(--color-surface-hover);
+}
+
+/* "Agora" and the active team open from anywhere on the card (2026-11-12). */
+.home-tile.is-clickable {
+    cursor: pointer;
 }
 
 .team-box .cozy-team__menu {

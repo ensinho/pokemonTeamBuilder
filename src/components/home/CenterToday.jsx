@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Crown, MessageCircle, Puzzle, Trophy } from 'lucide-react';
 import { useFriendActivity } from '../../hooks/useFriendActivity';
 import { useTranslation } from '../../hooks/useTranslation';
+import { typeColors } from '../../constants/types';
 import { RollingNumber } from '../RollingNumber';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { AvatarSprite } from '../AvatarSprite';
@@ -35,10 +36,14 @@ export function CenterToday({ variant = 'full', myPuzzle = null }) {
     const more = activeToday.length - stack.length;
     const firstName = (f) => f?.displayName || t('friends.unknownTrainer');
 
+    // Each challenge with its own icon in its own type's colour (2026-11-12,
+    // Enzo: "ícones para cada desafio e clareza visual"): the puzzle Psychic,
+    // the Champions Dragon (the hero's own tone), the Diary Water. Not gold:
+    // a crowd is not something the trainer earned.
     const doors = [
-        { key: 'puzzle', to: '/pokepuzzle', Icon: Puzzle, n: counts.puzzle, label: t('social.center.puzzle') },
-        { key: 'champions', to: '/challenge', Icon: Crown, n: counts.champions, label: t('social.center.champions') },
-        { key: 'diary', to: `/feed?topic=${encodeURIComponent(diaryTopicId)}`, Icon: MessageCircle, n: diaryCount, label: t('social.center.diary') },
+        { key: 'puzzle', to: '/pokepuzzle', Icon: Puzzle, n: counts.puzzle, label: t('social.center.puzzle'), tone: typeColors.psychic },
+        { key: 'champions', to: '/challenge', Icon: Crown, n: counts.champions, label: t('social.center.champions'), tone: typeColors.dragon },
+        { key: 'diary', to: `/feed?topic=${encodeURIComponent(diaryTopicId)}`, Icon: MessageCircle, n: diaryCount, label: t('social.center.diary'), tone: typeColors.water },
     ];
 
     let friendsLine = null;
@@ -89,10 +94,11 @@ export function CenterToday({ variant = 'full', myPuzzle = null }) {
                     const DoorIcon = door.Icon;
                     return (
                         <li key={door.key}>
-                            <Link to={door.to} className={`center-today__door center-today__door--${door.key}`}>
-                                <DoorIcon aria-hidden="true" />
+                            <Link to={door.to} className={`center-today__door center-today__door--${door.key}`} style={{ '--door-tone': door.tone }}>
+                                <span className="center-today__icon" aria-hidden="true"><DoorIcon /></span>
                                 <RollingNumber value={door.n} className="center-today__n" />
                                 <span className="center-today__label">{door.label}</span>
+                                <ChevronRight className="center-today__go" aria-hidden="true" />
                             </Link>
                         </li>
                     );

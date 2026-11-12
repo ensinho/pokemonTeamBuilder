@@ -19,8 +19,9 @@ const toneOf = (member) => typeColors[typeName(member?.types?.[0])] || null;
  * each box one, every card the same anatomy (`home-tile`: the art in a band
  * of the same height, then the words). A row is never left half empty: with
  * one box the last column is the dashed "new team" slot (dashed = absent),
- * with none the party takes the whole row. The cards are neutral; colour
- * lives only on the platforms.
+ * with none the party takes the whole row. Since 2026-11-12 each card's band
+ * takes its lead's colour (with the band's rays and Poké Ball watermark,
+ * home-grid.css) — "mais personalidade".
  */
 export function TeamDeck({ active, others, t, status, menu, subline, onContinue, onEdit, onNew }) {
     const { team, summary } = active;
@@ -28,8 +29,20 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
     return (
         <ul className="team-deck home-grid">
             <li className={partySpan}>
-                <article className="home-tile home-tile--card team-party">
+                {/* the lead's colour washes the band, rays and watermark (2026-11-12) */}
+                {/* The whole card continues the team (Enzo, 2026-11-12); its buttons
+                    stay the keyboard's way in. */}
+                <article
+                    className="home-tile home-tile--card team-party is-clickable"
+                    style={toneOf(summary.members[0]) ? { '--tone': toneOf(summary.members[0]) } : undefined}
+                    data-fx
+                    onClick={(e) => {
+                        if (e.target instanceof Element && e.target.closest('button, a, [role="menu"], [aria-haspopup]')) return;
+                        onContinue();
+                    }}
+                >
                     <span className="home-tile__media team-party__six" role="img" aria-label={t('cozyHome.ofSix', { n: summary.size })}>
+                        <span className="fx-holo" aria-hidden="true" />
                         {Array.from({ length: TEAM_SIZE }, (_, i) => {
                             const member = summary.members[i];
                             return (
@@ -67,8 +80,9 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
 
             {others.map(({ team: other, summary: s }) => (
                 <li key={other.id}>
-                    <article className="home-tile home-tile--card team-box">
+                    <article className="home-tile home-tile--card team-box" style={toneOf(s.members[0]) ? { '--tone': toneOf(s.members[0]) } : undefined} data-fx>
                         <span className="home-tile__media" aria-hidden="true">
+                            <span className="fx-holo" />
                             <PcBox members={s.members} columns={3} size="sm" className="team-box__box" />
                         </span>
                         <span className="home-tile__body">
@@ -87,8 +101,9 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
 
             {others.length === 1 && onNew && (
                 <li>
-                    <button type="button" className="home-tile home-tile--card team-new" onClick={onNew}>
+                    <button type="button" className="home-tile home-tile--card team-new" onClick={onNew} data-fx>
                         <span className="home-tile__media" aria-hidden="true">
+                            <span className="fx-holo" />
                             <span className="team-new__plus"><Plus /></span>
                         </span>
                         <span className="home-tile__body">

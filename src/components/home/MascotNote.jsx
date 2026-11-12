@@ -15,13 +15,14 @@ import { MascotFace } from '../Mascot';
  * desafio?" over "Tudo feito hoje"). When there is a note, it IS the line.
  * The line is still the way to what it mentions (a link, or the streak sheet).
  */
-export function MascotNote({ note, onOpenStreak }) {
+export function MascotNote({ note, onOpenStreak, face = true }) {
     const { t } = useTranslation();
     if (!note) return null;
 
     const inner = (
         <>
-            <MascotFace mood={note.mood} size="xs" className="mascot-note__face" />
+            {/* the greeting's circle shows him now (face={false}); elsewhere the sticker */}
+            {face && <MascotFace mood={note.mood} size="xs" className="mascot-note__face" />}
             <span className="mascot-note__text">{t(`mascot.note.${note.id}`, { n: note.n })}</span>
             {(note.to || note.action === 'streak') && <ChevronRight className="mascot-note__go" aria-hidden="true" />}
         </>

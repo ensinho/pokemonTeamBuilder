@@ -1105,6 +1105,16 @@ export default function PokePuzzleView() {
                             )}
                         </button>
                     )}
+
+                    {/* Desktop: the countdown joins the row (2026-11-12, Enzo:
+                        "dividir isso para ficar na mesma linha"); a phone keeps
+                        it on its own line below (the copy after this row). */}
+                    {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
+                        <div className="pokepuzzle-header-countdown pokepuzzle-header-countdown--inline" aria-hidden="true">
+                            <span className="pokepuzzle-header-countdown-label">{t('games.nextIn')}</span>
+                            <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Previous Puzzle Indicator Banner */}
@@ -1131,7 +1141,7 @@ export default function PokePuzzleView() {
 
                 {/* Header countdown timer for Daily challenge */}
                 {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
-                    <div className="pokepuzzle-header-countdown animate-fade-in">
+                    <div className="pokepuzzle-header-countdown pokepuzzle-header-countdown--below animate-fade-in">
                         <span className="pokepuzzle-header-countdown-label">{t('games.nextIn')}</span>
                         <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
                     </div>

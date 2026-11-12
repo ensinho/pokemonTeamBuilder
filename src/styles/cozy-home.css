@@ -430,9 +430,12 @@ button.cozy-journey__row:hover {
         align-items: start;
     }
 
+    /* It sticks under the sticky header, not behind it: at `top: space-4`
+       the header's party and buttons covered the streak card on scroll
+       (Enzo, 2026-11-12). */
     .cozy-rail {
         position: sticky;
-        top: var(--space-4);
+        top: calc(var(--app-shell-top-band-height) + var(--space-4));
     }
 }
 
