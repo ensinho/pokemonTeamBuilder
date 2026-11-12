@@ -31,6 +31,7 @@
 | [Rewards](./modules/rewards.md) | Trainer Level (computed XP), the daily check-in + streak shields, cosmetics (frames, titles, reward themes) and where they show |
 | [Friend battles](./modules/friend_battles.md) | PvP as built (2026-10-20): challenge-with-team → one-tap accept, `secret/state` + claimed rounds (no polling), the device log cache, the console screen, VS card, music |
 | [Champion Challenge](./modules/daily_challenge.md) | The daily battle vs the Cynthia AI as built: endpoint, engine, AI, the DS-console client, Home card, invariants, traps, calibration |
+| [Social media](./modules/social_media.md) | Before making a reel or post for `@pokemonbuilder_`: the 2026-11-11 Shorts research (what beats its own channel), the three formats we post, **the reel standard (the mascot hosts every video, each reel has its own score, the edit is cut to the bars)** and how to render the next one |
 | [Wounds Log](./wounds.md) | Before any non-trivial work — anti-pattern registry |
 | [UX audit 2026-10-20](./audits/2026-10-20-battles-forum.md) | Battles (Mega Evolution, the HUD, the anime flare) and the forum on a phone: findings by category, what changed, what is still open |
 | [UI audit 2026-10-22](./audits/2026-10-22-profile-journeys-landing.md) | Profile, Journeys/Rewards and the landing at 1440 and 390: findings by category, before → after figures, and a site-wide sweep (nested boxes, small touch targets, overflow) with what is still open |

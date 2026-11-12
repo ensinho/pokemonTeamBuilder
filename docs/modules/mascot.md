@@ -71,6 +71,7 @@ was approved by Enzo on 2026-11-06 ("nossa eu amei").
 | Daily check-in result | hops, or **evolves** on a level up (the games' white silhouette) |
 | Profile → Aparência → Mascote | the playground, eight moods, the tone picker, the reactions switch |
 | Toasts / connection | the stage mascot hops on success, says oops on error; offline/online toasts |
+| Instagram reels (outside the app) | the host of every video: a mood, a pose and a short line per scene, drawn from this rig through `scripts/social/mascot-bundle.mjs` (`social_media.md`) |
 
 ## Loader scenes (2026-11-06)
 
