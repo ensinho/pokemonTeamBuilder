@@ -141,6 +141,56 @@ shape is what a colour-blind reader has), a floating always-on companion (the
 JourneyCoach already holds that corner), mascot stickers as free-form forum
 content (a new field, rules and moderation — its own change).
 
+## The bot (2026-11-11)
+
+Enzo, pointing at [open-bot-avatar](https://github.com/DominikScholz/open-bot-avatar):
+"use tudo dele para criar NOSSO AVATAR com base no mascote … quero ELE EXATO,
+só que em formato de mascote roxinho animado". The bot is the same ghost with
+a body: the icon's outline turned into a solid, alive on screen, looking at
+the pointer with its whole body. Every mood, pose, prop, hat, costume, tone and
+reaction of the line mascot is also the bot's, because the face and the
+dressing are the rig's own pieces.
+
+| File | What it is |
+|---|---|
+| `src/vendor/open-bot-avatar/` | The engine (v0.2.1, MIT, Dominik Scholz), vendored from the package's `dist/` — the volume (stacked cross-sections inferred from a flat outline), the deterministic pose (breathing, sway, blinks, eye wander, the three moods), pointer following and the mood easing. Vendored, not installed, because the bot needs internals the package does not export (the volume, `planeMatrix`, `viewBasis`). **Never edit it**; the README there says how to upgrade. |
+| `scripts/lib/mascotBot.mjs` → `npm run mascot:bot` | Turns the rig into an open-bot-avatar v1 definition: `headPath()` turned by the icon's 8° tilt and fitted into 0 0 100 100; the cheek barbs and the two "!" sparks are their own subpaths, so each gets its own volume. Writes `src/utils/mascot/bot/definition.js` and `public/mascot-bot.json` (paste it into the open-bot-avatar editor's Import to see him there). |
+| `src/utils/mascot/bot/frame.js` | `botInner(pose, life)`: one frame as markup in **rig space** (so the stage, its zones and the views apply unchanged). The engine gives the cross-sections and the face plane; the rig's `mascotPieces(pose)` gives the face (clipped to the head's silhouette), the hat, the paws, the prop and the effects. `botMotion(mood, pose)` maps a mood to the engine's body language (joy → hop, thought → tilt and look up). Pure, Node-safe. |
+| `src/components/mascot/botStage.js` | `BotStage extends MascotStage`: the same taps, Shadow Ball, petting, drag, sleep, shiny and reactions; it overrides `draw()` and the look. Alive while on screen (≤ 60 fps on the shared ticker), follows the pointer anywhere on the page for 3.5 s after it last moved, leans into a drag. |
+| `src/components/mascot/botEngine.js` | The lazy chunk (≈ 17 KB gz), loaded by `useMascotBot` only where a bot is drawn. |
+
+**How he is painted.** The engine paints every cross-section in one flat
+colour; the bot shades them in eleven steps (`.bs0`…`.bs10`, mascot.css): the
+far walls a deeper violet, the silhouette the line's violet, and from about
+the line's width inside the outline (`LINE` in frame.js) the front plateau in
+the icon's dark tile. Straight on he IS the icon — a violet line around a dark
+face — and turned, the line becomes the side of a solid. Eyes and fangs stay
+white in every theme (they sit on the dark front); a tone recolours the body
+like it recolours the line.
+
+**Where.** `<Mascot bot>` asks for him anywhere. A `playground` (the Profile's
+room, the 404) is a bot unless the trainer picked the line: Profile → Mascote →
+Formato (`prefs.form`, `bot` by default, in `ptb:mascot`). Small mascots (tips,
+faces, loaders) stay the line: they repeat, and a body that moves every frame
+is for the one big mascot on a screen.
+
+Traps found while building it:
+
+- **The engine culls the front sections in flat colour** (they never leave the
+  core's outline, so they add nothing to a one-colour silhouette). Shaded,
+  they are the face — `drawn()` in frame.js keeps them and culls only the
+  hidden back ones.
+- **A custom property resolves where it is declared.** `--bot-rim: var(--m-line)`
+  on the `<svg>` ignored the tone set on the body's `<g>` (the fire bot kept a
+  violet body around an orange mouth); the `--bot-*` tokens live on `.bot-root`.
+- **Blink only open eyes.** Scaling an arc eye (happy, calm, sleepy) does not
+  close it, it only fades it — `BLINKS` in frame.js; the line's ambient blink
+  is off on the bot, the engine blinks.
+- **The engine rolls the body for a mood**: the rig's mood tilt adds only half
+  on top (`TILT_SHARE`), or "pensando" leans ~20°.
+- The ears and the crest do not move on the bot (the outline is one cached
+  volume, ~100 ms to build); the body's squash, roll and turn carry it.
+
 ## Rules (from the creative direction and the design system)
 
 - **One per screen.** The stage is held by the most recently mounted `stage`
@@ -186,6 +236,9 @@ project dependency. Output goes to `mascot-export/` (git-ignored).
 
 ## Tests
 
+`bot/bot.test.js` (the definition validates, matches the rig and the
+shipped JSON; every mood and pose draws without NaN; the face hides when the
+front turns away; the line and tile shades are there; sparks follow the mood),
 `rig.test.js` (outline pinned, every part/mood/pose/effect draws without NaN,
 sanitising, tones), `motion.test.js` (springs, every sequence finite and ending
 at rest, responses short, a key frame for reduced motion), `catalog.test.js`
