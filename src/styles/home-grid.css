@@ -283,6 +283,16 @@ button.home-tile:hover .home-tile__chevron {
     position: relative;
 }
 
+/* A route card's band is a battle field (Enzo, 2026-11-12: "um pouco de
+   personalidade nesses cards do meio"): the sky and, from the horizon down,
+   the ground the platforms stand on — two flat mixes of the subject's tone
+   with a hard stop between them, not a fade. No `--tone` → neutral. */
+.day-route .home-tile--card .home-tile__media {
+    --field-sky: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 14%, var(--color-surface-raised));
+    --field-ground: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 30%, var(--color-surface-raised));
+    background: linear-gradient(to bottom, var(--field-sky) 62%, var(--field-ground) 62%);
+}
+
 .day-route__group {
     display: grid;
     gap: var(--page-gap);
