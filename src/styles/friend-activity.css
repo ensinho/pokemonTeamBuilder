@@ -321,15 +321,32 @@
     box-shadow: var(--ring-primary);
 }
 
-.center-today__door svg {
-    width: 1rem;
-    height: 1rem;
-    color: var(--door-tone, var(--color-primary));
+.center-today__icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 18%, var(--color-surface-raised));
+    color: color-mix(in srgb, var(--door-tone, var(--color-primary)) 55%, var(--color-fg));
 }
 
-.center-today__door--puzzle { --door-tone: var(--color-primary); }
-.center-today__door--champions { --door-tone: var(--color-accent); }
-.center-today__door--diary { --door-tone: var(--color-success); }
+.center-today__icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* The arrow only where a door is a row (the rail); a tile is its own door. */
+.center-today__go {
+    display: none;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-left: auto;
+    color: var(--color-muted);
+    transition: translate var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
 
 .center-today__n {
     font-family: var(--font-mono);
@@ -495,22 +512,21 @@
     gap: var(--space-3);
 }
 
+/* Each challenge one button (2026-11-12, Enzo: "deixar claro… que o nome
+   acompanha o ícone"): a fill in its own tone holds the icon, the figure and
+   the word together. */
 .center-today--rail .center-today__door {
-    padding: 0;
-    border-radius: var(--radius-sm);
-    background: none;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 9%, var(--color-surface-raised));
 }
 
 .center-today--rail .center-today__door:hover {
-    background: none;
+    background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 16%, var(--color-surface-raised));
 }
 
 .center-today--rail .center-today__door:hover .center-today__label {
     color: var(--color-fg);
-}
-
-.center-today--rail .center-today__door svg {
-    display: none;
 }
 
 .center-today--rail .center-today__n {
@@ -522,17 +538,32 @@
 @media (min-width: 1024px) {
     .cozy-rail .center-today--rail .center-today__doors {
         grid-template-columns: minmax(0, 1fr);
-        gap: var(--space-1);
+        gap: var(--space-1_5);
     }
 
+    /* Each challenge a row: its icon, the figure, the word, the way in. */
     .cozy-rail .center-today--rail .center-today__door {
         flex-direction: row;
-        align-items: baseline;
-        gap: var(--space-2);
+        align-items: center;
+        gap: var(--space-2_5);
+        padding: var(--space-1_5) var(--space-2);
+        border-radius: var(--radius-md);
     }
 
+    .cozy-rail .center-today--rail .center-today__door:hover {
+        background: color-mix(in srgb, var(--door-tone, var(--color-primary)) 16%, var(--color-surface-raised));
+    }
+
+    .cozy-rail .center-today--rail .center-today__go { display: block; }
+
+    .cozy-rail .center-today--rail .center-today__door:hover .center-today__go {
+        color: var(--color-fg);
+        translate: var(--space-0_5) 0;
+    }
+
+    /* the figure right before its word: "6 no PokéPuzzle", not a column */
     .cozy-rail .center-today--rail .center-today__n {
-        min-width: 2.5rem;
+        min-width: 0;
         font-size: var(--text-md);
     }
 
