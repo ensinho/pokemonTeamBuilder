@@ -1,5 +1,6 @@
 import { buildBattleTeamText } from './battle';
 import { competitivePresetFor } from './loadCompetitivePreset';
+import { speciesIdOf } from './teamUniqueness';
 
 /**
  * Saved teams, checked for the Champion Challenge on the client — the server
@@ -21,7 +22,9 @@ export const teamCheck = (members) => {
  */
 export const completeMember = async (member) => {
     if ((member.customization?.moves || []).filter(Boolean).length) return member;
-    const preset = await competitivePresetFor(member.id).catch(() => null);
+    // The data is keyed by base species: a Mega or a form borrows its species' build.
+    const baseId = speciesIdOf(member);
+    const preset = await competitivePresetFor(member.id, { baseId: baseId !== Number(member.id) ? baseId : null }).catch(() => null);
     if (!preset?.moves?.length) return member;
     const current = member.customization || {};
     return {

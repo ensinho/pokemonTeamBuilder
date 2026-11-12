@@ -157,7 +157,10 @@ export function PokemonDetailModal({
                 const species = await getPokemonSpeciesData(apiData?.species?.url || pokemon.id);
                 if (cancelled || !species?.varieties?.length) return;
                 const built = await buildPokemonForms(species, { fetchPokemon: getPokemonApiData });
-                if (!cancelled) setForms(built);
+                // Opened on a form itself (Mega Heracross), the species' varieties
+                // include the Pokémon already on screen: it is the first choice
+                // of the picker, not a second one beside it.
+                if (!cancelled) setForms(built.filter((form) => form.id !== Number(pokemon.id)));
             } catch (err) {
                 console.error('Failed to load pokémon forms', err);
             }

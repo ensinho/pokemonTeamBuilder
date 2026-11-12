@@ -12,6 +12,7 @@ vi.mock('firebase/firestore', () => ({ doc: () => ({}), collection: () => ({}), 
 vi.mock('../services/pokemonDataCache', () => ({ resolvePokemonDetail: (id) => deferDetail(id) }));
 vi.mock('../utils/loadCompetitivePreset', () => ({
     competitivePresetFor: () => Promise.resolve({ item: 'Leftovers', ability: 'pressure' }),
+    megaStoneOfForme: () => null,
 }));
 vi.mock('./useToastStore', () => ({ toast: { error: vi.fn(), warning: vi.fn(), success: vi.fn(), info: vi.fn() } }));
 vi.mock('./useAuthStore', () => ({ useAuthStore: { getState: () => ({}) }, markJourney: () => {} }));

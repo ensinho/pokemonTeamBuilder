@@ -2040,7 +2040,7 @@ export default function AppLayout() {
                                     <Route path="/meta" element={<MetaUsageView />} />
                                     <Route path="/meta/:idOrName" element={<PokemonUsageView />} />
                                     <Route path="/gyms" element={
-                                        <GymsView showDetails={showDetails} onAddToTeam={handleAddPokemon} />
+                                        <GymsView showDetails={showDetails} onUseTeam={handleImportTeam} />
                                     } />
                                     <Route path="/damage-calculator" element={
                                         <DamageCalculatorView />

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { formatEvSpread, formatSetSpread, setSpreadParts } from './smogonSets';
+import { applySmogonSet, formatEvSpread, formatSetSpread, setSpreadParts } from './smogonSets';
 
 describe('formatSetSpread', () => {
     it('shows a Champions set in the Stat Points the game uses', () => {
@@ -20,5 +20,23 @@ describe('formatSetSpread', () => {
     it('splits unit from value for a labelled row', () => {
         expect(setSpreadParts({ sp: { hp: 32, attack: 32 } })).toEqual({ unit: 'SP', text: '32 HP / 32 Atk' });
         expect(setSpreadParts({ evs: { hp: 252 } })).toEqual({ unit: 'EVs', text: '252 HP' });
+    });
+});
+
+describe('applySmogonSet', () => {
+    const set = { item: 'flame-orb', ability: 'guts', nature: 'jolly', moves: [['close-combat'], ['facade'], ['megahorn'], ['knock-off']], evs: { attack: 252 } };
+
+    it('applies the set as written when nothing says what the Pokémon can have', () => {
+        expect(applySmogonSet(set, { ability: 'swarm', isShiny: true })).toMatchObject({
+            item: 'flame-orb', ability: 'guts', nature: 'jolly', isShiny: true,
+            moves: ['close-combat', 'facade', 'megahorn', 'knock-off'],
+        });
+    });
+
+    it('keeps a Mega forme legal: its own ability, its stone, only moves it learns', () => {
+        const own = { abilities: ['skill-link'], moves: ['close-combat', 'megahorn', 'pin-missile'], megaStone: 'heracronite' };
+        expect(applySmogonSet(set, { ability: 'skill-link' }, own)).toMatchObject({
+            item: 'heracronite', ability: 'skill-link', nature: 'jolly', moves: ['close-combat', 'megahorn'],
+        });
     });
 });

@@ -22,6 +22,8 @@ import { useThemeStore } from '../../store/useThemeStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useSmogonData } from '../../hooks/useSmogonData';
+import { useBaseIdOf } from '../../hooks/useBaseIdOf';
+import { speciesIdOf } from '../../utils/teamUniqueness';
 import { EmptyState } from '../EmptyState';
 import { openTeamCompare } from '../../store/useTeamCompareStore';
 
@@ -65,6 +67,7 @@ export function TeamDetailView({
     const { partnersFor, popular, status: tournamentStatus } = useTournamentData();
     const { usageFor } = useCompetitiveUsage();
     const { smogonFor } = useSmogonData();
+    const baseIdOf = useBaseIdOf();
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
     // Saved members store only id/name/sprites + customization; resolve full
@@ -259,8 +262,10 @@ export function TeamDetailView({
                     {members.map((m) => {
                         const cz = m.customization || {};
                         const weaknesses = getPokemonWeaknessEntries(m.types || []).slice(0, 6);
-                        const usage = usageFor(m.id);
-                        const smogon = smogonFor(m.id);
+                        // Keyed by base species: a Mega or a form asks for its species'.
+                        const dataId = speciesIdOf(m, baseIdOf);
+                        const usage = usageFor(dataId);
+                        const smogon = smogonFor(dataId);
                         const itemPicks = suggestItemsForPokemon(m, language, usage, smogon);
                         const itemsFromMeta = Boolean(usage && usage.n >= 2 && usage.items?.length);
                         const itemsFromSmogon = !itemsFromMeta && Boolean(smogon?.sets?.length);

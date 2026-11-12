@@ -60,17 +60,28 @@ export const primaryMoves = (set) =>
 /**
  * Merge a Smogon set onto a member's existing customization, preserving fields
  * the set doesn't specify (e.g. isShiny). Returns a NEW customization object.
+ *
+ * Sets are written for the base species. `own` says what this exact Pokémon is,
+ * so a form keeps a legal build: an ability it does not have is not applied
+ * (Mega Heracross stays Skill Link under a "Guts" set), a move it cannot learn
+ * is left out, and a Mega forme keeps the stone that makes it one.
+ *
  * @param {object} set   - a normalized set from smogon.json
  * @param {object} current - the member's current customization
+ * @param {{ abilities?: string[], moves?: string[], megaStone?: string|null }} [own]
  */
-export function applySmogonSet(set, current = {}) {
+export function applySmogonSet(set, current = {}, own = {}) {
+    const abilities = own.abilities?.length ? new Set(own.abilities) : null;
+    const learnable = own.moves?.length ? new Set(own.moves) : null;
+    const ability = set.ability && (!abilities || abilities.has(set.ability)) ? set.ability : current.ability;
+    const moves = primaryMoves(set).filter((move) => !learnable || learnable.has(move));
     return {
         ...current,
-        item: set.item || '',
-        ability: set.ability || current.ability,
+        item: own.megaStone || set.item || '',
+        ability,
         nature: set.nature || current.nature || 'serious',
         teraType: (set.tera && set.tera[0]) || current.teraType,
-        moves: primaryMoves(set),
+        moves,
         evs: { ...ZERO_EVS, ...(set.evs || {}) },
         ivs: { ...MAX_IVS, ...(set.ivs || {}) },
     };

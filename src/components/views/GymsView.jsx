@@ -4,6 +4,7 @@ import { Swords, Trophy, ChevronRight, X } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
 import { useGymLeaders } from '../../hooks/useGymLeaders';
+import { gymTeamForImport } from '../../utils/gymTeam';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
@@ -376,7 +377,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick, pt }) {
  * battle with. Covers official games and famous hack ROMs. Species resolve to
  * sprites/types from the pokémon index; teams can carry levels, items and moves.
  */
-export function GymsView({ showDetails, onAddToTeam }) {
+export function GymsView({ showDetails, onUseTeam }) {
     const { language } = useTranslation();
     const pt = language === 'pt';
     const isMobile = useMediaQuery(maxWidthBelow('lg'));
@@ -485,17 +486,12 @@ export function GymsView({ showDetails, onAddToTeam }) {
         }
     };
 
+    // The whole roster opens in the builder — moves, items, abilities and
+    // levels included — and the layout takes the trainer there. Adding the
+    // Pokémon one by one left them on this page with nothing to see.
     const buildTeam = (leader) => {
-        if (!onAddToTeam) return;
-        // A leader with random picks: the fixed members plus as many of the
-        // pool as the leader actually brings.
-        const roster = leader.poolPick
-            ? [...leader.team.filter((mon) => !mon.pool), ...leader.team.filter((mon) => mon.pool).slice(0, leader.poolPick)]
-            : leader.team;
-        for (const mon of roster.slice(0, 6)) {
-            const entry = resolve(mon.name);
-            if (entry) onAddToTeam(entry);
-        }
+        if (!onUseTeam) return;
+        onUseTeam(gymTeamForImport(leader, resolve, { gameLabel: selected?.label }));
     };
 
     const gymLeaders = selected ? selected.leaders.filter(l => l.gym !== 'Elite Four' && l.gym !== 'Champion') : [];
@@ -555,7 +551,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                         {leader.levelCap && (
                             <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} <span className="font-mono">{leader.levelCap}</span></span>
                         )}
-                        {onAddToTeam && leader.team.length > 0 && (
+                        {onUseTeam && leader.team.length > 0 && (
                             <button
                                 type="button"
                                 onClick={(e) => {

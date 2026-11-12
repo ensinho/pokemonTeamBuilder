@@ -42,6 +42,14 @@ describe('validateTeam', () => {
         expect(Teams.import(result.text)[0]).toMatchObject({ species: 'Charizard', item: 'Charizardite X' });
     });
 
+    it('hands a Mega forme its stone when the set came without it', () => {
+        const result = validateTeam('Heracross-Mega\nAbility: Skill Link\n- Pin Missile\n\nScizor-Mega @ Leftovers\nAbility: Technician\n- Bullet Punch');
+        expect(result.ok).toBe(true);
+        const sets = Teams.import(result.text);
+        expect(sets[0]).toMatchObject({ species: 'Heracross', item: 'Heracronite' });
+        expect(sets[1]).toMatchObject({ species: 'Scizor', item: 'Scizorite' });
+    });
+
     it('allows legendaries (tier is only a label)', () => {
         expect(validateTeam('Mewtwo\n- Psystrike\n\nKoraidon\n- Collision Course').ok).toBe(true);
     });

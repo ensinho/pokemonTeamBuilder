@@ -749,6 +749,7 @@ export function TeamBuilderView({
                                 <div
                                     key={pokemon.instanceId}
                                     className={`team-builder-slot group ${dragIndex === idx ? 'is-dragging' : ''} ${editingInstanceId === pokemon.instanceId ? 'is-editing' : ''} ${settledSlotIds.has(pokemon.instanceId) ? '' : 'is-peeling'}`}
+                                    style={typeDiscStyle(mega ? { types: mega.types } : pokemon)}
                                     onAnimationEnd={(e) => { if (e.animationName === 'sticker-peel') settleSlot(pokemon.instanceId); }}
                                     draggable
                                     tabIndex={0}
@@ -784,7 +785,7 @@ export function TeamBuilderView({
                                     }}
                                     onDragEnd={() => setDragIndex(null)}
                                 >
-                                    <div className="team-builder-slot__media tb-type-disc" style={typeDiscStyle(mega ? { types: mega.types } : pokemon)}>
+                                    <div className="team-builder-slot__media tb-type-disc">
                                         <Sprite
                                             src={mega ? getPokemonFrontSpriteUrl(mega.spriteId) : getTeamPokemonDisplaySprite(pokemon, { animated: true })}
                                             artworkSrc={getPokemonArtworkSpriteUrl(mega ? mega.spriteId : pokemon.id)}

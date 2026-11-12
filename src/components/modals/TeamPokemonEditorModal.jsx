@@ -8,6 +8,10 @@ import { getPokemonArtworkSpriteUrl, getPokemonDisplaySprite } from '../../utils
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSmogonData } from '../../hooks/useSmogonData';
+import { useBaseIdOf } from '../../hooks/useBaseIdOf';
+import { useMegaStones } from '../../hooks/useMegaStones';
+import { megaStoneOfForme } from '../../utils/loadCompetitivePreset';
+import { speciesIdOf } from '../../utils/teamUniqueness';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
@@ -90,6 +94,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
     const navigate = useNavigate();
     const { linkState } = useEntityNavigate();
     const { smogonFor } = useSmogonData();
+    const baseIdOf = useBaseIdOf();
     // Regulations only: this is the team editor, so the usage tab answers "what
     // does this Pokémon run in the reg I'm building for". Browsing every Smogon
     // tier is the Meta page's job (the link below opens it).
@@ -102,8 +107,20 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
     // one small static file, shared with the Moves list and the battle screen.
     const dex = useBattleDex();
     const battleItems = useBattleItems();
-    const smogonEntry = smogonFor(pokemon.id);
-    const usage = usageFor(pokemon.id);
+    // The mined data is keyed by base species: a Mega or a regional form looks
+    // its species up, or its suggestions and usage come back empty.
+    const dataId = speciesIdOf(pokemon, baseIdOf);
+    // What this exact Pokémon can have: a set is written for the base species,
+    // and applying it must not hand a form an ability or a move it lacks, or
+    // take a Mega's stone away.
+    const megaStones = useMegaStones();
+    const ownBuild = useMemo(() => ({
+        abilities: (pokemon.abilities || []).map((a) => a?.name).filter(Boolean),
+        moves: (pokemon.moves || []).map((m) => m?.name).filter(Boolean),
+        megaStone: megaStoneOfForme(pokemon.id, megaStones),
+    }), [pokemon.abilities, pokemon.moves, pokemon.id, megaStones]);
+    const smogonEntry = smogonFor(dataId);
+    const usage = usageFor(dataId);
 
     // Battle-relevant item options (with sprites). Falls back to the full reference
     // item list if the baked battle-items dataset hasn't loaded.
@@ -497,7 +514,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
                                                     onClick={() => setCustomization((prev) => {
                                                         // A set's spread is in its format's scale (Champions sets
                                                         // are Stat Points); the member keeps its own.
-                                                        const next = applySmogonSet(set, prev);
+                                                        const next = applySmogonSet(set, prev, ownBuild);
                                                         const from = looksLikeStatPoints(set.evs) ? 'sp' : 'ev';
                                                         return { ...next, evs: convertSpread(next.evs, from, prev.evScale === 'sp' ? 'sp' : 'ev') };
                                                     })}

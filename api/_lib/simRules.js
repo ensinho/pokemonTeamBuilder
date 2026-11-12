@@ -28,7 +28,31 @@ import { Dex } from '@pkmn/sim';
 export const QUICK_THAW_RULE = 'Quick Thaw Mod';
 export const QUICK_THAW_CHANCE = [1, 6];
 
+/**
+ * **Multi Mega Mod** (2026-11-12, Enzo: "ao termos megas dentro do time,
+ * desconsiderar regra de 1 mega por time no Champion Challenge"). The games
+ * allow one Mega Evolution a battle: the sim clears `canMegaEvo` on the whole
+ * side when one happens (`runMegaEvo`). A trainer who built a team with two
+ * Megas then fought with one of them stuck as its base for the whole battle.
+ * This puts the answer back for every ally right after a Mega Evolution, read
+ * from the sim's own check — the stone must still be held, and a Pokémon that
+ * is already Mega gets nothing. Champion Challenge only: PvP keeps the games'
+ * rule (`PVP_FORMAT` does not name it).
+ */
+export const MULTI_MEGA_RULE = 'Multi Mega Mod';
+
 const RULES = {
+    multimegamod: {
+        effectType: 'Rule',
+        name: MULTI_MEGA_RULE,
+        desc: 'Every Pokémon holding its Mega Stone may Mega Evolve, not just one a battle.',
+        onAfterMega(pokemon) {
+            for (const ally of pokemon.side.pokemon) {
+                if (ally === pokemon || ally.fainted) continue;
+                ally.canMegaEvo = this.actions.canMegaEvo(ally);
+            }
+        },
+    },
     quickthawmod: {
         effectType: 'Rule',
         name: QUICK_THAW_RULE,

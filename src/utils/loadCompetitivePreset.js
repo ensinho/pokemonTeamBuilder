@@ -60,21 +60,44 @@ export function usageSpread(spread) {
 }
 
 /**
+ * The stone that makes a Mega forme, by the forme's own id (Mega Heracross,
+ * #10047 → "heracronite"), or null when the id is not a Mega's. Pure: the map
+ * is mega-stones.json's `byStone`.
+ */
+export const megaStoneOfForme = (id, byStone) => {
+    const formeId = Number(id);
+    if (!formeId || !byStone) return null;
+    for (const [stone, mega] of Object.entries(byStone)) {
+        if (Number(mega?.spriteId) === formeId) return stone;
+    }
+    return null;
+};
+
+/**
  * Resolve a customization patch (item / ability / nature / teraType / moves /
  * evs) representing the most-used competitive build for `id`, or null if we have
  * nothing for it.
+ *
+ * Every dataset is keyed by base species, so a form asked for by its own id
+ * (Mega Heracross, Rotom-Wash, Alolan Ninetales) found nothing and arrived
+ * blank. `baseId` is where to look when the id itself has no entry — its
+ * species' build, which createTeamMember then trims to what the form can
+ * actually have. `megaStone` is the stone of a Mega forme: a Mega only exists
+ * holding it, so it replaces whatever item the species usually carries, and is
+ * the whole preset when the species has no data at all.
  */
-export async function competitivePresetFor(id) {
+export async function competitivePresetFor(id, { baseId = null, megaStone = null } = {}) {
     const [smogonById, usageById, compById] = await Promise.all([
         getSmogonById(), getDefaultUsageById(), getCompUsageById(),
     ]);
-    const usage = usageById[id] || null;      // precise per-format Smogon usage
-    const comp = compById[id] || null;        // tournament poképaste usage
-    const smogonSets = smogonById[id]?.sets || [];
+    const pick = (byId) => byId[id] || (baseId != null ? byId[baseId] : null) || null;
+    const usage = pick(usageById);            // precise per-format Smogon usage
+    const comp = pick(compById);              // tournament poképaste usage
+    const smogonSets = pick(smogonById)?.sets || [];
     const smogonSet = smogonSets[0] || null;
     // The first curated set that actually publishes a spread.
     const spreadSet = smogonSets.find((s) => s.evs && Object.values(s.evs).some((v) => v > 0)) || null;
-    if (!usage && !comp && !smogonSet) return null;
+    if (!usage && !comp && !smogonSet) return megaStone ? { item: megaStone } : null;
 
     // Candidates, most used first — more than four, because usage is keyed by base
     // species: Rotom's list holds Rotom-Wash's Hydro Pump, Gyarados's abilities
@@ -91,7 +114,7 @@ export async function competitivePresetFor(id) {
     };
 
     return {
-        item: usage?.items?.[0]?.slug || comp?.items?.[0]?.slug || smogonSet?.item || '',
+        item: megaStone || usage?.items?.[0]?.slug || comp?.items?.[0]?.slug || smogonSet?.item || '',
         ability: abilityName ? toSlug(abilityName) : (smogonSet?.ability || undefined),
         abilities: [...usedAbilities, smogonSet?.ability].filter(Boolean),
         nature,
