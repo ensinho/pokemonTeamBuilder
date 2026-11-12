@@ -1029,7 +1029,7 @@ export default function PokePuzzleView() {
     // The day, together: the crowd's distribution and friends' grids
     // (2026-11-06). One element — it reports the result when it mounts.
     const dayPanel = mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0
-        ? <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} />
+        ? <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} history={historyByDate} pastDates={pastDates} hints={hints.length} />
         : null;
 
     return (

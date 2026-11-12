@@ -294,6 +294,14 @@ Plain `navigate` with no View Transitions or under reduced motion.
 
 The rules behind them are in the `/design-system` skill, "Taste pass".
 
+### Gyms, Quiz and PokéPuzzle — the 2026-11-12 redesigns
+
+**Gyms (`views/GymsView.jsx`, `styles/gyms-view.css`) — a route and a stage.** One row per leader on the left (type, team size, ace level), the chosen leader on the right: portrait, team on `.type-platform`, level as a figure, types as icons, what to bring against the type (from `typeChart`). On a phone the route is a strip of portraits. "Mark as beaten" toggles the badge in **the Badge Case the Home already keeps** (`utils/badgeCase.js`, `setBadgeCase`) — never a second store — and the stage opens on `nextLeader()`. "Moves and items" opens the existing `LeaderTeamModal`.
+
+**Quiz (`views/GenerationQuizView.jsx`, `utils/quizProgress.js` + test) — regions, stars, modes.** The picker shows each generation as a region: starters (the PokéPuzzle silhouette until it is played), the bar of the best mark, three stars at 50/80/100% — read from `bestFound`, nothing new stored. A run of right answers is a combo (session only). Modes: classic, **Sprint** (60 s) and **Flawless** (ends on the first miss). A mode run is its own run document, `<signature>~<mode>` (`runIdFor`), so it never resets the classic run; its clock and rule are not saved — one found active after a reload goes back to the picker — and History lists classic runs only.
+
+**PokéPuzzle (`pokepuzzle/PuzzleDayPanel.jsx`, `utils/puzzleStandings.js` + test) — Hoje · Semana · Você.** `PuzzleDayPanel` fetches, `PuzzleDayView` draws (pure, so it can be rendered with any numbers). Hoje: the distribution with the trainer's bar said in words (`betterThanShare`) and a podium of friends. Semana: a league among friends, Monday to Sunday, 8 points for the first guess down to 1 — **computed in the browser from the `puzzleDays/{day}/players` rows `api/daily-puzzle.js` already writes**, read only when the tab opens; no endpoint, no new document. Você: the record from the saved days, the week as dots, four medals.
+
 ### CommandPalette — global search (2026-09-24)
 **Files:** `src/components/CommandPalette.jsx`, `src/styles/command-palette.css`, `src/utils/globalSearch.js` (+ test)
 
