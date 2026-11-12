@@ -217,6 +217,47 @@ Traps found while building it:
 - The ears and the crest do not move on the bot (the outline is one cached
   volume, ~100 ms to build); the body's squash, roll and turn carry it.
 
+## The companion (2026-11-11)
+
+Enzo, after the bot: "improve its presence by showing interactions on
+minigames, such as champion challenge, pokepuzzle, quiz and foruns", then
+"add him on guides too, meta and tournaments and a little on pokedex". A
+place says what just happened — a **beat** — and one pure table says his face
+and gesture (`GAME_BEATS` / `gameBeat` in `utils/mascot/assistant.js`, tested):
+
+| Beat | Face · gesture | Emitted by |
+|---|---|---|
+| `start` | determinado · nod | a quiz starting; the meta hub's page or rating cut changing |
+| `found` | animado · hop → from 3 in a row empolgado · jump → every 5th brilhando · spin | a right answer (quizzes) |
+| `close` / `miss` | curioso · nod / preocupado · shake | a PokéPuzzle guess with / without a letter in place; a quiz miss |
+| `repeat` / `invalid` | desconfiado / confuso · shake | already found; not a Pokémon |
+| `hint` | travesso · sparks | PokéPuzzle's hint |
+| `win` / `perfect` / `lose` | radiante / empolgado · celebrate, triste · oops | the end of a game (an end holds; a passing face goes back after `hold`) |
+| `posted` / `commented` / `liked` / `reacted` | radiante · celebrate / animado · nod / apaixonado · nod / brilhando · sparks | the forum store's actions; `liked` also a new favourite Pokémon |
+
+- **`useMascotBeat()`** gives a view `[beat, emit]` and counts the streak;
+  **`<MascotCompanion beat rest restPose listen>`** draws him alive (stage by
+  default). `listen` also takes the app's beats — `useMascotStore.emitBeat(kind)`
+  from a store — only those after he mounted.
+- **Battles** (`DsBattleStage`): the face beside the message is alive now and
+  gestures at the big moments only (`battleBeat`: a knock-out, a big hit, the
+  trainer's gimmick, the end).
+- **Where:** PokéPuzzle (beside the tries; the result's medal is him, the burst
+  behind a win), the Generation and Category quizzes (the feedback line), the
+  forum (the feed's header, the comment composer), the guides (the index's
+  professor in a mortarboard; the end of a guide, where he hops once it is
+  read), the meta hub's switch (a pose per page: clipboard, pointing, the lens),
+  the Pokédex's title (curious while searching).
+- **Only the trainer's own act** moves him: a run or a day that loads finished
+  shows his resting face, never a replayed celebration. `celebrate` is only
+  for an end (a win, a post) — a test pins that list.
+- **Trap:** the PokéPuzzle medal had `.pokepuzzle-result-badge svg { 1.5rem }`
+  for its icon, which shrank the mascot's own `<svg>` to a dot in the corner of
+  the burst — scope a container's icon rule (`:not(.has-mascot)`) before
+  putting a mascot inside it.
+- The 1.24.0 patch notes introduce him (`MascotBotVisual`): the line drawing
+  gives way to the body, which rises with the pop spring and waves once.
+
 ## Rules (from the creative direction and the design system)
 
 - **One per screen.** The stage is held by the most recently mounted `stage`
