@@ -47,7 +47,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Who makes it?',
                     paragraphs: [
-                        'Enzo Esmeraldo, an independent developer, designs, writes and runs the site. There is no company or advertiser behind it, and the source code is public on GitHub under the MIT license.',
+                        'Enzo Esmeraldo, an independent developer, designs, writes and runs the site. There is no company or advertiser behind it, and the source code is visible on GitHub, with all rights reserved.',
                     ],
                     links: [{ href: GITHUB, label: 'Source code on GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo on LinkedIn' }, { href: SOCIAL_X_URL, label: 'PokemonBuilder on X' }, { href: SOCIAL_INSTAGRAM_URL, label: 'PokemonBuilder on Instagram' }],
                 },
@@ -95,7 +95,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Quem faz o site?',
                     paragraphs: [
-                        'Enzo Esmeraldo, um desenvolvedor independente, projeta, escreve e mantém o site. Não há empresa nem anunciante por trás dele, e o código-fonte é público no GitHub, sob a licença MIT.',
+                        'Enzo Esmeraldo, um desenvolvedor independente, projeta, escreve e mantém o site. Não há empresa nem anunciante por trás dele, e o código-fonte está visível no GitHub, com todos os direitos reservados.',
                     ],
                     links: [{ href: GITHUB, label: 'Código-fonte no GitHub' }, { href: 'https://www.linkedin.com/in/enzoesmeraldo/', label: 'Enzo no LinkedIn' }, { href: SOCIAL_X_URL, label: 'PokemonBuilder no X' }, { href: SOCIAL_INSTAGRAM_URL, label: 'PokemonBuilder no Instagram' }],
                 },
@@ -430,7 +430,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Source code',
                     paragraphs: [
-                        'The site\'s code is open source under the MIT license. The license covers the code, not Pokémon names and images, which belong to their owners.',
+                        'The site\'s code is visible on GitHub for reference, with all rights reserved: it may not be copied, reused or redistributed without permission. That covers the site\'s own code and art, not Pokémon names and images, which belong to their owners.',
                     ],
                     links: [{ href: GITHUB, label: 'Source code on GitHub' }],
                 },
@@ -482,7 +482,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Código-fonte',
                     paragraphs: [
-                        'O código do site é aberto, sob a licença MIT. A licença cobre o código, não os nomes e as imagens de Pokémon, que pertencem aos seus donos.',
+                        'O código do site está visível no GitHub para consulta, com todos os direitos reservados: não pode ser copiado, reutilizado nem redistribuído sem autorização. Isso cobre o código e a arte próprios do site, não os nomes e as imagens de Pokémon, que pertencem aos seus donos.',
                     ],
                     links: [{ href: GITHUB, label: 'Código-fonte no GitHub' }],
                 },
