@@ -278,18 +278,14 @@
 /* ==========================================================================
    The hero: depth, an aura, motes of its type, its own light.
    ========================================================================== */
-/* Parallax: the layers drift at their own depth with the pointer. */
-.day-hero[data-fx-hero] .day-hero__art {
-    transform: translate3d(calc(var(--fx-px, 0) * 1.1rem), calc(var(--fx-py, 0) * 0.6rem), 0);
-    transition: transform 900ms var(--ease-glide);
-}
-
+/* Parallax: only the backdrop drifts with the pointer. The team stays on
+   its ground — pushed around, it read wrong (Enzo, 2026-11-12: "não
+   empurrar o time"). */
 .day-hero[data-fx-hero] .day-hero__disc {
     translate: calc(var(--fx-px, 0) * 1.75rem) calc(var(--fx-py, 0) * 1rem);
     transition: translate 900ms var(--ease-glide);
 }
 
-.day-hero[data-fx-hero].is-fx-hero-on .day-hero__art,
 .day-hero[data-fx-hero].is-fx-hero-on .day-hero__disc {
     transition-duration: 220ms;
 }

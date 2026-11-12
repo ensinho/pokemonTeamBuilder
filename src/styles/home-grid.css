@@ -752,8 +752,14 @@ button.home-tile:hover .home-tile__chevron {
     inset: 0;
 }
 
-.team-box:hover {
+.team-box:hover,
+.home-tile.is-clickable:hover {
     background: var(--color-surface-hover);
+}
+
+/* "Agora" and the active team open from anywhere on the card (2026-11-12). */
+.home-tile.is-clickable {
+    cursor: pointer;
 }
 
 .team-box .cozy-team__menu {

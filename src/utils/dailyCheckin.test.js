@@ -10,6 +10,7 @@ import {
     mergeStreaks,
     normalizeStreak,
     settleCheckin,
+    streakHeat,
 } from './dailyCheckin';
 import { CHECKIN_CYCLE_XP } from './trainerLevel';
 
@@ -293,5 +294,23 @@ describe('the Home calendar (checkinWeek, streakMonth)', () => {
         }, '2026-11-04');
         expect(states(month.days).slice(0, 5)).toEqual(['caught', 'caught', 'caught', 'today', 'ahead']);
         expect(month.streak).toBe(12);
+    });
+});
+
+describe('streakHeat', () => {
+    it('grows a tier at a day, three days, a week and a month', () => {
+        expect(streakHeat(0)).toEqual({ heat: 0, goal: 1, from: 0 });
+        expect(streakHeat(1)).toEqual({ heat: 1, goal: 3, from: 1 });
+        expect(streakHeat(2).heat).toBe(1);
+        expect(streakHeat(3)).toEqual({ heat: 2, goal: 7, from: 3 });
+        expect(streakHeat(7)).toEqual({ heat: 3, goal: 30, from: 7 });
+        expect(streakHeat(29).heat).toBe(3);
+        expect(streakHeat(30)).toEqual({ heat: 4, goal: 100, from: 30 });
+    });
+
+    it('has no next goal from a hundred days, and reads junk as no run', () => {
+        expect(streakHeat(100)).toEqual({ heat: 4, goal: null, from: 100 });
+        expect(streakHeat(undefined).heat).toBe(0);
+        expect(streakHeat(-4).heat).toBe(0);
     });
 });

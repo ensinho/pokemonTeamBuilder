@@ -30,7 +30,17 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
         <ul className="team-deck home-grid">
             <li className={partySpan}>
                 {/* the lead's colour washes the band, rays and watermark (2026-11-12) */}
-                <article className="home-tile home-tile--card team-party" style={toneOf(summary.members[0]) ? { '--tone': toneOf(summary.members[0]) } : undefined} data-fx>
+                {/* The whole card continues the team (Enzo, 2026-11-12); its buttons
+                    stay the keyboard's way in. */}
+                <article
+                    className="home-tile home-tile--card team-party is-clickable"
+                    style={toneOf(summary.members[0]) ? { '--tone': toneOf(summary.members[0]) } : undefined}
+                    data-fx
+                    onClick={(e) => {
+                        if (e.target instanceof Element && e.target.closest('button, a, [role="menu"], [aria-haspopup]')) return;
+                        onContinue();
+                    }}
+                >
                     <span className="home-tile__media team-party__six" role="img" aria-label={t('cozyHome.ofSix', { n: summary.size })}>
                         <span className="fx-holo" aria-hidden="true" />
                         {Array.from({ length: TEAM_SIZE }, (_, i) => {

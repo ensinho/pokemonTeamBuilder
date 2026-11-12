@@ -1131,6 +1131,19 @@ export default {
     },
     checkinWeek: {
         tapToday: 'toque em hoje: +{{xp}} XP',
+        streak: {
+            day: 'dia seguido',
+            days: 'dias seguidos',
+            open: 'ver sua sequência',
+            toGoal: '{{n}} para {{goal}} dias',
+        },
+        heat: {
+            h0: 'Acenda hoje',
+            h1: 'Uma faísca',
+            h2: 'Esquentando',
+            h3: 'Pegando fogo',
+            h4: 'Chama lendária',
+        },
         states: {
             caught: 'na sequência',
             shielded: 'coberto por um escudo',
