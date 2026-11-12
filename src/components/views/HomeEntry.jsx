@@ -6,7 +6,6 @@ import { track } from '../../services/analytics';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { needsTrainerProfile } from '../../utils/trainerProfile';
-import { promptSignIn } from '../../utils/navigation';
 
 // Every way off the landing leads through the onboarding first (2026-11-05):
 // it opens over wherever the CTA went, so the visitor's intent still wins.
@@ -46,12 +45,13 @@ export function HomeEntry({ hasTeams, isAnonymous, children }) {
         offerOnboarding();
     }, []);
 
-    // "Já tem conta? Entrar": the sign-in opens over the landing, which stays
-    // put if it is closed and gives way once an account is in (below) — no
-    // onboarding offered here: the account may already carry a profile.
+    // "Já tem conta? Entrar": the Primeira Jornada opens on its account screen
+    // (2026-11-12) over the landing, which stays put if it is closed and gives
+    // way once an account is in (below) — no questions here: the account may
+    // already carry a profile.
     const signIn = useCallback(() => {
         track('landing_cta', { cta: 'hero_signin' });
-        promptSignIn('signIn');
+        useOnboardingStore.getState().open('landing', { entry: 'signIn' });
     }, []);
 
     const showLanding = isFirstVisit && shouldShowLanding({ hasTeams, isAnonymous });

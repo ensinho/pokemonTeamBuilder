@@ -64,6 +64,8 @@ export default defineConfig({
           '**/challenge-og.png',
           '**/android-chrome-512x512.png',
           '**/logoLogin*.png',
+          // The Primeira Jornada's tour (FirstJourney): fetched when the flow opens, once.
+          '**/onboarding/tour-*.webp',
           // api/render-meta.js's template (scripts/lib/prerenderHome.mjs).
           '**/shell.html',
           // Faces almost no visit uses (src/styles/fonts.css): mono italic,

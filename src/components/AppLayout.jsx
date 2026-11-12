@@ -138,7 +138,7 @@ const BadgeUnlockModal = lazy(() => import('./modals/BadgeUnlockModal').then((m)
 const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) => ({ default: m.PatchNotesModal })));
 // The trainer-profile onboarding (2026-11-05): its own chunk, fetched only
 // when it opens — a trainer meets it once.
-const TrainerOnboarding = lazy(() => import('./onboarding/TrainerOnboarding').then((m) => ({ default: m.TrainerOnboarding })));
+const FirstJourney = lazy(() => import('./onboarding/FirstJourney').then((m) => ({ default: m.FirstJourney })));
 const PokegearDialog = lazy(() => import('./pokegear/PokegearDialog').then((m) => ({ default: m.PokegearDialog })));
 const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
 const AbilityDialog = lazy(() => import('./AbilityDialog').then((m) => ({ default: m.AbilityDialog })));
@@ -660,7 +660,7 @@ export default function AppLayout() {
     // never over a page someone came to read from a search result or a shared
     // link, never over the landing (its CTAs open it on the way out, HomeEntry),
     // never over the patch notes, and never to a crawler. Once per session at
-    // most; closing it records a skip (TrainerOnboarding).
+    // most; closing it records a skip (FirstJourney).
     const onboardingOffered = useRef(false);
     useEffect(() => {
         if (onboardingOffered.current || !isAuthReady || currentPage !== 'home') return;
@@ -1546,7 +1546,7 @@ export default function AppLayout() {
             )}
             {isOnboardingOpen && (
                 <Suspense fallback={null}>
-                    <TrainerOnboarding />
+                    <FirstJourney />
                 </Suspense>
             )}
 
