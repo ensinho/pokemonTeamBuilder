@@ -10,9 +10,11 @@
      doors 1·1·1·1, teams 2·1·1 — the same lines all the way down.
    - ONE card (`.home-tile`): the art on its platform in a band of the same
      height across a row, then kicker (mono), title, one line, a foot with a
-     figure or an action. Neutral surface; the subject's type colour lives
-     only on the platform under the Pokémon, as in a battle.
-   - The hero is the page's only tinted surface and holds its only primary.
+     figure or an action. Neutral surface; the subject's type colour is the
+     platform under the Pokémon and a wash of the art's band (`--tone`;
+     Enzo, 2026-11-12: "um tico de personalidade… cores nos cards") — a flat
+     mix into the surface, never a gradient; a tile with no tone stays neutral.
+   - The hero is the page's only fully tinted surface and holds its only primary.
    Phones: the route runs sideways ("Agora" first), the doors are 2 × 2.
 
    Pieces: DayRoute.jsx, RouteArt.jsx, PersonaDoors.jsx, TeamDeck.jsx.
@@ -81,7 +83,8 @@ button.home-tile:active { background: var(--color-surface-active); }
     align-items: flex-end;
     justify-content: center;
     height: var(--tile-media);
-    background: var(--color-surface-raised);
+    /* The subject's colour, washed into the band; neutral with no `--tone`. */
+    background: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 16%, var(--color-surface-raised));
 }
 
 /* The stage the art stands on, and its platform in the subject's colour. */
@@ -102,8 +105,8 @@ button.home-tile:active { background: var(--color-surface-active); }
     width: 5rem;
     height: 1rem;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--tone, var(--color-primary)) 32%, transparent);
-    box-shadow: inset 0 -0.1875rem 0 color-mix(in srgb, var(--tone, var(--color-primary)) 42%, transparent);
+    background: color-mix(in srgb, var(--tone, var(--color-primary)) 48%, transparent);
+    box-shadow: inset 0 -0.1875rem 0 color-mix(in srgb, var(--tone, var(--color-primary)) 60%, transparent);
     translate: -50% 0;
 }
 
@@ -219,6 +222,11 @@ button.home-tile:active { background: var(--color-surface-active); }
     transition: translate var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
 
+/* A door's arrow in its subject's colour (the type chip's label mix). */
+.door .home-tile__chevron {
+    color: color-mix(in srgb, var(--tone) 45%, var(--color-fg));
+}
+
 button.home-tile:hover .home-tile__chevron {
     color: var(--color-fg);
     translate: var(--space-0_5) 0;
@@ -273,6 +281,16 @@ button.home-tile:hover .home-tile__chevron {
 
 .day-route > * {
     position: relative;
+}
+
+/* A route card's band is a battle field (Enzo, 2026-11-12: "um pouco de
+   personalidade nesses cards do meio"): the sky and, from the horizon down,
+   the ground the platforms stand on — two flat mixes of the subject's tone
+   with a hard stop between them, not a fade. No `--tone` → neutral. */
+.day-route .home-tile--card .home-tile__media {
+    --field-sky: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 14%, var(--color-surface-raised));
+    --field-ground: color-mix(in srgb, var(--tone, var(--color-surface-raised)) 30%, var(--color-surface-raised));
+    background: linear-gradient(to bottom, var(--field-sky) 62%, var(--field-ground) 62%);
 }
 
 .day-route__group {

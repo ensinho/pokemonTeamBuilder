@@ -467,7 +467,7 @@
 
 /* The band the stage takes on a phone; the copy starts under it. */
 .day-hero--stage {
-    --stage-band: 9.5rem;
+    --stage-band: 10.5rem;
     padding-top: var(--stage-band);
 }
 
@@ -482,13 +482,15 @@
     translate: none;
 }
 
-/* Inside the band: its feet never reach the line under it. */
+/* Inside the band, whole (Enzo, 2026-11-12: the hero's edge cut its head
+   off): never pushed past the top or the side, feet above the line. */
 .day-hero__ace {
     position: absolute;
-    top: calc(var(--space-8) * -1);
-    right: calc(var(--space-4) * -1);
+    top: var(--space-2);
+    right: 0;
     width: auto;
-    height: 11rem;
+    /* Ends where the eyebrow row (and the palette button) starts. */
+    height: 9.5rem;
     max-width: none;
     aspect-ratio: 1;
     object-fit: contain;
@@ -539,9 +541,9 @@
 
     .day-hero__ace {
         top: auto;
-        right: -10%;
-        bottom: -16%;
-        height: 122%;
+        right: -6%;
+        bottom: -10%;
+        height: 106%;
     }
 
     .day-hero__pad {
