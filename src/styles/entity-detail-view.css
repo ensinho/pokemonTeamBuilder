@@ -3,18 +3,22 @@
    Bulbapedia-inspired reference pages on the app's theme tokens.
    ============================================================ */
 
+/* Every .edv page is a column of cards, and the gap between them belongs to
+   the column — not to a modifier (2026-11-12). It used to live only on
+   .edv--entity (and .best-teams), so every other .edv page — the guides, a
+   guide, /about, the type pages, a shared team — had its cards touching. */
 .edv {
     max-width: 84rem;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
 }
 
 /* Best teams sits under the Meta hub's switcher (HubSwitch): it starts at the
    page's edge with it, instead of centring 84rem away from it on a wide screen. */
 .edv.best-teams {
     margin-inline: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
     padding-bottom: var(--space-8);
 }
 
@@ -23,11 +27,6 @@
    left, who has it (a paged grid, so its height is known) on the right —
    two columns of the same width that start on the same line. One column
    on narrow viewports, or via --single when a side has nothing to show. */
-.edv--entity {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
 .edv-main {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
