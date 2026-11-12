@@ -168,11 +168,37 @@ face — and turned, the line becomes the side of a solid. Eyes and fangs stay
 white in every theme (they sit on the dark front); a tone recolours the body
 like it recolours the line.
 
-**Where.** `<Mascot bot>` asks for him anywhere. A `playground` (the Profile's
-room, the 404) is a bot unless the trainer picked the line: Profile → Mascote →
-Formato (`prefs.form`, `bot` by default, in `ptb:mascot`). Small mascots (tips,
-faces, loaders) stay the line: they repeat, and a body that moves every frame
-is for the one big mascot on a screen.
+**Where: everywhere the mascot was** (Enzo, same day: "use all references of
+this new 3d mascot all of the website where it was previous used, and make it
+a little more present"). Every `<Mascot>` and `<MascotFace>` is the bot unless
+the trainer picked the line (Profile → Mascote → Formato, `prefs.form`, `bot`
+by default, in `ptb:mascot`) or the caller passes `bot={false}`. Two kinds:
+
+- **A still** (`botStill`, one frame with its own sections): a mascot that only
+  shows a face — loaders (their props keep the CSS loops: the ball rocks, the
+  page turns), empty-state figures that are not interactive, modals, banners,
+  the battle face, the forum's reaction stickers (one still per mood, cached).
+  Sections closer than a pixel apart are dropped by size; below 40 px the line
+  band thickens like the line mascot's stroke (`strokeK`).
+- **Alive** (`BotStage`): `interactive`, `stage`, `playground`, or a bot asked
+  to `play`/`cheer`/cover its eyes. 60 fps from 120 px up, 30 fps below; stops
+  off screen, in a background tab and under reduced motion.
+
+The boot splash keeps the line icon (`MascotIcon`): it is the app icon itself,
+drawn before any chunk, and a bot still would add ~5 KB gz to the entry. So
+does any mascot in the instant before the bot chunk lands — AppLayout's idle
+warm-up loads it right after the line engine (`warmMascotBot`) and builds the
+volume (~100 ms, once) in an idle slot, so in practice the line never shows.
+
+More present (2026-11-11):
+
+- **Landing**: he says the stage's bubble ("Quem entra no seu time?") — xl,
+  alive, the first thing on the site that looks back at the visitor
+  (`.landing-speaker`). Calm (`feliz`): a landing that hops forever is noise;
+  he hops when touched.
+- **Recado do dia**: md → lg (at 48 px the face reads, the body does not).
+- **404**: `head` framing, so the playground's ghost fills the stage between
+  the digits.
 
 Traps found while building it:
 
