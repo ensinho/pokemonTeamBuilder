@@ -95,11 +95,11 @@ reuses these pieces before inventing one.
   that covers its eyes at the password stays — it is the only thing on this
   screen no other app has.
 - Desktop: the two columns stay; the same fields and footer switch.
-- Social sign-in (Google) is its own change: `signInWithPopup` /
-  `linkWithPopup` with `browserPopupRedirectResolver` passed **at the call
-  site** (`services/firebase.guard.test.js`), `linkWithPopup` for a guest so
-  the teams survive, and a `/__/auth` proxy before the catch-all in
-  `vercel.json` for iOS standalone. Do not ship it half.
+- Social sign-in (Google) shipped 2026-11-12 exactly that way: the resolver
+  at the call site (`services/googleAuth.js`), `linkWithPopup` for a guest,
+  the `/__/auth` proxy in `vercel.json`, the button hidden until the
+  project's provider answers (`googleAvailability.js`) — see
+  [google_sign_in.md](../../../docs/modules/google_sign_in.md).
 
 ### Home (phone) — `CozyHomeView.jsx`, `components/home/*`, `home-today.css`
 The order is the priority list (wounds 2026-09-14): each block earns its place
