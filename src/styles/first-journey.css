@@ -455,3 +455,124 @@
     .fj-evo { height: 6.5rem; }
     .fj-evo__art { width: 6.5rem; height: 6.5rem; }
 }
+
+/* ── Stage + talk (2026-11-12) ─────────────────────────────────────────
+   A phone keeps one column: both wrappers dissolve into the screen's flex
+   column, so every child keeps its place. From 64rem they become two panels:
+   the stage (the mascot, the art, the media) large on the left, the
+   conversation on the right — the desktop's own composition, not a phone in
+   the middle of a monitor. */
+.fj__stage,
+.fj__talk { display: contents; }
+.fj__slot--desk,
+.fj__desk-only,
+.fj-fan { display: none; }
+
+.fj-google { display: grid; gap: var(--space-3); }
+
+/* shown from 64rem only (.fj__desk-only sets its display there) */
+.fj-here { gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.fj-here li { display: flex; align-items: center; gap: var(--space-2_5); color: var(--color-muted); font-size: var(--text-base); }
+.fj-here li::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-primary-text);
+    flex: none;
+}
+
+@media (min-width: 64rem) {
+    .fj__col {
+        max-width: 76rem;
+        height: min(100%, 50rem);
+        padding-inline: calc(env(safe-area-inset-left, 0px) + var(--space-10)) calc(env(safe-area-inset-right, 0px) + var(--space-10));
+    }
+    .fj__screen {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 27rem);
+        gap: var(--space-12);
+        align-items: stretch;
+    }
+    .fj__screen--peek { display: flex; }
+    .fj__screen--peek .fj__talk { display: contents; }
+    .fj__stage {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-5);
+        min-height: 0;
+        padding: var(--space-8);
+        border-radius: var(--radius-xl);
+        background:
+            radial-gradient(70% 60% at 50% 42%, color-mix(in srgb, var(--fj-glow) 24%, transparent), transparent 72%),
+            var(--color-surface);
+        overflow: hidden;
+    }
+    .fj__talk {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--space-4);
+        min-height: 0;
+    }
+    .fj__talk .fj__grow { display: none; }
+    .fj__talk .fj__eyebrow { align-self: flex-start; }
+    .fj__talk .fj__title { font-size: clamp(var(--text-3xl), 3.4vw, 3.25rem); text-align: left; }
+    .fj__talk .fj__sub { text-align: left; font-size: var(--text-lg); }
+    .fj__talk .fj__link { align-self: flex-start; padding-inline: 0; }
+    .fj__talk .fj__links { justify-content: flex-start; }
+    .fj__desk-only { display: grid; }
+
+    /* the mascot's place on the stage grows with it */
+    .fj__stage .fj__slot { flex: 1 1 auto; width: 100%; max-height: 24rem; }
+    .fj__slot--phone { display: none; }
+    .fj__slot--desk { display: block; }
+
+    /* hello: the site's screens fanned behind him */
+    .fj-fan { display: block; position: absolute; inset: 0; pointer-events: none; }
+    .fj-fan__shot {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 11rem;
+        aspect-ratio: 400 / 866;
+        object-fit: cover;
+        object-position: top;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 0 0 0.3125rem var(--color-surface-raised), var(--shadow-lg);
+        opacity: 0.55;
+    }
+    .fj-fan__shot--0 { transform: translate(-150%, -48%) rotate(-12deg); }
+    .fj-fan__shot--1 { transform: translate(-50%, -62%); opacity: 0.35; }
+    .fj-fan__shot--2 { transform: translate(50%, -48%) rotate(12deg); }
+
+    /* tour: the screen large on the stage, the mascot at its corner */
+    .fj__screen--tour .fj-tour { width: 100%; }
+    .fj__screen--tour .fj__slot--desk {
+        position: absolute;
+        left: var(--space-6);
+        bottom: var(--space-6);
+        width: 9rem;
+        height: 9rem;
+        flex: none;
+    }
+    .fj__screen--tour .fj-tour__title { font-size: var(--text-2xl); }
+    .fj__screen--tour .fj-tour__desc { font-size: var(--text-base); }
+
+    /* level: the evolution as the stage's protagonist */
+    .fj__screen--level .fj-evo { height: 15rem; }
+    .fj__screen--level .fj-evo__art { width: 15rem; height: 15rem; }
+    .fj__screen--level .fj-evo__flash { width: 17rem; height: 17rem; }
+    .fj__screen--level .fj__stage .fj__slot--desk { flex: 0 0 8rem; max-width: 8rem; }
+
+    /* xp: room above for the bolt */
+    .fj__screen--xp .fj__slot--xp { margin-top: var(--space-12); }
+
+    /* persona and account: the card the stage presents */
+    .fj__stage .fj-persona,
+    .fj__stage .fj-card { width: min(100%, 26rem); }
+    .fj__stage .fj-persona { min-height: 14rem; }
+}

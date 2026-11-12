@@ -5,13 +5,15 @@ import { ArrowLeft, Check, LockKeyhole, Mail, UserRound, Zap } from 'lucide-reac
 import { Mascot } from '../Mascot';
 import { Loader } from '../Loader';
 import { PasswordField } from '../modals/auth/PasswordField';
+import { GoogleButton } from '../GoogleButton';
+import { useGoogleSignInAvailable } from '../../services/googleAvailability';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { typeColors } from '../../constants/types';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { track } from '../../services/analytics';
-import { prettifyAuthError, authErrorField } from '../../utils/authErrors';
+import { authErrorField, isAuthCancel, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
 import { JOURNEYS } from '../../utils/journeys';
 import {
@@ -71,7 +73,7 @@ const Art = ({ id, className = '', imgRef }) => (
 );
 
 /** The tour: real screens of the app as stories — a card turning in, a caption, the mascot's pose beside it. */
-function JourneyTour({ t, reduced, onLook, onDone }) {
+function JourneyTour({ t, reduced, onLook, onDone, onIndex, children }) {
     const [index, setIndex] = useState(0);
     const stageRef = useRef(null);
     const segRefs = useRef([]);
@@ -80,12 +82,15 @@ function JourneyTour({ t, reduced, onLook, onDone }) {
     look.current = onLook;
     const done = useRef(onDone);
     done.current = onDone;
+    const indexRef = useRef(onIndex);
+    indexRef.current = onIndex;
 
     useEffect(() => { JOURNEY_TOUR.forEach((item) => { const img = new Image(); img.src = tourImage(item.image); }); }, []);
 
     useEffect(() => {
         const item = JOURNEY_TOUR[index];
         look.current(item);
+        indexRef.current?.(index);
         const stage = stageRef.current;
         if (!stage) return undefined;
         const old = stage.lastElementChild;
@@ -134,7 +139,6 @@ function JourneyTour({ t, reduced, onLook, onDone }) {
         if (next >= JOURNEY_TOUR.length) done.current();
         else setIndex(Math.max(0, next));
     };
-    const item = JOURNEY_TOUR[index];
     return (
         <>
             <div className="fj-segs" data-s aria-hidden="true">
@@ -145,13 +149,7 @@ function JourneyTour({ t, reduced, onLook, onDone }) {
                 <button type="button" className="fj-tour__zone fj-tour__zone--prev" onClick={() => step(-1)} aria-label={t('journey.tour.prev')} />
                 <button type="button" className="fj-tour__zone fj-tour__zone--next" onClick={() => step(1)} aria-label={t('journey.tour.next')} />
             </div>
-            <div className="fj-tour__cap" data-s>
-                <span className="fj__slot fj__slot--side" data-slot aria-hidden="true" />
-                <div className="fj-tour__text" key={item.id} aria-live="polite">
-                    <h3 className="fj-tour__title">{t(`journey.tour.${item.id}.title`)}</h3>
-                    <p className="fj-tour__desc">{t(`journey.tour.${item.id}.desc`)}</p>
-                </div>
-            </div>
+            {children}
         </>
     );
 }
@@ -201,6 +199,9 @@ export function FirstJourney() {
     const [error, setError] = useState('');
     const [errorField, setErrorField] = useState(null);
     const [busy, setBusy] = useState(false);
+    const [googleBusy, setGoogleBusy] = useState(false);
+    const googleOn = useGoogleSignInAvailable();
+    const [tourIndex, setTourIndex] = useState(0);
     const [resetSentTo, setResetSentTo] = useState('');
     const [outcome, setOutcome] = useState(null); // 'account' | 'signedIn' | 'guest' | null
     const emailRef = useRef(null);
@@ -241,7 +242,7 @@ export function FirstJourney() {
         const lr = layer.getBoundingClientRect();
         const base = bot.offsetWidth || 200;
         let cx; let cy; let size;
-        const slot = screenRef.current?.querySelector('[data-slot]');
+        const slot = [...(screenRef.current?.querySelectorAll('[data-slot]') || [])].find((n) => n.getClientRects().length > 0);
         if (stepRef.current === 'peek') {
             size = Math.min(lr.width, 448) * 0.72;
             cx = lr.width / 2;
@@ -536,6 +537,25 @@ export function FirstJourney() {
             showError(prettifyAuthError(err, t), authErrorField(err));
         }
     };
+    // Google (2026-11-12): the popup is the whole sign-up. A name the trainer
+    // typed here wins over Google's; Google's fills the "Valeu, …!" otherwise.
+    const googleGo = async () => {
+        setError(''); setErrorField(null); setGoogleBusy(true);
+        setLook({ mood: 'expectante' });
+        try {
+            const { linked, isNewUser, name: googleName } = await auth().handleGoogleSignIn();
+            track('onboarding_account', { mode: 'google', source: source || 'unknown' });
+            if (name.trim()) saveName();
+            else if (googleName) setName(googleName);
+            setOutcome(linked || isNewUser ? 'account' : 'signedIn');
+            setGoogleBusy(false);
+            goTo('done');
+        } catch (err) {
+            setGoogleBusy(false);
+            if (isAuthCancel(err)) { setLook({ mood: 'feliz' }); return; }
+            showError(prettifyAuthError(err, t));
+        }
+    };
     const continueAsGuest = () => {
         saveName();
         setOutcome('guest');
@@ -566,20 +586,52 @@ export function FirstJourney() {
         <button type={type} className="btn btn-primary btn-lg btn-block fj__cta" data-s onClick={onClick} disabled={disabled}>{label}</button>
     );
 
-    let screen = null;
+    // Each screen is a STAGE (the scene: the mascot's slot, the art, the
+    // media) and a TALK (the words and the controls). On a phone the two
+    // merge back into one column (`display: contents`, the order above the
+    // fold unchanged); from 64rem they are two panels — the stage large on
+    // the left, the conversation on the right (2026-11-12, Enzo: "no pc uma
+    // visão mais expandida"). A screen whose phone slot sits in the talk
+    // (the tour's caption, the level's action row) adds a desktop slot to
+    // its stage; the mascot flies to whichever is visible.
+    const slot = (size) => <span className="fj__slot" style={{ '--slot': size }} data-slot aria-hidden="true" />;
+    const phoneSlot = <span className="fj__slot fj__slot--side fj__slot--phone" data-slot aria-hidden="true" />;
+    const deskSlot = <span className="fj__slot fj__slot--desk" data-slot aria-hidden="true" />;
+    const google = googleOn && mode !== 'reset' && !resetSentTo && !busy && (
+        <div className="fj-google" data-s>
+            <GoogleButton onClick={googleGo} busy={googleBusy} label={t('modals.authGoogle')} busyLabel={t('modals.authGoogleWorking')} />
+            <p className="auth-or" aria-hidden="true">{t('modals.authOr')}</p>
+        </div>
+    );
+
+    let stage = null;
+    let talk = null;
     if (step === 'peek') {
-        screen = (
+        talk = (
             <button type="button" className="fj-peek" onClick={() => goTo('hello')}>
                 <span className="fj-peek__hint" data-s>{t('journey.peekHint')}</span>
             </button>
         );
     } else if (step === 'hello') {
-        screen = (
+        stage = (
             <>
-                <span className="fj__slot" style={{ '--slot': '34%' }} data-slot aria-hidden="true" />
+                {/* desktop: the site's own screens fanned behind him — what is here, at a glance */}
+                <span className="fj-fan" aria-hidden="true">
+                    {JOURNEY_TOUR.slice(0, 3).map((item, i) => (
+                        <img key={item.id} className={`fj-fan__shot fj-fan__shot--${i}`} src={tourImage(item.image)} alt="" decoding="async" />
+                    ))}
+                </span>
+                {slot('34%')}
+            </>
+        );
+        talk = (
+            <>
                 <span className="fj__eyebrow" data-s>{t('journey.helloEyebrow')}</span>
                 {heading(['helloTitle', 'helloAccent'])}
                 <p className="fj__sub" data-s>{t('journey.helloSub')}</p>
+                <ul className="fj-here fj__desk-only" data-s>
+                    {JOURNEY_TOUR.map((item) => <li key={item.id}>{t(`journey.tour.${item.id}.title`)}</li>)}
+                </ul>
                 <span className="fj__grow" />
                 {cta(t('journey.start'), next)}
                 <button type="button" className="fj__link" data-s onClick={() => { setEntry('signIn'); setMode('signIn'); goTo('account'); }}>
@@ -588,22 +640,34 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'tour') {
-        screen = (
+        stage = (
+            <JourneyTour
+                t={t}
+                reduced={reduced}
+                onLook={(item) => { setLook({ mood: item.mood, pose: item.pose }); react('nod'); }}
+                onDone={next}
+                onIndex={setTourIndex}
+            >
+                {deskSlot}
+            </JourneyTour>
+        );
+        talk = (
             <>
                 <h2 id={titleId} className="sr-only" tabIndex={-1}>{t('journey.tour.label')}</h2>
-                <JourneyTour
-                    t={t}
-                    reduced={reduced}
-                    onLook={(item) => { setLook({ mood: item.mood, pose: item.pose }); react('nod'); }}
-                    onDone={next}
-                />
+                <div className="fj-tour__cap" data-s>
+                    {phoneSlot}
+                    <div className="fj-tour__text" key={JOURNEY_TOUR[tourIndex].id} aria-live="polite">
+                        <h3 className="fj-tour__title">{t(`journey.tour.${JOURNEY_TOUR[tourIndex].id}.title`)}</h3>
+                        <p className="fj-tour__desc">{t(`journey.tour.${JOURNEY_TOUR[tourIndex].id}.desc`)}</p>
+                    </div>
+                </div>
                 {cta(t('journey.continue'), next)}
             </>
         );
     } else if (step === 'interests') {
-        screen = (
+        stage = slot('20%');
+        talk = (
             <>
-                <span className="fj__slot" style={{ '--slot': '20%' }} data-slot aria-hidden="true" />
                 {heading(['interestsTitle', 'interestsAccent'])}
                 <p className="fj__sub" data-s>{t('onboarding.interests.sub')}</p>
                 <div className="fj-chips" role="group" aria-labelledby={titleId}>
@@ -635,12 +699,17 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'level') {
-        screen = (
+        stage = (
             <>
                 <div className="fj-evo" data-s aria-hidden="true">
                     <span className="fj-evo__flash" ref={flashRef} />
                     <Art id={LEVEL_ART[level || 'new']} imgRef={evoRef} className="fj-evo__art" />
                 </div>
+                {deskSlot}
+            </>
+        );
+        talk = (
+            <>
                 {heading(['levelTitle', 'levelAccent'])}
                 <div className="fj-opts" role="radiogroup" aria-labelledby={titleId}>
                     {COMPETITIVE_LEVELS.map((value) => (
@@ -660,17 +729,19 @@ export function FirstJourney() {
                 </div>
                 <span className="fj__grow" />
                 <div className="fj__row" data-s>
-                    <span className="fj__slot fj__slot--side" data-slot aria-hidden="true" />
+                    {phoneSlot}
                     <button type="button" className="btn btn-primary btn-lg btn-block fj__cta" onClick={next}>{t('journey.continue')}</button>
                 </div>
             </>
         );
     } else if (step === 'xp') {
-        screen = (
+        stage = (
+            <span className="fj__slot fj__slot--xp" style={{ '--slot': '28%' }} data-slot aria-hidden="true">
+                <span className="fj-bolt"><Zap /></span>
+            </span>
+        );
+        talk = (
             <>
-                <span className="fj__slot fj__slot--xp" style={{ '--slot': '28%' }} data-slot aria-hidden="true">
-                    <span className="fj-bolt"><Zap /></span>
-                </span>
                 {heading(['xpTitle', 'xpAccent'])}
                 <p className="fj__sub" data-s>{t('journey.xpSub', { mission: xp.mission, journey: xp.journey, badge: xp.badge })}</p>
                 <div className="fj-xp" data-s>
@@ -691,9 +762,9 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'persona' && persona) {
-        screen = (
+        stage = (
             <>
-                <span className="fj__slot" style={{ '--slot': '17%' }} data-slot aria-hidden="true" />
+                {slot('17%')}
                 <span className="fj__eyebrow" data-s>{t('onboarding.result.eyebrow')}</span>
                 <div className="fj-persona" ref={cardRef} style={{ '--tone': tone(persona.tone) }}>
                     <div className="fj-persona__text">
@@ -704,6 +775,10 @@ export function FirstJourney() {
                     <Art id={persona.art} className="fj-persona__art" />
                     <span className="fj-persona__shine" aria-hidden="true" />
                 </div>
+            </>
+        );
+        talk = (
+            <>
                 <p className="fj__sub" data-s>{t('onboarding.result.change')}</p>
                 <span className="fj__grow" />
                 {cta(t('journey.continue'), next)}
@@ -711,7 +786,7 @@ export function FirstJourney() {
         );
     } else if (step === 'account') {
         const signIn = mode !== 'signUp';
-        screen = (
+        stage = (
             <>
                 <div className="fj-card" ref={cardRef} data-s style={{ '--tone': persona && !signIn ? tone(persona.tone) : 'var(--color-primary)' }}>
                     <span className="fj-card__avatar"><Art id={persona && !signIn ? persona.art : 94} /></span>
@@ -723,9 +798,14 @@ export function FirstJourney() {
                     </span>
                     <span className="fj-card__level">{t('journey.xpLevel', { n: 1 })}</span>
                 </div>
-                <span className="fj__slot" style={{ '--slot': '12%' }} data-slot aria-hidden="true" />
+                {slot('12%')}
+            </>
+        );
+        talk = (
+            <>
                 {heading(accountTitle)}
                 <p className="fj__sub" data-s>{mode === 'reset' ? t('journey.accountResetSub') : signIn ? t('journey.accountSignInSub') : t('journey.accountSignUpSub', { xp: xp.mission })}</p>
+                {google}
                 {resetSentTo ? (
                     <div className="fj__done-note" role="status" data-s>
                         <p>{t('journey.resetSent', { email: resetSentTo })}</p>
@@ -812,9 +892,9 @@ export function FirstJourney() {
             { key: 'persona', label: t(`onboarding.personas.${persona.id}.name`), art: persona.art, tone: persona.tone },
             ...persona.interests.slice(0, 2).map((i) => ({ key: i, label: t(`onboarding.interests.${i}.title`), art: INTEREST_ART[i].art, tone: INTEREST_ART[i].tone })),
         ] : [];
-        screen = (
+        stage = slot('26%');
+        talk = (
             <>
-                <span className="fj__slot" style={{ '--slot': '26%' }} data-slot aria-hidden="true" />
                 {heading(doneTitle)}
                 <p className="fj__sub" data-s>{t(`journey.${doneSub}`)}</p>
                 {rows.length > 0 && (
@@ -867,8 +947,9 @@ export function FirstJourney() {
                         <button type="button" className="fj__skip" onClick={dismiss}>{t('onboarding.skip')}</button>
                     )}
                 </div>
-                <div className="fj__screen" key={step} ref={screenRef}>
-                    {screen}
+                <div className={`fj__screen fj__screen--${step}`} key={step} ref={screenRef}>
+                    {stage && <div className="fj__stage">{stage}</div>}
+                    <div className="fj__talk">{talk}</div>
                 </div>
             </div>
             <div className="fj__orbit" ref={orbitRef} aria-hidden="true" />
