@@ -640,6 +640,7 @@ eight segmented controls before this list existed (2026-09-22).
 | **v2** a question before destruction | `if (await confirmAction({ title, message, confirmText }))` — never `window.confirm` |
 | **v2** a reversible destructive action | do it, then `toast.info(title, { actions: [{ label: t('toast.undo'), onClick }] })` — undo beats confirm |
 | **v2** the theme | `chooseTheme(id, originFromEvent(event))` / `<ThemeToggle>` — never `changeTheme` from a control (it does not save) |
+| a hub page's search / toolbar | `<HubSlot>` (`components/HubSwitch.jsx`) — it shares the hub switcher's row (one height, pill fields); never a search row of its own under the switcher (2026-11-12) |
 | **v2** find anything | the global search (`CommandPalette`, `setIsSearchOpen` in AppLayout, ⌘K / `/`) — add searchable data as a group in it, never a second search dialog |
 
 Control heights are `--control-h-sm/md/lg` (1.75 / 2.25 / 2.75rem): a button, an

@@ -19,6 +19,7 @@ import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { MascotVerdict } from '../builder/MascotVerdict';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
+import { RecentTeamsCard, RecentTeamsDialog } from '../builder/RecentTeams';
 import { coreIconFor } from '../coreIcons';
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildSynergySuggestions } from '../../utils/synergySuggestions';
@@ -228,6 +229,7 @@ export function TeamBuilderView({
     // The member open in the editor wears the logo ring on its slot.
     const editingInstanceId = useActiveTeamStore((s) => s.editingTeamMember?.instanceId ?? null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
+    const [isRecentOpen, setIsRecentOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     // The guide opens on request only. It used to open itself on the first
     // visit, in front of the very screen it describes; the empty composer now
@@ -1051,6 +1053,8 @@ export function TeamBuilderView({
                             {/* The real number of matches — it showed the loaded
                                 page (50) as if it were the total. */}
                             <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0" title={t('builder.resultCount', { count: totalCount })}>{totalCount}</span>
+                            {/* The recent teams share the header row (RecentTeams.jsx). */}
+                            <RecentTeamsCard teams={recentTeams} onOpen={() => setIsRecentOpen(true)} t={t} />
                         </div>
 
                         <div className="team-builder-filterbar mt-3">
@@ -1236,67 +1240,69 @@ export function TeamBuilderView({
                         </div>
                     </section>
 
-                    <section className="section tb-recent">
-                        <div className="section-head">
-                            <h2 className="section-title">{t('builder.recentTeams')}</h2>
-                            {recentTeams.length > 0 && <span className="section-meta">{recentTeams.length}</span>}
-                            <button type="button" onClick={onNavigateToTeams} className="section-action btn btn-link">{t('builder.viewAll')}</button>
-                        </div>
-
-                        {recentTeams.length > 0 ? (
-                            <div className="tb-recent__grid">
-                                {recentTeams.map((team) => {
-                                    const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
-                                    const favLabel = team.isFavorite ? t('builder.unfavoriteTeam', { name: team.name }) : t('builder.favoriteTeam', { name: team.name });
-                                    return (
-                                        <article key={team.id} className="card card--compact tb-recent-card">
-                                            <div className="tb-recent-card__head">
-                                                <p className="tb-recent-card__title">{team.name}</p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleToggleFavorite(team)}
-                                                    title={favLabel}
-                                                    aria-label={favLabel}
-                                                    aria-pressed={!!team.isFavorite}
-                                                    className={`btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__star ${team.isFavorite ? 'is-on' : ''}`}
-                                                >
-                                                    <StarIcon isFavorite={team.isFavorite} color="currentColor" />
-                                                </button>
-                                            </div>
-                                            <div className="team-builder-sprite-stack">
-                                                {team.pokemons.map((pokemon) => (
-                                                    <img
-                                                        key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
-                                                        src={getTeamPokemonDisplaySprite(pokemon)}
-                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                        alt={pokemon.name}
-                                                        className="team-builder-sprite-stack__item"
-                                                    />
-                                                ))}
-                                            </div>
-                                            <div className="tb-recent-card__actions">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setActiveTeamId(isActive ? null : team.id)}
-                                                    aria-pressed={isActive}
-                                                    className="btn btn-secondary btn-sm tb-recent-card__active"
-                                                >
-                                                    {isActive ? `★ ${t('common.active')}` : t('builder.setActive')}
-                                                </button>
-                                                <button type="button" onClick={() => handleEditTeam(team)} className="btn btn-secondary btn-sm tb-recent-card__edit">{t('common.edit')}</button>
-                                                <button type="button" onClick={() => openTeamCompare(team.id, 'builder_recent')} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__compare" aria-label={t('teamCompare.openAria', { name: team.name })} title={t('teamCompare.openWith')}><ArrowLeftRight aria-hidden="true" /></button>
-                                                <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__delete" aria-label={t('builder.deleteTeamAria', { name: team.name })}><TrashIcon /></button>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <p className="tb-recent__empty">{t('builder.noRecentTeams')}</p>
-                        )}
-                    </section>
                 </div>
             </main> : null}
+
+            {isRecentOpen && (
+                <RecentTeamsDialog
+                    onClose={() => setIsRecentOpen(false)}
+                    onViewAll={() => { setIsRecentOpen(false); onNavigateToTeams(); }}
+                    count={recentTeams.length}
+                    t={t}
+                >
+                    {recentTeams.length > 0 ? (
+                        <div className="tb-recent__grid">
+                            {recentTeams.map((team) => {
+                                const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                                const favLabel = team.isFavorite ? t('builder.unfavoriteTeam', { name: team.name }) : t('builder.favoriteTeam', { name: team.name });
+                                return (
+                                    <article key={team.id} className="card card--compact tb-recent-card">
+                                        <div className="tb-recent-card__head">
+                                            <p className="tb-recent-card__title">{team.name}</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleFavorite(team)}
+                                                title={favLabel}
+                                                aria-label={favLabel}
+                                                aria-pressed={!!team.isFavorite}
+                                                className={`btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__star ${team.isFavorite ? 'is-on' : ''}`}
+                                            >
+                                                <StarIcon isFavorite={team.isFavorite} color="currentColor" />
+                                            </button>
+                                        </div>
+                                        <div className="team-builder-sprite-stack">
+                                            {team.pokemons.map((pokemon) => (
+                                                <img
+                                                    key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
+                                                    src={getTeamPokemonDisplaySprite(pokemon)}
+                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    alt={pokemon.name}
+                                                    className="team-builder-sprite-stack__item"
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="tb-recent-card__actions">
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveTeamId(isActive ? null : team.id)}
+                                                aria-pressed={isActive}
+                                                className="btn btn-secondary btn-sm tb-recent-card__active"
+                                            >
+                                                {isActive ? `★ ${t('common.active')}` : t('builder.setActive')}
+                                            </button>
+                                            <button type="button" onClick={() => { setIsRecentOpen(false); handleEditTeam(team); }} className="btn btn-secondary btn-sm tb-recent-card__edit">{t('common.edit')}</button>
+                                            <button type="button" onClick={() => { setIsRecentOpen(false); openTeamCompare(team.id, 'builder_recent'); }} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__compare" aria-label={t('teamCompare.openAria', { name: team.name })} title={t('teamCompare.openWith')}><ArrowLeftRight aria-hidden="true" /></button>
+                                            <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__delete" aria-label={t('builder.deleteTeamAria', { name: team.name })}><TrashIcon /></button>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="tb-recent__empty">{t('builder.noRecentTeams')}</p>
+                    )}
+                </RecentTeamsDialog>
+            )}
 
             <GamePickerModal
                 isOpen={isGamePickerOpen}

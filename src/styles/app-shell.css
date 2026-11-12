@@ -2707,8 +2707,18 @@
 /* ── Hub switcher (2026-11-09) ───────────────────────────────────────────
    One menu entry for related pages (constants/navHubs.js); this is where the
    trainer picks between them. Sized to its words on a desktop, the full
-   width of the page on a phone. */
-.hub-switch {
+   width of the page on a phone.
+
+   The hub bar (2026-11-12, Enzo): the switcher and the page's own toolbar
+   (<HubSlot>, its search first) share one row on a desktop — the switcher
+   sized to its words, the toolbar taking the rest, every control on one
+   height and one pill radius so the row reads as a single object. On a
+   phone the toolbar drops under the switcher, full width. */
+.hub-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
     margin-bottom: var(--space-4);
 }
 
@@ -2721,7 +2731,38 @@
 .hub-switch--mascot .hub-switch__track { flex: 1 1 auto; min-width: 0; }
 .hub-switch__mascot { flex-shrink: 0; }
 
+.hub-bar__slot {
+    display: flex;
+    flex: 1 1 22rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.hub-bar__slot:empty {
+    display: none;
+}
+
+/* What a page hands the slot loses the margin it kept as its own row and
+   fills what the switcher leaves. */
+.hub-bar__slot > * {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+/* One shape per row: the switcher is a pill, so are the fields beside it. */
+.hub-bar__slot .team-builder-search-wrap,
+.hub-bar__slot .team-builder-select {
+    border-radius: var(--radius-full);
+}
+
 @media (min-width: 1024px) {
+    .hub-bar__slot .team-builder-search-wrap {
+        flex: 1 1 14rem;
+    }
+
     .hub-switch__track.segmented--block {
         display: inline-flex;
         width: auto;
@@ -2734,11 +2775,18 @@
 }
 
 @media (max-width: 1023px) {
-    .hub-switch {
+    .hub-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
         margin-bottom: var(--space-3);
     }
 
     .hub-switch__mascot { width: 2.75rem; height: 2.75rem; }
+
+    .hub-bar__slot {
+        flex: 0 0 auto;
+    }
 
     /* Labels of unequal length ("Uso" / "Times de torneio"): each takes
        what it needs, so the longest still fits a 360px phone. */

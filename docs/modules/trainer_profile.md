@@ -22,7 +22,7 @@ the builder's first regulation. The plan and the proposals still open are in
 | `public/onboarding/tour-*.webp` | The tour's four phone captures (Construtor, Pokédex, PokéPuzzle, Meta), ~20 KB each, **outside the precache** (`vite.config.js` globIgnores). Retake them when those screens change a lot: 390×844, dark, a fresh guest. |
 | `HomeEntry.jsx` | Every way off the landing opens it (`landing`) — over wherever the CTA went; "Já tem conta? Entrar" opens it on the account screen (`entry: 'signIn'`). |
 | `AppLayout.jsx` | Auto-offers it (`auto`) on Home only, once per session; sorts `navigationGroups`; picks the dock's fourth tab. |
-| `CozyHomeView.jsx` | "Para você" panel (answered) or the setup card (not answered); the compact journey card follows `suggestedJourney`. |
+| `CozyHomeView.jsx` | "Para você" panel (answered — `PersonaDoors`, the first pick the big door) or the setup card (not answered); the compact journey card follows `suggestedJourney`. "Rota do dia" orders its cards by `personaDayCards` through `routeOrder` (utils/dayRoute.js), the Champion after the battles and the persona's first card. |
 | `JourneyList.jsx` | The "Para você" tag on recommended journeys. |
 | `ProfileView.jsx` | Preferences → "Perfil de treinador": the persona, its tags, Configurar/Refazer. |
 

@@ -4,6 +4,7 @@ import { CheckCircle2, HelpCircle, LayoutGrid, Swords } from 'lucide-react';
 import '../../styles/generation-quiz-view.css';
 
 import { GENERATION_RANGES } from '../../constants/pokemon';
+import { typeColors } from '../../constants/types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import {
@@ -71,6 +72,10 @@ const REGIONS = Object.freeze({
     'generation-viii': { name: 'Galar', starters: [810, 813, 816] },
     'generation-ix': { name: 'Paldea', starters: [906, 909, 912] },
 });
+
+// Every region's starters are grass, fire and water, in that order: each
+// stands on a battle platform in its own type colour (2026-11-12).
+const STARTER_TYPES = ['grass', 'fire', 'water'];
 
 // Three stars: half the region, four fifths, all of it (utils/quizProgress.js).
 function Stars({ count, label }) {
@@ -922,8 +927,10 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         >
                                             {/* Never played: the starters are silhouettes — "who's that Pokémon?". */}
                                             <span className="quiz-region__starters" aria-hidden="true">
-                                                {region.starters.map((id) => (
-                                                    <img key={id} src={pokemonById.get(id)?.spriteUrl} alt="" className="image-pixelated" loading="lazy" />
+                                                {region.starters.map((id, i) => (
+                                                    <span key={id} className="quiz-region__starter" style={{ '--type': typeColors[STARTER_TYPES[i]] }}>
+                                                        <img src={pokemonById.get(id)?.spriteUrl} alt="" className="image-pixelated" loading="lazy" />
+                                                    </span>
                                                 ))}
                                             </span>
                                             <span className="quiz-region__head">
