@@ -16,6 +16,8 @@ import { COSTUMES } from '../utils/mascot/assistant';
  *   drawing).
  * - `reaction`, a one-shot the app asks for (`hop` on a saved team, `oops`
  *   on an error); only the mascot holding the stage plays it — one per screen.
+ * - `beat`, a game/forum moment for the companion (2026-11-11): `emitBeat('posted')`
+ *   from a store's action; `<MascotCompanion listen>` shows it (`gameBeat`).
  * - `cover`, set while a password field has focus: the mascot near it covers
  *   its eyes (`cover`), or peeks when the password is shown (`peek`).
  */
@@ -42,10 +44,12 @@ const writePrefs = (prefs) => {
 };
 
 let reactionSeq = 0;
+let beatSeq = 0;
 
 export const useMascotStore = create((set, get) => ({
     prefs: typeof window === 'undefined' ? { ...DEFAULT_PREFS } : readPrefs(),
     reaction: null,
+    beat: null,
     cover: null,
     stage: null,
 
@@ -62,6 +66,11 @@ export const useMascotStore = create((set, get) => ({
         if (!get().prefs.reactions || !get().stage) return;
         reactionSeq += 1;
         set({ reaction: { name, id: reactionSeq } });
+    },
+    /** A moment of the trainer's own (a post, a like) for the companion on screen, if any. */
+    emitBeat: (kind) => {
+        beatSeq += 1;
+        set({ beat: { kind, id: beatSeq } });
     },
     setCover: (cover) => { if (get().cover !== cover) set({ cover }); },
 
