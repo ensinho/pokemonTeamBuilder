@@ -126,13 +126,13 @@ function drawn(P, v, pxPerUnit) {
 }
 
 /** Shade 0 (the far wall) … 10 (the front face) of a cross-section. */
-function shadeOf(P, x, depthRank) {
+function shadeOf(P, x, depthRank, lineK = 1) {
     const part = P.vol.parts[x.part];
     if (x.axis === 'z') {
         const half = SHADES / 2;
         if (x.s.at < 0 || x.part !== 0) return Math.round((1 + clamp(x.s.at / (part.depth / 2 || 1), -1, 0)) * half);
         // toward the front: the bevel's outer band is the icon's line, then the dark face
-        return half + Math.round(clamp((x.s.inset - LINE) / LINE_FADE, 0, 1) * half);
+        return half + Math.round(clamp((x.s.inset - LINE * lineK) / LINE_FADE, 0, 1) * half);
     }
     // seen from the side: the far wall dark, the near one the line's violet
     return Math.round(depthRank * (SHADES / 2));
@@ -173,7 +173,7 @@ export function botInner(pose, { time = 0, motion = 'idle', gaze, motionBlend, v
     for (const it of items) {
         if (SPARK_PARTS.has(it.x.part) && !showSparks) continue;
         const use = `<use href="#${uid}${it.x.id}" transform="${mat(it.m)}"`;
-        slices += `${use} class="bs${shadeOf(P, it.x, ranks.get(it) ?? 1)}"/>`;
+        slices += `${use} class="bs${shadeOf(P, it.x, ranks.get(it) ?? 1, Math.min(p.strokeK, 2.2))}"/>`;
         // the head's silhouette on screen: the union of its sections, which the face never leaves
         if (it.x.part === 0) outline += `${use}/>`;
     }
@@ -220,6 +220,17 @@ export function botInner(pose, { time = 0, motion = 'idle', gaze, motionBlend, v
         + '</g>'
         + pieces.fx
         + '</g>';
+}
+
+/**
+ * The bot at rest, one frame with its own sections — a face that only shows
+ * itself (a sticker, a loader's scene, a modal's figure). `px` (CSS width) and
+ * `view` drop the sections closer than a pixel apart; the line thickens at
+ * small sizes like the line mascot's stroke (`sizeTraits` → strokeK).
+ */
+export function botStill(pose, { uid = 'mb-', px = 120, view = '-480 -520 960 960' } = {}) {
+    const w = Number(String(view).split(/\s+/)[2]) || 960;
+    return botInner(pose, { reducedMotion: true, standalone: true, uid, pxPerUnit: (px / w) / RIG_SCALE });
 }
 
 /** A complete standalone <svg> of the bot (tests, the export script). */

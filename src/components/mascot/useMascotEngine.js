@@ -49,3 +49,12 @@ export function useMascotBot(enabled) {
     }, [enabled, mod]);
     return enabled ? mod : null;
 }
+
+/** The idle warm-up (AppLayout): the bot chunk, then its volume (~100 ms, once) in an idle slot. */
+export function warmMascotBot() {
+    return loadMascotBot().then((mod) => {
+        const idle = typeof window !== 'undefined' && window.requestIdleCallback ? window.requestIdleCallback : (fn) => setTimeout(fn, 200);
+        idle(() => { try { mod.botVolume(); } catch { /* drawn on first use instead */ } });
+        return mod;
+    });
+}

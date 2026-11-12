@@ -4,4 +4,4 @@
  * (`useMascotBot`), after the line mascot's own chunk.
  */
 export { BotStage } from './botStage.js';
-export { botMotion, botVolume } from '../../utils/mascot/bot/frame.js';
+export { botMotion, botVolume, botStill } from '../../utils/mascot/bot/frame.js';

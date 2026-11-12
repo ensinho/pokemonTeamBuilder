@@ -33,7 +33,8 @@ let seq = 0;
 export class BotStage extends MascotStage {
     constructor(options) {
         super(options);
-        const { getMotion, followPointer = true } = options;
+        const { getMotion, followPointer = true, fps = 60 } = options;
+        this.frameMs = 1000 / fps - 1;
         this.getMotion = getMotion || (() => 'idle');
         this.uid = `mb${(seq += 1)}-`;
         this.animator = createAnimator();
@@ -109,8 +110,8 @@ export class BotStage extends MascotStage {
 
     draw(pose, frameT) {
         const t = now();
-        // ~60 fps is all the motion needs: a 120/144 Hz screen would paint twice the markup for nothing
-        if (frameT != null && t - (this.lastDraw || 0) < 15) return;
+        // ~60 fps is all the motion needs (30 for a small one): a 120/144 Hz screen would paint twice the markup for nothing
+        if (frameT != null && t - (this.lastDraw || 0) < this.frameMs) return;
         this.lastDraw = t;
         const step = this.animator.step({ now: t, motion: this.motion(), target: this.target(t), hold: this.mode === 'drag', reducedMotion: this.reduced });
         const lean = this.mode === 'drag' ? { yaw: clamp(this.pos.vx * 0.03, -0.7, 0.7), pitch: clamp(-this.pos.vy * 0.015, -0.35, 0.35) } : undefined;
