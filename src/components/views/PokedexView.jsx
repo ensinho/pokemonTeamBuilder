@@ -153,6 +153,10 @@ const PokedexDesktopCard = React.memo(function PokedexDesktopCard({
                 onClick={(event) => onOpen(event, pokemon)}
                 aria-label={t('pokedex.viewDetailsAria', { name: pokemon.name })}
                 className="pokemon-card group"
+                // --card-type: the first type's colour, for the sprite's platform
+                // and the hover edge (pokemon-card.css) — this card has its own
+                // markup, so it has to say it too.
+                style={typeColors[pokemon.types?.[0]] ? { '--card-type': typeColors[pokemon.types[0]] } : undefined}
             >
                 <div className="pokemon-card__topbar">
                     <div className="pokemon-card__types">

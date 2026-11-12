@@ -40,9 +40,18 @@
    are about to pick up, so it becomes a sticker — the 3px edge and the hard
    drop (index.css --sticker). Inset edge, so nothing in the row moves; no
    lift, no loop: it is there while the pointer is. */
+/* The edge is the Pokémon's own type (2026-11-12), not the theme's ink: the
+   bare --sticker edge is --color-fg, which on the dark themes is a white
+   frame around a colourful sprite — the "borda branca sem cor" Enzo flagged.
+   A card with no type falls back to the primary, never to white. Same recipe
+   as the filled team slot (--slot-sticker, team-builder-view.css). */
+.pokemon-card {
+    --card-sticker: inset 0 0 0 3px var(--card-type, var(--color-primary)), 4px 4px 0 0 var(--sticker-drop);
+}
+
 .pokemon-card:hover {
     background: var(--color-surface-hover);
-    box-shadow: var(--sticker);
+    box-shadow: var(--card-sticker);
 }
 
 .pokemon-card:active {
@@ -59,7 +68,7 @@
 .pokemon-card--selected,
 .pokemon-card--selected:hover {
     background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
-    box-shadow: var(--sticker);
+    box-shadow: var(--card-sticker);
 }
 
 /* ── Synergy-pick cards ─────────────────────────────────────────────── */

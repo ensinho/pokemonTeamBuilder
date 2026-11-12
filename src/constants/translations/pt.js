@@ -1669,6 +1669,7 @@ export default {
             youShort: 'você',
             better: 'Você acertou em {{n}}. Melhor que {{pct}}% dos {{total}} treinadores de hoje.',
             solved: 'Você acertou em {{n}}.',
+            solvedOf: 'Você acertou em {{n}}. {{total}} treinadores jogaram hoje.',
             missed: 'Hoje não deu. {{total}} treinadores jogaram.',
             missedAlone: 'Hoje não deu. Amanhã tem outro.',
             league: 'Liga da semana',

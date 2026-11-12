@@ -25,7 +25,10 @@ import { localizePath } from '../../utils/localePath';
 import { deployBase } from '../../services/localeHistory';
 import { useForumStore } from '../../store/useForumStore';
 import { track } from '../../services/analytics';
-import { PuzzleDayPanel } from '../pokepuzzle/PuzzleDayPanel';
+import { PuzzleDayCard, PuzzleDayPanel } from '../pokepuzzle/PuzzleDayPanel';
+import { usePuzzleDay } from '../../hooks/usePuzzleDay';
+
+const NO_ROWS = Object.freeze([]);
 import { renderPuzzleShareBlob } from '../pokepuzzle/drawPuzzleShare';
 import { SITE_URL } from '../../utils/seoPages';
 import { Loader } from '../Loader';
@@ -911,7 +914,7 @@ export default function PokePuzzleView() {
     // guesses — the day's Pokémon never leaves this screen.
     const handleShareToForum = async () => {
         const share = buildPuzzleShare({
-            guesses,
+            guesses: guesses.map(normalizeNameForGame),
             target: targetNormalized,
             maxAttempts: MAX_ATTEMPTS,
             won: gameStatus === 'WON',
@@ -940,7 +943,7 @@ export default function PokePuzzleView() {
     // share that comes after awaited work. Desktop downloads it.
     const shareImageRef = useRef(null);
     const buildShareImage = useCallback(() => {
-        const rows = buildPuzzleShare({ guesses, target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [];
+        const rows = buildPuzzleShare({ guesses: guesses.map(normalizeNameForGame), target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [];
         if (!rows.length) return Promise.resolve(null);
         const won = gameStatus === 'WON';
         return renderPuzzleShareBlob({
@@ -995,8 +998,12 @@ export default function PokePuzzleView() {
     const isArchive = selectedDate !== getTodayDateString();
     const isWon = gameStatus === 'WON';
     // The finished board as colour codes only (never letters), for the day's panel.
+    // Guesses are compared letter by letter with the normalised answer, so they
+    // are normalised too: a raw "iron-crown" is ten characters against a
+    // nine-letter answer, and buildPuzzleShare drops a ragged row — which made
+    // a 3-guess win count, post and draw as a 2-guess one (2026-11-12).
     const dayShareRows = useMemo(() => (gameStatus === 'WON' || gameStatus === 'LOST')
-        ? (buildPuzzleShare({ guesses, target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [])
+        ? (buildPuzzleShare({ guesses: guesses.map(normalizeNameForGame), target: targetNormalized, maxAttempts: MAX_ATTEMPTS, won: gameStatus === 'WON' })?.rows || [])
         : [], [gameStatus, guesses, targetNormalized]);
 
     // Prepare the result image as soon as the game is over (see handleShareImage).
@@ -1028,9 +1035,21 @@ export default function PokePuzzleView() {
 
     // The day, together: the crowd's distribution and friends' grids
     // (2026-11-06). One element — it reports the result when it mounts.
-    const dayPanel = mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0
-        ? <PuzzleDayPanel dayKey={selectedDate} rows={dayShareRows} won={isWon} t={t} history={historyByDate} pastDates={pastDates} hints={hints.length} />
-        : null;
+    // One fetch for the page; the phone draws it as a tabbed panel inside the
+    // result card, the desktop as three cards (2026-11-12: Hoje under the
+    // board, Você and the league under the result — the tabs hid two thirds
+    // of it and left the column beside the board empty).
+    const hasDay = mode === 'daily' && selectedDate === getTodayDateString() && dayShareRows.length > 0;
+    const dayData = usePuzzleDay({
+        dayKey: selectedDate,
+        rows: hasDay ? dayShareRows : NO_ROWS,
+        won: isWon,
+        t,
+        history: historyByDate,
+        pastDates,
+        hints: hints.length,
+    });
+    const dayPanel = hasDay ? <PuzzleDayPanel data={dayData} t={t} /> : null;
 
     return (
         <>
@@ -1360,7 +1379,7 @@ export default function PokePuzzleView() {
 
                             {/* Two columns: the day fills the space under the board
                                 instead of stretching the result card beside it. */}
-                            {isTwoColumn && gameStatus !== 'IN_PROGRESS' && dayPanel}
+                            {isTwoColumn && gameStatus !== 'IN_PROGRESS' && hasDay && <PuzzleDayCard data={dayData} t={t} section="today" />}
                         </div>
 
                         {/* Result: one next step, one share. */}
@@ -1477,6 +1496,14 @@ export default function PokePuzzleView() {
                                         )}
                                     </div>
                                 </section>
+                                {/* Desktop: the trainer's record and the week's league sit
+                                    under the result, in the column that used to end there. */}
+                                {isTwoColumn && hasDay && (
+                                    <>
+                                        <PuzzleDayCard data={dayData} t={t} section="you" />
+                                        <PuzzleDayCard data={dayData} t={t} section="week" />
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
