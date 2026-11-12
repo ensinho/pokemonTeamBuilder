@@ -14,7 +14,7 @@ import { eventText } from '../../../../utils/challengeText';
 import { play, soundFor } from '../../../../utils/challengeSfx';
 import { setPinch, startMusic, stopMusic } from '../../../../utils/battleMusic';
 import { settledRequest, sheetFromRequest, shownConditions, withShown } from '../../../../utils/challengeSheet';
-import { battleMood } from '../../../../utils/mascot/assistant';
+import { battleBeat, battleMood } from '../../../../utils/mascot/assistant';
 import { championRoster, faintedSpecies, myRoster, railTeams, switchCounts } from '../../../../utils/challengeView';
 import { Mascot } from '../../../Mascot';
 import { DsBattleScene } from './DsBattleScene';
@@ -158,6 +158,7 @@ export function DsBattleStage({
     }, [onForfeit, run.practice, rival?.forfeitCopy, t]);
 
     const commandInput = useRef(null);
+    const gestureRef = useRef({ event: null, n: 0 });
     const cmd = useBattleCommands({
         request,
         enabled: yourTurn,
@@ -185,9 +186,13 @@ export function DsBattleStage({
     };
     // His face beside the message: the moment's readout (`battleMood`), never a second voice.
     const mood = battleMood(current, { hpPct: myHpPct, yourTurn, waiting: !playing && pending, ended, won: run.status === 'won' });
+    // ...and his gesture (2026-11-11, `battleBeat`): a knock-out, a big hit, the
+    // trainer's gimmick, the end — once per event, the rest of the time the face alone.
+    if (current && current !== gestureRef.current.event) gestureRef.current = { event: current, n: gestureRef.current.n + 1 };
+    const gesture = battleBeat(current, { won: run.status === 'won' });
     const mascot = (
         <span className="hud-mascot" aria-hidden="true">
-            <Mascot size="fill" framing="head" mood={mood} />
+            <Mascot size="fill" framing="head" mood={mood} play={gesture || undefined} playKey={gestureRef.current.n} interactive seasonal={false} />
         </span>
     );
     const scene = (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MascotCompanion } from '../MascotCompanion';
 import { RATINGS } from '../../utils/teamRating';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { activeMention, insertMention, mentionSuggestions } from '../../utils/forumMentions';
@@ -151,6 +152,8 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
             )}
 
             <div className="comment-composer__row">
+                {/* In a thread he sits where the trainer writes: a nod for the comment just sent. */}
+                <MascotCompanion listen rest="curioso" size="sm" className="comment-composer__host" />
                 <button
                     ref={attachButtonRef}
                     type="button"

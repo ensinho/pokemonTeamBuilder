@@ -1872,6 +1872,10 @@ summary.forum-explorer__heading:focus-visible {
     min-width: 0;
 }
 
+/* The Centro's host and the composer's (MascotCompanion, 2026-11-11). */
+.forum-host,
+.comment-composer__host { flex-shrink: 0; }
+
 .forum-feed-head__id {
     display: flex;
     flex: 1 1 auto;

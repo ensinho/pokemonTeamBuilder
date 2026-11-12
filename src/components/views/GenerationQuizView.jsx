@@ -30,6 +30,9 @@ import { useQuizRuns } from '../../hooks/useQuizRuns';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { Loader } from '../Loader';
+import { MascotCompanion } from '../MascotCompanion';
+import { useMascotBeat } from '../../hooks/useMascotBeat';
+import { feedbackBeat } from '../../utils/mascot/assistant';
 import { toast } from '../../store/useToastStore';
 import { track } from '../../services/analytics';
 import { useSearchParams } from 'react-router-dom';
@@ -154,6 +157,15 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(10);
     const runDeletes = useDeferredDelete();
     const celebrateTimerRef = useRef(0);
+    // The mascot reads the feedback line (2026-11-11): each new line is a beat
+    // — a find hops (a streak climbs), a miss shakes his head, the last one wins.
+    const [mascotBeat, emitBeat] = useMascotBeat();
+    const wonRef = useRef(false);
+    useEffect(() => {
+        const kind = feedbackBeat(feedback.tone, { complete: wonRef.current });
+        wonRef.current = false;
+        if (kind) emitBeat(kind);
+    }, [feedback, emitBeat]);
     useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
 
     useEffect(() => {
@@ -419,6 +431,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
     // that loaded already finished, and re-ran (re-opening the dialog) every
     // time the badge stats or the language changed.
     const celebrate = useCallback(() => {
+        wonRef.current = true;
         setAnnouncement(language === 'pt' ? 'Quiz de Gerações concluído.' : 'Generation Quiz complete.');
         setFeedback({ tone: 'success', message: language === 'pt' ? 'Quiz concluído. Todos os Pokémon selecionados foram encontrados!' : 'Quiz complete. Every selected Pokémon has been found.' });
         setCelebrationPokemon(activeEntries.length > 0
@@ -897,6 +910,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                 </div>
 
                                 <div className="generation-quiz__console-status">
+                                    <MascotCompanion beat={mascotBeat} rest="determinado" size="md" className="quiz-companion" />
                                     <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
                                         {feedback.message}
                                     </p>

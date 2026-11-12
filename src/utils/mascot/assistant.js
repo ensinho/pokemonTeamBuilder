@@ -155,3 +155,89 @@ export function battleMood(event, { mySide = 'p1', hpPct = 100, yourTurn = false
     if (yourTurn) return hpPct <= 25 ? 'preocupado' : 'determinado';
     return 'concentrado';
 }
+
+/* ---------- the game companion (2026-11-11) ---------- */
+/**
+ * Enzo: "improve its presence by showing interactions on minigames". A game
+ * says what just happened (a beat: the trainer guessed right, missed, asked
+ * for a hint, won); this table says his face and his gesture. Same rules as
+ * the rest of the assistant: he gestures, the game's own copy speaks; only
+ * the trainer's own act moves him (a run that loads finished is not a beat);
+ * the loud ones (`celebrate`) only at the end of a game.
+ *
+ * `hold` (ms): how long a passing face stays before he goes back to the
+ * game's resting face; an end (win, lose) holds until the next beat.
+ */
+export const GAME_BEATS = {
+    start: { mood: 'determinado', play: 'nod', hold: 2200 },
+    found: { mood: 'animado', play: 'hop', hold: 2200 },        // a right answer
+    close: { mood: 'curioso', play: 'nod', hold: 2400 },        // wrong, but warmer (letters in place)
+    miss: { mood: 'preocupado', play: 'shake', hold: 2400 },    // wrong
+    repeat: { mood: 'desconfiado', play: 'shake', hold: 2000 }, // already found that one
+    invalid: { mood: 'confuso', play: 'shake', hold: 2000 },    // not a Pokémon / not a word
+    hint: { mood: 'travesso', play: 'sparks', hold: 2400 },
+    win: { mood: 'radiante', play: 'celebrate' },
+    perfect: { mood: 'empolgado', play: 'celebrate' },          // won at the first try
+    lose: { mood: 'triste', play: 'oops' },
+    // the forum: a post is a moment, a comment or a like a nod
+    posted: { mood: 'radiante', play: 'celebrate', hold: 2600 },
+    commented: { mood: 'animado', play: 'nod', hold: 2200 },
+    liked: { mood: 'apaixonado', play: 'nod', hold: 2000 },
+    reacted: { mood: 'brilhando', play: 'sparks', hold: 2000 },
+};
+/** Beats that extend a streak of right answers; the others (but hints) end it. */
+const STREAK_UP = new Set(['found']);
+const STREAK_KEEP = new Set(['hint', 'repeat']);
+
+/** The streak after a beat. */
+export function nextStreak(streak, kind) {
+    if (STREAK_UP.has(kind)) return streak + 1;
+    if (STREAK_KEEP.has(kind)) return streak;
+    return 0;
+}
+
+/**
+ * His face and gesture for a beat. A streak of right answers climbs: from 3 a
+ * jump, every 5th a spin with stars in his eyes. Unknown beats: nothing.
+ */
+export function gameBeat(kind, { streak = 0 } = {}) {
+    const base = GAME_BEATS[kind];
+    if (!base) return null;
+    if (kind === 'found' && streak >= 5 && streak % 5 === 0) return { ...base, mood: 'brilhando', play: 'spin' };
+    if (kind === 'found' && streak >= 3) return { ...base, mood: 'empolgado', play: 'jump' };
+    return { ...base };
+}
+
+/**
+ * The quizzes' feedback line (`{ tone }`) as a beat: they already say what
+ * happened in one place, so the companion reads it there.
+ */
+export function feedbackBeat(tone, { complete = false } = {}) {
+    switch (tone) {
+        case 'success': return complete ? 'win' : 'found';
+        case 'danger': return 'miss';
+        case 'warning': return 'repeat';
+        case 'info': return 'start';
+        default: return null;
+    }
+}
+
+/**
+ * A battle event as a gesture (beside `battleMood`'s face): a knock-out on
+ * either side, a big hit, the trainer's own gimmick, the end. Everything
+ * else is the face alone — a battle has a line every second.
+ */
+export function battleBeat(event, { mySide = 'p1', won = false } = {}) {
+    const mine = event?.side === mySide;
+    switch (event?.type) {
+        case 'end': return won ? 'celebrate' : 'oops';
+        case 'faint': return mine ? 'oops' : 'hop';
+        case 'mega':
+        case 'tera':
+        case 'zpower': return mine ? 'sparks' : null;
+        case 'effect':
+            if (event.kind === 'supereffective' || event.kind === 'crit') return mine ? 'shake' : 'nod';
+            return null;
+        default: return null;
+    }
+}

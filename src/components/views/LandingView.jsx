@@ -16,6 +16,7 @@ import { AnimatedSprite } from '../AnimatedSprite';
 import { BrandWordmark } from '../BrandWordmark';
 import { LandingFeatures } from '../landing/LandingFeatures';
 import { LogoMark } from '../LogoMark';
+import { Mascot } from '../Mascot';
 import { THEME_META } from '../../constants/theme';
 import { LANGUAGES } from '../../utils/localePath';
 import { PokeballIcon } from '../icons';
@@ -58,8 +59,13 @@ function LandingStage({ bubble }) {
         <div className="landing-stage" aria-hidden="true" style={{ '--spark-color': typeColors[STAGE_LEAD_TYPE] }}>
             <span className="landing-stage__ball" />
             {/* The product speaking for itself (the references' chat bubble),
-                asked in the franchise's own words. Decoration: the h1 says it. */}
-            <span className="landing-bubble">{bubble}</span>
+                asked in the franchise's own words — said by the mascot, alive
+                (2026-11-11, the 3D bot): the first thing on the site that
+                looks back at the visitor. Decoration: the h1 says it. */}
+            <span className="landing-speaker">
+                <Mascot size="xl" framing="head" interactive stage className="landing-speaker__mascot" />
+                <span className="landing-bubble">{bubble}</span>
+            </span>
             {row(STAGE_BACK, 'back')}
             {row(STAGE_FRONT, 'front')}
         </div>

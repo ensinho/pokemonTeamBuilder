@@ -167,3 +167,22 @@
 }
 .data-notes__link:hover { text-decoration: underline; }
 .data-notes__link svg { width: 0.875rem; height: 0.875rem; }
+
+/* The mascot in the guides (2026-11-11): the index's professor, and the
+   end of a guide where he hops once it has been read. */
+.guide-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+.guide-hero__copy { flex: 1 1 0; min-width: 0; }
+.guide-hero__mascot { flex-shrink: 0; }
+.guide-more__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+.guide-end-mascot { display: inline-flex; flex-shrink: 0; }
+@media (max-width: 640px) {
+    .guide-hero__mascot { width: 4.5rem; height: 4.5rem; }
+}

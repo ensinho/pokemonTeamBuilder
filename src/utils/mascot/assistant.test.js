@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { COSTUMES, battleMood, PERSONA_COSTUME, costumeHat, homeNote, patienceStage, teamVerdict, verdictImproved, VERDICT_RANK } from './assistant';
+import { COSTUMES, battleMood, battleBeat, feedbackBeat, gameBeat, GAME_BEATS, nextStreak, PERSONA_COSTUME, costumeHat, homeNote, patienceStage, teamVerdict, verdictImproved, VERDICT_RANK } from './assistant';
+import { SEQ } from './motion';
 import { MOODS } from './catalog';
 import { HATS } from './rig';
 import { PERSONAS } from '../trainerProfile';
@@ -158,5 +159,47 @@ describe('battleMood', () => {
         expect(battleMood(null, { yourTurn: true, hpPct: 20 })).toBe('preocupado');
         expect(battleMood({ type: 'end' }, { won: true })).toBe('radiante');
         expect(battleMood(null, { ended: true, won: false })).toBe('triste');
+    });
+});
+
+describe('the game companion', () => {
+    it('every beat names a real mood and a real sequence', () => {
+        for (const [kind, beat] of Object.entries(GAME_BEATS)) {
+            expect(MOODS[beat.mood], `${kind} mood`).toBeTruthy();
+            expect(SEQ[beat.play], `${kind} play`).toBeTruthy();
+        }
+    });
+
+    it('celebrates only an end (a win, a post), never a passing answer', () => {
+        const loud = Object.entries(GAME_BEATS).filter(([, b]) => b.play === 'celebrate').map(([k]) => k).sort();
+        expect(loud).toEqual(['perfect', 'posted', 'win']);
+        expect(gameBeat('win').hold).toBeUndefined(); // an end stays on his face
+        expect(gameBeat('miss').hold).toBeGreaterThan(0);
+    });
+
+    it('a streak of right answers climbs: hop, then a jump from 3, a spin every 5th', () => {
+        let streak = 0;
+        const plays = [];
+        for (let i = 0; i < 6; i += 1) { streak = nextStreak(streak, 'found'); plays.push(gameBeat('found', { streak }).play); }
+        expect(plays).toEqual(['hop', 'hop', 'jump', 'jump', 'spin', 'jump']);
+        expect(nextStreak(4, 'hint')).toBe(4);
+        expect(nextStreak(4, 'miss')).toBe(0);
+    });
+
+    it('reads the quizzes\' feedback line', () => {
+        expect(feedbackBeat('success')).toBe('found');
+        expect(feedbackBeat('success', { complete: true })).toBe('win');
+        expect(feedbackBeat('danger')).toBe('miss');
+        expect(feedbackBeat('muted')).toBeNull();
+        expect(gameBeat('nonsense')).toBeNull();
+    });
+
+    it('gestures in battle only at the big moments', () => {
+        expect(battleBeat({ type: 'faint', side: 'p2' })).toBe('hop');
+        expect(battleBeat({ type: 'faint', side: 'p1' })).toBe('oops');
+        expect(battleBeat({ type: 'end' }, { won: true })).toBe('celebrate');
+        expect(battleBeat({ type: 'mega', side: 'p2' })).toBeNull();
+        expect(battleBeat({ type: 'hp', side: 'p1' })).toBeNull();
+        expect(battleBeat(null)).toBeNull();
     });
 });

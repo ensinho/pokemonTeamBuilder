@@ -181,6 +181,15 @@
     min-height: 1.1rem;
 }
 
+/* The mascot plays along at the feedback line (2026-11-11, MascotCompanion). */
+.quiz-companion { flex-shrink: 0; }
+.quiz-companion-line {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.generation-quiz__console-status .generation-quiz__feedback { flex: 1 1 0; }
+
 .generation-quiz__console-inline-metrics {
     display: none;
     font-family: var(--font-mono);
