@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import '../../styles/entity-detail-view.css';
@@ -10,6 +10,32 @@ import { GUIDE_INDEX, guideMeta } from '../../content/guideIndex';
 import { guideContent } from '../../content/guides';
 import { dayLabel } from '../../utils/dataNotes';
 import { EmptyState } from '../EmptyState';
+import { Mascot } from '../Mascot';
+import { MascotCompanion } from '../MascotCompanion';
+import { useMascotBeat } from '../../hooks/useMascotBeat';
+
+/**
+ * The end of a guide (2026-11-11): the mascot waits beside "Mais guias" and
+ * hops once when the trainer reads that far — the reading was theirs.
+ */
+function GuideEndMascot() {
+    const ref = useRef(null);
+    const [beat, emit] = useMascotBeat();
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+        const io = new IntersectionObserver(([e]) => {
+            if (e.isIntersecting) { emit('found'); io.disconnect(); }
+        }, { threshold: 0.9 });
+        io.observe(el);
+        return () => io.disconnect();
+    }, [emit]);
+    return (
+        <span ref={ref} className="guide-end-mascot">
+            <MascotCompanion beat={beat} rest="feliz" size="md" />
+        </span>
+    );
+}
 
 /**
  * The guides (2026-10-30): `/guides` lists them, `/guides/:slug` is one. The
@@ -25,10 +51,14 @@ export function GuidesView() {
 
     return (
         <div className="edv guide-view">
-            <header className="edv-header">
-                <span className="edv-kicker">{t('guidesPage.kicker')}</span>
-                <h1 className="edv-title">{t('guidesPage.title')}</h1>
-                <p className="edv-lead">{t('guidesPage.lede')}</p>
+            {/* The guides' professor (2026-11-11): the mascot in a mortarboard, reading. */}
+            <header className="edv-header guide-hero">
+                <div className="guide-hero__copy">
+                    <span className="edv-kicker">{t('guidesPage.kicker')}</span>
+                    <h1 className="edv-title">{t('guidesPage.title')}</h1>
+                    <p className="edv-lead">{t('guidesPage.lede')}</p>
+                </div>
+                <Mascot size="xl" framing="body" mood="concentrado" pose="lendoPokedex" hat="mortarboard" interactive stage className="guide-hero__mascot" />
             </header>
             <ul className="guide-list">
                 {GUIDE_INDEX.map((g) => {
@@ -119,7 +149,10 @@ export function GuideView() {
 
             {others.length > 0 && (
                 <nav className="edv-section" aria-labelledby="guide-more">
-                    <h2 id="guide-more" className="edv-section__title">{t('guidesPage.more')}</h2>
+                    <div className="guide-more__head">
+                        <GuideEndMascot />
+                        <h2 id="guide-more" className="edv-section__title">{t('guidesPage.more')}</h2>
+                    </div>
                     <ul className="guide-more">
                         {others.map((g) => (
                             <li key={g.slug}>
