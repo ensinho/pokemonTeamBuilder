@@ -842,11 +842,30 @@
         justify-content: flex-start;
     }
 
-    /* Under the board the panel is a card of the page, like the hints. */
-    .pokepuzzle-game-main > .puzzle-day {
+    /* Under the board, and under the result, each reading is a card of the
+       page, like the hints. */
+    .pokepuzzle-game-main > .puzzle-day,
+    .pokepuzzle-game-sidebar > .puzzle-day {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
         background: var(--color-surface);
+    }
+
+    /* The column now holds the result, the record and the league: a stack
+       taller than the screen must scroll with the page, not stick to it. */
+    .pokepuzzle-game-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .pokepuzzle-game-sidebar:has(> .puzzle-day) {
+        position: static;
+    }
+
+    /* 21rem is narrow for four figures in a row. */
+    .pokepuzzle-game-sidebar .puzzle-record {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

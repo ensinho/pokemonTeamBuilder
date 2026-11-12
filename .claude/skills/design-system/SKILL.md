@@ -101,6 +101,12 @@ override this skill):
   sprite's corner — Volt on hover/focus with a pointer, a quiet edged dot on
   touch (nothing lives only on hover). One word repeated on seventy cards is
   the same tell as seventy count pills.
+- **An edge takes the object's colour.** The hovered / selected Pokémon card's
+  sticker edge is its type (`--card-sticker`, from `--card-type`, falling back
+  to `--color-primary`), like the filled team slot's. Bare `--sticker` — whose
+  edge is `--color-fg`, white on the dark themes — is only for objects with no
+  colour of their own. A white frame on a coloured object is the wound of
+  2026-11-12; Enzo flagged it as recurring.
 - **A filter is quieter than a place.** `.segmented--quiet` (lifted neutral
   thumb, foreground ink) for a segmented control that narrows or orders the
   list under it; the Volt thumb is for "which page of this hub". One Volt

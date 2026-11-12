@@ -1703,6 +1703,7 @@ export default {
             youShort: 'you',
             better: 'You got it in {{n}}. Better than {{pct}}% of today\'s {{total}} trainers.',
             solved: 'You got it in {{n}}.',
+            solvedOf: 'You got it in {{n}}. {{total}} trainers played today.',
             missed: 'Not today. {{total}} trainers played.',
             missedAlone: 'Not today. There is another one tomorrow.',
             league: 'Weekly league',

@@ -56,7 +56,7 @@
    (pokemon-card.css) while the pointer is anywhere on it, star included. */
 .pokedex-card-cell--desktop:hover > .pokemon-card {
     background: var(--color-surface-hover);
-    box-shadow: var(--sticker);
+    box-shadow: var(--card-sticker);
 }
 
 .pokedex-card-cell--desktop:hover > .pokemon-card .pokemon-card__media {

@@ -1,12 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, doc, documentId, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../services/firebase';
-import { appId } from '../../constants/firebase';
-import { callAuthedApi } from '../../services/apiClient';
-import { useAuthStore } from '../../store/useAuthStore';
-import { useFriendsStore } from '../../store/useFriendsStore';
-import { betterThanShare, gapAbove, leagueWeek, puzzleMedals, puzzleRecord, rankDay, rankWeek } from '../../utils/puzzleStandings';
+import { betterThanShare, gapAbove, puzzleMedals } from '../../utils/puzzleStandings';
 
 /**
  * Under today's PokéPuzzle result: three readings of it (2026-11-12; it was
@@ -18,21 +12,10 @@ import { betterThanShare, gapAbove, leagueWeek, puzzleMedals, puzzleRecord, rank
  *   8 points for the first guess down to 1 for the eighth.
  * - **Você** — the trainer's own record, the week as dots, and medals.
  *
- * The result goes to the server once (api/daily-puzzle.js POST), which
- * answers with the distribution. Friends' rows are read from the day's
- * `players`; the league reads the same rows for the week's days, only when
- * its tab is opened. Nothing new is written (utils/puzzleStandings.js).
+ * The data is `usePuzzleDay` (hooks/usePuzzleDay.js): one fetch for the
+ * page. A phone draws it as `PuzzleDayPanel` (tabs); the desktop as three
+ * `PuzzleDayCard`s. Nothing new is written (utils/puzzleStandings.js).
  */
-const MAX_PLAYERS = 30; // Firestore's `in` limit; the trainer is one of them.
-const BUCKETS = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'miss'];
-const pad = (dayKey) => dayKey.split('-').map((part, i) => (i ? part.padStart(2, '0') : part)).join('-');
-const unpad = (dayKey) => dayKey.split('-').map((part, i) => (i ? String(Number(part)) : part)).join('-');
-
-const readPlayers = (day, uids) => getDocs(query(
-    collection(db, `artifacts/${appId}/public/data/puzzleDays/${day}/players`),
-    where(documentId(), 'in', uids),
-)).then((snap) => snap.docs.map((d) => ({ uid: d.id, ...d.data() })));
-
 function MiniGrid({ rows }) {
     if (!rows?.length) return null;
     return (
@@ -48,129 +31,26 @@ function MiniGrid({ rows }) {
 
 const scoreOf = (player) => (player.won ? `${player.guesses}/8` : '×');
 
-export function PuzzleDayPanel({ dayKey, rows, won, t, history = null, pastDates = [], hints = 0 }) {
-    const userId = useAuthStore((s) => s.userId);
-    const displayName = useAuthStore((s) => s.displayName);
-    const friends = useFriendsStore((s) => s.friends);
+/** A phone's panel: one card, the three readings behind tabs. */
+export function PuzzleDayPanel({ data, t }) {
     const [tab, setTab] = useState('today');
-    const [bars, setBars] = useState(null);
-    const [friendRows, setFriendRows] = useState([]);
-    const [weekRows, setWeekRows] = useState(null);
-    const day = pad(dayKey);
-    const friendUids = useMemo(
-        () => (friends || []).map((f) => f.userId).filter(Boolean).slice(0, MAX_PLAYERS - 1),
-        [friends],
-    );
-    const friendKey = friendUids.join(',');
+    const { loadWeek } = data;
+    useEffect(() => { if (tab === 'week') loadWeek(); }, [tab, loadWeek]);
+    return <PuzzleDayView {...data} t={t} tab={tab} onTab={setTab} />;
+}
 
-    useEffect(() => {
-        if (!userId || !rows.length) return undefined;
-        let alive = true;
-        (async () => {
-            const res = await callAuthedApi('/api/daily-puzzle', { day, rows }).catch(() => null);
-            let dist = res?.ok ? res.payload?.distribution : null;
-            if (!dist && db) {
-                // The endpoint is away (a static deploy): read the counters directly.
-                const snap = await getDoc(doc(db, `artifacts/${appId}/public/data/puzzleDays`, day)).catch(() => null);
-                const data = snap?.exists() ? snap.data() : null;
-                if (data) {
-                    const total = BUCKETS.reduce((s, k) => s + (Number(data[k]) || 0), 0);
-                    dist = { total, bars: BUCKETS.map((key) => ({ key, count: Number(data[key]) || 0, share: total ? Math.round(((Number(data[key]) || 0) / total) * 100) : 0 })) };
-                }
-            }
-            if (alive && dist?.total) setBars(dist);
-        })();
-        return () => { alive = false; };
-    }, [userId, day, rows]);
-
-    useEffect(() => {
-        if (!db || !friendUids.length) { setFriendRows([]); return undefined; }
-        let alive = true;
-        readPlayers(day, friendUids).then((list) => { if (alive) setFriendRows(list); }).catch(() => {});
-        return () => { alive = false; };
-        // friendKey stands for friendUids: the list is rebuilt on every store update.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [friendKey, day]);
-
-    // The trainer's own row is known here — it does not wait for the server.
-    const me = useMemo(() => ({
-        uid: userId || 'me',
-        name: displayName || t('pokepuzzle.day.you'),
-        won,
-        guesses: rows.length,
-        rows,
-        isMe: true,
-    }), [userId, displayName, won, rows, t]);
-    const todayRanked = useMemo(
-        () => rankDay([me, ...friendRows.filter((f) => f.uid !== me.uid)]),
-        [me, friendRows],
-    );
-
-    // The league: the week's days before today, read once when the tab opens.
-    const week = useMemo(() => leagueWeek(new Date(`${day}T12:00:00`)), [day]);
-    useEffect(() => {
-        if (tab !== 'week' || weekRows || !db || !userId || !friendUids.length) return undefined;
-        let alive = true;
-        const uids = [userId, ...friendUids];
-        Promise.all(week.days.filter((d) => d !== day).map((d) => readPlayers(d, uids).catch(() => [])))
-            .then((lists) => { if (alive) setWeekRows(lists); });
-        return () => { alive = false; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tab, weekRows, userId, friendKey, week, day]);
-    const weekTable = useMemo(
-        () => (weekRows ? rankWeek([...weekRows, todayRanked]) : null),
-        [weekRows, todayRanked],
-    );
-
-    // The record: every saved day, oldest first, then today.
-    const record = useMemo(() => {
-        const days = [...pastDates].reverse().map((date) => {
-            const entry = history?.get(date);
-            if (!entry?.guesses?.length || (entry.gameStatus !== 'WON' && entry.gameStatus !== 'LOST')) return null;
-            return { won: entry.gameStatus === 'WON', guesses: entry.guesses.length, hints: entry.hints?.length || 0 };
-        });
-        return puzzleRecord([...days, { won, guesses: rows.length, hints }]);
-    }, [history, pastDates, won, rows.length, hints]);
-    // This week as dots: won, missed, not played, today, still to come.
-    const weekDots = useMemo(() => {
-        const start = new Date(`${week.days[0]}T12:00:00`);
-        return Array.from({ length: 7 }, (_, i) => {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            const letter = t(`pokepuzzle.day.weekday.${i}`);
-            if (key === day) return { key, letter, state: won ? 'today-won' : 'today-lost' };
-            if (key > day) return { key, letter, state: 'ahead' };
-            const entry = history?.get(unpad(key));
-            const done = entry?.guesses?.length && (entry.gameStatus === 'WON' || entry.gameStatus === 'LOST');
-            return { key, letter, state: !done ? 'missed' : entry.gameStatus === 'WON' ? 'won' : 'lost' };
-        });
-    }, [week, day, won, history, t]);
-
-    return (
-        <PuzzleDayView
-            t={t}
-            tab={tab}
-            onTab={setTab}
-            won={won}
-            guesses={rows.length}
-            bars={bars}
-            todayRanked={todayRanked}
-            week={week}
-            weekTable={weekTable}
-            hasFriends={friendUids.length > 0}
-            record={record}
-            weekDots={weekDots}
-            meUid={me.uid}
-        />
-    );
+/** One reading as its own card (desktop: Hoje under the board, Você and the league beside it). */
+export function PuzzleDayCard({ data, t, section }) {
+    const { loadWeek } = data;
+    useEffect(() => { if (section === 'week') loadWeek(); }, [section, loadWeek]);
+    return <PuzzleDayView {...data} t={t} tab={section} only />;
 }
 
 /**
  * The panel itself, given everything it shows — no fetching, so it can be
  * drawn with any day's numbers.
  */
-export function PuzzleDayView({ t, tab, onTab, won, guesses, bars, todayRanked, week, weekTable, hasFriends, record, weekDots, meUid }) {
+export function PuzzleDayView({ t, tab, onTab, only = false, won, guesses, bars, todayRanked, week, weekTable, hasFriends, record, weekDots, meUid }) {
     const mine = won ? `g${guesses}` : 'miss';
     const medals = puzzleMedals(record);
     const peak = bars ? Math.max(1, ...bars.bars.map((b) => b.count)) : 1;
@@ -181,22 +61,31 @@ export function PuzzleDayView({ t, tab, onTab, won, guesses, bars, todayRanked, 
     const tabs = ['today', 'week', 'you'];
 
     return (
-        <section className="puzzle-day" aria-label={t('pokepuzzle.day.title')}>
-            <div className="tabs puzzle-day__tabs" role="tablist" aria-label={t('pokepuzzle.day.title')}>
-                {tabs.map((key) => (
-                    <button key={key} type="button" role="tab" className="tabs__item" aria-selected={tab === key} onClick={() => onTab(key)}>
-                        {t(`pokepuzzle.day.tabs.${key}`)}
-                    </button>
-                ))}
-            </div>
+        <section className={`puzzle-day ${only ? `puzzle-day--card puzzle-day--${tab}` : ''}`} aria-label={t(only ? `pokepuzzle.day.tabs.${tab}` : 'pokepuzzle.day.title')}>
+            {!only && (
+                <div className="tabs puzzle-day__tabs" role="tablist" aria-label={t('pokepuzzle.day.title')}>
+                    {tabs.map((key) => (
+                        <button key={key} type="button" role="tab" className="tabs__item" aria-selected={tab === key} onClick={() => onTab(key)}>
+                            {t(`pokepuzzle.day.tabs.${key}`)}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {tab === 'today' && (
-                <div className="puzzle-day__pane" role="tabpanel">
+                <div className="puzzle-day__pane" role={only ? undefined : 'tabpanel'}>
+                    {only && (
+                        <p className="puzzle-day__title">
+                            {t('pokepuzzle.day.title')}
+                            {bars && <span className="puzzle-day__total">{t('pokepuzzle.day.total', { n: bars.total })}</span>}
+                        </p>
+                    )}
                     <p className="puzzle-day__lead">
                         {won
-                            ? (better !== null
+                            ? (better
                                 ? t('pokepuzzle.day.better', { n: guesses, pct: better, total: bars.total })
-                                : t('pokepuzzle.day.solved', { n: guesses }))
+                                // Nobody did worse (or nobody else played): no "better than 0%".
+                                : bars ? t('pokepuzzle.day.solvedOf', { n: guesses, total: bars.total }) : t('pokepuzzle.day.solved', { n: guesses }))
                             : (bars ? t('pokepuzzle.day.missed', { total: bars.total }) : t('pokepuzzle.day.missedAlone'))}
                     </p>
                     {bars && (
@@ -242,7 +131,7 @@ export function PuzzleDayView({ t, tab, onTab, won, guesses, bars, todayRanked, 
             )}
 
             {tab === 'week' && (
-                <div className="puzzle-day__pane" role="tabpanel">
+                <div className="puzzle-day__pane" role={only ? undefined : 'tabpanel'}>
                     <p className="puzzle-day__title">
                         {t('pokepuzzle.day.league')}
                         <span className="puzzle-day__total">
@@ -279,7 +168,7 @@ export function PuzzleDayView({ t, tab, onTab, won, guesses, bars, todayRanked, 
             )}
 
             {tab === 'you' && (
-                <div className="puzzle-day__pane" role="tabpanel">
+                <div className="puzzle-day__pane" role={only ? undefined : 'tabpanel'}>
                     <p className="puzzle-day__title">
                         {t('pokepuzzle.day.record')}
                         {record.streak > 1 && <span className="puzzle-day__streak">{t('pokepuzzle.day.streak', { n: record.streak })}</span>}
