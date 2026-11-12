@@ -88,6 +88,14 @@
   ],
   "rewrites": [
     {
+      "source": "/__/auth/:path*",
+      "destination": "https://pokemonbuilder-8f80d.firebaseapp.com/__/auth/:path*"
+    },
+    {
+      "source": "/__/firebase/:path*",
+      "destination": "https://pokemonbuilder-8f80d.firebaseapp.com/__/firebase/:path*"
+    },
+    {
       "source": "/((?!api/.*).*)",
       "destination": "/api/render-meta"
     }

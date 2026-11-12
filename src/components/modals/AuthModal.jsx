@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Cloud, LockKeyhole, Mail, Medal, Swords, MailCheck } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { authErrorField, prettifyAuthError } from '../../utils/authErrors';
+import { authErrorField, isAuthCancel, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
 import { Loader } from '../Loader';
 import { AuthDialogShell, AuthHero, AuthStage } from './auth/AuthDialogShell';
 import { PasswordField } from './auth/PasswordField';
+import { GoogleButton } from '../GoogleButton';
+import { useGoogleSignInAvailable } from '../../services/googleAvailability';
 import { SHOWDOWN_SPRITES_BASE } from '../../utils/assetHost';
 
 const LOGIN_POKEMON = ['pikachu', 'eevee', 'charmander', 'gengar', 'squirtle', 'togepi', 'piplup', 'snivy'];
@@ -22,7 +24,7 @@ const EMAIL_RE = /^\S+@\S+\.\S+$/;
  * the fields. On a phone the form's surface rises over the scene
  * (auth-dialog.css).
  */
-export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onResetPassword, onClose }) {
+export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onGoogle, onResetPassword, onClose }) {
     const { t } = useTranslation();
     // Picked once per opening, not per render — it used to change on every keystroke.
     const sprite = useMemo(
@@ -39,6 +41,8 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
     const [busy, setBusy] = useState(false);
+    const [googleBusy, setGoogleBusy] = useState(false);
+    const googleOn = useGoogleSignInAvailable();
     const [resetSentTo, setResetSentTo] = useState('');
 
     const isSignUp = mode === 'signUp';
@@ -85,6 +89,20 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
         }
     };
 
+    // Google (2026-11-12): the popup does the rest; closing it is not an error.
+    const handleGoogle = async () => {
+        setError('');
+        setErrorField(null);
+        setGoogleBusy(true);
+        try {
+            await onGoogle();
+            onClose?.();
+        } catch (err) {
+            setGoogleBusy(false);
+            if (!isAuthCancel(err)) showError(prettifyAuthError(err, t));
+        }
+    };
+
     const hero = (
         <AuthHero
             titleId="auth-modal-title"
@@ -127,6 +145,13 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             <h3>{t('modals.authResetHeading')}</h3>
                             <p>{t('modals.authResetHint')}</p>
                         </div>
+                    )}
+
+                    {!isReset && onGoogle && googleOn && (
+                        <>
+                            <GoogleButton onClick={handleGoogle} busy={googleBusy} label={t('modals.authGoogle')} busyLabel={t('modals.authGoogleWorking')} />
+                            <p className="auth-or" aria-hidden="true">{t('modals.authOr')}</p>
+                        </>
                     )}
 
                     <form onSubmit={handleSubmit} className="auth-dialog__form" noValidate>
