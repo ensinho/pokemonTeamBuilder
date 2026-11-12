@@ -38,7 +38,8 @@ const makeAssetUrl = (assetUrl) => {
 
 const brandLogoUrl = () => {
     const base = import.meta.env.BASE_URL || '/';
-    return makeAssetUrl(`${base}${base.endsWith('/') ? '' : '/'}LogoCuteGengarRounded.png`);
+    // 64px in the reply email and the preview: the 256px copy, not the 724 KB original.
+    return makeAssetUrl(`${base}${base.endsWith('/') ? '' : '/'}logo-mascot-256.png`);
 };
 
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({

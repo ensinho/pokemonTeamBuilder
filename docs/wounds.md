@@ -14,6 +14,20 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-12 — The VS card cut every trainer's head off, and the names sat beside them `bug`
+- **Symptom:** on the VS card (Champion Challenge and friend battles) Cynthia's hair and head ended at the band's top edge, on both sides; the name plates were visibly off their portraits (Enzo's 1700 × 700 capture: "card de batalha anda cortado").
+- **Root cause:** `.ds-vs__portrait` drew an 80 × 80 trainer sprite at `1.95 × --vs-band-h` with `bottom: -0.34 × size` — 1.29 bands of sprite in a band of 1, so the top ~0.3 band (the head) fell outside the band's `overflow: hidden`. The plates were a padded two-column grid, centring them at ~24% / ~76% while the portraits sit at 26% / 74%. (Not the 2026-11-05 containment trap — that one is fixed; this was the sizing itself.)
+- **Fix:** trainer portrait `1.36 ×` band, `bottom: -0.3 ×` (shows 0.95 band: head inside, cut at the thighs); Pokémon portrait `1.3 ×` / `-0.12 ×`. Each plate is absolutely centred on its portrait's x (`left: calc(26% - width / 2)`), one `--space-3` below the band. Verified headless at 1700 × 700, 1920 × 1080 and 390 × 844.
+- **Correct pattern:** a sprite cut by a band must satisfy `size × (1 − |bottom|) ≤ band height` (minus the sprite's own top padding), or the top is what gets cut. Text that labels a positioned object is positioned on the same x as that object, never by an unrelated grid.
+- **Files:** `src/styles/battle-versus.css`
+
+### 2026-11-12 — The share image fetched a 724 KB logo, and every visit precached both support covers `perf`
+- **Symptom:** the share canvas and the admin reply email fetched `LogoCuteGengarRounded.png` (872 px, 724 KB) to draw a 52 / 64 px logo; the precache carried both languages' `support-cover-*.webp` (92 KB) though only the patch-notes dialog shows one; `public/` held two dead login logos.
+- **Root cause:** the original art served as-is; the covers matched the precache glob; nothing pruned `public/`.
+- **Fix:** a 256 px palette PNG, `public/logo-mascot-256.png` (7 KB, compared side by side — identical), for the share canvas and the admin email (the original stays for links already sent); `support-cover-*.webp` in `globIgnores`; `logoLogin*.png` deleted; `blueSprite.png` (a source sheet nothing reads at runtime) moved to `assets-src/challenge/`.
+- **Correct pattern:** flat raster art goes in at its display size × 2–4, palette-quantised **only when it is flat** — the PWA icons (7fdce3c4) carry a gradient and must stay truecolour RGBA (`appIcons.test.js`); quantising them banded the gradient. A file only one dialog shows is excluded from the precache.
+- **Files:** `public/`, `vite.config.js`, `src/components/modals/ShareSnippetModal.jsx`, `src/components/views/AdminDashboardView.jsx`
+
 ### 2026-11-12 — Text fields wore coloured bars when focused (desktop and phone) `bug`
 - **Symptom (Enzo):** clicking or tapping a search field (Meta & usage, and others) drew strange coloured bars around it.
 - **Root cause:** the global `:where(a, button, input, …):focus-visible` rule gives everything the logo ring (ink + magenta + gold, 6px). Browsers match `:focus-visible` on a **text field even on a mouse click or a tap**, so every field not using `.input-clean` (raw Tailwind inputs like the Meta search) showed the three-colour ring the moment you touched it. Rule 3 (`[class*='focus-visible:ring-2']`) did the same for Tailwind inputs with `focus-visible:ring-2`.

@@ -17,6 +17,7 @@ the persona journeys' chapter 2 walking each trainer in.
 | **@mentions** | `utils/forumMentions.js`, `CommentComposer` | Suggestions from the thread and friends, no network. A name with a space cannot be mentioned. |
 | **Sua liga** | `api/_lib/challenge/ranking.js` `friendBoards`, `passedFriends` | `state` returns `friends` per board; a win that passes a friend writes their inbox. |
 | **Weekly season** | `ranking.js` `nextWeekRanks` / `publicWeekRanks` | `challengeRanks/week-YYYY-Www[_blue]`: each day's best summed. "Semana" tab. |
+| **Last week's podium** (2026-11-12) | `utils/weeklyRecap.js` (pure, tested), `services/weeklyRecap.js`, `hooks/useWeeklyRecap.js`, `challenge/WeeklyRecapDialog.jsx` (lazy) | Reads last week's two season docs client-side (world-readable, final), once per session — no endpoint. Opens by itself once per week (`ptb:challenge:recapSeen`, a trainer key) on the first visit to the room after the week closes, only for a trainer who has played and never over a battle; after that the ranking's "Pódio da semana passada" line. Rows reuse `RankRow` / `PodiumStep`. |
 | **Como venceu** | `actions.js` `report` | A podium run's win-chance curve only. |
 | **Champion XP** | `utils/trainerLevel.js` | 30 per official win, +20 with the Time do dia. |
 | **Puzzle day** | `api/_lib/puzzleDay.js`, `pokepuzzle/PuzzleDayPanel.jsx` | `daily-puzzle` POST counts a result once; `puzzleDays/{day}` counters + `players/{uid}` colour grids (never letters). |

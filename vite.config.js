@@ -59,11 +59,14 @@ export default defineConfig({
         // share and the OS installer — never needed to render the app offline.
         globIgnores: [
           '**/LogoCuteGengarRounded.png',
+          '**/logo-mascot-256.png',
+          // The patch notes' donation cover, one per language — fetched when
+          // that dialog opens; precaching both cost every visit ~92 KB.
+          '**/support-cover-*.webp',
           '**/og-image.png',
           '**/pokepuzzle-og.png',
           '**/challenge-og.png',
           '**/android-chrome-512x512.png',
-          '**/logoLogin*.png',
           // The Primeira Jornada's tour (FirstJourney): fetched when the flow opens, once.
           '**/onboarding/tour-*.webp',
           // api/render-meta.js's template (scripts/lib/prerenderHome.mjs).

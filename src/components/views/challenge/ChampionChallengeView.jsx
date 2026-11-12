@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Clock, Crown, FastForward, Flame, Music, Trophy, Volume2, VolumeX,
 } from 'lucide-react';
@@ -44,6 +44,10 @@ import { nudgeSupport, cancelSupportNudge } from '../../../services/supportNudge
 import { refreshChallengeRecord, useChallengeRecord } from '../../../services/challengeRecord';
 import { challengeBadgesEarned } from '../../../constants/badges';
 import { celebrateBadgeOnce } from '../../../hooks/useTrainerBadges';
+import { useWeeklyRecap } from '../../../hooks/useWeeklyRecap';
+
+// Last week's podium: its own chunk, fetched the first time it opens.
+const WeeklyRecapDialog = lazy(() => import('./WeeklyRecapDialog'));
 
 /**
  * `/challenge` — the daily battle against the Champion, in a DS console
@@ -82,6 +86,7 @@ export function ChampionChallengeView() {
 
     const [stage, setStage] = useState('arena');
     const [showRanks, setShowRanks] = useState(false);
+    const [showRecap, setShowRecap] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     // Sound, music and speed — the bar's switches, unlocked by the first press.
     const { muted, toggleMuted, musicOn, toggleMusic, fast, toggleFast } = useBattleSound();
@@ -167,6 +172,24 @@ export function ChampionChallengeView() {
     useEffect(() => {
         if (stage === 'gate' && !isAnonymous && challenge.hasLoaded) setStage('pick');
     }, [stage, isAnonymous, challenge.hasLoaded]);
+
+    // Last week's podium (2026-11-12): it opens by itself once per week, on the
+    // first visit after the season closed — only for a trainer who plays the
+    // Challenge, only in the room (never over a battle, a picker or a link
+    // that asked for something else). After that it is the ranking's line.
+    const weeklyRecap = useWeeklyRecap(isAnonymous ? null : userId);
+    const { isDue: recapDue, markSeen: markRecapSeen } = weeklyRecap;
+    const playsChallenge = !isAnonymous && (challenge.stats?.played ?? 0) > 0;
+    useEffect(() => {
+        if (!recapDue || !playsChallenge || stage !== 'arena' || showRanks || !placed.current) return;
+        if (challenge.run?.status === 'active') return;
+        markRecapSeen();
+        setShowRecap(true);
+    }, [recapDue, playsChallenge, stage, showRanks, challenge.run, markRecapSeen]);
+    const openRecap = useCallback(() => {
+        setShowRanks(false);
+        setShowRecap(true);
+    }, []);
 
     // The day turns while the page is open: fetch the new team.
     const { nextResetAt } = challenge;
@@ -433,10 +456,16 @@ export function ChampionChallengeView() {
             defaultBoard={defaultBoard}
             stats={recordStats}
             onClose={() => setShowRanks(false)}
+            onOpenRecap={weeklyRecap.hasRecap ? openRecap : null}
         />
     );
     const ranksRail = railsOn && (
-        <ChallengeRanking key={championId} ranksByChampion={challenge.ranksByChampion} championId={championId} defaultBoard={defaultBoard} stats={recordStats} />
+        <ChallengeRanking key={championId} ranksByChampion={challenge.ranksByChampion} championId={championId} defaultBoard={defaultBoard} stats={recordStats} onOpenRecap={weeklyRecap.hasRecap ? openRecap : null} />
+    );
+    const recapDialog = showRecap && weeklyRecap.recaps && (
+        <Suspense fallback={null}>
+            <WeeklyRecapDialog weekKey={weeklyRecap.weekKey} recaps={weeklyRecap.recaps} championId={championId} onClose={() => setShowRecap(false)} />
+        </Suspense>
     );
     const railsWith = (start) => (railsOn ? { mode: railMode, start, end: ranksRail } : null);
 
@@ -529,6 +558,7 @@ export function ChampionChallengeView() {
                         />
                     )}
                     {rankingSheet}
+                    {recapDialog}
                 </div>
             );
         }
@@ -554,6 +584,7 @@ export function ChampionChallengeView() {
                     onForfeit={forfeit}
                     onFinished={handleFinished}
                 />
+                {recapDialog}
             </div>
         );
     }
@@ -646,6 +677,7 @@ export function ChampionChallengeView() {
                     )}
                 />
                 {rankingSheet}
+                {recapDialog}
             </div>
         );
     }
@@ -662,6 +694,7 @@ export function ChampionChallengeView() {
                 controls={stage === 'arena' || stage === 'dialogue'}
             />
             {rankingSheet}
+            {recapDialog}
         </div>
     );
 }

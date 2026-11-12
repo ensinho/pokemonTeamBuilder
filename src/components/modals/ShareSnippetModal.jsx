@@ -26,9 +26,11 @@ import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
 // The image's footer names the site, and the team's own page once it is
 // published (2026-10-24: it used to advertise the GitHub repository).
 const BRAND_LABEL = SITE_URL.replace(/^https?:\/\//, '');
+// Drawn at 52px: the 256px copy (7 KB) — the original is 872px and 724 KB
+// (2026-11-12). LogoCuteGengarRounded.png stays in public/ for links already out.
 const BRAND_LOGO_URL = typeof window !== 'undefined'
-    ? `${window.location.origin}${window.location.pathname.includes('/pokemonTeamBuilder') ? '/pokemonTeamBuilder/' : '/'}LogoCuteGengarRounded.png`.replace(/([^:]\/)\/+/g, "$1")
-    : '/LogoCuteGengarRounded.png';
+    ? `${window.location.origin}${window.location.pathname.includes('/pokemonTeamBuilder') ? '/pokemonTeamBuilder/' : '/'}logo-mascot-256.png`.replace(/([^:]\/)\/+/g, "$1")
+    : '/logo-mascot-256.png';
 
 const moveId = (name = '') => String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
 

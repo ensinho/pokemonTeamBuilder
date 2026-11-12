@@ -2189,7 +2189,10 @@ export default function AppLayout() {
                         </div>
                     </main>
 
-                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && (
+                    {/* No footer under the Champion Challenge either (2026-11-12, Enzo): the
+                        console is the whole screen, and a credit band under it only made the
+                        page scroll. */}
+                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && currentPage !== 'challenge' && (
                         <footer className="app-shell__footer">
                             <div className="app-shell__footer-row">
                                 <div className="app-shell__footer-credit">
