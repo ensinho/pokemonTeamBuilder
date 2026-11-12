@@ -207,6 +207,31 @@
     transform: scale(1.04);
 }
 
+/* The platform (2026-11-11, the taste pass): the oval every battle sprite
+   stands on, toned in the Pokémon's first type. Seventy identical tiles read
+   as a template grid; seventy platforms in seventy type colours read as a
+   Pokédex — the colour says something (the type) before the chip does.
+   Painted once, static, behind the sprite (a ::before precedes it), and only
+   ever a canon colour mixed down to a wash. No --card-type, no platform. */
+.pokemon-card__media::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 2%;
+    width: 92%;
+    height: 26%;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--card-type, transparent) 38%, transparent), color-mix(in srgb, var(--card-type, transparent) 10%, transparent) 70%, transparent);
+    pointer-events: none;
+}
+
+/* The sprite paints over its platform: positioned, it follows the ::before
+   in paint order. (The usage chip keeps its own absolute position.) */
+.pokemon-card__media > :not(.pokemon-card__usage) {
+    position: relative;
+}
+
 .pokemon-card__name {
     margin: var(--space-1_5) var(--space-1);
     font-size: var(--text-sm);
