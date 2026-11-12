@@ -253,3 +253,24 @@ describe('personaHero', () => {
         }
     });
 });
+
+describe('personaDayCards', () => {
+    const answered = (p) => normalizeTrainerProfile({ ...p, answeredAt: 1 });
+    it('keeps the default order with no profile', async () => {
+        const { personaDayCards, DEFAULT_DAY_CARDS } = await import('./trainerProfile');
+        expect(personaDayCards(null)).toEqual(DEFAULT_DAY_CARDS);
+    });
+    it('reads the meta first for the Strategist, a friend to battle for the Challenger', async () => {
+        const { personaDayCards } = await import('./trainerProfile');
+        expect(personaDayCards(answered({ interests: ['competitive'] }))[1]).toBe('meta');
+        const challenger = personaDayCards(answered({ interests: ['minigames'] }));
+        expect(challenger).toContain('invite');
+        expect(challenger).not.toContain('meta');        expect(personaDayCards(answered({ interests: ['franchise'] }))).not.toContain('meta');
+    });
+    it('always leads with a battle that waits on the trainer', async () => {
+        const { personaDayCards } = await import('./trainerProfile');
+        for (const interests of [[], ['minigames'], ['competitive'], ['franchise']]) {
+            expect(personaDayCards(answered({ interests }))[0]).toBe('battles');
+        }
+    });
+});

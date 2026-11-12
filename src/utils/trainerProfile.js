@@ -291,6 +291,28 @@ export function personaHomeOrder(profile) {
 }
 
 /**
+ * The compact cards of "Seu dia", in the order a persona reads them
+ * (2026-11-12). `battles` shows only when a friend's battle waits on the
+ * trainer, so it leads whenever it shows; `invite` is the Challenger's
+ * "challenge a friend" when nothing waits. The Strategist reads the meta
+ * first; the Challenger trades the meta for a friend to battle; the
+ * Traveler, who came for the games, has no meta card at all.
+ */
+export const DEFAULT_DAY_CARDS = ['battles', 'puzzle', 'badge', 'meta'];
+
+const DAY_CARDS_BY_PERSONA = {
+    strategist: ['battles', 'meta', 'puzzle', 'badge'],
+    challenger: ['battles', 'puzzle', 'invite', 'badge'],
+    // The games, not the ladder: no meta card for the one who came to play through.
+    traveler: ['battles', 'puzzle', 'badge'],
+};
+
+export function personaDayCards(profile) {
+    const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
+    return (persona && DAY_CARDS_BY_PERSONA[persona.id]) || DEFAULT_DAY_CARDS;
+}
+
+/**
  * What the Home's one hero card is about (2026-11-09, the "of the day" hero —
  * .claude/skills/app-screens): the team in progress for most trainers; the
  * day's Champion battle for the one who came for the minigames; the next gym

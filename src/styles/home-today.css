@@ -445,6 +445,292 @@
     display: inline-flex;
 }
 
+/* The picker sits at the far end even when a hero has no eyebrow. */
+.day-hero__top .day-hero__wallpaper {
+    margin-inline-start: auto;
+}
+
+/* ── The hero's scenes (constants/heroScenes.js, 2026-11-12) ──────────────
+   A photograph keeps the drained look above. A pattern is the hero's own ink
+   through a mask, faded out under the copy so the left stays quiet. The
+   partner is their artwork, drained like a photograph; the Trainer ID is the
+   trainer card's pixels, gold accents and all. */
+.day-hero__scene--pattern {
+    background: var(--color-fg);
+    mix-blend-mode: normal;
+    opacity: 0.1;
+    mask-image: var(--scene-mask), linear-gradient(to right, transparent 8%, black 55%);
+    mask-size: var(--scene-size) var(--scene-size), 100% 100%;
+    mask-repeat: repeat, no-repeat;
+    mask-composite: intersect;
+}
+
+.day-hero__scene--partner,
+.day-hero__scene--trainer {
+    overflow: hidden;
+}
+
+.day-hero__scene-partner {
+    position: absolute;
+    top: 50%;
+    left: 30%;
+    width: auto;
+    height: 150%;
+    max-width: none;
+    translate: -50% -50%;
+    object-fit: contain;
+}
+
+.day-hero__scene--trainer {
+    mix-blend-mode: normal;
+    opacity: 0.32;
+    color: var(--color-fg);
+}
+
+.day-hero__scene-pixels {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+    mask-image: linear-gradient(to left, black 35%, transparent 90%);
+}
+
+.day-hero__scene-pixels .is-accent {
+    fill: var(--brand-gold);
+}
+
+/* The shelf the palette opens: each scene as a small hero in the current tint. */
+.scene-picker {
+    width: min(22rem, calc(100vw - var(--space-8)));
+}
+
+.scene-picker__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+}
+
+.scene-picker__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.scene-picker__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+}
+
+.scene-picker__group-label {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.scene-picker__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.scene-picker__swatch {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-fg);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.scene-picker__preview {
+    position: relative;
+    isolation: isolate;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--hero-type) 30%, var(--color-surface));
+    transition: scale var(--duration-press) var(--ease-out);
+}
+
+.scene-picker__swatch:hover .scene-picker__preview {
+    scale: 1.04;
+}
+
+.scene-picker__swatch:active .scene-picker__preview {
+    scale: var(--press-scale);
+}
+
+.scene-picker__swatch:focus-visible {
+    outline: none;
+}
+
+.scene-picker__swatch:focus-visible .scene-picker__preview,
+.scene-picker__swatch.is-on .scene-picker__preview {
+    box-shadow: var(--ring-primary);
+}
+
+/* A swatch's pattern is drawn at half the hero's scale, so it reads at 64px. */
+.scene-picker__preview .day-hero__scene--pattern {
+    mask-size: calc(var(--scene-size) / 2) calc(var(--scene-size) / 2), 100% 100%;
+    opacity: 0.22;
+}
+
+.scene-picker__preview .day-hero__scene--image,
+.scene-picker__preview .day-hero__scene--partner {
+    opacity: 0.4;
+}
+
+.scene-picker__check {
+    position: absolute;
+    z-index: 1;
+    right: var(--space-1);
+    bottom: var(--space-1);
+    width: 1rem;
+    height: 1rem;
+    padding: var(--space-0_5);
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.scene-picker__name {
+    overflow: hidden;
+    color: var(--color-fg-secondary);
+    font-size: var(--text-2xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.day-hero__now .challenge-boards {
+    margin-top: var(--space-1);
+}
+
+/* The day's whole count beside the countdown: n/4 across both champions. */
+.cozy-day__daycount {
+    color: var(--color-muted);
+}
+
+/* The card's title opens the champion in focus; it still reads as the title. */
+.cozy-day__title-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.cozy-day__title-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+.cozy-day__title-link:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-primary);
+}
+
+/* A phone's rail card has no room for the chevron: the whole row is the button. */
+@media (max-width: 1023px) {
+    .champion-ledger__chevron {
+        display: none;
+    }
+}
+
+/* ── The Champion's hero by result (data-mood, utils/challengeBoards.js) ───
+   gold: both boards won — she steps back, her six wear the earned edge.
+   down: both lost — the room drains and she steps forward. live: a battle
+   runs — she breathes. Loops are transform only. */
+.day-hero__trainer,
+.day-hero__rival {
+    transition: translate var(--duration-glide) var(--ease-glide), scale var(--duration-glide) var(--ease-glide), opacity var(--duration-glide) var(--ease-glide);
+    transform-origin: 50% 100%;
+}
+
+.day-hero[data-mood='gold'] .day-hero__trainer {
+    translate: 10% 2%;
+    scale: 0.92;
+    opacity: 0.8;
+}
+
+.day-hero[data-mood='gold'] .day-hero__lineup .cozy-day__mini {
+    box-shadow: inset 0 0 0 2px var(--brand-gold);
+}
+
+.day-hero[data-mood='down'] {
+    background: color-mix(in srgb, var(--hero-type) 14%, var(--color-surface));
+}
+
+.day-hero[data-mood='down'] .day-hero__disc {
+    opacity: 0.45;
+}
+
+.day-hero[data-mood='down'] .day-hero__trainer {
+    translate: -6% 0;
+    scale: 1.08;
+}
+
+.day-hero[data-mood='down'] .day-hero__rival {
+    opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .day-hero[data-mood='live'] .day-hero__trainer {
+        animation: hero-breathe 2.4s var(--ease-smooth) infinite;
+    }
+
+    /* The arrival of a new result (CozyHomeView's CHALLENGE_SEEN_KEY): the
+       slots pop in turn, her six come out of the shadows one by one, and a
+       perfect day's gold pool blooms. Once, never on a reload. */
+    .is-revealing .challenge-boards__slot {
+        animation: board-pop var(--duration-pop) var(--ease-pop) both;
+        animation-delay: calc(200ms + var(--i, 0) * 140ms);
+    }
+
+    .is-revealing .cozy-day__mini {
+        animation: lineup-step var(--duration-reveal) var(--ease-out) both;
+    }
+
+    .is-revealing .cozy-day__mini:nth-child(2) { animation-delay: 80ms; }
+    .is-revealing .cozy-day__mini:nth-child(3) { animation-delay: 160ms; }
+    .is-revealing .cozy-day__mini:nth-child(4) { animation-delay: 240ms; }
+    .is-revealing .cozy-day__mini:nth-child(5) { animation-delay: 320ms; }
+    .is-revealing .cozy-day__mini:nth-child(6) { animation-delay: 400ms; }
+
+    .day-hero.is-revealing[data-mood='gold'] .day-hero__disc {
+        animation: disc-bloom var(--duration-slow) var(--ease-out) both;
+    }
+}
+
+@keyframes hero-breathe {
+    50% { transform: translateY(calc(var(--space-1) * -1)); }
+}
+
+@keyframes board-pop {
+    from { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes lineup-step {
+    from { opacity: 0; transform: translateY(var(--space-2)); }
+}
+
+@keyframes disc-bloom {
+    from { opacity: 0; transform: scale(0.4); }
+}
+
 /* ── The party (phones) ───────────────────────────────────────────────── */
 
 .home-party__slots {

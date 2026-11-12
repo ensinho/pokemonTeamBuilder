@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { THEMES, applyTheme, applyUiScale } from '../constants/theme';
-import { getBackgroundById } from '../assets/backgrounds';
+import { isHeroSceneId } from '../constants/heroScenes';
 import { normalizeUiScale, DEFAULT_UI_SCALE } from '../utils/uiScale';
 import { runThemeTransition } from '../utils/themeTransition';
 import { sanitizeShortcut } from '../utils/searchShortcut';
@@ -56,7 +56,7 @@ const getInitialWallpaper = () => {
     if (typeof window === 'undefined') return null;
     try {
         const saved = localStorage.getItem('homeWallpaperId');
-        return saved && getBackgroundById(saved).id === saved ? saved : null;
+        return isHeroSceneId(saved) ? saved : null;
     } catch (_) {
         return null;
     }
@@ -135,11 +135,8 @@ export const useThemeStore = create((set, get) => {
         },
 
         setHomeWallpaperPreference: (backgroundId) => {
-            const nextBackgroundId =
-                typeof backgroundId === 'string' &&
-                getBackgroundById(backgroundId).id === backgroundId
-                    ? backgroundId
-                    : null;
+            // Any Home hero scene (constants/heroScenes.js), not only the share photographs.
+            const nextBackgroundId = isHeroSceneId(backgroundId) ? backgroundId : null;
             try {
                 if (nextBackgroundId) {
                     localStorage.setItem('homeWallpaperId', nextBackgroundId);

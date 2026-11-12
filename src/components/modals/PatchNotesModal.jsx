@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Coffee, Crown, KeyRound, Megaphone, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
+import { Coffee, Crown, KeyRound, Megaphone, Puzzle, Scale, Search, Star, Trophy, X } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
@@ -11,6 +11,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
 import { typeColors, typeIcons } from '../../constants/types';
 import { trainerSpriteUrl } from '../../utils/challengeView';
+import { CHAMPION_FACES } from '../../utils/championFaces';
+import '../../styles/champion-day.css';
 import { BrandWordmark } from '../BrandWordmark';
 import { LogoMark } from '../LogoMark';
 import { Mascot } from '../Mascot';
@@ -578,6 +580,35 @@ const DockVisual = ({ language }) => {
 
 // The Champion Challenge — Cynthia (her DS battle sprite) against her ace, and
 // the line that brings people back: a new team every midnight.
+// 1.25.0: the champions' day as the Home shows it — each champion's face,
+// their two boards (a gold crown won, an ✕ lost, a dashed ball to play) and
+// the count. Drawn in the Home's own classes so the note matches the screen.
+const ChampionsDayVisual = () => (
+    <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-3 bg-bg p-5" aria-hidden="true">
+        {[
+            { id: 'cynthia', name: 'Cynthia', slots: ['won', 'won'] },
+            { id: 'blue', name: 'Blue', slots: ['lost', 'pending'] },
+        ].map((row) => (
+            <div key={row.id} className="flex w-full max-w-[17rem] items-center gap-3 rounded-lg bg-surface-raised px-3 py-2">
+                <span className="champion-face"><img src={CHAMPION_FACES[row.id]} alt="" className="champion-face__img" /></span>
+                <span className="flex-1 text-sm font-semibold text-fg">{row.name}</span>
+                <span className="challenge-boards is-compact">
+                    <span className="challenge-boards__count">{row.slots.filter((s) => s !== 'pending').length}/2</span>
+                    {row.slots.map((status, i) => (
+                        <span key={i} className={`challenge-boards__slot is-${status}`}>
+                            <span className="challenge-boards__mark">
+                                {status === 'won' ? <Crown /> : status === 'lost' ? <X /> : (
+                                    <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" className="challenge-boards__rim" /><path d="M2 8h12" className="challenge-boards__rim" /></svg>
+                                )}
+                            </span>
+                        </span>
+                    ))}
+                </span>
+            </div>
+        ))}
+    </div>
+);
+
 const ChallengeVisual = ({ language }) => {
     const pt = language === 'pt';
     return (
@@ -787,6 +818,7 @@ const NOTE_VISUALS = {
     social: SocialVisual,
     pokedexDesk: PokedexDeskVisual,
     mascotBot: MascotBotVisual,
+    championsDay: ChampionsDayVisual,
 };
 
 // One "what's new" card. The featured one carries its illustration and grows to

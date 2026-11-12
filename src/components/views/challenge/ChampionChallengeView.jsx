@@ -57,6 +57,9 @@ import { celebrateBadgeOnce } from '../../../hooks/useTrainerBadges';
  * through the `state` action, which also warms the function while the player
  * walks.
  */
+/** The boards a link may ask for (`?board=`), as the ranking names them. */
+const LINK_BOARDS = ['daily', 'free'];
+
 export function ChampionChallengeView() {
     const { t } = useTranslation();
     const userId = useAuthStore((s) => s.userId);
@@ -101,14 +104,7 @@ export function ChampionChallengeView() {
         load();
     }, [isAuthReady, userId, isAnonymous, load, reset]);
 
-    // First answer: a battle in progress resumes at once; anything else starts in the room.
-    // Picking another champion places the screen again, from their answer.
     const placed = useRef(false);
-    useEffect(() => {
-        if (!challenge.hasLoaded || placed.current || !challenge.day) return;
-        placed.current = true;
-        if (challenge.run?.status === 'active' && !isAnonymous) setStage('battle');
-    }, [challenge.hasLoaded, challenge.day, challenge.run, isAnonymous]);
 
     // `?champion=blue` opens on that champion (a link from the "next champion" card or a post).
     const [searchParams, setSearchParams] = useSearchParams();
@@ -132,6 +128,40 @@ export function ChampionChallengeView() {
             placed.current = false;
         }
     }, [askedChampion, selectChampion]);
+
+    // `?board=daily|free` and `?view=ranking` (2026-11-12, the Home's "Batalhar:
+    // Seu time"): a link that knows which battle it means skips the walk — the
+    // team picker opens on that board, or the ranking opens on it. Read once,
+    // then dropped from the address, so a reload starts in the room as usual.
+    const askedBoard = LINK_BOARDS.includes(searchParams.get('board')) ? searchParams.get('board') : null;
+    const askedView = searchParams.get('view') === 'ranking' ? 'ranking' : null;
+    const [linkedBoard, setLinkedBoard] = useState(null);
+
+    // First answer: a battle in progress resumes at once; a link to a board
+    // opens its picker; anything else starts in the room. Picking another
+    // champion places the screen again, from their answer — and a link for
+    // another champion waits for that champion's day.
+    useEffect(() => {
+        if (!challenge.hasLoaded || placed.current || !challenge.day) return;
+        if (isChampion(askedChampion) && askedChampion !== championId) return;
+        placed.current = true;
+        const linked = askedBoard || askedView;
+        if (linked) {
+            setSearchParams((params) => {
+                const next = new URLSearchParams(params);
+                next.delete('board');
+                next.delete('view');
+                return next;
+            }, { replace: true });
+        }
+        if (challenge.run?.status === 'active' && !isAnonymous) {
+            setStage('battle');
+            return;
+        }
+        if (askedBoard) setLinkedBoard(askedBoard);
+        if (askedView === 'ranking') setShowRanks(true);
+        else if (askedBoard) setStage(isAnonymous ? 'gate' : 'pick');
+    }, [challenge.hasLoaded, challenge.day, challenge.run, isAnonymous, askedChampion, championId, askedBoard, askedView, setSearchParams]);
 
     // A guest who signs in at the gate goes on to choose a team.
     useEffect(() => {
@@ -393,7 +423,7 @@ export function ChampionChallengeView() {
 
     // The day's ranking, on the board of today's official run: a side rail where
     // there is room beside the screen, an app sheet over the page where there is not.
-    const defaultBoard = (challenge.official?.result?.board) || (challenge.run?.teamSource === 'saved' ? 'free' : 'daily');
+    const defaultBoard = linkedBoard || (challenge.official?.result?.board) || (challenge.run?.teamSource === 'saved' ? 'free' : 'daily');
     const recordStats = isAnonymous ? null : challenge.stats;
     const rankingSheet = showRanks && !railsOn && (
         <ChallengeRankingSheet
@@ -565,6 +595,7 @@ export function ChampionChallengeView() {
                 onStart={handleStart}
                 onCancel={() => setStage('arena')}
                 inputRef={screenInput}
+                initialBoard={linkedBoard}
             />
         );
     }
