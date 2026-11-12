@@ -154,6 +154,17 @@ export const PokemonCard = React.memo(function PokemonCard({
                     </span>
                 )}
                 <Sprite src={getPokemonDisplaySprite(details)} artworkSrc={getPokemonArtworkSpriteUrl(details.id)} alt={details.name} className="w-full h-full" />
+                {/* In the picker the card itself is the add target; this "+" at the
+                    sprite's corner is the cue, not a second control (aria-hidden,
+                    clicks fall through). It used to be a full-width "+ Adicionar"
+                    row under the name — seventy copies of one word and a row of
+                    height per card (2026-11-12). Shown on hover/focus with a
+                    pointer, always (quiet) on touch. */}
+                {onAddToTeam && addOnClick && (
+                    <span className="pokemon-card__add" aria-hidden="true">
+                        <PlusIcon className="w-3.5 h-3.5" />
+                    </span>
+                )}
             </div>
             <p className="pokemon-card__name">{details.name}</p>
             {hasSynergy && synergyReason.label && (
@@ -163,14 +174,6 @@ export const PokemonCard = React.memo(function PokemonCard({
                 </span>
             )}
 
-            {/* In the picker the card itself is the add target, so this is the
-                cue, not a second control (aria-hidden; clicks fall through). */}
-            {onAddToTeam && addOnClick && (
-                <span className="pokemon-card__action" aria-hidden="true">
-                    <PlusIcon className="w-3 h-3" />
-                    {t('builder.addShort')}
-                </span>
-            )}
             {onAddToTeam && !addOnClick && (
                 <button
                     onClick={handleAddClick}

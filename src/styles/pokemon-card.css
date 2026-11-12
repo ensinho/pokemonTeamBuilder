@@ -212,7 +212,7 @@
 
 /* The sprite paints over its platform: positioned, it follows the ::before
    in paint order. (The usage chip keeps its own absolute position.) */
-.pokemon-card__media > :not(.pokemon-card__usage) {
+.pokemon-card__media > :not(.pokemon-card__usage, .pokemon-card__add) {
     position: relative;
 }
 
@@ -323,6 +323,7 @@
     .pokemon-card,
     .pokemon-card__favorite,
     .pokemon-card__media,
+    .pokemon-card__add,
     .pokemon-card__action {
         transition-duration: 0.001ms;
         animation: none;
@@ -370,7 +371,51 @@
     box-shadow: var(--ring-focus);
 }
 
-.pokemon-card--picker:hover .pokemon-card__action {
+/* The add cue (2026-11-12): a round "+" at the sprite's lower corner, in
+   place of the "+ Adicionar" row. With a pointer it appears when the card is
+   hovered or focused — the card's sticker and this are the hover; on touch,
+   where nothing may live only on hover, it stays as a quiet neutral dot.
+   Opacity and scale only; the card's height never changes. */
+.pokemon-card__add {
+    position: absolute;
+    right: calc(var(--space-3) * -1);
+    bottom: 0;
+    z-index: 1;
+    display: inline-flex;
+    width: var(--space-6);
+    height: var(--space-6);
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-surface-raised);
+    /* The control edge: on the light themes the raised fill alone is the
+       card's own colour. */
+    box-shadow: inset 0 0 0 1px var(--color-border-strong);
+    color: var(--color-fg);
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-fast) var(--ease-out),
+                background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .pokemon-card__add {
+        opacity: 0;
+        scale: 0.6;
+        box-shadow: none;
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+    }
+}
+
+.pokemon-card--picker:hover .pokemon-card__add,
+.pokemon-card--picker:focus-visible .pokemon-card__add {
+    opacity: 1;
+    scale: 1;
+}
+
+.pokemon-card--picker:active .pokemon-card__add {
     background: var(--color-primary);
     color: var(--color-on-primary);
 }

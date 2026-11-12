@@ -96,6 +96,11 @@ override this skill):
   4px above and below it has in the 2rem row. A tile that fills its row reads
   as a stripe.
 - **A rank is a figure too.** "#1" in the muted mono, never a chip.
+- **A cue is not a row.** The picker card's "+ Adicionar" bar is gone: the
+  whole card adds, and the cue is `.pokemon-card__add`, a round "+" at the
+  sprite's corner — Volt on hover/focus with a pointer, a quiet edged dot on
+  touch (nothing lives only on hover). One word repeated on seventy cards is
+  the same tell as seventy count pills.
 - **A filter is quieter than a place.** `.segmented--quiet` (lifted neutral
   thumb, foreground ink) for a segmented control that narrows or orders the
   list under it; the Volt thumb is for "which page of this hub". One Volt
