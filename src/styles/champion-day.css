@@ -159,14 +159,20 @@
     box-shadow: var(--ring-primary);
 }
 
-.champion-switch__count {
-    color: var(--color-muted);
-    font-family: var(--font-mono);
-    font-weight: var(--weight-medium);
+/* Each tab carries its day's marks (2026-11-12): the slots alone, no count
+   and no pill of their own inside the tab's pill. */
+.champion-switch .challenge-boards__count {
+    display: none;
 }
 
-.champion-switch__count.is-gold {
-    color: var(--color-accent);
+.champion-switch .challenge-boards {
+    gap: var(--space-0_5);
+}
+
+.champion-switch .challenge-boards__slot {
+    height: auto;
+    padding: 0;
+    background: none;
 }
 
 .champion-ledger {

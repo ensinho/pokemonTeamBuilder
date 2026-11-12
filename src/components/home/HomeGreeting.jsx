@@ -7,6 +7,7 @@ import { Sprite } from '../Sprite';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { RollingNumber } from '../RollingNumber';
 import { CHECKED_IN_EVENT } from '../../utils/dailyCheckin';
+import { MascotNote } from './MascotNote';
 
 /**
  * The Home's first line (2026-11-09, the "Hey, Alex." of the references —
@@ -18,6 +19,10 @@ import { CHECKED_IN_EVENT } from '../../utils/dailyCheckin';
  *
  * The partner is a silhouette until one is chosen ("Quem é esse Pokémon?",
  * the app's device for not-chosen-yet); a tap opens the picker either way.
+ *
+ * Its second line (2026-11-12) is the mascot's note of the day when he has
+ * one (`note`, homeNote()), the persona's question otherwise — one voice,
+ * never a question above a band that answers it the other way.
  */
 export function HomeGreeting({
     name,
@@ -26,6 +31,7 @@ export function HomeGreeting({
     uid,
     partner,
     streakCount = 0,
+    note = null,
     isAnonymous = false,
     onOpenPartner,
     onOpenStreak,
@@ -66,7 +72,9 @@ export function HomeGreeting({
 
             <div className="home-greet__text">
                 <h1 className="home-greet__hello">{hello}</h1>
-                <p className="home-greet__ask">{ask}</p>
+                {note
+                    ? <MascotNote note={note} onOpenStreak={onOpenStreak} />
+                    : <p className="home-greet__ask">{ask}</p>}
             </div>
 
             {isAnonymous ? (

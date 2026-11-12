@@ -20,6 +20,8 @@ export function ChampionFace({ id, className = '' }) {
  * claramente entre os dois campeões"): one tab each — their face, their name,
  * their day as 0/2 · 1/2 · 2/2 — and the tab picked is the champion the hero
  * shows. A segmented control in the hero's own material, not a second card.
+ * Since the harmony pass (2026-11-12) each tab carries its two boards' marks,
+ * so the score is read once, where the champion is picked.
  *
  * `plan` is `challengeDayPlan()`'s answer; `focus` the champion on screen.
  */
@@ -41,11 +43,9 @@ export function ChampionSwitch({ plan, focus, onFocus, showBoards = true }) {
                     >
                         <ChampionFace id={day.id} />
                         <span className="champion-switch__name">{name}</span>
-                        {showBoards && (
-                            <span className={`champion-switch__count ${day.outcome === 'perfect' ? 'is-gold' : ''}`}>
-                                {day.done}/{day.total}
-                            </span>
-                        )}
+                        {/* The day's two results on the tab itself (a crown, an ✕, the
+                            dashed ball) — the hero no longer repeats them in its foot. */}
+                        {showBoards && <ChallengeBoards day={day} compact className="champion-switch__boards" />}
                     </button>
                 );
             })}

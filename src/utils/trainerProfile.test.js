@@ -11,6 +11,7 @@ import {
     personaDockSlot,
     personaNavOrder,
     personaPicks,
+    homeDoors,
     recommendedJourneyIds,
     sortNavGroups,
     suggestedJourney,
@@ -116,6 +117,34 @@ describe('personaPicks', () => {
 
     it('is empty with no profile', () => {
         expect(personaPicks(normalizeTrainerProfile({}))).toEqual([]);
+    });
+});
+
+describe('homeDoors', () => {
+    it('never repeats what the hero and the route show, and still fills the row', () => {
+        const doors = homeDoors(profile(['minigames']), { exclude: ['pokepuzzle', 'challenge', 'battles'] });
+        expect(doors).toHaveLength(4);
+        expect(doors).not.toContain('pokepuzzle');
+        expect(doors).not.toContain('challenge');
+        expect(doors).not.toContain('battles');
+        expect(doors[0]).toBe('generationQuiz');
+        expect(new Set(doors).size).toBe(4);
+    });
+
+    it('keeps the persona order when nothing is excluded', () => {
+        const p = profile(['competitive'], { competitiveLevel: 'ranked' });
+        expect(homeDoors(p)).toEqual(personaPicks(p, 4));
+    });
+
+    it('every door is a known destination, even with everything a persona picks excluded', () => {
+        const p = profile(['competitive', 'franchise', 'minigames'], { competitiveLevel: 'casual' });
+        const doors = homeDoors(p, { exclude: personaPicks(p, 15) });
+        expect(doors).toHaveLength(4);
+        for (const key of doors) expect(PICK_DESTINATIONS[key]).toBeDefined();
+    });
+
+    it('is empty with no profile', () => {
+        expect(homeDoors(normalizeTrainerProfile({}))).toEqual([]);
     });
 });
 

@@ -67,6 +67,11 @@ Rules that make the pass worth something:
   `page.evaluate` — dev serves source modules), node identity (mark a node with a
   `data-` attribute, act, check it survived — this is how a whole grid remounting
   on a star tap was found). A screenshot is the last check, not the only one.
+- **Raise the resource-timing buffer first** (2026-11-12): Chrome keeps only
+  250 entries and the dev server loads more modules than that, so a late
+  module (a lazy chunk's store) is missing from the list below and the bare
+  fallback import loads a second copy. In the init script:
+  `performance.setResourceTimingBufferSize(50000)`.
 - **Import the page's own module, not a bare path, once the dev server has hot-
   updated anything.** After an HMR update Vite serves a module as
   `…/useAuthStore.js?t=<stamp>`; a bare `import('/pokemonTeamBuilder/src/store/…')`
