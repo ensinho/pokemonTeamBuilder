@@ -3194,7 +3194,7 @@ a.data-list__row:hover,
    pages…) drew a flat 2px Volt ring, not the logo ring. These rules come
    after the utilities at the same specificity, so one rule brings every one
    of them onto the system's ring. */
-[class*='focus-visible:ring-2']:focus-visible {
+[class*='focus-visible:ring-2']:not(input, textarea, select):focus-visible {
     box-shadow: var(--ring-focus);
 }
 
@@ -3202,6 +3202,16 @@ a.data-list__row:hover,
    outside it: one ring's width of scroll padding keeps it whole. */
 .app-shell__nav {
     scroll-padding-block: var(--space-2);
+}
+
+/* 5. Text fields never wear the logo ring. Browsers match :focus-visible on
+   a text field even for a mouse click or a tap, so the generic rule drew the
+   ink/magenta/gold stack around every raw <input> the moment it was touched
+   (2026-11-12: the Meta search and every Tailwind-styled field looked cut by
+   coloured bars). A field's focus is its edge turning primary, inset so the
+   row never moves. Zero specificity: a field that styles its own focus wins. */
+:where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='button'], [type='submit'], [type='reset'], [type='color'], [type='file'], [type='image']), textarea, select):focus-visible {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 /* Fields already draw their own inset focus treatment above; without this the

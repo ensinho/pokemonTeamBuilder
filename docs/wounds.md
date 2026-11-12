@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-12 — Text fields wore coloured bars when focused (desktop and phone) `bug`
+- **Symptom (Enzo):** clicking or tapping a search field (Meta & usage, and others) drew strange coloured bars around it.
+- **Root cause:** the global `:where(a, button, input, …):focus-visible` rule gives everything the logo ring (ink + magenta + gold, 6px). Browsers match `:focus-visible` on a **text field even on a mouse click or a tap**, so every field not using `.input-clean` (raw Tailwind inputs like the Meta search) showed the three-colour ring the moment you touched it. Rule 3 (`[class*='focus-visible:ring-2']`) did the same for Tailwind inputs with `focus-visible:ring-2`.
+- **Fix:** `src/index.css` now has a zero-specificity rule that gives text-entry `input`, `textarea` and `select` the field focus (`inset 0 0 0 1px var(--color-primary)`). Rule 3 now skips `input`, `textarea` and `select`. Checkboxes, radios and ranges still get the logo ring.
+- **Correct pattern:** the logo ring is for controls you **activate**, never for fields you **type in**. A field's focus is its edge turning primary.
+- **Files:** `src/index.css`
+
 ### 2026-11-12 — A hovered Pokémon card wore a white frame: an emphasis edge with no colour in it `dispattern`
 - **Symptom (Enzo):** "o card ficou com bordas brancas no hover… é meio frequente essa borda branca com falta de cor." Hovering a card in the builder or the Pokédex drew a 3px white frame around a colourful sprite on the dark themes. He names it as a recurring one.
 - **Root cause:** the hover used the bare `--sticker` shadow, whose edge is `--sticker-edge: var(--color-fg)` — the theme's text colour, so white on every dark theme. A neutral token was used where the object has a colour of its own (its type, in `--card-type`). The Pokédex's desktop card also never set `--card-type` (it has its own markup, not `<PokemonCard>`), so it had no type platform either.
