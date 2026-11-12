@@ -788,7 +788,7 @@
    the day's panel sits under the board, so both columns end close together. */
 @media (min-width: 1024px) {
     .pokepuzzle-view.has-ended {
-        max-width: 56.25rem;
+        max-width: 64rem;
     }
 
     .pokepuzzle-game-container.has-ended {
@@ -842,30 +842,21 @@
         justify-content: flex-start;
     }
 
-    /* Under the board, and under the result, each reading is a card of the
-       page, like the hints. */
-    .pokepuzzle-game-main > .puzzle-day,
-    .pokepuzzle-game-sidebar > .puzzle-day {
+    /* The three readings: one row under the board and the result, equal
+       columns, each a card of the page like the hints. */
+    .pokepuzzle-standings {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-4);
+        align-items: stretch;
+    }
+
+    .pokepuzzle-standings > .puzzle-day {
+        height: 100%;
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
         background: var(--color-surface);
-    }
-
-    /* The column now holds the result, the record and the league: a stack
-       taller than the screen must scroll with the page, not stick to it. */
-    .pokepuzzle-game-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-    }
-
-    .pokepuzzle-game-sidebar:has(> .puzzle-day) {
-        position: static;
-    }
-
-    /* 21rem is narrow for four figures in a row. */
-    .pokepuzzle-game-sidebar .puzzle-record {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
