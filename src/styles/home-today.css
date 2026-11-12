@@ -150,71 +150,67 @@
     -webkit-line-clamp: 2;
 }
 
-.home-greet__ask {
-    margin: 0;
-    overflow: hidden;
-    color: var(--color-muted);
-    font-size: var(--text-sm);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+/* He speaks (2026-11-12, the hearth pass): the line under the hello is the
+   mascot's — his note of the day, or the persona's question — in his speech
+   bubble, the device the Primeira Jornada and every <MascotTip> use. It hugs
+   its words (never a band) and its tail points at him. A note that leads
+   somewhere is the bubble itself: the fill answers the pointer, tail and all. */
+.home-greet__says {
+    display: flex;
+    min-width: 0;
+    margin-top: var(--space-1);
 }
 
-/* The streak: a control's height, a pill's corners. Lit, it is earned — Shiny
-   Gold worn as a sticker (the brand layer's rule for a reward). */
-.home-greet__streak {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: var(--space-1);
-    height: var(--control-h-md);
-    padding-inline: var(--space-3);
-    border: none;
-    border-radius: var(--radius-full);
+.home-greet__says .mascot-note {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    /* 8 and 12: the bubble lands on the Home's 4/8 steps. */
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
     background: var(--color-surface);
-    color: var(--color-muted);
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth),
-                scale var(--duration-press) var(--ease-out);
+    color: var(--color-fg-secondary);
 }
 
-.home-greet__streak:hover {
+.home-greet__says .mascot-note::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: calc(var(--space-1) * -1);
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--space-0_5);
+    background: inherit;
+    rotate: 45deg;
+    translate: 0 -50%;
+}
+
+.home-greet__says :is(a, button).mascot-note {
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.home-greet__says :is(a, button).mascot-note:hover {
     background: var(--color-surface-hover);
 }
 
-.home-greet__streak:active {
-    scale: var(--press-scale);
+/* A friend's battle waits: the words stay Live Pink in the bubble too. */
+.home-greet__says .mascot-note[data-note^='battle'] {
+    color: var(--brand-live-text);
 }
 
-.home-greet__streak svg {
-    width: 1rem;
-    height: 1rem;
-}
-
-.home-greet__flame {
-    transform-origin: 50% 90%;
-}
-
-/* The trainer's check-in, answered by the flame: it flares once, on the pop
-   spring, while the count rolls to its new figure (RollingNumber). */
-@media (prefers-reduced-motion: no-preference) {
-    .home-greet__flame.is-flaring {
-        animation: greet-flare var(--duration-pop) var(--ease-pop);
+/* Said once, when the Home opens — a line that arrives from his side, not a
+   loop. Desktop only: a phone's page already fades in whole (no entrance per
+   item there), and `backwards` leaves nothing behind once it has played. */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .home-greet__says .mascot-note {
+        transform-origin: 0 50%;
+        animation: greet-says var(--duration-slow) var(--ease-out) 200ms backwards;
     }
 }
 
-@keyframes greet-flare {
-    0% { transform: none; }
-    35% { transform: translateY(-12%) scale(1.4) rotate(-10deg); }
-    100% { transform: none; }
-}
-
-.home-greet__streak.is-lit {
-    background: var(--brand-gold);
-    color: var(--brand-on-gold);
-    box-shadow: inset 0 0 0 2px var(--brand-ink), 3px 3px 0 0 var(--sticker-drop);
+@keyframes greet-says {
+    from { opacity: 0; scale: 0.94; }
 }
 
 .cozy-home .home-greet__signin {
@@ -237,6 +233,24 @@
     border-radius: var(--radius-xl);
     background: color-mix(in srgb, var(--hero-type) 30%, var(--color-surface));
     color: var(--color-fg);
+}
+
+/* The type's colour at night (the hearth pass, 2026-11-12). On a dark theme
+   the mix above pulls every hue toward the violet surface, and the warm
+   types — Rock, Ground, Electric, Bug, Normal — came out khaki: a Strategist
+   led by Tyranitar got an olive slab, a new trainer a brown one. Here the
+   hero keeps the type's own hue and half its chroma at one fixed, dark
+   lightness, so Dragon stays the violet it was and Fire is an ember, not a
+   mud. The light themes keep their pastel mix (`light-dark()` follows the
+   `color-scheme` applyTheme sets); an engine without relative colours keeps
+   the rule above. */
+@supports (color: light-dark(red, oklch(from red l c h))) {
+    .day-hero {
+        background: light-dark(
+            color-mix(in srgb, var(--hero-type) 30%, var(--color-surface)),
+            oklch(from var(--hero-type) 0.3 calc(c * 0.45) h)
+        );
+    }
 }
 
 /* The trainer's wallpaper, drained to its light and shade so it takes the
@@ -653,11 +667,34 @@
         font-size: var(--text-3xl);
     }
 
+    /* The action stands right under the headline (the hearth pass,
+       2026-11-12): under her team it ended at ~900px of an 844px screen, 130px
+       behind the dock — the hero's one action was the only thing on it a
+       thumb could not reach without scrolling (/app-screens: the hero AND
+       its action above the fold). The bar dissolves into the hero's column
+       so the pill can move; her two tabs and her six follow it. The DOM
+       keeps its order — headline, the champions, their team, the action —
+       which is still the order a screen reader should say it in. */
     .day-hero--stage .day-hero__bar {
-        flex-wrap: wrap;
+        display: contents;
+    }
+
+    .day-hero--stage .day-hero__top { order: 1; }
+    .day-hero--stage .day-hero__copy { order: 2; }
+    .day-hero--stage .day-hero__extra { order: 4; margin-top: 0; }
+
+    .day-hero--stage .day-hero__now {
+        position: relative;
+        z-index: 2;
+        order: 5;
+        padding-top: var(--space-3);
+        border-top: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
     }
 
     .cozy-home .day-hero--stage .day-hero__play {
+        position: relative;
+        z-index: 2;
+        order: 3;
         width: 100%;
         height: var(--control-h-lg);
         gap: var(--space-2);
@@ -1197,6 +1234,51 @@
     }
 }
 
+/* ── The journey's missions on the Home (the hearth pass, 2026-11-12) ─────
+   A mission in a narrow column (a phone, the rail's card, a third of the
+   desktop's main one) had ~100px for its words beside the reward and the
+   arrow: three lines and a hint cut mid-sentence ("Pick a mode — by
+   generation or by…"). On the Home the reward drops under the words and the
+   hint has the lines it needs. */
+.cozy-home button.mission {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'mark text go' 'mark meta go';
+    row-gap: var(--space-1);
+}
+
+.cozy-home button.mission .mission__mark { grid-area: mark; }
+.cozy-home button.mission .mission__text { grid-area: text; }
+.cozy-home button.mission .mission__go { grid-area: go; }
+
+.cozy-home button.mission :is(.mission__reward, .mission__count) {
+    grid-area: meta;
+    justify-self: start;
+}
+
+.cozy-home button.mission .mission__count { justify-self: end; }
+
+.cozy-home button.mission .mission__sub {
+    -webkit-line-clamp: 4;
+}
+
+/* A new trainer's journey leads the desktop's main column: its three open
+   missions side by side, on the columns the cards below them use. */
+@media (min-width: 1024px) {
+    .cozy-main .journey-home .journey__missions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--page-gap);
+    }
+
+    .cozy-main .journey-home .journey__missions > li {
+        display: flex;
+    }
+
+    .cozy-main .journey-home .mission {
+        align-content: start;
+    }
+}
+
 /* ── Phones ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 1023px) {
@@ -1209,7 +1291,6 @@
 
 @media (prefers-reduced-motion: reduce) {
     .home-greet__avatar,
-    .home-greet__streak,
     .home-party__disc {
         transition: none;
     }

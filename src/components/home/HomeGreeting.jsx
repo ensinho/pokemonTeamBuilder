@@ -1,29 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Flame } from 'lucide-react';
+import React from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { typeColors } from '../../constants/types';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { Sprite } from '../Sprite';
 import { Mascot } from '../Mascot';
 import { FramedAvatar } from '../rewards/FramedAvatar';
-import { RollingNumber } from '../RollingNumber';
-import { CHECKED_IN_EVENT } from '../../utils/dailyCheckin';
 import { MascotNote } from './MascotNote';
 
 /**
  * The Home's first line (2026-11-09, the "Hey, Alex." of the references —
- * .claude/skills/app-screens): the partner as the trainer's face, a hello by
- * the hour with their name, and the question their persona came with. It
- * replaces the chip strip and the section tabs — the partner chip became the
- * avatar, the streak chip the gold pill on the right (earned, so gold), and a
- * guest gets the way into an account there instead.
+ * .claude/skills/app-screens): a hello by the hour with the trainer's name,
+ * said by the mascot in the trainer's own circle, with the partner riding on
+ * it as a badge (a silhouette until one is chosen — "Quem é esse Pokémon?";
+ * a tap opens the picker either way).
  *
- * The partner is a silhouette until one is chosen ("Quem é esse Pokémon?",
- * the app's device for not-chosen-yet); a tap opens the picker either way.
+ * Under the hello he speaks (2026-11-12, the hearth pass): his note of the
+ * day when he has one (`note`, homeNote()), the persona's question otherwise
+ * — always in his speech bubble, the same device the Primeira Jornada and
+ * every `<MascotTip>` use, its tail pointing at him. One voice, and it is
+ * visibly his.
  *
- * Its second line (2026-11-12) is the mascot's note of the day when he has
- * one (`note`, homeNote()), the persona's question otherwise — one voice,
- * never a question above a band that answers it the other way.
+ * The streak is NOT here any more: the week strip (CheckinWeek) opens with
+ * the run — flame, count, heat — and stands right under this line on a phone
+ * and beside it on a desktop, so a pill repeated the same figure a thumb
+ * away. A guest's way into an account still sits on the right on a phone.
  */
 export function HomeGreeting({
     name,
@@ -31,7 +31,6 @@ export function HomeGreeting({
     personaId,
     uid,
     partner,
-    streakCount = 0,
     note = null,
     isAnonymous = false,
     onOpenPartner,
@@ -39,14 +38,6 @@ export function HomeGreeting({
     onSignIn,
 }) {
     const { t } = useTranslation();
-    // The flame answers the trainer's own check-in (CHECKED_IN_EVENT), once —
-    // never a streak that merely arrives from another device.
-    const [flare, setFlare] = useState(0);
-    useEffect(() => {
-        const onCheckIn = () => setFlare((n) => n + 1);
-        window.addEventListener(CHECKED_IN_EVENT, onCheckIn);
-        return () => window.removeEventListener(CHECKED_IN_EVENT, onCheckIn);
-    }, []);
     const hello = name
         ? t(`homeToday.hello.${period}`, { name })
         : t(`homeToday.helloAnon.${period}`);
@@ -78,25 +69,16 @@ export function HomeGreeting({
 
             <div className="home-greet__text">
                 <h1 className="home-greet__hello">{hello}</h1>
-                {note
-                    ? <MascotNote note={note} onOpenStreak={onOpenStreak} face={false} />
-                    : <p className="home-greet__ask">{ask}</p>}
+                <div className="home-greet__says">
+                    {note
+                        ? <MascotNote note={note} onOpenStreak={onOpenStreak} face={false} />
+                        : <p className="mascot-note">{ask}</p>}
+                </div>
             </div>
 
-            {isAnonymous ? (
+            {isAnonymous && (
                 <button type="button" className="btn btn-secondary btn-sm home-greet__signin" onClick={onSignIn}>
                     {t('homeToday.signIn')}
-                </button>
-            ) : (
-                <button
-                    type="button"
-                    className={`home-greet__streak ${streakCount > 0 ? 'is-lit' : ''}`}
-                    onClick={onOpenStreak}
-                    aria-label={streakCount === 1 ? t('cozyHome.streakChipOne') : t('cozyHome.streakChip', { n: streakCount })}
-                >
-                    {/* Keyed by the flare, so each check-in plays it once. */}
-                    <Flame key={flare} aria-hidden="true" className={`home-greet__flame ${flare ? 'is-flaring' : ''}`} />
-                    <RollingNumber value={streakCount} />
                 </button>
             )}
         </header>

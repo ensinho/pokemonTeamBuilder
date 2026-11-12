@@ -27,6 +27,7 @@ import {
     dayPeriod,
     editedParts,
     findMetaAnswer,
+    homeDeck,
     pickNextBadge,
     resolveMembers,
     summarizeTeam,
@@ -476,6 +477,10 @@ export function CozyHomeView({
     const leadType = lead?.types?.[0] || partnerType;
     const heroArtId = lead?.id || (hasPartner ? partnerId : (emptyPersona ? PERSONAS[emptyPersona.id]?.art : null) || partnerId);
     const heroArtShiny = lead ? Boolean(lead.customization?.isShiny) : greetingPokemonIsShiny;
+    // Nothing chosen and nothing built: the hero wears the brand's own colour
+    // (the mascot's), not the type of a Pokémon the trainer never picked —
+    // the hour's stand-in is Umbreon at night, and a first Home opened brown.
+    const heroTone = lead || hasPartner ? typeColors[leadType] : 'var(--color-primary)';
     // The scene and its picker, for whichever hero leads. `owner` is what
     // makes the trainer's own scenes theirs (their partner, their Trainer ID).
     const sceneOwner = { uid: userId, partnerId, partnerShiny: greetingPokemonIsShiny };
@@ -537,8 +542,8 @@ export function CozyHomeView({
         />
     ) : (
         <DayHero
-            {...heroScene(typeColors[leadType])}
-            tone={typeColors[leadType]}
+            {...heroScene(heroTone)}
+            tone={heroTone}
             art={(
                 // The lead (or the partner) as a battle sprite on its platform (2026-11-12).
                 <span className="day-hero__sprite-stage">
@@ -671,7 +676,9 @@ export function CozyHomeView({
             },
         },
         badge: {
-            tone: 'var(--brand-gold)',
+            // Gold is for what is earned: the next badge wears the brand's own
+            // tone until then (its ring fills toward it), gold once it is in.
+            tone: nextBadge ? 'var(--color-primary)' : 'var(--brand-gold)',
             art: <RouteEmblem Icon={nextBadge ? nextBadge.Icon : Sparkles} percent={nextBadge ? nextBadge.progress.percent : 100} earned={!nextBadge} />,
             kicker: nextBadge ? `${nextBadge.progress.current}/${nextBadge.progress.target}` : '★',
             title: nextBadge ? badgeName(nextBadge) : t('cozyHome.allBadges'),
@@ -735,11 +742,18 @@ export function CozyHomeView({
     // "Seus times" as party and PC (TeamDeck, 2026-11-12): the team in
     // progress as a party, the next ones as PC boxes; the totals ride the
     // heading instead of a strip of their own.
+    //
+    // It never restates the hero (the hearth pass, 2026-11-12): when the hero
+    // IS the team in progress, the deck holds the other teams only — the same
+    // party and a second "Continuar" stood 40px under the first — and with no
+    // team at all the hero already is the empty state ("Monte seu primeiro
+    // time" was said three times on a new trainer's Home).
+    // What it holds is homeDeck()'s call (utils/homeStatus.js, tested).
+    const heroIsTeam = heroKind !== 'challenge' && heroKind !== 'badges';
     const teamsPanel = (limit) => {
-        const others = savedTeams
-            .filter((team) => team !== activeTeam)
-            .slice(0, limit)
-            .map((team) => ({ team, summary: summarizeTeam(team, typesById) }));
+        const deck = homeDeck({ heroIsTeam, teams: savedTeams, active: activeTeam, limit });
+        if (deck.kind === 'none') return null;
+        const others = deck.others.map((team) => ({ team, summary: summarizeTeam(team, typesById) }));
         return (
             <Panel
                 card={false}
@@ -749,7 +763,7 @@ export function CozyHomeView({
                     : t('cozyHome.yourTeamsSub')}
                 action={(
                     <span className="cozy-panel__tools">
-                        {savedTeams.length > limit + 1 && (
+                        {deck.hasMore && (
                             <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/teams')}>
                                 {t('cozyHome.seeAll')} <ChevronRight aria-hidden="true" />
                             </button>
@@ -760,7 +774,7 @@ export function CozyHomeView({
                     </span>
                 )}
             >
-                {!activeTeam ? (
+                {deck.kind === 'empty' ? (
                     <EmptyState
                         compact
                         title={t(`${emptyKey}.title`)}
@@ -772,7 +786,7 @@ export function CozyHomeView({
                     />
                 ) : (
                     <TeamDeck
-                        active={{ team: activeTeam, summary }}
+                        active={deck.party ? { team: deck.party, summary } : null}
                         others={others}
                         t={t}
                         status={teamStatus}
@@ -947,7 +961,6 @@ export function CozyHomeView({
             personaId={hasAnsweredProfile(trainerProfile) ? persona?.id : null}
             uid={userId}
             partner={{ id: partnerId, shiny: greetingPokemonIsShiny, type: partnerType, hasPartner }}
-            streakCount={streakCount}
             // The mascot's note of the day is the greeting's second line.
             note={note}
             // A guest's way into an account sits here on a phone; the
@@ -1008,7 +1021,14 @@ export function CozyHomeView({
                             {centerToday('rail')}
                             {savedTeams.length > 0 && guestCard}
                         </>
-                    ) : ordered}
+                    ) : (
+                        <>
+                            {/* A new trainer's guide stands right under the hero
+                                (as on a phone), not at the foot of the rail. */}
+                            {journeyFocus}
+                            {ordered}
+                        </>
+                    )}
                 </div>
 
                 {!isPhone && (
@@ -1018,7 +1038,7 @@ export function CozyHomeView({
                         {/* The day as a place, right under the trainer's own check-in (2026-11-09). */}
                         {centerToday('rail')}
                         {forYouSetup}
-                        {journeyFocus || journeyCompact}
+                        {journeyCompact}
                     </aside>
                 )}
             </div>
