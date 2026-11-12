@@ -1257,3 +1257,288 @@
 @media (prefers-reduced-motion: reduce) {
     .puzzle-day__fill { animation: none; }
 }
+
+/* ==========================================================================
+   The result in three readings (2026-11-12, PuzzleDayPanel): Hoje · Semana ·
+   Você. One panel, tabs across its top; everything inside separates by fill.
+   ========================================================================== */
+
+.puzzle-day__tabs {
+    margin-bottom: 0;
+}
+
+.puzzle-day__pane {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.puzzle-day__pane .puzzle-day__title {
+    margin: 0;
+}
+
+.puzzle-day__lead,
+.puzzle-day__note {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.puzzle-day__lead {
+    color: var(--color-fg);
+}
+
+.puzzle-day__friends {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.puzzle-day__streak {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    /* A streak is earned: gold, as a word. */
+    color: var(--color-accent);
+}
+
+.puzzle-day__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.puzzle-day__empty > p {
+    margin: 0;
+}
+
+/* The podium: second, first, third — the centre raised, the winner's step
+   the one filled thing (gold: it was won). */
+.puzzle-podium {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.puzzle-podium__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-fg) 6%, transparent);
+    text-align: center;
+}
+
+.puzzle-podium__step.is-first {
+    padding-block: var(--space-4);
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+}
+
+.puzzle-podium__step.is-me:not(.is-first) {
+    box-shadow: var(--ring-primary);
+}
+
+.puzzle-podium__place,
+.puzzle-rank__place {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.puzzle-podium__step.is-first .puzzle-podium__place,
+.puzzle-podium__step.is-first .puzzle-podium__score {
+    color: inherit;
+}
+
+.puzzle-podium__name {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.puzzle-podium__score,
+.puzzle-rank__score {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.puzzle-rank {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.puzzle-rank__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2_5);
+    padding: var(--space-1_5) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+}
+
+/* The trainer's own row: the one marked line of the table. */
+.puzzle-rank__row.is-me {
+    background: var(--color-primary-soft);
+    font-weight: var(--weight-semibold);
+}
+
+.puzzle-rank__row.is-me .puzzle-rank__place {
+    color: var(--color-primary-text);
+}
+
+.puzzle-rank__place {
+    width: 1.75rem;
+    flex-shrink: 0;
+}
+
+.puzzle-rank__name {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.puzzle-rank__score {
+    color: var(--color-fg);
+}
+
+/* The week as dots — the check-in strip's device: won, missed, not played
+   (dashed = absent), today inverted, the days still to come dim. */
+.puzzle-week {
+    display: flex;
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.puzzle-week__dot {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.puzzle-week__dot.is-won {
+    background: color-mix(in srgb, var(--color-success) 28%, transparent);
+    color: var(--color-fg);
+}
+
+.puzzle-week__dot.is-lost {
+    background: color-mix(in srgb, var(--color-danger) 22%, transparent);
+    color: var(--color-fg);
+}
+
+.puzzle-week__dot.is-missed {
+    border: 1px dashed var(--color-border-strong);
+    background: transparent;
+}
+
+.puzzle-week__dot.is-today-won,
+.puzzle-week__dot.is-today-lost {
+    background: var(--color-fg);
+    color: var(--color-bg);
+    font-weight: var(--weight-semibold);
+}
+
+.puzzle-week__dot.is-ahead {
+    opacity: 0.55;
+}
+
+.puzzle-record {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+}
+
+.puzzle-record > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.puzzle-record dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.puzzle-record dt {
+    order: 2;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.puzzle-medals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.puzzle-medal {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--space-2);
+    align-items: center;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-fg) 6%, transparent);
+}
+
+.puzzle-medal__mark {
+    grid-row: span 2;
+    width: 1.5rem;
+    height: 1.5rem;
+    clip-path: polygon(50% 0, 62% 36%, 100% 38%, 70% 60%, 80% 100%, 50% 76%, 20% 100%, 30% 60%, 0 38%, 38% 36%);
+    background: color-mix(in srgb, var(--color-fg) 18%, transparent);
+}
+
+/* Gold only when it was earned. */
+.puzzle-medal.is-earned .puzzle-medal__mark {
+    background: var(--brand-gold);
+}
+
+.puzzle-medal__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.puzzle-medal__need {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}

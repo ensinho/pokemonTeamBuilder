@@ -5,6 +5,7 @@ import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firesto
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
 import { GENERATION_RANGES } from '../constants/pokemon';
+import { runIdFor } from '../utils/quizProgress';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 
@@ -154,8 +155,10 @@ export const useQuizRunsStore = create((set, get) => {
             }
         },
 
-        startNewRun: (generationKeys, totalCount) => {
-            const signature = buildSelectionSignature(generationKeys);
+        // `mode` (utils/quizProgress.js): a Sprint or Flawless run is kept under
+        // its own id, so it never resets the classic run of the same selection.
+        startNewRun: (generationKeys, totalCount, mode = 'classic') => {
+            const signature = runIdFor(buildSelectionSignature(generationKeys), mode);
             const existing = get().quizRuns.find((r) => r.id === signature);
             
             const bestFound = existing ? existing.bestFound : 0;
@@ -163,6 +166,7 @@ export const useQuizRunsStore = create((set, get) => {
 
             const newRun = {
                 id: signature,
+                ...(signature.includes('~') ? { mode } : null),
                 generationKeys,
                 foundIds: [],
                 foundOrder: [],

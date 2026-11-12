@@ -1,101 +1,545 @@
 /* ============================================================
-   GYMS (GymsView) — phone layout. Desktop is styled by the utilities
-   in the view; nothing here applies at lg+.
+   GYMS (GymsView) — a route and a stage (2026-11-12).
 
-   The phone page ran 8,000px: every leader was a bordered card with a
-   type-coloured rail and a divider, holding a two-column grid of bordered
-   team cards, each with a 64px ringed disc and two 8px type pills — boxes
-   in boxes in boxes (206 bordered elements, 187 nested) — and all of them
-   faded in on arrival. Selectors are compound so they outrank the
-   utilities on the same elements regardless of stylesheet order.
+   It was a jump list beside thirteen stacked cards: every leader on screen
+   twice, each card a bordered box with a type rail holding bordered member
+   cards with a level chip and two three-letter type pills. Now the route
+   lists the game in one quiet row per leader and the stage shows the chosen
+   one. One bordered surface each (the route, the stage); everything inside
+   separates by fill. --gym-tone is the leader's type, always mixed.
    ============================================================ */
 
+.gyms-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--page-gap, var(--space-4));
+    max-width: 84rem;
+}
+
+/* ---- The bar: which game, and the badges won in it ---- */
+.gyms-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
+}
+
+.gyms-view .gyms-bar__game {
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 22rem;
+    margin: 0;
+}
+
+.gyms-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* A badge: the eight-sided gem. Dim until the leader is beaten, then their
+   type — mixed toward the foreground so it reads on every theme. */
+.gyms-badge {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+    background: color-mix(in srgb, var(--color-fg) 14%, transparent);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.gyms-badge.is-earned {
+    background: color-mix(in srgb, var(--gym-tone, var(--color-primary)) 78%, var(--color-fg));
+}
+
+.gyms-badges__figure {
+    margin-inline-start: var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+/* ---- Route + stage ---- */
+.gyms-body {
+    display: grid;
+    grid-template-columns: var(--page-rail-width, 19rem) minmax(0, 1fr);
+    gap: var(--page-gap, var(--space-4));
+    align-items: start;
+}
+
+.gyms-route {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.gyms-route__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: var(--space-2) var(--space-2) var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+}
+
+.gyms-route__title > svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.gyms-route__rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+}
+
+.gyms-route__row {
+    display: grid;
+    grid-template-columns: 1.25rem auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2_5);
+    width: 100%;
+    padding: var(--space-1_5) var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.gyms-route__row:hover {
+    background: var(--color-surface-hover);
+}
+
+.gyms-route__row.is-active {
+    background: var(--color-surface-active);
+}
+
+.gyms-route__row:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.gyms-route__order {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+    text-align: right;
+}
+
+.gyms-route__who {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.gyms-route__name {
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gyms-route__place {
+    overflow: hidden;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gyms-route__facts {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+
+.gyms-route__dot {
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gym-tone) 72%, var(--color-fg));
+}
+
+.gyms-route__facts .gyms-badge {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* ---- Trainer portrait ---- */
+.gyms-avatar {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--gym-tone, var(--color-muted)) 16%, transparent);
+}
+
+.gyms-avatar--sm {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+}
+
+.gyms-avatar--lg {
+    width: 6rem;
+    height: 6rem;
+    border-radius: var(--radius-lg);
+}
+
+.gyms-avatar__sprite {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.gyms-avatar__type {
+    width: 50%;
+    height: 50%;
+    color: var(--color-muted);
+}
+
+/* ---- The stage ---- */
+.gyms-stage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.gyms-stage__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.gyms-stage__who {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.gyms-stage__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.gyms-stage__name {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.gyms-stage__place,
+.gyms-stage__note {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.gyms-stage__team {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+    gap: var(--space-3);
+}
+
+.gyms-mon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+    padding: var(--space-3) var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.gyms-mon:hover {
+    background: var(--color-surface-hover);
+}
+
+.gyms-mon:disabled {
+    cursor: default;
+}
+
+.gyms-mon:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+/* Dashed = may be absent: a hack ROM leader's random pick. */
+.gyms-mon.is-pool {
+    border: 1px dashed var(--color-border-strong);
+    background: transparent;
+}
+
+.gyms-mon__sprite {
+    display: grid;
+    place-items: center;
+    width: 5rem;
+    height: 5rem;
+}
+
+.gyms-mon__sprite > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.gyms-mon__name {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.gyms-mon__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.gyms-mon__level {
+    margin-inline-end: var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.gyms-mon__type {
+    width: 1rem;
+    height: 1rem;
+}
+
+.gyms-mon__pool {
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.gyms-stage__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+}
+
+.gyms-stage__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-8);
+    margin: 0;
+}
+
+.gyms-stage__facts > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.gyms-stage__facts dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.gyms-stage__facts dt {
+    order: 2;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.gyms-stage__counters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 1.5rem;
+}
+
+.gyms-stage__counters > img {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.gyms-stage__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.gyms-view .gyms-stage__beat {
+    position: relative;
+}
+
+.gyms-stage__beat .gyms-badge {
+    width: 1rem;
+    height: 1rem;
+}
+
+.gyms-view .gyms-stage__beat.is-beaten {
+    color: color-mix(in srgb, var(--gym-tone) 45%, var(--color-fg));
+}
+
+.gyms-source {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.gyms-source > svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* ---- Phones: the route is a strip of portraits over the stage, and the
+   page is the panel (no boxes on the page, --color-surface fills). ---- */
 @media (max-width: 1023px) {
-    /* The shell owns the page gutter; the view added its own on top of it. */
-    div.gyms-view {
+    .gyms-view .gyms-bar__game {
+        flex: 1 1 100%;
+    }
+
+    .gyms-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .gyms-route {
+        flex-direction: row;
+        gap: var(--space-2);
         padding: 0;
-    }
-
-    /* The game card's column is the desktop sidebar: a bounded inner scroller
-       with a 4px scrollbar gutter, which left the card 4px short of the
-       leaders' right edge. On a phone it is just the top of the page. */
-    .gyms-view aside {
-        max-height: none;
-        overflow: visible;
-        padding-right: 0;
-    }
-
-    /* Section heading: sentence case, the body face (a section, not the
-       page — Neon Sticker type rule), no rule. */
-    .gyms-view .gyms-section-head {
-        padding-bottom: 0;
-        border-bottom: none;
-    }
-
-    .gyms-view .gyms-section-head h2 {
-        font-family: var(--font-body);
-        font-size: var(--text-md);
-        font-weight: var(--weight-semibold);
-        letter-spacing: -0.015em;
-        text-transform: none;
-        color: var(--color-fg);
-    }
-
-    /* A leader is one filled surface: no outline, no coloured rail, no divider
-       under its header — the avatar's tint and the type chip already carry the
-       type. Off-screen leaders skip layout and paint (content-visibility). */
-    .gyms-view .gyms-leader {
-        gap: var(--space-3);
-        padding: var(--space-3);
         border: none;
-        border-radius: var(--radius-lg);
-        box-shadow: none;
-        animation: none;
-        content-visibility: auto;
-        contain-intrinsic-size: auto 17rem;
+        background: transparent;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
     }
 
-    .gyms-view .gyms-leader__head {
-        padding-bottom: 0;
-        border-bottom: none;
+    .gyms-route::-webkit-scrollbar {
+        display: none;
     }
 
-    .gyms-view .gyms-leader__sparkle {
-        animation: none;
+    .gyms-route__group,
+    .gyms-route__rows {
+        display: contents;
     }
 
-    /* The team: three across, each member a small raised tile inside the
-       leader's surface. The disc's own colours already say its types, so the
-       two 8px type pills under every name go. */
-    .gyms-view .gyms-leader__team {
+    .gyms-route__title {
+        display: none;
+    }
+
+    .gyms-route__row {
+        display: flex;
+        flex: 0 0 auto;
+        flex-direction: column;
+        gap: var(--space-1);
+        width: 4.5rem;
+        padding: var(--space-2) var(--space-1);
+        background: var(--color-surface);
+        text-align: center;
+        scroll-snap-align: start;
+    }
+
+    .gyms-route__row.is-active {
+        background: var(--color-surface-active);
+        box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--gym-tone) 70%, var(--color-fg));
+    }
+
+    .gyms-route__order,
+    .gyms-route__place,
+    .gyms-route__facts > span {
+        display: none;
+    }
+
+    .gyms-route__row .gyms-avatar--sm {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .gyms-route__who {
+        width: 100%;
+    }
+
+    .gyms-route__name {
+        font-size: var(--text-xs);
+    }
+
+    .gyms-stage {
+        gap: var(--space-4);
+        padding: var(--space-4);
+        border: none;
+    }
+
+    .gyms-avatar--lg {
+        width: 4.5rem;
+        height: 4.5rem;
+    }
+
+    .gyms-stage__team {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: var(--space-2);
-        margin-top: 0;
     }
 
-    .gyms-view .gyms-mon {
-        gap: var(--space-1);
-        padding: var(--space-2) var(--space-1_5);
-        border: none;
-        border-radius: var(--radius-md);
-        background: var(--color-surface-raised);
+    .gyms-mon {
+        padding: var(--space-2) var(--space-1);
     }
 
-    .gyms-view .gyms-mon:active {
-        background: var(--color-surface-active);
+    .gyms-mon__sprite {
+        width: 4rem;
+        height: 4rem;
     }
 
-    .gyms-view .gyms-mon__disc {
-        width: 3rem;
-        height: 3rem;
-    }
-
-    .gyms-view .gyms-mon__disc img {
-        width: 2.5rem;
-        height: 2.5rem;
-    }
-
-    .gyms-view .gyms-mon__types {
-        display: none;
+    .gyms-stage__actions,
+    .gyms-stage__actions > .btn {
+        width: 100%;
     }
 }
