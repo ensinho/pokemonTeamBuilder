@@ -34,6 +34,7 @@ import {
 import { CheckinWeek } from '../rewards/CheckinWeek';
 import { HomeGreeting } from '../home/HomeGreeting';
 import { DayHero } from '../home/DayHero';
+import { HeroSprite } from '../home/HeroSprite';
 import { HomeParty } from '../home/HomeParty';
 import { DayRoute } from '../home/DayRoute';
 import { PersonaDoors } from '../home/PersonaDoors';
@@ -494,13 +495,12 @@ export function CozyHomeView({
             layout="stage"
             art={(
                 <span className="day-hero__stage">
-                    <img
+                    {/* Her ace as a battle sprite on its own platform — the same
+                        pixel world as the champion beside it (2026-11-12). */}
+                    <span className="day-hero__pad day-hero__pad--ace" />
+                    <HeroSprite
                         key={`ace-${aceDex}`}
-                        src={getPokemonArtworkSpriteUrl(aceDex)}
-                        alt=""
-                        width={240}
-                        height={240}
-                        decoding="async"
+                        id={aceDex}
                         className={`day-hero__ace ${lineupRevealed ? '' : 'is-unknown'}`}
                     />
                     <span className="day-hero__pad" />
@@ -535,16 +535,17 @@ export function CozyHomeView({
             {...heroScene(typeColors[leadType])}
             tone={typeColors[leadType]}
             art={(
-                <img
-                    key={`${heroArtId}-${heroArtShiny}`}
-                    src={getPokemonArtworkSpriteUrl(heroArtId, { shiny: heroArtShiny })}
-                    alt=""
-                    width={240}
-                    height={240}
-                    decoding="async"
-                    fetchPriority="high"
-                    className={`day-hero__artwork ${lead || hasPartner ? '' : 'is-unchosen'}`}
-                />
+                // The lead (or the partner) as a battle sprite on its platform (2026-11-12).
+                <span className="day-hero__sprite-stage">
+                    <span className="day-hero__sprite-pad" />
+                    <HeroSprite
+                        key={`${heroArtId}-${heroArtShiny}`}
+                        id={heroArtId}
+                        shiny={heroArtShiny}
+                        priority
+                        className={`day-hero__artwork ${lead || hasPartner ? '' : 'is-unchosen'}`}
+                    />
+                </span>
             )}
             eyebrow={`${clockLine} · ${clock}`}
             title={heroTitle}
@@ -759,8 +760,10 @@ export function CozyHomeView({
                         compact
                         title={t(`${emptyKey}.title`)}
                         message={t(`${emptyKey}.teams`)}
-                        // No button: the hero's "Montar time" and the "+" beside this
-                        // heading already start a team (one primary per view).
+                        // A way in right under the words (2026-11-12, Enzo) —
+                        // secondary: the hero's ▶ stays the page's one primary.
+                        action={{ label: t('cozyHome.newTeam'), onClick: startNewTeam, icon: <Plus aria-hidden="true" /> }}
+                        actionVariant="secondary"
                     />
                 ) : (
                     <TeamDeck

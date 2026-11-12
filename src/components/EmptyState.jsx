@@ -19,7 +19,8 @@ const FACES = {
  * Props:
  *   title     — required short headline
  *   message   — secondary copy
- *   action    — optional { label, onClick, icon } primary CTA (icon renders after the label)
+ *   action    — optional { label, onClick, icon } CTA (icon renders after the label);
+ *               `actionVariant` "secondary" where the page already has its primary
  *   secondaryAction — optional { label, onClick } quiet second way out ("Entrar" beside "Criar conta")
  *   spriteSrc — optional context sprite; when omitted, shows the mascot
  *   mascot    — which face it makes: 'empty' (default) | 'search' | 'lost' | 'error'
@@ -28,7 +29,7 @@ const FACES = {
  * Box-free at every width (v3): the page is the canvas, so an empty view is the
  * page speaking — the mascot, a heading, a line, one action.
  */
-export function EmptyState({ title, message, action, secondaryAction, spriteSrc, compact = false, mascot = 'empty' }) {
+export function EmptyState({ title, message, action, secondaryAction, spriteSrc, compact = false, mascot = 'empty', actionVariant = 'primary' }) {
     const face = FACES[mascot] || FACES.empty;
     const sizeImg = compact ? 'w-16 h-16' : 'w-24 h-24 md:w-32 md:h-32';
 
@@ -53,7 +54,7 @@ export function EmptyState({ title, message, action, secondaryAction, spriteSrc,
                 <button
                     type="button"
                     onClick={action.onClick}
-                    className="empty-state__action btn btn-primary"
+                    className={`empty-state__action btn ${actionVariant === 'secondary' ? 'btn-secondary' : 'btn-primary'}`}
                 >
                     {action.label}
                     {action.icon}
