@@ -1116,6 +1116,47 @@ export const useAuthStore = create((set, get) => {
             await updatePassword(user, newPassword);
         },
 
+        // Sign in with Google (2026-11-12): a guest is upgraded in place (same
+        // uid — nothing moves); an existing Google account is signed into, and
+        // the guest's PokéPuzzle progress follows it like an email sign-in.
+        // The Google name becomes the trainer's name only if they have none —
+        // the account's saved name wins when it hydrates. The module (and the
+        // popup resolver with it) loads only when the button is pressed.
+        // Throws Firebase's error: the caller says it (prettifyAuthError) or
+        // stays quiet when the trainer closed the popup (isAuthCancel).
+        handleGoogleSignIn: async () => {
+            const { googleSignIn } = await import('../services/googleAuth');
+            const { user, linked, isNewUser, previousUid } = await googleSignIn();
+            if (previousUid && user?.uid && previousUid !== user.uid) {
+                try {
+                    await migratePokePuzzleProgress(previousUid, user.uid);
+                    set({ pokePuzzleMigrationTick: get().pokePuzzleMigrationTick + 1 });
+                } catch (e) {
+                    console.error('PokePuzzle migration on Google sign-in failed:', e);
+                }
+            }
+            const email = user?.email || '';
+            set({
+                isAnonymous: false,
+                userEmail: email,
+                isAdmin: Boolean(email && ADMIN_EMAILS.includes(email.trim().toLowerCase())),
+                showSyncPrompt: false,
+            });
+            const googleName = String(user?.displayName || '').trim().slice(0, 24);
+            if (googleName && !get().displayName) {
+                set({ displayName: googleName });
+                get().savePreferences({ displayName: googleName }).then((status) => {
+                    if (status === 'saved') get().syncPublicProfile();
+                }, () => { /* the preferences sync after hydration carries it */ });
+            }
+            if (linked) {
+                toast.success(t('toast.accountCreated'), { description: t('toast.accountCreatedDesc', { email }) });
+            } else {
+                toast.success(t('toast.signedIn', { email }));
+            }
+            return { linked, isNewUser, name: googleName };
+        },
+
         sendPasswordReset: async (email) => {
             await sendPasswordResetEmail(auth, email);
         },

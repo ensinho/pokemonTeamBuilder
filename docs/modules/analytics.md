@@ -28,7 +28,7 @@ measures first.
 | `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `hero_signin` ("Já tem conta? Entrar" — opens the Primeira Jornada on its account screen since 2026-11-12), `closing_build`, `demo_open_builder`, `feature_<key>`, `skip` |
 | `onboarding_complete` | the Primeira Jornada (`FirstJourney`) reached the persona reveal — the answers are saved there (2026-11-12; before, the `TrainerOnboarding` dialog finishing) | `persona`, `interests` (comma list), `level`, `source`: `landing`, `auto`, `home`, `profile` |
 | `onboarding_skip` | the journey closed on a first run with no answers (Pular, Escape) | `step`, `source` |
-| `onboarding_account` | an account created or signed into from the journey's account screen | `mode`: `signUp` · `signIn`, `source` |
+| `onboarding_account` | an account created or signed into from the journey's account screen | `mode`: `signUp` · `signIn` · `google`, `source` |
 | `forum_post` / `forum_reply` | `useForumStore.sendMessage` (2026-11-06) | `kind` (text · team · puzzle · challenge · invite) |
 | `forum_react` | a battle-text reaction set | `kind` (super · crit · weak · confused), `target` (post · comment) |
 | `forum_answer_accepted` | Pergunte ao Professor: an answer accepted | — |

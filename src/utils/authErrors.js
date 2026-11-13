@@ -22,6 +22,11 @@ export function prettifyAuthError(err, t) {
         case 'auth/quota-exceeded': return t('modals.authErrorTooManyRequests');
         case 'auth/credential-already-in-use': return t('modals.authErrorCredentialInUse');
         case 'auth/requires-recent-login': return t('modals.authErrorRecentLogin');
+        // Google (2026-11-12)
+        case 'auth/popup-blocked': return t('modals.authErrorPopupBlocked');
+        case 'auth/operation-not-allowed': return t('modals.authErrorProviderOff');
+        case 'auth/unauthorized-domain': return t('modals.authErrorUnauthorizedDomain');
+        case 'auth/account-exists-with-different-credential': return t('modals.authErrorOtherMethod');
         case 'auth/internal-error':
         default: return t('modals.authErrorDefault');
     }
@@ -43,4 +48,13 @@ export function authErrorField(err) {
         default:
             return null;
     }
+}
+
+/**
+ * The trainer closed the Google popup (or opened a second one): not an
+ * error to show — the dialog just goes back to waiting.
+ */
+export function isAuthCancel(err) {
+    const code = err?.code || '';
+    return code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' || code === 'auth/user-cancelled';
 }

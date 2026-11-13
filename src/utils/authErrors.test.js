@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { authErrorField, prettifyAuthError } from './authErrors';
+import { authErrorField, isAuthCancel, prettifyAuthError } from './authErrors';
 
 const t = (key) => key;
 
@@ -29,5 +29,21 @@ describe('authErrorField', () => {
         // "Email or password is incorrect" names neither on purpose.
         expect(authErrorField({ code: 'auth/invalid-credential' })).toBeNull();
         expect(authErrorField(null)).toBeNull();
+    });
+});
+
+describe('Google sign-in errors (2026-11-12)', () => {
+    it('says what to do for each Google failure', () => {
+        expect(prettifyAuthError({ code: 'auth/popup-blocked' }, t)).toBe('modals.authErrorPopupBlocked');
+        expect(prettifyAuthError({ code: 'auth/operation-not-allowed' }, t)).toBe('modals.authErrorProviderOff');
+        expect(prettifyAuthError({ code: 'auth/unauthorized-domain' }, t)).toBe('modals.authErrorUnauthorizedDomain');
+        expect(prettifyAuthError({ code: 'auth/account-exists-with-different-credential' }, t)).toBe('modals.authErrorOtherMethod');
+    });
+
+    it('treats a closed popup as a cancel, never an error', () => {
+        expect(isAuthCancel({ code: 'auth/popup-closed-by-user' })).toBe(true);
+        expect(isAuthCancel({ code: 'auth/cancelled-popup-request' })).toBe(true);
+        expect(isAuthCancel({ code: 'auth/popup-blocked' })).toBe(false);
+        expect(isAuthCancel(null)).toBe(false);
     });
 });
