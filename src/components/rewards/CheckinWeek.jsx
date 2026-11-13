@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronRight, Flame, Plus, Shield } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -9,6 +9,7 @@ import { CHECKED_IN_EVENT, checkinCalendar, checkinWeek, liveStreak, localDayKey
 import { levelForXp } from '../../utils/trainerLevel';
 import { getCosmetic } from '../../constants/cosmetics';
 import { Mascot } from '../Mascot';
+import { RollingNumber } from '../RollingNumber';
 import '../../styles/rewards.css';
 
 /**
@@ -44,7 +45,10 @@ export function DayBall({ state }) {
  * streak do user… talvez foguinho"): a flame that grows with the run's heat
  * (`streakHeat`: a spark, three days, a week, a month), the count as the
  * strip's figure, and how far the next flame is. Earned, so gold. It opens
- * the streak sheet.
+ * the streak sheet. The trainer's own check-in is answered here (it was the
+ * greeting pill's job until the hearth pass removed the pill — the same
+ * figure stood twice, a thumb apart): the flame flares once and the count
+ * rolls to its new figure, wherever the check-in was made (CHECKED_IN_EVENT).
  *
  * Reads only recorded stores, so it paints at once — no listener, no loader.
  */
@@ -55,6 +59,14 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
     const unseen = useRewardsStore(selectUnseenCount);
     const shiny = useShinyBurst();
     const [result, setResult] = useState(null);
+    // Keyed by the flare, so each check-in plays it once — never for a streak
+    // that merely arrives from another device.
+    const [flare, setFlare] = useState(0);
+    useEffect(() => {
+        const onCheckIn = () => setFlare((n) => n + 1);
+        window.addEventListener(CHECKED_IN_EVENT, onCheckIn);
+        return () => window.removeEventListener(CHECKED_IN_EVENT, onCheckIn);
+    }, []);
 
     // The local day, read per render: a PWA left open across midnight turns
     // the page as soon as anything re-renders it.
@@ -113,11 +125,11 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
         <section className="checkin-week" data-heat={heat} aria-label={t('rewards.checkin.title')}>
             <button type="button" className="checkin-week__head" onClick={onOpenStreak} aria-label={`${run} ${run === 1 ? t('checkinWeek.streak.day') : t('checkinWeek.streak.days')} · ${t(`checkinWeek.heat.h${heat}`)} · ${t('checkinWeek.streak.open')}`}>
                 <span className="checkin-week__fire" aria-hidden="true">
-                    <Flame className="checkin-week__flame" />
+                    <Flame key={flare} className={`checkin-week__flame ${flare ? 'is-flaring' : ''}`} />
                     {heat >= 3 && <Flame className="checkin-week__flame checkin-week__flame--echo" />}
                 </span>
                 <span className="checkin-week__run" aria-hidden="true">
-                    <span className="checkin-week__count">{run}</span>
+                    <span className="checkin-week__count"><RollingNumber value={run} /></span>
                     <span className="checkin-week__unit">{run === 1 ? t('checkinWeek.streak.day') : t('checkinWeek.streak.days')}</span>
                 </span>
                 <span className="checkin-week__heat" aria-hidden="true">
@@ -176,11 +188,20 @@ export function CheckinWeek({ onOpenRewards, onOpenStreak }) {
                 ) : (
                     <button type="button" className="checkin-week__line checkin-week__streak" onClick={onOpenStreak}>
                         <span className="checkin-week__level">{t('rewards.levelLong', { n: progress.level })}</span>
-                        <span className="checkin-week__muted">
-                            {week.doneToday
-                                ? t('rewards.checkin.comeBack', { xp: calendar.days[calendar.todayIndex % 7].xp })
-                                : t('checkinWeek.tapToday', { xp: calendar.xpToday })}
-                        </span>
+                        {week.doneToday ? (
+                            // Two lengths, one shown (rewards.css, by the strip's width): on a
+                            // phone the long one lost its figure to an ellipsis ("…for +…").
+                            <>
+                                <span className="checkin-week__muted checkin-week__muted--long">
+                                    {t('rewards.checkin.comeBack', { xp: calendar.days[calendar.todayIndex % 7].xp })}
+                                </span>
+                                <span className="checkin-week__muted checkin-week__muted--short">
+                                    {t('rewards.checkin.comeBackShort', { xp: calendar.days[calendar.todayIndex % 7].xp })}
+                                </span>
+                            </>
+                        ) : (
+                            <span className="checkin-week__muted">{t('checkinWeek.tapToday', { xp: calendar.xpToday })}</span>
+                        )}
                     </button>
                 )}
                 {onOpenRewards && (

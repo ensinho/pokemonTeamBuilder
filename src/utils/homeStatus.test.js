@@ -4,6 +4,7 @@ import {
     dayPeriod,
     editedParts,
     findMetaAnswer,
+    homeDeck,
     pickNextBadge,
     resolveMembers,
     summarizeTeam,
@@ -123,5 +124,46 @@ describe('editedParts', () => {
     it('returns null for a missing or broken timestamp', () => {
         expect(editedParts(null, now)).toBeNull();
         expect(editedParts('nope', now)).toBeNull();
+    });
+});
+
+describe('homeDeck', () => {
+    const teams = ['a', 'b', 'c', 'd', 'e'].map((id) => ({ id }));
+    const [a, b, c, d] = teams;
+
+    it('shows the party and two boxes beside another hero', () => {
+        const deck = homeDeck({ heroIsTeam: false, teams, active: b });
+        expect(deck.kind).toBe('party');
+        expect(deck.party).toBe(b);
+        expect(deck.others).toEqual([a, c]);
+        expect(deck.hasMore).toBe(true);
+    });
+
+    it('never restates the team the hero already shows', () => {
+        const deck = homeDeck({ heroIsTeam: true, teams, active: b });
+        expect(deck.kind).toBe('boxes');
+        expect(deck.party).toBeNull();
+        expect(deck.others).toEqual([a, c, d]);
+        expect(deck.others).not.toContain(b);
+        expect(deck.hasMore).toBe(true);
+    });
+
+    it('is nothing when the hero holds the only team', () => {
+        expect(homeDeck({ heroIsTeam: true, teams: [a], active: a }).kind).toBe('none');
+    });
+
+    it('is nothing when the hero is already the empty state', () => {
+        expect(homeDeck({ heroIsTeam: true, teams: [], active: null }).kind).toBe('none');
+    });
+
+    it('invites a first team when another hero leads and none exists', () => {
+        const deck = homeDeck({ heroIsTeam: false, teams: [], active: null });
+        expect(deck.kind).toBe('empty');
+        expect(deck.others).toEqual([]);
+    });
+
+    it('has nothing more to see when every team is on screen', () => {
+        expect(homeDeck({ heroIsTeam: false, teams: [a, b], active: a }).hasMore).toBe(false);
+        expect(homeDeck({ heroIsTeam: true, teams: [a, b, c, d], active: a }).hasMore).toBe(false);
     });
 });

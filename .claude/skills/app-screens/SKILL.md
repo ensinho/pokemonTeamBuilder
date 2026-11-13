@@ -105,10 +105,14 @@ reuses these pieces before inventing one.
 The order is the priority list (wounds 2026-09-14): each block earns its place
 by being what ≥ 80% of visits need.
 
-1. **Greeting** (`HomeGreeting`): the partner as the avatar (silhouette until
-   chosen), "Boa noite, Enzo", the persona's question; the gold streak pill
-   (earned → gold) opening the streak sheet; a guest gets an "Entrar" pill
-   there instead. Replaces the chip strip and the section tabs.
+1. **Greeting** (`HomeGreeting`): the mascot in the trainer's circle (the
+   partner a badge on it, a silhouette until chosen), "Boa noite, Enzo", and
+   under it **his speech bubble** — the note of the day, or the persona's
+   question — its tail pointing at him. A guest gets an "Entrar" pill on the
+   right; nothing else stands there. **No streak pill** (2026-11-12): the
+   week strip under it opens with the run, and the same figure twice a thumb
+   apart was the first thing the review found. Replaces the chip strip and
+   the section tabs.
 2. **Week strip** (`CheckinWeek`): this week's seven days, each the date in a
    round disc (tall capsules read "muito oval" — Enzo, 2026-11-09), the run's
    discs tinted, today's inverted; under each a Poké Ball — caught (in the run), dashed (missed),
@@ -156,6 +160,24 @@ have routes of their own, one click away in the rail.
   pill and the week strip, not a heading's meta).
 - **The rail stays shorter than the main column** and sticky — three cards,
   never a second dashboard (no timeline that replays the day).
+
+**The hearth rules (2026-11-12, the review after PRs #142–#151 —
+`docs/wounds.md`, same date):**
+- **A block never restates the hero.** "Seus times" is `homeDeck()`'s call
+  (`utils/homeStatus.js`): the other teams only when the hero is the team in
+  progress, nothing when there is no team (the hero is the empty state).
+- **A new trainer's guide leads.** The journey's full card sits right under
+  the hero on a desktop too (three missions side by side), never at the foot
+  of the rail.
+- **The thumb reaches the hero's action.** On a phone the Champion's pill
+  stands under the headline, before her tabs and her six (`order`, the bar
+  dissolved). Measure it: `.day-hero__play`'s bottom against
+  `.app-shell__tabbar`'s top — 728 vs 769 at 390×844. (At 360×740 it still
+  ends behind the dock; the strip above it is the next thing to shorten.)
+- **Shoot the matrix, not your own state:** Challenger done and fresh,
+  Strategist, Traveler, a guest's first Home; 1440 and 390; dark and light.
+  Dragon is the brand's own hue — a change that looks right on Cynthia's
+  hero has been tested on the one type that cannot go wrong.
 
 ### Streak sheet — `components/rewards/StreakSheet.jsx` (+ `styles/streak-sheet.css`, its own chunk)
 - A `BottomSheet`/dialog, never a page. Title "Você está numa sequência de
@@ -209,3 +231,6 @@ At 390×844 and 360×740, dark and light (`/verify-ui` §2 has the harness):
 | The same team in the hero, the party row *and* a list beside them on a phone | the hero says the status, the row shows the members, the full list is `/teams` ("Ver todos") — a desktop keeps its teams panel, which has the room |
 | The day told by six narrators: the hero, the doors, a "Sua história" timeline, the route's heading and a mascot band each restating the Champion, the puzzle and the streak (2026-11-12) | one subject in one block; the mascot's line is the greeting's second line |
 | A dark box inside the hero (the "player bar" as a third surface) and three Volt buttons in one scroll | the bar is a hairline foot on the tint; the hero holds the one primary, card actions are secondary |
+| A figure added to a second block without leaving the first (the streak as the greeting's pill AND the week card's header, 2026-11-12) | one figure, one place; the block that shows it best keeps it |
+| The hero's action under its details on a phone, behind the dock | headline → action → details |
+| The hero's team again as the first card under it, with a second "Continuar" | `homeDeck()`: the deck is what the hero does not show |

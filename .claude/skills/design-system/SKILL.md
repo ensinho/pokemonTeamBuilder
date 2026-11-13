@@ -302,6 +302,34 @@ The temptation is to add. Calm comes from subtracting.
 - **Don't stack de-emphasis.** `opacity: 0.5` on top of `--color-muted` pushes
   text to the edge of legibility. Muted color alone is the de-emphasis.
 
+## Colour is light on a dark theme (2026-11-12, the Home's hearth pass)
+
+A subject's colour (a type, a tone) reaches a dark surface as **light**, not
+as paint. Three rules, each from a measured failure (`docs/wounds.md`,
+2026-11-12):
+
+- **Never flat-mix a subject's colour into the surface for a fill.**
+  `color-mix(in srgb, type N%, var(--color-surface))` drags the hue toward
+  the violet surface; for the yellow-ish types (Electric, Ground, Rock, Bug,
+  Normal, the gold) violet is the complement, so the result is khaki by
+  construction. A card's band is `--color-surface-raised` with the tone as a
+  pool under the platform:
+  `radial-gradient(62% 95% at 50% 100%, color-mix(in srgb, var(--tone, transparent) 30%, transparent), transparent 74%)`.
+  One family down the page, each card with its own lamp (`home-grid.css`).
+- **Where a whole surface takes a subject's colour** (the Home's hero — the
+  one tinted surface), keep the hue and set the lightness instead of mixing:
+  `oklch(from var(--hero-type) 0.3 calc(c * 0.45) h)`, behind
+  `@supports` and inside `light-dark()` so the light themes keep their
+  pastel mix (`applyTheme` sets `color-scheme`, which is what
+  `light-dark()` reads — no theme list in a view stylesheet). Dragon comes
+  out where the old mix put it; Rock is bronze, not olive.
+- **No radiating rays** on anything whose tone can be red or gold: a fan of
+  rays on a red field is a rising-sun flag. The Home's motifs are the Town
+  Map's grid, a halftone, rings, speed lines; an aura is rings that breathe.
+
+The light themes were never the problem — a pastel mix into white keeps its
+hue — which is why this is written for the dark ones, not as a new token.
+
 ## Canon colours (types, game versions)
 
 Pokémon type colours and game-version colours are the documented exception to "never

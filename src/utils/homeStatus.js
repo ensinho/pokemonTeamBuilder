@@ -72,6 +72,33 @@ export const summarizeTeam = (team, typesById) => {
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The attack multiplier of `attackType` against a Pokémon of `defenderTypes`. */
+/**
+ * What "Seus times" holds on the Home, so the block never restates the hero
+ * (the hearth pass, 2026-11-12). `teams` come most-recent first; `active` is
+ * the team in progress.
+ *
+ * - The hero IS the team in progress (`heroIsTeam`): the deck is the other
+ *   teams only — `boxes` — and nothing at all when there is no other team
+ *   (the hero already shows the team, or already is the empty state).
+ * - Any other hero (the Champion, the next gym): the team in progress as the
+ *   `party` with up to `limit` boxes beside it, or the `empty` invitation
+ *   when no team exists — there the hero says nothing about teams.
+ *
+ * `hasMore` is whether "Ver todos" has anything the deck does not show.
+ */
+export const homeDeck = ({ heroIsTeam = false, teams = [], active = null, limit = 2 } = {}) => {
+    const rest = teams.filter((team) => team !== active);
+    if (heroIsTeam) {
+        const others = rest.slice(0, limit + 1);
+        return others.length === 0
+            ? { kind: 'none', party: null, others, hasMore: false }
+            : { kind: 'boxes', party: null, others, hasMore: rest.length > others.length };
+    }
+    if (!active) return { kind: 'empty', party: null, others: [], hasMore: false };
+    const others = rest.slice(0, limit);
+    return { kind: 'party', party: active, others, hasMore: rest.length > others.length };
+};
+
 export const typeMultiplier = (attackType, defenderTypes = []) =>
     defenderTypes.reduce(
         (acc, defType) => acc * (typeChart[defType]?.damageTaken[capitalize(attackType)] ?? 1),

@@ -601,6 +601,27 @@
     }
 }
 
+/* The trainer's own check-in: the flame flares once on the pop spring while
+   the count rolls (RollingNumber) — the answer the greeting's pill used to give. */
+@media (prefers-reduced-motion: no-preference) {
+    .checkin-week .checkin-week__flame.is-flaring {
+        animation: checkin-flare var(--duration-pop) var(--ease-pop);
+    }
+
+    /* A run that flickers goes back to flickering once the flare has played. */
+    .checkin-week:is([data-heat='2'], [data-heat='3'], [data-heat='4']) .checkin-week__flame.is-flaring {
+        animation:
+            checkin-flare var(--duration-pop) var(--ease-pop),
+            checkin-flicker 1.8s var(--ease-smooth) var(--duration-pop) infinite;
+    }
+}
+
+@keyframes checkin-flare {
+    0% { transform: none; }
+    35% { transform: translateY(-12%) scale(1.4) rotate(-10deg); }
+    100% { transform: none; }
+}
+
 @keyframes checkin-flicker {
     0%, 100% { transform: scale(1) rotate(0deg); }
     30% { transform: scale(1.06, 0.96) rotate(-3deg); }
@@ -840,6 +861,19 @@
 
 .checkin-week__more {
     flex-shrink: 0;
+}
+
+/* Between the rail's width (wrapped, above) and a wide strip, the line and
+   "Recompensas" share one row with no room for the long sentence: a phone
+   read "Volte amanhã para +…" — the figure, the point of the line, cut off.
+   There the short one speaks. */
+.checkin-week__muted--short {
+    display: none;
+}
+
+@container (min-width: 19.01rem) and (max-width: 26rem) {
+    .checkin-week__muted--long { display: none; }
+    .checkin-week__muted--short { display: inline; }
 }
 
 .checkin-week__more svg {

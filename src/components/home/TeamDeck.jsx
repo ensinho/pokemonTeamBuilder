@@ -22,12 +22,22 @@ const toneOf = (member) => typeColors[typeName(member?.types?.[0])] || null;
  * with none the party takes the whole row. Since 2026-11-12 each card's band
  * takes its lead's colour (with the band's rays and Poké Ball watermark,
  * home-grid.css) — "mais personalidade".
+ *
+ * `active` is null when the hero already is the team in progress (the
+ * hearth pass, 2026-11-12): the deck is then the other teams only, one
+ * column each, and the dashed "new team" slot closes the row while there is
+ * a column left — the same party and a second "Continuar" never stand under
+ * the hero that shows them.
  */
 export function TeamDeck({ active, others, t, status, menu, subline, onContinue, onEdit, onNew }) {
-    const { team, summary } = active;
+    const team = active?.team;
+    const summary = active?.summary;
     const partySpan = others.length === 0 ? 'is-span-4' : 'is-span-2';
+    // A row is never left half empty: the dashed slot takes a free column.
+    const hasNewSlot = Boolean(onNew) && (active ? others.length === 1 : others.length < 4);
     return (
         <ul className="team-deck home-grid">
+            {active && (
             <li className={partySpan}>
                 {/* the lead's colour washes the band, rays and watermark (2026-11-12) */}
                 {/* The whole card continues the team (Enzo, 2026-11-12); its buttons
@@ -77,6 +87,7 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
                     </span>
                 </article>
             </li>
+            )}
 
             {others.map(({ team: other, summary: s }) => (
                 <li key={other.id}>
@@ -99,7 +110,7 @@ export function TeamDeck({ active, others, t, status, menu, subline, onContinue,
                 </li>
             ))}
 
-            {others.length === 1 && onNew && (
+            {hasNewSlot && (
                 <li>
                     <button type="button" className="home-tile home-tile--card team-new" onClick={onNew} data-fx>
                         <span className="home-tile__media" aria-hidden="true">
