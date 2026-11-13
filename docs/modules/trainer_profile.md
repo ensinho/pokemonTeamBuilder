@@ -46,6 +46,17 @@ account last and optional.
 | `account` (guests only) | the Trainer Card filling live (name, persona, format), name · email · password; Entrar / Criar conta / Esqueceu a senha in place; "Continuar como convidado" | covers his eyes at the password (`coverable`), peeks when shown; shakes at an error |
 | `done` | "Valeu, **Nome!**", the answers as white pills with checks, two picks, Bora! | jumps; the layer rises away and he shrinks toward the corner |
 
+- **Desktop (2026-11-12, "no pc uma visão mais expandida"):** every screen is
+  a `.fj__stage` (the mascot's slot, the art, the media) and a `.fj__talk`
+  (words and controls). On a phone both are `display: contents` — one column,
+  unchanged; from 64rem they are two panels: the stage large on the left (the
+  site's screens fanned behind him on "Oi", the tour's screen large, the
+  evolution as the protagonist), the conversation on the right, titles left
+  aligned. A screen whose phone slot sits in the talk adds a `.fj__slot--desk`
+  to its stage; the mascot flies to whichever slot is visible.
+- **Google:** "Continuar com o Google" heads the account screen when the
+  project's provider is on ([google_sign_in.md](./google_sign_in.md)); a name
+  typed in the journey wins over Google's.
 - **Entries:** `welcome` (first run), `redo` (a trainer with answers, from Home
   or Profile: interests → level → persona → done), `signIn` (account → done).
 - **Skip** (Pular, Escape) records `skippedAt` only on a first run with no
