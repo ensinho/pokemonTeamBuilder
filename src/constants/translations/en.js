@@ -1334,6 +1334,7 @@ export default {
         competitiveTab: 'Competitive',
         originalText: 'Original Pokédex text',
         pokedexEntry: 'Pokédex entry',
+        professorSays: 'The Professor explains',
         pokedexData: 'Pokédex data',
         statTotal: 'Total',
         weakAgainst: 'Weak against',

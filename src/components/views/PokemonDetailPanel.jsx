@@ -21,6 +21,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
+import { ProfessorEntry } from '../pokedex/ProfessorEntry';
 import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 import { useSharePage } from '../../hooks/useSharePage';
@@ -722,10 +723,12 @@ export function PokemonDetailPanel({
                         </div>
 
                         {pokedexDescription && (
-                            <div className="pdd-hero__entry">
-                                <p lang={isDescriptionLocal ? undefined : 'en'}>{pokedexDescription}</p>
-                                {!isDescriptionLocal && <p className="pdd-hero__note">{t('pokedex.originalText')}</p>}
-                            </div>
+                            <ProfessorEntry
+                                className="pdd-hero__entry"
+                                text={pokedexDescription}
+                                lang={isDescriptionLocal ? undefined : 'en'}
+                                note={isDescriptionLocal ? null : t('pokedex.originalText')}
+                            />
                         )}
 
                         <dl className="pdd-facts">

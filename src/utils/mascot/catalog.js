@@ -68,6 +68,7 @@ export const POSES = {
     shadowBall: { prop: 'orb', paws: 'charge', crest: 1, propS: 1.6, propY: 40, y: -70 }, // held low under the grin; the body rises so the glow stays in the frame
     lancandoPokebola: { prop: 'pokeballThrow', paws: 'raise', tilt: -8 },
     lendoPokedex: { prop: 'book', paws: 'hold', gaze: 'read' },
+    ensinando: { hat: 'professor', prop: 'pointer', paws: 'point', tilt: -6 }, // the Pokédex's professor: cap, glasses, pointer up at the lesson
     dandoDeOmbros: { paws: 'shrug', tilt: -10 },
     pataNoQueixo: { paws: 'chin', tilt: -8 },
     matutando: { paws: 'chin', tilt: -8, fx: ['dots'] }, // paw on the chin and a thought bubble: working something out

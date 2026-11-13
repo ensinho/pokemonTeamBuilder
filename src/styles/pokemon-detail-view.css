@@ -168,21 +168,13 @@
 }
 
 .pdd-hero__entry {
-    max-width: 40rem;
+    max-width: 44rem;
     margin-top: var(--space-4);
 }
 
-.pdd-hero__entry p {
-    margin: 0;
-    font-size: var(--text-md);
-    line-height: 1.55;
-    color: var(--color-fg);
-}
-
-.pdd-hero__entry .pdd-hero__note {
-    margin-top: var(--space-1);
-    font-size: var(--text-xs);
-    color: var(--color-muted);
+/* On the type-tinted hero the bubble is the facts' translucent fill. */
+.pdd-hero__entry .professor-entry__bubble {
+    background: color-mix(in srgb, var(--color-bg) 45%, transparent);
 }
 
 /* Three facts a trainer asks first, as figures on a translucent fill. */
