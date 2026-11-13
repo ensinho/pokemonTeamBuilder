@@ -1300,6 +1300,7 @@ export default {
         competitiveTab: 'Competitivo',
         originalText: 'Texto original da Pokédex, em inglês',
         pokedexEntry: 'Descrição da Pokédex',
+        professorSays: 'O Professor explica',
         pokedexData: 'Dados da Pokédex',
         statTotal: 'Total',
         weakAgainst: 'Fraco contra',

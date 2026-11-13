@@ -13,7 +13,7 @@ was approved by Enzo on 2026-11-06 ("nossa eu amei").
 |---|---|
 | `src/utils/mascot/rig.js` | The drawing as data. The outline was traced from `public/LogoCuteGengarRounded.png` and fitted to its pixels (93.5% overlap); eyes, mouths, blush, sparks, paws, props, hats and effects are parts. `mascotInner(pose)` → SVG markup. Pure, Node-safe (explicit `.js` imports). |
 | `src/utils/mascot/motion.js` | Every sequence is `pose(t)`: hop, jump, celebrate, oops, wake, vanish, evolve, capture, Shadow Ball… `merge(base, ...layers)` composes them; `E.pop`/`E.glide` are the design system's springs (same constants as `--ease-pop`/`--ease-glide`). |
-| `src/utils/mascot/catalog.js` | The vocabulary: 32 `MOODS` (faces) and 28 `POSES` (paws + props), `sizeTraits(px)` (the size ladder), `seasonalHat(date)`, `isNight(date)`, `personaTone(id)`. |
+| `src/utils/mascot/catalog.js` | The vocabulary: 32 `MOODS` (faces) and 29 `POSES` (paws + props), `sizeTraits(px)` (the size ladder), `seasonalHat(date)`, `isNight(date)`, `personaTone(id)`. |
 | `src/utils/mascot/constants.js` | What the boot path needs without the rig: `TONES`, `VIEWS` (framings), `MASCOT_SIZES`, `LOADER_SCENES` (names only). |
 | `src/utils/mascot/icon.js` | **Generated** (`node scripts/build-mascot-icon.mjs`): the mascot at rest as static markup, drawn before the engine chunk lands and by the boot splash. `catalog.test.js` fails when it drifts from the rig. |
 | `src/components/Mascot.jsx` | `<Mascot>`, `<MascotTip>` (same API as before: `size`, `cheer`), `<MascotIcon>` (splash, no engine), `<MascotFace>` (a still sticker for places where a face repeats). |
@@ -69,6 +69,7 @@ was approved by Enzo on 2026-11-06 ("nossa eu amei").
 | Password fields | covers / peeks (the dialog's working state: the scene; deleting an account keeps the ball) |
 | Global search, no results | shrugs (shake once per query) |
 | Daily check-in result | hops, or **evolves** on a level up (the games' white silhouette) |
+| Pokémon detail (desktop hero, the phone's Dados tab) | **the professor** (2026-11-13): `ensinando` (pointer up, `hat="professor"` = mortarboard + glasses, passed by name so it wins over costume and season) beside the Pokédex entry in a speech bubble — `components/pokedex/ProfessorEntry.jsx`; interactive (looks, hops), never the stage |
 | Profile → Aparência → Mascote | the playground, eight moods, the tone picker, the reactions switch |
 | Toasts / connection | the stage mascot hops on success, says oops on error; offline/online toasts |
 | Instagram reels (outside the app) | the host of every video: a mood, a pose and a short line per scene, drawn from this rig through `scripts/social/mascot-bundle.mjs` (`social_media.md`) |

@@ -27,6 +27,7 @@ import { getPokemonArtworkSpriteUrl, getPokemonDisplaySprite } from '../../utils
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
+import { ProfessorEntry } from '../pokedex/ProfessorEntry';
 import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 import { useSharePage } from '../../hooks/useSharePage';
@@ -257,8 +258,11 @@ export function MobilePokemonDetailView({
             <>
                 {pokedexDescription && (
                     <Section title={t('pokedex.pokedexEntry')}>
-                        <p className="pdm-prose" lang={isDescriptionLocal ? undefined : 'en'}>{pokedexDescription}</p>
-                        {!isDescriptionLocal && <p className="pdm-prose-note">{t('pokedex.originalText')}</p>}
+                        <ProfessorEntry
+                            text={pokedexDescription}
+                            lang={isDescriptionLocal ? undefined : 'en'}
+                            note={isDescriptionLocal ? null : t('pokedex.originalText')}
+                        />
                     </Section>
                 )}
 
