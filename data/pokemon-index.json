@@ -2,7 +2,7 @@
   "generatedAt": "2026-09-15T12:17:05.209Z",
   "source": "https://pokeapi.co/api/v2/pokemon?limit=100000",
   "baseCount": 1025,
-  "formCount": 194,
+  "formCount": 199,
   "pokemons": [
     {
       "id": 1,
@@ -17953,6 +17953,111 @@
         "special-attack": 88,
         "special-defense": 88,
         "speed": 88
+      }
+    },
+    {
+      "id": 10008,
+      "name": "Rotom Heat",
+      "apiName": "rotom-heat",
+      "url": "https://pokeapi.co/api/v2/pokemon/10008/",
+      "types": [
+        "electric",
+        "fire"
+      ],
+      "generation": "generation-iv",
+      "baseId": 479,
+      "isForm": true,
+      "baseStats": {
+        "hp": 50,
+        "attack": 65,
+        "defense": 107,
+        "special-attack": 105,
+        "special-defense": 107,
+        "speed": 86
+      }
+    },
+    {
+      "id": 10009,
+      "name": "Rotom Wash",
+      "apiName": "rotom-wash",
+      "url": "https://pokeapi.co/api/v2/pokemon/10009/",
+      "types": [
+        "electric",
+        "water"
+      ],
+      "generation": "generation-iv",
+      "baseId": 479,
+      "isForm": true,
+      "baseStats": {
+        "hp": 50,
+        "attack": 65,
+        "defense": 107,
+        "special-attack": 105,
+        "special-defense": 107,
+        "speed": 86
+      }
+    },
+    {
+      "id": 10010,
+      "name": "Rotom Frost",
+      "apiName": "rotom-frost",
+      "url": "https://pokeapi.co/api/v2/pokemon/10010/",
+      "types": [
+        "electric",
+        "ice"
+      ],
+      "generation": "generation-iv",
+      "baseId": 479,
+      "isForm": true,
+      "baseStats": {
+        "hp": 50,
+        "attack": 65,
+        "defense": 107,
+        "special-attack": 105,
+        "special-defense": 107,
+        "speed": 86
+      }
+    },
+    {
+      "id": 10011,
+      "name": "Rotom Fan",
+      "apiName": "rotom-fan",
+      "url": "https://pokeapi.co/api/v2/pokemon/10011/",
+      "types": [
+        "electric",
+        "flying"
+      ],
+      "generation": "generation-iv",
+      "baseId": 479,
+      "isForm": true,
+      "baseStats": {
+        "hp": 50,
+        "attack": 65,
+        "defense": 107,
+        "special-attack": 105,
+        "special-defense": 107,
+        "speed": 86
+      }
+    },
+    {
+      "id": 10012,
+      "name": "Rotom Mow",
+      "apiName": "rotom-mow",
+      "url": "https://pokeapi.co/api/v2/pokemon/10012/",
+      "types": [
+        "electric",
+        "grass"
+      ],
+      "generation": "generation-iv",
+      "baseId": 479,
+      "isForm": true,
+      "baseStats": {
+        "hp": 50,
+        "attack": 65,
+        "defense": 107,
+        "special-attack": 105,
+        "special-defense": 107,
+        "speed": 86
       }
     },
     {

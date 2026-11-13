@@ -1,1 +1,0 @@
-import{r as s}from"./react-vendor-D1jwkorh.js";import{da as f,db as d}from"./index-_JVtWLnG.js";function o(){const[t,a]=s.useState(()=>f().baseIdOf);return s.useEffect(()=>{let e=!0;return d().then(r=>{e&&a(()=>r.baseIdOf)}),()=>{e=!1}},[]),t}export{o as u};

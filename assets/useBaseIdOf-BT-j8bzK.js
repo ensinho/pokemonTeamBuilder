@@ -1,0 +1,1 @@
+import{r as s}from"./react-vendor-D1jwkorh.js";import{d3 as f,d4 as d}from"./index-BTA3TvRZ.js";function o(){const[t,r]=s.useState(()=>f().baseIdOf);return s.useEffect(()=>{let e=!0;return d().then(a=>{e&&r(()=>a.baseIdOf)}),()=>{e=!1}},[]),t}export{o as u};
