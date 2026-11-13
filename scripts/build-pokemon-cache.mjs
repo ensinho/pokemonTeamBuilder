@@ -214,13 +214,15 @@ const buildEnrichedIndex = async (rawResults, { concurrency = 10, delayMs = 100 
 
 // "Battle forms" = alternate formes with their own types/stats worth a grid card:
 // megas, primals, regional variants and gigantamax. We deliberately EXCLUDE purely
-// cosmetic formes (Pikachu caps, Alcremie creams, Vivillon patterns, Rotom appliances,
+// cosmetic formes (Pikachu caps, Alcremie creams, Vivillon patterns,
 // Deoxys/Wormadam formes…) which would just clutter the dex with near-duplicates.
 // Paldean Tauros (`tauros-paldea-combat-breed`) and Ogerpon's masks
 // (`ogerpon-wellspring-mask`) don't END in a regional suffix, so they're listed
 // on their own — each one has its own typing and is a different pick in a team.
+// Rotom's appliance forms too (Heat/Wash/Frost/Fan/Mow): each has its own
+// secondary type and stats, so they are real team picks, not cosmetics.
 const BATTLE_FORM_SUFFIX = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax|female)$/;
-const BATTLE_FORM_EXTRA = /^(tauros-paldea-(combat|blaze|aqua)-breed|ogerpon-(wellspring|hearthflame|cornerstone)-mask)$/;
+const BATTLE_FORM_EXTRA = /^(tauros-paldea-(combat|blaze|aqua)-breed|ogerpon-(wellspring|hearthflame|cornerstone)-mask|rotom-(heat|wash|frost|fan|mow))$/;
 const isBattleForm = (name) => BATTLE_FORM_SUFFIX.test(name) || BATTLE_FORM_EXTRA.test(name);
 
 // Build lightweight index entries for battle forms so they appear in the Pokédex /
