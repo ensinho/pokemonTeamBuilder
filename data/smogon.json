@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T15:32:20.202Z",
+  "generatedAt": "2026-11-14T14:22:08.501Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -37181,45 +37181,48 @@
           "source": "Champions BSS"
         },
         {
-          "name": "Mixed Attacker",
-          "item": "spell-tag",
+          "name": "Bulky Swords Dance",
+          "item": "colbur-berry",
           "itemAlts": [
-            "life-orb"
+            "spell-tag",
+            "leftovers",
+            "shuca-berry"
           ],
           "ability": "",
-          "nature": "naughty",
+          "nature": "adamant",
           "tera": [],
           "moves": [
+            [
+              "swords-dance"
+            ],
             [
               "poltergeist"
             ],
             [
-              "shadow-ball"
-            ],
-            [
-              "shadow-sneak"
-            ],
-            [
               "close-combat",
-              "iron-head",
+              "sacred-sword",
               "kings-shield"
+            ],
+            [
+              "shadow-sneak",
+              "iron-head"
             ]
           ],
           "evs": {
-            "hp": 0,
+            "hp": 204,
             "attack": 252,
             "defense": 0,
-            "special-attack": 6,
+            "special-attack": 0,
             "special-defense": 0,
-            "speed": 252
+            "speed": 54
           },
           "sp": {
-            "hp": 0,
+            "hp": 26,
             "attack": 32,
             "defense": 0,
-            "special-attack": 2,
+            "special-attack": 0,
             "special-defense": 0,
-            "speed": 32
+            "speed": 8
           },
           "ivs": {
             "hp": 31,
@@ -37230,7 +37233,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Aegislash's claim to fame is wielding the strongest Poltergeist in the entire tier, a move difficult to switch into comfortably, while also boosting its Attack with Swords Dance to function as a great wallbreaker and cleaner. Aegislash is not a one-note Pokemon, either, with a variety of moves and items it can use to…",
           "source": "Champions OU"
         }
       ]
