@@ -8,6 +8,9 @@ import { itemSpriteUrl } from '../../../../utils/itemSuggestions';
 
 const GENDER = { M: '♂', F: '♀' };
 
+// (The party screen before it — six cards, "Choose a Pokémon" — is
+// DsBwCommands' PartyGrid; this is the one picked, in full.)
+
 /*
  * The team sheet (Ficha) — Black & White's Summary, one Pokémon at a time:
  * the six along the top (icon and HP), then the chosen one's types, ability,

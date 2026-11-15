@@ -1748,6 +1748,263 @@
     white-space: nowrap;
 }
 
+/* ── The party: BW's "Choose a Pokémon" (PartyGrid, 2026-11-15) ──────────
+   Enzo's reference was the BW party screen: six slanted cards in two
+   columns, the right one lower, each with the icon, the name, the HP bar,
+   the level and the figures. Here in the HUD's material and on the screen's
+   8-pixel grid ("regra 8"): cards 36 tall, 8 between them, the right
+   column 4 lower (half a step), 8 around the edge, a 24-tall foot. The
+   whole screen adds up: 24 + 3 × 36 + 2 × 8 + 4 + 8 + 24 + 8 = 192.
+   The card keeps the reference's one slant — a lighter band across its top
+   corner — as a background layer, never a clip-path (the HP boxes' wound,
+   2026-11-10). */
+.bw-touch.is-sheet:has(> .bw-sheet.is-party) {
+    padding-top: calc(24 * var(--px));
+}
+
+.bw-sheet.is-party {
+    gap: calc(8 * var(--px));
+}
+
+.bw-overlay .bw-sheet.is-party {
+    padding: calc(8 * var(--px));
+}
+
+.bw-party {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    gap: calc(8 * var(--px));
+    min-height: 0;
+    margin: 0;
+    padding: 0 0 calc(4 * var(--px));
+    list-style: none;
+}
+
+.bw-party > li {
+    display: flex;
+    min-height: 0;
+}
+
+/* The DS's stagger: the right column stands half a step lower. */
+.bw-party > li:nth-child(even) {
+    translate: 0 calc(4 * var(--px));
+}
+
+.bw-party__card {
+    display: grid;
+    flex: 1;
+    grid-template-columns: calc(32 * var(--px)) minmax(0, 1fr);
+    grid-template-rows: calc(10 * var(--px)) calc(4 * var(--px)) calc(8 * var(--px));
+    grid-template-areas:
+        'art name'
+        'art bar'
+        'art figures';
+    align-content: center;
+    column-gap: calc(4 * var(--px));
+    row-gap: calc(2 * var(--px));
+    min-width: 0;
+    padding: 0 calc(8 * var(--px)) 0 calc(4 * var(--px));
+    border: none;
+    border-radius: calc(6 * var(--px));
+    background:
+        linear-gradient(135deg, transparent 62%, color-mix(in srgb, var(--bw-white) 6%, transparent) 62% 78%, transparent 78%),
+        var(--hud-raised);
+    color: var(--bw-white);
+    font: inherit;
+    text-align: left;
+    text-shadow: none;
+    cursor: pointer;
+    transition: transform var(--duration-press) var(--ease-out), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.bw-party__card:active {
+    transform: translateY(calc(1 * var(--px)));
+}
+
+/* The picked card: the site's selection ring, never a border that moves its neighbours. */
+.bw-party__card.is-picked {
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--hud-volt-text);
+}
+
+.bw-party__card:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-white);
+}
+
+/* A sprite stands on its platform, toned in its first type (the app's
+   battle base, at the DS's size). */
+.bw-party__art {
+    position: relative;
+    display: grid;
+    grid-area: art;
+    place-items: end center;
+    align-self: stretch;
+}
+
+.bw-party__art::before {
+    content: '';
+    position: absolute;
+    bottom: calc(4 * var(--px));
+    left: 50%;
+    width: calc(28 * var(--px));
+    height: calc(6 * var(--px));
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--type) 50%, var(--hud-ink));
+    translate: -50% 0;
+}
+
+.bw-party__art img {
+    position: relative;
+    width: calc(32 * var(--px));
+    height: calc(24 * var(--px));
+    margin-bottom: calc(6 * var(--px));
+    object-fit: contain;
+}
+
+.bw-party__name {
+    display: flex;
+    grid-area: name;
+    align-items: center;
+    gap: calc(2 * var(--px));
+    min-width: 0;
+    font-size: calc(9 * var(--px));
+    line-height: calc(10 * var(--px));
+}
+
+.bw-party__species {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bw-party__name .ds-hpbox__status {
+    flex: none;
+    padding: 0 calc(2 * var(--px));
+    border-radius: calc(2 * var(--px));
+    font-size: calc(6 * var(--px));
+    line-height: calc(8 * var(--px));
+}
+
+/* Out on the field: a Poké Ball before the name, as the party screen marks the lead. */
+.bw-party__out {
+    flex: none;
+    width: calc(6 * var(--px));
+    height: calc(6 * var(--px));
+    border-radius: 50%;
+    background:
+        linear-gradient(var(--ds-ball) 0 42%, var(--hud-ink) 42% 58%, var(--bw-white) 58%);
+    box-shadow: 0 0 0 calc(0.5 * var(--px)) var(--hud-ink);
+}
+
+.bw-party__bar {
+    display: flex;
+    grid-area: bar;
+    align-items: center;
+    gap: calc(2 * var(--px));
+}
+
+.bw-party__hp-mark {
+    color: var(--ds-hp-high);
+    font-size: calc(5 * var(--px));
+    line-height: calc(4 * var(--px));
+}
+
+.bw-party__bar .bw-card__hp {
+    flex: 1;
+    height: calc(4 * var(--px));
+}
+
+.bw-party__figures {
+    display: flex;
+    grid-area: figures;
+    align-items: baseline;
+    justify-content: space-between;
+    color: var(--hud-muted);
+    font-size: calc(7 * var(--px));
+    line-height: calc(8 * var(--px));
+    font-variant-numeric: tabular-nums;
+}
+
+.bw-party__figures > :last-child {
+    color: var(--bw-white);
+}
+
+.bw-party__card.is-fainted {
+    background: var(--hud-surface);
+}
+
+.bw-party__card.is-fainted .bw-party__art img {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+.bw-party__card.is-fainted .bw-party__species,
+.bw-party__card.is-fainted .bw-party__figures > :last-child {
+    color: var(--hud-muted);
+}
+
+/* The foot: BW's message box on the left — or, once the picked one can come
+   in, the sheet's primary in its place — then SUMMARY and the way back. */
+.bw-party__foot {
+    display: flex;
+    flex: none;
+    gap: calc(8 * var(--px));
+    height: calc(24 * var(--px));
+}
+
+.bw-party__foot > * {
+    height: 100%;
+}
+
+.bw-party__prompt,
+.bw-party__send {
+    flex: 1;
+    min-width: 0;
+}
+
+.bw-party__prompt {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0 calc(8 * var(--px));
+    overflow: hidden;
+    border-radius: calc(6 * var(--px));
+    background: var(--hud-surface);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
+    color: var(--bw-white);
+    font-size: calc(9 * var(--px));
+    white-space: nowrap;
+}
+
+.bw-party__foot .bw-cancel {
+    flex: none;
+    padding: 0 calc(8 * var(--px));
+    border-radius: calc(12 * var(--px));
+}
+
+.bw-party__send {
+    overflow: hidden;
+    padding: 0 calc(8 * var(--px));
+    border-radius: calc(12 * var(--px));
+    background: var(--hud-volt);
+    box-shadow: inset 0 calc(-2 * var(--px)) 0 var(--hud-volt-lip);
+    font-size: calc(9 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bw-party__card,
+    .bw-party__card:active {
+        transform: none;
+        transition: none;
+    }
+}
+
 /* ── A phone's bottom screen: the touch menu, on the page's dotted ink ── */
 
 .bw-touch {
