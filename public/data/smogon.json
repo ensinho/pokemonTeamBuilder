@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T14:22:08.501Z",
+  "generatedAt": "2026-11-15T14:52:53.499Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -843,6 +843,56 @@
       "overview": "",
       "sets": [
         {
+          "name": "Utility Support",
+          "item": "raichunite-x",
+          "itemAlts": [],
+          "ability": "lightning-rod",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "fake-out"
+            ],
+            [
+              "volt-switch"
+            ],
+            [
+              "volt-tackle"
+            ],
+            [
+              "feint",
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 220,
+            "attack": 0,
+            "defense": 70,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 220
+          },
+          "sp": {
+            "hp": 28,
+            "attack": 0,
+            "defense": 10,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 28
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Mega Raichu X electrifies Regulation M-C as a strong utility Pokemon, providing lots of support in and out of its Mega Evolution. It boasts high Speed and supplies Fake Out and pivoting support while having Volt Tackle to burst through Electric-weak Pokemon like Mega Charizard Y, both Basculegion formes, and Pelipper.…",
+          "source": "Champions VGC"
+        },
+        {
           "name": "Fast Attacker",
           "item": "raichunite-y",
           "itemAlts": [],
@@ -984,51 +1034,6 @@
           "level": null,
           "description": "",
           "source": "ZU"
-        },
-        {
-          "name": "Surge Surfer (Electric)",
-          "item": "psychium-z",
-          "itemAlts": [
-            "life-orb"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [],
-          "moves": [
-            [
-              "nasty-plot",
-              "focus-blast"
-            ],
-            [
-              "psychic",
-              "psyshock"
-            ],
-            [
-              "rising-voltage"
-            ],
-            [
-              "grass-knot"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Alolan Raichu surfs on Electric Terrain, blitzing past even the fastest Choice Scarf users in Greninja and Meowscarada and Swift Swim and Sand Rush users in Mega Swampert and Excadrill, which threaten to overwhelm Electric teams. Nasty Plot provides Alolan Raichu with the much-needed boost to OHKO Gliscor, Sinistcha,…",
-          "source": "Nat Dex Mono"
         }
       ]
     },
@@ -33589,9 +33594,111 @@
     },
     "637": {
       "name": "Volcarona",
-      "gen": "VGC 2025",
-      "overview": "This Pokemon has been updated to reflect Regulation H, that lasts until January 5h, 2025. After this, Regulation G will return.\nIf you feel that this analysis is missing important information, feel free to leave feedback here.",
+      "gen": "Champions VGC",
+      "overview": "Volcarona proves itself to be a solid Pokemon in Regulation M-C thanks to its versatility, strong base stats, and deep movepool. It can take an offensive approach, using Quiver Dance alongside strong spread damage in Heat Wave to take down some of the format's top foes like Kingambit, Sylveon, and Mega Golisopod. On…",
       "sets": [
+        {
+          "name": "Setup Sweeper",
+          "item": "grassy-seed",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "modest",
+          "tera": [],
+          "moves": [
+            [
+              "heat-wave"
+            ],
+            [
+              "giga-drain"
+            ],
+            [
+              "quiver-dance"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 124,
+            "attack": 0,
+            "defense": 58,
+            "special-attack": 196,
+            "special-defense": 0,
+            "speed": 132
+          },
+          "sp": {
+            "hp": 16,
+            "attack": 0,
+            "defense": 8,
+            "special-attack": 25,
+            "special-defense": 0,
+            "speed": 17
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Volcarona has access to one of the best boosting moves in the game, Quiver Dance. This, in combination with a good offensive typing to target foes like Gholdengo and Rillaboom, alongside good base stats, allows Volcarona to be a devastating sweeper, easily dealing with huge threats like Mega Floette.\nHeat Wave enables…",
+          "source": "Champions VGC"
+        },
+        {
+          "name": "Redirection Support",
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "sitrus-berry",
+            "charti-berry"
+          ],
+          "ability": "",
+          "nature": "timid",
+          "tera": [],
+          "moves": [
+            [
+              "rage-powder"
+            ],
+            [
+              "overheat"
+            ],
+            [
+              "struggle-bug"
+            ],
+            [
+              "protect",
+              "tailwind"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 92,
+            "special-attack": 0,
+            "special-defense": 2,
+            "speed": 164
+          },
+          "sp": {
+            "hp": 32,
+            "attack": 0,
+            "defense": 12,
+            "special-attack": 0,
+            "special-defense": 1,
+            "speed": 21
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Volcarona, using its great defensive ability and supportive movepool, becomes a solid support Pokemon, redirecting attacks from the likes of Mega Golisopod and Mega Floette with ease while still threatening foes like Mega Metagross with solid damage.\nOverheat gives Volcarona burst damage potential, capable of OHKOing…",
+          "source": "Champions VGC"
+        },
         {
           "name": "Quiver Dance Sweeper",
           "item": "covert-cloak",
@@ -33686,97 +33793,6 @@
           "level": null,
           "description": "Volcarona acts as a great support Pokemon thanks to its access to redirection, speed control, damage reduction, its ability in Flame Body that discourages foes from hitting it with contact moves, and a STAB move that threatens many common Steel-, Grass-, and Ice-type Pokemon in the format such as Kingambit, Amoonguss,…",
           "source": "VGC 2025"
-        },
-        {
-          "name": "Bulky Setup Sweeper",
-          "item": "leftovers",
-          "itemAlts": [
-            "electric-seed"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "dragon",
-            "grass"
-          ],
-          "moves": [
-            [
-              "struggle-bug",
-              "giga-drain"
-            ],
-            [
-              "flamethrower",
-              "fiery-dance"
-            ],
-            [
-              "quiver-dance"
-            ],
-            [
-              "protect"
-            ]
-          ],
-          "evs": {
-            "hp": 244,
-            "attack": 0,
-            "defense": 92,
-            "special-attack": 12,
-            "special-defense": 28,
-            "speed": 132
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nVolcarona relies on Quiver Dance to sustain itself and make it a threat on the field that deals massive damage with immense special bulk and high speed. Volcarona has a good matchup into both Calyrex-S and Calyrex-I as well as Zacian-C and Zamazenta-C thanks to its typing, STAB Fire-type moves, and ability…",
-          "source": "VGC 2025"
-        },
-        {
-          "name": "Quiver Dance",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "dragon"
-          ],
-          "moves": [
-            [
-              "flamethrower"
-            ],
-            [
-              "bug-buzz"
-            ],
-            [
-              "quiver-dance"
-            ],
-            [
-              "protect"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 92,
-            "special-attack": 12,
-            "special-defense": 12,
-            "speed": 140
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Quiver Dance Volcarona is a very interesting Pokemon in Regulation G because of its amazing setup potential, good bulk, and respectable damage after Quiver Dance. Volcarona does well against Zamazenta-C and Calyrex-I, since it can 2HKO both of them with Flamethrower. The Special Defense investment allows Volcarona to…",
-          "source": "VGC 2024"
         }
       ]
     },
@@ -51663,7 +51679,7 @@
     "902": {
       "name": "Basculegion",
       "gen": "Champions VGC",
-      "overview": "Thanks to its good Special Attack, Adaptability, and a STAB combination that is unresisted when paired with Ice Beam, Basculegion-F serves as one of the strongest special wallbreakers in the metagame. Its access to Flip Turn allows its Choice item sets to synergize with other pivots like Flamigo and Magnezone to form…",
+      "overview": "Basculegion-F utilizes its unique toolkit to find itself a strong niche as a specially offensive Swift Swim user on rain teams. It outspeeds and heavily hits large portions of the metagame, including the likes of Garchomp, Incineroar, and Mega Salamence. While Basculegion-M has a larger place in the metagame,…",
       "sets": [
         {
           "name": "Choice Scarf",
