@@ -674,9 +674,10 @@
 /* A phone (2026-11-15, second pass — Enzo: "tá meio confuso, só deixar mais
    fácil tipo o builder"). The builder's grammar: what you are making stays
    compact on top, the things to add are a plain grid under it, and a tap on
-   one does the job — here it opens the RankSheet with the five balls under
-   the thumb. The first pass floated the pool over the ranks as a tray, so
-   it covered the very rows it was meant to fill. */
+   one lifts it, a tap on a rank places it (the bar above the dock says who
+   is lifted). The first pass floated the pool over the ranks as a tray, so
+   it covered the very rows it was meant to fill; the second asked for a
+   ball in a sheet, a step Enzo found slower than tapping the rank itself. */
 @media (max-width: 1023px) {
     .tier-page {
         gap: var(--space-4);
@@ -833,111 +834,91 @@
     }
 }
 
-/* ── The rank sheet (a phone's tap on a Pokémon) ── */
-
-.tier-rank {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-3);
-    padding-bottom: var(--space-2);
+/* ── What is lifted (a phone) ──
+   Tap a Pokémon, then tap its rank (2026-11-15, Enzo: "clique no Pokémon →
+   depois clique na seção, visualmente mesmo"). The ranks light up where
+   they are; this bar, held above the dock, says who is lifted, since the
+   pool it came from may be scrolled away. It floats, so it earns the
+   shadow. A desktop needs none of it: the lifted card rises in place. */
+.tier-held {
+    display: none;
 }
 
-.tier-rank__hero {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 8rem;
-    height: 8rem;
-}
-
-.tier-rank__hero::before {
-    content: '';
-    position: absolute;
-    bottom: var(--space-3);
-    left: 50%;
-    width: 5.5rem;
-    height: 1rem;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--mon-type) 45%, transparent);
-    translate: -50% 0;
-}
-
-.tier-rank__hero img {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    image-rendering: pixelated;
-}
-
-.tier-rank__progress {
-    margin-left: var(--space-2);
-    color: var(--color-muted);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-}
-
-.tier-rank__ask {
-    margin: 0;
-    color: var(--color-muted);
-    font-size: var(--text-sm);
-}
-
-/* Five balls under the thumb, one row, equal. */
-.tier-rank__balls {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--space-2);
-    width: 100%;
-}
-
-.tier-rank__ball {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1);
-    min-height: 4.5rem;
-    border: none;
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--ball-top) 18%, var(--color-surface-raised));
-    color: var(--color-fg);
-    font: inherit;
-    font-family: var(--font-heading);
-    font-size: var(--text-md);
-    font-weight: 700;
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: background-color var(--duration-press) var(--ease-out), scale var(--duration-press) var(--ease-out);
-}
-
-@supports (color: light-dark(red, oklch(from red l c h))) {
-    .tier-rank__ball {
-        background: light-dark(
-            color-mix(in srgb, var(--ball-top) 16%, var(--color-surface)),
-            oklch(from var(--ball-top) 0.3 calc(c * 0.5) h)
+@media (max-width: 1023px) {
+    .tier-held {
+        position: fixed;
+        right: var(--space-4);
+        bottom: calc(
+            var(--app-shell-tab-height, 3.5rem) + var(--space-1_5) * 2
+            + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+            + var(--space-2)
         );
+        left: var(--space-4);
+        z-index: var(--z-sticky);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+        border-radius: var(--radius-xl);
+        background: var(--color-surface-elevated);
+        box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--color-primary);
+        animation: tier-held-in var(--duration-slow) var(--ease-out);
+    }
+
+    .tier-held__mon {
+        position: relative;
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .tier-held__mon::before {
+        content: '';
+        position: absolute;
+        bottom: var(--space-1);
+        left: 50%;
+        width: 2.25rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--mon-type) 45%, transparent);
+        translate: -50% 0;
+    }
+
+    .tier-held__mon img {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+    }
+
+    .tier-held__text {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+        font-size: var(--text-xs);
+        color: var(--color-muted);
+    }
+
+    .tier-held__text b {
+        overflow: hidden;
+        color: var(--color-fg);
+        font-size: var(--text-sm);
+        font-weight: var(--weight-semibold);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* The ranks are the targets: a clear Volt edge while something is lifted. */
+    .tier-page.is-holding .tier-row__lane {
+        box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-primary) 70%, transparent);
     }
 }
 
-.tier-rank__ball:active {
-    scale: var(--press-scale);
-}
-
-.tier-rank__ball.is-on {
-    box-shadow: inset 0 0 0 2px var(--color-primary);
-}
-
-.tier-rank__ball:focus-visible {
-    outline: none;
-    box-shadow: var(--ring-primary);
-}
-
-.tier-rank__more {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-2);
+@keyframes tier-held-in {
+    from { opacity: 0; translate: 0 var(--space-2); }
 }
 
 
@@ -946,5 +927,9 @@
     .tier-mon.is-held {
         translate: none;
         transition: none;
+    }
+
+    .tier-held {
+        animation: none;
     }
 }

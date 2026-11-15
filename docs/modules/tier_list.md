@@ -40,15 +40,16 @@ rail's items).
   over the pool still scrolls (a non-passive `touchmove` stops the scroll only
   once the drag began). The drop index comes from the item rects under the
   pointer; `placeItem` corrects for the gap a card leaves in its own row.
-- **On a phone, the builder's grammar** (2026-11-15, second pass — Enzo: "tá
-  meio confuso, só deixar mais fácil tipo o builder"): the board is compact
-  on top (3rem rank tiles, 3rem cards), the pool a plain grid under it, the
-  themes a row of chips. A tap on a Pokémon opens the `RankSheet` — the
-  Pokémon on its platform and the five balls under the thumb; picking one
-  places it and, from the pool, moves straight on to the next waiting
-  ("2 de 27"), so a list ranks in taps on the balls. A ranked Pokémon opens
-  the same sheet to move it or send it back. (The first pass floated the
-  pool over the ranks as a sticky tray — it covered the rows it fed.)
+- **On a phone, tap then tap** (2026-11-15, third pass — Enzo: "clique no
+  Pokémon → depois clique na seção, visualmente mesmo"): the board is compact
+  on top (3rem rank tiles and cards), the pool a plain grid under it, the
+  themes a row of chips. A tap lifts a Pokémon; every rank lights up with a
+  Volt edge and a bar above the dock (`.tier-held`) says who is lifted, with
+  "Reserva" for a ranked one and an X to put it down; a tap on a rank places
+  it, a tap on a Pokémon in a rank places it before that one. A long press
+  still drags. (Two earlier passes: a sticky tray over the ranks — it covered
+  the rows it fed — and a sheet of five balls, a step Enzo found slower than
+  tapping the rank itself.)
 
 ## The image
 
