@@ -61,6 +61,7 @@ export const STATIC_PAGES = {
     '/quiz': 'quiz',
     '/pokepuzzle': 'pokepuzzle',
     '/challenge': 'challenge',
+    '/tier-list': 'tierList',
     '/feed': 'feed',
     '/types': 'types',
     '/best-teams': 'bestTeams',
@@ -78,7 +79,7 @@ const PAGE_IMAGES = {
 };
 
 /** The daily games whose links can carry a result, and the code each takes. */
-const RESULT_PAGES = { pokepuzzle: 'puzzle', challenge: 'challenge' };
+const RESULT_PAGES = { pokepuzzle: 'puzzle', challenge: 'challenge', tierList: 'tierlist' };
 
 const dayLabel = (dayKey, language) => new Intl.DateTimeFormat(LOCALE_TAG[language], { day: 'numeric', month: 'short', timeZone: 'UTC' })
     .format(new Date(`${dayKey}T12:00:00Z`));
@@ -90,6 +91,18 @@ const dayLabel = (dayKey, language) => new Intl.DateTimeFormat(LOCALE_TAG[langua
  */
 export function resultShareMeta({ kind, data }, language) {
     const t = (key, params) => translate(language, `seo.resultShare.${key}`, params);
+    if (kind === 'tierlist') {
+        // The theme's name, never the sharer's own title (utils/tierList.js).
+        const name = translate(language, `tierList.templates.${data.templateId}.name`);
+        return {
+            title: t('tierListTitle', { name }),
+            description: data.kind === 'chart'
+                ? t('chartDescription', { n: data.count, total: data.total })
+                : t('tierListDescription', { n: data.count }),
+            name,
+            cta: t('tierListCta'),
+        };
+    }
     if (kind === 'puzzle') {
         const score = `${data.won ? data.attempts : 'X'}/${data.maxAttempts}`;
         return {

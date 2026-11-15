@@ -30,6 +30,7 @@ import { usePuzzleDay } from '../../hooks/usePuzzleDay';
 
 const NO_ROWS = Object.freeze([]);
 import { renderPuzzleShareBlob } from '../pokepuzzle/drawPuzzleShare';
+import { NextGameCard } from '../NextGameCard';
 import { SITE_URL } from '../../utils/seoPages';
 import { Loader } from '../Loader';
 import { MascotCompanion } from '../MascotCompanion';
@@ -1511,10 +1512,14 @@ export default function PokePuzzleView() {
                                             </button>
                                         </div>
                                         {mode === 'daily' ? (
-                                            <button type="button" onClick={() => setMode('ongoing')} className="btn btn-ghost btn-block">
-                                                <RefreshIcon />
-                                                {t('games.playFreeMode')}
-                                            </button>
+                                            <>
+                                                {/* The day's next game, one tap away (2026-11-15). */}
+                                                <NextGameCard game="challenge" />
+                                                <button type="button" onClick={() => setMode('ongoing')} className="btn btn-ghost btn-block">
+                                                    <RefreshIcon />
+                                                    {t('games.playFreeMode')}
+                                                </button>
+                                            </>
                                         ) : (
                                             <button type="button" onClick={startRandomOngoingGame} className="btn btn-ghost btn-block">
                                                 <RefreshIcon />

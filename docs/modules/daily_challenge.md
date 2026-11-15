@@ -112,6 +112,20 @@ Enzo: "deixar o HUD mais aesthetic e clean conforme o design e estilo do site, u
 - **Polish (2026-11-10, Enzo's review):** the strip's message is 9 px on an 11 px line, centred beside the face — three lines fit ("What will Gouging Fire do?" spilled under the box). In the two-rail deck the teams' rail is 85% of the ranking's. The ranking gets a step more air in a tall rail, and roomier rows only where the rail is ≥ 19rem (narrower, the extra padding cut names). **A phone's bar is crown · clock · Ranking · ⋯**: the streak and the music / sound / speed switches live in the ⋯ menu (`ConsoleMoreMenu`, a `.menu-surface`; `ConsoleSoundControls` renders the three chips on a desktop and the menu on a phone, for this console and the friend battle's — back · opponent · chat · ⋯ there), the Ranking chip keeps its label and stays during the battle, and every chip shares the row's height.
 - **Conditions (2026-11-10):** the same reducer keeps what a player has to remember between turns — a side's screens and hazards (`side.conditions`, from `-sidestart` / `-sideend`; Spikes arrives once per layer; `-swapsideconditions` is Court Change), what clings to the Pokémon out (`active.volatiles`, from `-start` / `-end`; `perishN` is one chip with a count; a switch and a faint clear them, Baton Pass hands on the ones the sim copies) and the field (`weather`, `terrain`, `rooms`). Only ids in `CONDITIONS` (`utils/battleState.js`) exist: the table is the whitelist, the chip's abbreviation (SR, SPK 2, REF, LS, SUB, SEED — move names stay English, as in the battle text) and its kind. `sideConditions(side)` / `fieldConditions(field)` are what the scene draws: a side's chips follow its stat stages in the same row (volatile white, screen Volt, hazard amber), the field's row sits over her box. Turn counters are not shown — an item stretches a screen or a weather and the log never says. Still not modelled: Protect-style one-turn effects, type changes, the Substitute's own HP.
 
+### The party screen (2026-11-15)
+
+Enzo's reference was BW's "Choose a Pokémon": POKéMON now opens your six as
+cards (`PartyGrid` in `ds/DsBwCommands.jsx`) before the Ficha — two columns,
+the right one half a step lower, each card the icon on a platform in its
+first type, the name (a Poké Ball before it for the one out), the status or
+gender, the HP bar, `Lv` and the HP figures; fainted cards are grey. Built on
+the screen's 8-px grid ("regra 8"): cards 36 tall, 8 apart, 4 of stagger, 8
+around, a 24-tall foot — `24 + 3×36 + 2×8 + 4 + 8 + 24 + 8 = 192`. A tap
+picks a card, a tap on the picked one (or FICHA) opens its sheet; the foot is
+BW's message box ("Escolha um Pokémon.") until the picked one can come in,
+when ENVIAR takes its place. ↑ ↓ move a row. Friend battles share it (same
+`DsTouchMenu`). The Ficha's own VOLTAR returns to the party.
+
 ### The team sheet (Ficha, 2026-10-17)
 
 BW's Summary for your own team, before and during the battle (`ds/DsTeamSheet.jsx`, data from `utils/challengeSheet.js`, tested):

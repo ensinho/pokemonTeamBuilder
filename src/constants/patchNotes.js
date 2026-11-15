@@ -34,6 +34,27 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // The tier list (2026-11-15) and nothing else, Enzo's call — beside
+        // it the donation card alone, so it keeps the whole column.
+        notes: [
+            {
+                key: 'tier-list',
+                featured: true,
+                icon: 'trophy',
+                visual: 'tierList',
+                title: 'patchNotes.tierListTitle',
+                description: 'patchNotes.tierListDesc',
+                cta: 'patchNotes.tierListCta',
+                path: '/tier-list',
+            },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+        ],
+    },
+    {
+        version: '1.25.0',
+        month: '2026-11',
+        thanks: false,
         // The Home that answers (2026-11-12): the champions' day as 0/2 · 1/2 ·
         // 2/2 per champion, each row a link straight to that battle; the
         // banner's scenes; the Home by what the trainer came for. The CTA lands
@@ -51,7 +72,6 @@ export const RELEASES = [
             },
             { key: 'hero-scenes', icon: 'sparkles', title: 'patchNotes.heroScenesTitle', description: 'patchNotes.heroScenesDesc', cta: 'patchNotes.heroScenesCta', path: '/' },
             { key: 'home-personas', icon: 'heart', title: 'patchNotes.homePersonasTitle', description: 'patchNotes.homePersonasDesc', cta: 'patchNotes.homePersonasCta', path: '/' },
-            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
             { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
         ],
     },

@@ -85,6 +85,10 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
                 } else if (view === 'party' && (action === 'left' || action === 'right') && size) {
                     play('cursor');
                     setMember((member + (action === 'left' ? size - 1 : 1)) % size);
+                } else if (view === 'party' && (action === 'up' || action === 'down') && size > 2) {
+                    // The party is two columns (PartyGrid): up and down move a row.
+                    const next = member + (action === 'up' ? -2 : 2);
+                    if (next >= 0 && next < size) { play('cursor'); setMember(next); }
                 } else if (view === 'party' && action === 'a') {
                     if (switchable) chooseSwitch(switchable);
                 } else if (view === 'moves' && ['up', 'down', 'left', 'right'].includes(action)) {

@@ -16,7 +16,7 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fetchSharedTeam } from './_lib/sharedTeam.js';
-import { OG_SIZE, RESULT_DECODERS, artworkUrl, pokemonCardTree, resultCardTree, strongestOfType, teamCardTree, typeCardTree } from './_lib/ogImage.js';
+import { OG_SIZE, RESULT_DECODERS, artworkUrl, pokemonCardTree, resultCardTree, strongestOfType, teamCardTree, tierListCardIds, tierListCardTree, typeCardTree, decodeTierList, keepFittingCells } from './_lib/ogImage.js';
 
 const require = createRequire(import.meta.url);
 const IMAGE_TIMEOUT_MS = 2500;
@@ -64,6 +64,16 @@ export async function renderTeamCard(team, language = 'en', { fetchImpl } = {}) 
     const { satori, Resvg, fonts } = await loadDeps();
     const images = await Promise.all(team.pokemons.map((p) => fetchImage(artworkUrl(p), fetchImpl)));
     const svg = await satori(teamCardTree(team, images, language), { ...OG_SIZE, fonts });
+    return new Resvg(svg, { fitTo: { mode: 'width', value: OG_SIZE.width } }).render().asPng();
+}
+
+/** The PNG for a decoded tier list (`?tierlist=`). Exported for the test. */
+export async function renderTierListCard(data, language = 'en', { fetchImpl } = {}) {
+    const { satori, Resvg, fonts } = await loadDeps();
+    const ids = tierListCardIds(data);
+    const fetched = await Promise.all(ids.map((id) => fetchImage(artworkUrl({ id }), fetchImpl)));
+    const images = new Map(ids.map((id, i) => [id, fetched[i]]));
+    const svg = await satori(tierListCardTree(data, images, language), { ...OG_SIZE, fonts });
     return new Resvg(svg, { fitTo: { mode: 'width', value: OG_SIZE.width } }).render().asPng();
 }
 
@@ -140,6 +150,18 @@ export default async function handler(req, res) {
         if (url.searchParams.has('type')) {
             const png = await renderTypeCard(url.searchParams.get('type'), language);
             return png ? sendPng(res, png, REFERENCE_CACHE) : fallback(res);
+        }
+        if (url.searchParams.has('tierlist')) {
+            const decoded = decodeTierList(url.searchParams.get('tierlist'));
+            // A chart cell keeps only a Pokémon its rule allows (the index decides).
+            const index = decoded?.kind === 'chart' ? new Map((await loadPokemonIndex()).map((p) => [p.id, p])) : null;
+            const data = index ? keepFittingCells(decoded, (id) => index.get(id)) : decoded;
+            if (!data) return fallback(res);
+            const png = await renderTierListCard(data, language);
+            res.setHeader('Content-Type', 'image/png');
+            // The code *is* the picture, as for a daily result.
+            res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=2592000, immutable');
+            return res.status(200).send(Buffer.from(png));
         }
         for (const [kind, decode] of Object.entries(RESULT_DECODERS)) {
             if (!url.searchParams.has(kind)) continue;

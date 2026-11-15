@@ -13,6 +13,7 @@ import { tournamentPresence } from '../src/utils/tournamentPresence.js';
 import { bestTeamsSummary } from '../src/utils/bestTeams.js';
 import { mostUsedBuild } from '../src/utils/mostUsedBuild.js';
 import { decodeChallengeResult, decodePuzzleResult } from '../src/utils/resultShareCode.js';
+import { decodeTierList } from '../src/utils/tierList.js';
 
 // Cache the pokemon index + tournament teams in memory across lambda invocations
 let pokemons = [];
@@ -126,6 +127,7 @@ const isNoindexRoute = (appPath) => NOINDEX_ROUTES.some((r) => appPath === r || 
 const RESULT_DECODERS = {
     '/pokepuzzle': ['puzzle', decodePuzzleResult],
     '/challenge': ['challenge', decodeChallengeResult],
+    '/tier-list': ['tierlist', decodeTierList],
 };
 
 function findTeam(id) {

@@ -13,7 +13,7 @@
     --app-shell-row-inset: var(--space-3);
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-6);
     padding-bottom: var(--space-2);
 }
 
@@ -21,7 +21,7 @@
     container: more-sheet / inline-size;
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-6);
 }
 
 /* A section heading organises the tiles under it: the drawer's own label type
@@ -39,161 +39,136 @@
     color: var(--color-muted);
 }
 
-/* Four columns on every phone, so every section's tiles stand in the same
-   columns as the one above it — the sections are built to fill their rows
-   (AppLayout `moreSheetSections`). An auto-fill minimum gave five columns on a
-   430px phone and broke that. The fallback is measured in rem against the
-   sheet's own width: once the user steps the interface scale up, four tiles no
-   longer fit their labels and the grid drops to three instead of clipping. */
+/* One card, three to a row (2026-11-15, Enzo: "simétrico e organizado por
+   atratividade, cards padronizados"). Every section is built to fill its row
+   (AppLayout `moreSheetSections`: three each); a section the dock left with
+   two gets two columns from MobileMoreSheet (`--more-cols`) instead of a
+   hole. The four-across grid of bare icons it replaces left "Jogar" with
+   three icons and an empty quarter, and set the Challenge card beside a
+   support tile half its weight. */
 .more-sheet__grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--space-3) var(--space-1);
+    grid-template-columns: repeat(var(--more-cols, 3), minmax(0, 1fr));
+    gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
+.more-sheet__grid > li {
+    display: flex;
+}
+
+/* A larger interface scale: three cards no longer hold their labels, two do. */
 @container more-sheet (width < 19rem) {
     .more-sheet__grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(min(var(--more-cols, 3), 2), minmax(0, 1fr));
     }
 }
 
-/* The pinned shortcuts: one row of equal cards, however many there are. */
-.more-sheet__grid.more-sheet__grid--featured {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-    gap: var(--space-2);
-}
-
-/* The highlighted destination: one card, alone on its row — or, with the
-   support tile beside it (2026-11-10), the card takes most of the row. */
-.more-sheet__grid.more-sheet__grid--hero {
-    grid-template-columns: minmax(0, 1fr);
-}
-
-.more-sheet__grid.more-sheet__grid--hero:has(> li + li) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-}
-
-/* Support: the quiet tile of the row — muted until touched. */
-.more-tile.more-tile--quiet {
-    color: var(--color-muted);
-    text-decoration: none;
-}
-
-.more-tile.more-tile--quiet .more-tile__label {
-    font-size: var(--text-xs);
-}
-
-/* A tile is a nav item: it never sinks and never takes a fill of its own. The
-   icon box is the small object that answers the finger (design system: cards,
-   rows and nav items press with a fill; small controls give). */
+/* The card: a raised fill (the sheet owns the edge — never a border inside
+   it), the destination's toned tile on top, its name under it. A card
+   presses with a fill and never sinks (design system: cards, rows and nav
+   items); the small tile inside is what gives under the finger. */
 .more-tile {
+    --nav-tone: var(--nav-hue, var(--color-muted));
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-1_5);
+    justify-content: center;
+    gap: var(--space-2);
     width: 100%;
-    padding: 0;
+    min-height: 5.5rem;
+    padding: var(--space-3) var(--space-2);
     border: none;
-    background: transparent;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
     color: var(--color-fg);
     cursor: pointer;
     touch-action: manipulation;
+    transition: background-color var(--duration-press) var(--ease-out),
+                color var(--duration-press) var(--ease-out);
+}
+
+.more-tile:hover {
+    background: var(--color-surface-hover);
+}
+
+.more-tile:active {
+    background: var(--color-surface-active);
 }
 
 .more-tile__icon {
     position: relative;
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius-lg);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-md);
     /* The destination's type tone (2026-11-12, utils/navHue.js) — the rail's
        tile at the sheet's size: a 14% wash, the glyph 55% toward the
-       foreground. No --nav-hue falls back to the neutral box it was. */
-    --nav-tone: var(--nav-hue, var(--color-muted));
-    background: color-mix(in srgb, var(--nav-tone) 14%, var(--color-surface-raised));
+       foreground. */
+    background: color-mix(in srgb, var(--nav-tone) 16%, var(--color-surface));
     color: color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg));
     transition: background-color var(--duration-press) var(--ease-out),
-                color var(--duration-press) var(--ease-out),
                 scale var(--duration-press) var(--ease-out);
 }
 
+/* Colour is light on a dark theme (design system, 2026-11-12): a flat mix of
+   a yellow-ish tone into the violet surface is khaki by construction — the
+   first pass gave Meta, the Library and the Champion's crown brown tiles.
+   The dark themes keep the tone's hue at one fixed lightness; the light ones
+   keep the pastel mix above. */
+@supports (color: light-dark(red, oklch(from red l c h))) {
+    .more-tile__icon {
+        background: light-dark(
+            color-mix(in srgb, var(--nav-tone) 16%, var(--color-surface)),
+            oklch(from var(--nav-tone) 0.3 calc(c * 0.4) h)
+        );
+        color: light-dark(
+            color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg)),
+            oklch(from var(--nav-tone) 0.86 calc(c * 0.6) h)
+        );
+    }
+}
+
 .more-tile__icon > svg {
-    width: 1.375rem;
-    height: 1.375rem;
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
-.more-tile:hover .more-tile__icon {
-    background: color-mix(in srgb, var(--nav-tone) 22%, var(--color-surface-raised));
-}
-
-/* After the hover rule on purpose: the build copies hover fills onto :active
-   for touch, and this press — fill plus the shared sink — must be the one that
-   wins. */
 .more-tile:active .more-tile__icon {
-    background: color-mix(in srgb, var(--nav-tone) 30%, var(--color-surface-raised));
     scale: var(--press-scale);
 }
 
 /* Where you are. The page's one accent in the sheet — Volt, like the dock's
-   lozenge under it, not the tile's own tone: on a phone "you are here" is
-   one colour everywhere. */
+   lozenge under it, not the card's own tone: on a phone "you are here" is
+   one colour everywhere. A ring, not a border, so nothing moves. */
+.more-tile.is-active {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
 .more-tile.is-active .more-tile__icon {
     background: var(--color-primary-soft);
     color: var(--color-primary-text);
 }
 
-/* A shortcut card: the whole card is the object, filled like the account row
-   above it, so the icon drops its own box. A card presses with a fill and
-   never sinks (design system: cards, rows and nav items). */
-.more-tile.more-tile--featured,
-.more-tile.more-tile--hero {
-    height: 100%;
-    min-height: 4.5rem;
-    justify-content: center;
-    padding: var(--space-3) var(--space-2);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    transition: background-color var(--duration-press) var(--ease-out),
-                color var(--duration-press) var(--ease-out);
-}
-
-.more-tile--featured .more-tile__icon,
-.more-tile--featured:hover .more-tile__icon,
-.more-tile--featured:active .more-tile__icon,
-.more-tile--featured.is-active .more-tile__icon {
-    width: auto;
-    height: auto;
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-    scale: none;
-}
-
-/* The hero card reads left to right: the crown in its own Volt box (the
-   sheet's one accent), then the name and what it is. */
+/* The day's games: two equal wide cards, read left to right — the toned
+   tile, the name, what it is. */
 .more-tile.more-tile--hero {
     flex-direction: row;
     justify-content: flex-start;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    min-height: 4.5rem;
+    padding: var(--space-3);
 }
 
-.more-tile--hero .more-tile__icon,
-.more-tile--hero:hover .more-tile__icon,
-.more-tile--hero:active .more-tile__icon {
-    flex-shrink: 0;
+.more-tile--hero .more-tile__icon {
     width: 2.75rem;
     height: 2.75rem;
-    border-radius: var(--radius-md);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
 }
 
 .more-tile__text {
@@ -205,7 +180,7 @@
 }
 
 .more-tile--hero .more-tile__label {
-    font-size: var(--text-md);
+    font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     text-align: start;
 }
@@ -214,31 +189,10 @@
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    font-size: var(--text-xs);
+    -webkit-line-clamp: 1;
+    font-size: var(--text-2xs);
     line-height: 1.3;
     color: var(--color-muted);
-}
-
-.more-tile.more-tile--featured:hover,
-.more-tile.more-tile--hero:hover {
-    background: var(--color-surface-hover);
-}
-
-.more-tile.more-tile--featured:active,
-.more-tile.more-tile--hero:active {
-    background: var(--color-surface-active);
-}
-
-.more-tile.more-tile--featured.is-active,
-.more-tile.more-tile--hero.is-active {
-    background: var(--color-primary-soft);
-    color: var(--color-primary-text);
-}
-
-.more-tile--featured.is-active .more-tile__label,
-.more-tile--hero.is-active .more-tile__label {
-    color: var(--color-primary-text);
 }
 
 .more-tile__label {
@@ -249,13 +203,19 @@
     -webkit-line-clamp: 2;
     /* A label you operate: the body face (Neon Sticker keeps mono for figures). */
     font-family: var(--font-body);
-    font-size: var(--text-2xs);
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     line-height: 1.25;
     letter-spacing: -0.01em;
     text-align: center;
     overflow-wrap: break-word;
     color: var(--color-fg);
+}
+
+/* The support row under the grid: a quiet row, never a second accent. */
+.more-sheet__support {
+    color: var(--color-muted);
+    text-decoration: none;
 }
 
 /* Pending count (friend requests, battles waiting on you). Rides the icon's

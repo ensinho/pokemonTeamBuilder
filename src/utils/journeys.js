@@ -306,11 +306,19 @@ export const evaluateJourneys = (facts = {}) => evaluate(JOURNEYS, facts);
 /** The persona journeys, resolved like the levels (their `level` is unused). */
 export const evaluatePersonaJourneys = (facts = {}) => evaluate(PERSONA_JOURNEYS, facts);
 
-/** Which persona journeys a trainer is shown: theirs, or all three for the Master. */
+/**
+ * The persona journeys each persona owns. The Desafiante took the Traveler's
+ * in when the games joined the minigames (2026-11-15): the gym route is a
+ * game a player plays too, and badges already earned stay earned.
+ */
+const JOURNEY_OWNERS = { challenger: ['challenger', 'traveler'] };
+const ownsJourney = (personaId, journeyPersona) => (JOURNEY_OWNERS[personaId] || [personaId]).includes(journeyPersona);
+
+/** Which persona journeys a trainer is shown: theirs, or all of them for the Master. */
 export const personaJourneyFilter = (personaId) => (journey) => {
     if (!personaId) return false;
-    if (journey.chapter === 2) return journey.persona === personaId;
-    return personaId === 'master' || journey.persona === personaId;
+    if (journey.chapter === 2) return ownsJourney(personaId, journey.persona);
+    return personaId === 'master' || ownsJourney(personaId, journey.persona);
 };
 
 /** A chapter 2 opens when its chapter 1 is done (the Master's, when any one is). */

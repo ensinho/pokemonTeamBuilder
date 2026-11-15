@@ -9,6 +9,10 @@
 import { translate } from '../../src/utils/translateCore.js';
 import { formatSlug, resultShareMeta } from '../../src/utils/seoPages.js';
 import { decodeChallengeResult, decodePuzzleResult } from '../../src/utils/resultShareCode.js';
+import { TIER_BALLS, TIER_KEYS, decodeTierList, keepFittingCells } from '../../src/utils/tierList.js';
+
+// api/og.js may import only node: builtins and _lib/ statically (og.test.js).
+export { decodeTierList, keepFittingCells };
 import { typeColors } from '../../src/constants/typeChart.js';
 import { immunitiesOf, resistancesOf, strongAgainst, weaknessesOf } from '../../src/utils/typeMatchups.js';
 
@@ -170,6 +174,62 @@ export function challengeCardTree(result, meta, language = 'en') {
         ...(bars ? [bars] : []),
     ]);
     return resultFrame(language, kicker, body, meta.cta);
+}
+
+// ── A shared tier list (`/tier-list?r=…`, 2026-11-15) ──────────────────────
+// Ids only: each rank's ball colour and letter, the Pokémon as artwork, the
+// theme's name. A chart is its cells in a grid, each labelled by its type or
+// generation from the translations — never a word the sharer typed.
+
+/** The dex ids the card draws, in the order the images are fetched. */
+export function tierListCardIds(data, perRow = 13) {
+    if (data.kind === 'chart') return Object.values(data.cells).filter(Boolean);
+    return TIER_KEYS.flatMap((key) => data.tiers[key].slice(0, perRow));
+}
+
+/**
+ * @param {object} data  a decoded tier list (utils/tierList.js decodeTierList)
+ * @param {Map<number, string|null>} images  id → artwork data URI
+ */
+export function tierListCardTree(data, images, language = 'en') {
+    const meta = resultShareMeta({ kind: 'tierlist', data }, language);
+    const art = (id, size) => (images.get(id)
+        ? { type: 'img', props: { src: images.get(id), width: size, height: size } }
+        : h('div', { display: 'flex', width: size, height: size }, []));
+    let body;
+    if (data.kind === 'chart') {
+        const keys = Object.keys(data.cells);
+        const columns = keys.length <= 9 ? 5 : 6;
+        const cell = Math.floor((1080 - (columns - 1) * 12) / columns);
+        body = h('div', { display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }, keys.map((key) => {
+            const id = data.cells[key];
+            const tone = typeColors[key];
+            const label = key.startsWith('gen') ? `Gen ${key.slice(3)}` : translate(language, `types.${key}`);
+            return h('div', {
+                display: 'flex', flexDirection: 'column', alignItems: 'center', width: cell, height: keys.length <= 9 ? 170 : 116,
+                padding: '6px 4px', borderRadius: 16, background: tone ? `${tone}2e` : BRAND.platform,
+            }, [
+                h('div', { display: 'flex', fontSize: 18, fontWeight: 700, color: tone || BRAND.accent }, label),
+                id ? art(id, keys.length <= 9 ? 120 : 78) : h('div', { display: 'flex', fontSize: 52, fontWeight: 700, color: 'rgba(255,255,255,0.18)' }, '?'),
+            ]);
+        }));
+    } else {
+        body = h('div', { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 22 }, TIER_KEYS.map((key) => {
+            const ids = data.tiers[key];
+            const shown = ids.slice(0, 13);
+            const ball = TIER_BALLS[key];
+            return h('div', { display: 'flex', alignItems: 'center', gap: 10, height: 64, paddingRight: 10, borderRadius: 14, background: BRAND.platform }, [
+                h('div', {
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', width: 76, height: 64, borderRadius: 14,
+                    background: ball.ball === 'ultra' ? ball.band : ball.top, color: ball.ball === 'premier' ? '#1b1426' : '#ffffff',
+                    fontSize: 34, fontWeight: 700,
+                }, key),
+                ...shown.map((id) => art(id, 60)),
+                ...(ids.length > shown.length ? [h('div', { display: 'flex', fontSize: 24, color: BRAND.muted }, `+${ids.length - shown.length}`)] : []),
+            ]);
+        }));
+    }
+    return resultFrame(language, `Tier list · ${meta.name}`, body, meta.cta);
 }
 
 /** `?puzzle=` / `?challenge=` → the decoder for that code. */

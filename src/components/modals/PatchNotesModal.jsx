@@ -173,6 +173,21 @@ const NEW_GAMES = [
     { key: 'legends-za', label: 'Legends: Z-A', count: 412, starters: [650, 653, 656] },
 ];
 
+// The tier list (1.26.0): three ranks, each led by its letter, starters on them.
+const TIER_VISUAL_ROWS = [['S', [7, 4]], ['A', [1, 155, 393]], ['B', [152]]];
+const TierListVisual = () => (
+    <div className="flex h-[9.5rem] flex-col justify-center gap-1.5 bg-bg p-3" aria-hidden="true">
+        {TIER_VISUAL_ROWS.map(([tier, ids]) => (
+            <div key={tier} className="flex items-center gap-2 rounded-lg bg-surface-raised p-1">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/20 text-sm font-bold text-fg">{tier}</span>
+                {ids.map((id) => (
+                    <img key={id} src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-8 w-8 object-contain" style={{ imageRendering: 'pixelated' }} />
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
 const NewGamesVisual = ({ language }) => {
     const pt = language === 'pt';
     return (
@@ -793,6 +808,7 @@ const NOTE_ICONS = {
 };
 
 const NOTE_VISUALS = {
+    tierList: TierListVisual,
     brand: BrandVisual,
     champions: ChampionsDexVisual,
     playthrough: PlaythroughVisual,
@@ -825,7 +841,7 @@ const NOTE_VISUALS = {
 // the height of the column beside it; the side ones are icon, title, text and
 // call to action, so three of them stack into identical rows. Either way the
 // call to action sits on the card's bottom edge, so the cards line up across.
-function NoteCard({ note, featured = false, onActivate, expanded, colors, t, language }) {
+function NoteCard({ note, featured = false, alone = false, onActivate, expanded, colors, t, language }) {
     const { title, description, cta } = note;
     const NoteIcon = note.Icon;
     const NoteVisual = note.Visual;
@@ -860,7 +876,10 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
     // A note with `href` leaves the site: a real link. Featured, it is a centred
     // card under its cover with a real button; beside the featured note it keeps
     // the side notes' row layout.
-    const centred = Boolean(note.href) && featured;
+    // Alone beside the featured note (1.26.0: the tier list and the donation
+    // card, Enzo), a link note takes the centred form too — the cup, the
+    // title, a real button — and keeps its pull instead of a quiet row.
+    const centred = Boolean(note.href) && (featured || alone);
     const Card = note.href ? 'a' : 'button';
     const cardProps = note.href
         ? { href: note.href, target: '_blank', rel: 'noopener noreferrer' }
@@ -881,7 +900,7 @@ function NoteCard({ note, featured = false, onActivate, expanded, colors, t, lan
             {centred ? (
                 <>
                     {/* The cup sits on the cover's bottom edge, a little tilted; below it on a phone, where it would hide the cover's line of text. */}
-                    <span className="relative mb-2 inline-flex sm:-mt-10 h-14 w-14 -rotate-6 items-center justify-center rounded-full bg-primary text-on-primary ring-4 ring-surface-raised" aria-hidden="true">
+                    <span className={`relative mb-2 inline-flex ${featured && NoteVisual ? "sm:-mt-10 " : ""}h-14 w-14 -rotate-6 items-center justify-center rounded-full bg-primary text-on-primary ring-4 ring-surface-raised`} aria-hidden="true">
                         <NoteIcon className="h-7 w-7" />
                     </span>
                     <h3 className="mb-1 text-xl font-bold text-fg">{title}</h3>
@@ -996,7 +1015,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                         <NoteCard {...cardProps(featuredNote)} featured />
                         {sideNotes.length > 0 && (
                             <div className="grid grid-cols-1 gap-4 md:auto-rows-fr">
-                                {sideNotes.map((note) => <NoteCard key={note.key} {...cardProps(note)} />)}
+                                {sideNotes.map((note) => <NoteCard key={note.key} {...cardProps(note)} alone={sideNotes.length === 1} />)}
                             </div>
                         )}
                     </div>
@@ -1071,7 +1090,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                         <button
                             type="button"
                             onClick={onClose}
-                            className={`btn btn-lg ${featuredNote.href ? 'btn-secondary' : 'btn-primary'}`}
+                            className={`btn btn-lg ${featuredNote.href || (sideNotes.length === 1 && sideNotes[0].href) ? 'btn-secondary' : 'btn-primary'}`}
                         >
                             {t('patchNotes.gotIt')}
                         </button>

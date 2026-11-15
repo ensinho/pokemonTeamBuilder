@@ -19,92 +19,90 @@ import { navHue } from '../utils/navHue';
  * - It rises from the bottom, where the tab that opened it is, on the shared
  *   BottomSheet — so it drags to dismiss, leaves on the exit animation and
  *   handles Escape and focus exactly like every other sheet in the app.
- * - Destinations are tiles in a grid, not rows: fifteen of them fit in about
- *   half the screen instead of running past the fold. Four columns on every
- *   phone, so the sections line up under each other; a larger interface scale
- *   drops to three instead of clipping labels (a container query in rem).
- * - A `hero` section is one wide card alone on its row — the daily Champion
- *   Challenge: icon, full name and a `hint` line saying what it is.
- * - A `featured` section (the untitled pinned one) is a single row of equal
- *   shortcut cards instead of tiles — however many it holds, it fills the row.
- * - A tile shows `shortLabel` when the item has one: one line in a quarter of
- *   the sheet. The full name stays its accessible name.
+ * - Destinations are cards in a grid, not rows. Since 2026-11-15 every card is
+ *   the same object (Enzo: "simétrico… cards padronizados"): a toned icon tile
+ *   over its name, three to a row, so each section is one even row of three.
+ *   A section of two (a persona's dock took one) is two columns, never a gap.
+ * - A `hero` section is the day's games: two equal wide cards, the icon beside
+ *   the name and a `hint` line saying what it is.
+ * - `accountAfter` names the section the `header` (the account) follows: the
+ *   games first — what people open the sheet for — then who you are.
+ * - A card shows `shortLabel` when the item has one. The full name stays its
+ *   accessible name.
  * - The caller leaves out what the tab bar already shows. The same destination
- *   twice on one screen reads as a bug.
+ *   twice on one screen reads as a bug (the Champion is Enzo's one exception).
  *
- * `children` carries the rows that are not destinations (account, install, the
- * About section); they keep the shell's own nav-row styling.
+ * `children` carries the rows that are not destinations (support, install,
+ * the About section); they keep the shell's own nav-row styling.
  */
-export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, onIntent, header = null, children = null }) {
+export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, onIntent, header = null, accountAfter = null, children = null }) {
     const { t } = useTranslation();
+    const headerIndex = accountAfter ? sections.findIndex((section) => section.key === accountAfter) : -1;
+
+    const renderSection = (section) => {
+        const columns = section.hero ? 2 : Math.min(3, section.items.length);
+        return (
+            <section
+                key={section.key}
+                className="more-sheet__section"
+                aria-labelledby={section.title ? `more-sheet-${section.key}` : undefined}
+            >
+                {section.title && (
+                    <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
+                )}
+                <ul
+                    className={`more-sheet__grid ${section.hero ? 'more-sheet__grid--hero' : ''}`}
+                    style={{ '--more-cols': columns }}
+                >
+                    {section.items.map((item) => {
+                        const active = currentPage === item.key || Boolean(item.members?.includes(currentPage));
+                        const shortened = item.shortLabel && item.shortLabel !== item.label;
+                        return (
+                            <li key={item.key}>
+                                <button
+                                    type="button"
+                                    className={`more-tile ${section.hero ? 'more-tile--hero' : ''} ${active ? 'is-active' : ''}`}
+                                    aria-current={active ? 'page' : undefined}
+                                    aria-label={shortened ? item.label : undefined}
+                                    onPointerDown={() => onIntent?.(item.prefetchKey || item.key)}
+                                    onClick={() => onNavigate(item.path)}
+                                    // --nav-hue: the destination's type tone, as in the
+                                    // rail and the dock (utils/navHue.js).
+                                    style={{ '--nav-hue': navHue(item.key) }}
+                                >
+                                    <span className="more-tile__icon">
+                                        {item.icon}
+                                        {item.badge > 0 && (
+                                            <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
+                                        )}
+                                    </span>
+                                    {section.hero ? (
+                                        <span className="more-tile__text">
+                                            <span className="more-tile__label">{item.label}</span>
+                                            {item.hint && <span className="more-tile__hint">{item.hint}</span>}
+                                        </span>
+                                    ) : (
+                                        <span className="more-tile__label">{shortened ? item.shortLabel : item.label}</span>
+                                    )}
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </section>
+        );
+    };
 
     return (
         <BottomSheet onClose={onClose} title={t('nav.more')}>
             <div className="more-sheet">
-                {header}
+                {headerIndex === -1 && header}
                 <nav className="more-sheet__nav" aria-label={t('nav.moreSheetLabel')}>
-                    {sections.map((section) => (
-                        <section
-                            key={section.key}
-                            className="more-sheet__section"
-                            aria-labelledby={section.title ? `more-sheet-${section.key}` : undefined}
-                        >
-                            {section.title && (
-                                <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
-                            )}
-                            <ul className={`more-sheet__grid ${section.featured ? 'more-sheet__grid--featured' : ''} ${section.hero ? 'more-sheet__grid--hero' : ''}`}>
-                                {section.items.map((item) => {
-                                    const active = currentPage === item.key || Boolean(item.members?.includes(currentPage));
-                                    const shortened = item.shortLabel && item.shortLabel !== item.label;
-                                    // An outside link (the support page) is a real <a>, quiet:
-                                    // icon over label, no Volt box, opens in a new tab.
-                                    if (item.href) {
-                                        return (
-                                            <li key={item.key}>
-                                                <a
-                                                    href={item.href}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="more-tile more-tile--featured more-tile--quiet"
-                                                >
-                                                    <span className="more-tile__icon">{item.icon}</span>
-                                                    <span className="more-tile__label">{item.label}</span>
-                                                </a>
-                                            </li>
-                                        );
-                                    }
-                                    return (
-                                        <li key={item.key}>
-                                            <button
-                                                type="button"
-                                                className={`more-tile ${section.featured ? 'more-tile--featured' : ''} ${section.hero ? 'more-tile--hero' : ''} ${active ? 'is-active' : ''}`}
-                                                aria-current={active ? 'page' : undefined}
-                                                aria-label={shortened ? item.label : undefined}
-                                                onPointerDown={() => onIntent?.(item.prefetchKey || item.key)}
-                                                onClick={() => onNavigate(item.path)}
-                                            >
-                                                {/* --nav-hue: the destination's type tone, as in the
-                                                    rail and the dock (utils/navHue.js). */}
-                                                <span className="more-tile__icon" style={{ '--nav-hue': navHue(item.key) }}>
-                                                    {item.icon}
-                                                    {item.badge > 0 && (
-                                                        <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
-                                                    )}
-                                                </span>
-                                                {section.hero ? (
-                                                    <span className="more-tile__text">
-                                                        <span className="more-tile__label">{item.label}</span>
-                                                        {item.hint && <span className="more-tile__hint">{item.hint}</span>}
-                                                    </span>
-                                                ) : (
-                                                    <span className="more-tile__label">{shortened ? item.shortLabel : item.label}</span>
-                                                )}
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </section>
+                    {sections.map((section, index) => (
+                        <React.Fragment key={section.key}>
+                            {renderSection(section)}
+                            {index === headerIndex && header}
+                        </React.Fragment>
                     ))}
                 </nav>
                 {children}

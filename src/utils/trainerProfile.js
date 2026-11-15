@@ -9,14 +9,24 @@
  * this module what they mean, so the rail and the Home can never disagree
  * about who is looking. Copy lives under `onboarding.*` in translations.
  *
- * The questions are few on purpose (Hick): what brings you here (any of
- * three), and — only for the competitive — how deep and which format.
+ * The questions are few on purpose (Hick): what brings you here (one or
+ * both of two), and — only for the competitive — how deep and which format.
+ *
+ * Two interests since 2026-11-15 (Enzo: "concentrar o perfil de minijogos e o
+ * perfil de franquias, para focar nos minigames"): playing the games and the
+ * minigames became one — `minigames`, the Desafiante — because the site's
+ * daily games (the Champion Challenge, the PokéPuzzle) are what people come
+ * back for. A stored `franchise` is read as `minigames` (`LEGACY_INTERESTS`),
+ * so nobody who answered before has to answer again.
  */
 
 export const TRAINER_PROFILE_VERSION = 1;
 
-/** What a trainer can say they came for. More than one is the common case. */
-export const INTERESTS = ['competitive', 'franchise', 'minigames'];
+/** What a trainer can say they came for. Both is the common case. */
+export const INTERESTS = ['competitive', 'minigames'];
+
+/** Interests the onboarding no longer asks, read as the one that absorbed them. */
+export const LEGACY_INTERESTS = { franchise: 'minigames' };
 
 /** How deep into competitive play, asked only when `competitive` is picked. */
 export const COMPETITIVE_LEVELS = ['new', 'casual', 'ranked'];
@@ -27,17 +37,18 @@ export const BATTLE_FORMATS = ['singles', 'doubles', 'both'];
 /**
  * The personas. `art` is the National Dex id drawn for it (official artwork),
  * `tone` the type colour its card and scene take. One per interest, plus the
- * trainer who picked all three.
+ * trainer who picked both. `traveler` is no longer derived (2026-11-15) — it
+ * stays so another trainer's older public profile still reads as a persona.
  */
 export const PERSONAS = {
     strategist: { id: 'strategist', interest: 'competitive', art: 445, tone: 'dragon' },
-    traveler: { id: 'traveler', interest: 'franchise', art: 25, tone: 'electric' },
+    traveler: { id: 'traveler', interest: null, art: 25, tone: 'electric', legacy: true },
     challenger: { id: 'challenger', interest: 'minigames', art: 150, tone: 'psychic' },
     master: { id: 'master', interest: null, art: 94, tone: 'ghost' },
 };
 
 /** The persona each interest leads to, in priority order. */
-const PERSONA_BY_INTEREST = { competitive: 'strategist', franchise: 'traveler', minigames: 'challenger' };
+const PERSONA_BY_INTEREST = { competitive: 'strategist', minigames: 'challenger' };
 
 /** The competitive level drawn as an evolution line: Gible → Gabite → Garchomp. */
 export const LEVEL_ART = { new: 443, casual: 444, ranked: 445 };
@@ -61,7 +72,10 @@ const isTime = (value) => Number.isFinite(value) && value > 0;
  */
 export function normalizeTrainerProfile(raw) {
     const value = raw && typeof raw === 'object' ? raw : {};
-    const interests = INTERESTS.filter((interest) => Array.isArray(value.interests) && value.interests.includes(interest));
+    const given = Array.isArray(value.interests)
+        ? value.interests.map((interest) => LEGACY_INTERESTS[interest] || interest)
+        : [];
+    const interests = INTERESTS.filter((interest) => given.includes(interest));
     const isCompetitive = interests.includes('competitive');
     return {
         version: TRAINER_PROFILE_VERSION,
@@ -95,13 +109,14 @@ export function mergeTrainerProfiles(local, remote) {
 }
 
 /** The interests in their canonical order, the first being the primary. */
-const orderedInterests = (profile) => INTERESTS.filter((i) => profile?.interests?.includes(i));
+const orderedInterests = (profile) => {
+    const given = (profile?.interests || []).map((i) => LEGACY_INTERESTS[i] || i);
+    return INTERESTS.filter((i) => given.includes(i));
+};
 
 /**
- * Who the trainer is: `{ id, primary, interests }`. All three interests make a
- * `master`; otherwise the persona follows the first interest in priority
- * order (competitive → franchise → minigames) and the rest ride along as
- * secondary tags. Null with no interests — the app keeps its defaults.
+ * Who the trainer is: `{ id, primary, interests }`. Both interests make a
+ * `master`; otherwise the persona follows the one interest. Null with no interests — the app keeps its defaults.
  */
 export function derivePersona(profile) {
     const interests = orderedInterests(profile);
@@ -133,6 +148,7 @@ export const PICK_DESTINATIONS = {
     moves: { path: '/moves', labelKey: 'nav.moves' },
     pokepuzzle: { path: '/pokepuzzle', labelKey: 'nav.pokepuzzle' },
     challenge: { path: '/challenge', labelKey: 'nav.challenge' },
+    tierList: { path: '/tier-list', labelKey: 'nav.tierList' },
     generationQuiz: { path: '/quiz', labelKey: 'nav.quiz' },
     battles: { path: '/battles', labelKey: 'nav.battles' },
 };
@@ -144,8 +160,9 @@ const PICKS_BY_INTEREST = {
         casual: ['builder', 'damageCalc', 'bestTeams', 'meta'],
         ranked: ['meta', 'speedTiers', 'tournaments', 'damageCalc'],
     },
-    franchise: ['pokedex', 'builder', 'gyms', 'types'],
-    minigames: ['pokepuzzle', 'challenge', 'generationQuiz', 'battles'],
+    // The games and the minigames, one interest since 2026-11-15: the daily
+    // two first, then what a player makes and looks up.
+    minigames: ['challenge', 'pokepuzzle', 'tierList', 'generationQuiz', 'battles', 'pokedex', 'gyms'],
 };
 
 const picksFor = (interest, profile) => {
@@ -174,8 +191,7 @@ export function personaPicks(profile, max = 4) {
 /** Where a trainer goes next once their own picks are already on the Home, most useful first. */
 const MORE_BY_INTEREST = {
     competitive: ['meta', 'damageCalc', 'speedTiers', 'bestTeams', 'guides', 'types', 'tournaments'],
-    franchise: ['pokedex', 'gyms', 'types', 'moves', 'generationQuiz'],
-    minigames: ['generationQuiz', 'pokedex', 'types', 'moves', 'gyms'],
+    minigames: ['tierList', 'generationQuiz', 'pokedex', 'gyms', 'types', 'moves'],
 };
 
 /**
@@ -205,8 +221,7 @@ export const DEFAULT_NAV_ORDER = ['teamBuilding', 'guessing', 'database', 'dashb
 /** The sections an interest pulls to the top. */
 const NAV_BY_INTEREST = {
     competitive: ['teamBuilding'],
-    franchise: ['database'],
-    minigames: ['guessing', 'dashboard'],
+    minigames: ['guessing', 'database'],
 };
 
 /**
@@ -236,21 +251,20 @@ export function sortNavGroups(groups, profile) {
  * The phone dock's fourth slot. The daily puzzle held it from 2026-09-24; the
  * Champion Challenge took it on 2026-11-09 (Enzo), for anyone who plays or has
  * not said — the PokéPuzzle moved into the Mais sheet. A trainer who came only
- * for competitive gets Meta there, one who only plays the games the type chart.
+ * for competitive gets Meta there. (The type chart held it for the Traveler
+ * until the games joined the minigames, 2026-11-15.)
  */
 export function personaDockSlot(profile) {
     const interests = orderedInterests(profile);
     if (interests.length === 0 || interests.includes('minigames')) return 'challenge';
-    if (interests[0] === 'competitive') return 'meta';
-    return 'types';
+    return 'meta';
 }
 
 // ── Journeys ───────────────────────────────────────────────────────────────
 
 const JOURNEYS_BY_INTEREST = {
     competitive: ['first-team', 'strategy'],
-    franchise: ['first-steps', 'first-team'],
-    minigames: ['league', 'champions'],
+    minigames: ['league', 'champions', 'first-steps'],
 };
 
 /** The journey ids this trainer's interests point at, in interest order. */
@@ -279,14 +293,15 @@ export const SINGLES_DEFAULT_FORMAT = 'gen9ou';
 
 /**
  * The builder's first regulation for this trainer, or null to keep the app's
- * default (the current VGC). Someone who only plays the games starts in
- * playthrough mode ('none', constants/regulations.js); a singles player on
- * OU. Applied only when the builder has no choice stored yet.
+ * default (the current VGC). A singles player starts on OU. Applied only when
+ * the builder has no choice stored yet. (The Traveler started in playthrough
+ * mode until 2026-11-15; the Desafiante builds for the Champion Challenge,
+ * which battles with competitive sets.)
  */
 export function builderRegulationSeed(profile) {
     const interests = orderedInterests(profile);
     if (interests.length === 0) return null;
-    if (!interests.includes('competitive')) return interests.includes('franchise') ? 'none' : null;
+    if (!interests.includes('competitive')) return null;
     return profile.battleFormat === 'singles' ? SINGLES_DEFAULT_FORMAT : null;
 }
 
@@ -298,17 +313,14 @@ export const asksCompetitiveLevel = (interests = []) => interests.includes('comp
 /**
  * The Home's main blocks, in the order a persona reaches for them
  * (2026-11-05, round 3): the Challenger's day (puzzle + Champion) comes
- * first, the Strategist's teams first, the Traveler's places to go and then
- * the teams of their run, the day's games last. Anyone else — no profile, the
- * Master — keeps the shipped order. Block ids are CozyHomeView's.
+ * first, the Strategist's teams first. Anyone else — no profile, the Master —
+ * keeps the shipped order. Block ids are CozyHomeView's.
  */
 export const DEFAULT_HOME_ORDER = ['forYou', 'yourDay', 'teams'];
 
 const HOME_ORDER_BY_PERSONA = {
     challenger: ['yourDay', 'forYou', 'teams'],
     strategist: ['teams', 'forYou', 'yourDay'],
-    // The Traveler's own block leads: the Badge Case (components/home/BadgeCase.jsx).
-    traveler: ['badges', 'forYou', 'teams', 'yourDay'],
 };
 
 export function personaHomeOrder(profile) {
@@ -321,16 +333,13 @@ export function personaHomeOrder(profile) {
  * (2026-11-12). `battles` shows only when a friend's battle waits on the
  * trainer, so it leads whenever it shows; `invite` is the Challenger's
  * "challenge a friend" when nothing waits. The Strategist reads the meta
- * first; the Challenger trades the meta for a friend to battle; the
- * Traveler, who came for the games, has no meta card at all.
+ * first; the Challenger trades the meta for a friend to battle.
  */
 export const DEFAULT_DAY_CARDS = ['battles', 'puzzle', 'badge', 'meta'];
 
 const DAY_CARDS_BY_PERSONA = {
     strategist: ['battles', 'meta', 'puzzle', 'badge'],
     challenger: ['battles', 'puzzle', 'invite', 'badge'],
-    // The games, not the ladder: no meta card for the one who came to play through.
-    traveler: ['battles', 'puzzle', 'badge'],
 };
 
 export function personaDayCards(profile) {
@@ -340,19 +349,18 @@ export function personaDayCards(profile) {
 
 /**
  * What the Home's one hero card is about (2026-11-09, the "of the day" hero —
- * .claude/skills/app-screens): the team in progress for most trainers; the
- * day's Champion battle for the one who came for the minigames; the next gym
- * leader of the game being played for the one who came for the games (Enzo,
- * 2026-11-09). The rail of the day's cards leaves the Champion out when she
- * is the hero, so nothing shows twice.
+ * .claude/skills/app-screens). Since 2026-11-15 (Enzo: "focar a proposta do
+ * site nos minigames… desde a home") it is the day's Champion battle for
+ * everyone — no profile, the Desafiante, the Master — except the trainer who
+ * came only for competitive, whose hero stays the team in progress. The rail
+ * of the day's cards leaves the Champion out when she is the hero, so nothing
+ * shows twice. `badges` (the Traveler's next gym leader) is no longer chosen.
  */
 export const HOME_HEROES = ['team', 'challenge', 'badges'];
 
-const HERO_BY_PERSONA = { challenger: 'challenge', traveler: 'badges' };
-
 export function personaHero(profile) {
     const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
-    return HERO_BY_PERSONA[persona?.id] || 'team';
+    return persona?.id === 'strategist' ? 'team' : 'challenge';
 }
 
 /** Whether the builder should coach (competitive, just starting). */

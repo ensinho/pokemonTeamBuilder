@@ -579,44 +579,25 @@
     display: block;
 }
 
-/* The band the stage takes on a phone; the copy starts under it. */
-.day-hero--stage {
-    --stage-band: 10.5rem;
-    padding-top: var(--stage-band);
-}
-
+/* Shared by both widths: the ace and the two platforms are placed inside
+   the art's box; where that box sits, and how big they stand in it, is each
+   width's call below. */
 .day-hero--stage .day-hero__art {
-    top: 0;
-    right: 0;
-    left: 0;
-    width: auto;
     max-width: none;
-    height: var(--stage-band);
     aspect-ratio: auto;
     translate: none;
 }
 
-/* Inside the band, whole (Enzo, 2026-11-12: the hero's edge cut its head
-   off): never pushed past the top or the side, feet above the line. */
+/* Her ace, whole (Enzo, 2026-11-12: the hero's edge cut its head off):
+   never pushed past the top or the side, feet on its platform. */
 .day-hero__ace {
     position: absolute;
     z-index: 1;
     top: auto;
-    right: var(--space-2);
-    bottom: var(--space-3);
     width: auto;
-    /* Ends where the eyebrow row (and the palette button) starts. */
-    height: 9rem;
     max-width: none;
     aspect-ratio: 1;
     object-fit: contain;
-}
-
-/* The ace's own platform, under its feet (the sprite stands; the artwork flew). */
-.day-hero__pad--ace {
-    right: var(--space-4);
-    bottom: var(--space-2);
-    width: 8rem;
 }
 
 .day-hero__ace.is-unknown {
@@ -624,77 +605,169 @@
     opacity: 0.5;
 }
 
-/* Her platform, in the hero's own tone — beside her ace at any width. */
+/* A platform in the hero's own tone under each of them. */
 .day-hero__pad {
     position: absolute;
-    right: 10.5rem;
-    bottom: var(--space-2);
-    width: 6.5rem;
-    height: 1.25rem;
     border-radius: 50%;
     background: color-mix(in srgb, var(--hero-type) 45%, var(--color-surface));
 }
 
 .day-hero--stage .day-hero__trainer {
     top: auto;
-    right: 10.5rem;
-    bottom: var(--space-3);
     left: auto;
-    width: 6.5rem;
-    height: 6.5rem;
 }
 
-.day-hero--stage .day-hero__top {
-    margin-top: calc(var(--space-2) * -1);
-}
+/* Phones — the stage beside the words (2026-11-13, Enzo on his iPhone: "o
+   card ficou mt alto… quero uma tela bem app, confortável mesmo").
+   The stage used to be a 10.5rem band across the top with everything else
+   stacked under it: ~570px of card, the action a screen away from the
+   greeting. Now the hero is a grid —
 
-/* Phones (Enzo: "melhorar hierarquia de título e ícones"): the palette leaves
-   the eyebrow's row for the stage's corner, the eyebrow sits right on the
-   title, the title is the hero's loudest line, and the action is a full pill
-   that says its name under her team — not a lone round icon. */
+       eyebrow ······················ palette
+       the headline      │   her and her ace
+       its line          │   (the stage spans both)
+       [ the action, full width ]
+       [ Cynthia      ] [ Blue         ]
+       their label ········ her six
+
+   — and on a 375×812 phone the WHOLE card stands above the dock.
+   - Words left, scene right (2026-11-15, Enzo: "simétrico e harmônico"): the
+     first grid put the headline across the card and the stage under it,
+     beside the line — the line sat top-left, her feet bottom-right, and the
+     two empty corners read as a diagonal. Now the stage spans the headline
+     and the line, centred on them, and the headline is a step smaller so
+     "Desafio da / Campeã" breaks on its own words, two lines against her.
+   - The two champions' tabs share the row equally — one wider than the
+     other left a gap at the right edge.
+   - The art is a box in the grid (not a layer), so its row is as tall as
+     the taller of the line and the stage and nothing can stand on the copy.
+   - Both sprites are drawn at their own pixel size (her 80px, the ace
+     96px): one pixel scale in the box, where the band had her at 1.3× and
+     the ace at 1.5×.
+   - The headline is the title size, one line for every champion's day; the
+     band's hero size needed two.
+   - The bar dissolves (`display: contents`) so the action sits under the
+     headline — the hearth pass's rule: the thumb reaches it. DOM order is
+     untouched: headline, champions, their team, the action.
+   - Her six share a line with their label and shrink together before they
+     would wrap; the mono line under it repeated the difficulty and the
+     streak the hero's own sentence already says.
+   - Each platform under its own feet: the ace's used to sit under hers
+     (`.day-hero__pad` came after `--ace` at the same weight and won). */
 @media (max-width: 1023px) {
+    .day-hero--stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            'top top'
+            'title art'
+            'sub art'
+            'play play'
+            'extra extra'
+            'now now';
+        grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+        column-gap: var(--space-2);
+        align-items: start;
+        min-height: 0;
+    }
+
+    /* The eyebrow sits right on the headline, and the palette hangs from the
+       card's corner instead of holding a row of its own open. */
+    .day-hero--stage .day-hero__top {
+        grid-area: top;
+        margin-bottom: calc(var(--space-2) * -1);
+    }
+
+    .day-hero--stage .day-hero__eyebrow {
+        min-height: 0;
+    }
+
     .day-hero--stage .day-hero__top .day-hero__wallpaper {
         position: absolute;
-        top: calc(-1 * var(--stage-band) + var(--space-3));
-        right: var(--space-3);
+        top: calc(var(--space-1) * -1);
+        right: calc(var(--space-1) * -1);
     }
 
-    .day-hero--stage .day-hero__top {
-        margin-bottom: calc(-1 * var(--space-2));
-    }
-
-    .cozy-home .day-hero--stage .day-hero__title {
-        font-size: var(--text-3xl);
-    }
-
-    /* The action stands right under the headline (the hearth pass,
-       2026-11-12): under her team it ended at ~900px of an 844px screen, 130px
-       behind the dock — the hero's one action was the only thing on it a
-       thumb could not reach without scrolling (/app-screens: the hero AND
-       its action above the fold). The bar dissolves into the hero's column
-       so the pill can move; her two tabs and her six follow it. The DOM
-       keeps its order — headline, the champions, their team, the action —
-       which is still the order a screen reader should say it in. */
-    .day-hero--stage .day-hero__bar {
+    /* The copy's box dissolves: its headline and its line are the grid's own.
+       Each keeps the copy's layer, above the scene and the motes. */
+    .day-hero--stage .day-hero__copy {
         display: contents;
     }
 
-    .day-hero--stage .day-hero__top { order: 1; }
-    .day-hero--stage .day-hero__copy { order: 2; }
-    .day-hero--stage .day-hero__extra { order: 4; margin-top: 0; }
-
-    .day-hero--stage .day-hero__now {
+    .cozy-home .day-hero--stage .day-hero__title {
         position: relative;
         z-index: 2;
-        order: 5;
-        padding-top: var(--space-3);
-        border-top: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
+        grid-area: title;
+        align-self: end;
+        font-size: var(--text-lg);
+        text-wrap: balance;
+    }
+
+    /* The line belongs to the headline: right under it, at the top of its
+       row, with the stage standing to its right. */
+    .day-hero--stage .day-hero__sub {
+        position: relative;
+        z-index: 2;
+        grid-area: sub;
+        align-self: start;
+        margin-top: calc(var(--space-1) * -1);
+        text-wrap: pretty;
+    }
+
+    .day-hero--stage .day-hero__art {
+        position: relative;
+        grid-area: art;
+        align-self: center;
+        top: auto;
+        right: auto;
+        width: 9.5rem;
+        height: 6.5rem;
+        /* her ace reaches the card's edge: the box borrows half the padding */
+        margin-right: calc(var(--space-2) * -1);
+    }
+
+    .day-hero--stage .day-hero__ace {
+        right: 0;
+        bottom: var(--space-1);
+        height: 6rem;
+    }
+
+    .day-hero--stage .day-hero__pad--ace {
+        right: var(--space-1);
+        bottom: 0;
+        width: 5.5rem;
+        height: 0.875rem;
+    }
+
+    .day-hero--stage .day-hero__trainer {
+        right: 4.5rem;
+        bottom: var(--space-1);
+        width: 5rem;
+        height: 5rem;
+    }
+
+    .day-hero--stage .day-hero__pad:not(.day-hero__pad--ace) {
+        right: 4.75rem;
+        bottom: 0;
+        width: 4.5rem;
+        height: 0.75rem;
+    }
+
+    /* The rings spread from the ace, wider than the small box they start in. */
+    .day-hero--stage .fx-aura {
+        top: 50%;
+        left: 62%;
+        width: 200%;
+    }
+
+    .day-hero--stage .day-hero__bar {
+        display: contents;
     }
 
     .cozy-home .day-hero--stage .day-hero__play {
         position: relative;
         z-index: 2;
-        order: 3;
+        grid-area: play;
         width: 100%;
         height: var(--control-h-lg);
         gap: var(--space-2);
@@ -705,14 +778,127 @@
         display: inline;
     }
 
+    .day-hero--stage .day-hero__extra {
+        grid-area: extra;
+        margin-top: 0;
+    }
+
+    /* The tabs bring their own foot margin for the desktop's bar under them;
+       on a phone the two share the row equally. */
+    .day-hero--stage .champion-switch {
+        display: grid;
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
+        gap: var(--space-2);
+        margin-bottom: 0;
+    }
+
+    .day-hero--stage .champion-switch__tab {
+        min-width: 0;
+    }
+
+    /* The day's two marks keep one line, at the tab's far end. */
+    .day-hero--stage .champion-switch .challenge-boards {
+        flex-wrap: nowrap;
+        margin-left: auto;
+    }
+
+    .day-hero--stage .day-hero__now {
+        position: relative;
+        z-index: 2;
+        grid-area: now;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        padding-top: var(--space-3);
+        border-top: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
+    }
+
+    .day-hero--stage .day-hero__label {
+        flex: 0 0 auto;
+        overflow: visible;
+        color: var(--color-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-medium);
+    }
+
+    /* Six slots that share what the label leaves: 2.125rem each where there
+       is room, a little less on the narrowest phones — never a second row. */
+    .day-hero--stage .day-hero__lineup {
+        flex: 1 1 auto;
+        justify-content: flex-end;
+        min-width: 0;
+    }
+
     .cozy-home .day-hero--stage .day-hero__lineup .cozy-day__mini {
-        width: 2.375rem;
-        height: 2.375rem;
+        flex: 0 1 2.125rem;
+        width: auto;
+        min-width: 0;
+        height: auto;
+        aspect-ratio: 1;
     }
 
     .cozy-home .day-hero--stage .day-hero__lineup .cozy-day__mini-sprite {
-        width: 2.875rem;
-        height: 2.875rem;
+        width: 122%;
+        height: auto;
+        aspect-ratio: 1;
+    }
+
+    .day-hero--stage .day-hero__meta {
+        display: none;
+    }
+}
+
+/* A tablet has the width for the stage at twice its pixels and the words in
+   a column of their own: the art spans the headline, the line, the action
+   and the tabs instead of standing small beside one sentence. */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .day-hero--stage {
+        grid-template-areas:
+            'top top'
+            'title art'
+            'sub art'
+            'play art'
+            'extra art'
+            'now now';
+        column-gap: var(--space-6);
+    }
+
+    .cozy-home .day-hero--stage .day-hero__title {
+        font-size: var(--text-2xl);
+    }
+
+    .day-hero--stage .day-hero__art {
+        width: 19rem;
+        height: 12.5rem;
+    }
+
+    .day-hero--stage .day-hero__ace {
+        height: 12rem;
+    }
+
+    .day-hero--stage .day-hero__pad--ace {
+        right: var(--space-2);
+        width: 11rem;
+        height: 1.5rem;
+    }
+
+    .day-hero--stage .day-hero__trainer {
+        right: 9rem;
+        width: 10rem;
+        height: 10rem;
+    }
+
+    .day-hero--stage .day-hero__pad:not(.day-hero__pad--ace) {
+        right: 9.5rem;
+        width: 9rem;
+        height: 1.25rem;
+    }
+
+    .cozy-home .day-hero--stage .day-hero__play {
+        justify-self: start;
+        width: auto;
     }
 }
 

@@ -1006,8 +1006,33 @@ button.home-tile:hover .home-tile__chevron {
         display: none;
     }
 
+    /* The title and the arrow share one row, the figure sits under the title
+       (2026-11-13): a door with no figure kept a foot for its arrow alone, a
+       third of the card empty. */
     .persona-doors .home-tile__body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-content: start;
+        align-items: center;
+        column-gap: var(--space-2);
+        row-gap: var(--space-0_5);
         padding: var(--space-3);
+    }
+
+    .persona-doors .home-tile__foot {
+        display: contents;
+    }
+
+    .persona-doors .home-tile__title {
+        grid-area: 1 / 1;
+    }
+
+    .persona-doors .home-tile__foot > :first-child {
+        grid-area: 2 / 1;
+    }
+
+    .persona-doors .home-tile__chevron {
+        grid-area: 1 / 2 / span 2;
     }
 
     .team-deck {

@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getBattleIcon } from '../../../../utils/battleSprites';
+import { hpTone } from '../../../../utils/battleState';
+import { play } from '../../../../utils/challengeSfx';
 import { moveChoosable } from '../../../../hooks/useBattleCommands';
 import { DsTeamSheet } from './DsTeamSheet';
 import { DsTextBox } from './DsTextBox';
@@ -109,24 +112,113 @@ function MoveGrid({ cmd, request, moveMeta }) {
     );
 }
 
+const GENDER = { M: '♂', F: '♀' };
+
 /**
- * Your six as BW's Summary (DsTeamSheet): readable while the turn plays; on
- * your turn the one shown can be sent in. A forced switch has no way back.
+ * BW's party screen ("Choose a Pokémon", 2026-11-15 — Enzo's reference): the
+ * six as cards, two columns, the right one standing half a step lower as on
+ * the DS. Each card is what a trainer checks before a switch — the icon on a
+ * platform in its first type, the name, the HP bar, the level and the HP as
+ * figures, the status — and the one out has a Poké Ball by its name. Built on
+ * the screen's 8-pixel grid: 36-px cards, 8 between them, 4 of stagger.
+ * A tap picks a card; a tap on the picked one opens its sheet.
+ */
+function PartyGrid({ cmd, sheet, onSummary }) {
+    const { t } = useTranslation();
+    const pick = (index) => {
+        if (index === cmd.member) {
+            onSummary();
+            return;
+        }
+        play('cursor');
+        cmd.setMember(index);
+    };
+    return (
+        <ul className="bw-party" aria-label={t('challenge.sheet.title')}>
+            {sheet.map((mon, index) => {
+                const icon = getBattleIcon(mon.species);
+                const hp = mon.hp;
+                const figures = hp ? (hp.max ? `${hp.current}/${hp.max}` : `${hp.pct}%`) : null;
+                return (
+                    // The team's order is fixed for the battle.
+                    <li key={`${mon.species}-${index}`}>
+                        <button
+                            type="button"
+                            className={`bw-party__card ${index === cmd.member ? 'is-picked' : ''} ${mon.fainted ? 'is-fainted' : ''}`}
+                            style={{ '--type': typeColors[mon.types?.[0]] || 'var(--hud-edge)' }}
+                            aria-pressed={index === cmd.member}
+                            aria-label={[mon.species, mon.active ? t('challenge.sheet.onField') : null, figures ? `HP ${figures}` : null].filter(Boolean).join(', ')}
+                            onClick={() => pick(index)}
+                        >
+                            <span className="bw-party__art" aria-hidden="true">
+                                {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" />}
+                            </span>
+                            <span className="bw-party__name">
+                                {mon.active && <span className="bw-party__out" aria-hidden="true" />}
+                                <span className="bw-party__species">{mon.species}</span>
+                                {mon.status
+                                    ? <span className={`ds-hpbox__status is-${mon.status}`}>{String(mon.status).toUpperCase()}</span>
+                                    : GENDER[mon.gender] && <span className={`ds-hpbox__gender is-${mon.gender === 'F' ? 'f' : 'm'}`}>{GENDER[mon.gender]}</span>}
+                            </span>
+                            <span className="bw-party__bar" aria-hidden="true">
+                                <span className="bw-party__hp-mark">HP</span>
+                                <span className="bw-card__hp">
+                                    {hp && <span className={`ds-partymon__fill is-${hpTone(hp.pct)}`} style={{ '--hp': hp.pct / 100 }} />}
+                                </span>
+                            </span>
+                            <span className="bw-party__figures" aria-hidden="true">
+                                <span>Lv{mon.level}</span>
+                                {figures && <span>{figures}</span>}
+                            </span>
+                        </button>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
+
+/**
+ * Your six, in two steps as on the DS: the party (PartyGrid) and, for the one
+ * picked, BW's Summary (DsTeamSheet). Readable while the turn plays; on your
+ * turn the picked one can be sent in from either. A forced switch has no way
+ * back to the menu.
  */
 function PartySheet({ cmd, sheet }) {
     const { t } = useTranslation();
+    const [summary, setSummary] = useState(false);
     const shown = sheet[cmd.member];
+    const send = cmd.switchable && (
+        <button type="button" className="bw-btn is-pokemon bw-party__send" onClick={() => cmd.chooseSwitch(cmd.switchable)}>
+            {t('challenge.sheet.switchIn', { name: shown?.species || cmd.switchable.name })}
+        </button>
+    );
+
+    if (summary) {
+        return (
+            <div className="bw-sheet">
+                <DsTeamSheet members={sheet} index={cmd.member} onSelect={cmd.setMember} />
+                <div className="bw-ficha__foot">
+                    <button type="button" className="bw-cancel" onClick={() => { play('cancel'); setSummary(false); }}>{t('challenge.command.back')}</button>
+                    {send}
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="bw-sheet">
-            {cmd.forced && <p className="bw-sheet__title">{t('challenge.command.chooseWho')}</p>}
-            <DsTeamSheet members={sheet} index={cmd.member} onSelect={cmd.setMember} />
-            <div className="bw-ficha__foot">
-                {!cmd.forced && <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>}
-                {cmd.switchable && (
-                    <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.chooseSwitch(cmd.switchable)}>
-                        {t('challenge.sheet.switchIn', { name: shown?.species || cmd.switchable.name })}
-                    </button>
+        <div className="bw-sheet is-party">
+            <PartyGrid cmd={cmd} sheet={sheet} onSummary={() => { play('confirm'); setSummary(true); }} />
+            <div className="bw-party__foot">
+                {send || (
+                    <p className="bw-party__prompt" role="status">
+                        {t(cmd.forced ? 'challenge.command.chooseWho' : 'challenge.sheet.choose')}
+                    </p>
                 )}
+                <button type="button" className="bw-cancel bw-party__summary" onClick={() => { play('confirm'); setSummary(true); }} disabled={!shown}>
+                    {t('challenge.sheet.summary')}
+                </button>
+                {!cmd.forced && <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>}
             </div>
         </div>
     );

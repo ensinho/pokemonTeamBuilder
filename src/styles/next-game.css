@@ -1,0 +1,83 @@
+/* "Próximo do dia" (NextGameCard.jsx): one row that hands a finished game
+   to the next. A fill, not a box — it often sits inside a bordered card. */
+.next-game {
+    --nav-tone: var(--nav-hue, var(--color-primary));
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 4rem;
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.next-game:hover {
+    background: var(--color-surface-hover);
+}
+
+.next-game:active {
+    background: var(--color-surface-active);
+}
+
+.next-game:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.next-game__icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--nav-tone) 16%, var(--color-surface));
+    color: color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg));
+}
+
+@supports (color: light-dark(red, oklch(from red l c h))) {
+    .next-game__icon {
+        background: light-dark(
+            color-mix(in srgb, var(--nav-tone) 16%, var(--color-surface)),
+            oklch(from var(--nav-tone) 0.3 calc(c * 0.4) h)
+        );
+        color: light-dark(
+            color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg)),
+            oklch(from var(--nav-tone) 0.86 calc(c * 0.6) h)
+        );
+    }
+}
+
+.next-game__icon > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.next-game__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.next-game__kicker,
+.next-game__hint {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+.next-game__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.next-game__chevron {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-muted);
+}

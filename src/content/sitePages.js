@@ -262,7 +262,7 @@ export const SITE_PAGES = {
     },
 
     privacy: {
-        updated: '2026-11-12',
+        updated: '2026-11-15',
         en: {
             lede: 'What PokemonBuilder stores about you, why, who else handles it, and how to delete it. In short: your teams and progress, the profile you choose to make public, and, only if you allow it, usage statistics. No ads, and your data is never sold.',
             sections: [
@@ -270,7 +270,7 @@ export const SITE_PAGES = {
                     heading: 'What is stored when you use the site without an account?',
                     paragraphs: [
                         'On your first visit the site creates an anonymous account for you: a random identifier, with no name or email. Under it, Firebase stores what you save: teams, favorites, quiz, PokéPuzzle and Champion Challenge results, your progress, and the answers you give the welcome questions (what you play, and how deep into competitive), which only arrange the site for you, and the gym badges you mark in your badge case.',
-                        'Your browser also keeps preferences (language, theme, text size, the mascot\'s colour and reactions) and a copy of public game data in its own storage, so pages open faster. Clearing the site\'s data in your browser removes them.',
+                        'Your browser also keeps preferences (language, theme, text size, the mascot\'s colour and reactions) the tier lists you make (they never leave the device), and a copy of public game data in its own storage, so pages open faster. Clearing the site\'s data in your browser removes them.',
                     ],
                 },
                 {
@@ -332,7 +332,7 @@ export const SITE_PAGES = {
                     heading: 'O que é guardado quando você usa o site sem conta?',
                     paragraphs: [
                         'Na primeira visita o site cria uma conta anônima para você: um identificador aleatório, sem nome nem e-mail. Nele, o Firebase guarda o que você salva: times, favoritos, resultados do quiz, do PokéPuzzle e do Desafio do Campeão, o seu progresso e as respostas das perguntas de boas-vindas (o que você joga e o seu nível no competitivo), que servem só para organizar o site para você, e as insígnias de ginásio que você marca no seu estojo.',
-                        'O seu navegador também guarda preferências (idioma, tema, tamanho do texto, a cor e as reações do mascote) e uma cópia de dados públicos do jogo no próprio armazenamento, para as páginas abrirem mais rápido. Apagar os dados do site no navegador os remove.',
+                        'O seu navegador também guarda preferências (idioma, tema, tamanho do texto, a cor e as reações do mascote), as tier lists que você monta (elas nunca saem do aparelho) e uma cópia de dados públicos do jogo no próprio armazenamento, para as páginas abrirem mais rápido. Apagar os dados do site no navegador os remove.',
                     ],
                 },
                 {
