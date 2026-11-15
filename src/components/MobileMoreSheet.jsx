@@ -3,6 +3,8 @@ import { BottomSheet } from './BottomSheet';
 import { useTranslation } from '../hooks/useTranslation';
 import '../styles/more-sheet.css';
 import { navHue } from '../utils/navHue';
+import { useGamesToday } from '../hooks/useGamesToday';
+import { DAILY_GAMES } from '../utils/gamesToday';
 
 /**
  * MobileMoreSheet — what the phone's "Mais" tab opens.
@@ -25,6 +27,11 @@ import { navHue } from '../utils/navHue';
  *   A section of two (a persona's dock took one) is two columns, never a gap.
  * - A `hero` section is the day's games: two equal wide cards, the icon beside
  *   the name and a `hint` line saying what it is.
+ * - The day's games know what was played (2026-11-15, `useGamesToday`): a
+ *   game still open today wears the Live Pink dot (the brand layer's "today's
+ *   open puzzle"), a played one says "Feito hoje" in its hint, and the
+ *   section's title carries two pips — one per game, filled in its tone once
+ *   played — instead of a "1/2".
  * - `accountAfter` names the section the `header` (the account) follows: the
  *   games first — what people open the sheet for — then who you are.
  * - A card shows `shortLabel` when the item has one. The full name stays its
@@ -38,9 +45,13 @@ import { navHue } from '../utils/navHue';
 export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, onIntent, header = null, accountAfter = null, children = null }) {
     const { t } = useTranslation();
     const headerIndex = accountAfter ? sections.findIndex((section) => section.key === accountAfter) : -1;
+    const gamesDone = useGamesToday();
+    const isDaily = (key) => DAILY_GAMES.includes(key);
 
     const renderSection = (section) => {
         const columns = section.hero ? 2 : Math.min(3, section.items.length);
+        const daily = section.hero ? section.items.filter((item) => isDaily(item.key)) : [];
+        const dailyDone = daily.filter((item) => gamesDone[item.key]).length;
         return (
             <section
                 key={section.key}
@@ -48,7 +59,24 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                 aria-labelledby={section.title ? `more-sheet-${section.key}` : undefined}
             >
                 {section.title && (
-                    <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
+                    <div className="more-sheet__section-head">
+                        <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
+                        {daily.length > 0 && (
+                            <span
+                                className="more-sheet__pips"
+                                role="img"
+                                aria-label={t('nav.gamesDone', { n: dailyDone, total: daily.length })}
+                            >
+                                {daily.map((item) => (
+                                    <span
+                                        key={item.key}
+                                        className={`more-sheet__pip ${gamesDone[item.key] ? 'is-done' : ''}`}
+                                        style={{ '--nav-hue': navHue(item.key) }}
+                                    />
+                                ))}
+                            </span>
+                        )}
+                    </div>
                 )}
                 <ul
                     className={`more-sheet__grid ${section.hero ? 'more-sheet__grid--hero' : ''}`}
@@ -57,6 +85,9 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                     {section.items.map((item) => {
                         const active = currentPage === item.key || Boolean(item.members?.includes(currentPage));
                         const shortened = item.shortLabel && item.shortLabel !== item.label;
+                        const open = section.hero && isDaily(item.key) && !gamesDone[item.key];
+                        const played = section.hero && isDaily(item.key) && gamesDone[item.key];
+                        const hint = played ? t('nav.playedToday') : item.hint;
                         return (
                             <li key={item.key}>
                                 <button
@@ -72,6 +103,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                 >
                                     <span className="more-tile__icon">
                                         {item.icon}
+                                        {open && <span className="more-tile__live live-dot" role="img" aria-label={t('nav.openToday')} />}
                                         {item.badge > 0 && (
                                             <span className="more-tile__badge">{item.badge > 9 ? '9+' : item.badge}</span>
                                         )}
@@ -79,7 +111,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, on
                                     {section.hero ? (
                                         <span className="more-tile__text">
                                             <span className="more-tile__label">{item.label}</span>
-                                            {item.hint && <span className="more-tile__hint">{item.hint}</span>}
+                                            {hint && <span className="more-tile__hint">{hint}</span>}
                                         </span>
                                     ) : (
                                         <span className="more-tile__label">{shortened ? item.shortLabel : item.label}</span>

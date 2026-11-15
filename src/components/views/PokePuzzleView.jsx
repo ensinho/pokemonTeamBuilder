@@ -1514,7 +1514,7 @@ export default function PokePuzzleView() {
                                         {mode === 'daily' ? (
                                             <>
                                                 {/* The day's next game, one tap away (2026-11-15). */}
-                                                <NextGameCard game="challenge" />
+                                                <NextGameCard game="challenge" from="pokepuzzle" />
                                                 <button type="button" onClick={() => setMode('ongoing')} className="btn btn-ghost btn-block">
                                                     <RefreshIcon />
                                                     {t('games.playFreeMode')}

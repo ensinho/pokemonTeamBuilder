@@ -742,6 +742,9 @@ export default {
         challengeCardHint: 'Daily battle',
         pokepuzzleCardHint: 'Daily puzzle',
         todayGames: "Today's games",
+        gamesDone: "{{n}} of {{total}} of today's games done",
+        openToday: "Open today",
+        playedToday: "Done today",
         yourSpace: 'Your space',
         tierList: 'Tier list',
         pokepuzzle: 'PokéPuzzle',
@@ -1833,6 +1836,9 @@ export default {
     nextGame: {
         kicker: 'Next today',
         tierListHint: 'Rank and export your list',
+        allDone: 'All done today',
+        allDoneIn: 'All done today · new games in {{time}}',
+        opensIn: 'New games in {{time}}',
     },
     tierList: {
         subtitle: 'Rank the starters, the legendaries or your favourite of every type — and export the image.',

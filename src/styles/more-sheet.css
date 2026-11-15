@@ -30,6 +30,44 @@
    and the install button above and below it. The tile glyphs sit well inside
    that edge by design (they are centred in their cells), which reads as a grid
    under a heading rather than a near miss. */
+/* The title row: the title, and for the day's games their two pips. */
+.more-sheet__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-2);
+}
+
+.more-sheet__section-head .more-sheet__section-title {
+    margin: 0;
+}
+
+/* One pip per daily game (the PartyPips grammar): a dim dot while it is
+   open, filled in the game's tone once played. Static. */
+.more-sheet__pips {
+    display: inline-flex;
+    gap: var(--space-1);
+}
+
+.more-sheet__pip {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-fg) 16%, transparent);
+}
+
+.more-sheet__pip.is-done {
+    background: color-mix(in srgb, var(--nav-hue, var(--color-primary)) 72%, var(--color-fg));
+}
+
+/* Today's game still open: the Live dot at the tile's corner. */
+.more-tile__live {
+    position: absolute;
+    top: calc(var(--space-0_5) * -1);
+    right: calc(var(--space-0_5) * -1);
+}
+
 .more-sheet__section-title {
     margin: 0 0 var(--space-2);
     font-size: var(--text-xs);
