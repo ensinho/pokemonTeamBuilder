@@ -25,7 +25,7 @@ measures first.
 | Event | Where | Params |
 |---|---|---|
 | `landing_view` | `HomeEntry`, when the first-visit landing shows | — |
-| `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `hero_signin` ("Já tem conta? Entrar" — opens the Primeira Jornada on its account screen since 2026-11-12), `closing_build`, `demo_open_builder`, `feature_<key>`, `skip` |
+| `landing_cta` | every way out of the landing | `cta`: `hero_build`, `hero_pokedex`, `hero_signin` ("Já tem conta? Entrar" — opens the Primeira Jornada on its account screen since 2026-11-12), `closing_build`, `demo_open_builder`, `feature_<key>`, `play_challenge` / `play_puzzle` / `play_tierlist` ("Jogue hoje", 2026-11-15), `skip` |
 | `onboarding_complete` | the Primeira Jornada (`FirstJourney`) reached the persona reveal — the answers are saved there (2026-11-12; before, the `TrainerOnboarding` dialog finishing) | `persona`, `interests` (comma list), `level`, `source`: `landing`, `auto`, `home`, `profile` |
 | `onboarding_skip` | the journey closed on a first run with no answers (Pular, Escape) | `step`, `source` |
 | `onboarding_account` | an account created or signed into from the journey's account screen | `mode`: `signUp` · `signIn` · `google`, `source` |
