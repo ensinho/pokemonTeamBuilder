@@ -22,6 +22,7 @@ import { SITE_URL } from '../../utils/seoPages';
 import { POKEAPI_SPRITES_BASE, isAssetMirrorEnabled } from '../../utils/assetHost';
 import { SHEET_TONES, mixHex, sheetBase, sheetMember } from '../../utils/teamSheet';
 import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
+import { drawBrandMark } from '../../utils/brandMarkCanvas';
 
 // The image's footer names the site, and the team's own page once it is
 // published (2026-10-24: it used to advertise the GitHub repository).
@@ -483,19 +484,9 @@ const renderTeamSheetSync = ({ canvas, pokemons, kicker, labels, tone, moveTypes
     const headline = fitText(ctx, labels.title.toUpperCase(), headW, { weight: 800, size: 52, min: 28, family: HEADING_FONT });
     ctx.fillText(headline, headX, faceY + 80);
 
-    // The mark, top right, on a white disc so the Gengar reads on any tone.
-    if (assets.logo) {
-        const s = 76;
-        const lx = W - M - s;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(lx + s / 2, faceY + s / 2 + 4, s / 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.14)';
-        ctx.fill();
-        ctx.clip();
-        ctx.drawImage(assets.logo, lx + 4, faceY + 8, s - 8, s - 8);
-        ctx.restore();
-    }
+    // The mark, top right: the app icon as it is (it carries its own dark
+    // square, so it reads on any tone) — no disc behind it.
+    drawBrandMark(ctx, assets.logo, W - M - 72, faceY + 4, 72);
 
     // ---- Six cards, 2 × 3 ------------------------------------------------
     const gap = 30;
@@ -600,19 +591,7 @@ const drawFooterStripSync = (ctx, W, H, FOOTER_H, shareUrl, logoImg) => {
     const logoX = 24;
     const logoY = footerY + (FOOTER_H - logoSize) / 2;
 
-    if (logoImg) {
-        try {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
-            ctx.restore();
-        } catch {
-            /* ignore logo clip */
-        }
-    }
+    drawBrandMark(ctx, logoImg, logoX, logoY, logoSize);
 
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';

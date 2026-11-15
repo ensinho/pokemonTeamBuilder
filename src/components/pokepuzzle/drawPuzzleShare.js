@@ -1,5 +1,6 @@
 import QRCode from 'qrcode';
 import { SHARE_SIZE, puzzleGridLayout } from '../../utils/puzzleShareLayout';
+import { drawBrandMark } from '../../utils/brandMarkCanvas';
 
 /**
  * The PokéPuzzle result as an image (2026-11-09, replacing the 400 × 640
@@ -67,16 +68,8 @@ export async function renderPuzzleShareBlob({ rows, won, maxAttempts, puzzleNumb
     }
 
     // Header: the mark, the kicker, the puzzle number, the score.
-    if (logo) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(90 + 56, 96 + 56, 56, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.10)';
-        ctx.fill();
-        ctx.clip();
-        ctx.drawImage(logo, 98, 104, 96, 96);
-        ctx.restore();
-    }
+    // The app icon as it is, from the kicker's cap height to the headline's baseline.
+    drawBrandMark(ctx, logo, 90, 112, 96);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = CREAM;
