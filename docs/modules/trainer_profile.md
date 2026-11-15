@@ -10,6 +10,22 @@ arranges the app: the order of the rail, the dock's fourth tab, the Home's
 the builder's first regulation. The plan and the proposals still open are in
 [plans/persona-onboarding.md](../plans/persona-onboarding.md).
 
+## Two interests (2026-11-15)
+
+Enzo: "concentrar o perfil de minijogos e o perfil de franquias, para focar
+nos minigames do site" — the forum's quiet and the daily games' traffic
+(the Champion Challenge, the PokéPuzzle, and their shares) said where people
+are. `INTERESTS` is now `competitive` and `minigames` ("Jogos e minijogos");
+a stored `franchise` is read as `minigames` (`LEGACY_INTERESTS`, in
+`normalizeTrainerProfile` and every derivation), so nobody answers again.
+The Traveler is no longer derived — `PERSONAS.traveler` stays only so another
+trainer's older public profile still reads — and the Desafiante owns its
+journeys (`JOURNEY_OWNERS` in `utils/journeys.js`). Both interests make the
+Master. **The Home's hero is the Champion for everyone but the
+competitive-only Strategist** (`personaHero`), with no profile too; the
+Badge Case and the gym hero are no longer chosen by any persona. The tables
+below still describe the Traveler's old rows; read them with that in mind.
+
 ## Pieces
 
 | File | Role |

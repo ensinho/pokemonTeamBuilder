@@ -35,6 +35,7 @@ measures first.
 | `challenge_finish` | any Champion run ends | `champion`, `board`, `result`, `practice` |
 | `challenge_share` | a Champion result posted to the Diário do dia | `champion`, `board` |
 | `puzzle_finish` | a PokéPuzzle ends | `mode`, `won`, `guesses`, `hints` |
+| `tierlist_export` | a tier list or chart is exported as an image | `template`, `placed` |
 | `puzzle_hint` | a letter hint is taken (2026-11-11) | `mode`, `n` (which hint) |
 | `puzzle_share` | a puzzle result posted to the Diário do dia | `channel` |
 | `quiz_finish` | a quiz run completed | `mode` (generation · category), `total` |
