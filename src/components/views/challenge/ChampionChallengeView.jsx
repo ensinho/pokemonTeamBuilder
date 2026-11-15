@@ -559,7 +559,7 @@ export function ChampionChallengeView() {
                         />
                     )}
                     {/* The battle is over: the day's next game is one tap away (2026-11-15). */}
-                    <NextGameCard game="pokepuzzle" />
+                    <NextGameCard game="pokepuzzle" from="challenge" />
                     {rankingSheet}
                     {recapDialog}
                 </div>

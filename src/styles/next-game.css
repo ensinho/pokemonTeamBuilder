@@ -81,3 +81,14 @@
     height: 1.25rem;
     color: var(--color-muted);
 }
+
+/* Both of the day's games played: earned, so the check is gold. A status,
+   not a link — no hover. */
+.next-game--done {
+    --nav-tone: var(--brand-gold);
+}
+
+.next-game--done:hover,
+.next-game--done:active {
+    background: var(--color-surface-raised);
+}

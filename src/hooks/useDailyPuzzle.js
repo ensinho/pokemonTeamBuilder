@@ -3,6 +3,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { loadPokemonIndex } from '../services/pokemonDataCache';
 import { getDailyPokemonIndex } from '../utils/pokePuzzle';
+import { markGameDone } from './useGamesToday';
 
 const ALLOWED_MAX_ID = 1025;
 
@@ -28,6 +29,8 @@ export function useDailyPuzzle(userId) {
                     if (snap.exists()) {
                         const data = snap.data();
                         summary = { solved: data.gameStatus === 'WON', attempts: data.guesses?.length || 0, date: dateString };
+                        // Finished on another device: the day's loop knows (hooks/useGamesToday.js).
+                        if (data.gameStatus && data.gameStatus !== 'IN_PROGRESS') markGameDone('pokepuzzle');
                     }
                 } catch (_) { /* offline or signed out — fall through to local */ }
             }

@@ -707,6 +707,9 @@ export default {
         challengeCardHint: 'Batalha diária',
         pokepuzzleCardHint: 'Puzzle diário',
         todayGames: 'Jogos do dia',
+        gamesDone: '{{n}} de {{total}} jogos de hoje feitos',
+        openToday: 'Aberto hoje',
+        playedToday: 'Feito hoje',
         yourSpace: 'Seu espaço',
         tierList: 'Tier list',
         pokepuzzle: 'PokéPuzzle',
@@ -1799,6 +1802,9 @@ export default {
     nextGame: {
         kicker: 'Próximo do dia',
         tierListHint: 'Ranqueie e exporte a sua lista',
+        allDone: 'Tudo feito hoje',
+        allDoneIn: 'Tudo feito hoje · novos jogos em {{time}}',
+        opensIn: 'Novos jogos em {{time}}',
     },
     tierList: {
         subtitle: 'Ranqueie os iniciais, os lendários ou o seu favorito de cada tipo — e exporte a imagem.',

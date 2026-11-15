@@ -501,7 +501,7 @@ export function TierListView() {
         return (
             <div className="tier-page">
                 <SharedList shared={shared} monsById={monsById} cellLabel={cellLabel} onMakeMine={makeMine} onStartFresh={startFresh} />
-                <NextGameCard game="challenge" />
+                <NextGameCard game="challenge" from="tierList" />
             </div>
         );
     }
@@ -674,7 +674,7 @@ export function TierListView() {
                 </button>
             </div>
 
-            <NextGameCard game="challenge" />
+            <NextGameCard game="challenge" from="tierList" />
 
             {!mons && !loadError && <Loader size="md" scene="pokedex" block label={t('tierList.loading')} />}
             {loadError && <p className="tier-page__error">{t('tierList.loadFailed')}</p>}
