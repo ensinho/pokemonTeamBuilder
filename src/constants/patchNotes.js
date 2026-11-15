@@ -34,8 +34,8 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
-        // The games first (2026-11-15): the tier list maker, the party
-        // screen in battle, and the app arranged around the daily games.
+        // The tier list (2026-11-15) and nothing else, Enzo's call — beside
+        // it the donation card alone, so it keeps the whole column.
         notes: [
             {
                 key: 'tier-list',
@@ -47,8 +47,6 @@ export const RELEASES = [
                 cta: 'patchNotes.tierListCta',
                 path: '/tier-list',
             },
-            { key: 'party-hud', icon: 'swords', title: 'patchNotes.partyHudTitle', description: 'patchNotes.partyHudDesc', cta: 'patchNotes.partyHudCta', path: '/challenge' },
-            { key: 'games-first', icon: 'puzzle', title: 'patchNotes.gamesFirstTitle', description: 'patchNotes.gamesFirstDesc', cta: 'patchNotes.gamesFirstCta', path: '/' },
             // Fixed rule (Enzo, 2026-11-11): every release asks for support.
             { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
         ],
