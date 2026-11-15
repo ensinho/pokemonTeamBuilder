@@ -46,7 +46,7 @@ import '../../styles/first-journey.css';
  * comes back uninvited.
  */
 
-const INTEREST_ART = Object.fromEntries(INTERESTS.map((i) => [i, PERSONAS[{ competitive: 'strategist', franchise: 'traveler', minigames: 'challenger' }[i]]]));
+const INTEREST_ART = Object.fromEntries(INTERESTS.map((i) => [i, PERSONAS[{ competitive: 'strategist', minigames: 'challenger' }[i]]]));
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 const prefersReduced = () => typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 const cssVar = (name, fallback) => {

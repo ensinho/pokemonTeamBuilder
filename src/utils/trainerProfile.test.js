@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    INTERESTS,
     DEFAULT_NAV_ORDER,
     PICK_DESTINATIONS,
     builderRegulationSeed,
@@ -63,14 +64,32 @@ describe('mergeTrainerProfiles', () => {
     });
 
     it('a later skip does not erase earlier answers on the other copy unless newer', () => {
-        const answered = normalizeTrainerProfile({ interests: ['franchise'], answeredAt: 300 });
+        const answered = normalizeTrainerProfile({ interests: ['minigames'], answeredAt: 300 });
         const skipped = normalizeTrainerProfile({ skippedAt: 100 });
-        expect(mergeTrainerProfiles(skipped, answered).interests).toEqual(['franchise']);
+        expect(mergeTrainerProfiles(skipped, answered).interests).toEqual(['minigames']);
     });
 
     it('an empty account copy never erases this device', () => {
-        const local = profile(['franchise']);
-        expect(mergeTrainerProfiles(local, undefined).interests).toEqual(['franchise']);
+        const local = profile(['competitive']);
+        expect(mergeTrainerProfiles(local, undefined).interests).toEqual(['competitive']);
+    });
+});
+
+describe('the games joined the minigames (2026-11-15)', () => {
+    it('reads a stored franchise answer as minigames, never twice', () => {
+        expect(normalizeTrainerProfile({ interests: ['franchise'] }).interests).toEqual(['minigames']);
+        expect(normalizeTrainerProfile({ interests: ['franchise', 'minigames'] }).interests).toEqual(['minigames']);
+        expect(normalizeTrainerProfile({ interests: ['competitive', 'franchise'] }).interests).toEqual(['competitive', 'minigames']);
+    });
+
+    it('turns a Traveler into a Desafiante and the old three into a Master', () => {
+        expect(derivePersona(profile(['franchise'])).id).toBe('challenger');
+        expect(derivePersona({ interests: ['franchise'] }).id).toBe('challenger');
+        expect(derivePersona(profile(['competitive', 'franchise', 'minigames'])).id).toBe('master');
+    });
+
+    it('asks two questions, not three', () => {
+        expect(INTERESTS).toEqual(['competitive', 'minigames']);
     });
 });
 
@@ -81,18 +100,17 @@ describe('derivePersona', () => {
 
     it('follows the first interest in priority order', () => {
         expect(derivePersona(profile(['minigames'])).id).toBe('challenger');
-        expect(derivePersona(profile(['franchise', 'minigames'])).id).toBe('traveler');
-        expect(derivePersona(profile(['minigames', 'competitive'])).id).toBe('strategist');
+        expect(derivePersona(profile(['competitive'])).id).toBe('strategist');
     });
 
-    it('all three make a master', () => {
-        expect(derivePersona(profile(['competitive', 'franchise', 'minigames'])).id).toBe('master');
+    it('both make a master', () => {
+        expect(derivePersona(profile(['minigames', 'competitive'])).id).toBe('master');
     });
 });
 
 describe('personaPicks', () => {
     it('every pick is a known destination', () => {
-        for (const interests of [['competitive'], ['franchise'], ['minigames'], ['competitive', 'franchise', 'minigames']]) {
+        for (const interests of [['competitive'], ['minigames'], ['competitive', 'minigames']]) {
             for (const competitiveLevel of ['new', 'casual', 'ranked']) {
                 for (const key of personaPicks(profile(interests, { competitiveLevel }))) {
                     expect(PICK_DESTINATIONS[key]).toBeDefined();
@@ -106,7 +124,11 @@ describe('personaPicks', () => {
         expect(picks).toHaveLength(4);
         expect(new Set(picks).size).toBe(4);
         expect(picks.slice(0, 2)).toEqual(['meta', 'speedTiers']);
-        expect(picks).toContain('pokepuzzle');
+        expect(picks).toContain('challenge');
+    });
+
+    it('the Desafiante reaches for the daily two first', () => {
+        expect(personaPicks(profile(['minigames'])).slice(0, 2)).toEqual(['challenge', 'pokepuzzle']);
     });
 
     it('a beginner gets guides before the meta', () => {
@@ -127,7 +149,7 @@ describe('homeDoors', () => {
         expect(doors).not.toContain('pokepuzzle');
         expect(doors).not.toContain('challenge');
         expect(doors).not.toContain('battles');
-        expect(doors[0]).toBe('generationQuiz');
+        expect(doors[0]).toBe('tierList');
         expect(new Set(doors).size).toBe(4);
     });
 
@@ -154,27 +176,27 @@ describe('the rail', () => {
     });
 
     it('pulls the interests up', () => {
-        expect(personaNavOrder(profile(['minigames']))).toEqual(['guessing', 'dashboard', 'teamBuilding', 'database']);
-        expect(personaNavOrder(profile(['franchise']))[0]).toBe('database');
+        expect(personaNavOrder(profile(['minigames']))).toEqual(['guessing', 'database', 'teamBuilding', 'dashboard']);
+        expect(personaNavOrder(profile(['competitive']))[0]).toBe('teamBuilding');
     });
 
     it('sorts groups and keeps unknown sections (admin) last', () => {
         const groups = ['teamBuilding', 'guessing', 'database', 'dashboard', 'management'].map((key) => ({ key }));
-        expect(sortNavGroups(groups, profile(['franchise'])).map((g) => g.key))
-            .toEqual(['database', 'teamBuilding', 'guessing', 'dashboard', 'management']);
+        expect(sortNavGroups(groups, profile(['minigames'])).map((g) => g.key))
+            .toEqual(['guessing', 'database', 'teamBuilding', 'dashboard', 'management']);
     });
 
     it('gives the dock slot to the puzzle unless the trainer does not play', () => {
         expect(personaDockSlot(normalizeTrainerProfile({}))).toBe('challenge');
         expect(personaDockSlot(profile(['competitive', 'minigames']))).toBe('challenge');
         expect(personaDockSlot(profile(['competitive']))).toBe('meta');
-        expect(personaDockSlot(profile(['franchise']))).toBe('types');
+        expect(personaDockSlot(profile(['franchise']))).toBe('challenge');
     });
 });
 
 describe('journeys', () => {
     it('recommends only journeys that exist', () => {
-        for (const id of recommendedJourneyIds(profile(['competitive', 'franchise', 'minigames']))) {
+        for (const id of recommendedJourneyIds(profile(['competitive', 'minigames']))) {
             expect(JOURNEYS_BY_ID[id]).toBeDefined();
         }
     });
@@ -194,15 +216,15 @@ describe('journeys', () => {
 });
 
 describe('builderRegulationSeed', () => {
-    it('starts a games-only trainer in playthrough mode', () => {
-        expect(builderRegulationSeed(profile(['franchise']))).toBe('none');
-        expect(builderRegulationSeed(profile(['franchise', 'minigames']))).toBe('none');
+    it('leaves a games-only trainer on the default (the Champion battles with competitive sets)', () => {
+        expect(builderRegulationSeed(profile(['franchise']))).toBeNull();
+        expect(builderRegulationSeed(profile(['minigames']))).toBeNull();
     });
 
     it('starts a singles player on OU and leaves doubles on the default', () => {
         expect(builderRegulationSeed(profile(['competitive'], { battleFormat: 'singles' }))).toBe('gen9ou');
         expect(builderRegulationSeed(profile(['competitive'], { battleFormat: 'doubles' }))).toBeNull();
-        expect(builderRegulationSeed(profile(['competitive', 'franchise'], { battleFormat: 'both' }))).toBeNull();
+        expect(builderRegulationSeed(profile(['competitive', 'minigames'], { battleFormat: 'both' }))).toBeNull();
     });
 
     it('changes nothing without an answer', () => {
@@ -216,19 +238,18 @@ describe('personaHomeOrder', () => {
     it('keeps the shipped order with no profile', async () => {
         const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
         expect(personaHomeOrder(null)).toEqual(DEFAULT_HOME_ORDER);
-        expect(personaHomeOrder(answered({ interests: ['competitive', 'franchise', 'minigames'] }))).toEqual(DEFAULT_HOME_ORDER);
+        expect(personaHomeOrder(answered({ interests: ['competitive', 'minigames'] }))).toEqual(DEFAULT_HOME_ORDER);
     });
     it('leads with what each persona reaches for', async () => {
         const { personaHomeOrder } = await import('./trainerProfile');
         expect(personaHomeOrder(answered({ interests: ['minigames'] }))[0]).toBe('yourDay');
         expect(personaHomeOrder(answered({ interests: ['competitive'], competitiveLevel: 'ranked' }))[0]).toBe('teams');
-        expect(personaHomeOrder(answered({ interests: ['franchise'] }))).toEqual(['badges', 'forYou', 'teams', 'yourDay']);
+        expect(personaHomeOrder(answered({ interests: ['franchise'] }))[0]).toBe('yourDay');
     });
     it('every order has the same blocks', async () => {
         const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
         for (const interests of [['minigames'], ['competitive'], ['franchise']]) {
-            // The Traveler adds the Badge Case; nobody loses a block.
-            expect(personaHomeOrder(answered({ interests })).filter((id) => id !== 'badges').sort()).toEqual([...DEFAULT_HOME_ORDER].sort());
+            expect([...personaHomeOrder(answered({ interests }))].sort()).toEqual([...DEFAULT_HOME_ORDER].sort());
         }
     });
 });
@@ -253,8 +274,8 @@ describe('personaQuickLinks', () => {
     });
     it('puts the persona picks first and drops nothing', async () => {
         const { personaQuickLinks } = await import('./trainerProfile');
-        const out = personaQuickLinks(destinations, normalizeTrainerProfile({ interests: ['franchise'], answeredAt: 1 }));
-        expect(out[0].path).toBe('/pokedex');
+        const out = personaQuickLinks(destinations, normalizeTrainerProfile({ interests: ['minigames'], answeredAt: 1 }));
+        expect(out[0].path).toBe('/pokepuzzle');
         expect(out).toHaveLength(destinations.length);
         expect(out.findIndex((d) => d.path === '/gyms')).toBeLessThan(out.findIndex((d) => d.path === '/'));
     });
@@ -262,18 +283,17 @@ describe('personaQuickLinks', () => {
 
 describe('personaHero', () => {
     const answered = (p) => normalizeTrainerProfile({ ...p, answeredAt: 1 });
-    it('is the team in progress with no profile, or a skipped one', async () => {
+    it('is the Champion with no profile, or a skipped one (2026-11-15: the games lead)', async () => {
         const { personaHero } = await import('./trainerProfile');
-        expect(personaHero(null)).toBe('team');
-        expect(personaHero(normalizeTrainerProfile({ interests: ['minigames'], skippedAt: 1 }))).toBe('team');
+        expect(personaHero(null)).toBe('challenge');
+        expect(personaHero(normalizeTrainerProfile({ interests: ['competitive'], skippedAt: 1 }))).toBe('challenge');
     });
-    it('is the Champion for the minigames trainer, the next gym for the games one', async () => {
+    it('is the team in progress only for the competitive-only trainer', async () => {
         const { personaHero } = await import('./trainerProfile');
         expect(personaHero(answered({ interests: ['minigames'] }))).toBe('challenge');
+        expect(personaHero(answered({ interests: ['franchise'] }))).toBe('challenge');
         expect(personaHero(answered({ interests: ['competitive'] }))).toBe('team');
-        expect(personaHero(answered({ interests: ['franchise'] }))).toBe('badges');
-        // All three interests make the Pokémon Master: the team leads.
-        expect(personaHero(answered({ interests: ['competitive', 'franchise', 'minigames'] }))).toBe('team');
+        expect(personaHero(answered({ interests: ['competitive', 'minigames'] }))).toBe('challenge');
     });
     it('only ever names a known hero', async () => {
         const { personaHero, HOME_HEROES } = await import('./trainerProfile');
@@ -294,7 +314,8 @@ describe('personaDayCards', () => {
         expect(personaDayCards(answered({ interests: ['competitive'] }))[1]).toBe('meta');
         const challenger = personaDayCards(answered({ interests: ['minigames'] }));
         expect(challenger).toContain('invite');
-        expect(challenger).not.toContain('meta');        expect(personaDayCards(answered({ interests: ['franchise'] }))).not.toContain('meta');
+        expect(challenger).not.toContain('meta');
+        expect(personaDayCards(answered({ interests: ['franchise'] }))).toEqual(challenger);
     });
     it('always leads with a battle that waits on the trainer', async () => {
         const { personaDayCards } = await import('./trainerProfile');
