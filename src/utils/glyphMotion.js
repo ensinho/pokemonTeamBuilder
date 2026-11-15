@@ -45,6 +45,7 @@ const BY_KEY = Object.freeze({
     pokepuzzle: 'snap',
     challenge: 'lift',
     generationQuiz: 'swing',
+    tierList: 'rise',
     library: 'open',
     types: 'turn',
     gyms: 'swing',

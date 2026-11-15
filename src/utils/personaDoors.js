@@ -21,6 +21,7 @@ export const DOOR_LOOK = {
     pokepuzzle: { type: 'psychic', dex: 150 },
     challenge: { type: 'dragon', dex: 445 },
     generationQuiz: { type: 'grass', dex: 1 },
+    tierList: { type: 'ice', dex: 471 }, // Glaceon, ranking the Eeveelutions
     battles: { type: 'fighting', dex: 448 },
 };
 

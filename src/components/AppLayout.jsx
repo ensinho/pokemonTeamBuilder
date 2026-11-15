@@ -71,7 +71,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Rows3, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -165,6 +165,7 @@ const ROUTE_CHUNKS = {
     abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
     types: () => import('./views/TypesView'),
     gyms: () => import('./views/GymsView'), generationQuiz: () => import('./views/QuizView'),
+    tierList: () => import('./views/TierListView'),
     journeys: () => import('./views/JourneysView'),
     friends: () => import('./views/FriendsView'), battles: () => import('./views/battle/BattleListView'),
     profile: () => import('./views/ProfileView'), admin: () => import('./views/AdminDashboardView'),
@@ -196,6 +197,7 @@ const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then(
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
 const QuizView = lazy(() => import('./views/QuizView').then((m) => ({ default: m.QuizView })));
 const JourneysView = lazy(() => import('./views/JourneysView').then((m) => ({ default: m.JourneysView })));
+const TierListView = lazy(() => import('./views/TierListView').then((m) => ({ default: m.TierListView })));
 const PokedexView = lazy(() => loadPokedexView().then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
@@ -385,6 +387,7 @@ export default function AppLayout() {
         if (path.includes('/pokemon/')) return 'pokemonDetail';
         if (path.includes('/pokepuzzle')) return 'pokepuzzle';
         if (path.includes('/challenge')) return 'challenge';
+        if (path === '/tier-list') return 'tierList';
         if (path.includes('/moves')) return 'moves';
         if (path.includes('/abilities')) return 'abilities';
         if (path === '/types' || path.startsWith('/types/')) return 'types';
@@ -948,6 +951,7 @@ export default function AppLayout() {
             'journeys': { title: t('journeys.title'), subtitle: t('journeys.subtitle') },
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'challenge': { title: t('challenge.title'), subtitle: '' },
+            'tierList': { title: t('nav.tierList'), subtitle: t('tierList.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             // "Cartão de Treinador & Preferências" ellipsised at "Prefe…" in a phone
@@ -1047,6 +1051,8 @@ export default function AppLayout() {
                 items: [
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
+                    // The trainer's own ranking (2026-11-15): the one game here you make.
+                    { key: 'tierList', label: t('nav.tierList'), path: '/tier-list', icon: <Rows3 className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <CircleHelp className="w-5 h-5 shrink-0" /> },
                     // Battles and friends: one entry, its badge the sum of both
                     // (a battle on your turn, a request waiting) — 2026-11-10;
@@ -1135,27 +1141,39 @@ export default function AppLayout() {
     // Admin is a tool, not a destination people browse to: it leaves the grid
     // for a row under it (`moreSheetToolItems`). Sections are derived from the
     // rail's items, never re-listed, so a link added there shows up here too.
+    //
+    // 2026-11-15 (Enzo: "organizar o 'more'… simétrico e organizado por
+    // atratividade, cards padronizados"): the day's two games lead as a pair
+    // of equal cards — the Champion stays here even with her dock tab, the one
+    // destination Enzo wants in both places — then every other section is
+    // three of the same card in three columns: Jogar, Seu espaço, Competitivo,
+    // PokéData. The account follows the games and Jogar (`accountAfter`) —
+    // the guest's "save your progress" card is a screen's third, and between
+    // the two game rows it split what people open the sheet for —
+    // and the support link is a quiet row under the grid, still in sight
+    // without opening "Sobre" (2026-11-10).
     const moreSheetSections = useMemo(() => {
         const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
-        const placed = new Set(['challenge', ...primaryNavItems.map((item) => item.key)]);
+        const games = ['challenge', 'pokepuzzle'];
+        const placed = new Set([...games, ...primaryNavItems.map((item) => item.key)]);
         const visible = (items) => items.filter((item) => !inTabBar.has(item.key));
         const groupItems = (key) => navigationGroups.find((group) => group.key === key)?.items ?? [];
         const itemsOf = (...keys) => visible(keys.flatMap(groupItems)).filter((item) => !placed.has(item.key));
         const titleOf = (key) => navigationGroups.find((group) => group.key === key)?.title;
-        const challenge = navigationGroups.flatMap((group) => group.items).find((item) => item.key === 'challenge');
+        const allItems = navigationGroups.flatMap((group) => group.items);
+        const gameCards = games
+            .map((key) => allItems.find((item) => item.key === key))
+            .filter(Boolean)
+            .map((item) => ({ ...item, shortLabel: undefined, hint: t(`nav.${item.key}CardHint`) }));
+        // The two reference sections keep the rail's persona order.
+        const reference = navigationGroups
+            .filter((group) => group.key === 'teamBuilding' || group.key === 'database')
+            .map((group) => ({ key: group.key, title: titleOf(group.key), items: itemsOf(group.key) }));
         return [
-            // The card has room for the full name; the hint says what it is.
-            // The Challenge shares its row with the support link (Enzo, 2026-11-10):
-            // the ask in sight on a phone without opening "Sobre", and quieter —
-            // a plain tile beside the Volt card, never a second accent.
-            { key: 'hero', title: null, hero: true, items: [
-                ...(challenge ? [{ ...challenge, shortLabel: undefined, hint: t('nav.challengeHint') }] : []),
-                { key: 'support', label: t('nav.support'), icon: <Coffee className="w-5 h-5 shrink-0" />, href: SUPPORT_URL, quiet: true },
-            ] },
-            { key: 'pinned', title: null, featured: true, items: visible(primaryNavItems) },
+            { key: 'games', title: t('nav.todayGames'), hero: true, items: gameCards },
             { key: 'play', title: t('nav.play'), items: itemsOf('guessing') },
-            { key: 'teamBuilding', title: titleOf('teamBuilding'), items: itemsOf('teamBuilding') },
-            { key: 'database', title: titleOf('database'), items: itemsOf('database') },
+            { key: 'pinned', title: t('nav.yourSpace'), items: visible(primaryNavItems) },
+            ...reference,
         ].filter((section) => section.items.length > 0);
     }, [mobileTabs, primaryNavItems, navigationGroups, t]);
 
@@ -2110,6 +2128,7 @@ export default function AppLayout() {
                                         <PokePuzzleView />
                                     } />
                                     <Route path="/challenge" element={<ChampionChallengeView />} />
+                                    <Route path="/tier-list" element={<TierListView />} />
                                     {/* Saved Teams now lives as a tab inside /favorites. */}
                                     <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
                                     <Route path="/teams/:id" element={
@@ -2278,6 +2297,7 @@ export default function AppLayout() {
                     <MobileMoreSheet
                         onClose={() => setIsSidebarOpen(false)}
                         sections={moreSheetSections}
+                        accountAfter="play"
                         currentPage={currentPage}
                         onIntent={prefetchRoute}
                         onNavigate={(path) => {
@@ -2326,6 +2346,16 @@ export default function AppLayout() {
                             </ul>
                         }
                     >
+                        <ul className="more-sheet__list">
+                            <li>
+                                {/* The ask, in sight without opening "Sobre" (Enzo, 2026-11-10):
+                                    a quiet row under the grid, never a second accent. */}
+                                <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="app-shell__nav-link more-sheet__support">
+                                    <span className="app-shell__nav-icon" aria-hidden="true"><Coffee className="w-5 h-5 shrink-0" /></span>
+                                    <span className="app-shell__nav-text">{t('nav.support')}</span>
+                                </a>
+                            </li>
+                        </ul>
                         {moreSheetToolItems.length > 0 && (
                             <ul className="more-sheet__list">
                                 {moreSheetToolItems.map((item) => (

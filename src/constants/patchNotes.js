@@ -34,6 +34,29 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // The games first (2026-11-15): the tier list maker, the party
+        // screen in battle, and the app arranged around the daily games.
+        notes: [
+            {
+                key: 'tier-list',
+                featured: true,
+                icon: 'trophy',
+                visual: 'tierList',
+                title: 'patchNotes.tierListTitle',
+                description: 'patchNotes.tierListDesc',
+                cta: 'patchNotes.tierListCta',
+                path: '/tier-list',
+            },
+            { key: 'party-hud', icon: 'swords', title: 'patchNotes.partyHudTitle', description: 'patchNotes.partyHudDesc', cta: 'patchNotes.partyHudCta', path: '/challenge' },
+            { key: 'games-first', icon: 'puzzle', title: 'patchNotes.gamesFirstTitle', description: 'patchNotes.gamesFirstDesc', cta: 'patchNotes.gamesFirstCta', path: '/' },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+        ],
+    },
+    {
+        version: '1.25.0',
+        month: '2026-11',
+        thanks: false,
         // The Home that answers (2026-11-12): the champions' day as 0/2 · 1/2 ·
         // 2/2 per champion, each row a link straight to that battle; the
         // banner's scenes; the Home by what the trainer came for. The CTA lands
@@ -51,7 +74,6 @@ export const RELEASES = [
             },
             { key: 'hero-scenes', icon: 'sparkles', title: 'patchNotes.heroScenesTitle', description: 'patchNotes.heroScenesDesc', cta: 'patchNotes.heroScenesCta', path: '/' },
             { key: 'home-personas', icon: 'heart', title: 'patchNotes.homePersonasTitle', description: 'patchNotes.homePersonasDesc', cta: 'patchNotes.homePersonasCta', path: '/' },
-            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
             { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
         ],
     },

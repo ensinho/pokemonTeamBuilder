@@ -173,6 +173,21 @@ const NEW_GAMES = [
     { key: 'legends-za', label: 'Legends: Z-A', count: 412, starters: [650, 653, 656] },
 ];
 
+// The tier list (1.26.0): three ranks, each led by its letter, starters on them.
+const TIER_VISUAL_ROWS = [['S', [7, 4]], ['A', [1, 155, 393]], ['B', [152]]];
+const TierListVisual = () => (
+    <div className="flex h-[9.5rem] flex-col justify-center gap-1.5 bg-bg p-3" aria-hidden="true">
+        {TIER_VISUAL_ROWS.map(([tier, ids]) => (
+            <div key={tier} className="flex items-center gap-2 rounded-lg bg-surface-raised p-1">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/20 text-sm font-bold text-fg">{tier}</span>
+                {ids.map((id) => (
+                    <img key={id} src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-8 w-8 object-contain" style={{ imageRendering: 'pixelated' }} />
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
 const NewGamesVisual = ({ language }) => {
     const pt = language === 'pt';
     return (
@@ -793,6 +808,7 @@ const NOTE_ICONS = {
 };
 
 const NOTE_VISUALS = {
+    tierList: TierListVisual,
     brand: BrandVisual,
     champions: ChampionsDexVisual,
     playthrough: PlaythroughVisual,

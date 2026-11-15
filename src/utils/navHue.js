@@ -27,6 +27,7 @@ const BY_KEY = Object.freeze({
     pokepuzzle: 'ghost', // the daily silhouette
     challenge: 'ground', // the Champion's gold crown
     generationQuiz: 'fairy', // the "?"
+    tierList: 'ice', // the tiers stacked like blocks of ice
     community: 'flying', // the shield of battles and friends
     battles: 'flying',
     friends: 'flying',
