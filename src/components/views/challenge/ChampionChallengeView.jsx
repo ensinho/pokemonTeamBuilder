@@ -31,6 +31,7 @@ import { DsBattleReport } from './ds/DsBattleReport';
 import { DsBattleStage } from './ds/DsBattleStage';
 import { DsConsole } from './ds/DsConsole';
 import { DsChampionHint, DsResult, DsSignInGate } from './ds/DsPanels';
+import { NextGameCard } from '../../NextGameCard';
 import { DsPoketch } from './ds/DsPoketch';
 import { DsTeamPicker } from './ds/DsTeamPicker';
 import { DsVersusLazy } from './ds/DsVersusLazy';
@@ -557,6 +558,8 @@ export function ChampionChallengeView() {
                             controls={false}
                         />
                     )}
+                    {/* The battle is over: the day's next game is one tap away (2026-11-15). */}
+                    <NextGameCard game="pokepuzzle" />
                     {rankingSheet}
                     {recapDialog}
                 </div>
