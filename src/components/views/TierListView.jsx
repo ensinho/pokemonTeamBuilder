@@ -6,8 +6,6 @@ import { BottomSheet } from '../BottomSheet';
 import { Loader } from '../Loader';
 import { NextGameCard } from '../NextGameCard';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { maxWidthBelow } from '../../constants/breakpoints';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { track } from '../../services/analytics';
@@ -112,57 +110,6 @@ function MonChip({ id, mon, held, onTap, onPointerDown, dragging }) {
 }
 
 /**
- * The phone's way to rank (2026-11-15, Enzo: "deixar mais fácil, tipo o
- * builder"): a tap on a Pokémon opens it here, the five balls under the
- * thumb. Picking one places it and, while the pool has more, moves straight
- * on to the next — the whole starter list ranks in taps on the balls.
- */
-function RankSheet({ id, mon, where, progress, onPick, onUnrank, onRemove, onClose }) {
-    const { t } = useTranslation();
-    return (
-        <BottomSheet onClose={onClose} title={mon?.label || `#${id}`}>
-            <div className="tier-rank">
-                <div className="tier-rank__hero" style={{ '--mon-type': typeColors[mon?.types?.[0]] || 'var(--color-muted)' }}>
-                    <img src={getPokemonFrontSpriteUrl(id)} alt="" width={96} height={96} decoding="async" draggable="false" />
-                </div>
-                <p className="tier-rank__ask">
-                    {t(where === 'pool' ? 'tierList.rankAsk' : 'tierList.rankMove')}
-                    {progress && <span className="tier-rank__progress">{t('tierList.rankProgress', progress)}</span>}
-                </p>
-                <div className="tier-rank__balls" role="group" aria-label={t('tierList.rankAsk')}>
-                    {TIER_KEYS.map((tier) => (
-                        <button
-                            key={tier}
-                            type="button"
-                            className={`tier-rank__ball ${where === tier ? 'is-on' : ''}`}
-                            style={{ '--ball-top': TIER_BALLS[tier].ball === 'ultra' ? TIER_BALLS[tier].band : TIER_BALLS[tier].top }}
-                            aria-pressed={where === tier}
-                            aria-label={t('tierList.placeIn', { tier })}
-                            onClick={() => onPick(tier)}
-                        >
-                            <TierBall tier={tier} />
-                            <span>{tier}</span>
-                        </button>
-                    ))}
-                </div>
-                <div className="tier-rank__more">
-                    {where !== 'pool' && (
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={onUnrank}>
-                            <RotateCcw className="w-4 h-4" aria-hidden="true" /> {t('tierList.unrank')}
-                        </button>
-                    )}
-                    {onRemove && (
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={onRemove}>
-                            <X className="w-4 h-4" aria-hidden="true" /> {t('tierList.remove')}
-                        </button>
-                    )}
-                </div>
-            </div>
-        </BottomSheet>
-    );
-}
-
-/**
  * A list someone shared (`?r=`, utils/tierList.js decodeTierList): read-only,
  * the same ranks and cells as the editor, and the way to make one's own.
  */
@@ -256,8 +203,6 @@ export function TierListView() {
     const [held, setHeld] = useState(null);
     const [query, setQuery] = useState('');
     const [adding, setAdding] = useState(false);
-    const isPhone = useMediaQuery(maxWidthBelow('lg'));
-    const [rankFor, setRankFor] = useState(null);
     const [cellOpen, setCellOpen] = useState(null);
     const [cellQuery, setCellQuery] = useState('');
     const [exporting, setExporting] = useState(false);
@@ -327,11 +272,6 @@ export function TierListView() {
         event.stopPropagation();
         if (dragRef.current.suppressClick) {
             dragRef.current.suppressClick = false;
-            return;
-        }
-        // A phone ranks through the sheet: the Pokémon, then a ball.
-        if (isPhone) {
-            setRankFor(id);
             return;
         }
         if (held == null || held === id) {
@@ -557,18 +497,6 @@ export function TierListView() {
     const isChart = board.kind === 'chart';
     const placed = placedCount(board);
 
-    // The sheet's Pokémon: where it sits now, and what comes after it.
-    const rankWhere = rankFor != null ? locate(board, rankFor) : null;
-    const rankTo = (tier) => {
-        const id = rankFor;
-        const from = locate(board, id);
-        const poolIndex = board.pool.indexOf(id);
-        update((b) => placeItem(b, id, tier));
-        // From the pool, move straight on to the next one waiting.
-        const next = from === 'pool' ? board.pool[poolIndex + 1] ?? board.pool[poolIndex - 1] : undefined;
-        setRankFor(next !== undefined && next !== id ? next : null);
-    };
-
     if (shared) {
         return (
             <div className="tier-page">
@@ -677,7 +605,7 @@ export function TierListView() {
                     <aside className={`tier-pool ${over === 'pool' ? 'is-over' : ''}`} aria-label={t('tierList.pool')}>
                         <div className="tier-pool__head">
                             <h2 className="tier-pool__title">{t('tierList.pool')} <span className="tier-pool__count">{board.pool.length}</span></h2>
-                            <p className="tier-pool__hint">{t(isPhone ? 'tierList.hintPhone' : held != null ? 'tierList.hintHolding' : 'tierList.hint')}</p>
+                            <p className="tier-pool__hint">{t(held != null ? 'tierList.hintHolding' : 'tierList.hint')}</p>
                             {/* A phone keeps the tray to one row: the search opens from here. */}
                             <button
                                 type="button"
@@ -751,24 +679,32 @@ export function TierListView() {
             {!mons && !loadError && <Loader size="md" scene="pokedex" block label={t('tierList.loading')} />}
             {loadError && <p className="tier-page__error">{t('tierList.loadFailed')}</p>}
 
+            {/* What is lifted, and where it goes (2026-11-15, Enzo: "clique no Pokémon,
+                depois clique na seção"). A phone shows it in a bar above the dock — the
+                ranks light up, the pool may be scrolled away. */}
+            {held != null && !drag && (
+                <div className="tier-held" role="status">
+                    <span className="tier-held__mon" style={{ '--mon-type': typeColors[monsById.get(held)?.types?.[0]] || 'var(--color-muted)' }}>
+                        <img src={getPokemonFrontSpriteUrl(held)} alt="" width={96} height={96} />
+                    </span>
+                    <span className="tier-held__text">
+                        <b>{monsById.get(held)?.label || `#${held}`}</b>
+                        <span>{t('tierList.heldHint')}</span>
+                    </span>
+                    {locate(board, held) !== 'pool' && (
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => place('pool', 0)}>{t('tierList.heldToPool')}</button>
+                    )}
+                    <button type="button" className="btn btn-ghost btn-icon btn-sm" onClick={() => setHeld(null)} aria-label={t('tierList.heldCancel')}>
+                        <X className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                </div>
+            )}
+
             {drag && (
                 <div className="tier-ghost" // Centred on the pointer: half its 4rem size back.
                     style={{ translate: `calc(${drag.x}px - 2rem) calc(${drag.y}px - 2rem)` }} aria-hidden="true">
                     <img src={getPokemonFrontSpriteUrl(drag.id)} alt="" width={96} height={96} />
                 </div>
-            )}
-
-            {rankFor != null && rankWhere && (
-                <RankSheet
-                    id={rankFor}
-                    mon={monsById.get(rankFor)}
-                    where={rankWhere}
-                    progress={rankWhere === 'pool' ? { n: placed + 1, total: placed + board.pool.length } : null}
-                    onPick={rankTo}
-                    onUnrank={() => { update((b) => placeItem(b, rankFor, 'pool', 0)); setRankFor(null); }}
-                    onRemove={templateId === 'free' ? () => { update((b) => removeItem(b, rankFor)); setRankFor(null); } : null}
-                    onClose={() => setRankFor(null)}
-                />
             )}
 
             {cellOpen && (
