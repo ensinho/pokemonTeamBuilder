@@ -14,7 +14,7 @@ rail's items).
 | `src/components/views/TierListView.jsx` | The page: the theme rail, the board (ranks or a chart), the pool, the actions. Lazy route chunk. |
 | `src/components/tierList/drawTierList.js` | The PNG: draws what `tierExportLayout` places. Its own chunk, loaded on the first export. |
 | `src/styles/tier-list.css` | The page's styles. |
-| `src/components/NextGameCard.jsx` | "Próximo do dia" — the row under the actions pointing at the Champion. |
+| `src/components/NextGameCard.jsx` | "Próximo do dia" — the row under the actions: the Champion, or the PokéPuzzle when the Champion was played today, or "Tudo feito hoje · novos jogos em 5h12" once both were (`utils/gamesToday.js` `nextGameFor`, tested). |
 
 ## Two kinds of board
 

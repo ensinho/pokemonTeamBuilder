@@ -240,3 +240,26 @@ curl https://pokemonbuilder.app/api/challenge?ping=1           # then the bare G
 
 - **Quick Thaw Mod** (`api/_lib/simRules.js`): a frozen Pokémon thaws 1 time in 3 before it moves instead of the games' 1 in 5 (an extra 1-in-6 roll at priority 11, ahead of `frz`'s own). It is a ruleset registered on `Dex.data.Rulesets` when `simRules.js` is imported — `battleResolver.js`, `challenge/engine.js` and `ai/fog.js` do — and it joins a battle only through its format string, so a run or PvP battle created before it replays exactly as it was played. A new rule of ours goes in the same file and the same way. `simRules.test.js` measures the rate.
 - **Transform** (Ditto, Imposter, Mew): `|-transform|p2a: Ditto|p1a: Iron Hands|…` — `readBattleField` sets `active.transformedInto` (the target as it looks, copying its stat stages, with a `transform` volatile chip, TRANSF) until the switch-out; `DsBattleScene` draws that sprite and keeps the box's own name; the timeline emits a `transform` event ("Ditto inimigo se transformou em Iron Hands!") that flashes like a Mega Evolution.
+
+## The day's loop (2026-11-15)
+
+Enzo approved three small moves after the games-first pass. All three read one
+device record of what was played today:
+
+- **The record.** `hooks/useGamesToday.js` keeps the device key `ptb:gamesToday`.
+  It is a trainer's key, so `leaveSession` wipes it.
+- **The rules.** They live in the pure, tested `utils/gamesToday.js`. Each game
+  keeps its own day: the Champion's turns at midnight in São Paulo, the
+  PokéPuzzle's at the trainer's own midnight.
+- **Who writes it.** `markGameDone` runs when an official battle ends or is
+  forfeited, or when the store loads an official battle already finished today
+  (`useChampionChallengeStore`). It also runs when today's PokéPuzzle is won or
+  lost (`useSessionGame`), and when the Home's own reads find either game
+  finished (`useChallengeSummary`, `useDailyPuzzle`). No new Firestore read.
+- **`<NextGameCard game from>`.** It hands over to the game still open today.
+  Once both games are played it shows "Tudo feito hoje · novos jogos em 5h12",
+  pointing at the tier list. On the tier list itself it shows only the clock,
+  in gold, because both games are earned.
+- **The Mais sheet's "Jogos do dia".** A game still open shows the Live Pink
+  dot. A played game says "Feito hoje". The title carries two pips, one per
+  game, each filled in its tone once played.
