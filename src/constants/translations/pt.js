@@ -120,6 +120,31 @@ export default {
             openInBuilder: 'Abrir este time no montador',
             teamName: 'Meu primeiro time',
         },
+        playToday: {
+            title: 'Jogue hoje',
+            sub: 'Jogos novos todo dia, à meia-noite',
+            challenge: {
+                kicker: 'Novo time em {{time}}',
+                name: 'Desafio da Campeã',
+                line: 'Cynthia e Blue, uma batalha oficial por dia.',
+                cta: 'Desafiar',
+            },
+            puzzle: {
+                kicker: 'PokéPuzzle nº {{n}}',
+                name: 'Quem é esse Pokémon?',
+                line: 'Tipos, status, altura e peso como pistas. Sem cadastro.',
+                cta: 'Jogar o de hoje',
+            },
+            tierList: {
+                name: 'Ranqueie os iniciais',
+                line: 'Monte a sua tier list e mande o link. Sem cadastro.',
+                cta: 'Montar a minha',
+            },
+            crowd: {
+                challenge: { played: '{{n}} batalhas hoje', playedOne: '1 batalha hoje', beFirst: 'Seja o primeiro a batalhar hoje' },
+                puzzle: { played: '{{n}} jogaram hoje', playedOne: '1 pessoa jogou hoje', beFirst: 'Seja o primeiro a jogar hoje' },
+            },
+        },
         featuresTitle: 'Tudo para o seu time, num lugar só',
         featuresSub: 'Cada ferramenta abre direto, sem conta e sem cadastro.',
         features: {
@@ -1789,6 +1814,11 @@ export default {
         pool: 'Para ranquear',
         hint: 'Toque num Pokémon e depois num nível. No computador, arraste.',
         hintHolding: 'Agora toque num nível — ou num Pokémon para entrar antes dele.',
+        hintPhone: 'Toque num Pokémon e escolha a bola.',
+        rankAsk: 'Em qual nível?',
+        rankMove: 'Mover para',
+        rankProgress: '{{n}} de {{total}}',
+        unrank: 'Voltar para a reserva',
         addPlaceholder: 'Adicionar Pokémon…',
         searchPlaceholder: 'Buscar Pokémon…',
         freeEmpty: 'Busque acima e adicione os Pokémon que você quer ranquear.',

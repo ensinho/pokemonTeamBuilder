@@ -100,6 +100,13 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
         body.push(`<h1>${escapeHtml(t('landing.title'))}</h1>`);
         body.push(`<p>${escapeHtml(t('landing.lede'))}</p>`);
         body.push(`<p>${link('/builder', t('landing.primaryCta'))} · ${link('/pokedex', t('landing.secondaryCta'))}</p>`);
+        // "Jogue hoje" (2026-11-15): the day's games, linked as text.
+        body.push(`<h2>${escapeHtml(t('landing.playToday.title'))}</h2>`);
+        body.push(list([
+            ['/challenge', 'challenge'],
+            ['/pokepuzzle', 'puzzle'],
+            ['/tier-list', 'tierList'],
+        ].map(([to, key]) => `<h3>${link(to, t(`landing.playToday.${key}.name`))}</h3><p>${escapeHtml(t(`landing.playToday.${key}.line`))}</p>`)));
         body.push(`<h2>${escapeHtml(t('landing.featuresTitle'))}</h2>`);
         body.push(list(LANDING_FEATURES.map((f) => `<h3>${link(LANDING_LINKS[f], t(`landing.features.${f}.title`))}</h3><p>${escapeHtml(t(`landing.features.${f}.body`))}</p>`)));
     } else {

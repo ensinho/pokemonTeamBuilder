@@ -123,6 +123,31 @@ export default {
             openInBuilder: 'Open this team in the builder',
             teamName: 'My first team',
         },
+        playToday: {
+            title: 'Play today',
+            sub: 'New games every day at midnight',
+            challenge: {
+                kicker: 'New team in {{time}}',
+                name: 'Champion Challenge',
+                line: 'Cynthia and Blue, one official battle a day.',
+                cta: 'Challenge',
+            },
+            puzzle: {
+                kicker: 'PokéPuzzle #{{n}}',
+                name: "Who's that Pokémon?",
+                line: 'Types, stats, height and weight as clues. No sign-up.',
+                cta: "Play today's",
+            },
+            tierList: {
+                name: 'Rank the starters',
+                line: 'Make your tier list and send the link. No sign-up.',
+                cta: 'Make mine',
+            },
+            crowd: {
+                challenge: { played: '{{n}} battles today', playedOne: '1 battle today', beFirst: 'Be the first to battle today' },
+                puzzle: { played: '{{n}} played today', playedOne: '1 person played today', beFirst: 'Be the first to play today' },
+            },
+        },
         featuresTitle: 'Everything for your team, in one place',
         featuresSub: 'Every tool opens straight away — no account, no sign-up.',
         features: {
@@ -1823,6 +1848,11 @@ export default {
         pool: 'To rank',
         hint: 'Tap a Pokémon, then a tier. On a computer, drag.',
         hintHolding: 'Now tap a tier — or a Pokémon to go before it.',
+        hintPhone: 'Tap a Pokémon and pick its ball.',
+        rankAsk: 'Which tier?',
+        rankMove: 'Move to',
+        rankProgress: '{{n}} of {{total}}',
+        unrank: 'Back to the pool',
         addPlaceholder: 'Add a Pokémon…',
         searchPlaceholder: 'Search Pokémon…',
         freeEmpty: 'Search above and add the Pokémon you want to rank.',
