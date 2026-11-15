@@ -615,6 +615,53 @@
     white-space: nowrap;
 }
 
+/* ── A shared list: the same board, still ── */
+
+.tier-shared {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.tier-shared__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.tier-shared__kicker {
+    color: var(--color-primary-text);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+}
+
+.tier-shared__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+}
+
+.tier-shared__count {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.tier-mon.is-still,
+.tier-cell.is-still {
+    cursor: default;
+}
+
+.tier-mon.is-still:hover {
+    background: var(--color-surface-raised);
+}
+
+.tier-cell.is-still:hover {
+    background-color: var(--color-surface);
+}
+
 /* ── Actions ── */
 
 .tier-actions {
@@ -723,8 +770,9 @@
         flex: 1 1 100%;
     }
 
+    .tier-actions .btn-secondary,
     .tier-actions .btn-ghost {
-        margin-inline: auto;
+        flex: 1 1 0;
     }
 }
 

@@ -343,3 +343,107 @@ export function searchMons(mons = [], query = '', max = 12) {
     }
     return [...starts, ...contains].slice(0, max);
 }
+
+// ── The shared link (`/tier-list?r=…`, 2026-11-15) ─────────────────────────
+// A board as a few URL-safe characters, read by the page (to show the list
+// and offer "make mine from this"), by api/render-meta.js (to title the
+// preview) and by api/og.js (to draw it). The resultShareCode.js rules:
+// **ids only, never text** — the list's own name stays on the device, the
+// preview says the theme's — and a strict decode: anything off is null.
+//
+//   t.{template}.{S}.{A}.{B}.{C}.{D}   each rank's dex ids in base 36, joined by `-`
+//   c.{template}.{cells}               one base-36 id or `_` per cell, in order
+//
+// `t.starters.7-4.1-9c..c.4` — Squirtle and Charmander in S.
+
+/** The highest dex id a list can hold: the base Pokémon the page offers. */
+export const MAX_DEX_ID = 1025;
+
+const toCode = (id) => id.toString(36);
+const fromCode = (text) => (/^[0-9a-z]{1,2}$/.test(text) ? Number.parseInt(text, 36) : NaN);
+
+/** The board as a link code, or '' when nothing is ranked or chosen yet. */
+export function encodeTierList(board) {
+    const template = TEMPLATES_BY_ID[board?.templateId];
+    if (!template || template.kind !== board.kind || placedCount(board) === 0) return '';
+    if (board.kind === 'chart') {
+        const cells = template.cells.map((cell) => (isDexId(board.cells[cell.key]) ? toCode(board.cells[cell.key]) : '_'));
+        return ['c', template.id, cells.join('-')].join('.');
+    }
+    return ['t', template.id, ...TIER_KEYS.map((key) => board.tiers[key].map(toCode).join('-'))].join('.');
+}
+
+/**
+ * A link code, checked: a known theme of the right kind, ids that are base
+ * Pokémon, no Pokémon twice, a themed list holding only its theme's
+ * Pokémon, a chart with exactly its cells, and at least one placed.
+ * Returns `{ kind: 'tier', templateId, tiers, count }` or
+ * `{ kind: 'chart', templateId, cells, count, total }`, else null.
+ */
+export function decodeTierList(code) {
+    if (typeof code !== 'string' || code.length > 600) return null;
+    const parts = code.split('.');
+    const template = TEMPLATES_BY_ID[parts[1]];
+    if (!template) return null;
+    const seen = new Set();
+    const readId = (text) => {
+        const id = fromCode(text);
+        if (!Number.isInteger(id) || id < 1 || id > MAX_DEX_ID || seen.has(id)) return null;
+        if (template.kind === 'tier' && template.id !== 'free' && !template.ids.includes(id)) return null;
+        seen.add(id);
+        return id;
+    };
+    if (parts[0] === 'c' && template.kind === 'chart' && parts.length === 3) {
+        const texts = parts[2].split('-');
+        if (texts.length !== template.cells.length) return null;
+        const cells = {};
+        for (let i = 0; i < texts.length; i += 1) {
+            if (texts[i] === '_') { cells[template.cells[i].key] = null; continue; }
+            const id = readId(texts[i]);
+            if (id === null) return null;
+            cells[template.cells[i].key] = id;
+        }
+        if (seen.size === 0) return null;
+        return { kind: 'chart', templateId: template.id, cells, count: seen.size, total: texts.length };
+    }
+    if (parts[0] === 't' && template.kind === 'tier' && parts.length === 2 + TIER_KEYS.length) {
+        const tiers = {};
+        for (let i = 0; i < TIER_KEYS.length; i += 1) {
+            const text = parts[2 + i];
+            const ids = text === '' ? [] : text.split('-').map(readId);
+            if (ids.some((id) => id === null)) return null;
+            tiers[TIER_KEYS[i]] = ids;
+        }
+        if (seen.size === 0 || seen.size > MAX_BOARD_ITEMS) return null;
+        return { kind: 'tier', templateId: template.id, tiers, count: seen.size };
+    }
+    return null;
+}
+
+/** A decoded list as a board of one's own: its ranks, the theme's other Pokémon in the pool. */
+export function boardFromShare(shared) {
+    const fresh = createBoard(shared.templateId);
+    if (shared.kind === 'chart') return { ...fresh, cells: { ...fresh.cells, ...shared.cells } };
+    const ranked = new Set(TIER_KEYS.flatMap((key) => shared.tiers[key]));
+    return { ...fresh, tiers: { ...shared.tiers }, pool: fresh.pool.filter((id) => !ranked.has(id)) };
+}
+
+/**
+ * A decoded chart with only the cells its rule allows: a link can name any
+ * Pokémon, the index says whether it is a Fire type or from Gen 3. `lookup`
+ * maps an id to its index entry; an unknown id empties its cell. A tier list
+ * is returned as is. Null when nothing is left to show.
+ */
+export function keepFittingCells(shared, lookup) {
+    if (!shared || shared.kind !== 'chart') return shared;
+    const template = TEMPLATES_BY_ID[shared.templateId];
+    const cells = {};
+    let count = 0;
+    for (const cell of template.cells) {
+        const id = shared.cells[cell.key];
+        const fits = id && meetsCellRule(cell.rule, lookup(id));
+        cells[cell.key] = fits ? id : null;
+        if (fits) count += 1;
+    }
+    return count ? { ...shared, cells, count } : null;
+}

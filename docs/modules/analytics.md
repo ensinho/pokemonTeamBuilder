@@ -36,6 +36,8 @@ measures first.
 | `challenge_share` | a Champion result posted to the Diário do dia | `champion`, `board` |
 | `puzzle_finish` | a PokéPuzzle ends | `mode`, `won`, `guesses`, `hints` |
 | `tierlist_export` | a tier list or chart is exported as an image | `template`, `placed` |
+| `tierlist_share` | its link is shared or copied | `template`, `placed` |
+| `tierlist_remix` | a shared list is copied into the visitor's own board | `template` |
 | `puzzle_hint` | a letter hint is taken (2026-11-11) | `mode`, `n` (which hint) |
 | `puzzle_share` | a puzzle result posted to the Diário do dia | `channel` |
 | `quiz_finish` | a quiz run completed | `mode` (generation · category), `total` |

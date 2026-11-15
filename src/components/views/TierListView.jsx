@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Plus, RotateCcw, Search, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Download, Link2, Plus, RotateCcw, Search, X } from 'lucide-react';
 
 import { BottomSheet } from '../BottomSheet';
 import { Loader } from '../Loader';
@@ -12,6 +13,8 @@ import { toast } from '../../store/useToastStore';
 import { confirmAction } from '../../store/useConfirmStore';
 import { typeColors } from '../../constants/typeChart';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { localizePath } from '../../utils/localePath';
+import { deployBase } from '../../services/localeHistory';
 import {
     BALL_BASE,
     BALL_INK,
@@ -21,7 +24,11 @@ import {
     TIER_LIST_STORAGE_KEY,
     TIER_TEMPLATES,
     addToPool,
+    boardFromShare,
     createBoard,
+    decodeTierList,
+    encodeTierList,
+    keepFittingCells,
     locate,
     meetsCellRule,
     monLabel,
@@ -102,9 +109,89 @@ function MonChip({ id, mon, held, onTap, onPointerDown, dragging }) {
     );
 }
 
-export function TierListView() {
+/**
+ * A list someone shared (`?r=`, utils/tierList.js decodeTierList): read-only,
+ * the same ranks and cells as the editor, and the way to make one's own.
+ */
+function SharedList({ shared, monsById, cellLabel, onMakeMine, onStartFresh }) {
     const { t } = useTranslation();
+    const template = TEMPLATES_BY_ID[shared.templateId];
+    const name = t(`tierList.templates.${shared.templateId}.name`);
+    const still = (id) => (
+        <span
+            key={id}
+            className="tier-mon is-still"
+            style={{ '--mon-type': typeColors[monsById.get(id)?.types?.[0]] || 'var(--color-muted)' }}
+            title={monsById.get(id)?.label}
+        >
+            <img src={getPokemonFrontSpriteUrl(id)} alt={monsById.get(id)?.label || `#${id}`} width={96} height={96} loading="lazy" decoding="async" draggable="false" />
+        </span>
+    );
+    return (
+        <section className="tier-shared" aria-labelledby="tier-shared-title">
+            <div className="tier-shared__head">
+                <span className="tier-shared__kicker">{t('tierList.sharedKicker')}</span>
+                <h2 id="tier-shared-title" className="tier-shared__title">{name}</h2>
+                <p className="tier-shared__count">
+                    {shared.kind === 'chart'
+                        ? t('tierList.chosen', { n: shared.count, total: shared.total })
+                        : t('tierList.sharedRanked', { n: shared.count })}
+                </p>
+            </div>
+            {shared.kind === 'chart' ? (
+                <ul className={`tier-chart ${template.cells.length <= 9 ? 'is-nine' : ''}`}>
+                    {template.cells.map((cell) => {
+                        const id = shared.cells[cell.key];
+                        const mon = id ? monsById.get(id) : null;
+                        return (
+                            <li key={cell.key}>
+                                <div className={`tier-cell is-still ${id ? 'is-filled' : ''}`} style={{ '--cell-tone': typeColors[cell.key] || 'var(--color-primary)' }}>
+                                    <span className="tier-cell__label">{cellLabel(cell.key)}</span>
+                                    <span className="tier-cell__art">
+                                        {id
+                                            ? <img src={getPokemonFrontSpriteUrl(id)} alt="" width={96} height={96} loading="lazy" decoding="async" draggable="false" />
+                                            : <span className="tier-cell__unknown" aria-hidden="true">?</span>}
+                                    </span>
+                                    <span className="tier-cell__name">{mon ? mon.label : t('tierList.empty')}</span>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : (
+                <ol className="tier-rows">
+                    {TIER_KEYS.map((tier) => (
+                        <li
+                            key={tier}
+                            className="tier-row"
+                            style={{ '--ball-top': TIER_BALLS[tier].ball === 'ultra' ? TIER_BALLS[tier].band : TIER_BALLS[tier].top }}
+                        >
+                            <span className="tier-row__label">
+                                <TierBall tier={tier} />
+                                <span className="tier-row__letter">{tier}</span>
+                            </span>
+                            <div className="tier-row__lane">{shared.tiers[tier].map(still)}</div>
+                        </li>
+                    ))}
+                </ol>
+            )}
+            <div className="tier-actions">
+                <button type="button" className="btn btn-primary btn-lg" onClick={onMakeMine}>
+                    <span>{t('tierList.makeMine')}</span>
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={onStartFresh}>
+                    <span>{t('tierList.startFresh')}</span>
+                </button>
+            </div>
+        </section>
+    );
+}
+
+export function TierListView() {
+    const { t, language } = useTranslation();
     useDocumentMeta({ title: t('seo.tierList.title'), description: t('seo.tierList.description'), path: '/tier-list' });
+    const [searchParams, setSearchParams] = useSearchParams();
+    const sharedCode = searchParams.get('r');
 
     const [store, setStore] = useState(readStore);
     const templateId = store.current;
@@ -136,6 +223,29 @@ export function TierListView() {
     }, [store]);
 
     const monsById = useMemo(() => new Map((mons || []).map((mon) => [mon.id, { ...mon, label: monLabel(mon.name) }])), [mons]);
+
+    // A shared list, once the index can check a chart's cells against their rules.
+    const shared = useMemo(() => {
+        const decoded = decodeTierList(sharedCode);
+        if (!decoded || !mons) return null;
+        return keepFittingCells(decoded, (id) => monsById.get(id));
+    }, [sharedCode, mons, monsById]);
+    const sharedIsBad = Boolean(sharedCode) && Boolean(mons) && !shared;
+
+    const leaveShared = useCallback(() => {
+        setSearchParams((params) => {
+            const next = new URLSearchParams(params);
+            next.delete('r');
+            return next;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    useEffect(() => {
+        if (sharedIsBad) {
+            toast.error(t('tierList.badLink'));
+            leaveShared();
+        }
+    }, [sharedIsBad, leaveShared, t]);
 
     const update = useCallback((change) => {
         setStore((prev) => {
@@ -278,6 +388,53 @@ export function TierListView() {
     const templateName = t(`tierList.templates.${templateId}.name`);
     const shownTitle = board.title || templateName;
 
+    const makeMine = async () => {
+        if (!shared) return;
+        const mine = store.boards[shared.templateId];
+        if (mine && placedCount(mine) > 0) {
+            const ok = await confirmAction({
+                title: t('tierList.replaceTitle'),
+                message: t('tierList.replaceBody'),
+                confirmText: t('tierList.makeMine'),
+            });
+            if (!ok) return;
+        }
+        setStore((prev) => ({
+            current: shared.templateId,
+            boards: { ...prev.boards, [shared.templateId]: { ...boardFromShare(shared), title: prev.boards[shared.templateId]?.title || '' } },
+        }));
+        setHeld(null);
+        track('tierlist_remix', { template: shared.templateId });
+        leaveShared();
+    };
+
+    const startFresh = () => {
+        if (shared) setStore((prev) => ({ ...prev, current: shared.templateId }));
+        leaveShared();
+    };
+
+    const shareLink = async () => {
+        const code = encodeTierList(board);
+        if (!code) return;
+        const url = `${window.location.origin}${localizePath('/tier-list', language, deployBase())}?r=${code}`;
+        track('tierlist_share', { template: templateId, placed: placedCount(board) });
+        const coarse = window.matchMedia?.('(pointer: coarse)').matches;
+        if (coarse && navigator.share) {
+            try {
+                await navigator.share({ title: shownTitle, text: t('tierList.shareText'), url });
+                return;
+            } catch (error) {
+                if (error?.name === 'AbortError') return;
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(url);
+            toast.success(t('tierList.linkCopied'));
+        } catch {
+            toast.error(t('tierList.linkFailed'));
+        }
+    };
+
     const exportImage = async () => {
         if (exporting) return;
         setExporting(true);
@@ -339,6 +496,15 @@ export function TierListView() {
 
     const isChart = board.kind === 'chart';
     const placed = placedCount(board);
+
+    if (shared) {
+        return (
+            <div className="tier-page">
+                <SharedList shared={shared} monsById={monsById} cellLabel={cellLabel} onMakeMine={makeMine} onStartFresh={startFresh} />
+                <NextGameCard game="challenge" />
+            </div>
+        );
+    }
 
     return (
         <div className={`tier-page ${held != null ? 'is-holding' : ''}`}>
@@ -497,6 +663,10 @@ export function TierListView() {
                 <button type="button" className="btn btn-primary btn-lg" onClick={exportImage} disabled={exporting || !mons}>
                     {exporting ? <Loader size="xs" /> : <Download className="w-5 h-5" aria-hidden="true" />}
                     <span>{t('tierList.export')}</span>
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={shareLink} disabled={!placed}>
+                    <Link2 className="w-4 h-4" aria-hidden="true" />
+                    <span>{t('tierList.shareLink')}</span>
                 </button>
                 <button type="button" className="btn btn-ghost" onClick={restart} disabled={!placed}>
                     <RotateCcw className="w-4 h-4" aria-hidden="true" />

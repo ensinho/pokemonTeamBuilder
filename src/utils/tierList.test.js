@@ -163,3 +163,77 @@ describe('tierExportLayout', () => {
         expect(nine.cells[8].x + nine.cells[8].size).toBeLessThanOrEqual(EXPORT_WIDTH - nine.pad);
     });
 });
+
+describe('the shared link', () => {
+    it('round-trips a tier board and a chart', async () => {
+        const { encodeTierList, decodeTierList, boardFromShare } = await import('./tierList');
+        let board = placeItem(createBoard('starters'), 7, 'S');
+        board = placeItem(board, 4, 'S');
+        board = placeItem(board, 906, 'D');
+        const code = encodeTierList(board);
+        expect(code).toBe('t.starters.7-4....p6');
+        const shared = decodeTierList(code);
+        expect(shared.tiers.S).toEqual([7, 4]);
+        expect(shared.tiers.D).toEqual([906]);
+        const mine = boardFromShare(shared);
+        expect(placedCount(mine)).toBe(3);
+        expect(boardIds(mine)).toHaveLength(27);
+
+        const chart = setCell(setCell(createBoard('types'), 'fire', 6), 'water', 9);
+        const chartShared = decodeTierList(encodeTierList(chart));
+        expect(chartShared.cells.fire).toBe(6);
+        expect(chartShared.cells.normal).toBeNull();
+        expect(chartShared.count).toBe(2);
+        expect(chartShared.total).toBe(18);
+    });
+
+    it('says nothing for an empty board', async () => {
+        const { encodeTierList } = await import('./tierList');
+        expect(encodeTierList(createBoard('starters'))).toBe('');
+    });
+
+    it('never carries the list name', async () => {
+        const { encodeTierList } = await import('./tierList');
+        const board = setTitle(placeItem(createBoard('eevee'), 133, 'S'), 'my words');
+        expect(encodeTierList(board)).not.toMatch(/my|words/);
+    });
+
+    it('refuses anything off', async () => {
+        const { decodeTierList } = await import('./tierList');
+        for (const code of [
+            '', null, 't.nope.1....', 't.starters.1.1...', 't.starters.zz....', 't.starters.....',
+            't.starters.25....', 'c.starters.1', 'c.types.1', 't.types.1....', 'x.starters.1....',
+            't.free.0....', 't.free.<b>....', 'c.generations._-_-_-_-_-_-_-_-_',
+        ]) {
+            expect(decodeTierList(code)).toBeNull();
+        }
+        // A free list may hold any base Pokémon; a themed one only its own.
+        expect(decodeTierList('t.free.p6....')).not.toBeNull();
+        expect(decodeTierList('t.eevee.p6....')).toBeNull();
+    });
+});
+
+describe('keepFittingCells', () => {
+    it('empties a cell whose Pokémon breaks its rule', async () => {
+        const { decodeTierList, encodeTierList, keepFittingCells } = await import('./tierList');
+        const chart = setCell(setCell(createBoard('types'), 'fire', 6), 'electric', 45);
+        const index = new Map([[6, { types: ['fire', 'flying'] }], [45, { types: ['grass', 'poison'] }]]);
+        const kept = keepFittingCells(decodeTierList(encodeTierList(chart)), (id) => index.get(id));
+        expect(kept.cells.fire).toBe(6);
+        expect(kept.cells.electric).toBeNull();
+        expect(kept.count).toBe(1);
+        expect(keepFittingCells(decodeTierList('c.types._-_-_-_-19-_-_-_-_-_-_-_-_-_-_-_-_-_'), (id) => index.get(id))).toBeNull();
+    });
+});
+
+describe('the shared link preview', () => {
+    it('is titled by the theme, never by the sharer', async () => {
+        const { resultShareMeta } = await import('./seoPages');
+        const { decodeTierList } = await import('./tierList');
+        const meta = resultShareMeta({ kind: 'tierlist', data: decodeTierList('t.starters.7-4....p6') }, 'pt');
+        expect(meta.title).toBe('Minha tier list: Iniciais');
+        expect(meta.description).toContain('3 Pokémon');
+        const chart = resultShareMeta({ kind: 'tierlist', data: decodeTierList('c.types._-6-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_') }, 'en');
+        expect(chart.description).toContain('1 of 18');
+    });
+});

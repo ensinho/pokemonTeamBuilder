@@ -68,8 +68,31 @@ tier lists never leave the device (2026-11-15).
 `/tier-list` is in `STATIC_PAGES` (`seo.tierList` in both languages) and the
 sitemap.
 
+## The shared link (`?r=`)
+
+"Compartilhar link" puts the board in the URL: `/tier-list?r=t.starters.7-4....p6`
+(`encodeTierList` / `decodeTierList` in `utils/tierList.js`, tested). The
+resultShareCode.js rules hold: **ids only** — the list's own name never
+leaves the device, the preview says the theme's — and a strict decode (a
+known theme of the right kind, base Pokémon only, no repeats, a themed list
+holding only its theme, a chart with exactly its cells). A chart's cells are
+also checked against their rule with the index (`keepFittingCells`) on the
+page and in `api/og.js`, so a forged link cannot put a Grass type in the
+Electric cell.
+
+- **The page** shows the list read-only (`SharedList`) with "Fazer a minha a
+  partir desta" (copies it into that theme's board — after a confirm when one
+  is already ranked — and drops `?r=`) and "Começar do zero". A bad code is a
+  toast and the editor.
+- **The preview**: `render-meta` titles it "Minha tier list: {theme}" through
+  `resultShareMeta` (kind `tierlist`) and points og:image at
+  `/api/og?tierlist=…`, which draws the ranks (each in its ball's colour, up
+  to 13 artworks a row) or the chart's grid. `api/og.js` takes the codec
+  through `_lib/ogImage.js` — its static imports are `node:` and `_lib/` only
+  (`og.test.js`).
+- Events: `tierlist_share`, `tierlist_remix`.
+
 ## Not built yet
 
-A shared link that opens someone's list (it would need a code like
-`resultShareCode`, ids only); editable rank names; more chart themes
-(favourite per region's gym, per evolution line).
+Editable rank names; more chart themes (favourite per region's gym, per
+evolution line); posting a list to the forum's Diário do dia.
