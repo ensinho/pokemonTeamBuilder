@@ -232,6 +232,17 @@ pages are crawlable from each other.
   `ptbActiveTeamId` in storage (`src/utils/landing.js`), no saved teams, not
   signed in with an account. A crawler is always a first visit.
 - Every exit marks it seen; "Go to my home" also swaps to the dashboard at once.
+- **Jogue hoje** (2026-11-15, Enzo picked option A of the proposal): right
+  under the hero, `components/landing/LandingPlayToday.jsx` — the Champion
+  (the band's one loud card: the hero's tint, Cynthia beside her ace's
+  silhouette, the clock to the next team), then the PokéPuzzle (today's
+  number) and the tier list. "How many played today" is `useTodayCrowd`: the
+  public `puzzleDays/{localDay}` and `challengeRanks/{braDay}` counters
+  summed by `centerCounts`, read once the page is idle so the first paint
+  never waits; a zero says "Seja o primeiro…" (`crowdLine`, `utils/playToday.js`,
+  tested). Each card leaves through `onLeave('play_challenge' | 'play_puzzle' |
+  'play_tierlist')`. The prerendered home lists the three as text links
+  (`api/_lib/seoSnapshot.js`); the page's title and description are unchanged.
 - While it is up, `useLandingStore.isOpen` is true (set by `HomeEntry`): the
   shell drops the phone dock (and its bottom reservation, `.is-landing`), so the
   CTAs are the only way forward, and `useFirestoreTeamsStore` keeps the

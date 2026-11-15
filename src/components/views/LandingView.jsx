@@ -15,6 +15,7 @@ import { RollingNumber } from '../RollingNumber';
 import { AnimatedSprite } from '../AnimatedSprite';
 import { BrandWordmark } from '../BrandWordmark';
 import { LandingFeatures } from '../landing/LandingFeatures';
+import { LandingPlayToday } from '../landing/LandingPlayToday';
 import { LogoMark } from '../LogoMark';
 import { Mascot } from '../Mascot';
 import { THEME_META } from '../../constants/theme';
@@ -236,6 +237,9 @@ export function LandingView({ onLeave, onSkip, onSignIn }) {
                 </div>
                 <LandingStage bubble={t('landing.bubble')} />
             </section>
+
+            {/* The day's games, right under the hero (2026-11-15). */}
+            <LandingPlayToday onLeave={onLeave} />
 
             <LandingDemo onLeave={onLeave} />
 

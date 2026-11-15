@@ -40,9 +40,15 @@ rail's items).
   over the pool still scrolls (a non-passive `touchmove` stops the scroll only
   once the drag began). The drop index comes from the item rects under the
   pointer; `placeItem` corrects for the gap a card leaves in its own row.
-- **On a phone the pool is a tray** sticky just above the dock (one sideways
-  row; the search opens from its "+", always open on the free list), so the
-  Pokémon and the ranks share the screen.
+- **On a phone, the builder's grammar** (2026-11-15, second pass — Enzo: "tá
+  meio confuso, só deixar mais fácil tipo o builder"): the board is compact
+  on top (3rem rank tiles, 3rem cards), the pool a plain grid under it, the
+  themes a row of chips. A tap on a Pokémon opens the `RankSheet` — the
+  Pokémon on its platform and the five balls under the thumb; picking one
+  places it and, from the pool, moves straight on to the next waiting
+  ("2 de 27"), so a list ranks in taps on the balls. A ranked Pokémon opens
+  the same sheet to move it or send it back. (The first pass floated the
+  pool over the ranks as a sticky tray — it covered the rows it fed.)
 
 ## The image
 

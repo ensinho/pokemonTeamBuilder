@@ -2,6 +2,7 @@ import { typeColors } from '../../constants/typeChart';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { toOriginUrl } from '../../utils/assetHost';
 import { TIER_BALLS, TIER_KEYS, tierExportLayout } from '../../utils/tierList';
+import { drawBrandMark } from '../../utils/brandMarkCanvas';
 
 /**
  * A tier list or a chart as an image (2026-11-15): the PokéPuzzle share's
@@ -144,18 +145,10 @@ export async function renderTierListBlob({ board, monsById, cellLabels = {}, log
         ctx.stroke();
     }
 
-    // Header: the mascot's mark, what this is, the title.
+    // Header: the mascot's mark — the app icon as it is, from the kicker's
+    // cap height to the title's baseline — what this is, the title.
     const markY = 64;
-    if (logo) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(P + 48, markY + 48, 48, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.10)';
-        ctx.fill();
-        ctx.clip();
-        ctx.drawImage(logo, P + 8, markY + 8, 80, 80);
-        ctx.restore();
-    }
+    drawBrandMark(ctx, logo, P, markY + 12, 92);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = CREAM;
