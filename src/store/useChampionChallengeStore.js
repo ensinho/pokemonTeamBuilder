@@ -6,6 +6,10 @@ import { DEFAULT_CHAMPION, isChampion } from '../utils/challengeChampions';
 import { promptSignIn } from '../utils/navigation';
 import { t } from '../utils/translate';
 import { toast } from './useToastStore';
+import { markGameDone } from '../hooks/useGamesToday';
+
+/** An official run's stored status once it is over (an expired one is a loss). */
+const FINISHED = new Set(['won', 'lost', 'expired']);
 
 /**
  * The Champion Challenge screen's state. The server is the authority on every
@@ -141,6 +145,8 @@ export const useChampionChallengeStore = create((set, get) => ({
         const {
             dayKey, nextResetAt, day, official, officials = null, run, stats, ranks = null, champions = null, ranksByChampion = null,
         } = res.payload;
+        // An official battle already finished today (on this device or another): the day's loop knows.
+        if (Object.values(officials || {}).some((o) => o && FINISHED.has(o.status))) markGameDone('challenge');
         set((s) => ({
             status: 'ready', hasLoaded: true, loadError: null, dayKey, nextResetAt, day, official, officials, stats, run, ranks, champions, pending: null,
             // A server from before sends only this champion's.
@@ -263,6 +269,7 @@ export const useChampionChallengeStore = create((set, get) => ({
                 if (marks.length) import('./useAuthStore').then((m) => marks.forEach((mark) => m.markJourney(mark))).catch(() => {});
             }
             if (ended && !s.run.practice) {
+                markGameDone('challenge');
                 const official = { runId: s.run.runId, status: p.status, result: p.result };
                 next.official = official;
                 next.officials = { ...s.officials, [boardOfRun(s.run)]: official };
@@ -286,6 +293,7 @@ export const useChampionChallengeStore = create((set, get) => ({
                 return false;
             }
             const { result, ranks } = res.payload;
+            if (!run.practice) markGameDone('challenge');
             set((s) => ({
                 ...(ranks ? { ranks, ranksByChampion: withChampionRanks(s.ranksByChampion, s.championId, ranks) } : {}),
                 run: s.run?.runId === run.runId

@@ -6,6 +6,7 @@ import {
     getPokemonSpeciesData,
 } from '../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl } from '../utils/pokemonSprites';
+import { markGameDone } from './useGamesToday';
 
 // ============================================================
 //  useSessionGame — owns the ENTIRE PokePuzzle game lifecycle for ONE
@@ -214,6 +215,7 @@ export function useSessionGame({ userId, allowedPool, language, getDailyIndex, o
         const now = new Date();
         const today = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
         if (date === today) {
+            if (session.gameStatus !== 'IN_PROGRESS') markGameDone('pokepuzzle');
             safeLocalSet(ppKey(userId, 'daily:summary'), JSON.stringify({
                 solved: session.gameStatus === 'WON',
                 attempts: session.guesses.length,

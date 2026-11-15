@@ -5,6 +5,7 @@ import { appId } from '../constants/firebase';
 import { db } from '../services/firebase';
 import { challengeSummaryState, dayKeyAt, effectiveStreak, nextResetAt } from '../utils/challengeDay';
 import { CHAMPION_IDS, DEFAULT_CHAMPION } from '../utils/challengeChampions';
+import { markGameDone } from './useGamesToday';
 
 const CACHE_KEY = 'ptb:challenge:summary';
 
@@ -94,6 +95,8 @@ export function useChallengeSummary(userId, isAnonymous) {
                     champions,
                     nextResetAt: nextResetAt(now),
                 };
+                // A board played today on any champion: the day's loop knows (hooks/useGamesToday.js).
+                if (champions.some((c) => Object.values(c.boards).some((st) => st && st !== 'active'))) markGameDone('challenge');
                 if (!cancelled) {
                     setSummary(next);
                     writeCache(next);
