@@ -488,6 +488,24 @@
         font-size: var(--text-xl);
     }
 
+    /* Four cards, two thumb-scrolls: the detail beside the state steps
+       aside and the line holds to two rows. */
+    .daygame__meta {
+        display: none;
+    }
+
+    .daygame__line {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+
+    .daygame__stage {
+        min-height: 6.5rem;
+    }
+
     /* The belt spans the screen: four balls, evenly, under the words. */
     .games-day__belt {
         justify-content: space-between;
