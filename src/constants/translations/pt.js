@@ -710,6 +710,7 @@ export default {
         todayGames: 'Jogos do dia',
         games: 'Jogos',
         gamesToday: 'Jogos de hoje',
+        gamesRail: 'Hoje',
         quizDaily: 'Quiz do dia',
         tierDaily: 'Tier list do dia',
         quizCardHint: 'Categoria nova',

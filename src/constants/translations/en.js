@@ -745,6 +745,7 @@ export default {
         todayGames: "Today's games",
         games: 'Games',
         gamesToday: 'Today\'s games',
+        gamesRail: 'Today',
         quizDaily: 'Quiz of the day',
         tierDaily: 'Tier list of the day',
         quizCardHint: 'New category',

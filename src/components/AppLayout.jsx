@@ -960,7 +960,8 @@ export default function AppLayout() {
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'challenge': { title: t('challenge.title'), subtitle: '' },
             'tierList': { title: t('nav.tierList'), subtitle: t('tierList.subtitle') },
-            'games': { title: t('nav.games'), subtitle: t('gamesHub.subtitle') },
+            // "Jogos / Jogos" in the desktop crumb said the same word twice.
+            'games': { title: t('nav.gamesToday'), shortTitle: t('nav.games'), subtitle: t('gamesHub.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             // "Cartão de Treinador & Preferências" ellipsised at "Prefe…" in a phone
@@ -1060,7 +1061,7 @@ export default function AppLayout() {
                 items: [
                     // The day's four in one place (2026-11-15): the row carries the
                     // day's pips — how much of today is played, read from the rail.
-                    { key: 'games', label: t('nav.gamesToday'), shortLabel: t('nav.games'), path: '/games', icon: <Gamepad2 className="w-5 h-5 shrink-0" />, trailing: <DayPips /> },
+                    { key: 'games', label: t('nav.gamesRail'), shortLabel: t('nav.games'), searchLabel: t('nav.gamesToday'), path: '/games', icon: <Gamepad2 className="w-5 h-5 shrink-0" />, trailing: <DayPips /> },
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
                     // The trainer's own ranking (2026-11-15): the one game here you make.

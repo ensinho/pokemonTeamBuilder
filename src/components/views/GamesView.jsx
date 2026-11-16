@@ -79,7 +79,7 @@ function StageSprite({ id, unknown = false }) {
             height={96}
             decoding="async"
             draggable="false"
-            className={`game-card__sprite ${unknown ? 'is-unknown' : ''}`}
+            className={`daygame__sprite ${unknown ? 'is-unknown' : ''}`}
         />
     );
 }
@@ -170,7 +170,7 @@ export function GamesView() {
             art: (
                 <>
                     <StageSprite id={ace} unknown={!beaten} />
-                    <img src={CHAMPION_FACES.cynthia} alt="" width={80} height={80} decoding="async" draggable="false" className="game-card__sprite game-card__trainer" />
+                    <img src={CHAMPION_FACES.cynthia} alt="" width={80} height={80} decoding="async" draggable="false" className="daygame__sprite daygame__trainer" />
                 </>
             ),
         },
@@ -240,9 +240,9 @@ export function GamesView() {
                     </div>
                     <ol className="games-day__belt" aria-label={t('nav.gamesDone', { n: tally.played, total: tally.total })}>
                         {DAILY_GAMES.map((game) => (
-                            <li key={game} className={`day-ball ${done[game] ? 'is-caught' : ''}`} style={{ '--tone': navHue(GAME_NAV_KEYS[game]) }}>
-                                <span className="day-ball__ball" aria-hidden="true" />
-                                <span className="day-ball__name">{t(`gamesHub.short.${game}`)}</span>
+                            <li key={game} className={`belt-ball ${done[game] ? 'is-caught' : ''}`} style={{ '--tone': navHue(GAME_NAV_KEYS[game]) }}>
+                                <span className="belt-ball__ball" aria-hidden="true" />
+                                <span className="belt-ball__name">{t(`gamesHub.short.${game}`)}</span>
                                 <span className="sr-only">{t(done[game] ? 'nav.playedToday' : 'nav.openToday')}</span>
                             </li>
                         ))}
@@ -260,26 +260,26 @@ export function GamesView() {
                             <li key={game}>
                                 {/* The whole card answers a click; its button is the keyboard's way in. */}
                                 <article
-                                    className={`game-card ${isDone ? 'is-done' : 'is-open'} ${isNext ? 'is-next' : ''}`}
+                                    className={`daygame ${isDone ? 'is-done' : 'is-open'} ${isNext ? 'is-next' : ''}`}
                                     style={{ '--tone': card.tone }}
                                     onClick={(event) => { if (!(event.target instanceof Element && event.target.closest('button, a'))) open(); }}
                                 >
-                                    <div className="game-card__stage" aria-hidden="true">
-                                        <span className="game-card__art">{card.art}</span>
-                                        {isDone && <span className="game-card__mark"><Check /></span>}
+                                    <div className="daygame__stage" aria-hidden="true">
+                                        <span className="daygame__art">{card.art}</span>
+                                        {isDone && <span className="daygame__mark"><Check /></span>}
                                     </div>
-                                    <div className="game-card__body">
-                                        <p className="game-card__kicker">
+                                    <div className="daygame__body">
+                                        <p className="daygame__kicker">
                                             {isDone
-                                                ? <span className="game-card__state is-done">{t('nav.playedToday')}</span>
-                                                : <span className="game-card__state"><span className="live-dot" aria-hidden="true" />{t('nav.openToday')}</span>}
-                                            <span className="game-card__meta">{card.kicker}</span>
+                                                ? <span className="daygame__state is-done">{t('nav.playedToday')}</span>
+                                                : <span className="daygame__state"><span className="live-dot" aria-hidden="true" />{t('nav.openToday')}</span>}
+                                            <span className="daygame__meta">{card.kicker}</span>
                                         </p>
-                                        <h3 className="game-card__title"><Icon aria-hidden="true" />{card.title}</h3>
-                                        <p className="game-card__line">{card.line}</p>
+                                        <h3 className="daygame__title"><Icon aria-hidden="true" />{card.title}</h3>
+                                        <p className="daygame__line">{card.line}</p>
                                         <button
                                             type="button"
-                                            className={`btn btn-sm game-card__cta ${isNext ? 'btn-primary' : isDone ? 'btn-ghost' : 'btn-secondary'}`}
+                                            className={`btn btn-sm daygame__cta ${isNext ? 'btn-primary' : isDone ? 'btn-ghost' : 'btn-secondary'}`}
                                             onClick={open}
                                         >
                                             {card.cta}

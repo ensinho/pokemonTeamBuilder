@@ -109,7 +109,7 @@
 
 /* A ball per game. Open: a dashed ring — dashed means absent, here as
    everywhere. Caught: a Poké Ball whose upper half is the game's own tone. */
-.day-ball {
+.belt-ball {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -117,7 +117,9 @@
     min-width: 3rem;
 }
 
-.day-ball__ball {
+.belt-ball__ball {
+    display: block;
+    box-sizing: border-box;
     --ball-base: color-mix(in srgb, var(--color-fg) 90%, var(--color-surface));
     --ball-ink: var(--color-bg);
     width: 2.5rem;
@@ -126,7 +128,7 @@
     border-radius: 50%;
 }
 
-.day-ball.is-caught .day-ball__ball {
+.belt-ball.is-caught .belt-ball__ball {
     border: none;
     background:
         radial-gradient(circle, var(--ball-base) 0 0.22rem, var(--ball-ink) 0.23rem 0.42rem, transparent 0.43rem),
@@ -139,20 +141,20 @@
 }
 
 /* The four caught: earned, so the belt is gold. */
-.games-day.is-complete .day-ball.is-caught .day-ball__ball {
+.games-day.is-complete .belt-ball.is-caught .belt-ball__ball {
     background:
         radial-gradient(circle, var(--ball-base) 0 0.22rem, var(--ball-ink) 0.23rem 0.42rem, transparent 0.43rem),
         linear-gradient(var(--brand-gold) 0 45%, var(--ball-ink) 45% 55%, var(--ball-base) 55%);
 }
 
-.day-ball__name {
+.belt-ball__name {
     color: var(--color-muted);
     font-size: var(--text-2xs);
     font-weight: var(--weight-medium);
     white-space: nowrap;
 }
 
-.day-ball.is-caught .day-ball__name {
+.belt-ball.is-caught .belt-ball__name {
     color: var(--color-fg);
 }
 
@@ -171,7 +173,7 @@
     min-width: 0;
 }
 
-.game-card {
+.daygame {
     display: grid;
     grid-template-columns: 7rem minmax(0, 1fr);
     flex: 1;
@@ -184,12 +186,12 @@
     transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.game-card:hover {
+.daygame:hover {
     background: var(--color-surface-hover);
 }
 
 /* The band: one raised surface, the game's tone a pool under the platform. */
-.game-card__stage {
+.daygame__stage {
     position: relative;
     display: flex;
     align-items: flex-end;
@@ -202,7 +204,7 @@
     overflow: hidden;
 }
 
-.game-card__stage::before {
+.daygame__stage::before {
     content: '';
     position: absolute;
     bottom: var(--space-2);
@@ -214,14 +216,14 @@
     translate: -50% 0;
 }
 
-.game-card__art {
+.daygame__art {
     position: relative;
     display: flex;
     align-items: flex-end;
     justify-content: center;
 }
 
-.game-card__sprite {
+.daygame__sprite {
     position: relative;
     flex: none;
     width: 4.5rem;
@@ -231,22 +233,22 @@
 }
 
 /* A party standing close: each one a step in front of the last. */
-.game-card__sprite + .game-card__sprite {
+.daygame__sprite + .daygame__sprite {
     margin-left: calc(var(--space-6) * -1);
 }
 
 /* On the narrow band a card shows two of them. */
-.game-card__sprite:nth-child(n + 3) {
+.daygame__sprite:nth-child(n + 3) {
     display: none;
 }
 
 /* "Quem é esse Pokémon?": not known yet — the shape, haloed in the game's tone. */
-.game-card__sprite.is-unknown {
+.daygame__sprite.is-unknown {
     filter: brightness(0) drop-shadow(0 0 0.375rem color-mix(in srgb, var(--tone, var(--color-primary)) 60%, transparent));
     opacity: 0.7;
 }
 
-.game-card__mark {
+.daygame__mark {
     position: absolute;
     top: var(--space-2);
     left: var(--space-2);
@@ -259,13 +261,13 @@
     color: var(--color-bg);
 }
 
-.game-card__mark > svg {
+.daygame__mark > svg {
     width: 0.875rem;
     height: 0.875rem;
     stroke-width: 3;
 }
 
-.game-card__body {
+.daygame__body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -274,7 +276,7 @@
     padding: var(--space-3);
 }
 
-.game-card__kicker {
+.daygame__kicker {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -283,7 +285,7 @@
     font-size: var(--text-xs);
 }
 
-.game-card__state {
+.daygame__state {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1_5);
@@ -291,17 +293,17 @@
     font-weight: var(--weight-semibold);
 }
 
-.game-card__state.is-done {
+.daygame__state.is-done {
     color: var(--color-success);
 }
 
-.game-card__meta {
+.daygame__meta {
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
 }
 
-.game-card__title {
+.daygame__title {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -313,31 +315,31 @@
     letter-spacing: -0.015em;
 }
 
-.game-card__title > svg {
+.daygame__title > svg {
     flex: none;
     width: 1rem;
     height: 1rem;
     color: color-mix(in srgb, var(--tone, var(--color-primary)) 55%, var(--color-fg));
 }
 
-.game-card__line {
+.daygame__line {
     margin: 0;
     color: var(--color-muted);
     font-size: var(--text-sm);
     line-height: 1.4;
 }
 
-.game-card__cta {
+.daygame__cta {
     margin-top: auto;
 }
 
-.game-card__cta > svg {
+.daygame__cta > svg {
     width: 1rem;
     height: 1rem;
 }
 
 /* A little air between the line and the action, without a second gap rule. */
-.game-card__line + .game-card__cta {
+.daygame__line + .daygame__cta {
     margin-top: var(--space-2);
 }
 
@@ -348,36 +350,36 @@
     }
 
     /* Room for the art: the band on top, the party of three. */
-    .game-card {
+    .daygame {
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto 1fr;
     }
 
-    .game-card__stage {
+    .daygame__stage {
         min-height: 8.5rem;
         padding-bottom: var(--space-3);
     }
 
-    .game-card__stage::before {
+    .daygame__stage::before {
         bottom: var(--space-3);
         width: 9rem;
     }
 
-    .game-card__sprite {
+    .daygame__sprite {
         width: 5.5rem;
         height: 5.5rem;
     }
 
-    .game-card__sprite:nth-child(n + 3) {
+    .daygame__sprite:nth-child(n + 3) {
         display: block;
     }
 
-    .game-card__body {
+    .daygame__body {
         gap: var(--space-1_5);
         padding: var(--space-4);
     }
 
-    .game-card__line {
+    .daygame__line {
         min-height: 2.8em;
     }
 }
@@ -493,7 +495,7 @@
         gap: var(--space-2);
     }
 
-    .day-ball {
+    .belt-ball {
         flex: 1;
     }
 
