@@ -132,7 +132,10 @@ export const useCategoryGuesserStore = create((set, get) => {
             return picked ? picked.id : (customList[0]?.id ?? null);
         },
 
-        startNewRun: (listId, fullPokemonNames) => {
+        // `extra` stamps the run — the quiz of the day passes `{ dailyDay }`
+        // (utils/dailyQuiz.js) with the day's own names, at most ten, so the
+        // sample below keeps them all.
+        startNewRun: (listId, fullPokemonNames, extra = null) => {
             const { quizRuns, recentListIds } = get();
             const existing = quizRuns.find((r) => r.id === listId);
 
@@ -162,6 +165,7 @@ export const useCategoryGuesserStore = create((set, get) => {
                 bestAccuracy,
                 updatedAt: Date.now(),
                 isComplete: false,
+                ...(extra && typeof extra === 'object' ? extra : {}),
             };
 
             const updatedRuns = quizRuns.filter((r) => r.id !== listId);
@@ -177,6 +181,16 @@ export const useCategoryGuesserStore = create((set, get) => {
             } catch (_) { /* local storage is a cache here; the store state is the truth */ }
 
             get().saveRunToStorage(newRun);
+        },
+
+        // The quiz of the day can be closed before every name is found: the
+        // run keeps what was named, shows the rest, and takes no more guesses.
+        endRun: (listId) => {
+            const run = get().quizRuns.find((r) => r.id === listId);
+            if (!run || run.isComplete || run.ended) return;
+            const endedRun = { ...run, ended: true, updatedAt: Date.now() };
+            set({ quizRuns: get().quizRuns.map((r) => (r.id === listId ? endedRun : r)) });
+            get().saveRunToStorage(endedRun);
         },
 
         resumeRun: (listId) => {
@@ -203,8 +217,10 @@ export const useCategoryGuesserStore = create((set, get) => {
                 }
                 const sampledPokemonNames = pool.length > 0 ? pool.slice(0, 20) : (run.sampledPokemonNames || []);
 
+                // A replay is a run of its own: never the day's, never closed.
+                const { dailyDay: _dailyDay, ended: _ended, ...rest } = run;
                 const resetRun = {
-                    ...run,
+                    ...rest,
                     sampledPokemonNames,
                     totalCount: sampledPokemonNames.length || run.totalCount,
                     foundNames: [],

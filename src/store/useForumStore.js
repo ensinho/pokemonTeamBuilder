@@ -323,10 +323,23 @@ export const useForumStore = create((set, get) => ({
     //     which by construction carries no answer.
     //   sharedChallenge — a Champion Challenge result (utils/challengeShare),
     //     with no team in it; read back through readChallengeShare.
+    //   sharedTierList / sharedQuiz — a tier list's link code and a quiz's
+    //     figures (utils/gameShare, 2026-11-15): ids and numbers only, written
+    //     through their `clean*` so nothing else rides along.
     // `notifyError: false` — the caller owns the failure (the composer puts the
     // draft back and offers Retry itself).
     sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}, { notifyError = true } = {}) => {
         const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null, rating = null, diaryFallback = false } = attachments || {};
+        // The two games' payloads are checked by their own rules, loaded only
+        // for a message that carries one (the tier list's tables stay off the
+        // boot path, where this store lives).
+        let sharedTierList = null;
+        let sharedQuiz = null;
+        if (attachments?.sharedTierList || attachments?.sharedQuiz) {
+            const { cleanTierListShare, cleanQuizShare } = await import('../utils/gameShare');
+            sharedTierList = cleanTierListShare(attachments.sharedTierList);
+            sharedQuiz = cleanQuizShare(attachments.sharedQuiz);
+        }
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -338,7 +351,7 @@ export const useForumStore = create((set, get) => ({
         }
 
         const cleanText = text.trim();
-        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge && !rating) {
+        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge && !sharedTierList && !sharedQuiz && !rating) {
             return false;
         }
 
@@ -399,6 +412,9 @@ export const useForumStore = create((set, get) => ({
                     ? sharedPuzzle
                     : null,
                 sharedChallenge: sharedChallenge?.v === 1 ? sharedChallenge : null,
+                // Only when there is one: older messages never had the field.
+                ...(sharedTierList ? { sharedTierList } : {}),
+                ...(sharedQuiz ? { sharedQuiz } : {}),
                 // "Avalie meu time" (2026-11-06, social-heart B4).
                 ...(['ready', 'almost', 'train'].includes(rating) ? { rating } : {}),
                 // A day's result the diary could not take (postToDiary).
@@ -425,7 +441,10 @@ export const useForumStore = create((set, get) => ({
                     ? cleanText.substring(0, 100)
                     : (serializedAttachedTeam
                         ? `Shared team: ${serializedAttachedTeam.name}`
-                        : (sharedPuzzle ? 'PokéPuzzle result' : (sharedChallenge ? 'Champion Challenge result' : 'Battle invite')))
+                        : (sharedPuzzle ? 'PokéPuzzle result'
+                            : sharedChallenge ? 'Champion Challenge result'
+                                : sharedTierList ? 'Tier list'
+                                    : sharedQuiz ? 'Quiz result' : 'Battle invite'))
             });
 
             // The Pokégear: a reply, a mention or a comment on someone's post
@@ -436,7 +455,7 @@ export const useForumStore = create((set, get) => ({
             }
             forumBeat('commented');
             track(replyRef ? 'forum_reply' : 'forum_post', {
-                kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : battleInvite ? 'invite' : 'text',
+                kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : sharedTierList ? 'tierlist' : sharedQuiz ? 'quiz' : battleInvite ? 'invite' : 'text',
             });
             // The id is truthy, so callers that read a boolean keep working.
             return messageRef.id;
@@ -492,7 +511,7 @@ export const useForumStore = create((set, get) => ({
 
     /**
      * A day's result into today's diary (the challenge and the puzzle share
-     * here since 2026-11-06). Returns the message id, or false. If the diary
+     * here since 2026-11-06; the tier list and the quiz since 2026-11-15). Returns the message id, or false. If the diary
      * cannot be opened or written, the result still gets posted — in the
      * general chat, stamped `diaryFallback` (Enzo, 2026-11-09). The stamp is
      * what the rules let through there: an installed app on a pre-diary build

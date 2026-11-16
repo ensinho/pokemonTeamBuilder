@@ -40,6 +40,7 @@ const STATIC_ROUTES = [
     { loc: '/pokepuzzle', changefreq: 'monthly', priority: '0.5' },
     { loc: '/challenge', changefreq: 'daily', priority: '0.5' },
     { loc: '/tier-list', changefreq: 'monthly', priority: '0.5' },
+    { loc: '/games', changefreq: 'daily', priority: '0.6' },
     { loc: '/feed', changefreq: 'daily', priority: '0.5' },
     { loc: '/guides', changefreq: 'monthly', priority: '0.7' },
     { loc: '/types', changefreq: 'monthly', priority: '0.7' },

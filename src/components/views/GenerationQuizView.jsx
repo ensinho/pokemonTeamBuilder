@@ -40,6 +40,9 @@ import { useSearchParams } from 'react-router-dom';
 import { decodeQuizDuel, encodeQuizDuel } from '../../utils/resultShareCode';
 import { shareLink } from '../../utils/forumShare';
 import { QuizDuelBanner } from '../QuizDuelBanner';
+import { DiaryShareButton } from '../DiaryShareButton';
+import { useDiaryShare } from '../../hooks/useDiaryShare';
+import { buildGenerationQuizShare } from '../../utils/gameShare';
 import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
 import { QUIZ_MODES, SPRINT_SECONDS, formatClock, modeOfRun, nextStarGoal, runIdFor, sprintSecondsLeft, starsFor } from '../../utils/quizProgress';
 
@@ -889,6 +892,14 @@ export function GenerationQuizView({ showDetails, showToast }) {
         if (outcome === 'shared' || outcome === 'copied') track('quiz_duel_share', { found: foundCount, total: totalCount });
     };
 
+    // "Postar no Diário" (2026-11-15): the run's mark as its duel code — the
+    // forum's card opens the same quiz to beat. Generations and two figures.
+    const diary = useDiaryShare(activeRun ? `gen:${activeRun.id}:${foundCount}/${totalCount}` : null);
+    const postRun = async () => {
+        const share = buildGenerationQuizShare({ generations: activeRun?.generationKeys || [...selectedGenerationKeys], found: foundCount, total: totalCount });
+        if (share && await diary.post({ sharedQuiz: share })) track('quiz_forum', { mode: 'generation', daily: false });
+    };
+
     return (
         <main className={`generation-quiz ${quizStarted ? 'generation-quiz--running' : ''}`}>
             {duel && <QuizDuelBanner duel={duel} found={quizStarted ? foundCount : null} t={t} />}
@@ -1180,6 +1191,9 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                             <Swords aria-hidden="true" /> {t('quiz.duel.share')}
                                         </button>
                                     )}
+                                    {foundCount > 0 && (
+                                        <DiaryShareButton share={diary} onPost={postRun} className="generation-quiz__compact-reset-btn" />
+                                    )}
                                     <button
                                         type="button"
                                         onClick={handleExitQuizClick}
@@ -1235,6 +1249,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                     pokemon={celebrationPokemon}
                     accuracy={accuracyPercent}
                     totalCount={totalCount}
+                    share={<DiaryShareButton share={diary} onPost={postRun} className="btn btn-secondary btn-block" />}
                 />
             )}
 

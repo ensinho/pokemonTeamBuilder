@@ -16,10 +16,13 @@ export const PokemonGenerationQuizCard = memo(function PokemonGenerationQuizCard
     isLoading,
     isInteractable,
     onInspect,
+    // A closed run shows what was not named (2026-11-15, the quiz of the day):
+    // the same card, its sprite in grey.
+    isMissed = false,
 }) {
     const { t } = useTranslation();
 
-    if (!isFound) {
+    if (!isFound && !isMissed) {
         return (
             <div
                 className="generation-quiz-card generation-quiz-card--hidden"
@@ -40,7 +43,7 @@ export const PokemonGenerationQuizCard = memo(function PokemonGenerationQuizCard
                 }
             }}
             disabled={!isInteractable || isLoading}
-            className={`generation-quiz-card generation-quiz-card--revealed ${isNew ? 'is-new' : ''}  ${!isInteractable ? 'is-locked' : ''}`}
+            className={`generation-quiz-card generation-quiz-card--revealed ${isNew ? 'is-new' : ''} ${isMissed && !isFound ? 'is-missed' : ''} ${!isInteractable ? 'is-locked' : ''}`}
             aria-label={isInteractable
                 ? t('games.openDetails', { name: pokemon.displayName })
                 : t('games.detailsLocked', { name: pokemon.displayName })}

@@ -26,6 +26,7 @@ const BY_KEY = Object.freeze({
     guides: 'ground', // the book
     pokepuzzle: 'ghost', // the daily silhouette
     challenge: 'ground', // the Champion's gold crown
+    games: 'poison', // the mascot's own type: where he plays
     generationQuiz: 'fairy', // the "?"
     tierList: 'ice', // the tiers stacked like blocks of ice
     community: 'flying', // the shield of battles and friends

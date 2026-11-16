@@ -43,6 +43,32 @@
     margin: 0;
 }
 
+/* The heading as the way to the section's own page (Jogos, when the dock
+   holds another tab): the same quiet words, a chevron after them. */
+.more-sheet__section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+}
+
+.more-sheet__section-link > svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.more-sheet__section-link:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-primary);
+}
+
 /* One pip per daily game (the PartyPips grammar): a dim dot while it is
    open, filled in the game's tone once played. Static. */
 .more-sheet__pips {

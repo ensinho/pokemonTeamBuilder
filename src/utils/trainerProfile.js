@@ -253,10 +253,16 @@ export function sortNavGroups(groups, profile) {
  * not said — the PokéPuzzle moved into the Mais sheet. A trainer who came only
  * for competitive gets Meta there. (The type chart held it for the Traveler
  * until the games joined the minigames, 2026-11-15.)
+ *
+ * Since the games pass (2026-11-15, Enzo: "facilitar todos — Champion
+ * Challenge, PokéPuzzle, Quizzes e Tier list") the slot is **Jogos**, the
+ * page of the day's four: one tab for all of them, lit on each. The Champion
+ * is its first card and stays the Home's hero. `'challenge'` is still a tab
+ * the shell knows — returning it here gives her the slot back.
  */
 export function personaDockSlot(profile) {
     const interests = orderedInterests(profile);
-    if (interests.length === 0 || interests.includes('minigames')) return 'challenge';
+    if (interests.length === 0 || interests.includes('minigames')) return 'games';
     return 'meta';
 }
 
@@ -335,11 +341,15 @@ export function personaHomeOrder(profile) {
  * "challenge a friend" when nothing waits. The Strategist reads the meta
  * first; the Challenger trades the meta for a friend to battle.
  */
-export const DEFAULT_DAY_CARDS = ['battles', 'puzzle', 'badge', 'meta'];
+export const DEFAULT_DAY_CARDS = ['battles', 'puzzle', 'quiz', 'tier', 'meta', 'badge'];
 
+// `quiz` and `tier` (2026-11-15, the games pass): the day's quiz category and
+// tier theme walk the route after the puzzle, so "Agora" is always the next
+// game still open. The Strategist came for competitive only: the meta leads
+// and the day's two newer games stay out of the way.
 const DAY_CARDS_BY_PERSONA = {
     strategist: ['battles', 'meta', 'puzzle', 'badge'],
-    challenger: ['battles', 'puzzle', 'invite', 'badge'],
+    challenger: ['battles', 'puzzle', 'quiz', 'tier', 'invite', 'badge'],
 };
 
 export function personaDayCards(profile) {

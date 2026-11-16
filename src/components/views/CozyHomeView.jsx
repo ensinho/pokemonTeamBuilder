@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'rea
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
-import { ArrowLeftRight, ArrowUpRight, ChevronRight, MoreHorizontal, Pencil, Play, Plus, RotateCcw, Sparkles, Swords, Trophy } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, ChevronRight, CircleHelp, MoreHorizontal, Pencil, Play, Plus, RotateCcw, Sparkles, Swords, Trophy } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GuestAccountCard } from '../GuestAccountCard';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
@@ -13,6 +13,9 @@ import { useMetaUsage } from '../../hooks/useMetaUsage';
 import { useDailyPuzzle } from '../../hooks/useDailyPuzzle';
 import { useChallengeSummary } from '../../hooks/useChallengeSummary';
 import { useBattles } from '../../hooks/useBattles';
+import { useGameNotes, useGamesToday } from '../../hooks/useGamesToday';
+import { localDayNumber } from '../../utils/gamesToday';
+import { dailyTierTemplate } from '../../utils/tierTemplates';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { typeColors } from '../../constants/types';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
@@ -254,6 +257,9 @@ export function CozyHomeView({
     const puzzle = useDailyPuzzle(userId);
     const challenge = useChallengeSummary(userId, isAnonymous);
     const { awaitingMeCount } = useBattles();
+    // The day's two newer games (2026-11-15): what the device recorded today.
+    const gamesDone = useGamesToday();
+    const gameNotes = useGameNotes();
 
     // The Pokédex index carries names and types for every id; saved slots and
     // usage rows only carry ids, so everything here resolves through it.
@@ -597,7 +603,39 @@ export function CozyHomeView({
     const championsDone = !isChallengeGuest && dayPlan.total > 0 && dayPlan.done >= dayPlan.total;
     // A battle's art: the partner facing a silhouette (RouteArt.jsx).
     const duoArt = <RouteDuo partnerId={partnerId} partnerShiny={greetingPokemonIsShiny} partnerTone={typeColors[partnerType]} />;
+    // The quiz's category and the tier list's theme of the day (the games
+    // pass, 2026-11-15). The category's own name stays with the quiz — its
+    // table is not something the Home should load.
+    const tierTheme = dailyTierTemplate(localDayNumber(now.getTime()));
+    const openDailyQuiz = () => navigate('/quiz?tab=categories&daily=1');
+    const openDailyTier = () => navigate('/tier-list?daily=1');
     const routeItems = {
+        quiz: {
+            tone: typeColors.fairy,
+            art: <RouteEmblem Icon={CircleHelp} percent={gamesDone.quiz ? 100 : 0} />,
+            live: true,
+            kicker: t('cozyHome.route.quizKicker'),
+            title: t('nav.quizDaily'),
+            sub: t('cozyHome.route.quizSub'),
+            action: { label: t('cozyHome.play'), onClick: openDailyQuiz },
+            onOpen: openDailyQuiz,
+            stamp: {
+                title: t('nav.quizDaily'),
+                sub: gameNotes.quiz ? t('cozyHome.route.quizStamp', { found: gameNotes.quiz.found, total: gameNotes.quiz.total }) : t('nav.playedToday'),
+                mark: 'check',
+            },
+        },
+        tier: {
+            tone: typeColors.ice,
+            art: <Sprite src={dexSprite(tierTheme.art)} className="day-sprite" />,
+            live: true,
+            kicker: t('cozyHome.route.tierKicker'),
+            title: t('nav.tierDaily'),
+            sub: t('cozyHome.route.tierSub', { theme: t(`tierList.templates.${tierTheme.id}.name`) }),
+            action: { label: t('cozyHome.route.tierCta'), onClick: openDailyTier },
+            onOpen: openDailyTier,
+            stamp: { title: t('nav.tierDaily'), sub: t('cozyHome.route.tierStamp'), mark: 'check' },
+        },
         battles: {
             tone: 'var(--brand-live)',
             art: duoArt,
@@ -714,11 +752,13 @@ export function CozyHomeView({
         champion: heroKind !== 'challenge' ? (championsDone ? 'done' : 'open') : null,
         badge: 'ambient',
         meta: metaLeader ? 'open' : null,
+        quiz: gamesDone.quiz ? 'done' : 'open',
+        tier: gamesDone.tierList ? 'done' : 'open',
     };
-    const route = dayRoute(
-        routeOrder(personaDayCards(trainerProfile), { withChampion: heroKind !== 'challenge' }),
-        routeStates,
-    );
+    const routeIds = routeOrder(personaDayCards(trainerProfile), { withChampion: heroKind !== 'challenge' });
+    const route = dayRoute(routeIds, routeStates);
+    // Whether a card stands on this trainer's route today (the persona decides which do).
+    const onRoute = (id) => routeIds.includes(id) && Boolean(routeStates[id]);
 
     const yourDay = (
         <Panel card={false} title={t('cozyHome.route.title')}>
@@ -822,6 +862,8 @@ export function CozyHomeView({
         routeStates.puzzle ? '/pokepuzzle' : null,
         routeStates.champion ? '/challenge' : null,
         routeStates.meta ? '/meta' : null,
+        onRoute('quiz') ? '/quiz' : null,
+        onRoute('tier') ? '/tier-list' : null,
     ].filter(Boolean));
     const openMissions = suggested?.missions.filter((m) => !m.done) || [];
     const upNext = openMissions.find((m) => !routePaths.has((m.to || '').split('?')[0])) || nextMission(suggested);
@@ -881,6 +923,8 @@ export function CozyHomeView({
             routeStates.puzzle ? 'pokepuzzle' : null,
             routeStates.battles || routeStates.invite ? 'battles' : null,
             routeStates.meta ? 'meta' : null,
+            onRoute('quiz') ? 'generationQuiz' : null,
+            onRoute('tier') ? 'tierList' : null,
             // The team in progress is the hero or the teams block.
             activeTeam ? 'builder' : null,
             // The Traveler's hero is the next gym leader.

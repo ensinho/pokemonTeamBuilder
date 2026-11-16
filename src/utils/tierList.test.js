@@ -237,3 +237,68 @@ describe('the shared link preview', () => {
         expect(chart.description).toContain('1 of 18');
     });
 });
+
+describe('the theme of the day', () => {
+    it('is the same for a day and a themed one', async () => {
+        const { DAILY_TIER_TEMPLATES, dailyTierTemplate } = await import('./tierList');
+        expect(dailyTierTemplate(20772)).toBe(dailyTierTemplate(20772));
+        expect(DAILY_TIER_TEMPLATES.map((t) => t.id)).not.toContain('free');
+        for (let day = 0; day < 60; day += 1) expect(dailyTierTemplate(day).id).not.toBe('free');
+    });
+
+    it('visits every theme before one comes round again', async () => {
+        const { DAILY_TIER_TEMPLATES, dailyTierTemplate } = await import('./tierList');
+        const seen = new Set();
+        let previous = null;
+        for (let day = 500; day < 500 + DAILY_TIER_TEMPLATES.length; day += 1) {
+            const { id } = dailyTierTemplate(day);
+            expect(id).not.toBe(previous);
+            previous = id;
+            seen.add(id);
+        }
+        expect(seen.size).toBe(DAILY_TIER_TEMPLATES.length);
+    });
+
+    it('reads a bad day as day zero', async () => {
+        const { dailyTierTemplate } = await import('./tierList');
+        expect(dailyTierTemplate(undefined)).toBe(dailyTierTemplate(0));
+    });
+});
+
+describe('a finished board', () => {
+    it('is a themed list with nothing left in the pool', async () => {
+        const { isBoardComplete } = await import('./tierList');
+        let board = createBoard('eevee');
+        expect(isBoardComplete(board)).toBe(false);
+        for (const id of [...board.pool]) board = placeItem(board, id, 'B');
+        expect(isBoardComplete(board)).toBe(true);
+        expect(isBoardComplete(placeItem(board, 133, 'pool'))).toBe(false);
+    });
+
+    it('is a chart with every cell chosen', async () => {
+        const { isBoardComplete } = await import('./tierList');
+        let board = createBoard('generations');
+        expect(isBoardComplete(board)).toBe(false);
+        Object.keys(board.cells).forEach((key, i) => { board = setCell(board, key, i + 1); });
+        expect(isBoardComplete(board)).toBe(true);
+    });
+
+    it('is a free list only once it holds a few', async () => {
+        const { isBoardComplete } = await import('./tierList');
+        let board = createBoard('free');
+        expect(isBoardComplete(board)).toBe(false);
+        board = placeItem(placeItem(board, 1, 'S'), 4, 'S');
+        expect(isBoardComplete(board)).toBe(false);
+        expect(isBoardComplete(placeItem(board, 7, 'A'))).toBe(true);
+        expect(isBoardComplete(null)).toBe(false);
+    });
+
+    it('shows its best first', async () => {
+        const { boardHighlights } = await import('./tierList');
+        let board = createBoard('starters');
+        board = placeItem(placeItem(placeItem(placeItem(board, 4, 'A'), 7, 'S'), 1, 'B'), 152, 'C');
+        expect(boardHighlights(board)).toEqual([7, 4, 1]);
+        expect(boardHighlights(setCell(createBoard('types'), 'fire', 6))).toEqual([6]);
+        expect(boardHighlights(null)).toEqual([]);
+    });
+});

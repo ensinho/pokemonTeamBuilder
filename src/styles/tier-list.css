@@ -109,6 +109,18 @@
     font-size: var(--text-2xs);
 }
 
+/* The theme of the day (2026-11-15): where the kind would be, "Hoje" — with
+   the Live dot while today's list is still to make. */
+.tier-theme__today {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    color: var(--brand-live-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+}
+
 /* ── The page: the board, and the pool beside it on a desktop ── */
 
 .tier-page__body {
@@ -671,6 +683,18 @@
     gap: var(--space-3);
 }
 
+/* The list was finished just now: one line above the ways to show it. */
+.tier-actions__done {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-success);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
 /* A phone (2026-11-15, second pass — Enzo: "tá meio confuso, só deixar mais
    fácil tipo o builder"). The builder's grammar: what you are making stays
    compact on top, the things to add are a plain grid under it, and a tap on
@@ -828,9 +852,13 @@
         flex: 1 1 100%;
     }
 
-    .tier-actions .btn-secondary,
+    /* The forum and the link share a row; starting over sits under them. */
+    .tier-actions .btn-secondary {
+        flex: 1 1 40%;
+    }
+
     .tier-actions .btn-ghost {
-        flex: 1 1 0;
+        flex: 1 1 100%;
     }
 }
 

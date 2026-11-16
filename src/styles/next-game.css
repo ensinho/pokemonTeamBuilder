@@ -82,13 +82,30 @@
     color: var(--color-muted);
 }
 
-/* Both of the day's games played: earned, so the check is gold. A status,
-   not a link — no hover. */
-.next-game--done {
-    --nav-tone: var(--brand-gold);
+/* The day's four as pips (2026-11-15): one per game, filled in its own tone
+   once played — the Mais sheet's device, here beside where the day goes on. */
+.day-pips {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--space-1);
 }
 
-.next-game--done:hover,
-.next-game--done:active {
-    background: var(--color-surface-raised);
+.day-pips__pip {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-fg) 16%, transparent);
 }
+
+.day-pips__pip.is-done {
+    background: color-mix(in srgb, var(--nav-hue, var(--color-primary)) 72%, var(--color-fg));
+}
+
+/* Every game played: earned, so the pips are gold. */
+.day-pips.is-complete .day-pips__pip {
+    background: var(--brand-gold);
+}
+
+/* Every game of the day played: the row points at the Diário do dia, in the
+   forum's own tone; what was earned is the pips, in gold. */

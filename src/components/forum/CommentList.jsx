@@ -15,6 +15,7 @@ import { buildCommentTree, displayAncestors } from '../../utils/forumTree';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
 import { ChallengeShareCard } from '../ChallengeShareCard';
+import { GameShares } from './GameShares';
 import { ForumTeamCard } from './ForumTeamCard';
 
 const isStaff = (c) => c.createdBy === 'system' || c.creatorName === 'Professor Oak' || c.userEmail === 'enzopo625@gmail.com';
@@ -152,6 +153,7 @@ const CommentNode = memo(function CommentNode({
 
                 {comment.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={comment.sharedPuzzle} />}
                 {comment.sharedChallenge && <ChallengeShareCard share={comment.sharedChallenge} />}
+                <GameShares message={comment} />
                 {comment.championNote && <ChampionNote note={comment.championNote} t={t} />}
                 {comment.rating && <span className="cmt__rating">{t('forum.rating.label')} {t(`forum.rating.${comment.rating}`)}</span>}
                 {comment.battleInvite?.battleId && <BattleInviteCard invite={comment.battleInvite} />}

@@ -12,6 +12,7 @@ export function useCategoryGuesser() {
     const getRandomUnplayedListId = useCategoryGuesserStore((state) => state.getRandomUnplayedListId);
     const startNewRun = useCategoryGuesserStore((state) => state.startNewRun);
     const resumeRun = useCategoryGuesserStore((state) => state.resumeRun);
+    const endRun = useCategoryGuesserStore((state) => state.endRun);
     const rerunRun = useCategoryGuesserStore((state) => state.rerunRun);
     const updateActiveRunProgress = useCategoryGuesserStore((state) => state.updateActiveRunProgress);
     const deleteRun = useCategoryGuesserStore((state) => state.deleteRun);
@@ -32,6 +33,7 @@ export function useCategoryGuesser() {
         getRandomUnplayedListId,
         startNewRun,
         resumeRun,
+        endRun,
         rerunRun,
         updateActiveRunProgress,
         deleteRun,
