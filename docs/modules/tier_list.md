@@ -99,7 +99,26 @@ Electric cell.
   (`og.test.js`).
 - Events: `tierlist_share`, `tierlist_remix`.
 
+## The games pass (2026-11-15, [games.md](./games.md))
+
+- **Themes** live in `utils/tierTemplates.js` (re-exported by `tierList.js`),
+  so the Home and the Jogos page can name the theme of the day without the
+  board's rules. Five more: final starters, fossils, Ultra Beasts, Paradox,
+  babies.
+- **The theme of the day** (`dailyTierTemplate`): first in the rail, marked
+  "Hoje", the Live dot while today's list is still to make. `?daily=1` and
+  `?t=<theme>` open a theme.
+- **"Postar no Diário"** sends the list to the forum's room of the day
+  (`utils/gameShare.js` `sharedTierList` — the link code, never the list's
+  name). The privacy page says so.
+- **The finish line**: the moment the last Pokémon is ranked by the
+  trainer's own placement (`isBoardComplete` going false → true on the same
+  theme; never a board that loaded finished or was copied from a link) the
+  page says so above the three ways to show it.
+- Finishing or sharing a list is the tier list's part of the day
+  (`markGameDone('tierList', { theme })`).
+
 ## Not built yet
 
 Editable rank names; more chart themes (favourite per region's gym, per
-evolution line); posting a list to the forum's Diário do dia.
+evolution line).
