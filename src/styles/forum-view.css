@@ -3586,6 +3586,151 @@ summary.forum-explorer__heading:focus-visible {
     color: var(--color-muted);
 }
 
+/* A shared tier list and a shared quiz (2026-11-15, TierListShareCard /
+   QuizShareCard): the same shell. A rank is a letter on its ball's colour
+   and its Pokémon small on their platforms; a quiz's mark is pips. */
+.game-share-slot {
+    min-height: 5.5rem;
+}
+
+.tier-share__body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3);
+}
+
+.tier-share__ranks,
+.tier-share__cells {
+    display: flex;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tier-share__ranks {
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.tier-share__cells {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    max-width: 24rem;
+}
+
+.tier-share__rank {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.tier-share__letter {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--ball-top) 18%, var(--color-surface-raised));
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Colour is light on a dark theme: the ball's hue at a set lightness
+   (the recipe of tier-list.css), never a flat mix. */
+@supports (color: light-dark(red, oklch(from red l c h))) {
+    .tier-share__letter {
+        background: light-dark(
+            color-mix(in srgb, var(--ball-top) 16%, var(--color-surface-raised)),
+            oklch(from var(--ball-top) 0.3 calc(c * 0.5) h)
+        );
+    }
+}
+
+.tier-share__lane {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.tier-share__mon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+}
+
+.tier-share__mon::before {
+    content: '';
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    width: 72%;
+    height: 20%;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mon-type) 45%, transparent);
+    translate: -50% 0;
+}
+
+.tier-share__mon img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.tier-share__more {
+    padding-inline: var(--space-1);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.quiz-share__pips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    max-width: 12rem;
+}
+
+.quiz-share__pip {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-border) 70%, transparent);
+}
+
+.quiz-share__pip.is-found {
+    background: var(--color-success);
+}
+
+.quiz-share__meter {
+    flex: 1 1 8rem;
+    height: 0.5rem;
+    min-width: 6rem;
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+    overflow: hidden;
+}
+
+.quiz-share__fill {
+    display: block;
+    width: var(--quiz-share, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-success);
+}
+
 /* ============================================================
    TEAM OF THE WEEK (forum/TeamOfTheWeek.jsx, 2026-10-23)
    The top of an unfiltered feed. One filled block, bleeding past

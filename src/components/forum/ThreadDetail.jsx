@@ -20,6 +20,7 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
 import { ChallengeShareCard } from '../ChallengeShareCard';
+import { GameShares } from './GameShares';
 import { useChatAutoScroll } from '../../hooks/useChatAutoScroll';
 import { formatForumTime, getCategoryMeta } from '../../utils/forumTime';
 import { isPinnedTopic, topicReplies } from '../../utils/forumRanking';
@@ -250,6 +251,7 @@ export function ThreadDetail({
                     {opMessage?.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={opMessage.sharedPuzzle} />}
                     {opMessage?.sharedBadgeCase && <BadgeCaseCard share={opMessage.sharedBadgeCase} t={t} />}
                     {opMessage?.sharedChallenge && <ChallengeShareCard share={opMessage.sharedChallenge} />}
+                    <GameShares message={opMessage} />
                     {opMessage?.battleInvite?.battleId && <BattleInviteCard invite={opMessage.battleInvite} />}
 
                     {(topic.sharedTeam || opMessage?.sharedTeam) && <RatingVerdict messages={comments} t={t} />}
