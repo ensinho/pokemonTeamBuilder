@@ -188,6 +188,27 @@ const TierListVisual = () => (
     </div>
 );
 
+// The day's belt (1.27.0): four games, the first two already caught.
+const GAMES_DAY = [['Campeã', 'Champion', true], ['Puzzle', 'Puzzle', true], ['Quiz', 'Quiz', false], ['Tier list', 'Tier list', false]];
+const GamesDayVisual = ({ language }) => (
+    <div className="flex h-[9.5rem] items-center justify-center gap-4 bg-bg p-3" aria-hidden="true">
+        {GAMES_DAY.map(([pt, en, caught]) => (
+            <div key={en} className="flex flex-col items-center gap-2">
+                {caught ? (
+                    <span className="relative block h-10 w-10 overflow-hidden rounded-full bg-fg">
+                        <span className="absolute inset-x-0 top-0 block h-1/2 bg-primary" />
+                        <span className="absolute inset-x-0 top-1/2 block h-1 -translate-y-1/2 bg-bg" />
+                        <span className="absolute left-1/2 top-1/2 block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg bg-fg" />
+                    </span>
+                ) : (
+                    <span className="block h-10 w-10 rounded-full border-2 border-dashed border-border-strong" />
+                )}
+                <span className={`text-2xs font-semibold ${caught ? 'text-fg' : 'text-muted'}`}>{language === 'pt' ? pt : en}</span>
+            </div>
+        ))}
+    </div>
+);
+
 const NewGamesVisual = ({ language }) => {
     const pt = language === 'pt';
     return (
@@ -808,6 +829,7 @@ const NOTE_ICONS = {
 };
 
 const NOTE_VISUALS = {
+    gamesDay: GamesDayVisual,
     tierList: TierListVisual,
     brand: BrandVisual,
     champions: ChampionsDexVisual,
