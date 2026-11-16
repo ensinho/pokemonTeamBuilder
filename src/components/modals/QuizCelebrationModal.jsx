@@ -14,6 +14,8 @@ import { RefreshIcon } from '../icons';
  * flips it to its shiny form and sparkles again. No confetti canvas, no rings
  * spinning forever.
  *
+ * `share` is the caller's "Postar no Diário" button, shown under the figures.
+ *
  * Two ways on: play again at once (`onPlayAgain` — same generations, or a new
  * challenge, the caller decides and names it with `playAgainText`), or close
  * the dialog and look at the finished grid.
@@ -33,6 +35,8 @@ export function QuizCelebrationModal({
     titleText,
     descText,
     mode = 'generation',
+    // "Postar no Diário" (2026-11-15): the caller's button, under the figures.
+    share = null,
 }) {
     const { t, language } = useTranslation();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
@@ -131,6 +135,7 @@ export function QuizCelebrationModal({
                             <dd className="m-0 text-lg font-semibold text-fg tabular-nums">{finalAccuracy}%</dd>
                         </div>
                     </dl>
+                    {share && <div className="w-full">{share}</div>}
                     </div>
                 </div>
 

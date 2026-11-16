@@ -1,10 +1,12 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Activity,
     Anchor,
     Award,
     Box,
     Bug,
+    Check,
     CheckCircle2,
     Compass,
     Crown,
@@ -59,7 +61,16 @@ import { useMascotBeat } from '../../hooks/useMascotBeat';
 import { feedbackBeat } from '../../utils/mascot/assistant';
 import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { toast } from '../../store/useToastStore';
+import { confirmAction } from '../../store/useConfirmStore';
 import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
+import { track } from '../../services/analytics';
+import { NextGameCard } from '../NextGameCard';
+import { DiaryShareButton } from '../DiaryShareButton';
+import { useDiaryShare } from '../../hooks/useDiaryShare';
+import { markGameDone } from '../../hooks/useGamesToday';
+import { gameDayKey, localDayNumber } from '../../utils/gamesToday';
+import { dailyQuizFor } from '../../utils/dailyQuiz';
+import { buildCategoryQuizShare } from '../../utils/gameShare';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
 const MIN_AUTOCOMPLETE_CHARACTERS = 5;
@@ -215,10 +226,35 @@ export function CategoryGuesserView({ showDetails }) {
         getRandomUnplayedListId,
         startNewRun,
         resumeRun,
+        endRun,
         updateActiveRunProgress,
         deleteRun,
         rerunRun,
     } = useCategoryGuesser();
+
+    // The quiz of the day (2026-11-15, utils/dailyQuiz.js): one category and
+    // its ten Pokémon, the same for everyone today. Its run is this store's
+    // own, stamped with the day; a strip above the panel says where it stands.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const today = useMemo(() => {
+        const now = Date.now();
+        return { key: gameDayKey('quiz', now), quiz: dailyQuizFor(localDayNumber(now)) };
+    }, []);
+    const dailyRun = useMemo(
+        () => quizRuns.find((run) => run.id === today.quiz?.listId && run.dailyDay === today.key) || null,
+        [quizRuns, today],
+    );
+    const dailyFound = dailyRun?.foundNames?.length || 0;
+    const dailyTotal = dailyRun?.totalCount || today.quiz?.names.length || 0;
+    const dailyClosed = Boolean(dailyRun && (dailyRun.isComplete || dailyRun.ended));
+    const isDailyActive = Boolean(dailyRun && activeRunId === dailyRun.id);
+    const dailyTitle = today.quiz ? (language === 'pt' ? today.quiz.list.title.pt : today.quiz.list.title.en) : '';
+
+    // Named in full or closed early, here or on another device: the quiz's
+    // part of the day is played.
+    useEffect(() => {
+        if (dailyClosed) markGameDone('quiz', { found: dailyFound, total: dailyTotal });
+    }, [dailyClosed, dailyFound, dailyTotal]);
 
     // Older runs appear as the list nears its end — at once, they are local.
     const handleHistoryScroll = useCallback((e) => {
@@ -263,12 +299,61 @@ export function CategoryGuesserView({ showDetails }) {
         return () => { cancelled = true; };
     }, []);
 
+    const startDaily = useCallback(() => {
+        if (!today.quiz) return;
+        if (dailyRun) resumeRun(dailyRun.id);
+        else {
+            startNewRun(today.quiz.listId, today.quiz.names, { dailyDay: today.key });
+            track('quiz_daily_start');
+        }
+        setAnswerInput('');
+        setManualHint('');
+        setHintsUsed(0);
+        setGridFilter('all');
+        setFeedback({ tone: 'info', message: t('quiz.daily.started', { title: dailyTitle }) });
+    }, [today, dailyRun, resumeRun, startNewRun, dailyTitle, t]);
+
+    // What opens: a link's own category (`?list=`, a quiz shared in the
+    // forum) or the quiz of the day (`?daily=1`); with neither, the run that
+    // was open — and on a first visit of the day, the day's quiz before a
+    // drawn one. Read once; the parameters leave the URL after.
+    const bootedRef = useRef(false);
     useEffect(() => {
-        if (!isLoadingIndex && pokemonIndex.length > 0 && !activeRun) {
+        if (isLoadingIndex || pokemonIndex.length === 0) return;
+        if (!bootedRef.current) {
+            bootedRef.current = true;
+            const list = searchParams.get('list');
+            const wantsDaily = searchParams.has('daily') || (Boolean(list) && list === today.quiz?.listId);
+            if (list || searchParams.has('daily')) {
+                setSearchParams((params) => {
+                    const next = new URLSearchParams(params);
+                    next.delete('list');
+                    next.delete('daily');
+                    return next;
+                }, { replace: true });
+            }
+            if (wantsDaily) {
+                startDaily();
+                return;
+            }
+            if (list && categoryListMap.has(list)) {
+                const run = quizRuns.find((r) => r.id === list);
+                if (run && !run.isComplete && !run.ended) resumeRun(list);
+                else startNewRun(list, categoryListMap.get(list).pokemonNames);
+                return;
+            }
+            if (!activeRun && today.quiz && !dailyClosed) {
+                startDaily();
+                return;
+            }
+        }
+        if (!activeRun) {
             const initialListId = getRandomUnplayedListId(CATEGORY_LISTS);
             const listObj = categoryListMap.get(initialListId) || CATEGORY_LISTS[0];
             startNewRun(listObj.id, listObj.pokemonNames);
         }
+        // Read on boot and whenever no run is open; the day's own values are stable.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoadingIndex, pokemonIndex, activeRun, getRandomUnplayedListId, categoryListMap, startNewRun]);
 
     const pokemonByName = useMemo(() => {
@@ -350,6 +435,37 @@ export function CategoryGuesserView({ showDetails }) {
     }, [foundNames, pokemonByName]);
 
     const isComplete = activeRun && activeRun.totalCount > 0 && foundNames.size === activeRun.totalCount;
+    // Closed before every name was found (the quiz of the day's "Encerrar").
+    const isEnded = Boolean(activeRun?.ended) && !isComplete;
+    const isOver = Boolean(isComplete || isEnded);
+
+    // "Postar no Diário": the day's quiz from its strip, any finished run from
+    // the celebration. Figures and the category's id — never a Pokémon's name.
+    const dailyShare = useDiaryShare(dailyRun ? `daily:${today.key}:${dailyFound}/${dailyTotal}` : null);
+    const runShare = useDiaryShare(activeRun ? `run:${activeRun.id}:${foundNames.size}/${activeRun.totalCount}` : null);
+    const postDaily = async () => {
+        const share = buildCategoryQuizShare({ listId: today.quiz.listId, found: dailyFound, total: dailyTotal, daily: true });
+        if (share && await dailyShare.post({ sharedQuiz: share })) track('quiz_forum', { mode: 'category', daily: true });
+    };
+    const postRun = async () => {
+        if (isDailyActive) { await postDaily(); return; }
+        const share = buildCategoryQuizShare({ listId: activeRun.id, found: foundNames.size, total: activeRun.totalCount });
+        if (share && await runShare.post({ sharedQuiz: share })) track('quiz_forum', { mode: 'category', daily: false });
+    };
+    const activeShare = isDailyActive ? dailyShare : runShare;
+
+    const endDaily = async () => {
+        if (!dailyRun || dailyClosed) return;
+        const ok = await confirmAction({
+            title: t('quiz.daily.endTitle'),
+            message: t('quiz.daily.endBody', { found: dailyFound, total: dailyTotal }),
+            confirmText: t('quiz.daily.end'),
+        });
+        if (!ok) return;
+        endRun(dailyRun.id);
+        track('quiz_daily_end', { found: dailyFound, total: dailyTotal });
+        setFeedback({ tone: 'info', message: t('quiz.daily.ended', { found: dailyFound, total: dailyTotal }) });
+    };
 
     const answerLookup = useMemo(() => {
         const lookup = new Map();
@@ -593,6 +709,37 @@ export function CategoryGuesserView({ showDetails }) {
 
     return (
         <main className="category-guesser">
+            {/* The quiz of the day: where it stands and its one next step — play,
+                close, or post. Live while it is still to play. */}
+            {today.quiz && (
+                <section className={`quiz-daily ${dailyClosed ? 'is-done' : ''} ${isDailyActive ? 'is-active' : ''}`} aria-label={t('quiz.daily.title')}>
+                    <span className="quiz-daily__mark" aria-hidden="true">
+                        {dailyClosed ? <Check /> : <span className="live-dot" />}
+                    </span>
+                    <span className="quiz-daily__text">
+                        <span className="quiz-daily__kicker">{t('quiz.daily.title')}</span>
+                        <span className="quiz-daily__name">{dailyTitle}</span>
+                    </span>
+                    <span className="quiz-daily__fig">
+                        {dailyRun ? `${dailyFound}/${dailyTotal}` : t('quiz.daily.count', { n: dailyTotal })}
+                    </span>
+                    <span className="quiz-daily__actions">
+                        {dailyClosed ? (
+                            <DiaryShareButton share={dailyShare} onPost={postDaily} className="btn btn-secondary btn-sm" />
+                        ) : isDailyActive ? (
+                            dailyFound > 0 && (
+                                <button type="button" className="btn btn-ghost btn-sm" onClick={endDaily}>{t('quiz.daily.end')}</button>
+                            )
+                        ) : (
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={startDaily}>
+                                {t(dailyRun ? 'games.continue' : 'quiz.daily.play')}
+                            </button>
+                        )}
+                    </span>
+                </section>
+            )}
+            {dailyClosed && isDailyActive && <NextGameCard game="tierList" from="quiz" />}
+
             <section className="category-guesser__panel" aria-labelledby="category-guesser-title">
                 {/* One header for the page: the category, its count, the grid
                     filter, and the two page actions — at every width. History
@@ -709,7 +856,7 @@ export function CategoryGuesserView({ showDetails }) {
                                     suggestions={suggestions}
                                     activeIndex={activeSuggestionIndex}
                                     onSelectSuggestion={handleSelectSuggestion}
-                                    disabled={isComplete}
+                                    disabled={isOver}
                                     inputRef={inputRef}
                                     placeholder={language === 'pt' ? 'Digite o nome do Pokémon...' : 'Type a Pokémon name...'}
                                     minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
@@ -735,7 +882,7 @@ export function CategoryGuesserView({ showDetails }) {
                                 type="button"
                                 onClick={handleManualHint}
                                 className="btn btn-secondary btn-block"
-                                disabled={availableHints <= 0 || remainingPokemon.length === 0 || isComplete}
+                                disabled={availableHints <= 0 || remainingPokemon.length === 0 || isOver}
                                 title={t('games.hintEarn', { count: hintInterval })}
                             >
                                 <Sparkles className="text-accent" aria-hidden="true" />
@@ -758,6 +905,7 @@ export function CategoryGuesserView({ showDetails }) {
                                         key={pokemon.id}
                                         pokemon={pokemon}
                                         isFound={foundIds.has(pokemon.id)}
+                                        isMissed={isEnded}
                                         isNew={pokemon.id === newlyFoundId}
                                         isLoading={loadingDetailId === pokemon.id}
                                         isInteractable={true}
@@ -782,6 +930,7 @@ export function CategoryGuesserView({ showDetails }) {
                     totalCount={totalCount}
                     accuracy={accuracyPercent}
                     pokemon={celebrationPokemon}
+                    share={<DiaryShareButton share={activeShare} onPost={postRun} className="btn btn-secondary btn-block" />}
                 />
             )}
 

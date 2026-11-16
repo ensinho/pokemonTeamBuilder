@@ -658,6 +658,16 @@
     animation: generation-quiz-reveal 320ms ease-out;
 }
 
+/* Shown after the run was closed, not named by the trainer: the same card,
+   its sprite in grey and its name muted. */
+.generation-quiz-card.is-missed .generation-quiz-card__sprite {
+    filter: grayscale(1);
+}
+
+.generation-quiz-card.is-missed .generation-quiz-card__name {
+    color: var(--color-muted);
+}
+
 .generation-quiz-card__header {
     display: flex;
     align-items: center;
