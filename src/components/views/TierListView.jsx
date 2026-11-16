@@ -1,16 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Download, Link2, Plus, RotateCcw, Search, X } from 'lucide-react';
+import { Check, Download, Link2, Plus, RotateCcw, Search, X } from 'lucide-react';
 
 import { BottomSheet } from '../BottomSheet';
 import { Loader } from '../Loader';
 import { NextGameCard } from '../NextGameCard';
+import { DiaryShareButton } from '../DiaryShareButton';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { track } from '../../services/analytics';
 import { toast } from '../../store/useToastStore';
 import { confirmAction } from '../../store/useConfirmStore';
+import { markGameDone, useGamesToday } from '../../hooks/useGamesToday';
+import { useDiaryShare } from '../../hooks/useDiaryShare';
+import { localDayNumber } from '../../utils/gamesToday';
+import { buildTierListShare } from '../../utils/gameShare';
 import { typeColors } from '../../constants/typeChart';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { localizePath } from '../../utils/localePath';
@@ -26,8 +31,10 @@ import {
     addToPool,
     boardFromShare,
     createBoard,
+    dailyTierTemplate,
     decodeTierList,
     encodeTierList,
+    isBoardComplete,
     keepFittingCells,
     locate,
     meetsCellRule,
@@ -55,6 +62,13 @@ import '../../styles/tier-list.css';
  * - Kept on this device only, one board per theme (TIER_LIST_STORAGE_KEY).
  * - "Exportar imagem" draws the board (components/tierList/drawTierList.js)
  *   and shares it where a phone can, downloads it elsewhere.
+ * - The games pass (2026-11-15): one theme is the day's (`dailyTierTemplate`,
+ *   first in the rail, the Live dot while the day's list is still to make);
+ *   "Postar no Diário" sends the list to the forum's room of the day
+ *   (utils/gameShare.js — ids only, the list's name stays here); and the
+ *   moment the last Pokémon is ranked the pool's place says so and offers
+ *   the three ways to show it. Finishing or sharing a list is the tier
+ *   list's part of the day (`markGameDone('tierList')`).
  */
 
 const HOLD_MS = 260;
@@ -192,6 +206,13 @@ export function TierListView() {
     useDocumentMeta({ title: t('seo.tierList.title'), description: t('seo.tierList.description'), path: '/tier-list' });
     const [searchParams, setSearchParams] = useSearchParams();
     const sharedCode = searchParams.get('r');
+    const gamesDone = useGamesToday();
+    // The theme of the day: the same for everyone on this calendar day.
+    const todayTheme = useMemo(() => dailyTierTemplate(localDayNumber(Date.now())), []);
+    const themes = useMemo(
+        () => [todayTheme, ...TIER_TEMPLATES.filter((item) => item.id !== todayTheme.id)],
+        [todayTheme],
+    );
 
     const [store, setStore] = useState(readStore);
     const templateId = store.current;
@@ -215,6 +236,20 @@ export function TierListView() {
         loadMons().then((list) => { if (alive) setMons(list); }).catch(() => { if (alive) setLoadError(true); });
         return () => { alive = false; };
     }, []);
+
+    // `?daily=1` (the Jogos page, the Diário's door) opens the theme of the
+    // day, `?t=` a named one; the parameter leaves once it has been read.
+    useEffect(() => {
+        const wanted = searchParams.get('daily') ? todayTheme.id : searchParams.get('t');
+        if (!wanted) return;
+        if (TEMPLATES_BY_ID[wanted]) setStore((prev) => (prev.current === wanted ? prev : { ...prev, current: wanted }));
+        setSearchParams((params) => {
+            const next = new URLSearchParams(params);
+            next.delete('daily');
+            next.delete('t');
+            return next;
+        }, { replace: true });
+    }, [searchParams, setSearchParams, todayTheme]);
 
     // Saved a moment after the last change, not on every drag frame.
     useEffect(() => {
@@ -388,6 +423,27 @@ export function TierListView() {
     const templateName = t(`tierList.templates.${templateId}.name`);
     const shownTitle = board.title || templateName;
 
+    // The list was finished just now, by this trainer's own last placement —
+    // never a board that loaded finished, never a theme switched to, never a
+    // list copied whole from a link. That moment is the tier list's part of
+    // the day, and the pool's place offers the ways to show it.
+    const complete = isBoardComplete(board);
+    const completeRef = useRef({ id: templateId, complete, skip: false });
+    const [justCompleted, setJustCompleted] = useState(false);
+    useEffect(() => {
+        const prev = completeRef.current;
+        completeRef.current = { id: templateId, complete, skip: false };
+        if (prev.id !== templateId || !complete) {
+            setJustCompleted(false);
+            return;
+        }
+        if (!prev.complete && !prev.skip) {
+            setJustCompleted(true);
+            markGameDone('tierList', { theme: templateId });
+            track('tierlist_complete', { template: templateId });
+        }
+    }, [templateId, complete]);
+
     const makeMine = async () => {
         if (!shared) return;
         const mine = store.boards[shared.templateId];
@@ -404,6 +460,8 @@ export function TierListView() {
             boards: { ...prev.boards, [shared.templateId]: { ...boardFromShare(shared), title: prev.boards[shared.templateId]?.title || '' } },
         }));
         setHeld(null);
+        // A copied list arrives finished: nothing to celebrate, it is not ranked yet.
+        completeRef.current = { ...completeRef.current, skip: true };
         track('tierlist_remix', { template: shared.templateId });
         leaveShared();
     };
@@ -418,6 +476,7 @@ export function TierListView() {
         if (!code) return;
         const url = `${window.location.origin}${localizePath('/tier-list', language, deployBase())}?r=${code}`;
         track('tierlist_share', { template: templateId, placed: placedCount(board) });
+        markGameDone('tierList', { theme: templateId });
         const coarse = window.matchMedia?.('(pointer: coarse)').matches;
         if (coarse && navigator.share) {
             try {
@@ -450,6 +509,7 @@ export function TierListView() {
             });
             if (!blob) throw new Error('no image');
             track('tierlist_export', { template: templateId, placed: placedCount(board) });
+            markGameDone('tierList', { theme: templateId });
             const file = new File([blob], `tier-list-${templateId}.png`, { type: 'image/png' });
             const coarse = window.matchMedia?.('(pointer: coarse)').matches;
             if (coarse && navigator.canShare?.({ files: [file] })) {
@@ -472,6 +532,18 @@ export function TierListView() {
         } finally {
             setExporting(false);
         }
+    };
+
+    // Into the Diário do dia, where the day's results meet. The message
+    // carries the list's link code and no text: the card names the theme.
+    // The button rests as "Ver no Diário" until the list changes (its code is the key).
+    const diary = useDiaryShare(encodeTierList(board));
+    const postToForum = async () => {
+        const share = buildTierListShare(board);
+        if (!share) return;
+        if (!(await diary.post({ sharedTierList: share }))) return;
+        markGameDone('tierList', { theme: templateId });
+        track('tierlist_forum', { template: templateId, placed: placedCount(board) });
     };
 
     // Escape drops what is lifted.
@@ -512,22 +584,33 @@ export function TierListView() {
             <p className="tier-page__sub">{t('tierList.subtitle')}</p>
 
             <div className="tier-themes" role="listbox" aria-label={t('tierList.themes')}>
-                {TIER_TEMPLATES.map((item) => (
-                    <button
-                        key={item.id}
-                        type="button"
-                        role="option"
-                        aria-selected={item.id === templateId}
-                        className={`tier-theme ${item.id === templateId ? 'is-on' : ''}`}
-                        onClick={() => chooseTemplate(item.id)}
-                    >
-                        <span className="tier-theme__art type-platform" style={{ '--card-type': 'var(--color-primary)' }}>
-                            <img src={getPokemonArtworkSpriteUrl(item.art)} alt="" width={56} height={56} loading="lazy" decoding="async" draggable="false" />
-                        </span>
-                        <span className="tier-theme__name">{t(`tierList.templates.${item.id}.name`)}</span>
-                        <span className="tier-theme__kind">{t(item.kind === 'chart' ? 'tierList.kindChart' : 'tierList.kindTier')}</span>
-                    </button>
-                ))}
+                {themes.map((item) => {
+                    const isToday = item.id === todayTheme.id;
+                    return (
+                        <button
+                            key={item.id}
+                            type="button"
+                            role="option"
+                            aria-selected={item.id === templateId}
+                            className={`tier-theme ${item.id === templateId ? 'is-on' : ''} ${isToday ? 'is-today' : ''}`}
+                            onClick={() => chooseTemplate(item.id)}
+                        >
+                            <span className="tier-theme__art type-platform" style={{ '--card-type': 'var(--color-primary)' }}>
+                                <img src={getPokemonArtworkSpriteUrl(item.art)} alt="" width={56} height={56} loading="lazy" decoding="async" draggable="false" />
+                            </span>
+                            <span className="tier-theme__name">{t(`tierList.templates.${item.id}.name`)}</span>
+                            {isToday ? (
+                                // The day's theme: Live while today's list is still to make.
+                                <span className="tier-theme__today">
+                                    {!gamesDone.tierList && <span className="live-dot" aria-hidden="true" />}
+                                    {t('tierList.todayTheme')}
+                                </span>
+                            ) : (
+                                <span className="tier-theme__kind">{t(item.kind === 'chart' ? 'tierList.kindChart' : 'tierList.kindTier')}</span>
+                            )}
+                        </button>
+                    );
+                })}
             </div>
 
             <div className="tier-page__body">
@@ -648,7 +731,7 @@ export function TierListView() {
                         >
                             {board.pool.length
                                 ? renderMons(board.pool, 'pool')
-                                : <p className="tier-pool__empty">{t(templateId === 'free' && placed === 0 ? 'tierList.freeEmpty' : 'tierList.poolDone')}</p>}
+                                : <p className="tier-pool__empty">{t(templateId === 'free' && placed === 0 ? 'tierList.freeEmpty' : justCompleted ? 'tierList.poolJustDone' : 'tierList.poolDone')}</p>}
                         </div>
                         {held != null && locate(board, held) === 'pool' && templateId === 'free' && (
                             <button type="button" className="btn btn-ghost btn-sm" onClick={() => { update((b) => removeItem(b, held)); setHeld(null); }}>
@@ -659,11 +742,21 @@ export function TierListView() {
                 )}
             </div>
 
-            <div className="tier-actions">
+            {/* Three ways to show the list, one to start over. The image is the
+                page's one primary; the forum comes right after it — the list
+                lands in the Diário do dia, where the others' are. */}
+            <div className={`tier-actions ${justCompleted ? 'is-complete' : ''}`}>
+                {justCompleted && (
+                    <p className="tier-actions__done" role="status">
+                        <Check className="w-4 h-4" aria-hidden="true" />
+                        <span>{t(isChart ? 'tierList.doneChart' : 'tierList.doneTier')}</span>
+                    </p>
+                )}
                 <button type="button" className="btn btn-primary btn-lg" onClick={exportImage} disabled={exporting || !mons}>
                     {exporting ? <Loader size="xs" /> : <Download className="w-5 h-5" aria-hidden="true" />}
                     <span>{t('tierList.export')}</span>
                 </button>
+                <DiaryShareButton share={diary} onPost={postToForum} disabled={!placed} />
                 <button type="button" className="btn btn-secondary" onClick={shareLink} disabled={!placed}>
                     <Link2 className="w-4 h-4" aria-hidden="true" />
                     <span>{t('tierList.shareLink')}</span>
