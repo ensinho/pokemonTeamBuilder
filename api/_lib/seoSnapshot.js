@@ -35,6 +35,7 @@ const NAV = [
     ['/tournaments', 'tournaments'],
     ['/damage-calculator', 'damageCalculator'],
     ['/speed-tiers', 'speedTiers'],
+    ['/games', 'games'],
     ['/challenge', 'challenge'],
     ['/pokepuzzle', 'pokepuzzle'],
     ['/guides', 'guides'],

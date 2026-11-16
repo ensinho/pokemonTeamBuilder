@@ -186,11 +186,11 @@ describe('the rail', () => {
             .toEqual(['guessing', 'database', 'teamBuilding', 'dashboard', 'management']);
     });
 
-    it('gives the dock slot to the puzzle unless the trainer does not play', () => {
-        expect(personaDockSlot(normalizeTrainerProfile({}))).toBe('challenge');
-        expect(personaDockSlot(profile(['competitive', 'minigames']))).toBe('challenge');
+    it('gives the dock slot to Jogos unless the trainer does not play', () => {
+        expect(personaDockSlot(normalizeTrainerProfile({}))).toBe('games');
+        expect(personaDockSlot(profile(['competitive', 'minigames']))).toBe('games');
         expect(personaDockSlot(profile(['competitive']))).toBe('meta');
-        expect(personaDockSlot(profile(['franchise']))).toBe('challenge');
+        expect(personaDockSlot(profile(['franchise']))).toBe('games');
     });
 });
 
@@ -308,6 +308,13 @@ describe('personaDayCards', () => {
     it('keeps the default order with no profile', async () => {
         const { personaDayCards, DEFAULT_DAY_CARDS } = await import('./trainerProfile');
         expect(personaDayCards(null)).toEqual(DEFAULT_DAY_CARDS);
+        expect(DEFAULT_DAY_CARDS.slice(1, 4)).toEqual(['puzzle', 'quiz', 'tier']);
+    });
+    it('keeps the day’s newer games out of the competitive-only trainer’s route', async () => {
+        const { personaDayCards } = await import('./trainerProfile');
+        const strategist = personaDayCards(answered({ interests: ['competitive'] }));
+        expect(strategist).not.toContain('quiz');
+        expect(strategist).not.toContain('tier');
     });
     it('reads the meta first for the Strategist, a friend to battle for the Challenger', async () => {
         const { personaDayCards } = await import('./trainerProfile');
@@ -315,6 +322,8 @@ describe('personaDayCards', () => {
         const challenger = personaDayCards(answered({ interests: ['minigames'] }));
         expect(challenger).toContain('invite');
         expect(challenger).not.toContain('meta');
+        // The day's quiz and tier list walk the route right after the puzzle.
+        expect(challenger.slice(challenger.indexOf('puzzle'), challenger.indexOf('puzzle') + 3)).toEqual(['puzzle', 'quiz', 'tier']);
         expect(personaDayCards(answered({ interests: ['franchise'] }))).toEqual(challenger);
     });
     it('always leads with a battle that waits on the trainer', async () => {

@@ -71,7 +71,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Rows3, Route as RouteIcon } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, Users, ShieldHalf, Crown, Shapes, Award, BookOpen, CircleHelp, Coffee, Gamepad2, Rows3, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -90,6 +90,8 @@ import { useInboxStore } from '../store/useInboxStore';
 import { useQuickLookStore } from '../store/useQuickLookStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
+import { GAME_NAV_KEYS } from '../utils/gamesToday';
+import { DayPips } from './DayPips';
 import { glyphMotion } from '../utils/glyphMotion';
 import { navHue } from '../utils/navHue';
 import { HeaderCrumb } from './HeaderCrumb';
@@ -109,6 +111,8 @@ const loadPokedexView = () => import('./views/PokedexView');
 const loadPokemonDetailView = () => import('./views/PokemonDetailView');
 const loadPokePuzzleView = () => import('./views/PokePuzzleView');
 const loadChampionChallengeView = () => import('./views/challenge/ChampionChallengeView');
+// Jogos (2026-11-15): the phone dock's fourth tab for anyone who plays.
+const loadGamesView = () => import('./views/GamesView');
 const loadMetaUsageView = () => import('./views/MetaUsageView');
 // The Mais sheet only exists once its tab is tapped, so it stays out of the
 // boot bundle — and is warmed with the tab destinations, so that tap opens it
@@ -147,7 +151,7 @@ const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemon
 const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
 
 // The mascot's drawing goes first, then his body (the 3D bot): almost every screen has one.
-const MOBILE_PREFETCH = [loadMascotEngine, warmMascotBot, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadChampionChallengeView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
+const MOBILE_PREFETCH = [loadMascotEngine, warmMascotBot, loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadGamesView, loadChampionChallengeView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
 // Desktop had no warm-up at all, so the first click on Construtor downloaded a
 // 107 KB chunk behind the route fallback. Same idea, the rail's main entries.
 // Hovering or focusing a rail entry fetches its chunk: the half second between
@@ -156,7 +160,7 @@ const MOBILE_PREFETCH = [loadMascotEngine, warmMascotBot, loadTeamBuilderView, l
 // specifiers as the lazy() calls below, so the module cache is shared.
 const ROUTE_CHUNKS = {
     builder: loadTeamBuilderView, pokedex: loadPokedexView, pokepuzzle: loadPokePuzzleView, meta: loadMetaUsageView,
-    challenge: loadChampionChallengeView,
+    challenge: loadChampionChallengeView, games: loadGamesView,
     feed: () => import('./views/FeedView'), favorites: () => import('./views/FavoritesView'),
     tournaments: () => import('./views/TournamentsView'), bestTeams: () => import('./views/BestTeamsView'),
     guides: () => import('./views/GuidesView'), sitePage: () => import('./views/InfoPageView'),
@@ -198,6 +202,7 @@ const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ 
 const QuizView = lazy(() => import('./views/QuizView').then((m) => ({ default: m.QuizView })));
 const JourneysView = lazy(() => import('./views/JourneysView').then((m) => ({ default: m.JourneysView })));
 const TierListView = lazy(() => import('./views/TierListView').then((m) => ({ default: m.TierListView })));
+const GamesView = lazy(() => loadGamesView().then((m) => ({ default: m.GamesView })));
 const PokedexView = lazy(() => loadPokedexView().then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
@@ -277,7 +282,7 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size 
 
 // A real link, not a button that calls navigate(): Cmd/Ctrl-click, middle-click
 // and long-press "open in new tab" all work, and the browser shows the URL.
-const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent, glyph = 'nudge', hue }) => {
+const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0, onIntent, glyph = 'nudge', hue, trailing = null }) => {
     const buttonRef = useRef(null);
     // Styled hover tooltip for the collapsed rail. Rendered via a portal with
     // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
@@ -311,6 +316,8 @@ const ShellNavButton = ({ to, active, collapsed, label, onClick, icon, badge = 0
             </span>
             <span className={`app-shell__nav-text ${collapsed ? 'is-hidden' : ''}`}>{label}</span>
             {badge > 0 && !collapsed && <span className="app-shell__nav-badge">{badge > 9 ? '9+' : badge}</span>}
+            {/* A quiet readout at the row's end (the day's pips on Jogos). */}
+            {trailing && !collapsed && <span className="app-shell__nav-trailing">{trailing}</span>}
             {collapsed && tooltipPos && createPortal(
                 <span
                     role="tooltip"
@@ -385,6 +392,7 @@ export default function AppLayout() {
         if (path.includes('/feed')) return 'feed';
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/pokemon/')) return 'pokemonDetail';
+        if (path === '/games') return 'games';
         if (path.includes('/pokepuzzle')) return 'pokepuzzle';
         if (path.includes('/challenge')) return 'challenge';
         if (path === '/tier-list') return 'tierList';
@@ -952,6 +960,7 @@ export default function AppLayout() {
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'challenge': { title: t('challenge.title'), subtitle: '' },
             'tierList': { title: t('nav.tierList'), subtitle: t('tierList.subtitle') },
+            'games': { title: t('nav.games'), subtitle: t('gamesHub.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             // "Cartão de Treinador & Preferências" ellipsised at "Prefe…" in a phone
@@ -1049,6 +1058,9 @@ export default function AppLayout() {
                 key: 'guessing',
                 title: t('nav.guessing'),
                 items: [
+                    // The day's four in one place (2026-11-15): the row carries the
+                    // day's pips — how much of today is played, read from the rail.
+                    { key: 'games', label: t('nav.gamesToday'), shortLabel: t('nav.games'), path: '/games', icon: <Gamepad2 className="w-5 h-5 shrink-0" />, trailing: <DayPips /> },
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeShort'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
                     // The trainer's own ranking (2026-11-15): the one game here you make.
@@ -1106,6 +1118,12 @@ export default function AppLayout() {
         // The tabs the dock's fourth slot can hold (personaDockSlot).
         const slotTabs = {
             // The full name is its accessible name; the pill says "Challenge" (Enzo, 2026-11-09).
+            // Jogos (2026-11-15, Enzo: "facilitar todos — Champion Challenge,
+            // PokéPuzzle, Quizzes e Tier list"): one tab for the four. The
+            // Champion held this slot alone from 2026-11-09; she is the page's
+            // first card and the Home's hero, still one tap from where a visit
+            // starts. To give her the tab back: personaDockSlot → 'challenge'.
+            games: { key: 'games', label: t('nav.games'), icon: <Gamepad2 className="w-5 h-5 shrink-0" />, path: '/games' },
             challenge: { key: 'challenge', label: t('nav.challenge'), shortLabel: t('nav.challengeTab'), icon: <Crown className="w-5 h-5 shrink-0" />, path: '/challenge' },
             meta: { key: 'meta', label: t('nav.meta'), icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
             types: { key: 'types', label: t('nav.typesShort'), icon: <Shapes className="w-5 h-5 shrink-0" />, path: '/types' },
@@ -1122,7 +1140,7 @@ export default function AppLayout() {
             // Champion Challenge; a competitive-only trainer Meta, a games-only one
             // the type chart (personaDockSlot). The Mais sheet keeps the Challenge's
             // hero card too — it is the one destination Enzo wants in both places.
-            slotTabs[personaDockSlot(trainerProfile)] ?? slotTabs.challenge,
+            slotTabs[personaDockSlot(trainerProfile)] ?? slotTabs.games,
         ];
     }, [t, trainerProfile]);
 
@@ -1152,10 +1170,23 @@ export default function AppLayout() {
     // the two game rows it split what people open the sheet for —
     // and the support link is a quiet row under the grid, still in sight
     // without opening "Sobre" (2026-11-10).
+    //
+    // The games pass (2026-11-15): the day has four games, so the pair is a
+    // 2×2 — the Champion, the PokéPuzzle, the quiz of the day, the tier list
+    // of the day (the last two open on today's category and theme). What the
+    // rail's Jogos keeps beyond them (battles and friends) joins "Seu espaço",
+    // four cards two by two. With no Jogos tab in the dock (the competitive-
+    // only trainer's holds Meta) the section's heading is the way to the page.
     const moreSheetSections = useMemo(() => {
         const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
-        const games = ['challenge', 'pokepuzzle'];
-        const placed = new Set([...games, ...primaryNavItems.map((item) => item.key)]);
+        const games = ['challenge', 'pokepuzzle', 'generationQuiz', 'tierList'];
+        const placed = new Set([...games, 'games', ...primaryNavItems.map((item) => item.key)]);
+        const dailyCard = {
+            challenge: { hint: t('nav.challengeCardHint') },
+            pokepuzzle: { hint: t('nav.pokepuzzleCardHint') },
+            generationQuiz: { label: t('nav.quizDaily'), hint: t('nav.quizCardHint'), path: '/quiz?tab=categories&daily=1' },
+            tierList: { label: t('nav.tierDaily'), hint: t('nav.tierListCardHint'), path: '/tier-list?daily=1' },
+        };
         const visible = (items) => items.filter((item) => !inTabBar.has(item.key));
         const groupItems = (key) => navigationGroups.find((group) => group.key === key)?.items ?? [];
         const itemsOf = (...keys) => visible(keys.flatMap(groupItems)).filter((item) => !placed.has(item.key));
@@ -1164,15 +1195,14 @@ export default function AppLayout() {
         const gameCards = games
             .map((key) => allItems.find((item) => item.key === key))
             .filter(Boolean)
-            .map((item) => ({ ...item, shortLabel: undefined, hint: t(`nav.${item.key}CardHint`) }));
+            .map((item) => ({ ...item, shortLabel: undefined, ...dailyCard[item.key] }));
         // The two reference sections keep the rail's persona order.
         const reference = navigationGroups
             .filter((group) => group.key === 'teamBuilding' || group.key === 'database')
             .map((group) => ({ key: group.key, title: titleOf(group.key), items: itemsOf(group.key) }));
         return [
-            { key: 'games', title: t('nav.todayGames'), hero: true, items: gameCards },
-            { key: 'play', title: t('nav.play'), items: itemsOf('guessing') },
-            { key: 'pinned', title: t('nav.yourSpace'), items: visible(primaryNavItems) },
+            { key: 'games', title: t('nav.todayGames'), hero: true, items: gameCards, to: inTabBar.has('games') ? null : '/games' },
+            { key: 'pinned', title: t('nav.yourSpace'), items: [...visible(primaryNavItems), ...itemsOf('guessing')] },
             ...reference,
         ].filter((section) => section.items.length > 0);
     }, [mobileTabs, primaryNavItems, navigationGroups, t]);
@@ -1678,6 +1708,7 @@ export default function AppLayout() {
                                                         glyph={glyphMotion(item.key)}
                                                         hue={navHue(item.key)}
                                                         badge={item.badge || 0}
+                                                        trailing={item.trailing}
                                                         onIntent={() => prefetchRoute(item.prefetchKey || item.key)}
                                                         to={item.path}
                                                         onClick={() => setIsSidebarOpen(false)}
@@ -2129,6 +2160,7 @@ export default function AppLayout() {
                                     } />
                                     <Route path="/challenge" element={<ChampionChallengeView />} />
                                     <Route path="/tier-list" element={<TierListView />} />
+                                    <Route path="/games" element={<GamesView />} />
                                     {/* Saved Teams now lives as a tab inside /favorites. */}
                                     <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
                                     <Route path="/teams/:id" element={
@@ -2258,8 +2290,10 @@ export default function AppLayout() {
                     <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''} ${isDockLive ? 'is-live' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
                         {(() => {
                             // A hub's tab (Meta) lights on every page the hub holds (navHubs).
+                            // Jogos lights on the page and on each of the four games it holds.
                             const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail')
-                                || (key === 'meta' && hubMembers('meta').includes(currentPage));
+                                || (key === 'meta' && hubMembers('meta').includes(currentPage))
+                                || (key === 'games' && Object.values(GAME_NAV_KEYS).includes(currentPage));
                             // "Mais" answers "where am I" for every page it leads to: with
                             // no tab lit on /gyms, the bar said nothing about location.
                             // Only for pages the sheet actually lists — it used to light up
@@ -2297,7 +2331,7 @@ export default function AppLayout() {
                     <MobileMoreSheet
                         onClose={() => setIsSidebarOpen(false)}
                         sections={moreSheetSections}
-                        accountAfter="play"
+                        accountAfter="games"
                         currentPage={currentPage}
                         onIntent={prefetchRoute}
                         onNavigate={(path) => {

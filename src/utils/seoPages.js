@@ -62,6 +62,7 @@ export const STATIC_PAGES = {
     '/pokepuzzle': 'pokepuzzle',
     '/challenge': 'challenge',
     '/tier-list': 'tierList',
+    '/games': 'games',
     '/feed': 'feed',
     '/types': 'types',
     '/best-teams': 'bestTeams',

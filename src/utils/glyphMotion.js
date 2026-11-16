@@ -33,6 +33,7 @@ export const GLYPH_MOTIONS = Object.freeze([
 
 const BY_KEY = Object.freeze({
     home: 'hop',
+    games: 'pop', // the pad's buttons
     journeys: 'nudge',
     builder: 'clash',
     pokedex: 'wobble',

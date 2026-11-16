@@ -1,0 +1,516 @@
+/* Jogos (`/games`, components/views/GamesView.jsx — 2026-11-15).
+   The day's four games in one place. Calm structure: the page is the panel,
+   the cards own the only borders, every value on the spacing grid. The one
+   object with a voice is the belt of four Poké Balls; a card's colour is a
+   lamp under its platform, never paint (design system, "Colour is light"). */
+
+.games-page {
+    display: grid;
+    gap: var(--page-gap, var(--space-4));
+    width: 100%;
+}
+
+.games-page__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    min-width: 0;
+}
+
+.games-page__rail {
+    min-width: 0;
+}
+
+@media (min-width: 1024px) {
+    .games-page {
+        grid-template-columns: minmax(0, 1fr) var(--page-rail-width);
+        align-items: start;
+    }
+}
+
+/* ── The day: what is left, and the belt ── */
+
+.games-day {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+}
+
+.games-day__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.games-day__date {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+}
+
+.games-day__date::first-letter {
+    text-transform: uppercase;
+}
+
+.games-day__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.games-day__clock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+}
+
+.games-day__reset {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.games-day__diary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    color: var(--color-primary-text);
+    font-weight: var(--weight-semibold);
+    text-decoration: none;
+}
+
+.games-day__diary:hover {
+    text-decoration: underline;
+}
+
+.games-day__diary > svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.games-day__belt {
+    display: flex;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* A ball per game. Open: a dashed ring — dashed means absent, here as
+   everywhere. Caught: a Poké Ball whose upper half is the game's own tone. */
+.day-ball {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 3rem;
+}
+
+.day-ball__ball {
+    --ball-base: color-mix(in srgb, var(--color-fg) 90%, var(--color-surface));
+    --ball-ink: var(--color-bg);
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px dashed var(--color-border-strong);
+    border-radius: 50%;
+}
+
+.day-ball.is-caught .day-ball__ball {
+    border: none;
+    background:
+        radial-gradient(circle, var(--ball-base) 0 0.22rem, var(--ball-ink) 0.23rem 0.42rem, transparent 0.43rem),
+        linear-gradient(
+            color-mix(in srgb, var(--tone, var(--color-primary)) 78%, var(--color-fg)) 0 45%,
+            var(--ball-ink) 45% 55%,
+            var(--ball-base) 55%
+        );
+    box-shadow: inset 0 0 0 2px var(--ball-ink);
+}
+
+/* The four caught: earned, so the belt is gold. */
+.games-day.is-complete .day-ball.is-caught .day-ball__ball {
+    background:
+        radial-gradient(circle, var(--ball-base) 0 0.22rem, var(--ball-ink) 0.23rem 0.42rem, transparent 0.43rem),
+        linear-gradient(var(--brand-gold) 0 45%, var(--ball-ink) 45% 55%, var(--ball-base) 55%);
+}
+
+.day-ball__name {
+    color: var(--color-muted);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+}
+
+.day-ball.is-caught .day-ball__name {
+    color: var(--color-fg);
+}
+
+/* ── The four games ── */
+
+.games-grid {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.games-grid > li {
+    display: flex;
+    min-width: 0;
+}
+
+.game-card {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    overflow: hidden;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.game-card:hover {
+    background: var(--color-surface-hover);
+}
+
+/* The band: one raised surface, the game's tone a pool under the platform. */
+.game-card__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 7rem;
+    padding-bottom: var(--space-2);
+    background:
+        radial-gradient(70% 90% at 50% 100%, color-mix(in srgb, var(--tone, transparent) 30%, transparent), transparent 74%),
+        var(--color-surface-raised);
+    overflow: hidden;
+}
+
+.game-card__stage::before {
+    content: '';
+    position: absolute;
+    bottom: var(--space-2);
+    left: 50%;
+    width: 5.5rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tone, var(--color-primary)) 48%, transparent);
+    translate: -50% 0;
+}
+
+.game-card__art {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.game-card__sprite {
+    position: relative;
+    flex: none;
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* A party standing close: each one a step in front of the last. */
+.game-card__sprite + .game-card__sprite {
+    margin-left: calc(var(--space-6) * -1);
+}
+
+/* On the narrow band a card shows two of them. */
+.game-card__sprite:nth-child(n + 3) {
+    display: none;
+}
+
+/* "Quem é esse Pokémon?": not known yet — the shape, haloed in the game's tone. */
+.game-card__sprite.is-unknown {
+    filter: brightness(0) drop-shadow(0 0 0.375rem color-mix(in srgb, var(--tone, var(--color-primary)) 60%, transparent));
+    opacity: 0.7;
+}
+
+.game-card__mark {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: var(--color-bg);
+}
+
+.game-card__mark > svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    stroke-width: 3;
+}
+
+.game-card__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    min-width: 0;
+    padding: var(--space-3);
+}
+
+.game-card__kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    margin: 0;
+    font-size: var(--text-xs);
+}
+
+.game-card__state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    color: var(--brand-live-text);
+    font-weight: var(--weight-semibold);
+}
+
+.game-card__state.is-done {
+    color: var(--color-success);
+}
+
+.game-card__meta {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.game-card__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+}
+
+.game-card__title > svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    color: color-mix(in srgb, var(--tone, var(--color-primary)) 55%, var(--color-fg));
+}
+
+.game-card__line {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    line-height: 1.4;
+}
+
+.game-card__cta {
+    margin-top: auto;
+}
+
+.game-card__cta > svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* A little air between the line and the action, without a second gap rule. */
+.game-card__line + .game-card__cta {
+    margin-top: var(--space-2);
+}
+
+@media (min-width: 768px) {
+    .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-4);
+    }
+
+    /* Room for the art: the band on top, the party of three. */
+    .game-card {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+    }
+
+    .game-card__stage {
+        min-height: 8.5rem;
+        padding-bottom: var(--space-3);
+    }
+
+    .game-card__stage::before {
+        bottom: var(--space-3);
+        width: 9rem;
+    }
+
+    .game-card__sprite {
+        width: 5.5rem;
+        height: 5.5rem;
+    }
+
+    .game-card__sprite:nth-child(n + 3) {
+        display: block;
+    }
+
+    .game-card__body {
+        gap: var(--space-1_5);
+        padding: var(--space-4);
+    }
+
+    .game-card__line {
+        min-height: 2.8em;
+    }
+}
+
+/* ── What needs no clock: three equal doors ── */
+
+.games-anytime {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.games-anytime__title {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+}
+
+.games-anytime__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.games-door {
+    --nav-tone: var(--nav-hue, var(--color-primary));
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    height: 100%;
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.games-door:hover {
+    background: var(--color-surface-hover);
+}
+
+.games-door:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.games-door__icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--nav-tone) 16%, var(--color-surface));
+    color: color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg));
+}
+
+@supports (color: light-dark(red, oklch(from red l c h))) {
+    .games-door__icon {
+        background: light-dark(
+            color-mix(in srgb, var(--nav-tone) 16%, var(--color-surface)),
+            oklch(from var(--nav-tone) 0.3 calc(c * 0.4) h)
+        );
+        color: light-dark(
+            color-mix(in srgb, var(--nav-tone) 55%, var(--color-fg)),
+            oklch(from var(--nav-tone) 0.86 calc(c * 0.6) h)
+        );
+    }
+}
+
+.games-door__icon > svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.games-door__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.games-door__label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+}
+
+.games-door__hint {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+}
+
+@media (max-width: 1023px) {
+    .games-page__main {
+        gap: var(--space-5);
+    }
+
+    .games-day__title {
+        font-size: var(--text-xl);
+    }
+
+    /* The belt spans the screen: four balls, evenly, under the words. */
+    .games-day__belt {
+        justify-content: space-between;
+        width: 100%;
+        gap: var(--space-2);
+    }
+
+    .day-ball {
+        flex: 1;
+    }
+
+    /* The Mais sheet's tile: the icon over its name, three to a row. */
+    .games-door {
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-2);
+        background: var(--color-surface);
+        text-align: center;
+    }
+
+    .games-door__text {
+        align-items: center;
+    }
+
+    .games-door__hint {
+        display: none;
+    }
+}
