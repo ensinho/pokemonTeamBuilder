@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { gamesDoneToday, withGameDone } from '../utils/gamesToday';
+import { DAILY_GAMES, gameNoteToday, gamesDoneToday, withGameDone } from '../utils/gamesToday';
 
 /**
  * The day's games this trainer played (`utils/gamesToday.js` holds the rules).
@@ -21,25 +21,31 @@ const readRecord = () => {
     }
 };
 
-/** Mark `game` ('challenge' | 'pokepuzzle') as played today. Safe anywhere, a store included. */
-export function markGameDone(game) {
+/**
+ * Mark `game` ('challenge' | 'pokepuzzle' | 'quiz' | 'tierList') as played
+ * today. `note` is a few figures the Jogos page says back ("9 de 10").
+ * Safe anywhere, a store included.
+ */
+export function markGameDone(game, note = null) {
     const before = readRecord();
-    const next = withGameDone(before, game, Date.now());
-    if (before && before[game] === next[game]) return;
+    const next = withGameDone(before, game, Date.now(), note);
+    if (before && JSON.stringify(before) === JSON.stringify(next)) return;
     try {
         localStorage.setItem(KEY, JSON.stringify(next));
     } catch (_) { /* private mode: the cards simply stay generic */ }
     if (typeof window !== 'undefined') window.dispatchEvent(new Event(EVENT));
 }
 
-/** `{ challenge, pokepuzzle }` — true for each game played today. */
-export function useGamesToday() {
-    const [done, setDone] = useState(() => gamesDoneToday(readRecord(), Date.now()));
+const sameDone = (a, b) => DAILY_GAMES.every((game) => a[game] === b[game]);
+
+/** Runs `read` now, on every write of the record, and when the tab comes back. */
+function useRecord(read, same) {
+    const [value, setValue] = useState(read);
 
     useEffect(() => {
         const refresh = () => {
-            const next = gamesDoneToday(readRecord(), Date.now());
-            setDone((prev) => (prev.challenge === next.challenge && prev.pokepuzzle === next.pokepuzzle ? prev : next));
+            const next = read();
+            setValue((prev) => (same(prev, next) ? prev : next));
         };
         const onStorage = (event) => { if (event.key === KEY) refresh(); };
         const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
@@ -52,7 +58,28 @@ export function useGamesToday() {
             window.removeEventListener('storage', onStorage);
             document.removeEventListener('visibilitychange', onVisible);
         };
+        // `read` and `same` are module constants at every call site.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return done;
+    return value;
+}
+
+const readDone = () => gamesDoneToday(readRecord(), Date.now());
+
+/** `{ challenge, pokepuzzle, quiz, tierList }` — true for each game played today. */
+export function useGamesToday() {
+    return useRecord(readDone, sameDone);
+}
+
+const readNotes = () => {
+    const record = readRecord();
+    const now = Date.now();
+    return Object.fromEntries(DAILY_GAMES.map((game) => [game, gameNoteToday(record, game, now)]));
+};
+const sameNotes = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/** What each game noted today (`{ quiz: { found, total }, … }`), null where nothing was. */
+export function useGameNotes() {
+    return useRecord(readNotes, sameNotes);
 }

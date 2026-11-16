@@ -16,7 +16,7 @@
  * key — utils/sessionWipe.js clears it on sign-out), one per template.
  */
 
-import { TYPE_IDS } from './typeMatchups.js';
+import { DEFAULT_TEMPLATE_ID, TEMPLATES_BY_ID, TIER_TEMPLATES } from './tierTemplates.js';
 
 export const TIER_LIST_STORAGE_KEY = 'ptb:tierList:v1';
 export const TIER_LIST_VERSION = 1;
@@ -41,72 +41,36 @@ export const TIER_BALLS = {
 export const BALL_BASE = '#f4f2fb';
 export const BALL_INK = '#1b1426';
 
-const GENERATIONS = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix'];
+export {
+    DAILY_TIER_TEMPLATES, DEFAULT_TEMPLATE_ID, TEMPLATES_BY_ID, TIER_TEMPLATES, dailyTierTemplate,
+} from './tierTemplates.js';
 
 /**
- * The starting themes. `ids` fill a tier board's pool; `cells` name a
- * chart's cells, each with the rule its Pokémon must meet. `art` is the
- * National Dex id the template's card shows.
+ * Whether a board is finished: every Pokémon of a themed list ranked, every
+ * cell of a chart chosen. A free list is finished once it holds a few and
+ * none waits in the pool.
  */
-export const TIER_TEMPLATES = [
-    {
-        id: 'starters',
-        kind: 'tier',
-        art: 7,
-        ids: [1, 4, 7, 152, 155, 158, 252, 255, 258, 387, 390, 393, 495, 498, 501, 650, 653, 656, 722, 725, 728, 810, 813, 816, 906, 909, 912],
-    },
-    {
-        id: 'types',
-        kind: 'chart',
-        art: 133,
-        cells: TYPE_IDS.map((type) => ({ key: type, rule: { type } })),
-    },
-    {
-        id: 'legendaries',
-        kind: 'tier',
-        art: 384,
-        ids: [150, 249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 716, 717, 718, 791, 792, 800, 888, 889, 890, 1007, 1008, 1024],
-    },
-    {
-        id: 'generations',
-        kind: 'chart',
-        art: 25,
-        cells: GENERATIONS.map((gen, index) => ({ key: `gen${index + 1}`, rule: { generation: `generation-${gen}` } })),
-    },
-    {
-        id: 'pseudo',
-        kind: 'tier',
-        art: 445,
-        ids: [149, 248, 373, 376, 445, 635, 706, 784, 887, 998],
-    },
-    {
-        id: 'eevee',
-        kind: 'tier',
-        art: 133,
-        ids: [133, 134, 135, 136, 196, 197, 470, 471, 700],
-    },
-    {
-        id: 'mythicals',
-        kind: 'tier',
-        art: 151,
-        ids: [151, 251, 385, 386, 489, 490, 491, 492, 493, 494, 647, 648, 649, 719, 720, 721, 801, 802, 807, 808, 809, 893, 1025],
-    },
-    {
-        id: 'pikaclones',
-        kind: 'tier',
-        art: 25,
-        ids: [25, 311, 312, 417, 587, 702, 777, 877, 921],
-    },
-    {
-        id: 'free',
-        kind: 'tier',
-        art: 132,
-        ids: [],
-    },
-];
+export function isBoardComplete(board) {
+    if (!board) return false;
+    if (board.kind === 'chart') {
+        const cells = Object.values(board.cells);
+        return cells.length > 0 && cells.every(isDexId);
+    }
+    const ranked = TIER_KEYS.reduce((sum, key) => sum + board.tiers[key].length, 0);
+    return board.pool.length === 0 && ranked >= (board.templateId === 'free' ? 3 : 1);
+}
 
-export const TEMPLATES_BY_ID = Object.fromEntries(TIER_TEMPLATES.map((template) => [template.id, template]));
-export const DEFAULT_TEMPLATE_ID = TIER_TEMPLATES[0].id;
+/**
+ * The few Pokémon a board is "about", for a card that shows it small: a
+ * tier list's best ranked (S first), a chart's chosen cells in order.
+ */
+export function boardHighlights(board, max = 3) {
+    if (!board) return [];
+    const ids = board.kind === 'chart'
+        ? Object.values(board.cells).filter(isDexId)
+        : TIER_KEYS.flatMap((key) => board.tiers[key]);
+    return ids.slice(0, max);
+}
 
 /** The most Pokémon a board keeps: a free board grows by hand. */
 export const MAX_BOARD_ITEMS = 120;
