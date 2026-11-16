@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-15 — The Jogos page's cards and belt took another sheet's styles `dispattern`
+- **Symptom:** on the first build of `/games` each card had a foreign padding and a grey slab where its platform should be, and the day's four Poké Balls were flat dashed lines.
+- **Root cause:** two new class names already existed. `.game-card` is the game-version picker's card (`game-cover.css`) and `.day-ball` the week strip's ball (`rewards.css`); both sheets are loaded by the time the page opens, so their rules applied to the new elements. The balls also sized a `<span>` with `width`/`height` while it was still inline. Nothing fails on a name collision — no test, no lint, no build warning — and it was only found by looking at the page.
+- **Fix:** renamed to `.daygame*` and `.belt-ball*`; the ball is `display: block`.
+- **Correct pattern:** before naming a block in a new stylesheet, grep the name across `src/styles` and `src/index.css` (`grep -rn "\.name\b" src/styles src/index.css`). Short generic names (`card`, `ball`, `day`, `game`) are the ones already taken. And look at a new screen in a browser before committing it — the commit that shipped this had only passed tests and lint.
+- **Files:** `src/styles/games-hub.css`, `src/components/views/GamesView.jsx`
+
 ### 2026-11-15 — The tier list's phone tray covered the ranks it fed, and every share image set the app icon on a misaligned disc `dispattern`
 - **Symptom (Enzo, on his iPhone):** the tier list "tá meio confuso": the pool floated over the board as a sticky tray, so tapping a Pokémon and then a rank meant hunting for a rank the tray was covering. Separately, in every share image (the tier list's export, the PokéPuzzle's card, the team sheet's mark and footer) the mascot icon sat inside a translucent circle and was clipped to a circle: the app icon is a rounded square, so its corners and the disc's edge never lined up and the mark looked off-centre.
 - **Root cause:** the tray solved "the pool is a scroll away" by putting the pool on top of the board instead of changing the interaction; the builder already had the answer (the thing being built on top, a grid under it, a tap that does the job). The disc was copied from the first share card, drawn when the logo was a transparent mascot, and survived the switch to the square app icon.

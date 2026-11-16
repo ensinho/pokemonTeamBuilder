@@ -38,6 +38,11 @@ measures first.
 | `tierlist_export` | a tier list or chart is exported as an image | `template`, `placed` |
 | `tierlist_share` | its link is shared or copied | `template`, `placed` |
 | `tierlist_remix` | a shared list is copied into the visitor's own board | `template` |
+| `tierlist_complete` | the last Pokémon of a list is ranked (2026-11-15) | `template` |
+| `tierlist_forum` | a list is posted to the Diário do dia | `template`, `placed` |
+| `quiz_daily_start` | the quiz of the day is started | — |
+| `quiz_daily_end` | the quiz of the day is closed before every name | `found`, `total` |
+| `quiz_forum` | a quiz result is posted to the Diário do dia | `mode` (generation · category), `daily` |
 | `puzzle_hint` | a letter hint is taken (2026-11-11) | `mode`, `n` (which hint) |
 | `puzzle_share` | a puzzle result posted to the Diário do dia | `channel` |
 | `quiz_finish` | a quiz run completed | `mode` (generation · category), `total` |

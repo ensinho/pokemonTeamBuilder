@@ -961,7 +961,7 @@ export default function AppLayout() {
             'challenge': { title: t('challenge.title'), subtitle: '' },
             'tierList': { title: t('nav.tierList'), subtitle: t('tierList.subtitle') },
             // "Jogos / Jogos" in the desktop crumb said the same word twice.
-            'games': { title: t('nav.gamesToday'), shortTitle: t('nav.games'), subtitle: t('gamesHub.subtitle') },
+            'games': { title: t('nav.gamesToday'), subtitle: t('gamesHub.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             // "Cartão de Treinador & Preferências" ellipsised at "Prefe…" in a phone
@@ -1185,8 +1185,10 @@ export default function AppLayout() {
         const dailyCard = {
             challenge: { hint: t('nav.challengeCardHint') },
             pokepuzzle: { hint: t('nav.pokepuzzleCardHint') },
-            generationQuiz: { label: t('nav.quizDaily'), hint: t('nav.quizCardHint'), path: '/quiz?tab=categories&daily=1' },
-            tierList: { label: t('nav.tierDaily'), hint: t('nav.tierListCardHint'), path: '/tier-list?daily=1' },
+            // The pages' own names (a longer one wrapped and broke the 2×2's
+            // rhythm); the hint says what is new today.
+            generationQuiz: { hint: t('nav.quizCardHint'), path: '/quiz?tab=categories&daily=1' },
+            tierList: { hint: t('nav.tierListCardHint'), path: '/tier-list?daily=1' },
         };
         const visible = (items) => items.filter((item) => !inTabBar.has(item.key));
         const groupItems = (key) => navigationGroups.find((group) => group.key === key)?.items ?? [];

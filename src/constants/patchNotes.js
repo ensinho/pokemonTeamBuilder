@@ -34,6 +34,29 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // The games pass (2026-11-15): four games a day and the Jogos page,
+        // the forum for the tier list and the quiz, five new tier themes.
+        notes: [
+            {
+                key: 'games-day',
+                featured: true,
+                icon: 'pokeball',
+                visual: 'gamesDay',
+                title: 'patchNotes.gamesDayTitle',
+                description: 'patchNotes.gamesDayDesc',
+                cta: 'patchNotes.gamesDayCta',
+                path: '/games',
+            },
+            { key: 'games-forum', icon: 'message', title: 'patchNotes.gamesForumTitle', description: 'patchNotes.gamesForumDesc', cta: 'patchNotes.gamesForumCta', path: '/feed' },
+            { key: 'tier-themes', icon: 'trophy', title: 'patchNotes.tierThemesTitle', description: 'patchNotes.tierThemesDesc', cta: 'patchNotes.tierThemesCta', path: '/tier-list' },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+        ],
+    },
+    {
+        version: '1.26.0',
+        month: '2026-11',
+        thanks: false,
         // The tier list (2026-11-15) and nothing else, Enzo's call — beside
         // it the donation card alone, so it keeps the whole column.
         notes: [

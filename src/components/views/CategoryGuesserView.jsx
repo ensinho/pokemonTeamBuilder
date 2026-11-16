@@ -718,11 +718,16 @@ export function CategoryGuesserView({ showDetails }) {
                     </span>
                     <span className="quiz-daily__text">
                         <span className="quiz-daily__kicker">{t('quiz.daily.title')}</span>
-                        <span className="quiz-daily__name">{dailyTitle}</span>
+                        {/* On screen already (the panel names it and counts it): say what makes it the day's. */}
+                        <span className="quiz-daily__name">
+                            {isDailyActive && !dailyClosed ? t('quiz.daily.same', { n: dailyTotal }) : dailyTitle}
+                        </span>
                     </span>
-                    <span className="quiz-daily__fig">
-                        {dailyRun ? `${dailyFound}/${dailyTotal}` : t('quiz.daily.count', { n: dailyTotal })}
-                    </span>
+                    {!(isDailyActive && !dailyClosed) && (
+                        <span className="quiz-daily__fig">
+                            {dailyRun ? `${dailyFound}/${dailyTotal}` : t('quiz.daily.count', { n: dailyTotal })}
+                        </span>
+                    )}
                     <span className="quiz-daily__actions">
                         {dailyClosed ? (
                             <DiaryShareButton share={dailyShare} onPost={postDaily} className="btn btn-secondary btn-sm" />
