@@ -1,8 +1,2443 @@
 {
-  "generatedAt": "2026-11-16T17:13:09.376Z",
+  "generatedAt": "2026-11-17T16:58:46.456Z",
   "source": "https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw",
   "count": 120,
   "teams": [
+    {
+      "id": "4e572771dec214f8",
+      "title": "Eze's Buenos Aires SPE 2027 Champion Team",
+      "player": "Ezequiel Bustamente",
+      "author": "ezebustamante_",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "Champion",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/4e572771dec214f8",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 998,
+          "name": "Baxcalibur-Mega",
+          "item": "Baxcalibrite",
+          "ability": "Ice Body",
+          "nature": "Adamant",
+          "evs": {
+            "hp": 18,
+            "atk": 25,
+            "def": 1,
+            "spd": 17,
+            "spe": 5
+          },
+          "moves": [
+            "Glaive Rush",
+            "Ice Shard",
+            "Swords Dance",
+            "Protect"
+          ]
+        },
+        {
+          "id": 26,
+          "name": "Raichu-Mega-Y",
+          "item": "Raichunite Y",
+          "ability": "Lightning Rod",
+          "nature": "Timid",
+          "evs": {
+            "hp": 25,
+            "def": 11,
+            "spa": 2,
+            "spd": 5,
+            "spe": 23
+          },
+          "moves": [
+            "Zap Cannon",
+            "Focus Blast",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Careful",
+          "evs": {
+            "hp": 30,
+            "def": 16,
+            "spd": 20
+          },
+          "moves": [
+            "Flare Blitz",
+            "Darkest Lariat",
+            "Fake Out",
+            "Parting Shot"
+          ]
+        },
+        {
+          "id": 637,
+          "name": "Volcarona",
+          "item": "Grassy Seed",
+          "ability": "Flame Body",
+          "nature": "Modest",
+          "evs": {
+            "hp": 32,
+            "def": 4,
+            "spa": 5,
+            "spd": 1,
+            "spe": 24
+          },
+          "moves": [
+            "Bug Buzz",
+            "Heat Wave",
+            "Quiver Dance",
+            "Protect"
+          ]
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "item": "Leftovers",
+          "ability": "Competitive",
+          "nature": "Calm",
+          "evs": {
+            "hp": 30,
+            "def": 11,
+            "spd": 25
+          },
+          "moves": [
+            "Muddy Water",
+            "Hypnosis",
+            "Coil",
+            "Recover"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "evs": {
+            "hp": 32,
+            "atk": 25,
+            "spe": 9
+          },
+          "moves": [
+            "Wood Hammer",
+            "Grassy Glide",
+            "High Horsepower",
+            "Fake Out"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cb961dfd044ef427",
+      "title": "Bruno Quiroga's Buenos Aires SPE 2027 Runner Up Team",
+      "player": "Bruno Quiroga",
+      "author": "Bruno",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "Runner Up",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/cb961dfd044ef427",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "item": "Aerodactylite",
+          "ability": "Unnerve",
+          "nature": "Jolly",
+          "moves": [
+            "Dual Wingbeat",
+            "Rock Slide",
+            "Protect",
+            "Tailwind"
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "item": "Charizardite Y",
+          "ability": "Blaze",
+          "nature": "Modest",
+          "moves": [
+            "Heat Wave",
+            "Weather Ball",
+            "Protect",
+            "Solar Beam"
+          ]
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "item": "Sitrus Berry",
+          "ability": "Armor Tail",
+          "nature": "Bold",
+          "moves": [
+            "Psychic Noise",
+            "Protect",
+            "Trick Room",
+            "Helping Hand"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Focus Sash",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Kowtow Cleave",
+            "Iron Head",
+            "Sucker Punch",
+            "Low Kick"
+          ]
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "item": "Fairy Feather",
+          "ability": "Pixilate",
+          "nature": "Modest",
+          "moves": [
+            "Hyper Voice",
+            "Moonblast",
+            "Protect",
+            "Yawn"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "item": "Life Orb",
+          "ability": "Rough Skin",
+          "nature": "Jolly",
+          "moves": [
+            "Dragon Claw",
+            "Stomping Tantrum",
+            "Protect",
+            "Earthquake"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "7dc35555df689638",
+      "title": "Samuel Pereira Marante's Buenos Aires SPE 2027 Top 4 Team",
+      "player": "Samuel Pereira Marante",
+      "author": "CSK",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "3rd",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/7dc35555df689638",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 26,
+          "name": "Raichu-Mega-Y",
+          "item": "Raichunite Y",
+          "ability": "Lightning Rod",
+          "nature": "Timid",
+          "moves": [
+            "Zap Cannon",
+            "Focus Blast",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Jolly",
+          "moves": [
+            "Close Combat",
+            "Brave Bird",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "item": "Focus Sash",
+          "ability": "Rock Head",
+          "nature": "Adamant",
+          "moves": [
+            "Flare Blitz",
+            "Extreme Speed",
+            "Head Smash",
+            "Protect"
+          ]
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "item": "Leftovers",
+          "ability": "Competitive",
+          "nature": "Calm",
+          "moves": [
+            "Muddy Water",
+            "Coil",
+            "Hypnosis",
+            "Protect"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Wood Hammer",
+            "Grassy Glide",
+            "High Horsepower",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 1000,
+          "name": "Gholdengo",
+          "item": "Life Orb",
+          "ability": "Good as Gold",
+          "nature": "Modest",
+          "moves": [
+            "Make It Rain",
+            "Shadow Ball",
+            "Nasty Plot",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dfb9cd123b926a29",
+      "title": "Diego Ferreira Silva's Buenos Aires SPE 2027 Top 4 Team",
+      "player": "Diego Ferreira Silva",
+      "author": "Diego",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "4th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/dfb9cd123b926a29",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Adamant",
+          "moves": [
+            "Close Combat",
+            "Brave Bird",
+            "Roost",
+            "Protect"
+          ]
+        },
+        {
+          "id": 936,
+          "name": "Armarouge",
+          "item": "Psychic Seed",
+          "ability": "Flash Fire",
+          "nature": "Modest",
+          "moves": [
+            "Expanding Force",
+            "Flamethrower",
+            "Calm Mind",
+            "Trick Room"
+          ]
+        },
+        {
+          "id": 324,
+          "name": "Torkoal",
+          "item": "Life Orb",
+          "ability": "Drought",
+          "nature": "Quiet",
+          "moves": [
+            "Eruption",
+            "Flamethrower",
+            "Solar Beam",
+            "Earth Power"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Sitrus Berry",
+          "ability": "Grassy Surge",
+          "nature": "Sassy",
+          "moves": [
+            "Wood Hammer",
+            "Grassy Glide",
+            "Fake Out",
+            "Worry Seed"
+          ]
+        },
+        {
+          "id": 876,
+          "name": "Indeedee-F",
+          "item": "Rocky Helmet",
+          "ability": "Psychic Surge",
+          "nature": "Relaxed",
+          "moves": [
+            "Follow Me",
+            "Heal Pulse",
+            "Skill Swap",
+            "Trick Room"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Focus Sash",
+          "ability": "Defiant",
+          "nature": "Brave",
+          "moves": [
+            "Kowtow Cleave",
+            "Iron Head",
+            "Low Kick",
+            "Sucker Punch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aeaef642e3a50d37",
+      "title": "Len Deuel's Buenos Aires SPE 2027 Top 8 Team",
+      "player": "Len Deuel",
+      "author": "Len",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "5th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/aeaef642e3a50d37",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 373,
+          "name": "Salamence-Mega",
+          "item": "Salamencite",
+          "ability": "Intimidate",
+          "nature": "Timid",
+          "moves": [
+            "Hyper Voice",
+            "Draco Meteor",
+            "Flamethrower",
+            "Protect"
+          ]
+        },
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "item": "Tyranitarite",
+          "ability": "Sand Stream",
+          "nature": "Careful",
+          "moves": [
+            "Knock Off",
+            "Rock Slide",
+            "Low Kick",
+            "Protect"
+          ]
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "item": "Focus Sash",
+          "ability": "Sand Rush",
+          "nature": "Adamant",
+          "moves": [
+            "High Horsepower",
+            "Iron Head",
+            "Swords Dance",
+            "Protect"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "White Herb",
+          "ability": "Unburden",
+          "nature": "Adamant",
+          "moves": [
+            "Close Combat",
+            "Dire Claw",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 36,
+          "name": "Clefable",
+          "item": "Sitrus Berry",
+          "ability": "Unaware",
+          "nature": "Calm",
+          "moves": [
+            "Moonblast",
+            "Helping Hand",
+            "Follow Me",
+            "Protect"
+          ]
+        },
+        {
+          "id": 1000,
+          "name": "Gholdengo",
+          "item": "Choice Scarf",
+          "ability": "Good as Gold",
+          "nature": "Modest",
+          "moves": [
+            "Make It Rain",
+            "Shadow Ball",
+            "Thunderbolt",
+            "Focus Blast"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "942f0375c862f0c5",
+      "title": "Juan Velasco's Buenos Aires SPE 2027 Top 8 Team",
+      "player": "Juan Velasco",
+      "author": "Anya",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "6th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/942f0375c862f0c5",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "item": "Charizardite Y",
+          "ability": "Blaze",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Heat Wave",
+            "Weather Ball",
+            "Solar Beam"
+          ]
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "item": "Floettite",
+          "ability": "Flower Veil",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Moonblast",
+            "Dazzling Gleam",
+            "Light of Ruin"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "moves": [
+            "Protect",
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet"
+          ]
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "item": "Focus Sash",
+          "ability": "Prankster",
+          "nature": "Timid",
+          "moves": [
+            "Protect",
+            "Moonblast",
+            "Encore",
+            "Tailwind"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Chople Berry",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Iron Head",
+            "Kowtow Cleave",
+            "Sucker Punch",
+            "Low Kick"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "item": "Life Orb",
+          "ability": "Rough Skin",
+          "nature": "Jolly",
+          "moves": [
+            "Protect",
+            "Dragon Claw",
+            "Earthquake",
+            "Rock Slide"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2092f9ce7b7b83e5",
+      "title": "Robson Hamilton's Buenos Aires SPE 2027 Top 8 Team",
+      "player": "Robson Hamilton",
+      "author": "OZasquense",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "7th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/2092f9ce7b7b83e5",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 970,
+          "name": "Glimmora-Mega",
+          "item": "Glimmoranite",
+          "ability": "Toxic Debris",
+          "nature": "Modest",
+          "moves": [
+            "Earth Power",
+            "Sludge Bomb",
+            "Power Gem",
+            "Spiky Shield"
+          ]
+        },
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Jolly",
+          "moves": [
+            "Brave Bird",
+            "Close Combat",
+            "Roost",
+            "Protect"
+          ]
+        },
+        {
+          "id": 450,
+          "name": "Hippowdon",
+          "item": "Leftovers",
+          "ability": "Sand Stream",
+          "nature": "Adamant",
+          "moves": [
+            "High Horsepower",
+            "Stone Edge",
+            "Yawn",
+            "Protect"
+          ]
+        },
+        {
+          "id": 972,
+          "name": "Houndstone",
+          "item": "Life Orb",
+          "ability": "Sand Rush",
+          "nature": "Adamant",
+          "moves": [
+            "Last Respects",
+            "Play Rough",
+            "Substitute",
+            "Protect"
+          ]
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "item": "Focus Sash",
+          "ability": "Prankster",
+          "nature": "Modest",
+          "moves": [
+            "Moonblast",
+            "Tailwind",
+            "Charm",
+            "Encore"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Occa Berry",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Sucker Punch",
+            "Kowtow Cleave",
+            "Low Kick",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "851cd0722decc253",
+      "title": "Luis Roquet's Buenos Aires SPE 2027 Top 8 Team",
+      "player": "Luis Roquet",
+      "author": "Aparocks",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "8th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/851cd0722decc253",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 26,
+          "name": "Raichu-Mega-Y",
+          "item": "Raichunite Y",
+          "ability": "Lightning Rod",
+          "nature": "Timid",
+          "moves": [
+            "Zap Cannon",
+            "Focus Blast",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Jolly",
+          "moves": [
+            "Close Combat",
+            "Brave Bird",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 936,
+          "name": "Armarouge",
+          "item": "Life Orb",
+          "ability": "Flash Fire",
+          "nature": "Modest",
+          "moves": [
+            "Armor Cannon",
+            "Expanding Force",
+            "Wide Guard",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Flip Turn",
+            "Aqua Jet"
+          ]
+        },
+        {
+          "id": 876,
+          "name": "Indeedee-F",
+          "item": "Rocky Helmet",
+          "ability": "Psychic Surge",
+          "nature": "Relaxed",
+          "moves": [
+            "Psychic",
+            "Follow Me",
+            "Trick Room",
+            "Helping Hand"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Focus Sash",
+          "nature": "Adamant",
+          "moves": [
+            "Kowtow Cleave",
+            "Sucker Punch",
+            "Iron Head",
+            "Low Kick"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1ff7781a67659209",
+      "title": "Guilherme Schilling's Buenos Aires SPE 2027 Top 16 Team",
+      "player": "Guilherme Schilling",
+      "author": "Gspm02",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "9th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/1ff7781a67659209",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "item": "Froslassite",
+          "ability": "Cursed Body",
+          "nature": "Timid",
+          "moves": [
+            "Blizzard",
+            "Shadow Ball",
+            "Aurora Veil",
+            "Protect"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp-Mega-Z",
+          "item": "Garchompite Z",
+          "ability": "Rough Skin",
+          "nature": "Timid",
+          "moves": [
+            "Protect",
+            "Earth Power",
+            "Power Gem",
+            "Draco Meteor"
+          ]
+        },
+        {
+          "id": 637,
+          "name": "Volcarona",
+          "item": "Grassy Seed",
+          "ability": "Flame Body",
+          "nature": "Modest",
+          "moves": [
+            "Heat Wave",
+            "Quiver Dance",
+            "Protect",
+            "Bug Buzz"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Sitrus Berry",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Fake Out",
+            "Wood Hammer",
+            "Grassy Glide",
+            "U-turn"
+          ]
+        },
+        {
+          "id": 745,
+          "name": "Lycanroc-Dusk",
+          "item": "Focus Sash",
+          "ability": "Tough Claws",
+          "nature": "Adamant",
+          "moves": [
+            "Rock Slide",
+            "Accelerock",
+            "Close Combat",
+            "Protect"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "White Herb",
+          "ability": "Unburden",
+          "nature": "Adamant",
+          "moves": [
+            "Close Combat",
+            "Dire Claw",
+            "Protect",
+            "Throat Chop"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "271b8408de956630",
+      "title": "Juan Francisco Salerno's Buenos Aires SPE 2027 Top 16 Team",
+      "player": "Juan Francisco Salerno",
+      "author": "Juanfi",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "10th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/271b8408de956630",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "item": "Charizardite Y",
+          "ability": "Blaze",
+          "nature": "Timid",
+          "moves": [
+            "Protect",
+            "Heat Wave",
+            "Weather Ball",
+            "Ancient Power"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Impish",
+          "moves": [
+            "Fake Out",
+            "Parting Shot",
+            "Flare Blitz",
+            "Throat Chop"
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Venusaur",
+          "item": "Life Orb",
+          "ability": "Chlorophyll",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Leaf Storm",
+            "Sludge Bomb",
+            "Earth Power"
+          ]
+        },
+        {
+          "id": 681,
+          "name": "Aegislash",
+          "item": "Focus Sash",
+          "ability": "Stance Change",
+          "nature": "Adamant",
+          "moves": [
+            "King's Shield",
+            "Poltergeist",
+            "Shadow Sneak",
+            "Close Combat"
+          ]
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "item": "Fairy Feather",
+          "ability": "Pixilate",
+          "nature": "Modest",
+          "moves": [
+            "Detect",
+            "Yawn",
+            "Hyper Voice",
+            "Moonblast"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "item": "Choice Scarf",
+          "ability": "Rough Skin",
+          "nature": "Adamant",
+          "moves": [
+            "Dragon Claw",
+            "Earthquake",
+            "Stomping Tantrum",
+            "Rock Slide"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1a9f57c28233b5af",
+      "title": "Ivan Charles' Buenos Aires SPE 2027 Top 16 Team",
+      "player": "Ivan Charles",
+      "author": "Guschar",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "11th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/1a9f57c28233b5af",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "item": "Charizardite Y",
+          "ability": "Blaze",
+          "nature": "Timid",
+          "moves": [
+            "Heat Wave",
+            "Weather Ball",
+            "Hurricane",
+            "Protect"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp-Mega-Z",
+          "item": "Garchompite Z",
+          "ability": "Rough Skin",
+          "nature": "Modest",
+          "moves": [
+            "Draco Meteor",
+            "Earth Power",
+            "Power Gem",
+            "Protect"
+          ]
+        },
+        {
+          "id": 279,
+          "name": "Pelipper",
+          "item": "Sitrus Berry",
+          "ability": "Drizzle",
+          "nature": "Bold",
+          "moves": [
+            "Hurricane",
+            "Weather Ball",
+            "Tailwind",
+            "Wide Guard"
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Venusaur",
+          "item": "Focus Sash",
+          "ability": "Chlorophyll",
+          "nature": "Modest",
+          "moves": [
+            "Leaf Storm",
+            "Sludge Bomb",
+            "Sleep Powder",
+            "Protect"
+          ]
+        },
+        {
+          "id": 861,
+          "name": "Grimmsnarl",
+          "item": "Light Clay",
+          "ability": "Prankster",
+          "nature": "Sassy",
+          "moves": [
+            "Spirit Break",
+            "Parting Shot",
+            "Light Screen",
+            "Reflect"
+          ]
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "item": "Leftovers",
+          "ability": "Stamina",
+          "nature": "Calm",
+          "moves": [
+            "Dragon Pulse",
+            "Flash Cannon",
+            "Electro Shot",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "09a6110770504cb8",
+      "title": "Jimmy Espitia's Buenos Aires SPE 2027 Top 16 Team",
+      "player": "Jimmy Espitia",
+      "author": "Sley",
+      "tournament": "Buenos Aires SPE 2027",
+      "placement": "12th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/09a6110770504cb8",
+      "sourceUrl": "https://victoryroad.pro/2027-buenos-aires/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "item": "Floettite",
+          "ability": "Flower Veil",
+          "nature": "Modest",
+          "moves": [
+            "Moonblast",
+            "Dazzling Gleam",
+            "Calm Mind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 26,
+          "name": "Raichu-Mega-Y",
+          "item": "Raichunite Y",
+          "ability": "Lightning Rod",
+          "nature": "Timid",
+          "moves": [
+            "Zap Cannon",
+            "Focus Blast",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Impish",
+          "moves": [
+            "Flare Blitz",
+            "Throat Chop",
+            "Fake Out",
+            "Parting Shot"
+          ]
+        },
+        {
+          "id": 637,
+          "name": "Volcarona",
+          "item": "Grassy Seed",
+          "ability": "Flame Body",
+          "nature": "Timid",
+          "moves": [
+            "Heat Wave",
+            "Giga Drain",
+            "Quiver Dance",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "moves": [
+            "Wave Crash",
+            "Flip Turn",
+            "Last Respects",
+            "Soak"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Wood Hammer",
+            "Grassy Glide",
+            "U-turn",
+            "Fake Out"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "88de9b238aadef38",
+      "title": "thunder_wave_'s 2027 Global Challenge II Top 128 Team",
+      "player": "thunder_wave_",
+      "author": "thunder_wave_",
+      "tournament": "2027 Global Challenge II",
+      "placement": "83rd",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/88de9b238aadef38",
+      "sourceUrl": "-",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 9,
+          "name": "Blastoise-Mega",
+          "item": "Blastoisinite",
+          "ability": "Rain Dish",
+          "nature": "Timid",
+          "level": 50,
+          "evs": {
+            "hp": 6,
+            "spa": 32,
+            "spe": 28
+          },
+          "moves": [
+            "Aura Sphere",
+            "Dark Pulse",
+            "Ice Beam",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "item": "Sharp Beak",
+          "ability": "Gale Wings",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Dual Wingbeat",
+            "Flare Blitz",
+            "Tailwind",
+            "Quick Guard"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Focus Sash",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Waterfall",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Wide Lens",
+          "ability": "Technician",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Population Bomb",
+            "Feint",
+            "Encore",
+            "Protect"
+          ]
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "item": "Sitrus Berry",
+          "ability": "Armor Tail",
+          "nature": "Modest",
+          "level": 50,
+          "evs": {
+            "hp": 6,
+            "spa": 30,
+            "spd": 20,
+            "spe": 10
+          },
+          "moves": [
+            "Expanding Force",
+            "Hyper Voice",
+            "Trick Room",
+            "Imprison"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "item": "Life Orb",
+          "ability": "Rough Skin",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Earthquake",
+            "Rock Slide",
+            "Dragon Claw",
+            "Stomping Tantrum"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3f1a5003b936e8a9",
+      "title": "Huyubare's VR November Challenge #2 Champion Team",
+      "player": "Ko Tsukide",
+      "author": "Huyubare_Poke",
+      "tournament": "VR November Challenge #2",
+      "placement": "Champion",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/3f1a5003b936e8a9",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "item": "Charizardite Y",
+          "ability": "Blaze",
+          "nature": "Modest",
+          "moves": [
+            "Heat Wave",
+            "Solar Beam",
+            "Weather Ball",
+            "Protect"
+          ]
+        },
+        {
+          "id": 373,
+          "name": "Salamence-Mega",
+          "item": "Salamencite",
+          "ability": "Intimidate",
+          "nature": "Modest",
+          "moves": [
+            "Hyper Voice",
+            "Draco Meteor",
+            "Fire Blast",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "White Herb",
+          "ability": "Unburden",
+          "nature": "Adamant",
+          "moves": [
+            "Close Combat",
+            "Gunk Shot",
+            "Rock Slide",
+            "Protect"
+          ]
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "item": "Focus Sash",
+          "ability": "Prankster",
+          "nature": "Timid",
+          "moves": [
+            "Moonblast",
+            "Encore",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Chople Berry",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Kowtow Cleave",
+            "Iron Head",
+            "Sucker Punch",
+            "Low Kick"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "08e7965ccaad1ba7",
+      "title": "Matteo Boschmans' VR November Challenge #2 Runner Up Team",
+      "player": "Matteo Boschmans",
+      "author": "Matteo Boschmans",
+      "tournament": "VR November Challenge #2",
+      "placement": "Runner Up",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/08e7965ccaad1ba7",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "item": "Froslassite",
+          "ability": "Cursed Body",
+          "nature": "Timid",
+          "moves": [
+            "Blizzard",
+            "Shadow Ball",
+            "Aurora Veil",
+            "Protect"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Careful",
+          "moves": [
+            "Fake Out",
+            "Flare Blitz",
+            "Parting Shot",
+            "Helping Hand"
+          ]
+        },
+        {
+          "id": 748,
+          "name": "Toxapex",
+          "item": "Leftovers",
+          "ability": "Regenerator",
+          "nature": "Bold",
+          "moves": [
+            "Infestation",
+            "Toxic",
+            "Wide Guard",
+            "Baneful Bunker"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "White Herb",
+          "ability": "Unburden",
+          "nature": "Adamant",
+          "moves": [
+            "Close Combat",
+            "Dire Claw",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Black Glasses",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Kowtow Cleave",
+            "Sucker Punch",
+            "Swords Dance",
+            "Protect"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "item": "Choice Scarf",
+          "ability": "Rough Skin",
+          "nature": "Adamant",
+          "moves": [
+            "Earthquake",
+            "Dragon Claw",
+            "Stomping Tantrum",
+            "Rock Slide"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4780e81e78cd7dd2",
+      "title": "Candy's VR November Challenge #2 Top 4 Team",
+      "player": "Kandai Nagatome",
+      "author": "sdlnfo",
+      "tournament": "VR November Challenge #2",
+      "placement": "3rd",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/4780e81e78cd7dd2",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "item": "Floettite",
+          "ability": "Flower Veil",
+          "nature": "Modest",
+          "moves": [
+            "Moonblast",
+            "Draining Kiss",
+            "Calm Mind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 373,
+          "name": "Salamence-Mega",
+          "item": "Salamencite",
+          "ability": "Intimidate",
+          "nature": "Modest",
+          "moves": [
+            "Hyper Voice",
+            "Draco Meteor",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Careful",
+          "moves": [
+            "Flare Blitz",
+            "Helping Hand",
+            "Parting Shot",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Focus Sash",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "moves": [
+            "Liquidation",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Life Orb",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Wood Hammer",
+            "High Horsepower",
+            "Grassy Glide",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "White Herb",
+          "ability": "Unburden",
+          "nature": "Adamant",
+          "moves": [
+            "Dire Claw",
+            "Close Combat",
+            "Fake Out",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b0b79aa539ec80cc",
+      "title": "Shao's VR November Challenge #2 Top 4 Team",
+      "player": "Adam Cherfaoui",
+      "author": "Shao_VG",
+      "tournament": "VR November Challenge #2",
+      "placement": "4th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/b0b79aa539ec80cc",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": true,
+      "pokemons": [
+        {
+          "id": 26,
+          "name": "Raichu-Mega-Y",
+          "item": "Raichunite Y",
+          "ability": "Lightning Rod",
+          "nature": "Timid",
+          "moves": [
+            "Zap Cannon",
+            "Focus Blast",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 373,
+          "name": "Salamence-Mega",
+          "item": "Salamencite",
+          "ability": "Intimidate",
+          "nature": "Timid",
+          "moves": [
+            "Hyper Voice",
+            "Protect",
+            "Draco Meteor",
+            "Tailwind"
+          ]
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "item": "Focus Sash",
+          "ability": "Rock Head",
+          "nature": "Adamant",
+          "moves": [
+            "Flare Blitz",
+            "Head Smash",
+            "Extreme Speed",
+            "Protect"
+          ]
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "item": "Leftovers",
+          "ability": "Competitive",
+          "nature": "Calm",
+          "moves": [
+            "Coil",
+            "Hypnosis",
+            "Protect",
+            "Muddy Water"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Fake Out",
+            "Grassy Glide",
+            "Wood Hammer",
+            "High Horsepower"
+          ]
+        },
+        {
+          "id": 1000,
+          "name": "Gholdengo",
+          "item": "Life Orb",
+          "ability": "Good as Gold",
+          "nature": "Modest",
+          "moves": [
+            "Make It Rain",
+            "Shadow Ball",
+            "Nasty Plot",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5613b78f506b2406",
+      "title": "bsmiffy's VR November Challenge #2 Top 8 Team",
+      "player": "Brady Smith",
+      "author": "vgccorner",
+      "tournament": "VR November Challenge #2",
+      "placement": "5th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/5613b78f506b2406",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "item": "Gengarite",
+          "ability": "Cursed Body",
+          "nature": "Modest",
+          "moves": [
+            "Sludge Bomb",
+            "Shadow Ball",
+            "Perish Song",
+            "Protect"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Sassy",
+          "moves": [
+            "Fake Out",
+            "Flare Blitz",
+            "Parting Shot",
+            "Protect"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Grassy Glide",
+            "Wood Hammer",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 666,
+          "name": "Vivillon",
+          "item": "Focus Sash",
+          "ability": "Compound Eyes",
+          "nature": "Timid",
+          "moves": [
+            "Sleep Powder",
+            "Rage Powder",
+            "Hurricane",
+            "Protect"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Life Orb",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Swords Dance",
+            "Sucker Punch",
+            "Kowtow Cleave",
+            "Protect"
+          ]
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "item": "Leftovers",
+          "ability": "Soundproof",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Clanging Scales",
+            "Aura Sphere",
+            "Clangorous Soul"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "7f4d49f8ed96e2f7",
+      "title": "Redsilver's VR November Challenge #2 Top 8 Team",
+      "player": "Hippolyte Bernard",
+      "author": "RedsilverFR",
+      "tournament": "VR November Challenge #2",
+      "placement": "6th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/7f4d49f8ed96e2f7",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "item": "Gengarite",
+          "ability": "Cursed Body",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Shadow Ball",
+            "Sludge Bomb",
+            "Perish Song"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Chople Berry",
+          "ability": "Intimidate",
+          "nature": "Sassy",
+          "moves": [
+            "Protect",
+            "Flare Blitz",
+            "Parting Shot",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Occa Berry",
+          "ability": "Grassy Surge",
+          "nature": "Sassy",
+          "moves": [
+            "Protect",
+            "Grassy Glide",
+            "U-turn",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 450,
+          "name": "Hippowdon",
+          "item": "Leftovers",
+          "ability": "Sand Stream",
+          "nature": "Careful",
+          "moves": [
+            "Protect",
+            "High Horsepower",
+            "Stone Edge",
+            "Yawn"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "Grassy Seed",
+          "ability": "Unburden",
+          "nature": "Adamant",
+          "moves": [
+            "Protect",
+            "Close Combat",
+            "Dire Claw",
+            "Rock Slide"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Life Orb",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Protect",
+            "Kowtow Cleave",
+            "Sucker Punch",
+            "Swords Dance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "8bb4369d008bd3be",
+      "title": "MichaelderBeste's VR November Challenge #2 Top 8 Team",
+      "player": "Michael Kelsch",
+      "author": "MichaelderBeste",
+      "tournament": "VR November Challenge #2",
+      "placement": "7th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/8bb4369d008bd3be",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 26,
+          "name": "Raichu-Mega-Y",
+          "item": "Raichunite Y",
+          "ability": "Lightning Rod",
+          "nature": "Timid",
+          "moves": [
+            "Zap Cannon",
+            "Focus Blast",
+            "Fake Out",
+            "Protect"
+          ]
+        },
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Jolly",
+          "moves": [
+            "Brave Bird",
+            "Close Combat",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "item": "Focus Sash",
+          "ability": "Rock Head",
+          "nature": "Adamant",
+          "moves": [
+            "Flare Blitz",
+            "Head Smash",
+            "Extreme Speed",
+            "Protect"
+          ]
+        },
+        {
+          "id": 730,
+          "name": "Primarina",
+          "item": "Grassy Seed",
+          "ability": "Torrent",
+          "nature": "Modest",
+          "moves": [
+            "Moonblast",
+            "Hyper Voice",
+            "Calm Mind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Wood Hammer",
+            "Grassy Glide",
+            "High Horsepower",
+            "Fake Out"
+          ]
+        },
+        {
+          "id": 1000,
+          "name": "Gholdengo",
+          "item": "Life Orb",
+          "ability": "Good as Gold",
+          "nature": "Modest",
+          "moves": [
+            "Make It Rain",
+            "Shadow Ball",
+            "Nasty Plot",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5687f488f01e2636",
+      "title": "DidiVGC's VR November Challenge #2 Top 8 Team",
+      "player": "DidiVGC",
+      "author": "DidiVGC",
+      "tournament": "VR November Challenge #2",
+      "placement": "8th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/5687f488f01e2636",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Jolly",
+          "moves": [
+            "Close Combat",
+            "Brave Bird",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "item": "Tyranitarite",
+          "ability": "Sand Stream",
+          "nature": "Jolly",
+          "moves": [
+            "Rock Slide",
+            "Knock Off",
+            "Low Kick",
+            "Protect"
+          ]
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "item": "Sitrus Berry",
+          "ability": "Competitive",
+          "nature": "Calm",
+          "moves": [
+            "Scald",
+            "Ice Beam",
+            "Icy Wind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "item": "Focus Sash",
+          "ability": "Sand Rush",
+          "nature": "Adamant",
+          "moves": [
+            "High Horsepower",
+            "Iron Head",
+            "Rock Slide",
+            "Protect"
+          ]
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "item": "Rocky Helmet",
+          "ability": "Hospitality",
+          "nature": "Bold",
+          "moves": [
+            "Matcha Gotcha",
+            "Strength Sap",
+            "Rage Powder",
+            "Protect"
+          ]
+        },
+        {
+          "id": 1000,
+          "name": "Gholdengo",
+          "item": "Life Orb",
+          "ability": "Good as Gold",
+          "nature": "Modest",
+          "moves": [
+            "Shadow Ball",
+            "Make It Rain",
+            "Nasty Plot",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4e72104a03400cf6",
+      "title": "Crystal's VR November Challenge #2 Top 16 Team",
+      "player": "Jeongso Lee",
+      "author": "crystal_0302",
+      "tournament": "VR November Challenge #2",
+      "placement": "9th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/4e72104a03400cf6",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "item": "Charizardite Y",
+          "ability": "Blaze",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Heat Wave",
+            "Weather Ball",
+            "Ancient Power"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Chople Berry",
+          "ability": "Intimidate",
+          "nature": "Careful",
+          "moves": [
+            "Fake Out",
+            "Throat Chop",
+            "Flare Blitz",
+            "Parting Shot"
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Venusaur",
+          "item": "Life Orb",
+          "ability": "Chlorophyll",
+          "nature": "Modest",
+          "moves": [
+            "Protect",
+            "Leaf Storm",
+            "Earth Power",
+            "Sludge Bomb"
+          ]
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "item": "Sitrus Berry",
+          "ability": "Armor Tail",
+          "nature": "Calm",
+          "moves": [
+            "Protect",
+            "Trick Room",
+            "Psychic",
+            "Thunderbolt"
+          ]
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "item": "Fairy Feather",
+          "ability": "Pixilate",
+          "nature": "Modest",
+          "moves": [
+            "Detect",
+            "Hyper Voice",
+            "Quick Attack",
+            "Yawn"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "item": "Choice Scarf",
+          "ability": "Rough Skin",
+          "nature": "Adamant",
+          "moves": [
+            "Earthquake",
+            "Rock Slide",
+            "Dragon Claw",
+            "Stomping Tantrum"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0d5f9e543e1006ae",
+      "title": "FedeCampoVGC's VR November Challenge #2 Top 16 Team",
+      "player": "Federico Camporesi",
+      "author": "FedeCampoVGC",
+      "tournament": "VR November Challenge #2",
+      "placement": "10th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/0d5f9e543e1006ae",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "item": "Floettite",
+          "ability": "Flower Veil",
+          "nature": "Modest",
+          "moves": [
+            "Moonblast",
+            "Dazzling Gleam",
+            "Calm Mind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 373,
+          "name": "Salamence-Mega",
+          "item": "Salamencite",
+          "ability": "Intimidate",
+          "nature": "Timid",
+          "moves": [
+            "Hyper Voice",
+            "Flamethrower",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "moves": [
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects",
+            "Protect"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Life Orb",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Fake Out",
+            "Grassy Glide",
+            "Wood Hammer",
+            "High Horsepower"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "Focus Sash",
+          "ability": "Poison Touch",
+          "nature": "Jolly",
+          "moves": [
+            "Fake Out",
+            "Dire Claw",
+            "Close Combat",
+            "Protect"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Chople Berry",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Sucker Punch",
+            "Iron Head",
+            "Kowtow Cleave",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a19773c09b4f100c",
+      "title": "VuulturVGC's VR November Challenge #2 Top 16 Team",
+      "player": "VuulturVGC",
+      "author": "VuulturVGC",
+      "tournament": "VR November Challenge #2",
+      "placement": "11th",
+      "date": "15 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/a19773c09b4f100c",
+      "sourceUrl": "https://victoryroad.pro/vr-nov26-2/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "item": "Floettite",
+          "ability": "Flower Veil",
+          "nature": "Modest",
+          "moves": [
+            "Dazzling Gleam",
+            "Draining Kiss",
+            "Calm Mind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 445,
+          "name": "Garchomp-Mega",
+          "item": "Garchompite",
+          "ability": "Rough Skin",
+          "nature": "Adamant",
+          "moves": [
+            "Dragon Claw",
+            "Stomping Tantrum",
+            "Rock Slide",
+            "Protect"
+          ]
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "item": "Sitrus Berry",
+          "ability": "Intimidate",
+          "nature": "Sassy",
+          "moves": [
+            "Fake Out",
+            "Flare Blitz",
+            "Helping Hand",
+            "Parting Shot"
+          ]
+        },
+        {
+          "id": 812,
+          "name": "Rillaboom",
+          "item": "Miracle Seed",
+          "ability": "Grassy Surge",
+          "nature": "Adamant",
+          "moves": [
+            "Fake Out",
+            "Wood Hammer",
+            "Grassy Glide",
+            "High Horsepower"
+          ]
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "item": "Focus Sash",
+          "ability": "Poison Touch",
+          "nature": "Jolly",
+          "moves": [
+            "Fake Out",
+            "Close Combat",
+            "Dire Claw",
+            "Coaching"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Life Orb",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "moves": [
+            "Kowtow Cleave",
+            "Sucker Punch",
+            "Swords Dance",
+            "Protect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5124e113ea6383f1",
+      "title": "prespres_'s Gdańsk Regional 2027 Top 32 Team",
+      "player": "prespres_",
+      "author": "prespres_",
+      "tournament": "Gdańsk Regional 2027",
+      "placement": "32nd",
+      "date": "14 Nov 2026",
+      "format": "Reg M-C",
+      "pokepaste": "https://pokepast.es/5124e113ea6383f1",
+      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
+      "featured": false,
+      "pokemons": [
+        {
+          "id": 26,
+          "name": "Raichu-Mega-X",
+          "item": "Raichunite X",
+          "ability": "Lightning Rod",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 30,
+            "def": 4,
+            "spe": 32
+          },
+          "moves": [
+            "Volt Switch",
+            "Fake Out",
+            "Charm",
+            "Volt Tackle"
+          ]
+        },
+        {
+          "id": 398,
+          "name": "Staraptor-Mega",
+          "item": "Staraptite",
+          "ability": "Intimidate",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 27,
+            "atk": 11,
+            "spe": 28
+          },
+          "moves": [
+            "Brave Bird",
+            "Close Combat",
+            "Tailwind",
+            "Protect"
+          ]
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "item": "Focus Sash",
+          "ability": "Rock Head",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 1,
+            "atk": 32,
+            "spd": 1,
+            "spe": 32
+          },
+          "moves": [
+            "Flare Blitz",
+            "Extreme Speed",
+            "Head Smash",
+            "Protect"
+          ]
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "item": "Sitrus Berry",
+          "ability": "Armor Tail",
+          "nature": "Calm",
+          "level": 50,
+          "evs": {
+            "hp": 29,
+            "def": 17,
+            "spd": 20
+          },
+          "moves": [
+            "Psychic",
+            "Helping Hand",
+            "Trick Room",
+            "Protect"
+          ]
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "item": "Life Orb",
+          "ability": "Defiant",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 24,
+            "atk": 32,
+            "spd": 9,
+            "spe": 1
+          },
+          "moves": [
+            "Kowtow Cleave",
+            "Swords Dance",
+            "Sucker Punch",
+            "Protect"
+          ]
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "item": "Fairy Feather",
+          "ability": "Pixilate",
+          "nature": "Quiet",
+          "level": 50,
+          "evs": {
+            "hp": 17,
+            "def": 28,
+            "spa": 21
+          },
+          "moves": [
+            "Hyper Voice",
+            "Hyper Beam",
+            "Quick Attack",
+            "Protect"
+          ]
+        }
+      ]
+    },
     {
       "id": "7300801d5d05770f",
       "title": "johnnychiou36's Taiwan PBL 2027 Champion Team",
@@ -10772,3194 +13207,6 @@
             "Shadow Ball",
             "Nasty Plot",
             "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "8950c4a66fee515c",
-      "title": "frpio_pero's Gdańsk Regional 2027 Top 16 Team",
-      "player": "frpio_pero",
-      "author": "frpio_pero",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "13th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/8950c4a66fee515c",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 26,
-          "name": "Raichu-Mega-Y",
-          "item": "Raichunite Y",
-          "ability": "Lightning Rod",
-          "nature": "Timid",
-          "moves": [
-            "Zap Cannon",
-            "Focus Blast",
-            "Fake Out",
-            "Protect"
-          ]
-        },
-        {
-          "id": 398,
-          "name": "Staraptor-Mega",
-          "item": "Staraptite",
-          "ability": "Intimidate",
-          "nature": "Jolly",
-          "moves": [
-            "Brave Bird",
-            "Close Combat",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 59,
-          "name": "Arcanine-Hisui",
-          "item": "Focus Sash",
-          "ability": "Rock Head",
-          "nature": "Adamant",
-          "moves": [
-            "Flare Blitz",
-            "Head Smash",
-            "Extreme Speed",
-            "Protect"
-          ]
-        },
-        {
-          "id": 730,
-          "name": "Primarina",
-          "item": "Leftovers",
-          "ability": "Liquid Voice",
-          "nature": "Modest",
-          "moves": [
-            "Hyper Voice",
-            "Moonblast",
-            "Calm Mind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Miracle Seed",
-          "ability": "Grassy Surge",
-          "nature": "Adamant",
-          "moves": [
-            "Wood Hammer",
-            "High Horsepower",
-            "Grassy Glide",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 1000,
-          "name": "Gholdengo",
-          "item": "Life Orb",
-          "ability": "Good as Gold",
-          "nature": "Modest",
-          "moves": [
-            "Make It Rain",
-            "Shadow Ball",
-            "Nasty Plot",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "50adea42373fefd9",
-      "title": "AuraRayquaza's Gdańsk Regional 2027 Top 16 Team",
-      "player": "Taran Birdee",
-      "author": "AuraRayquaza",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "14th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/50adea42373fefd9",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 149,
-          "name": "Dragonite-Mega",
-          "item": "Dragoninite",
-          "ability": "Multiscale",
-          "nature": "Modest",
-          "moves": [
-            "Dragon Pulse",
-            "Heat Wave",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 478,
-          "name": "Froslass-Mega",
-          "item": "Froslassite",
-          "ability": "Cursed Body",
-          "nature": "Timid",
-          "moves": [
-            "Blizzard",
-            "Shadow Ball",
-            "Aurora Veil",
-            "Protect"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Sitrus Berry",
-          "ability": "Intimidate",
-          "nature": "Careful",
-          "moves": [
-            "Fake Out",
-            "Flare Blitz",
-            "Throat Chop",
-            "Parting Shot"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Choice Scarf",
-          "ability": "Adaptability",
-          "nature": "Jolly",
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Aqua Jet",
-            "Flip Turn"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "White Herb",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "moves": [
-            "Fake Out",
-            "Close Combat",
-            "Gunk Shot",
-            "Protect"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Black Glasses",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "moves": [
-            "Kowtow Cleave",
-            "Sucker Punch",
-            "Swords Dance",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "31d51c2d516fe5bc",
-      "title": "NikolajHoej's Gdańsk Regional 2027 Top 32 Team",
-      "player": "Nikolaj Høj Nielsen",
-      "author": "nikolajhoej",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "26th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/31d51c2d516fe5bc",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 6,
-          "name": "Charizard-Mega-Y",
-          "item": "Charizardite Y",
-          "ability": "Blaze",
-          "nature": "Modest",
-          "evs": {
-            "hp": 32,
-            "def": 23,
-            "spa": 1,
-            "spd": 10
-          },
-          "moves": [
-            "Heat Wave",
-            "Weather Ball",
-            "Protect",
-            "Solar Beam"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Chople Berry",
-          "ability": "Intimidate",
-          "nature": "Sassy",
-          "evs": {
-            "hp": 32,
-            "def": 14,
-            "spd": 20
-          },
-          "moves": [
-            "Flare Blitz",
-            "Snarl",
-            "Fake Out",
-            "Parting Shot"
-          ]
-        },
-        {
-          "id": 979,
-          "name": "Annihilape",
-          "item": "Spell Tag",
-          "ability": "Defiant",
-          "nature": "Brave",
-          "evs": {
-            "hp": 32,
-            "atk": 5,
-            "spd": 29
-          },
-          "moves": [
-            "Rage Fist",
-            "Drain Punch",
-            "Encore",
-            "Protect"
-          ]
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
-          "item": "Sitrus Berry",
-          "ability": "Armor Tail",
-          "nature": "Calm",
-          "evs": {
-            "hp": 29,
-            "def": 16,
-            "spd": 21
-          },
-          "moves": [
-            "Psychic",
-            "Thunderbolt",
-            "Trick Room",
-            "Beat Up"
-          ]
-        },
-        {
-          "id": 700,
-          "name": "Sylveon",
-          "item": "Fairy Feather",
-          "ability": "Pixilate",
-          "nature": "Modest",
-          "evs": {
-            "hp": 14,
-            "def": 32,
-            "spa": 20
-          },
-          "moves": [
-            "Hyper Voice",
-            "Hyper Beam",
-            "Yawn",
-            "Protect"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Life Orb",
-          "ability": "Rough Skin",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 6,
-            "atk": 28,
-            "spe": 32
-          },
-          "moves": [
-            "Stomping Tantrum",
-            "Dragon Claw",
-            "Rock Slide",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "2a9f1437c1700338",
-      "title": "gabryyl_'s Gdańsk Regional 2027 Top 32 Team",
-      "player": "gabryyl_",
-      "author": "gabryyl_",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "30th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/2a9f1437c1700338",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 142,
-          "name": "Aerodactyl-Mega",
-          "item": "Aerodactylite",
-          "ability": "Unnerve",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 6,
-            "atk": 28,
-            "spe": 32
-          },
-          "moves": [
-            "Rock Slide",
-            "Dual Wingbeat",
-            "Tailwind",
-            "Wide Guard"
-          ]
-        },
-        {
-          "id": 6,
-          "name": "Charizard-Mega-Y",
-          "item": "Charizardite Y",
-          "ability": "Blaze",
-          "nature": "Modest",
-          "evs": {
-            "hp": 32,
-            "def": 9,
-            "spa": 1,
-            "spd": 24
-          },
-          "moves": [
-            "Weather Ball",
-            "Heat Wave",
-            "Solar Beam",
-            "Protect"
-          ]
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
-          "item": "Sitrus Berry",
-          "ability": "Armor Tail",
-          "nature": "Bold",
-          "evs": {
-            "hp": 31,
-            "def": 21,
-            "spd": 14
-          },
-          "moves": [
-            "Psychic",
-            "Thunderbolt",
-            "Protect",
-            "Trick Room"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Focus Sash",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Iron Head",
-            "Kowtow Cleave",
-            "Sucker Punch",
-            "Low Kick"
-          ]
-        },
-        {
-          "id": 700,
-          "name": "Sylveon",
-          "item": "Fairy Feather",
-          "ability": "Pixilate",
-          "nature": "Modest",
-          "evs": {
-            "hp": 20,
-            "def": 16,
-            "spa": 20,
-            "spe": 10
-          },
-          "moves": [
-            "Hyper Voice",
-            "Hyper Beam",
-            "Quick Attack",
-            "Protect"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Life Orb",
-          "ability": "Rough Skin",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dragon Claw",
-            "Earthquake",
-            "Rock Tomb",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "2eaffce00e93b550",
-      "title": "DaniVGC's Gdańsk Regional 2027 Top 64 Team",
-      "player": "DaniVGC",
-      "author": "vgcdani",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "38th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/2eaffce00e93b550",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 768,
-          "name": "Golisopod-Mega",
-          "item": "Golisopite",
-          "ability": "Emergency Exit",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 32,
-            "atk": 32,
-            "spe": 2
-          },
-          "moves": [
-            "Iron Head",
-            "Leech Life",
-            "Sucker Punch",
-            "Protect"
-          ]
-        },
-        {
-          "id": 26,
-          "name": "Raichu-Mega-X",
-          "item": "Raichunite X",
-          "ability": "Lightning Rod",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 30,
-            "def": 4,
-            "spe": 32
-          },
-          "moves": [
-            "Volt Tackle",
-            "Volt Switch",
-            "Fake Out",
-            "Feint"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion-F",
-          "item": "Focus Sash",
-          "ability": "Swift Swim",
-          "nature": "Modest",
-          "evs": {
-            "hp": 1,
-            "spa": 32,
-            "spd": 1,
-            "spe": 32
-          },
-          "moves": [
-            "Muddy Water",
-            "Shadow Ball",
-            "Ice Beam",
-            "Protect"
-          ]
-        },
-        {
-          "id": 279,
-          "name": "Pelipper",
-          "item": "Damp Rock",
-          "ability": "Drizzle",
-          "nature": "Bold",
-          "evs": {
-            "hp": 32,
-            "def": 10,
-            "spa": 11,
-            "spd": 7,
-            "spe": 6
-          },
-          "moves": [
-            "Weather Ball",
-            "Hurricane",
-            "Helping Hand",
-            "Wide Guard"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Electric Seed",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 20,
-            "atk": 20,
-            "def": 10,
-            "spe": 16
-          },
-          "moves": [
-            "Poison Jab",
-            "Close Combat",
-            "Swords Dance",
-            "Protect"
-          ]
-        },
-        {
-          "id": 1018,
-          "name": "Archaludon",
-          "item": "Leftovers",
-          "ability": "Stamina",
-          "nature": "Calm",
-          "evs": {
-            "hp": 30,
-            "spa": 1,
-            "spd": 25,
-            "spe": 10
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Electro Shot",
-            "Snarl",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "8459bad287052762",
-      "title": "Trimoxis' Gdańsk Regional 2027 Top 64 Team",
-      "player": "Alejandro Iglesias (Alex)",
-      "author": "trimoxis12",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "41st",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/8459bad287052762",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 768,
-          "name": "Golisopod-Mega",
-          "item": "Golisopite",
-          "ability": "Emergency Exit",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 31,
-            "atk": 30,
-            "spd": 4,
-            "spe": 1
-          },
-          "moves": [
-            "Iron Head",
-            "Leech Life",
-            "Sucker Punch",
-            "Protect"
-          ]
-        },
-        {
-          "id": 26,
-          "name": "Raichu-Mega-X",
-          "item": "Raichunite X",
-          "ability": "Lightning Rod",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 30,
-            "def": 4,
-            "spe": 32
-          },
-          "moves": [
-            "Fake Out",
-            "Feint",
-            "Volt Switch",
-            "Volt Tackle"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion-F",
-          "item": "Focus Sash",
-          "ability": "Swift Swim",
-          "nature": "Modest",
-          "evs": {
-            "hp": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Muddy Water",
-            "Shadow Ball",
-            "Ice Beam",
-            "Protect"
-          ]
-        },
-        {
-          "id": 279,
-          "name": "Pelipper",
-          "item": "Damp Rock",
-          "ability": "Drizzle",
-          "nature": "Bold",
-          "evs": {
-            "hp": 32,
-            "def": 10,
-            "spa": 17,
-            "spd": 7
-          },
-          "moves": [
-            "Weather Ball",
-            "Hurricane",
-            "Helping Hand",
-            "Wide Guard"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Electric Seed",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 30,
-            "atk": 14,
-            "spd": 4,
-            "spe": 18
-          },
-          "moves": [
-            "Close Combat",
-            "Dire Claw",
-            "Swords Dance",
-            "Protect"
-          ]
-        },
-        {
-          "id": 1018,
-          "name": "Archaludon",
-          "item": "Leftovers",
-          "ability": "Stamina",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 1,
-            "spa": 1,
-            "spd": 29,
-            "spe": 3
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Snarl",
-            "Electro Shot",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "69cab68cd7298757",
-      "title": "ildrarvgc's Gdańsk Regional 2027 Top 64 Team",
-      "player": "ildrarvgc",
-      "author": "ildrarvgc",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "58th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/69cab68cd7298757",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 257,
-          "name": "Blaziken-Mega",
-          "item": "Blazikenite",
-          "ability": "Speed Boost",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 4,
-            "atk": 29,
-            "def": 1,
-            "spe": 32
-          },
-          "moves": [
-            "Close Combat",
-            "Flare Blitz",
-            "Rock Slide",
-            "Protect"
-          ]
-        },
-        {
-          "id": 478,
-          "name": "Froslass-Mega",
-          "item": "Froslassite",
-          "ability": "Cursed Body",
-          "nature": "Timid",
-          "evs": {
-            "hp": 30,
-            "def": 4,
-            "spa": 4,
-            "spd": 4,
-            "spe": 24
-          },
-          "moves": [
-            "Blizzard",
-            "Shadow Ball",
-            "Aurora Veil",
-            "Protect"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Choice Scarf",
-          "ability": "Adaptability",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 4,
-            "atk": 26,
-            "def": 8,
-            "spe": 28
-          },
-          "moves": [
-            "Last Respects",
-            "Wave Crash",
-            "Flip Turn",
-            "Aqua Jet"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Occa Berry",
-          "ability": "Grassy Surge",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 31,
-            "atk": 11,
-            "spd": 22,
-            "spe": 2
-          },
-          "moves": [
-            "Wood Hammer",
-            "Grassy Glide",
-            "Fake Out",
-            "U-turn"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "White Herb",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 21,
-            "atk": 10,
-            "spd": 3,
-            "spe": 32
-          },
-          "moves": [
-            "Gunk Shot",
-            "Close Combat",
-            "Fake Out",
-            "Protect"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Life Orb",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 32,
-            "atk": 32,
-            "spd": 1,
-            "spe": 1
-          },
-          "moves": [
-            "Swords Dance",
-            "Kowtow Cleave",
-            "Sucker Punch",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "231bfe2760e85828",
-      "title": "draxolotl12's Gdańsk Regional 2027 Top 128 Team",
-      "player": "draxolotl12",
-      "author": "draxolotl12",
-      "tournament": "Gdańsk Regional 2027",
-      "placement": "75th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/231bfe2760e85828",
-      "sourceUrl": "https://victoryroad.pro/2027-gdansk/",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 398,
-          "name": "Staraptor-Mega",
-          "item": "Staraptite",
-          "ability": "Intimidate",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 29,
-            "atk": 1,
-            "spd": 4,
-            "spe": 32
-          },
-          "moves": [
-            "Protect",
-            "Brave Bird",
-            "Close Combat",
-            "Tailwind"
-          ]
-        },
-        {
-          "id": 260,
-          "name": "Swampert-Mega",
-          "item": "Swampertite",
-          "ability": "Torrent",
-          "nature": "Adamant",
-          "evs": {
-            "hp": 18,
-            "atk": 30,
-            "spe": 18
-          },
-          "moves": [
-            "Protect",
-            "Wave Crash",
-            "Earthquake",
-            "Ice Punch"
-          ]
-        },
-        {
-          "id": 279,
-          "name": "Pelipper",
-          "item": "Sitrus Berry",
-          "ability": "Drizzle",
-          "nature": "Bold",
-          "evs": {
-            "hp": 32,
-            "def": 11,
-            "spd": 15,
-            "spe": 8
-          },
-          "moves": [
-            "Hurricane",
-            "Weather Ball",
-            "Tailwind",
-            "Wide Guard"
-          ]
-        },
-        {
-          "id": 1013,
-          "name": "Sinistcha",
-          "item": "Kasib Berry",
-          "ability": "Hospitality",
-          "nature": "Bold",
-          "evs": {
-            "hp": 31,
-            "def": 4,
-            "spd": 31
-          },
-          "moves": [
-            "Protect",
-            "Matcha Gotcha",
-            "Trick Room",
-            "Rage Powder"
-          ]
-        },
-        {
-          "id": 1000,
-          "name": "Gholdengo",
-          "item": "Life Orb",
-          "ability": "Good as Gold",
-          "nature": "Timid",
-          "evs": {
-            "hp": 7,
-            "spa": 27,
-            "spe": 32
-          },
-          "moves": [
-            "Protect",
-            "Make It Rain",
-            "Shadow Ball",
-            "Power Gem"
-          ]
-        },
-        {
-          "id": 1018,
-          "name": "Archaludon",
-          "item": "Leftovers",
-          "ability": "Stamina",
-          "nature": "Calm",
-          "evs": {
-            "hp": 30,
-            "def": 4,
-            "spd": 25,
-            "spe": 7
-          },
-          "moves": [
-            "Protect",
-            "Electro Shot",
-            "Dragon Pulse",
-            "Snarl"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "7eb5f86855ef59ad",
-      "title": "gp04_g's 2027 Global Challenge II Runner Up Team",
-      "player": "gp04_g",
-      "author": "gp04_g",
-      "tournament": "2027 Global Challenge II",
-      "placement": "2nd",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/7eb5f86855ef59ad",
-      "sourceUrl": "-",
-      "featured": true,
-      "pokemons": [
-        {
-          "id": 94,
-          "name": "Gengar-Mega",
-          "item": "Gengarite",
-          "ability": "Cursed Body",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 28,
-            "def": 2,
-            "spa": 13,
-            "spe": 23
-          },
-          "moves": [
-            "Sludge Bomb",
-            "Perish Song",
-            "Shadow Ball",
-            "Protect"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Air Balloon",
-          "ability": "Intimidate",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 10,
-            "spd": 24
-          },
-          "moves": [
-            "Throat Chop",
-            "Fake Out",
-            "Parting Shot",
-            "Protect"
-          ]
-        },
-        {
-          "id": 186,
-          "name": "Politoed",
-          "item": "Sitrus Berry",
-          "ability": "Drizzle",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 23,
-            "spd": 12
-          },
-          "moves": [
-            "Weather Ball",
-            "Ice Beam",
-            "Perish Song",
-            "Protect"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Muscle Band",
-          "ability": "Grassy Surge",
-          "nature": "Careful",
-          "level": 50,
-          "evs": {
-            "hp": 26,
-            "atk": 17,
-            "spd": 21,
-            "spe": 2
-          },
-          "moves": [
-            "Grassy Glide",
-            "High Horsepower",
-            "Fake Out",
-            "U-turn"
-          ]
-        },
-        {
-          "id": 1018,
-          "name": "Archaludon",
-          "item": "Leftovers",
-          "ability": "Stamina",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 1,
-            "spd": 32,
-            "spe": 1
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Electro Shot",
-            "Snarl",
-            "Protect"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Choice Scarf",
-          "ability": "Rough Skin",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 10,
-            "atk": 9,
-            "spd": 19,
-            "spe": 28
-          },
-          "moves": [
-            "Earthquake",
-            "Dragon Claw",
-            "Stomping Tantrum",
-            "Rock Tomb"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "60e3fe03468748db",
-      "title": "onumera_poke's 2027 Global Challenge II Top 8 Team",
-      "player": "onumera_poke",
-      "author": "onumera_poke",
-      "tournament": "2027 Global Challenge II",
-      "placement": "6th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/60e3fe03468748db",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 398,
-          "name": "Staraptor-Mega",
-          "item": "Staraptite",
-          "ability": "Intimidate",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 29,
-            "atk": 1,
-            "spd": 4,
-            "spe": 32
-          },
-          "moves": [
-            "Brave Bird",
-            "Close Combat",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 248,
-          "name": "Tyranitar-Mega",
-          "item": "Tyranitarite",
-          "ability": "Sand Stream",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 18,
-            "atk": 16,
-            "spe": 32
-          },
-          "moves": [
-            "Rock Slide",
-            "Knock Off",
-            "Dragon Dance",
-            "Protect"
-          ]
-        },
-        {
-          "id": 350,
-          "name": "Milotic",
-          "item": "Sitrus Berry",
-          "ability": "Competitive",
-          "nature": "Calm",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 13,
-            "spa": 13,
-            "spd": 5,
-            "spe": 4
-          },
-          "moves": [
-            "Scald",
-            "Ice Beam",
-            "Icy Wind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 530,
-          "name": "Excadrill",
-          "item": "Focus Sash",
-          "ability": "Sand Rush",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "def": 2,
-            "spe": 32
-          },
-          "moves": [
-            "High Horsepower",
-            "Iron Head",
-            "Rock Slide",
-            "Protect"
-          ]
-        },
-        {
-          "id": 1013,
-          "name": "Sinistcha",
-          "item": "Rocky Helmet",
-          "ability": "Hospitality",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 29,
-            "def": 14,
-            "spd": 23
-          },
-          "moves": [
-            "Rage Powder",
-            "Strength Sap",
-            "Matcha Gotcha",
-            "Protect"
-          ]
-        },
-        {
-          "id": 1000,
-          "name": "Gholdengo",
-          "item": "Life Orb",
-          "ability": "Good as Gold",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 27,
-            "def": 9,
-            "spa": 7,
-            "spd": 9,
-            "spe": 14
-          },
-          "moves": [
-            "Make It Rain",
-            "Shadow Ball",
-            "Nasty Plot",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "8b72bdb6f1469837",
-      "title": "Santino's 2027 Global Challenge II Top 16 Team",
-      "player": "Santino Tarquinio",
-      "author": "supahsanti",
-      "tournament": "2027 Global Challenge II",
-      "placement": "10th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/8b72bdb6f1469837",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 94,
-          "name": "Gengar-Mega",
-          "item": "Gengarite",
-          "ability": "Cursed Body",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "spd": 26,
-            "spe": 8
-          },
-          "moves": [
-            "Protect",
-            "Perish Song",
-            "Substitute",
-            "Shadow Ball"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Chople Berry",
-          "ability": "Intimidate",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 20,
-            "spd": 14
-          },
-          "moves": [
-            "Protect",
-            "Fake Out",
-            "Flare Blitz",
-            "Parting Shot"
-          ]
-        },
-        {
-          "id": 730,
-          "name": "Primarina",
-          "item": "Sitrus Berry",
-          "ability": "Liquid Voice",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 20,
-            "spd": 14
-          },
-          "moves": [
-            "Protect",
-            "Perish Song",
-            "Hyper Voice",
-            "Moonblast"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Miracle Seed",
-          "ability": "Grassy Surge",
-          "nature": "Brave",
-          "level": 50,
-          "evs": {
-            "hp": 20,
-            "atk": 32,
-            "def": 1,
-            "spd": 13
-          },
-          "moves": [
-            "Protect",
-            "Fake Out",
-            "Grassy Glide",
-            "U-turn"
-          ]
-        },
-        {
-          "id": 979,
-          "name": "Annihilape",
-          "item": "Choice Scarf",
-          "ability": "Defiant",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 1,
-            "atk": 32,
-            "def": 1,
-            "spe": 32
-          },
-          "moves": [
-            "Close Combat",
-            "Phantom Force",
-            "Rock Slide",
-            "U-turn"
-          ]
-        },
-        {
-          "id": 784,
-          "name": "Kommo-o",
-          "item": "Leftovers",
-          "ability": "Bulletproof",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 10,
-            "spa": 24,
-            "spe": 32
-          },
-          "moves": [
-            "Protect",
-            "Clangorous Soul",
-            "Clanging Scales",
-            "Aura Sphere"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "a8cbb09f8e62d226",
-      "title": "lix12_poke's 2027 Global Challenge II Top 16 Team (Seniors)",
-      "player": "lix12_poke",
-      "author": "lix12_poke",
-      "tournament": "2027 Global Challenge II",
-      "placement": "10th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/a8cbb09f8e62d226",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 142,
-          "name": "Aerodactyl-Mega",
-          "item": "Aerodactylite",
-          "ability": "Unnerve",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Rock Slide",
-            "Dual Wingbeat",
-            "Tailwind",
-            "Wide Guard"
-          ]
-        },
-        {
-          "id": 768,
-          "name": "Golisopod-Mega",
-          "item": "Golisopite",
-          "ability": "Emergency Exit",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "atk": 32,
-            "spd": 2,
-            "spe": 1
-          },
-          "moves": [
-            "Leech Life",
-            "Iron Head",
-            "Sucker Punch",
-            "Protect"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion-F",
-          "item": "Life Orb",
-          "ability": "Swift Swim",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "def": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Muddy Water",
-            "Shadow Ball",
-            "Ice Beam",
-            "Protect"
-          ]
-        },
-        {
-          "id": 279,
-          "name": "Pelipper",
-          "item": "Choice Scarf",
-          "ability": "Drizzle",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Muddy Water",
-            "Hurricane",
-            "Ice Beam",
-            "Rain Dance"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Focus Sash",
-          "ability": "Unburden",
-          "nature": "Naive",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dire Claw",
-            "Close Combat",
-            "Coaching",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 1018,
-          "name": "Archaludon",
-          "item": "Leftovers",
-          "ability": "Stamina",
-          "nature": "Calm",
-          "level": 50,
-          "evs": {
-            "hp": 30,
-            "def": 1,
-            "spd": 19,
-            "spe": 16
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Electro Shot",
-            "Snarl",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "d9915c459ab8b824",
-      "title": "habakamiyudai's 2027 Global Challenge II Top 16 Team (Seniors)",
-      "player": "habakamiyudai",
-      "author": "habakamiyudai",
-      "tournament": "2027 Global Challenge II",
-      "placement": "14th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/d9915c459ab8b824",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 398,
-          "name": "Staraptor-Mega",
-          "item": "Staraptite",
-          "ability": "Intimidate",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 15,
-            "atk": 20,
-            "spe": 31
-          },
-          "moves": [
-            "Brave Bird",
-            "Close Combat",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Life Orb",
-          "ability": "Adaptability",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "def": 14,
-            "spe": 20
-          },
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Aqua Jet",
-            "Protect"
-          ]
-        },
-        {
-          "id": 26,
-          "name": "Raichu",
-          "item": "Focus Sash",
-          "ability": "Lightning Rod",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Thunderbolt",
-            "Charm",
-            "Encore",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 876,
-          "name": "Indeedee-F",
-          "item": "Sitrus Berry",
-          "ability": "Psychic Surge",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 32,
-            "spe": 2
-          },
-          "moves": [
-            "Psychic",
-            "Follow Me",
-            "Helping Hand",
-            "Trick Room"
-          ]
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
-          "item": "Psychic Seed",
-          "ability": "Armor Tail",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 2,
-            "spa": 32
-          },
-          "moves": [
-            "Expanding Force",
-            "Hyper Voice",
-            "Nasty Plot",
-            "Protect"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Chople Berry",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 25,
-            "def": 9
-          },
-          "moves": [
-            "Kowtow Cleave",
-            "Iron Head",
-            "Sucker Punch",
-            "Low Kick"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "2d8e59376dc45011",
-      "title": "pikapatVGC's 2027 Global Challenge II Top 32 Team",
-      "player": "pikapatVGC",
-      "author": "pikapatVGC",
-      "tournament": "2027 Global Challenge II",
-      "placement": "19th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/2d8e59376dc45011",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 334,
-          "name": "Altaria-Mega",
-          "item": "Altarianite",
-          "ability": "Cloud Nine",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 28,
-            "spa": 30,
-            "spe": 8
-          },
-          "moves": [
-            "Protect",
-            "Hyper Voice",
-            "Draco Meteor",
-            "Tailwind"
-          ]
-        },
-        {
-          "id": 479,
-          "name": "Rotom-Heat",
-          "item": "Choice Scarf",
-          "ability": "Levitate",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 20,
-            "spa": 15,
-            "spe": 31
-          },
-          "moves": [
-            "Overheat",
-            "Thunderbolt",
-            "Volt Switch",
-            "Electroweb"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Focus Sash",
-          "ability": "Adaptability",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "def": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Protect",
-            "Liquidation",
-            "Last Respects",
-            "Aqua Jet"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Miracle Seed",
-          "ability": "Grassy Surge",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 17,
-            "atk": 25,
-            "def": 1,
-            "spd": 21,
-            "spe": 2
-          },
-          "moves": [
-            "Fake Out",
-            "Grassy Glide",
-            "Wood Hammer",
-            "U-turn"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "White Herb",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "def": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Protect",
-            "Fake Out",
-            "Close Combat",
-            "Dire Claw"
-          ]
-        },
-        {
-          "id": 1000,
-          "name": "Gholdengo",
-          "item": "Life Orb",
-          "ability": "Good as Gold",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 7,
-            "def": 1,
-            "spa": 32,
-            "spd": 5,
-            "spe": 21
-          },
-          "moves": [
-            "Protect",
-            "Make It Rain",
-            "Shadow Ball",
-            "Nasty Plot"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "834da98b01e1b35d",
-      "title": "yuukari's 2027 Global Challenge II Top 32 Team",
-      "player": "yuukari",
-      "author": "yuukari_circle",
-      "tournament": "2027 Global Challenge II",
-      "placement": "30th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/834da98b01e1b35d",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 149,
-          "name": "Dragonite-Mega",
-          "item": "Dragoninite",
-          "ability": "Inner Focus",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 1,
-            "def": 1,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Heat Wave",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 670,
-          "name": "Floette-Eternal-Mega",
-          "item": "Floettite",
-          "ability": "Flower Veil",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 28,
-            "def": 4,
-            "spa": 16,
-            "spe": 18
-          },
-          "moves": [
-            "Moonblast",
-            "Dazzling Gleam",
-            "Calm Mind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Sitrus Berry",
-          "ability": "Intimidate",
-          "nature": "Impish",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 27,
-            "spd": 8
-          },
-          "moves": [
-            "Flare Blitz",
-            "Darkest Lariat",
-            "Fake Out",
-            "Parting Shot"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Miracle Seed",
-          "ability": "Grassy Surge",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "atk": 25,
-            "spd": 10
-          },
-          "moves": [
-            "Wood Hammer",
-            "Grassy Glide",
-            "U-turn",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "White Herb",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 20,
-            "def": 14,
-            "spe": 32
-          },
-          "moves": [
-            "Close Combat",
-            "Dire Claw",
-            "Throat Chop",
-            "Protect"
-          ]
-        },
-        {
-          "id": 1000,
-          "name": "Gholdengo",
-          "item": "Choice Scarf",
-          "ability": "Good as Gold",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "spa": 32,
-            "spd": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Make It Rain",
-            "Shadow Ball",
-            "Power Gem",
-            "Trick"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "68eb76ef1a933999",
-      "title": "denryu_ampharos' 2027 Global Challenge II Top 64 Team",
-      "player": "denryu_ampharos",
-      "author": "denryu_ampharos",
-      "tournament": "2027 Global Challenge II",
-      "placement": "33rd",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/68eb76ef1a933999",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 181,
-          "name": "Ampharos-Mega",
-          "item": "Ampharosite",
-          "ability": "Plus",
-          "nature": "Quiet",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 2,
-            "spa": 32
-          },
-          "moves": [
-            "Thunderbolt",
-            "Protect",
-            "Dragon Pulse",
-            "Volt Switch"
-          ]
-        },
-        {
-          "id": 323,
-          "name": "Camerupt-Mega",
-          "item": "Cameruptite",
-          "ability": "Solid Rock",
-          "nature": "Quiet",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "spa": 32,
-            "spd": 2
-          },
-          "moves": [
-            "Ancient Power",
-            "Earth Power",
-            "Protect",
-            "Heat Wave"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "White Herb",
-          "ability": "Intimidate",
-          "nature": "Careful",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 5,
-            "spd": 30
-          },
-          "moves": [
-            "Flare Blitz",
-            "Throat Chop",
-            "Parting Shot",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 730,
-          "name": "Primarina",
-          "item": "Life Orb",
-          "ability": "Liquid Voice",
-          "nature": "Quiet",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 2,
-            "spa": 32
-          },
-          "moves": [
-            "Hyper Voice",
-            "Dazzling Gleam",
-            "Calm Mind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Eject Button",
-          "ability": "Grassy Surge",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 2,
-            "spd": 32
-          },
-          "moves": [
-            "Grassy Glide",
-            "Fake Out",
-            "U-turn",
-            "High Horsepower"
-          ]
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
-          "item": "Sitrus Berry",
-          "ability": "Armor Tail",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 29,
-            "def": 14,
-            "spd": 23
-          },
-          "moves": [
-            "Psychic",
-            "Trick Room",
-            "Sunny Day",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "4d84f6ddf8d6f582",
-      "title": "U_DonPM's 2027 Global Challenge II Top 64 Team",
-      "player": "U_DonPM",
-      "author": "Don70016112",
-      "tournament": "2027 Global Challenge II",
-      "placement": "43rd",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/4d84f6ddf8d6f582",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 445,
-          "name": "Garchomp-Mega-Z",
-          "item": "Garchompite Z",
-          "ability": "Sand Veil",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 8,
-            "def": 4,
-            "spa": 32,
-            "spd": 1,
-            "spe": 21
-          },
-          "moves": [
-            "Earth Power",
-            "Draco Meteor",
-            "Power Gem",
-            "Protect"
-          ]
-        },
-        {
-          "id": 376,
-          "name": "Metagross-Mega",
-          "item": "Metagrossite",
-          "ability": "Tough Claws",
-          "nature": "Jolly",
-          "evs": {
-            "hp": 9,
-            "atk": 32,
-            "spe": 25
-          },
-          "moves": [
-            "Thunder Punch",
-            "Hammer Arm",
-            "Psychic Fangs",
-            "Stomping Tantrum"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Charcoal",
-          "ability": "Intimidate",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "atk": 32,
-            "spe": 3
-          },
-          "moves": [
-            "Flare Blitz",
-            "Darkest Lariat",
-            "Parting Shot",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
-          "item": "Sitrus Berry",
-          "ability": "Armor Tail",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 22,
-            "spd": 13
-          },
-          "moves": [
-            "Psychic",
-            "Helping Hand",
-            "Trick Room",
-            "Protect"
-          ]
-        },
-        {
-          "id": 700,
-          "name": "Sylveon",
-          "item": "Fairy Feather",
-          "ability": "Pixilate",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 11,
-            "def": 32,
-            "spa": 21,
-            "spe": 2
-          },
-          "moves": [
-            "Hyper Voice",
-            "Moonblast",
-            "Calm Mind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 780,
-          "name": "Drampa",
-          "item": "Life Orb",
-          "ability": "Cloud Nine",
-          "nature": "Quiet",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "spa": 32,
-            "spd": 2
-          },
-          "moves": [
-            "Earth Power",
-            "Flamethrower",
-            "Dragon Pulse",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "579a832b7c25abfd",
-      "title": "satorungo's 2027 Global Challenge II Top 64 Team",
-      "player": "Satoru Nishigai",
-      "author": "__st__rn__5",
-      "tournament": "2027 Global Challenge II",
-      "placement": "44th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/579a832b7c25abfd",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 6,
-          "name": "Charizard-Mega-Y",
-          "item": "Charizardite Y",
-          "ability": "Blaze",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 16,
-            "def": 18,
-            "spe": 32
-          },
-          "moves": [
-            "Weather Ball",
-            "Solar Beam",
-            "Heat Wave",
-            "Protect"
-          ]
-        },
-        {
-          "id": 670,
-          "name": "Floette-Eternal-Mega",
-          "item": "Floettite",
-          "ability": "Flower Veil",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 22,
-            "def": 9,
-            "spa": 20,
-            "spe": 15
-          },
-          "moves": [
-            "Moonblast",
-            "Dazzling Gleam",
-            "Calm Mind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Sitrus Berry",
-          "ability": "Intimidate",
-          "nature": "Careful",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 10,
-            "spd": 17,
-            "spe": 7
-          },
-          "moves": [
-            "Flare Blitz",
-            "Snarl",
-            "Fake Out",
-            "Parting Shot"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Life Orb",
-          "ability": "Adaptability",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 4,
-            "atk": 15,
-            "def": 23,
-            "spe": 24
-          },
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Aqua Jet",
-            "Protect"
-          ]
-        },
-        {
-          "id": 547,
-          "name": "Whimsicott",
-          "item": "Focus Sash",
-          "ability": "Prankster",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Moonblast",
-            "Tailwind",
-            "Sunny Day",
-            "Protect"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Choice Scarf",
-          "ability": "Rough Skin",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Earthquake",
-            "Dragon Claw",
-            "Stomping Tantrum",
-            "Rock Slide"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "9ceb7843759e65e6",
-      "title": "tooshi_ptcg's 2027 Global Challenge II Top 64 Team (Seniors)",
-      "player": "tooshi_ptcg",
-      "author": "tooshi_ptcg",
-      "tournament": "2027 Global Challenge II",
-      "placement": "44th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/9ceb7843759e65e6",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 94,
-          "name": "Gengar-Mega",
-          "item": "Gengarite",
-          "ability": "Cursed Body",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 5,
-            "spa": 10,
-            "spd": 12,
-            "spe": 7
-          },
-          "moves": [
-            "Shadow Ball",
-            "Sludge Bomb",
-            "Perish Song",
-            "Protect"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Sitrus Berry",
-          "ability": "Intimidate",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 15,
-            "spd": 20
-          },
-          "moves": [
-            "Fake Out",
-            "Flare Blitz",
-            "Parting Shot",
-            "Protect"
-          ]
-        },
-        {
-          "id": 186,
-          "name": "Politoed",
-          "item": "Grassy Seed",
-          "ability": "Drizzle",
-          "nature": "Calm",
-          "level": 50,
-          "evs": {
-            "hp": 31,
-            "def": 23,
-            "spd": 12
-          },
-          "moves": [
-            "Weather Ball",
-            "Perish Song",
-            "Encore",
-            "Protect"
-          ]
-        },
-        {
-          "id": 812,
-          "name": "Rillaboom",
-          "item": "Kebia Berry",
-          "ability": "Grassy Surge",
-          "nature": "Sassy",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 2,
-            "spd": 32
-          },
-          "moves": [
-            "Fake Out",
-            "Grassy Glide",
-            "U-turn",
-            "Protect"
-          ]
-        },
-        {
-          "id": 1013,
-          "name": "Sinistcha",
-          "item": "Eject Button",
-          "ability": "Hospitality",
-          "nature": "Calm",
-          "level": 50,
-          "evs": {
-            "hp": 30,
-            "def": 15,
-            "spd": 21
-          },
-          "moves": [
-            "Matcha Gotcha",
-            "Rage Powder",
-            "Life Dew",
-            "Protect"
-          ]
-        },
-        {
-          "id": 784,
-          "name": "Kommo-o",
-          "item": "Leftovers",
-          "ability": "Soundproof",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 11,
-            "def": 1,
-            "spa": 20,
-            "spd": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Aura Sphere",
-            "Clanging Scales",
-            "Clangorous Soul",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "67226052054745c9",
-      "title": "K's 2027 Global Challenge II Top 64 Team",
-      "player": "K",
-      "author": "k_pokemontcg",
-      "tournament": "2027 Global Challenge II",
-      "placement": "48th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/67226052054745c9",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 26,
-          "name": "Raichu-Mega-Y",
-          "item": "Raichunite Y",
-          "ability": "Lightning Rod",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 7,
-            "spd": 1,
-            "spe": 26
-          },
-          "moves": [
-            "Zap Cannon",
-            "Focus Blast",
-            "Encore",
-            "Protect"
-          ]
-        },
-        {
-          "id": 936,
-          "name": "Armarouge",
-          "item": "Focus Sash",
-          "ability": "Weak Armor",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Expanding Force",
-            "Armor Cannon",
-            "Wide Guard",
-            "Protect"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Choice Scarf",
-          "ability": "Adaptability",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "atk": 26,
-            "def": 8,
-            "spe": 32
-          },
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Flip Turn",
-            "Aqua Jet"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Psychic Seed",
-          "ability": "Unburden",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Close Combat",
-            "Dire Claw",
-            "Throat Chop",
-            "Protect"
-          ]
-        },
-        {
-          "id": 876,
-          "name": "Indeedee-F",
-          "item": "Rocky Helmet",
-          "ability": "Psychic Surge",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 31,
-            "spd": 2,
-            "spe": 1
-          },
-          "moves": [
-            "Psychic",
-            "Follow Me",
-            "Skill Swap",
-            "Trick Room"
-          ]
-        },
-        {
-          "id": 780,
-          "name": "Drampa",
-          "item": "Haban Berry",
-          "ability": "Cloud Nine",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 9,
-            "spa": 25
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Grass Knot",
-            "Heat Wave",
-            "Protect"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "8b60c2e5af04c85a",
-      "title": "siratama090177's 2027 Global Challenge II Top 64 Team",
-      "player": "siratama090177",
-      "author": "siratama090177",
-      "tournament": "2027 Global Challenge II",
-      "placement": "53rd",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/8b60c2e5af04c85a",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 398,
-          "name": "Staraptor-Mega",
-          "item": "Staraptite",
-          "ability": "Intimidate",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 23,
-            "atk": 15,
-            "spe": 28
-          },
-          "moves": [
-            "Brave Bird",
-            "Close Combat",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 936,
-          "name": "Armarouge",
-          "item": "Life Orb",
-          "ability": "Flash Fire",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 3,
-            "spa": 31,
-            "spe": 32
-          },
-          "moves": [
-            "Heat Wave",
-            "Expanding Force",
-            "Wide Guard",
-            "Ally Switch"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Rindo Berry",
-          "ability": "Adaptability",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 12,
-            "atk": 13,
-            "def": 16,
-            "spd": 6,
-            "spe": 19
-          },
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Aqua Jet",
-            "Protect"
-          ]
-        },
-        {
-          "id": 26,
-          "name": "Raichu",
-          "item": "Focus Sash",
-          "ability": "Lightning Rod",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "def": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Thunderbolt",
-            "Charm",
-            "Fake Out",
-            "Encore"
-          ]
-        },
-        {
-          "id": 876,
-          "name": "Indeedee-F",
-          "item": "Sitrus Berry",
-          "ability": "Psychic Surge",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 32,
-            "spd": 2
-          },
-          "moves": [
-            "Follow Me",
-            "Psychic",
-            "Helping Hand",
-            "Trick Room"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Chople Berry",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 25,
-            "def": 8,
-            "spe": 1
-          },
-          "moves": [
-            "Kowtow Cleave",
-            "Sucker Punch",
-            "Iron Head",
-            "Low Kick"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "cade390da4f4b45b",
-      "title": "snm_774's 2027 Global Challenge II Top 64 Team",
-      "player": "snm_774",
-      "author": "snm_774",
-      "tournament": "2027 Global Challenge II",
-      "placement": "58th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/cade390da4f4b45b",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 655,
-          "name": "Delphox-Mega",
-          "item": "Delphoxite",
-          "ability": "Blaze",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 17,
-            "def": 5,
-            "spa": 12,
-            "spe": 32
-          },
-          "moves": [
-            "Heat Wave",
-            "Psychic",
-            "Encore",
-            "Protect"
-          ]
-        },
-        {
-          "id": 149,
-          "name": "Dragonite-Mega",
-          "item": "Dragoninite",
-          "ability": "Inner Focus",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 1,
-            "def": 1,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Heat Wave",
-            "Extreme Speed",
-            "Protect"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Focus Sash",
-          "ability": "Adaptability",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "def": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Liquidation",
-            "Last Respects",
-            "Aqua Jet",
-            "Protect"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Life Orb",
-          "ability": "Poison Touch",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dire Claw",
-            "Close Combat",
-            "Fake Out",
-            "Rock Slide"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Chople Berry",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 20,
-            "def": 5,
-            "spe": 9
-          },
-          "moves": [
-            "Kowtow Cleave",
-            "Iron Head",
-            "Low Kick",
-            "Sucker Punch"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Choice Scarf",
-          "ability": "Rough Skin",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dragon Claw",
-            "Stomping Tantrum",
-            "Rock Slide",
-            "Earthquake"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "99fdc9d0f7c73553",
-      "title": "natsumewato's 2027 Global Challenge II Top 128 Team",
-      "player": "natsumewato",
-      "author": "natsumewato",
-      "tournament": "2027 Global Challenge II",
-      "placement": "65th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/99fdc9d0f7c73553",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 6,
-          "name": "Charizard-Mega-Y",
-          "item": "Charizardite Y",
-          "ability": "Blaze",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 28,
-            "def": 4,
-            "spa": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Weather Ball",
-            "Heat Wave",
-            "Ancient Power",
-            "Protect"
-          ]
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "item": "Sitrus Berry",
-          "ability": "Intimidate",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 5,
-            "def": 7,
-            "spd": 21,
-            "spe": 1
-          },
-          "moves": [
-            "Flare Blitz",
-            "Darkest Lariat",
-            "Parting Shot",
-            "Fake Out"
-          ]
-        },
-        {
-          "id": 3,
-          "name": "Venusaur",
-          "item": "Focus Sash",
-          "ability": "Chlorophyll",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Sleep Powder",
-            "Sludge Bomb",
-            "Leaf Storm",
-            "Protect"
-          ]
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
-          "item": "Twisted Spoon",
-          "ability": "Armor Tail",
-          "nature": "Relaxed",
-          "level": 50,
-          "evs": {
-            "hp": 23,
-            "def": 20,
-            "spd": 23
-          },
-          "moves": [
-            "Psychic",
-            "Trick Room",
-            "Helping Hand",
-            "Protect"
-          ]
-        },
-        {
-          "id": 700,
-          "name": "Sylveon",
-          "item": "Fairy Feather",
-          "ability": "Pixilate",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 19,
-            "def": 27,
-            "spa": 20
-          },
-          "moves": [
-            "Hyper Voice",
-            "Moonblast",
-            "Yawn",
-            "Detect"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Choice Scarf",
-          "ability": "Rough Skin",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 9,
-            "atk": 10,
-            "spd": 19,
-            "spe": 28
-          },
-          "moves": [
-            "Earthquake",
-            "Stomping Tantrum",
-            "Dragon Claw",
-            "Rock Slide"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "558a3e68cd09362e",
-      "title": "oldamber_poke's 2027 Global Challenge II Top 128 Team",
-      "player": "oldamber_poke",
-      "author": "oldamber_poke",
-      "tournament": "2027 Global Challenge II",
-      "placement": "70th",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/558a3e68cd09362e",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 655,
-          "name": "Delphox-Mega",
-          "item": "Delphoxite",
-          "ability": "Blaze",
-          "nature": "Timid",
-          "level": 50,
-          "evs": {
-            "hp": 1,
-            "def": 2,
-            "spa": 31,
-            "spe": 32
-          },
-          "moves": [
-            "Heat Wave",
-            "Psychic",
-            "Encore",
-            "Protect"
-          ]
-        },
-        {
-          "id": 149,
-          "name": "Dragonite-Mega",
-          "item": "Dragoninite",
-          "ability": "Inner Focus",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 18,
-            "spa": 25,
-            "spd": 2,
-            "spe": 21
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Heat Wave",
-            "Thunderbolt",
-            "Tailwind"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Life Orb",
-          "ability": "Adaptability",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "atk": 26,
-            "def": 14,
-            "spe": 26
-          },
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Aqua Jet",
-            "Protect"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Focus Sash",
-          "ability": "Poison Touch",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dire Claw",
-            "Close Combat",
-            "Fake Out",
-            "Feint"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Chople Berry",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 15,
-            "def": 14,
-            "spe": 5
-          },
-          "moves": [
-            "Kowtow Cleave",
-            "Iron Head",
-            "Sucker Punch",
-            "Low Kick"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Choice Scarf",
-          "ability": "Rough Skin",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "atk": 32,
-            "spd": 2,
-            "spe": 32
-          },
-          "moves": [
-            "Earthquake",
-            "Rock Slide",
-            "Stomping Tantrum",
-            "Dragon Claw"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "581f5cb83d4d492f",
-      "title": "mintia0810's 2027 Global Challenge II Top 128 Team",
-      "player": "Kento Sato",
-      "author": "mintia0810",
-      "tournament": "2027 Global Challenge II",
-      "placement": "72nd",
-      "date": "2 Nov 2026",
-      "format": "Reg M-C",
-      "pokepaste": "https://pokepast.es/581f5cb83d4d492f",
-      "sourceUrl": "-",
-      "featured": false,
-      "pokemons": [
-        {
-          "id": 149,
-          "name": "Dragonite-Mega",
-          "item": "Dragoninite",
-          "ability": "Inner Focus",
-          "nature": "Modest",
-          "level": 50,
-          "evs": {
-            "hp": 1,
-            "def": 1,
-            "spa": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Dragon Pulse",
-            "Flamethrower",
-            "Tailwind",
-            "Protect"
-          ]
-        },
-        {
-          "id": 637,
-          "name": "Volcarona",
-          "item": "Sitrus Berry",
-          "ability": "Flame Body",
-          "nature": "Bold",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "def": 25,
-            "spa": 1,
-            "spe": 8
-          },
-          "moves": [
-            "Overheat",
-            "Struggle Bug",
-            "Rage Powder",
-            "Whirlwind"
-          ]
-        },
-        {
-          "id": 902,
-          "name": "Basculegion",
-          "item": "Life Orb",
-          "ability": "Adaptability",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "atk": 25,
-            "def": 14,
-            "spe": 27
-          },
-          "moves": [
-            "Wave Crash",
-            "Last Respects",
-            "Aqua Jet",
-            "Protect"
-          ]
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "item": "Focus Sash",
-          "ability": "Poison Touch",
-          "nature": "Jolly",
-          "level": 50,
-          "evs": {
-            "hp": 2,
-            "atk": 32,
-            "spe": 32
-          },
-          "moves": [
-            "Close Combat",
-            "Dire Claw",
-            "Fake Out",
-            "Protect"
-          ]
-        },
-        {
-          "id": 983,
-          "name": "Kingambit",
-          "item": "Chople Berry",
-          "ability": "Defiant",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 32,
-            "atk": 17,
-            "def": 2,
-            "spd": 14,
-            "spe": 1
-          },
-          "moves": [
-            "Kowtow Cleave",
-            "Sucker Punch",
-            "Iron Head",
-            "Protect"
-          ]
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "item": "Choice Scarf",
-          "ability": "Rough Skin",
-          "nature": "Adamant",
-          "level": 50,
-          "evs": {
-            "hp": 1,
-            "atk": 32,
-            "def": 1,
-            "spe": 32
-          },
-          "moves": [
-            "Dragon Claw",
-            "Stomping Tantrum",
-            "Rock Slide",
-            "Earthquake"
           ]
         }
       ]

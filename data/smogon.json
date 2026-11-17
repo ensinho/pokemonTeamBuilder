@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T17:13:14.646Z",
+  "generatedAt": "2026-11-17T16:58:51.705Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -29557,11 +29557,11 @@
           "name": "Choice Scarf",
           "item": "choice-scarf",
           "itemAlts": [],
-          "ability": "intimidate",
+          "ability": "moxie",
           "nature": "jolly",
           "tera": [
-            "poison",
-            "dark"
+            "dark",
+            "poison"
           ],
           "moves": [
             [
@@ -29571,12 +29571,12 @@
               "knock-off"
             ],
             [
-              "gunk-shot",
-              "stone-edge"
+              "gunk-shot"
             ],
             [
               "stone-edge",
               "close-combat",
+              "foul-play",
               "stealth-rock"
             ]
           ],
