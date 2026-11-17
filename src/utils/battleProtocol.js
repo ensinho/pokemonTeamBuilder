@@ -12,7 +12,7 @@
 /**
  * The sim's latest ask, from my own filtered log.
  *
- * @returns {{kind: 'teamPreview'|'move'|'switch'|'wait'|'none', moves: Array, switches: Array, teamSize: number, canMega?: boolean, canTera?: string|null, canZ?: boolean}}
+ * @returns {{kind: 'teamPreview'|'move'|'switch'|'wait'|'none', moves: Array, switches: Array, teamSize: number, reviving?: boolean, canMega?: boolean, canTera?: string|null, canZ?: boolean}}
  */
 export const readMyRequest = (myLogLines = []) => {
     const requests = myLogLines.filter((line) => line.startsWith('|request|'));
@@ -32,6 +32,10 @@ export const readMyRequest = (myLogLines = []) => {
     if (payload.wait) return { ...empty, kind: 'wait' };
 
     const roster = payload.side?.pokemon || [];
+    // Revival Blessing: the sim asks for a fainted Pokémon to bring back (the
+    // active entry carries `reviving`), so the usual filter flips — only the
+    // fainted bench can be chosen, and a standing one is refused by the sim.
+    const reviving = Boolean(payload.forceSwitch) && roster.some((mon) => mon.reviving);
     // A Pokémon can be switched to if it's on the bench and still standing.
     const switches = roster
         .map((mon, index) => ({
@@ -41,14 +45,14 @@ export const readMyRequest = (myLogLines = []) => {
             active: Boolean(mon.active),
             fainted: String(mon.condition || '').endsWith(' fnt') || String(mon.condition || '') === '0 fnt',
         }))
-        .filter((mon) => !mon.active && !mon.fainted);
+        .filter((mon) => !mon.active && (reviving ? mon.fainted : !mon.fainted));
 
     if (payload.teamPreview) {
         return { kind: 'teamPreview', moves: [], switches: [], teamSize: roster.length };
     }
 
     if (payload.forceSwitch) {
-        return { kind: 'switch', moves: [], switches, teamSize: roster.length };
+        return { kind: 'switch', moves: [], switches, teamSize: roster.length, ...(reviving ? { reviving: true } : {}) };
     }
 
     const active = payload.active?.[0];

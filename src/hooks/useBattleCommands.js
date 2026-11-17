@@ -26,6 +26,8 @@ import { play } from '../utils/challengeSfx';
  */
 export function useBattleCommands({ request, enabled, onChoose, onForfeit, switchLabel, inputRef, activeIndex = 0 }) {
     const forced = request.kind === 'switch';
+    // Revival Blessing: the forced pick is a fainted Pokémon to bring back.
+    const reviving = forced && Boolean(request.reviving);
     const firstIn = forced && request.switches?.length ? request.switches[0].slot - 1 : 0;
     const [view, setView] = useState(forced ? 'party' : 'main');
     const [focus, setFocus] = useState(0);
@@ -65,7 +67,7 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
     const chooseSwitch = (mon) => {
         if (!enabled) return;
         play('confirm');
-        onChoose(`switch ${mon.slot}`, switchLabel(mon.name));
+        onChoose(`switch ${mon.slot}`, switchLabel(mon.name, reviving));
     };
     const forfeit = () => {
         if (!enabled) return;
@@ -106,7 +108,7 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
     });
 
     return {
-        view, open, forced, focus, setFocus, member, setMember, switchable, chooseMove, chooseSwitch, forfeit,
+        view, open, forced, reviving, focus, setFocus, member, setMember, switchable, chooseMove, chooseSwitch, forfeit,
         gimmick, armed, toggleGimmick, teraType: request.canTera || null,
     };
 }

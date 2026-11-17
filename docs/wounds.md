@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-17 — Revival Blessing stuck the battle: the client offered the wrong bench `bug`
+- **Symptom:** after Rabsca's Revival Blessing the party screen offered the standing Pokémon; every pick came back "[Invalid choice] Can't switch: You have to pass to a fainted Pokémon" and the turn could not go on.
+- **Root cause:** the sim answers Revival Blessing with a `forceSwitch` request whose active entry carries `reviving: true` — the legal picks are the *fainted* bench. `readMyRequest` (`src/utils/battleProtocol.js`) always filtered fainted Pokémon out. The AI already knew (`api/_lib/ai/options.js`); the client didn't. Second half: the revive is logged as `|-heal|p1: Name|…` for a **benched** Pokémon, and `battleState` applied every `-heal` to the active one (Rabsca would have shown the revived one's HP); `faintedSpecies`/`championRoster` never un-fainted anyone.
+- **Fix:** `readMyRequest` flips the filter and returns `reviving`; `useBattleCommands` exposes it, the sheet says REVIVER/"Escolha quem volta à luta"; `battleState` applies HP lines only to a positional ident (`p1a:`) and decrements `faintedCount` on a revive; the faint sets drop the revived species; the battle text says "voltou para a luta!".
+- **Correct pattern:** a forced switch is not always "a standing bench Pokémon" — read `reviving` from the request. An HP line whose ident has no position letter (`p1:` not `p1a:`) is about the bench: never apply it to the active.
+- **Files:** `src/utils/battleProtocol.js`, `src/hooks/useBattleCommands.js`, `src/components/views/challenge/ds/DsBwCommands.jsx`, `src/utils/battleState.js`, `src/utils/challengeView.js`, `src/utils/challengeText.js`, `api/_lib/challenge/revivalBlessing.test.js`
+
 ### 2026-11-17 — A share card's new import pulled Firebase Auth into a CI test `bug`
 - **Symptom:** PR #162's CI failed in `src/components/ChallengeShareCard.test.jsx` with `FirebaseError: auth/invalid-api-key` at `src/services/firebase.js:23`; locally every test passed.
 - **Root cause:** the card gained the mascot's comic strip (`BattleStrip` → `Mascot` → `useAuthStore` → `services/firebase`), so merely importing the card initialised Firebase Auth. CI has no `VITE_FIREBASE_*`; the local `.env` hid it.

@@ -330,16 +330,18 @@ export function ChallengeRanking({ ranksByChampion, championId, defaultBoard = '
                 heading={showTitle}
                 onSwitch={switchChampion}
             />
-            <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('challenge.ranking.title')}>
+            {/* Three tabs in a narrow rail: short labels, the full name on hover. */}
+            <div className="segmented segmented--sm segmented--block challenge-rank__boards" role="group" aria-label={t('challenge.ranking.title')}>
                 {[...BOARDS, ...(ranks?.week ? ['week'] : [])].map((key) => (
                     <button
                         key={key}
                         type="button"
                         className="segmented__item"
                         aria-pressed={board === key}
+                        title={t(`challenge.ranking.${key}`)}
                         onClick={() => pickBoard(key)}
                     >
-                        {t(`challenge.ranking.${key}`)}
+                        {t(`challenge.ranking.tab.${key}`)}
                     </button>
                 ))}
             </div>

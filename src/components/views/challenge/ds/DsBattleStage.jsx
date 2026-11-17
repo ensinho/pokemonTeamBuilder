@@ -164,7 +164,7 @@ export function DsBattleStage({
         enabled: yourTurn,
         onChoose,
         onForfeit: forfeit,
-        switchLabel: (name) => t('challenge.battle.switchLabel', { name }),
+        switchLabel: (name, reviving) => t(reviving ? 'challenge.battle.reviveLabel' : 'challenge.battle.switchLabel', { name }),
         inputRef: commandInput,
         activeIndex: Math.max(0, sheet.findIndex((member) => member.active)),
     });

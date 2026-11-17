@@ -360,7 +360,15 @@ export const readBattleField = (lines = []) => {
             case '-heal':
             case '-sethp': {
                 const ident = parseIdent(rest[0]);
-                if (ident) applyCondition(ident.side, rest[1]);
+                if (!ident) break;
+                // Revival Blessing heals a fainted Pokémon on the bench (`p1: Name`,
+                // no position) — it is no longer down, and it is not the one out.
+                if (tag === '-heal' && rest.some((part) => /Revival Blessing/i.test(part))) {
+                    const side = state.sides[ident.side];
+                    side.faintedCount = Math.max(0, side.faintedCount - 1);
+                }
+                if (!/^p[12][a-z]:/i.test(String(rest[0]).trim())) break;
+                applyCondition(ident.side, rest[1]);
                 break;
             }
             case '-boost':

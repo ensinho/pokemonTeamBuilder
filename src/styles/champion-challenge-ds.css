@@ -3656,6 +3656,14 @@
     background: var(--color-surface-hover);
 }
 
+/* The board tabs: three in a rail ~13rem wide, so each label gets the room the
+   small segmented's padding would take, and never runs past its pill. */
+.challenge-rank__boards > .segmented__item {
+    padding: 0 var(--space-1_5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .challenge-rank__swap {
     display: inline-flex;
     flex-shrink: 0;
