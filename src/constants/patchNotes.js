@@ -34,6 +34,30 @@ export const RELEASES = [
         version: PATCH_NOTES_VERSION,
         month: '2026-11',
         thanks: false,
+        // "Fantasminha de plantão" (2026-11-17): the mascot gets a job (the
+        // round and its receipt, the island), a gesture in each of the day's
+        // games, and the friends' meadow with the poke.
+        notes: [
+            {
+                key: 'mascot-shift',
+                featured: true,
+                icon: 'sparkles',
+                visual: 'mascotShift',
+                title: 'patchNotes.mascotShiftTitle',
+                description: 'patchNotes.mascotShiftDesc',
+                cta: 'patchNotes.mascotShiftCta',
+                path: '/games',
+            },
+            { key: 'meadow', icon: 'heart', title: 'patchNotes.meadowTitle', description: 'patchNotes.meadowDesc', cta: 'patchNotes.meadowCta', path: '/friends?tab=activity' },
+            { key: 'mascot-duty-games', icon: 'pokeball', title: 'patchNotes.mascotDutyGamesTitle', description: 'patchNotes.mascotDutyGamesDesc', cta: 'patchNotes.mascotDutyGamesCta', path: '/quiz?tab=categories&daily=1' },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+        ],
+    },
+    {
+        version: '1.27.0',
+        month: '2026-11',
+        thanks: false,
         // The games pass (2026-11-15): four games a day and the Jogos page,
         // the forum for the tier list and the quiz, five new tier themes.
         notes: [
