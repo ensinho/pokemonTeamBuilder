@@ -45,6 +45,7 @@ measures first.
 | `quiz_forum` | a quiz result is posted to the Diário do dia | `mode` (generation · category), `daily` |
 | `receipt_open` | the mascot's receipt is opened (2026-11-17) | `mode` (morning · day), `news` / `played` |
 | `receipt_post` | the day's receipt is posted to the Diário | `played` |
+| `receipt_share` | the day's receipt leaves as an image | `channel` (`save`, `download`, `instagram`, `instagram_web`, `x`, `x_web`) |
 | `island_open` / `island_go` | the island is opened / taken to its game | `kind` (battle · quiz · puzzle · receipt) |
 | `mime_ask` | the quiz's mime is asked for (once a run) | `list` |
 | `poke_send` | a dozing friend is poked from the meadow | — |

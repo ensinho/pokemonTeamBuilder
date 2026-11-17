@@ -79,6 +79,21 @@ export default {
         shareTitle: 'Recibo do dia',
         shareFull: '{{n}} dias completos',
         sharePlay: 'Jogar os de hoje',
+        // The day's receipt as an image (2026-11-17): save, Instagram, X.
+        image: {
+            group: 'Compartilhar o recibo como imagem',
+            save: 'Salvar',
+            saveLong: 'Salvar a imagem do recibo',
+            x: 'Compartilhar no X',
+            kicker: 'Jogos do dia',
+            play: 'Jogue os de hoje',
+            post: 'Fiz {{n}} de {{total}} jogos do dia no PokemonBuilder. O fantasminha trouxe o recibo 👻',
+            postFull: 'Dia completo: os 4 jogos do dia no PokemonBuilder. O fantasminha carimbou de ouro 👻🏆',
+            saved: 'Imagem do recibo salva',
+            savedForInstagram: 'Imagem salva — é só postar no Instagram',
+            copiedForX: 'Imagem copiada — cole no post do X',
+            error: 'Não deu para gerar a imagem',
+        },
     },
     island: {
         day: {
