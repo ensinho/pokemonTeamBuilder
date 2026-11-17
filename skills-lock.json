@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "drive-motivation": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "skillPath": "drive-motivation/SKILL.md",
+      "computedHash": "14d9e4db4a27a32be76618b5979aab24a7cdfcc4265a889223c33f708873e142"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    },
     "mobile-app-ui-design": {
       "source": "ceorkm/mobile-app-ui-design",
       "sourceType": "github",
