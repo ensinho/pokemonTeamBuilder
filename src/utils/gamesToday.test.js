@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { dayKeyAt } from './challengeDay.js';
 import {
     DAILY_GAMES, GAME_NAV_KEYS, dayTally, gameDayKey, gameNoteToday, gameOfNavKey, gameResetAt, gamesDoneToday,
-    localDayNumber, nextGameFor, nextGameResetAt, withGameDone,
+    localDayNumber, mergeGameRecords, nextGameFor, nextGameResetAt, withGameDone,
 } from './gamesToday.js';
 
 const NOW = new Date(2026, 10, 15, 15, 30).getTime();
@@ -113,5 +113,31 @@ describe('gamesToday', () => {
             const done = { pokepuzzle: true, quiz: true, tierList: true };
             expect(nextGameFor({ preferred: 'pokepuzzle', from: 'challenge', done })).toBeNull();
         });
+    });
+});
+
+describe('mergeGameRecords (this device + the account)', () => {
+    const quizHere = withGameDone(null, 'quiz', NOW, { found: 9, total: 10 });
+    const tierThere = withGameDone(withGameDone(null, 'tierList', NOW, { theme: 'starters' }), 'pokepuzzle', NOW);
+
+    it('a game played today in either copy is played', () => {
+        const merged = mergeGameRecords(quizHere, tierThere, NOW);
+        expect(gamesDoneToday(merged, NOW)).toEqual({ challenge: false, pokepuzzle: true, quiz: true, tierList: true });
+        expect(gameNoteToday(merged, 'quiz', NOW)).toMatchObject({ found: 9, total: 10 });
+        expect(gameNoteToday(merged, 'tierList', NOW)).toMatchObject({ theme: 'starters' });
+    });
+
+    it('keeps only today: yesterday never comes back', () => {
+        const merged = mergeGameRecords(quizHere, null, TOMORROW);
+        expect(gamesDoneToday(merged, TOMORROW)).toEqual(NONE);
+        expect(merged).toEqual({});
+    });
+
+    it('takes this device’s note first, and survives junk from the account', () => {
+        const remote = { quiz: gameDayKey('quiz', NOW), notes: { quiz: { found: 2, total: 10, day: gameDayKey('quiz', NOW) } }, challenge: 42, tierList: { x: 1 } };
+        const merged = mergeGameRecords(quizHere, remote, NOW);
+        expect(gameNoteToday(merged, 'quiz', NOW)).toMatchObject({ found: 9 });
+        expect(gamesDoneToday(merged, NOW)).toEqual({ ...NONE, quiz: true });
+        expect(mergeGameRecords('nope', 7, NOW)).toEqual({});
     });
 });

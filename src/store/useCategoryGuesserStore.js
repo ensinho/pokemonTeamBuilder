@@ -4,6 +4,8 @@ import { db } from '../services/firebase';
 import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { markJourney, useAuthStore } from './useAuthStore';
+import { markGameDone } from '../hooks/useGamesToday';
+import { gameDayKey } from '../utils/gamesToday';
 // The category lists (data/categoryListsData.js, ~35 KB) are NOT imported
 // here: useTrainerBadges reads this store at boot for the quiz history, and
 // the import put every list in the entry chunk (2026-11-12). The quiz view
@@ -97,6 +99,12 @@ export const useCategoryGuesserStore = create((set, get) => {
 
                 const mergedRuns = Array.from(mergedMap.values());
                 set({ quizRuns: mergedRuns });
+                // Today's quiz closed on any device is the quiz's part of the
+                // day — said here, where the runs arrive at boot, not only when
+                // the quiz page is open (2026-11-17).
+                const today = gameDayKey('quiz', Date.now());
+                const daily = mergedRuns.find((run) => run?.dailyDay === today && (run.isComplete || run.ended));
+                if (daily) markGameDone('quiz', { found: daily.foundNames?.length || 0, total: daily.totalCount || 0 });
             }, (error) => {
                 console.error('Error listening to PokéQuiz runs from Firestore:', error);
             });
