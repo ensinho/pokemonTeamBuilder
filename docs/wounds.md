@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-17 — A share card's new import pulled Firebase Auth into a CI test `bug`
+- **Symptom:** PR #162's CI failed in `src/components/ChallengeShareCard.test.jsx` with `FirebaseError: auth/invalid-api-key` at `src/services/firebase.js:23`; locally every test passed.
+- **Root cause:** the card gained the mascot's comic strip (`BattleStrip` → `Mascot` → `useAuthStore` → `services/firebase`), so merely importing the card initialised Firebase Auth. CI has no `VITE_FIREBASE_*`; the local `.env` hid it.
+- **Fix:** `BattleStrip` is `lazy()` in the card, loaded only for a post that carries a strip (`Suspense fallback={null}`) — also keeps the forum chunk lighter.
+- **Correct pattern:** a component with a test must not statically import anything that reaches `useAuthStore`/`services/firebase` (`<Mascot>` does). Reproduce CI before pushing: `VITE_FIREBASE_API_KEY= npx vitest run` — the empty variable beats `.env` and fails the same way.
+- **Files:** `src/components/ChallengeShareCard.jsx`
+
 ### 2026-11-17 — A new release's note keys silently replaced an older release's copy `dispattern`
 - **Symptom:** adding the 1.28.0 notes ("Fantasminha de plantão") with `patchNotes.mascotGamesTitle/Desc/Cta` turned the 1.24.0 release's "Ele joga junto" card into the new text in the history — no error, no warning at runtime. Caught by `npm run lint` (`no-dupe-keys`, 6 errors) before shipping. In the same pass, copy inserted with a substring anchor (`'    tierList: {'`) landed inside `landing.tierList` (a deeper key whose line ends the same way), and the receipt showed raw keys.
 - **Root cause:** the translation tables are plain object literals: a repeated key keeps the *last* definition, so a later section rewrites an earlier one. And `str.index('    tierList: {\n')` also matches `            tierList: {\n`.

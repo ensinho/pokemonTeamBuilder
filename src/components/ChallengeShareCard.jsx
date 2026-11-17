@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { CHAMPION_NAMES, difficultyLabel } from '../utils/challengeChampions';
 import { readChallengeShare } from '../utils/challengeShare';
-import { BattleStrip } from './BattleStrip';
+
+// The mascot's comic strip, only for a post that carries one: the card stays
+// light (and free of the mascot and auth chain) for every other result.
+const BattleStrip = lazy(() => import('./BattleStrip'));
 
 /**
  * A Champion Challenge result inside a forum message: the day, the outcome
@@ -68,7 +71,11 @@ export function ChallengeShareCard({ share }) {
                 </button>
             </div>
             {/* The battle as the mascot's comic strip (2026-11-17), when posted from it. */}
-            {card.strip && <BattleStrip panels={card.strip} championName={CHAMPION_NAMES[card.champion] || 'Cynthia'} size="md" compact />}
+            {card.strip && (
+                <Suspense fallback={null}>
+                    <BattleStrip panels={card.strip} championName={CHAMPION_NAMES[card.champion] || 'Cynthia'} size="md" compact />
+                </Suspense>
+            )}
         </div>
     );
 }
