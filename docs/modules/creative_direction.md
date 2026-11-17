@@ -64,6 +64,24 @@ built; this file says what they should *feel* like.
 | Icon micro-motions (2026-11-09) | `utils/glyphMotion.js`, `styles/interactions.css` ("Glyph motion"), `HomeGreeting.jsx` (flame) | One vocabulary of "the icon does what it draws" for the whole navigation: the Poké Ball's capture wobble, the swords' clash, the crown lifted, the trend rising — on hover in the desktop rail, once when a dock tab becomes current on a phone; the streak's flame flares and its figure rolls on the trainer's own check-in; chevrons step toward where they go |
 | Team sheet (share image) | `modals/ShareSnippetModal.jsx` (`renderTeamSheetSync`), `utils/teamSheet.js` | The regional-champion poster: trainer's face + "Time de X", six raked cards (art + item, ability, nature, four type-signed move pills) on the lead's type colour, poster rings |
 
+## "Fantasminha de plantão" (2026-11-17)
+
+Enzo, on the proposal ("EU AMEI! TA INCRIVEL"): the mascot gets a job. Built from
+three references — the dusk bot (a small bot with a job, a routine receipt,
+pixel skies 64 cells tall, "none of them shout"), the ai-app-widgets template
+(Live Activities: a black pill, the moment's figure on its own clock, a spring
+to the card) and Pin UI (Progress Image's pixel reveal, Presence Cards). The
+pieces and their rules are in mascot.md, "O plantão". The devices it added:
+
+| Device | Means | Where |
+|---|---|---|
+| **The receipt** (paper in every theme, dashed rules, torn edge, his stamp, the trainer's code as bars) | "here is what I did" — a summary of *his* work, never a panel | `mascot/Receipt.jsx`, `styles/receipt.css` |
+| **The stamp** (his face in a square + one word) | Volt = done; gold = a day of four, earned | `ReceiptStamp` |
+| **The pixel scene** (64 cells tall, type colours as sky and grass) | *his world* — never behind text, never chrome | `mascot/PixelScene.jsx` |
+| **Progress as resolution** (6 → 28 px → the artwork) | a win that just happened | `mascot/PixelReveal.jsx` |
+| **The island** (black pill, his face, a rolling figure) | something live waits on you | `LiveIsland.jsx` |
+| **The ghost in a friend's colour** | presence: who played today, who dozes | `social/Meadow.jsx` |
+
 ## Inspiration bank — the "community boards" kit (reference 5, 2026-11-05)
 
 A dark UI kit of small cards (streaks, boards, quests, a podium, a trade

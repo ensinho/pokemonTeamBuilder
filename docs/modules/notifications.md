@@ -115,3 +115,10 @@ supported, not an iOS tab that needs installing, permission still `default`,
 notifications off, and the offer never answered (`ptb:reminderOfferSeen`).
 Accepting calls the same `toggle()` as Profile, synchronously from the click.
 
+
+## The poke (2026-11-17)
+
+`socialPoke` (webPush.js `TEMPLATES`, grouped as `social` — the opt-in topic):
+a friend poked the trainer's dozing ghost in the meadow. Sent by
+`notifyPoke` through `battle-notify` (`kind: 'poke'`), at most once per pair
+per day; the Pokégear entry (`kind: 'poke'`) is the in-app half.

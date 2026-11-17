@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-17 — A new release's note keys silently replaced an older release's copy `dispattern`
+- **Symptom:** adding the 1.28.0 notes ("Fantasminha de plantão") with `patchNotes.mascotGamesTitle/Desc/Cta` turned the 1.24.0 release's "Ele joga junto" card into the new text in the history — no error, no warning at runtime. Caught by `npm run lint` (`no-dupe-keys`, 6 errors) before shipping. In the same pass, copy inserted with a substring anchor (`'    tierList: {'`) landed inside `landing.tierList` (a deeper key whose line ends the same way), and the receipt showed raw keys.
+- **Root cause:** the translation tables are plain object literals: a repeated key keeps the *last* definition, so a later section rewrites an earlier one. And `str.index('    tierList: {\n')` also matches `            tierList: {\n`.
+- **Fix:** the new notes use keys unique to the release (`mascotDutyGames*`); the misplaced blocks were moved to the top-level `tierList` / `challenge` sections by a whole-line match (`^    tierList: \{$`). A check that every static `t('…')` key in the touched files resolves in both tables ran clean afterwards.
+- **Correct pattern:** grep the table before naming a key (`grep -n "keyName:" src/constants/translations/pt.js`); a release's note keys carry the release's own subject in their name. When editing the tables by script, anchor on the whole line, never a substring, and run `npx eslint src --max-warnings 0` before trusting the copy. (Same pass, a recurrence of 2026-09-14: the receipt's one-column grid had an `auto` track, so one `nowrap` name pushed every value off the paper — `grid-template-columns: minmax(0, 1fr)`.)
+- **Files:** `src/constants/translations/{pt,en}.js`, `src/constants/patchNotes.js`, `src/styles/receipt.css`
+
 ### 2026-11-16 — A longer `includeFiles` made Vercel reject the whole deployment before building `bug`
 - **Symptom:** PR #161 (the OG pass) showed "Vercel — Deployment has failed" seconds after the push, with no preview URL and no build log on GitHub. `npx vercel inspect --logs` needs a login, so from here it looked opaque. The dashboard said: `functions.api/og.js.includeFiles should NOT be longer than 256 characters`.
 - **Root cause:** Vercel validates `vercel.json` against a schema **before** any build, and caps a function's `includeFiles`/`excludeFiles` at 256 characters. The pass listed the wordmark, the 512px icon, the type icons and three data files one by one, which pushed `api/og.js`'s glob to 300+.

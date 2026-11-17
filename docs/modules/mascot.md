@@ -260,6 +260,26 @@ and gesture (`GAME_BEATS` / `gameBeat` in `utils/mascot/assistant.js`, tested):
 - The 1.24.0 patch notes introduce him (`MascotBotVisual`): the line drawing
   gives way to the body, which rises with the pop spring and waves once.
 
+## O plantão (2026-11-17)
+
+Enzo approved the proposal "Fantasminha de plantão" ("EU AMEI! TA INCRIVEL",
+phases 1 and 2): he gets a job between visits, a gesture in each of the day's
+games and the friends' meadow. What he says stays in pure, tested files.
+
+| Piece | Files | Rules |
+|---|---|---|
+| **The round and its receipt** | `utils/mascot/roundReceipt.js`, `store/useRoundStore.js` (`ptb:mascot:round`, a trainer key; `startRoundKeeper` in AppLayout), `mascot/RoundReceiptDialog.jsx` (lazy) | A brand-new trainer gets a baseline, never a receipt. Then, once a day, the note of the day says "Trouxe o recibo da ronda" (`homeNote` `receipt`, after a friend waiting). The receipt compares today with the last round: the four games (new / open / played), a friend who passed the trainer on a board since then (the Pokégear's `passed` entries, ≤ 2), the streak (≥ 2, a fact, never a threat), and — only when a new month of usage lands — the team's ranks in the meta (the usage file is read at most once a month). Opening it takes the round. |
+| **The day's receipt** | `dayReceipt` (same file), the Jogos page's button | Rows per game from what each noted; the full days counted (`withFullDay`: a count, a gap never takes one away); gold stamp only at four of four; "Postar no Diário" = `sharedReceipt`. |
+| **The island** | `utils/liveIsland.js`, `LiveIsland.jsx` (lazy), `styles/live-island.css` | The exception to "no always-on companion", approved on its conditions: only while something is live (a friend's battle waiting, the quiz or the PokéPuzzle of the day half-way, the receipt), one at a time in that order, never beside the JourneyCoach, never on the thing's own page, never in the console or a battle. "Agora não" puts it away until it changes. Phones: under the top band (toasts are at the bottom); desktop: the coach's corner. Live Pink only for a battle. |
+| **PokéPuzzle** | `gameBeat('hint', { letter })`, `MascotCompanion` (pose/extra/tone/framing from a beat), `mascot/PixelReveal.jsx` | The hint: he holds up the sign with the letter. A win just made resolves from 6 px to the artwork (4 steps, < 600 ms); a day loaded solved shows it still. |
+| **Quiz** | `utils/mascot/mime.js`, `CategoryGuesserView` | "Pede uma mímica", once a run: he takes the colour of a missing Pokémon's first type and that type's gesture (`MIME_GESTURES`, every pose real — tested); the line gives type · height (battle dex) · generation. Never a name. |
+| **Tier list** | `utils/tierOpinion.js`, `tierList/TierOpinion.jsx` | His list of the same theme — base stat total, a Ghost one tier up, the Gengar line always S, said on the card — and how much it agrees with a *complete* themed list. A face and a line, no celebration. |
+| **Champion** | `utils/battleStrip.js`, `BattleStrip.jsx`, `views/challenge/BattleStripDialog.jsx` | The console bar's "Tirinha" chip after a battle: three panels (her opening, the turn it turned on — the trainer's gimmick first —, the end) with his face and the battle's own lines (`eventText`). Posting carries `sharedChallenge.strip` (checked by `readStrip`), drawn again in the thread. |
+| **The meadow** | social_heart.md | His friends as ghosts, `publicProfiles.mascot`. |
+
+`<Mascot tone="brand">` forces the brand's violet (a friend's ghost with no
+colour of its own must not wear the viewer's).
+
 ## Rules (from the creative direction and the design system)
 
 - **One per screen.** The stage is held by the most recently mounted `stage`

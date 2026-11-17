@@ -43,6 +43,12 @@ measures first.
 | `quiz_daily_start` | the quiz of the day is started | — |
 | `quiz_daily_end` | the quiz of the day is closed before every name | `found`, `total` |
 | `quiz_forum` | a quiz result is posted to the Diário do dia | `mode` (generation · category), `daily` |
+| `receipt_open` | the mascot's receipt is opened (2026-11-17) | `mode` (morning · day), `news` / `played` |
+| `receipt_post` | the day's receipt is posted to the Diário | `played` |
+| `island_open` / `island_go` | the island is opened / taken to its game | `kind` (battle · quiz · puzzle · receipt) |
+| `mime_ask` | the quiz's mime is asked for (once a run) | `list` |
+| `poke_send` | a dozing friend is poked from the meadow | — |
+| `strip_post` | a Champion result is posted with the mascot's comic strip | `champion` |
 | `puzzle_hint` | a letter hint is taken (2026-11-11) | `mode`, `n` (which hint) |
 | `puzzle_share` | a puzzle result posted to the Diário do dia | `channel` |
 | `quiz_finish` | a quiz run completed | `mode` (generation · category), `total` |
