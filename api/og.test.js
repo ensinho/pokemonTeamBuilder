@@ -147,3 +147,17 @@ describe('api/og section pages and dex cards (2026-11-16)', () => {
         expect(JSON.stringify(moveCardTree(move, 'en'))).toContain('burn');
     });
 });
+
+describe('vercel.json', () => {
+    // Vercel rejects the whole deployment, before any build, when a function's
+    // includeFiles passes 256 characters (2026-11-16, PR #161) — group paths
+    // with nested braces instead of listing them.
+    it('keeps every function\'s includeFiles within Vercel\'s 256 characters', () => {
+        const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'vercel.json'), 'utf8'));
+        for (const [name, fn] of Object.entries(config.functions || {})) {
+            for (const key of ['includeFiles', 'excludeFiles']) {
+                if (fn[key]) expect(fn[key].length, `${name} ${key}`).toBeLessThanOrEqual(256);
+            }
+        }
+    });
+});
