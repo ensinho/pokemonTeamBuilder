@@ -1,8 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Clock, Crown, FastForward, Flame, GalleryHorizontal, Music, Trophy, Volume2, VolumeX,
+    Clock, Crown, FastForward, Flame, GalleryHorizontal, Music, Swords, Trophy, Volume2, VolumeX,
 } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useChampionChallenge } from '../../../hooks/useChampionChallenge';
@@ -70,6 +70,7 @@ const LINK_BOARDS = ['daily', 'free'];
 
 export function ChampionChallengeView() {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const userId = useAuthStore((s) => s.userId);
     const isAnonymous = useAuthStore((s) => s.isAnonymous);
     const isAuthReady = useAuthStore((s) => s.isAuthReady);
@@ -395,16 +396,6 @@ export function ChampionChallengeView() {
             <span className="ds-console__spacer" />
             {/* After today's win: the moment tomorrow's team is worth a nudge. */}
             <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />
-            {/* From the daily duel to a friend's (2026-11-06, social-heart C5). */}
-            {stage === 'result' && challenge.run?.lines?.length > 0 && (
-                <button type="button" className="ds-chip is-button" onClick={() => setShowStrip(true)}>
-                    <GalleryHorizontal className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                    <span>{t('challenge.strip.chip')}</span>
-                </button>
-            )}
-            {stage === 'result' && !isAnonymous && (
-                <Link to="/battles?new=1" className="ds-chip is-button">{t('challenge.result.challengeFriend')}</Link>
-            )}
             {/* A phone has no rail: the ranking stays one tap away, in battle too. */}
             {(phone || stage !== 'battle') && stage !== 'transition' && !railsOn && (
                 <button
@@ -556,6 +547,15 @@ export function ChampionChallengeView() {
                     isSharing={isSharing}
                     // Back to the room — where another champion may be waiting.
                     onBack={() => setStage('arena')}
+                    // The comic strip and a friend's duel (social-heart C5) live in the result, not the bar.
+                    extras={[
+                        ...(challenge.run?.lines?.length > 0
+                            ? [{ id: 'strip', icon: <GalleryHorizontal aria-hidden="true" />, label: t('challenge.strip.chip'), onClick: () => setShowStrip(true) }]
+                            : []),
+                        ...(!isAnonymous
+                            ? [{ id: 'friend', icon: <Swords aria-hidden="true" />, label: t('challenge.result.challengeFriend'), onClick: () => navigate('/battles?new=1') }]
+                            : []),
+                    ]}
                 />
             );
             const teams = railsOn && railTeams(challenge.run.lines || [], challenge.day?.lineup || []);

@@ -208,6 +208,21 @@
         flex-wrap: nowrap;
         /* A chip of words and a chip that is only an icon share the row's height. */
         align-items: stretch;
+        /* Six chips since the island joined the bar (2026-11-17): a tighter
+           step keeps the ⋯ inside the row at 360 px. */
+        gap: var(--space-1_5);
+    }
+
+    .ds-console__bar .island-chip__pill {
+        gap: var(--space-1);
+    }
+}
+
+/* A narrow phone: the island is his face alone (its mood is the day's
+   progress; the card says the rest), so the countdown keeps its figures. */
+@media (max-width: 379px) {
+    .ds-console__bar .island-chip__pill .day-pips {
+        display: none;
     }
 
     .ds-console__bar .ds-chip {
@@ -2940,6 +2955,40 @@
     font-size: calc(18 * var(--px));
     font-weight: 700;
     text-align: center;
+}
+
+/* The quieter ways on after a battle: the comic strip, a friend's duel —
+   text links with an icon, under the actions (they were bar chips, cut off
+   on a phone). */
+.ds-result__more {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: calc(4 * var(--px)) calc(10 * var(--px));
+}
+
+.ds-result__extra {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(3 * var(--px));
+    padding: calc(2 * var(--px)) calc(4 * var(--px));
+    border: none;
+    border-radius: calc(4 * var(--px));
+    background: transparent;
+    color: var(--hud-volt-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: calc(8 * var(--px));
+    text-shadow: none;
+    transition: color var(--duration-fast) var(--ease-smooth), transform var(--duration-press) var(--ease-out);
+}
+
+.ds-result__extra:hover { color: var(--bw-white); }
+.ds-result__extra:active { transform: translateY(calc(1 * var(--px))); }
+
+.ds-result__extra svg {
+    width: calc(9 * var(--px));
+    height: calc(9 * var(--px));
 }
 
 .ds-result.is-won .ds-result__title {
