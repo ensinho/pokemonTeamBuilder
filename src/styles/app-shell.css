@@ -2184,6 +2184,7 @@
             var(--app-shell-tab-height) + var(--space-1_5) * 2
             + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
             + var(--space-4)
+            + var(--island-room, 0px)
         );
         /* Keyboard focus is never hidden behind the floating dock (WCAG
            2.4.11): a control tabbed to near the bottom scrolls up past it.
@@ -2192,6 +2193,7 @@
             var(--app-shell-tab-height) + var(--space-1_5) * 2
             + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
             + var(--space-2)
+            + var(--island-room, 0px)
         );
     }
 

@@ -81,6 +81,15 @@ export default {
         sharePlay: "Play today's",
     },
     island: {
+        day: {
+            label: "Today's games",
+            fresh: "Today's 4 games are waiting",
+            left: '{{n}} games left today',
+            leftOne: '1 game left today',
+            complete: 'Full day!',
+            next: 'Next: {{game}}',
+            receipt: "The day's receipt",
+        },
         region: 'Happening now',
         continue: 'Continue',
         later: 'Not now',

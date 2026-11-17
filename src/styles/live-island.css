@@ -34,6 +34,19 @@
 }
 .live-island > * { pointer-events: auto; }
 
+/* While the island is up (LiveIsland sets html[data-island]), the page keeps
+   its room at the end of the scroll — the dock's reservation plus the pill on
+   a phone, the corner on a desktop — so the last row of a game (the tier
+   list's pool, a quiz's buttons) always scrolls clear of it, and a control
+   tabbed to is never hidden under it. */
+html[data-island] .app-shell__content { --island-room: calc(var(--control-h-md) + var(--space-3)); }
+@media (min-width: 1024px) {
+    html[data-island] .app-shell__content {
+        padding-bottom: calc(var(--space-6) + var(--island-room));
+        scroll-padding-bottom: calc(var(--space-6) + var(--island-room));
+    }
+}
+
 @media (min-width: 1024px) {
     .live-island {
         left: auto;
@@ -122,3 +135,56 @@
 .live-island__go:hover { background: color-mix(in srgb, var(--island-ink) 86%, var(--island-fg)); }
 .live-island__later { color: var(--island-muted); }
 .live-island__later:hover { background: color-mix(in srgb, var(--island-fg) 10%, transparent); color: var(--island-fg); }
+
+/* ── The day (inside the games, 2026-11-17) ───────────────────────────────
+   The pill carries the day's pips (DayPips) and the figure; the card lists
+   the four, each a tap away. The pips are drawn for the island's black in
+   every theme: dim while open, the game's tone once played, gold at four. */
+.live-island .day-pips__pip { background: color-mix(in srgb, var(--island-fg) 22%, transparent); }
+.live-island .day-pips__pip.is-done { background: color-mix(in srgb, var(--nav-hue, var(--color-primary)) 72%, var(--island-fg)); }
+.live-island .day-pips.is-complete .day-pips__pip { background: var(--brand-gold); }
+.live-island__pips { margin-left: var(--space-1); }
+.live-island__count { display: inline-flex; margin-left: var(--space-2); }
+
+.live-island__games {
+    display: grid;
+    gap: var(--space-0_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.live-island__game {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-1_5) var(--space-2);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--island-fg);
+    font: 500 0.85rem/1.3 var(--font-body);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+.live-island__game:hover,
+.live-island__game[aria-current="page"] { background: color-mix(in srgb, var(--island-fg) 9%, transparent); }
+.live-island__game-dot {
+    display: grid;
+    place-items: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: var(--radius-full);
+    border: 1.5px dashed color-mix(in srgb, var(--pip) 70%, var(--island-fg));
+}
+.live-island__game.is-done .live-island__game-dot {
+    border: 0;
+    background: color-mix(in srgb, var(--pip) 72%, var(--island-fg));
+    color: var(--brand-ink);
+}
+.live-island__game-dot svg { width: 0.75rem; height: 0.75rem; stroke-width: 3; }
+.live-island__game-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.live-island__game-state { color: var(--island-muted); font: 500 0.72rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.live-island__game.is-done .live-island__game-state { color: color-mix(in srgb, var(--pip) 60%, var(--island-fg)); }

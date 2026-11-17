@@ -81,6 +81,15 @@ export default {
         sharePlay: 'Jogar os de hoje',
     },
     island: {
+        day: {
+            label: 'Jogos do dia',
+            fresh: 'Os 4 jogos de hoje te esperam',
+            left: 'Faltam {{n}} jogos hoje',
+            leftOne: 'Falta 1 jogo hoje',
+            complete: 'Dia completo!',
+            next: 'Próximo: {{game}}',
+            receipt: 'O recibo do dia',
+        },
         region: 'Acontecendo agora',
         continue: 'Continuar',
         later: 'Agora não',
