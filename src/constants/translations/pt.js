@@ -3137,6 +3137,11 @@ export default {
             category: { physical: 'Físico', special: 'Especial', status: 'Status' },
             power: 'Poder {{power}}',
             accuracy: 'Precisão {{accuracy}}%',
+            forfeitLabel: 'Desistir da batalha',
+            you: 'Você',
+            standing: '{{mine}} seus ainda de pé, {{theirs}} de {{name}}',
+            matchup: { super: 'Super eficaz', weak: 'Pouco eficaz', immune: 'Sem efeito' },
+            matchupOn: '{{effect}} em {{name}}',
         },
         sheet: {
             title: 'Ficha do time',

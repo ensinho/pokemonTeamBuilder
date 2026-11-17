@@ -3173,6 +3173,11 @@ export default {
             category: { physical: 'Physical', special: 'Special', status: 'Status' },
             power: 'Power {{power}}',
             accuracy: 'Accuracy {{accuracy}}%',
+            forfeitLabel: 'Forfeit the battle',
+            you: 'You',
+            standing: '{{mine}} of yours still standing, {{theirs}} of {{name}}',
+            matchup: { super: 'Super effective', weak: 'Not very effective', immune: 'No effect' },
+            matchupOn: '{{effect}} on {{name}}',
         },
         sheet: {
             title: 'Team sheet',

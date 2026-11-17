@@ -111,6 +111,23 @@ export function DsBattleStage({
         return entry ? { type: entry[1], category: entry[2], power: entry[3], accuracy: entry[4], desc: entry[6] } : null;
     }, [dex]);
 
+    // The Pokémon in front of your moves: what each one would do to it (the
+    // HUD's "Super eficaz ×2", utils/moveMatchup.js). Its types from the dex,
+    // a Tera type from the field; nothing while the slot is empty.
+    const foeActive = field.theirs?.active;
+    const foeSpecies = foeActive && !foeActive.fainted ? foeActive.species : null;
+    const foeTera = foeActive?.teraType || null;
+    const target = useMemo(() => {
+        if (!foeSpecies || !dex?.species) return null;
+        const entry = dex.species[moveKey(foeSpecies)] || dex.species[moveKey(foeSpecies.split('-')[0])];
+        return entry ? { name: foeSpecies, types: entry[1] || [], abilities: entry[3] || [], teraType: foeTera } : null;
+    }, [dex, foeSpecies, foeTera]);
+    // A revealed member's types, for her team's sheet.
+    const typesOf = useCallback((species) => {
+        const entry = dex?.species?.[moveKey(species)] || dex?.species?.[moveKey(String(species).split('-')[0])];
+        return entry?.[1] || [];
+    }, [dex]);
+
     // Text: the moment's line; a silent moment keeps the last one up.
     const lastText = useRef({ text: '', speaker: null });
     const ended = run.status !== 'active';
@@ -242,6 +259,8 @@ export function DsBattleStage({
                             request={request}
                             enabled={yourTurn}
                             moveMeta={moveMeta}
+                            target={target}
+                            typesOf={typesOf}
                             message={message}
                             foeBalls={foeBalls}
                             sheet={sheet}
@@ -268,6 +287,8 @@ export function DsBattleStage({
                     request={request}
                     enabled={yourTurn}
                     moveMeta={moveMeta}
+                    target={target}
+                    typesOf={typesOf}
                     myBalls={myBalls}
                     foeBalls={foeBalls}
                     sheet={sheet}
