@@ -611,6 +611,59 @@
     color: var(--ds-badge);
 }
 
+/* At the door, before the first step (2026-11-17): the room says what to do
+   and the plates of the champions still open call — a ring that breathes
+   (transform/opacity). The first step puts both away. */
+.ds-arena__hint {
+    position: absolute;
+    left: calc(6 * var(--px));
+    bottom: calc(6 * var(--px));
+    z-index: 3;
+    max-width: calc(96 * var(--px));
+    margin: 0;
+    padding: calc(2 * var(--px)) calc(5 * var(--px));
+    border-radius: calc(4 * var(--px));
+    background: color-mix(in srgb, var(--hud-ink) 82%, transparent);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--hud-edge);
+    color: var(--bw-white);
+    font-size: calc(7 * var(--px));
+    line-height: calc(9 * var(--px));
+    pointer-events: none;
+}
+
+.ds-arena__hint-pointer { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+    .ds-arena__hint-touch { display: none; }
+    .ds-arena__hint-pointer { display: inline; }
+}
+
+.ds-arena.is-idle .ds-actor__plate:not(.is-beaten)::after {
+    content: '';
+    position: absolute;
+    inset: calc(-1.5 * var(--px));
+    border-radius: calc(4 * var(--px));
+    box-shadow: 0 0 0 calc(1 * var(--px)) var(--hud-volt-text);
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ds-arena__hint { animation: ds-hint-in var(--duration-entrance) var(--ease-out) both; }
+    .ds-arena.is-idle:not(.is-reduced) .ds-actor__plate:not(.is-beaten)::after {
+        animation: ds-plate-call 1.8s var(--ease-smooth) infinite;
+    }
+}
+
+@keyframes ds-hint-in {
+    from { opacity: 0; transform: translateY(calc(3 * var(--px))); }
+}
+
+@keyframes ds-plate-call {
+    0% { opacity: 0.9; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(1.25); }
+}
+
 /* Just above the head (the cell's first opaque row is 5). */
 .ds-actor__bang {
     position: absolute;

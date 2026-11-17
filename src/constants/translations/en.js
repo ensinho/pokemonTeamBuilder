@@ -3100,6 +3100,8 @@ export default {
             hint: 'Walk to {{name}} — arrows, WASD or a click on the floor',
             skip: 'Go to {{name}}',
             goToBeaten: 'Go to {{name}} — beaten today',
+            hintTouch: 'Tap a champion to challenge them',
+            hintPointer: 'Click a champion — or walk with the arrow keys',
             otherBoard: 'Your first battle on the "{{board}}" ranking still counts today.',
         },
         share: {

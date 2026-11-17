@@ -3064,6 +3064,8 @@ export default {
             hint: 'Ande até {{name}} — setas, WASD ou um clique no chão',
             skip: 'Ir até {{name}}',
             goToBeaten: 'Ir até {{name}} — vencido hoje',
+            hintTouch: 'Toque num campeão para desafiar',
+            hintPointer: 'Clique num campeão — ou ande com as setas',
             otherBoard: 'Sua primeira batalha no ranking "{{board}}" ainda vale hoje.',
         },
         share: {
