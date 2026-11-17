@@ -189,7 +189,12 @@ history, so an announcement can be re-read after it is dismissed.
    current release always carries the Buy Me a Coffee note
    (`key: 'buy-me-a-coffee'`, `href: SUPPORT_URL`, `patchNotes.supportShort` as a
    side note or `supportBody` when featured). It takes one of the three side
-   slots; `patchNotes.test.js` fails without it.
+   slots; `patchNotes.test.js` fails without it. **It keeps the cup and the
+   purple button** (Enzo, 2026-11-17): alone beside the featured note it takes
+   that centred form by itself; beside other notes, mark it `prominent: true`
+   so it does not shrink to a quiet row. A featured `visual` fills its cover
+   (`h-full`, with a `min-h`) — a fixed height leaves a dark band under it
+   when the side column is taller (1.28.0's first build).
 
 `patchNotes.test.js` guards the invariants: head version equals
 `PATCH_NOTES_VERSION`, versions descend, none repeat, every release has a month
