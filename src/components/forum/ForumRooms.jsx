@@ -4,6 +4,7 @@ import { Pin } from 'lucide-react';
 import { MessageIcon } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
 import { topicReplies, topicLastActivity } from '../../utils/forumRanking';
+import { forumPreviewText } from '../../utils/forumPreview';
 import { roomIcon } from './forumNav';
 
 // A room that moved in the last hour has someone in it right now.
@@ -52,7 +53,7 @@ export const ForumRooms = memo(function ForumRooms({ rooms = [], hrefFor, onBefo
                                     <span className="forum-room__name">{name}</span>
                                     <span className="forum-room__meta">
                                         {/* What is in it today: the date or theme, else the last line said there. */}
-                                        {detail || (room.lastMessageText || '').trim() || t(room.virtual ? 'forum.roomTopics' : 'forum.roomMessages', { count: replies })}
+                                        {detail || forumPreviewText(room.lastMessageText, t) || t(room.virtual ? 'forum.roomTopics' : 'forum.roomMessages', { count: replies })}
                                     </span>
                                 </span>
                                 <span className="forum-room__side">

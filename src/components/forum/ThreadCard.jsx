@@ -7,6 +7,7 @@ import { Pin } from 'lucide-react';
 import { PokeballIcon, MessageIcon, HeartIcon, ShareIcon, ReplyIcon, SparklesIcon } from '../icons';
 import { formatForumTime, getCategoryMeta } from '../../utils/forumTime';
 import { topicReplies, topicLikes } from '../../utils/forumRanking';
+import { forumPreviewText } from '../../utils/forumPreview';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 
@@ -41,9 +42,10 @@ export const ThreadCard = memo(function ThreadCard({
     const when = isPinned ? (topic.lastActivityAt || topic.createdAt) : (topic.createdAt || topic.lastActivityAt);
     const isOfficial = topic.createdBy === 'system';
 
-    const body = (topic.bodyPreview || '').trim()
-        || (replies === 0 ? (topic.lastMessageText || '').trim() : '');
-    const lastReply = !body && replies > 0 ? (topic.lastMessageText || '').trim() : '';
+    // The last line in the reader's language: an attachment's stand-in is stored in English.
+    const lastLine = forumPreviewText(topic.lastMessageText, t);
+    const body = (topic.bodyPreview || '').trim() || (replies === 0 ? lastLine : '');
+    const lastReply = !body && replies > 0 ? lastLine : '';
     const team = Array.isArray(topic.sharedTeam?.pokemons) ? topic.sharedTeam.pokemons.filter(Boolean).slice(0, 6) : [];
 
     const profile = () => onOpenProfile?.({
