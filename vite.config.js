@@ -72,8 +72,9 @@ export default defineConfig({
           // that dialog opens; precaching both cost every visit ~92 KB.
           '**/support-cover-*.webp',
           '**/og-image.png',
-          '**/pokepuzzle-og.png',
-          '**/challenge-og.png',
+          // Favicons for search results (index.html); the tab uses the SVG.
+          '**/favicon-48x48.png',
+          '**/favicon-96x96.png',
           '**/android-chrome-512x512.png',
           // The Primeira Jornada's tour (FirstJourney): fetched when the flow opens, once.
           '**/onboarding/tour-*.webp',

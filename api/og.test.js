@@ -102,3 +102,48 @@ describe('api/og reference pages', () => {
         expect(tree).toContain('Soma de status 600');
     });
 });
+
+describe('api/og section pages and dex cards (2026-11-16)', () => {
+    it('has a card for every page with fixed copy', async () => {
+        const { STATIC_PAGES } = await import('../src/utils/seoPages.js');
+        const { PAGE_CARDS } = await import('./_lib/ogImage.js');
+        for (const key of Object.values(STATIC_PAGES)) expect(PAGE_CARDS[key], key).toBeTruthy();
+    });
+
+    it('draws a page, a dex entry, a guide and the square home as PNGs', async () => {
+        const cases = [
+            ['/api/og?page=games&lang=pt', 630],
+            ['/api/og?page=home&format=square', 1200],
+            ['/api/og?move=flamethrower&lang=pt', 630],
+            ['/api/og?ability=intimidate', 630],
+            ['/api/og?item=leftovers', 630],
+            ['/api/og?guide=first-vgc-team&lang=pt', 630],
+        ];
+        for (const [url, height] of cases) {
+            const res = fakeRes();
+            await handler({ url }, res);
+            expect(res.code, url).toBe(200);
+            expect(Buffer.from(res.body).readUInt32BE(20), url).toBe(height);
+        }
+    }, 120000);
+
+    it('answers an unknown page, dex entry, guide or tournament team with the default card', async () => {
+        for (const url of ['/api/og?page=nope', '/api/og?move=<b>', '/api/og?ability=notreal', '/api/og?item=', '/api/og?guide=nope', '/api/og?tteam=nope']) {
+            const res = fakeRes();
+            await handler({ url }, res);
+            expect(res.code, url).toBe(302);
+        }
+    });
+
+    it('heads every card with the brand and never draws a sharer\'s words', async () => {
+        const { pageCardTree, moveCardTree } = await import('./_lib/ogImage.js');
+        const page = JSON.stringify(pageCardTree('games', new Map(), 'pt', { wordmark: 'data:image/svg+xml;base64,AA' }));
+        expect(page).toContain('data:image/svg+xml;base64,AA');
+        expect(page).toContain('Jogos Pokémon do dia');
+        expect(page).toContain('Jogue os quatro de hoje');
+        // The dex's effect text is English: the Portuguese card leaves it out.
+        const move = ['Flamethrower', 'fire', 'Special', 90, 100, 15, '10% chance to burn the target.'];
+        expect(JSON.stringify(moveCardTree(move, 'pt'))).not.toContain('burn');
+        expect(JSON.stringify(moveCardTree(move, 'en'))).toContain('burn');
+    });
+});
