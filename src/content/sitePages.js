@@ -269,8 +269,8 @@ export const SITE_PAGES = {
                 {
                     heading: 'What is stored when you use the site without an account?',
                     paragraphs: [
-                        'On your first visit the site creates an anonymous account for you: a random identifier, with no name or email. Under it, Firebase stores what you save: teams, favorites, quiz, PokéPuzzle and Champion Challenge results, your progress, and the answers you give the welcome questions (what you play, and how deep into competitive), which only arrange the site for you, and the gym badges you mark in your badge case.',
-                        'Your browser also keeps preferences (language, theme, text size, the mascot\'s colour, outfit and reactions) the tier lists you make (they stay on the device unless you share one: a link or a forum post carries the theme and the Pokémon you ranked, never the name you gave the list), which of today\'s games you played, the mascot\'s round (the day you last opened his receipt and how many full days you have played, so the next receipt can say what changed), the friends you poked today, and a copy of public game data in its own storage, so pages open faster. Clearing the site\'s data in your browser removes them.',
+                        'On your first visit the site creates an anonymous account for you: a random identifier, with no name or email. Under it, Firebase stores what you save: teams, favorites, quiz, PokéPuzzle and Champion Challenge results, your progress, and the answers you give the welcome questions (what you play, and how deep into competitive), which only arrange the site for you, the gym badges you mark in your badge case, the tier lists you make (their names included, visible only to you) and which of today\'s games you played, so another browser signed in to your account shows the same day.',
+                        'Your browser also keeps preferences (language, theme, text size, the mascot\'s colour, outfit and reactions) a copy of the tier lists you make (shared, a link or a forum post carries the theme and the Pokémon you ranked, never the name you gave the list) and of which of today\'s games you played, the mascot\'s round (the day you last opened his receipt and how many full days you have played, so the next receipt can say what changed), the friends you poked today, and a copy of public game data in its own storage, so pages open faster. Clearing the site\'s data in your browser removes them.',
                     ],
                 },
                 {
@@ -311,7 +311,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'How do you delete your data?',
                     paragraphs: [
-                        'In Profile → Account → Delete account. It erases your teams, favorites, results, profile, friendships, push subscriptions and Champion Challenge ranking, then the account itself. Forum posts are not erased automatically: delete them before, or write to us and we remove them.',
+                        'In Profile → Account → Delete account. It erases your teams, favorites, results, tier lists, profile, friendships, push subscriptions and Champion Challenge ranking, then the account itself. Forum posts are not erased automatically: delete them before, or write to us and we remove them.',
                         'Under Brazil\'s LGPD and similar laws you can ask to see, correct or delete your data at any time by writing to ' + CONTACT_EMAIL + '.',
                     ],
                     links: [{ href: MAILTO, label: CONTACT_EMAIL }],
@@ -331,8 +331,8 @@ export const SITE_PAGES = {
                 {
                     heading: 'O que é guardado quando você usa o site sem conta?',
                     paragraphs: [
-                        'Na primeira visita o site cria uma conta anônima para você: um identificador aleatório, sem nome nem e-mail. Nele, o Firebase guarda o que você salva: times, favoritos, resultados do quiz, do PokéPuzzle e do Desafio do Campeão, o seu progresso e as respostas das perguntas de boas-vindas (o que você joga e o seu nível no competitivo), que servem só para organizar o site para você, e as insígnias de ginásio que você marca no seu estojo.',
-                        'O seu navegador também guarda preferências (idioma, tema, tamanho do texto, a cor, o traje e as reações do mascote), as tier lists que você monta (elas ficam no aparelho, a não ser que você compartilhe uma: o link ou o post no fórum leva o tema e os Pokémon ranqueados, nunca o nome que você deu à lista), quais jogos do dia você já jogou, a ronda do mascote (o dia em que você abriu o recibo dele e quantos dias completos já jogou, para o próximo recibo dizer o que mudou), os amigos que você cutucou hoje e uma cópia de dados públicos do jogo no próprio armazenamento, para as páginas abrirem mais rápido. Apagar os dados do site no navegador os remove.',
+                        'Na primeira visita o site cria uma conta anônima para você: um identificador aleatório, sem nome nem e-mail. Nele, o Firebase guarda o que você salva: times, favoritos, resultados do quiz, do PokéPuzzle e do Desafio do Campeão, o seu progresso e as respostas das perguntas de boas-vindas (o que você joga e o seu nível no competitivo), que servem só para organizar o site para você, as insígnias de ginásio que você marca no seu estojo, as tier lists que você monta (com os nomes, visíveis só para você) e quais jogos do dia você já jogou, para outro navegador com a sua conta mostrar o mesmo dia.',
+                        'O seu navegador também guarda preferências (idioma, tema, tamanho do texto, a cor, o traje e as reações do mascote), uma cópia das tier lists que você monta (compartilhada, o link ou o post no fórum leva o tema e os Pokémon ranqueados, nunca o nome que você deu à lista) e de quais jogos do dia você já jogou, a ronda do mascote (o dia em que você abriu o recibo dele e quantos dias completos já jogou, para o próximo recibo dizer o que mudou), os amigos que você cutucou hoje e uma cópia de dados públicos do jogo no próprio armazenamento, para as páginas abrirem mais rápido. Apagar os dados do site no navegador os remove.',
                     ],
                 },
                 {
@@ -373,7 +373,7 @@ export const SITE_PAGES = {
                 {
                     heading: 'Como apagar os seus dados?',
                     paragraphs: [
-                        'Em Perfil → Conta → Excluir conta. Isso apaga os seus times, favoritos, resultados, perfil, amizades, inscrições push e posição no ranking do Desafio do Campeão, e depois a própria conta. Posts no fórum não são apagados automaticamente: apague-os antes, ou escreva para nós e nós os removemos.',
+                        'Em Perfil → Conta → Excluir conta. Isso apaga os seus times, favoritos, resultados, tier lists, perfil, amizades, inscrições push e posição no ranking do Desafio do Campeão, e depois a própria conta. Posts no fórum não são apagados automaticamente: apague-os antes, ou escreva para nós e nós os removemos.',
                         'Pela LGPD você pode pedir para ver, corrigir ou apagar os seus dados a qualquer momento, escrevendo para ' + CONTACT_EMAIL + '.',
                     ],
                     links: [{ href: MAILTO, label: CONTACT_EMAIL }],

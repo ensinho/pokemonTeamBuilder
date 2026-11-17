@@ -215,16 +215,59 @@ export function normalizeBoard(raw, templateId) {
     return { ...fresh, title, tiers, pool: pool.slice(0, MAX_BOARD_ITEMS) };
 }
 
-/** What is kept on the device: the board of each template and the last one open. */
+/**
+ * What is kept: the board of each template, the last one open, and when each
+ * board last changed (`stamps`, ms) — the device's copy and, since
+ * 2026-11-17, the account's (`services/tierListSync.js`), merged board by
+ * board on the stamp (`mergeTierStores`).
+ */
 export function normalizeStore(raw) {
     const value = raw && typeof raw === 'object' ? raw : {};
     const current = TEMPLATES_BY_ID[value.current] ? value.current : DEFAULT_TEMPLATE_ID;
     const boards = {};
+    const stamps = {};
     for (const template of TIER_TEMPLATES) {
-        if (value.boards?.[template.id]) boards[template.id] = normalizeBoard(value.boards[template.id], template.id);
+        if (value.boards?.[template.id]) {
+            boards[template.id] = normalizeBoard(value.boards[template.id], template.id);
+            const stamp = value.stamps?.[template.id];
+            if (Number.isFinite(stamp) && stamp > 0) stamps[template.id] = stamp;
+        }
     }
-    return { current, boards };
+    return { current, boards, stamps };
 }
+
+const sameBoard = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+
+/** `next` with every board that differs from `prev` stamped `ms`. */
+export function stampChangedBoards(prev, next, ms) {
+    let stamps = next.stamps || {};
+    for (const id of Object.keys(next.boards || {})) {
+        if (!sameBoard(prev?.boards?.[id], next.boards[id])) stamps = { ...stamps, [id]: ms };
+    }
+    return stamps === next.stamps ? next : { ...next, stamps };
+}
+
+/**
+ * This device's store and the account's as one: for each template, the board
+ * stamped later (a board only one copy has is kept; an unstamped board loses
+ * to a stamped one). The open template stays this device's.
+ */
+export function mergeTierStores(local, remote) {
+    const here = normalizeStore(local);
+    const there = normalizeStore(remote);
+    const boards = { ...here.boards };
+    const stamps = { ...here.stamps };
+    for (const [id, board] of Object.entries(there.boards)) {
+        if (!here.boards[id] || (there.stamps[id] || 0) > (here.stamps[id] || 0)) {
+            boards[id] = board;
+            if (there.stamps[id]) stamps[id] = there.stamps[id];
+        }
+    }
+    return { current: here.current, boards, stamps };
+}
+
+/** Whether two stores hold the same boards (the open template aside). */
+export const sameTierBoards = (a, b) => sameBoard(a?.boards, b?.boards) && sameBoard(a?.stamps, b?.stamps);
 
 /** Whether a Pokémon (an index entry) may fill a chart cell. */
 export function meetsCellRule(rule, pokemon) {
