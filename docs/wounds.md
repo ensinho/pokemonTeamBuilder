@@ -14,6 +14,20 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-17 — The forum showed Portuguese readers English stand-ins ("Champion Challenge result") `bug`
+- **Symptom:** in the feed and the pinned rooms, a topic whose last reply was only an attachment read "↩ Champion Challenge result", "Quiz result", "Shared team: X" — in English, in the PT site.
+- **Root cause:** `useForumStore.sendMessage` writes a fixed English string as the topic's `lastMessageText` when the message has no text; `ThreadCard` and `ForumRooms` printed it verbatim. Display copy had been stored as data.
+- **Fix:** `src/utils/forumPreview.js` (tested) reads the known stand-ins back through `forum.preview.*` at render; anything else is a person's own words and passes untouched. Stored data unchanged, so old topics are fixed too.
+- **Correct pattern:** never store UI copy in Firestore. Store a marker (or keep a closed set of stand-ins) and translate on read; a new attachment kind adds its stand-in to `FIXED` and a `forum.preview` key.
+- **Files:** `src/utils/forumPreview.js`, `src/components/forum/ThreadCard.jsx`, `src/components/forum/ForumRooms.jsx`, `src/store/useForumStore.js`
+
+### 2026-11-17 — The Champion console's phone bar ran past the screen once the island joined it `bug`
+- **Symptom:** on a phone, the result's bar cut "Desafiar um am…" off and, at 360 px, squeezed the countdown to "11|".
+- **Root cause:** the phone bar is one `nowrap` row (crown · clock · Ranking · ⋯). The island chip (93 px) joined it, while the result still added two chips (Tirinha, Desafiar um amigo): seven chips with no room for them.
+- **Fix:** the two result actions moved into the result itself (`DsResult extras`, one quiet row under the actions); the phone bar steps at `--space-1_5`; below 380 px the island chip is the face alone (`.day-pips` hidden).
+- **Correct pattern:** a one-row bar has a chip budget. Before adding a chip to `ds-console__bar`, measure the row at 360 px in every stage (room, battle, result); an action that belongs to one stage lives in that stage's screen, not the bar.
+- **Files:** `src/components/views/challenge/ChampionChallengeView.jsx`, `src/components/views/challenge/ds/DsPanels.jsx`, `src/styles/champion-challenge-ds.css`
+
 ### 2026-11-17 — Revival Blessing stuck the battle: the client offered the wrong bench `bug`
 - **Symptom:** after Rabsca's Revival Blessing the party screen offered the standing Pokémon; every pick came back "[Invalid choice] Can't switch: You have to pass to a fainted Pokémon" and the turn could not go on.
 - **Root cause:** the sim answers Revival Blessing with a `forceSwitch` request whose active entry carries `reviving: true` — the legal picks are the *fainted* bench. `readMyRequest` (`src/utils/battleProtocol.js`) always filtered fainted Pokémon out. The AI already knew (`api/_lib/ai/options.js`); the client didn't. Second half: the revive is logged as `|-heal|p1: Name|…` for a **benched** Pokémon, and `battleState` applied every `-heal` to the active one (Rabsca would have shown the revived one's HP); `faintedSpecies`/`championRoster` never un-fainted anyone.
