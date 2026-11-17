@@ -28,6 +28,7 @@ import { EmptyState } from '../../EmptyState';
 import { Loader } from '../../Loader';
 import { DsArena } from './ds/DsArena';
 import { DsBattleReport } from './ds/DsBattleReport';
+import { IslandChip } from '../../IslandChip';
 import { DsBattleStage } from './ds/DsBattleStage';
 import { DsConsole } from './ds/DsConsole';
 import { DsChampionHint, DsResult, DsSignInGate } from './ds/DsPanels';
@@ -389,6 +390,8 @@ export function ChampionChallengeView() {
                 </span>
             )}
             {!phone && streakChip}
+            {/* The island lives here on the console (2026-11-17): floating, it would sit on the controls. */}
+            <IslandChip />
             <span className="ds-console__spacer" />
             {/* After today's win: the moment tomorrow's team is worth a nudge. */}
             <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />

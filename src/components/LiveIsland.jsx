@@ -10,7 +10,7 @@ import { useQuizRunsStore } from '../store/useQuizRunsStore';
 import { useJourneyCoachStore } from '../store/useJourneyCoachStore';
 import { useRoundStore, selectReceiptReady } from '../store/useRoundStore';
 import { describeBattle } from '../utils/battle';
-import { ISLAND_MOODS, dayMood, gameOfPath, pickLive } from '../utils/liveIsland';
+import { GAME_DOORS, GAME_NAV, ISLAND_MOODS, dayMood, dayTitle, gameOfPath, pickLive } from '../utils/liveIsland';
 import { dailyQuizFor } from '../utils/dailyQuiz';
 import { DAILY_GAMES, dayTally, gameDayKey, localDayNumber, nextGameFor } from '../utils/gamesToday';
 import { useGamesToday } from '../hooks/useGamesToday';
@@ -60,14 +60,34 @@ const readPuzzle = (userId) => {
         return null;
     }
 };
-/** Where each of the day's games opens (the Jogos page's own doors). */
-const GAME_PATHS = {
-    challenge: '/challenge',
-    pokepuzzle: '/pokepuzzle',
-    quiz: '/quiz?tab=categories&daily=1',
-    tierList: '/tier-list?daily=1',
-};
-const NAV_KEY = { challenge: 'challenge', pokepuzzle: 'pokepuzzle', quiz: 'generationQuiz', tierList: 'tierList' };
+
+/**
+ * The day's four in the island's card, each a tap away (shared with the
+ * Champion console's chip, `IslandChip`). `figureOf(game)` is the figure a
+ * game has today, if any ("6/10"); `here` marks the page the trainer is on.
+ */
+export function DayGames({ done, here = null, figureOf = () => null, onGo }) {
+    const { t } = useTranslation();
+    return (
+        <ul className="live-island__games">
+            {DAILY_GAMES.map((game) => (
+                <li key={game}>
+                    <button
+                        type="button"
+                        className={`live-island__game ${done[game] ? 'is-done' : ''}`}
+                        style={{ '--pip': navHue(GAME_NAV[game]) }}
+                        aria-current={here === game ? 'page' : undefined}
+                        onClick={() => onGo(GAME_DOORS[game])}
+                    >
+                        <span className="live-island__game-dot" aria-hidden="true">{done[game] && <Check />}</span>
+                        <span className="live-island__game-name">{t(`gamesHub.short.${game}`)}</span>
+                        <span className="live-island__game-state">{done[game] ? t('nav.playedToday') : (figureOf(game) || t('nav.openToday'))}</span>
+                    </button>
+                </li>
+            ))}
+        </ul>
+    );
+}
 
 const readDismissed = () => {
     try { return JSON.parse(sessionStorage.getItem(DISMISS_KEY) || '{}') || {}; } catch { return {}; }
@@ -142,7 +162,7 @@ export function LiveIsland() {
         setOpen(false);
         if (live.kind === 'battle') navigate(`/battles/${live.id}`);
         else if (live.kind === 'day') {
-            if (next?.kind === 'next') navigate(GAME_PATHS[next.game]);
+            if (next?.kind === 'next') navigate(GAME_DOORS[next.game]);
             else openReceipt('day');
         } else if (live.kind === 'quiz') navigate('/quiz?tab=categories&daily=1');
         else if (live.kind === 'puzzle') navigate('/pokepuzzle');
@@ -189,7 +209,7 @@ export function LiveIsland() {
         day: {
             label: t('island.day.label'),
             value: <><DayPips className="live-island__pips" /><span className="live-island__count"><RollingNumber value={tally.played} />/{tally.total}</span></>,
-            title: tally.complete ? t('island.day.complete') : tally.played === 0 ? t('island.day.fresh') : tally.total - tally.played === 1 ? t('island.day.leftOne') : t('island.day.left', { n: tally.total - tally.played }),
+            title: dayTitle(t, tally),
             sub: null,
             cta: next?.kind === 'next' ? t('island.day.next', { game: t(`gamesHub.short.${next.game}`) }) : t('island.day.receipt'),
         },
@@ -202,23 +222,7 @@ export function LiveIsland() {
         return null;
     };
     const dayList = live.kind === 'day' && (
-        <ul className="live-island__games">
-            {DAILY_GAMES.map((game) => (
-                <li key={game}>
-                    <button
-                        type="button"
-                        className={`live-island__game ${done[game] ? 'is-done' : ''}`}
-                        style={{ '--pip': navHue(NAV_KEY[game]) }}
-                        aria-current={here === game ? 'page' : undefined}
-                        onClick={() => { setOpen(false); navigate(GAME_PATHS[game]); }}
-                    >
-                        <span className="live-island__game-dot" aria-hidden="true">{done[game] && <Check />}</span>
-                        <span className="live-island__game-name">{t(`gamesHub.short.${game}`)}</span>
-                        <span className="live-island__game-state">{done[game] ? t('nav.playedToday') : (figureOf(game) || t('nav.openToday'))}</span>
-                    </button>
-                </li>
-            ))}
-        </ul>
+        <DayGames done={done} here={here} figureOf={figureOf} onGo={(to) => { setOpen(false); navigate(to); }} />
     );
 
     return (
