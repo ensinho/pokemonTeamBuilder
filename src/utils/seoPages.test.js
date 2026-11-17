@@ -123,14 +123,32 @@ describe('structuredData', () => {
         expect(app).toMatchObject({ name: 'Speed tiers de Pokémon', inLanguage: 'pt-BR' });
         expect(app.featureList).toContain('Choice Scarf');
         const guide = structuredData(pageMeta('/guides/first-vgc-team', 'en'), 'en', { faq: [{ q: 'Q?', a: 'A.' }] });
-        expect(guide.map((b) => b['@type'])).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList']);
+        expect(guide.map((b) => b['@type'])).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList', 'WebPage']);
     });
 
     it('gives the organisation a contact and marks the About page as one', () => {
         const [org] = structuredData(pageMeta('/', 'en'), 'en');
         expect(org.contactPoint).toMatchObject({ '@type': 'ContactPoint', email: 'pokemonteambuilderadmin@gmail.com' });
         const about = structuredData(pageMeta('/about', 'pt'), 'pt');
-        expect(about.map((b) => b['@type'])).toEqual(['Organization', 'AboutPage', 'BreadcrumbList']);
+        expect(about.map((b) => b['@type'])).toEqual(['Organization', 'AboutPage', 'BreadcrumbList', 'WebPage']);
         expect(about[1]).toMatchObject({ url: 'https://pokemonbuilder.app/pt/about', mainEntity: { '@id': 'https://pokemonbuilder.app/#organization' } });
+    });
+});
+
+describe('link-preview images (2026-11-16)', () => {
+    it('gives every page its own card, the English home the static one', () => {
+        expect(pageMeta('/', 'en').image).toBe('https://pokemonbuilder.app/og-image.png');
+        expect(pageMeta('/', 'pt').image).toBe('https://pokemonbuilder.app/api/og?page=home&lang=pt');
+        expect(pageMeta('/games', 'pt').image).toBe('https://pokemonbuilder.app/api/og?page=games&lang=pt');
+        expect(pageMeta('/guides/first-vgc-team', 'en').image).toBe('https://pokemonbuilder.app/api/og?guide=first-vgc-team&lang=en');
+        expect(pageMeta('/moves/fire-blast', 'en', { name: 'Fire Blast' }).image).toBe('https://pokemonbuilder.app/api/og?move=fireblast&lang=en');
+        expect(pageMeta('/moves/not-real', 'en').image).toBe('https://pokemonbuilder.app/api/og?page=moves&lang=en');
+        expect(pageMeta('/tournaments/team/abc', 'en', { team: { id: 'abc', title: 'T', tournament: 'X' } }).image).toBe('https://pokemonbuilder.app/api/og?tteam=abc&lang=en');
+    });
+
+    it('names the picture that stands for the page, and the home its square cut', () => {
+        const page = structuredData(pageMeta('/', 'pt'), 'pt').find((b) => b['@type'] === 'WebPage');
+        expect(page.primaryImageOfPage.url).toBe('https://pokemonbuilder.app/api/og?page=home&lang=pt');
+        expect(page.image.map((i) => i.height)).toEqual([630, 1200]);
     });
 });

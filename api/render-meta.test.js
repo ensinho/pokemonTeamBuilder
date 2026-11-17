@@ -61,7 +61,7 @@ describe('render-meta buildPage', () => {
 
     it('emits JSON-LD that parses, and keeps it from closing its script tag', () => {
         const blocks = [...page('/pt').matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
-        expect(blocks.map((b) => b['@type'])).toEqual(['Organization', 'WebSite', 'WebApplication']);
+        expect(blocks.map((b) => b['@type'])).toEqual(['Organization', 'WebSite', 'WebApplication', 'WebPage']);
         const topicMeta = { id: 'abc', title: '</script><b>hi', description: 'x' };
         const html = page('/feed', { topicMeta });
         expect(head(html)).not.toContain('</script><b>');
@@ -102,7 +102,7 @@ describe('render-meta buildPage', () => {
 
         // A code that does not decode changes nothing.
         const bogus = buildPage(shell, { urlPath: '/pt/pokepuzzle', search: 'r=<script>', data }).html;
-        expect(attr(bogus, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/pokepuzzle-og.png');
+        expect(attr(bogus, /<meta property="og:image" content="([^"]*)"/)).toBe('https://pokemonbuilder.app/api/og?page=pokepuzzle&amp;lang=pt');
     });
 
     it('prerenders the best-teams page with its top teams, Pokémon and pairs as links', () => {
@@ -227,7 +227,7 @@ describe('render-meta: existence, indexing and the content AI crawlers read', ()
         for (const path of ['/', '/pt', '/pokemon/charizard', '/pt/types/fire', '/guides', '/pt/guides/first-vgc-team', '/moves/karate-chop']) {
             const { html, status } = build(path);
             expect(status, path).toBe(200);
-            expect(robots(html), path).toBeUndefined();
+            expect(robots(html), path).toContain('max-image-preview:large');
         }
         for (const path of ['/profile', '/pt/battles/abc', '/teams', '/favorites', '/admin']) {
             const { html, status } = build(path);
@@ -276,7 +276,7 @@ describe('render-meta: existence, indexing and the content AI crawlers read', ()
         expect(main(html)).toContain('<h2>Por que a velocidade importa tanto nas duplas?</h2>');
         expect(main(html)).toContain('<h3>O PokemonBuilder é grátis?</h3>');
         const types = blocksOf(html).map((b) => b['@type']);
-        expect(types).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList']);
+        expect(types).toEqual(['Organization', 'Article', 'FAQPage', 'BreadcrumbList', 'WebPage']);
         const faq = blocksOf(html).find((b) => b['@type'] === 'FAQPage');
         expect(faq.mainEntity[0]).toMatchObject({ '@type': 'Question', name: 'O PokemonBuilder é grátis?' });
     });
@@ -314,7 +314,7 @@ describe('render-meta: existence, indexing and the content AI crawlers read', ()
         for (const path of ['/about', '/methodology', '/pt/privacy', '/pt/terms']) {
             const { status, html } = build(path);
             expect(status, path).toBe(200);
-            expect(robots(html), path).toBeUndefined();
+            expect(robots(html), path).toContain('max-image-preview:large');
         }
         const methodology = main(build('/methodology').html);
         expect(methodology).toContain('<h1>How the team analysis works</h1>');

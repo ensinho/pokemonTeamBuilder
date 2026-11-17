@@ -4,7 +4,7 @@ import { escapeHtml, fetchTopicMeta, topicIdFromUrl } from './_lib/forumMeta.js'
 import { renderSnapshot } from './_lib/seoSnapshot.js';
 import { fetchSharedTeam, sharedTeamIdFrom } from './_lib/sharedTeam.js';
 import { LANGUAGES, LOCALE_TAG, OG_LOCALE, alternateUrls, localizePath, splitLocalePath } from '../src/utils/localePath.js';
-import { SITE_NAME, SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
+import { ROBOTS_INDEXABLE, SITE_NAME, SITE_URL, jsonLdScript, pageMeta, structuredData } from '../src/utils/seoPages.js';
 import { translate } from '../src/utils/translateCore.js';
 import { guideContent } from '../src/content/guides.js';
 import { sitePageContent } from '../src/content/sitePages.js';
@@ -259,7 +259,7 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
         `<link rel="alternate" hreflang="x-default" href="${escapeHtml(alternates.find((a) => a.language === 'en').href)}" />`,
         `<meta property="og:locale" content="${OG_LOCALE[language]}" />`,
         ...LANGUAGES.filter((l) => l !== language).map((l) => `<meta property="og:locale:alternate" content="${OG_LOCALE[l]}" />`),
-        ...(indexable ? [] : ['<meta name="robots" content="noindex, follow" />']),
+        `<meta name="robots" content="${indexable ? ROBOTS_INDEXABLE : 'noindex, follow'}" />`,
         ...structuredData(meta, language, { faq: guide?.faq }).map((block) => `<script type="application/ld+json">${jsonLdScript(block)}</script>`),
     ].join('\n    ');
     set(/<\/head>/i, `    ${headExtras}\n  </head>`);
