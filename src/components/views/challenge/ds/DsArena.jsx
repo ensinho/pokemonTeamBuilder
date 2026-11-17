@@ -219,10 +219,14 @@ export function DsArena({
     };
 
     const dialogueText = mode === 'dialogue' ? dialogue[Math.min(line, dialogue.length - 1)] : null;
+    // Standing at the door, before the first step: the room says what to do
+    // (2026-11-17 — nothing did, and a newcomer had to guess that the choice
+    // is a walk). The first step puts it away; the plates pulse meanwhile.
+    const idle = mode === 'walk' && !startAtChampion && pos.x === startPos.x && pos.y === startPos.y;
 
     return (
         // A click, not pointerdown: a swipe to scroll the page must not start a walk.
-        <div className={`ds-arena ${reducedMotion ? 'is-reduced' : ''}`} onClick={tap}>
+        <div className={`ds-arena ${reducedMotion ? 'is-reduced' : ''} ${idle ? 'is-idle' : ''}`} onClick={tap}>
             <div className="ds-arena__walls" aria-hidden="true" />
             <div className="ds-arena__floor" aria-hidden="true" />
             {/* On the room's axis (x 128): between the two Champions, over the door. */}
@@ -268,6 +272,13 @@ export function DsArena({
             >
                 <div className="ds-sheet" style={sheetStyle(PLAYER_SHEET, facing, frame)} />
             </div>
+
+            {idle && (
+                <p className="ds-arena__hint" aria-hidden="true">
+                    <span className="ds-arena__hint-touch">{t('challenge.arena.hintTouch')}</span>
+                    <span className="ds-arena__hint-pointer">{t('challenge.arena.hintPointer')}</span>
+                </p>
+            )}
 
             {dialogueText && (
                 <DsTextBox

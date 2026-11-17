@@ -38,9 +38,12 @@ export function DsChampionHint({ beatenName, nextName, onGo, onDismiss }) {
 /**
  * Bottom screen after the battle — the peak-end moment: the outcome, the
  * numbers, and the next step: a rematch, sharing it to the forum, or back to
- * the room, where another champion may be waiting (`onBack`).
+ * the room, where another champion may be waiting (`onBack`). `extras` are
+ * the quieter ways on — the battle's comic strip, a friend's duel — as one
+ * row under the actions (2026-11-17: they were chips on the bar, cut off on a
+ * phone and easy to miss at the moment they matter).
  */
-export function DsResult({ run, stats, onPractice, onShare, onBack, isSharing = false, inputRef }) {
+export function DsResult({ run, stats, onPractice, onShare, onBack, isSharing = false, inputRef, extras = [] }) {
     const { t } = useTranslation();
     const won = run.status === 'won';
     const headline = run.practice
@@ -87,6 +90,16 @@ export function DsResult({ run, stats, onPractice, onShare, onBack, isSharing = 
                 )}
                 <button type="button" className="ds-cmd is-plain" onClick={onBack}>{t('challenge.result.back')}</button>
             </div>
+            {extras.length > 0 && (
+                <div className="ds-result__more">
+                    {extras.map((extra) => (
+                        <button key={extra.id} type="button" className="ds-result__extra" onClick={extra.onClick}>
+                            {extra.icon}
+                            <span>{extra.label}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

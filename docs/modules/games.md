@@ -28,6 +28,18 @@ names is never the day's.
 `utils/gamesToday.js` (pure, tested) + `hooks/useGamesToday.js` (`ptb:gamesToday`,
 a trainer's key — wiped by `leaveSession`).
 
+**The account has it too (2026-11-17).** The Champion and the PokéPuzzle were
+re-marked from the server wherever the Home reads them, but the quiz and the
+tier list lived on the device alone, so another browser said "Aberto hoje".
+Now `markGameDone` also saves today's part of the record (`accountGamesRecord`)
+as `gamesToday` in the preferences doc (through `setGamesToAccount`, which
+`useAuthStore` registers — the hook never imports the store), the profile read
+merges the account's copy in (`applyAccountGames` → `mergeGameRecords`: played
+today in either copy is played; only today is kept), and the full profile sync
+carries it. The quiz is also re-marked from `categoryGuesserRuns` as they
+arrive at boot (`useCategoryGuesserStore`), and the tier list's boards follow
+the account (tier_list.md).
+
 - `DAILY_GAMES = ['challenge', 'pokepuzzle', 'quiz', 'tierList']` — the day's order.
 - `markGameDone(game, note?)` where a game ends. `note` is a few figures or
   ids (`{ found, total }`, `{ theme }`) — never text a trainer typed — kept

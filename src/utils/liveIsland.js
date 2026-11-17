@@ -28,6 +28,22 @@
 export const GAME_PATHS = ['/games', '/quiz', '/pokepuzzle', '/tier-list'];
 export const isGamesPath = (path = '') => GAME_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
+/** Where each of the day's games opens (the Jogos page's own doors). */
+export const GAME_DOORS = {
+    challenge: '/challenge',
+    pokepuzzle: '/pokepuzzle',
+    quiz: '/quiz?tab=categories&daily=1',
+    tierList: '/tier-list?daily=1',
+};
+/** Each game's tone key (utils/navHue.js). */
+export const GAME_NAV = { challenge: 'challenge', pokepuzzle: 'pokepuzzle', quiz: 'generationQuiz', tierList: 'tierList' };
+
+/** The day's title in the island's card: what is left, or the full day. */
+export const dayTitle = (t, tally) => (tally.complete ? t('island.day.complete')
+    : tally.played === 0 ? t('island.day.fresh')
+        : tally.total - tally.played === 1 ? t('island.day.leftOne')
+            : t('island.day.left', { n: tally.total - tally.played }));
+
 /** The daily game a page is, or null (`/games` is all four). */
 export const gameOfPath = (path = '') => ({ '/quiz': 'quiz', '/pokepuzzle': 'pokepuzzle', '/tier-list': 'tierList' }[path] || null);
 

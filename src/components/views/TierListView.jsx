@@ -39,6 +39,7 @@ import {
     keepFittingCells,
     locate,
     meetsCellRule,
+    mergeTierStores,
     monLabel,
     normalizeStore,
     placeItem,
@@ -46,9 +47,13 @@ import {
     removeItem,
     searchMons,
     setCell,
+    sameTierBoards,
     setTitle,
+    stampChangedBoards,
     unrankAll,
 } from '../../utils/tierList';
+import { loadAccountTierLists, saveAccountTierLists } from '../../services/tierListSync';
+import { useAuthStore } from '../../store/useAuthStore';
 import '../../styles/tier-list.css';
 
 /*
@@ -60,7 +65,10 @@ import '../../styles/tier-list.css';
  *   it) puts it there — two taps, no precision. A mouse drags; a finger drags
  *   after a short hold, so a swipe over the pool still scrolls the page.
  * - A chart's cell opens a sheet of the Pokémon that fit it.
- * - Kept on this device only, one board per theme (TIER_LIST_STORAGE_KEY).
+ * - One board per theme, kept on the device (TIER_LIST_STORAGE_KEY) and in
+ *   the account (services/tierListSync.js, 2026-11-17): read when the page
+ *   opens and merged board by board on when each last changed; every change
+ *   goes back a moment later. A list made in one browser is there in another.
  * - "Exportar imagem" draws the board (components/tierList/drawTierList.js)
  *   and shares it where a phone can, downloads it elsewhere.
  * - The games pass (2026-11-15): one theme is the day's (`dailyTierTemplate`,
@@ -252,11 +260,51 @@ export function TierListView() {
         }, { replace: true });
     }, [searchParams, setSearchParams, todayTheme]);
 
-    // Saved a moment after the last change, not on every drag frame.
+    // Saved a moment after the last change, not on every drag frame — each
+    // board that changed since the last save stamped with the time, which is
+    // what decides between this device's copy and the account's.
+    const savedRef = useRef(store);
     useEffect(() => {
-        const timer = setTimeout(() => writeStore(store), 250);
+        const timer = setTimeout(() => {
+            const stamped = stampChangedBoards(savedRef.current, store, Date.now());
+            savedRef.current = stamped;
+            writeStore(stamped);
+            if (stamped !== store) setStore(stamped);
+        }, 250);
         return () => clearTimeout(timer);
     }, [store]);
+
+    // The account's copy: read once per account, merged in (a board another
+    // browser changed later wins), then this device's changes go back to it.
+    const userId = useAuthStore((s) => s.userId);
+    const [pulledFor, setPulledFor] = useState(null);
+    const pushedRef = useRef(null);
+    useEffect(() => {
+        if (!userId) return undefined;
+        let alive = true;
+        loadAccountTierLists(userId).then((remote) => {
+            if (!alive) return;
+            if (remote) {
+                // What came from the account is not an edit made here: no new stamp.
+                savedRef.current = mergeTierStores(savedRef.current, remote);
+                setStore((prev) => {
+                    const merged = mergeTierStores(prev, remote);
+                    return sameTierBoards(merged, prev) ? prev : merged;
+                });
+            }
+            pushedRef.current = remote;
+            setPulledFor(userId);
+        });
+        return () => { alive = false; };
+    }, [userId]);
+    useEffect(() => {
+        if (!userId || pulledFor !== userId || !Object.keys(store.boards).length) return undefined;
+        if (pushedRef.current && sameTierBoards(pushedRef.current, store)) return undefined;
+        const timer = setTimeout(() => {
+            saveAccountTierLists(userId, store).then((ok) => { if (ok) pushedRef.current = store; });
+        }, 1500);
+        return () => clearTimeout(timer);
+    }, [store, userId, pulledFor]);
 
     const monsById = useMemo(() => new Map((mons || []).map((mon) => [mon.id, { ...mon, label: monLabel(mon.name) }])), [mons]);
 

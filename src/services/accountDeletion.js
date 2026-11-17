@@ -14,6 +14,7 @@ export const USER_COLLECTIONS = [
     'profile',
     'pushSubscriptions',
     'inbox', // the Pokégear (2026-11-06)
+    'tierLists', // the tier list boards (2026-11-17)
 ];
 
 // Firestore caps a batch at 500 writes.

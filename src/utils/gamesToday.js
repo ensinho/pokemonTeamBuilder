@@ -92,6 +92,28 @@ export function gameNoteToday(record, game, ms) {
     return note;
 }
 
+/**
+ * Two copies of the record — this device's and the account's (2026-11-17,
+ * Enzo: the quiz and the tier list played in one browser read "Aberto hoje"
+ * in another) — as one: a game played today in either is played; its note
+ * comes from the copy that played it (this device first). Only today is
+ * kept; a stale day of either copy is dropped, never revived.
+ */
+export function mergeGameRecords(local, remote, ms) {
+    const merged = {};
+    const notes = {};
+    for (const game of DAILY_GAMES) {
+        const today = gameDayKey(game, ms);
+        const copies = [local, remote].filter((record) => record && typeof record === 'object' && record[game] === today);
+        if (!copies.length) continue;
+        merged[game] = today;
+        const note = copies.map((record) => cleanNote(gameNoteToday(record, game, ms))).find(Boolean);
+        if (note) notes[game] = { ...note, day: today };
+    }
+    if (Object.keys(notes).length) merged.notes = notes;
+    return merged;
+}
+
 /** How much of the day is played: `{ played, total, complete }`. */
 export function dayTally(done = {}) {
     const played = DAILY_GAMES.filter((game) => done[game]).length;

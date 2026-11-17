@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Flag } from 'lucide-react';
 
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getBattleIcon } from '../../../../utils/battleSprites';
 import { hpTone } from '../../../../utils/battleState';
+import { moveMatchup, multiplierLabel } from '../../../../utils/moveMatchup';
 import { play } from '../../../../utils/challengeSfx';
 import { moveChoosable } from '../../../../hooks/useBattleCommands';
 import { DsTeamSheet } from './DsTeamSheet';
@@ -35,12 +36,38 @@ const ppTone = (pp, max) => {
     return 'ok';
 };
 
-function MoveButton({ move, meta, focused, onChoose, onFocus, cmd }) {
+/**
+ * What a move would do to the Pokémon in front of it (`moveMatchup`): Tera
+ * Blast armed with TERA takes the Tera type, as in the games. Null for a
+ * status move, a neutral hit or an empty slot across the field.
+ */
+const matchupFor = (move, meta, target, cmd) => {
+    if (!move || !meta?.type || !target) return null;
+    const teraBlast = cmd.armed && cmd.gimmick === 'terastallize' && cmd.teraType && String(move.id || move.name).toLowerCase().replace(/[^a-z]/g, '') === 'terablast';
+    const reading = moveMatchup({ moveType: teraBlast ? String(cmd.teraType).toLowerCase() : meta.type, category: meta.category, target });
+    return reading && reading.tone !== 'neutral' ? reading : null;
+};
+
+/** The matchup as the HUD shows it: a word (hidden in the desktop strip) and the figure. */
+function MatchupTag({ reading, className = '' }) {
+    const { t } = useTranslation();
+    if (!reading) return null;
+    const word = t(`challenge.command.matchup.${reading.tone}`);
+    return (
+        <span className={`bw-eff is-${reading.tone} ${className}`} title={word}>
+            <span className="bw-eff__word">{word}</span>
+            <span className="bw-eff__figure" aria-hidden="true">{multiplierLabel(reading.multiplier)}</span>
+        </span>
+    );
+}
+
+function MoveButton({ move, meta, focused, onChoose, onFocus, cmd, target }) {
     const { t } = useTranslation();
     if (!move) return <span className="bw-move is-empty" aria-hidden="true" />;
     const category = meta?.category ? meta.category.toLowerCase() : null;
     // Z armed: the move reads as the Z-Move it becomes; the others wait.
     const asZ = cmd.armed && cmd.gimmick === 'zmove' && move.zMove;
+    const reading = matchupFor(move, meta, target, cmd);
     return (
         <button
             type="button"
@@ -51,7 +78,10 @@ function MoveButton({ move, meta, focused, onChoose, onFocus, cmd }) {
             onPointerEnter={onFocus}
             onFocus={onFocus}
         >
-            <span className="bw-move__name">{asZ ? move.zMove : move.name}</span>
+            <span className="bw-move__head">
+                <span className="bw-move__name">{asZ ? move.zMove : move.name}</span>
+                <MatchupTag reading={reading} />
+            </span>
             <span className="bw-move__meta">
                 {meta?.type && <span className="bw-move__type">{t(`types.${meta.type}`)}</span>}
                 {category && <span className={`ds-move__cat is-${category}`} role="img" aria-label={t(`challenge.command.category.${category}`)} />}
@@ -93,7 +123,7 @@ function MegaToggle({ cmd }) {
     );
 }
 
-function MoveGrid({ cmd, request, moveMeta }) {
+function MoveGrid({ cmd, request, moveMeta, target }) {
     const slots = Array.from({ length: 4 }, (_, i) => request.moves?.[i] || null);
     return (
         <div className="bw-moves__grid">
@@ -106,6 +136,7 @@ function MoveGrid({ cmd, request, moveMeta }) {
                     onChoose={cmd.chooseMove}
                     onFocus={() => cmd.setFocus(index)}
                     cmd={cmd}
+                    target={target}
                 />
             ))}
         </div>
@@ -224,8 +255,11 @@ function PartySheet({ cmd, sheet }) {
     );
 }
 
-/** Her six: dim silhouettes and "???" until each one is sent out. */
-function DossierGrid({ cmd, foe, championName, title }) {
+/**
+ * Her six: dim silhouettes and "???" until each one is sent out — then its
+ * types, so a trainer can plan the next switch without leaving the battle.
+ */
+function DossierGrid({ cmd, foe, championName, title, typesOf }) {
     const { t } = useTranslation();
     return (
         <div className="bw-sheet is-dossier">
@@ -234,13 +268,23 @@ function DossierGrid({ cmd, foe, championName, title }) {
                 {foe.map((mon, index) => {
                     const icon = mon.species ? getBattleIcon(mon.species) : null;
                     const name = mon.revealed ? mon.species : t('challenge.poketch.unknown');
+                    const types = mon.revealed && typesOf ? typesOf(mon.species) : [];
                     return (
                         // Her sending order is fixed for the day.
                         <li key={index} className={`bw-card is-foe ${mon.revealed ? 'is-revealed' : ''} ${mon.fainted ? 'is-fainted' : ''}`}>
                             {icon?.url
                                 ? <img src={icon.url} alt={name} width={40} height={30} decoding="async" draggable="false" />
                                 : <span className="bw-card__unknown" aria-label={name}>?</span>}
-                            <span className="bw-card__name">{name}</span>
+                            <span className="bw-card__text">
+                                <span className="bw-card__name">{name}</span>
+                                {types.length > 0 && (
+                                    <span className="bw-card__types">
+                                        {types.map((type) => (
+                                            <span key={type} className="bw-move__type" style={{ '--type': typeColors[type] }}>{t(`types.${type}`)}</span>
+                                        ))}
+                                    </span>
+                                )}
+                            </span>
                         </li>
                     );
                 })}
@@ -262,10 +306,46 @@ function BallRow({ slots, className }) {
 }
 
 /**
+ * Who is still standing, as one line (2026-11-17, the HUD clarity pass): your
+ * balls under your name, theirs under theirs — the two loose rows of BW's
+ * touch screen read as decoration to anyone who never held a DS.
+ */
+function Scoreboard({ myBalls, foeBalls, foeName }) {
+    const { t } = useTranslation();
+    const left = (slots) => slots.filter((slot) => slot && !slot.fainted).length;
+    return (
+        <div className="bw-score">
+            <span className="bw-score__side">
+                <span className="bw-score__name">{t('challenge.command.you')}</span>
+                <BallRow slots={myBalls} className="is-mine" />
+            </span>
+            <span className="bw-score__vs" aria-label={t('challenge.command.standing', { mine: left(myBalls), theirs: left(foeBalls), name: foeName })}>
+                {left(myBalls)}<span className="bw-score__dash" aria-hidden="true">–</span>{left(foeBalls)}
+            </span>
+            <span className="bw-score__side is-foe">
+                <span className="bw-score__name">{foeName}</span>
+                <BallRow slots={foeBalls} className="is-foe" />
+            </span>
+        </div>
+    );
+}
+
+/** DESISTIR as a quiet flag: rare, irreversible (it asks first), never the size of LUTAR. */
+function ForfeitButton({ cmd, disabled, className = '' }) {
+    const { t } = useTranslation();
+    const label = t('challenge.command.forfeitLabel');
+    return (
+        <button type="button" className={`bw-flag ${className}`} onClick={cmd.forfeit} disabled={disabled} aria-label={label} title={label}>
+            <Flag aria-hidden="true" />
+        </button>
+    );
+}
+
+/**
  * A phone's bottom screen. While the turn plays it stays on the menu, dimmed —
  * as the DS does — so the layout never jumps between turns.
  */
-export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls, sheet, championName, clock, turn, labels = null }) {
+export function DsTouchMenu({ cmd, request, enabled, moveMeta, target = null, typesOf = null, myBalls, foeBalls, sheet, championName, clock, turn, labels = null }) {
     const { t } = useTranslation();
     const status = (
         <div className="bw-touch__status" aria-hidden="true">
@@ -277,7 +357,7 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
         return (
             <div className="bw-touch is-moves">
                 {status}
-                <MoveGrid cmd={cmd} request={request} moveMeta={moveMeta} />
+                <MoveGrid cmd={cmd} request={request} moveMeta={moveMeta} target={target} />
                 <div className="bw-moves__foot">
                     <MegaToggle cmd={cmd} />
                     <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>
@@ -287,23 +367,22 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
     }
     // A forced switch waits for the faint to play out before it takes the screen.
     if (cmd.view === 'party' && (enabled || !cmd.forced)) return <div className="bw-touch is-sheet">{status}<PartySheet cmd={cmd} sheet={sheet} /></div>;
-    if (cmd.view === 'dossier') return <div className="bw-touch is-sheet">{status}<DossierGrid cmd={cmd} foe={foeBalls} championName={championName} title={labels?.foeTitle} /></div>;
+    if (cmd.view === 'dossier') return <div className="bw-touch is-sheet">{status}<DossierGrid cmd={cmd} foe={foeBalls} championName={championName} title={labels?.foeTitle} typesOf={typesOf} /></div>;
 
     return (
         <div className={`bw-touch is-main ${enabled ? '' : 'is-waiting'}`}>
             {status}
-            <BallRow slots={foeBalls} className="is-foe" />
+            <Scoreboard myBalls={myBalls} foeBalls={foeBalls} foeName={championName} />
             <button type="button" className="bw-fight" onClick={() => cmd.open('moves')} disabled={!enabled || request.kind !== 'move'}>
                 <span className="bw-fight__label">{t('challenge.command.fight')}</span>
             </button>
-            <BallRow slots={myBalls} className="is-mine" />
             <div className="bw-touch__row">
+                <ForfeitButton cmd={cmd} disabled={!enabled} />
                 {/* Her team stays readable while the turn plays. */}
                 <button type="button" className="bw-btn is-dossier" onClick={() => cmd.open('dossier')} disabled={!foeBalls.length}>
                     {labels?.foeButton || t('challenge.command.herTeam')}
                 </button>
-                <button type="button" className="bw-btn is-run" onClick={cmd.forfeit} disabled={!enabled}>{t('challenge.command.forfeit')}</button>
-                {/* Your team's sheet, too. */}
+                {/* Your team's sheet, too — on the thumb's side. */}
                 <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open('party')} disabled={!sheet.length}>
                     {t('challenge.command.pokemon')}
                 </button>
@@ -317,24 +396,43 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
  * buttons on the right — or, choosing a move, the moves on the right and what
  * the focused one does on the left. Party and her team open over the field.
  */
-export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, sheet, championName, reducedMotion, labels = null, mascot = null }) {
+export function DsHud({ cmd, request, enabled, moveMeta, target = null, typesOf = null, message, foeBalls, sheet, championName, reducedMotion, labels = null, mascot = null }) {
     const { t } = useTranslation();
     const choosing = enabled && cmd.view === 'moves';
     const focused = choosing ? request.moves?.[cmd.focus] : null;
     const meta = focused ? moveMeta(focused.name) : null;
+    const reading = focused ? matchupFor(focused, meta, target, cmd) : null;
 
     return (
         <>
             {cmd.view === 'party' && (enabled || !cmd.forced) && <div className="bw-overlay is-full"><PartySheet cmd={cmd} sheet={sheet} /></div>}
-            {cmd.view === 'dossier' && <div className="bw-overlay"><DossierGrid cmd={cmd} foe={foeBalls} championName={championName} title={labels?.foeTitle} /></div>}
+            {cmd.view === 'dossier' && <div className="bw-overlay"><DossierGrid cmd={cmd} foe={foeBalls} championName={championName} title={labels?.foeTitle} typesOf={typesOf} /></div>}
             <div className={`bw-hud ${enabled ? 'is-choosing' : ''}`}>
                 <div className="bw-hud__message">
                     {choosing && focused ? (
                         <div className="bw-hud__info" aria-live="polite">
                             <span className="bw-hud__info-name">{cmd.armed && cmd.gimmick === 'zmove' && focused.zMove ? focused.zMove : focused.name}</span>
+                            {/* Two fixed rows: what it is (how it lands first — the one fact
+                                that changes the choice — its type, its category), then its figures. */}
                             <span className="bw-hud__info-line">
+                                {reading && (
+                                    <span className={`bw-eff is-${reading.tone}`} title={t('challenge.command.matchupOn', { effect: t(`challenge.command.matchup.${reading.tone}`), name: target.name })}>
+                                        {t(`challenge.command.matchup.${reading.tone}`)}
+                                        <span className="bw-eff__figure">{multiplierLabel(reading.multiplier)}</span>
+                                    </span>
+                                )}
                                 {meta?.type && <span className="bw-move__type" style={{ '--type': typeColors[meta.type] }}>{t(`types.${meta.type}`)}</span>}
-                                {meta?.category && <span>{t(`challenge.command.category.${meta.category.toLowerCase()}`)}</span>}
+                                {/* The category as the games draw it (as on the phone's tiles): the word cost the line its room. */}
+                                {meta?.category && (
+                                    <span
+                                        className={`ds-move__cat is-${meta.category.toLowerCase()}`}
+                                        role="img"
+                                        aria-label={t(`challenge.command.category.${meta.category.toLowerCase()}`)}
+                                        title={t(`challenge.command.category.${meta.category.toLowerCase()}`)}
+                                    />
+                                )}
+                            </span>
+                            <span className="bw-hud__info-line is-figures">
                                 {meta?.power ? <span>{t('challenge.command.power', { power: meta.power })}</span> : null}
                                 {Number.isFinite(meta?.accuracy) && <span>{t('challenge.command.accuracy', { accuracy: meta.accuracy })}</span>}
                                 {Number.isFinite(focused.pp) && (
@@ -363,7 +461,7 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, shee
                 {enabled && (
                     <div className="bw-hud__commands">
                         {choosing ? (
-                            <MoveGrid cmd={cmd} request={request} moveMeta={moveMeta} />
+                            <MoveGrid cmd={cmd} request={request} moveMeta={moveMeta} target={target} />
                         ) : (
                             <div className="bw-hud__grid">
                                 <button type="button" className="bw-btn is-fight" onClick={() => cmd.open('moves')} disabled={request.kind !== 'move'}>
@@ -375,7 +473,7 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, shee
                                 <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open('party')} disabled={!sheet.length}>
                                     {t('challenge.command.pokemon')}
                                 </button>
-                                <button type="button" className="bw-btn is-run" onClick={cmd.forfeit}>{t('challenge.command.forfeit')}</button>
+                                <ForfeitButton cmd={cmd} className="bw-hud__flag" />
                             </div>
                         )}
                     </div>

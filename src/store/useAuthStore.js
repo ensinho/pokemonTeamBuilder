@@ -34,6 +34,7 @@ import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '..
 import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
 import { wipeBrowserUserStorage, LEFT_SESSION_KEY } from '../utils/sessionWipe';
 import { useMascotStore } from './useMascotStore';
+import { accountGamesRecord, applyAccountGames, setGamesToAccount } from '../hooks/useGamesToday';
 import { costumeHat } from '../utils/mascot/assistant';
 
 // Re-exported so components can keep importing it from the store they already use.
@@ -465,6 +466,10 @@ export const useAuthStore = create((set, get) => {
         writeBadgeCase(mergedCase);
         set({ badgeCase: mergedCase });
 
+        // 5.27 The day's games (hooks/useGamesToday): played
+        // today in any browser of the account is played here.
+        applyAccountGames(data.gamesToday);
+
         // 5.3 Rewards (useRewardsStore): XP never drops,
         // unlocks are a union, the account's equip wins.
         useRewardsStore.getState().hydrate(data.rewards);
@@ -726,6 +731,7 @@ export const useAuthStore = create((set, get) => {
                 trainerProfile,
                 badgeCase,
                 rewards: useRewardsStore.getState().snapshot(),
+                gamesToday: accountGamesRecord(),
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
@@ -1245,6 +1251,9 @@ export const useAuthStore = create((set, get) => {
 
 /** Record a journey mark from outside React (stores, handlers). */
 export const markJourney = (mark) => useAuthStore.getState().markJourney(mark);
+
+// A game marked played (hooks/useGamesToday.markGameDone) is saved to the account too.
+setGamesToAccount((gamesToday) => useAuthStore.getState().savePreferences({ gamesToday }));
 
 /**
  * What friends see of this trainer's mascot (`publicProfiles.mascot`):

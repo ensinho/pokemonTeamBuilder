@@ -112,6 +112,17 @@ Enzo: "deixar o HUD mais aesthetic e clean conforme o design e estilo do site, u
 - **Polish (2026-11-10, Enzo's review):** the strip's message is 9 px on an 11 px line, centred beside the face — three lines fit ("What will Gouging Fire do?" spilled under the box). In the two-rail deck the teams' rail is 85% of the ranking's. The ranking gets a step more air in a tall rail, and roomier rows only where the rail is ≥ 19rem (narrower, the extra padding cut names). **A phone's bar is crown · clock · Ranking · ⋯**: the streak and the music / sound / speed switches live in the ⋯ menu (`ConsoleMoreMenu`, a `.menu-surface`; `ConsoleSoundControls` renders the three chips on a desktop and the menu on a phone, for this console and the friend battle's — back · opponent · chat · ⋯ there), the Ranking chip keeps its label and stays during the battle, and every chip shares the row's height.
 - **Conditions (2026-11-10):** the same reducer keeps what a player has to remember between turns — a side's screens and hazards (`side.conditions`, from `-sidestart` / `-sideend`; Spikes arrives once per layer; `-swapsideconditions` is Court Change), what clings to the Pokémon out (`active.volatiles`, from `-start` / `-end`; `perishN` is one chip with a count; a switch and a faint clear them, Baton Pass hands on the ones the sim copies) and the field (`weather`, `terrain`, `rooms`). Only ids in `CONDITIONS` (`utils/battleState.js`) exist: the table is the whitelist, the chip's abbreviation (SR, SPK 2, REF, LS, SUB, SEED — move names stay English, as in the battle text) and its kind. `sideConditions(side)` / `fieldConditions(field)` are what the scene draws: a side's chips follow its stat stages in the same row (volatile white, screen Volt, hazard amber), the field's row sits over her box. Turn counters are not shown — an item stretches a screen or a weather and the log never says. Still not modelled: Protect-style one-turn effects, type changes, the Substitute's own HP.
 
+### The clarity pass (2026-11-17)
+
+Enzo: "aprimorar o HUD do Champion Challenge, deixando ele bem clean, e mais fácil de mexer e entender". What changed, and the rule each one keeps:
+
+- **Matchups on the moves** (`utils/moveMatchup.js`, tested): every damaging move says how it lands on the Pokémon across the field — *Super eficaz ×2 / ×4*, *Pouco eficaz ×½ / ×¼*, *Sem efeito ×0*; neutral says nothing. Only what is certain: the type chart, a Terastallized target's one type (Stellar keeps its own), and Levitate when it is the species' **only** ability; Tera Blast armed with TERA takes the Tera type. `DsBattleStage` builds `target` from `field.theirs.active` + `battle-dex.json` species (`[name, types, stats, abilities]`). A phone's tile shows word + figure under the name; the desktop card wears the figure as a corner sticker (the name keeps its width) and the info box leads its first row with the word. The desktop info box is two fixed rows — reading · type · category icon, then power · accuracy · PP — at 6 DS px, measured to fit at 1440.
+- **One primary:** the desktop strip is LUTAR (full height) · POKéMON over TIME RIVAL · a flag; the phone row is flag · TIME RIVAL · POKéMON (the thumb's side). DESISTIR is `ForfeitButton` — icon only, `aria-label`, still behind `confirmAction`. Friend battles share it.
+- **Scoreboard:** the phone's two loose rows of balls are one line under the status bar — *Você ●●●●●● 6–6 ●●●●●● Cynthia* (`Scoreboard`, the count is the `aria-label`).
+- **Her team's sheet** shows each revealed member's types (`typesOf`).
+- **The result** holds the comic strip and "Desafiar um amigo" as one quiet row under its actions (`DsResult extras`); they left the bar, which overflowed on a phone. The phone bar steps at `--space-1_5`, and below 380 px the island chip is his face alone so the countdown keeps its figures.
+- **The room speaks first:** at the door, before the first step, a line says what to do (touch: "Toque num campeão para desafiar"; pointer: click or arrows — chosen by `(hover: hover) and (pointer: fine)`) and the open champions' plates breathe a ring; the first step puts both away (`DsArena` `idle`).
+
 ### The party screen (2026-11-15)
 
 Enzo's reference was BW's "Choose a Pokémon": POKéMON now opens your six as
@@ -247,7 +258,8 @@ Enzo approved three small moves after the games-first pass. All three read one
 device record of what was played today:
 
 - **The record.** `hooks/useGamesToday.js` keeps the device key `ptb:gamesToday`.
-  It is a trainer's key, so `leaveSession` wipes it.
+  It is a trainer's key, so `leaveSession` wipes it. Since 2026-11-17 the
+  account's preferences doc keeps today's part too (`gamesToday`; games.md).
 - **The rules.** They live in the pure, tested `utils/gamesToday.js`. Each game
   keeps its own day: the Champion's turns at midnight in São Paulo, the
   PokéPuzzle's at the trainer's own midnight.

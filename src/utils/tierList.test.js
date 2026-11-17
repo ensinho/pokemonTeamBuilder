@@ -11,6 +11,9 @@ import {
     meetsCellRule,
     normalizeBoard,
     normalizeStore,
+    mergeTierStores,
+    stampChangedBoards,
+    sameTierBoards,
     placeItem,
     placedCount,
     removeItem,
@@ -300,5 +303,36 @@ describe('a finished board', () => {
         expect(boardHighlights(board)).toEqual([7, 4, 1]);
         expect(boardHighlights(setCell(createBoard('types'), 'fire', 6))).toEqual([6]);
         expect(boardHighlights(null)).toEqual([]);
+    });
+});
+
+describe('the account copy (2026-11-17)', () => {
+    const starters = TIER_TEMPLATES.find((tpl) => tpl.id === 'starters');
+    const ranked = (id) => ({ ...createBoard('starters'), tiers: { S: [id], A: [], B: [], C: [], D: [] } });
+
+    it('stamps only the boards that changed', () => {
+        const prev = normalizeStore({ boards: { starters: createBoard('starters') } });
+        const next = { ...prev, boards: { ...prev.boards, starters: ranked(starters.ids[0]) } };
+        expect(stampChangedBoards(prev, next, 500).stamps).toEqual({ starters: 500 });
+        expect(stampChangedBoards(next, next, 900)).toBe(next);
+    });
+
+    it('keeps the board stamped later, and a board only one copy has', () => {
+        const here = { current: 'types', boards: { starters: ranked(starters.ids[0]) }, stamps: { starters: 100 } };
+        const there = { current: 'starters', boards: { starters: ranked(starters.ids[1]), legendaries: createBoard('legendaries') }, stamps: { starters: 200, legendaries: 50 } };
+        const merged = mergeTierStores(here, there);
+        expect(merged.current).toBe('types');
+        expect(merged.boards.starters.tiers.S).toEqual([starters.ids[1]]);
+        expect(merged.stamps).toEqual({ starters: 200, legendaries: 50 });
+        expect(Object.keys(merged.boards).sort()).toEqual(['legendaries', 'starters']);
+        // This device's newer edit wins back.
+        const newer = mergeTierStores({ ...here, stamps: { starters: 300 } }, there);
+        expect(newer.boards.starters.tiers.S).toEqual([starters.ids[0]]);
+    });
+
+    it('survives junk from the account', () => {
+        const here = normalizeStore({ boards: { starters: ranked(starters.ids[0]) }, stamps: { starters: 1 } });
+        expect(sameTierBoards(mergeTierStores(here, 'nope'), here)).toBe(true);
+        expect(sameTierBoards(mergeTierStores(here, { boards: { starters: 7 }, stamps: { starters: 'x' } }), here)).toBe(true);
     });
 });
