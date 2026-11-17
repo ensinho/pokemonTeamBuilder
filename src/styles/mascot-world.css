@@ -1,0 +1,24 @@
+/* ============================================================
+   The mascot's world (2026-11-17, "Fantasminha de plantão"): pixel scenes
+   (components/mascot/PixelScene.jsx) and progress as resolution
+   (components/mascot/PixelReveal.jsx). Pixels belong to his world only —
+   never to text or chrome (design-system skill).
+   ============================================================ */
+
+/* ── The pixel scene (components/mascot/PixelScene.jsx) ─────────────────── */
+.pixel-scene {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* ── Progress as resolution (components/mascot/PixelReveal.jsx) ───────── */
+.pixel-reveal { position: relative; display: inline-grid; }
+.pixel-reveal > * { grid-area: 1 / 1; }
+.pixel-reveal.is-revealing .pixel-reveal__img { opacity: 0; }
+.pixel-reveal__pixels {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}

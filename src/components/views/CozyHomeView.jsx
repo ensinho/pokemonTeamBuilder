@@ -24,6 +24,7 @@ import { timeUntil } from '../../utils/challengeView';
 import { nextResetAt as challengeResetAt } from '../../utils/challengeDay';
 import { liveStreak, localDayKey, normalizeCheckin, normalizeStreak } from '../../utils/dailyCheckin';
 import { homeNote } from '../../utils/mascot/assistant';
+import { useRoundStore, selectReceiptReady } from '../../store/useRoundStore';
 import {
     TEAM_SIZE,
     TYPE_COUNT,
@@ -242,6 +243,8 @@ export function CozyHomeView({
     const fxRootRef = useRef(null);
     useCardFx(fxRootRef);
     const isPhone = useMediaQuery(maxWidthBelow('lg'));
+    // The mascot's round (2026-11-17): a receipt waiting is his line of the day.
+    const receiptReady = useRoundStore(selectReceiptReady);
     // Every sprite on this page is the Pokédex's own: the pixel front sprite
     // through <Sprite> (placeholder, fade-in, artwork fallback for forms).
     const dexSprite = (id, shiny = false) => getPokemonFrontSpriteUrl(id, { shiny });
@@ -997,6 +1000,7 @@ export function CozyHomeView({
         shields: normalizeStreak(streak).shields,
         puzzle: puzzle.isLoading ? null : (puzzle.summary && (puzzle.summary.solved || puzzle.summary.attempts >= 8)) ? 'done' : 'open',
         challenge: !challenge ? null : challenge.state === 'guest' ? 'none' : ['won', 'lost'].includes(challenge.state) ? 'done' : 'open',
+        receipt: receiptReady,
     });
     const greeting = (
         <HomeGreeting

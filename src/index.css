@@ -513,6 +513,19 @@
     --brand-on-live: var(--brand-ink);
     --brand-live-text: var(--brand-live);
 
+    /* The mascot's receipt (2026-11-17, "Fantasminha de plantão",
+       components/mascot/Receipt.jsx): paper in every theme, like a real
+       receipt and like the trainer card's paper — it is an object the
+       mascot hands over, not a panel. Ink is the wordmark's. The stamp is
+       Volt for "done"; gold (as ink on paper) only for a day of four games. */
+    --receipt-paper: #F6F3FC;
+    --receipt-ink: var(--brand-ink);
+    --receipt-muted: color-mix(in srgb, var(--brand-ink) 60%, var(--receipt-paper));
+    --receipt-rule: color-mix(in srgb, var(--brand-ink) 28%, transparent);
+    --receipt-volt: #6A2BF0;
+    --receipt-gold: color-mix(in srgb, var(--brand-gold) 42%, var(--brand-ink));
+    --receipt-gold-wash: color-mix(in srgb, var(--brand-gold) 26%, transparent);
+
     /* Defaults for the per-theme base tokens the brand layer leans on;
        `dark` and `light` set their own above. */
     --color-primary-text: var(--color-primary);

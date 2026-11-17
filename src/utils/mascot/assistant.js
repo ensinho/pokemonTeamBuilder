@@ -76,7 +76,8 @@ export const EVENING = 18;
  * @param {number} f.shields         streak shields in hand
  * @param {'open'|'done'|null} f.puzzle     today's PokéPuzzle (null: not known yet)
  * @param {'open'|'done'|'none'|null} f.challenge  today's Champion Challenge ('none': a guest has none; null: not known yet)
- * @returns {{ id: string, mood: string, to?: string, action?: 'streak', n?: number } | null}
+ * @param {boolean} f.receipt        the round's receipt is waiting (roundReceipt.js `receiptReady`)
+ * @returns {{ id: string, mood: string, to?: string, action?: 'streak'|'receipt', n?: number } | null}
  */
 export function homeNote(f = {}) {
     if (f.isNew) return null;
@@ -85,6 +86,8 @@ export function homeNote(f = {}) {
     if (!f.checkedIn && f.streak >= 2 && f.hour >= EVENING) {
         return { id: f.shields > 0 ? 'streakShield' : 'streak', mood: f.shields > 0 ? 'aliviado' : 'expectante', action: 'streak', n: f.streak };
     }
+    // The round's receipt (2026-11-17): the first thing he has for the day.
+    if (f.receipt) return { id: 'receipt', mood: 'feliz', action: 'receipt' };
     if (f.puzzle === 'open') return { id: 'puzzle', mood: 'curioso', to: '/pokepuzzle' };
     if (f.challenge === 'open') return { id: 'challenge', mood: 'determinado', to: '/challenge' };
     if (f.checkedIn && f.puzzle === 'done' && (f.challenge === 'done' || f.challenge === 'none')) {
@@ -184,6 +187,10 @@ export const GAME_BEATS = {
     commented: { mood: 'animado', play: 'nod', hold: 2200 },
     liked: { mood: 'apaixonado', play: 'nod', hold: 2000 },
     reacted: { mood: 'brilhando', play: 'sparks', hold: 2000 },
+    // "Fantasminha de plantão" (2026-11-17): a mime the trainer asked for
+    // (the quiz's lifeline) holds long enough to be read; its look comes
+    // from the facts (`mime`, utils/mascot/mime.js).
+    mime: { mood: 'travesso', play: 'nod', hold: 9000 },
 };
 /** Beats that extend a streak of right answers; the others (but hints) end it. */
 const STREAK_UP = new Set(['found']);
@@ -200,11 +207,20 @@ export function nextStreak(streak, kind) {
  * His face and gesture for a beat. A streak of right answers climbs: from 3 a
  * jump, every 5th a spin with stars in his eyes. Unknown beats: nothing.
  */
-export function gameBeat(kind, { streak = 0 } = {}) {
+export function gameBeat(kind, { streak = 0, letter = null, mime = null } = {}) {
     const base = GAME_BEATS[kind];
     if (!base) return null;
     if (kind === 'found' && streak >= 5 && streak % 5 === 0) return { ...base, mood: 'brilhando', play: 'spin' };
     if (kind === 'found' && streak >= 3) return { ...base, mood: 'empolgado', play: 'jump' };
+    // The PokéPuzzle's hint: he holds up the sign with the letter (2026-11-17).
+    if (kind === 'hint' && typeof letter === 'string' && /^[\p{L}\p{N}]$/u.test(letter)) {
+        return { ...base, pose: 'segurandoPlaca', extra: { signText: letter.toUpperCase(), signSize: 120 }, framing: 'body', hold: 3200 };
+    }
+    // The quiz's mime: he takes the colour of the type and its gesture.
+    if (kind === 'mime') {
+        if (!mime?.mood) return null;
+        return { ...base, mood: mime.mood, pose: mime.pose || undefined, tone: mime.tone || undefined, framing: mime.pose ? 'body' : undefined };
+    }
     return { ...base };
 }
 

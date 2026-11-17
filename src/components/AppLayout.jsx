@@ -87,6 +87,7 @@ import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useTrainerCardStore } from '../store/useTrainerCardStore';
 import { useAbilityDialogStore } from '../store/useAbilityDialogStore';
 import { useInboxStore } from '../store/useInboxStore';
+import { useRoundStore, startRoundKeeper } from '../store/useRoundStore';
 import { useQuickLookStore } from '../store/useQuickLookStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
@@ -145,6 +146,9 @@ const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) =
 // when it opens — a trainer meets it once.
 const FirstJourney = lazy(() => import('./onboarding/FirstJourney').then((m) => ({ default: m.FirstJourney })));
 const PokegearDialog = lazy(() => import('./pokegear/PokegearDialog').then((m) => ({ default: m.PokegearDialog })));
+// "Fantasminha de plantão" (2026-11-17): the mascot's receipt and the island, off the boot path.
+const RoundReceiptDialog = lazy(() => import('./mascot/RoundReceiptDialog').then((m) => ({ default: m.RoundReceiptDialog })));
+const LiveIsland = lazy(() => import('./LiveIsland').then((m) => ({ default: m.LiveIsland })));
 const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
 const AbilityDialog = lazy(() => import('./AbilityDialog').then((m) => ({ default: m.AbilityDialog })));
 const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
@@ -480,6 +484,7 @@ export default function AppLayout() {
     const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
     const isAbilityDialogOpen = useAbilityDialogStore((s) => Boolean(s.name));
     const isPokegearOpen = useInboxStore((s) => s.isOpen);
+    const isReceiptOpen = useRoundStore((s) => Boolean(s.open));
     const isQuickLookOpen = useQuickLookStore((s) => s.stack.length > 0);
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
@@ -548,6 +553,10 @@ export default function AppLayout() {
         const mark = PAGE_MARKS[currentPage];
         if (mark) useAuthStore.getState().markJourney(mark);
     }, [currentPage]);
+
+    // The mascot's round (2026-11-17): a baseline the first time this trainer
+    // is seen, a full day counted at four of four (store/useRoundStore.js).
+    useEffect(() => startRoundKeeper(), []);
 
     // The Pokégear's one listener per session, for whoever is signed in.
     useEffect(() => {
@@ -1589,6 +1598,11 @@ export default function AppLayout() {
                     <PokegearDialog />
                 </Suspense>
             )}
+            {isReceiptOpen && (
+                <Suspense fallback={null}>
+                    <RoundReceiptDialog />
+                </Suspense>
+            )}
             {isTrainerCardOpen && (
                 <Suspense fallback={null}>
                     <TrainerCardDialog />
@@ -1614,6 +1628,12 @@ export default function AppLayout() {
             {/* The mission guide. Steps aside on the screens that own the whole
                 viewport: the Champion's console and a battle in progress. */}
             <JourneyCoach hidden={currentPage === 'challenge' || location.pathname.startsWith('/battles/')} />
+            {/* The island (2026-11-17): only while something is live, never beside the coach. */}
+            {!isLandingOpen && (
+                <Suspense fallback={null}>
+                    <LiveIsland />
+                </Suspense>
+            )}
 
             {/* Sidebar Shell Layout */}
             <div className="app-shell">
