@@ -28,10 +28,11 @@ let depsPromise = null;
 const loadDeps = () => {
     if (!depsPromise) {
         depsPromise = (async () => {
-            const [serverAuth, notify, social] = await Promise.all([
+            const [serverAuth, notify, social, challengeDay] = await Promise.all([
                 import('./_lib/serverAuth.js'),
                 import('./_lib/battleNotify.js'),
                 import('./_lib/socialNotify.js'),
+                import('../src/utils/challengeDay.js'),
             ]);
             return {
                 verifyCaller: serverAuth.verifyCaller,
@@ -39,6 +40,7 @@ const loadDeps = () => {
                 getAppId: serverAuth.getAppId,
                 notifyBattleEvent: notify.notifyBattleEvent,
                 social,
+                dayKeyAt: challengeDay.dayKeyAt,
             };
         })().catch((err) => {
             depsPromise = null;
@@ -81,8 +83,10 @@ export default async function handler(req, res) {
                 if (text && !/^[A-Za-z0-9_-]{1,128}$/.test(text)) throw new HttpError(400, 'Bad id.');
                 return text || null;
             };
-            if (kind !== 'friendRequest' && !id(body.topicId)) throw new HttpError(400, 'topicId is required.');
-            if (kind === 'friendRequest' && !id(body.to)) throw new HttpError(400, 'to is required.');
+            // A friend request and a poke (the meadow, 2026-11-17) name a trainer, not a topic.
+            const toTrainer = kind === 'friendRequest' || kind === 'poke';
+            if (!toTrainer && !id(body.topicId)) throw new HttpError(400, 'topicId is required.');
+            if (toTrainer && !id(body.to)) throw new HttpError(400, 'to is required.');
             let result;
             if (kind === 'forumMessage') {
                 result = await deps.social.notifyForumMessage({ db, appId, callerUid: uid, topicId: id(body.topicId), messageId: id(body.messageId) });
@@ -90,6 +94,9 @@ export default async function handler(req, res) {
                 result = await deps.social.notifyReaction({ db, appId, callerUid: uid, topicId: id(body.topicId), messageId: id(body.messageId) });
             } else if (kind === 'friendRequest') {
                 result = await deps.social.notifyFriendRequest({ db, appId, callerUid: uid, to: id(body.to) });
+            } else if (kind === 'poke') {
+                // The day is the Champion's (Brasília), the same for both trainers.
+                result = await deps.social.notifyPoke({ db, appId, callerUid: uid, to: id(body.to), day: deps.dayKeyAt(Date.now()) });
             } else {
                 throw new HttpError(400, 'Unknown kind.');
             }

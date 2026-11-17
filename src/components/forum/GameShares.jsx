@@ -4,6 +4,7 @@ import React, { Suspense, lazy } from 'react';
 // tier rules, one without a quiz never loads the category table.
 const TierListShareCard = lazy(() => import('../TierListShareCard'));
 const QuizShareCard = lazy(() => import('../QuizShareCard'));
+const ReceiptShareCard = lazy(() => import('../ReceiptShareCard'));
 
 /**
  * The tier list and the quiz result a forum message may carry (2026-11-15,
@@ -12,11 +13,12 @@ const QuizShareCard = lazy(() => import('../QuizShareCard'));
  * of about their height, so the thread does not jump when they arrive.
  */
 export function GameShares({ message }) {
-    if (!message?.sharedTierList && !message?.sharedQuiz) return null;
+    if (!message?.sharedTierList && !message?.sharedQuiz && !message?.sharedReceipt) return null;
     return (
         <Suspense fallback={<div className="game-share-slot" aria-hidden="true" />}>
             {message.sharedTierList && <TierListShareCard share={message.sharedTierList} />}
             {message.sharedQuiz && <QuizShareCard share={message.sharedQuiz} />}
+            {message.sharedReceipt && <ReceiptShareCard share={message.sharedReceipt} />}
         </Suspense>
     );
 }

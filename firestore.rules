@@ -65,7 +65,20 @@ service cloud.firestore {
           let streak = d.get('streak', null);
           let persona = d.get('persona', null);
           let memberSince = d.get('memberSince', null);
-          return (streak == null || (streak is map
+          // The meadow (2026-11-17): the ghost friends see — a type tone (or
+          // the shiny one) and a costume from the catalogue (utils/mascot/;
+          // meadow.test.js fails when these lists drift), or null.
+          let mascot = d.get('mascot', null);
+          return (mascot == null || (mascot is map
+                && mascot.keys().hasOnly(['tone', 'hat'])
+                && (mascot.get('tone', null) == null || mascot.get('tone', null) in [
+                    'normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground',
+                    'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy', 'shiny'
+                  ])
+                && (mascot.get('hat', null) == null || mascot.get('hat', null) in [
+                    'glasses', 'explorer', 'headphones', 'detective', 'cap', 'bowtie', 'sunglasses', 'mortarboard'
+                  ])))
+            && (streak == null || (streak is map
                 && streak.keys().hasOnly(['count', 'lastVisit', 'shields'])
                 && streak.get('count', 0) is int && streak.get('count', 0) >= 0 && streak.get('count', 0) <= 100000
                 && (streak.get('lastVisit', null) == null || (streak.get('lastVisit', '') is string && streak.get('lastVisit', '').size() == 10))
@@ -94,7 +107,7 @@ service cloud.firestore {
               'displayName', 'displayNameLower', 'avatarPokemonId',
               'avatarIsShiny', 'trainerSprite', 'selectedBadgeId', 'battleRecord', 'updatedAt',
               'frameId', 'titleId', 'trainerLevel',
-              'streak', 'persona', 'memberSince'
+              'streak', 'persona', 'memberSince', 'mascot'
             ])
             && d.displayName is string
             && d.displayName.size() >= 1 && d.displayName.size() <= 40

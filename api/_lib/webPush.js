@@ -80,6 +80,11 @@ const TEMPLATES = {
         en: { title: 'You were mentioned', body: ({ name }) => `${name} mentioned you on the forum.` },
         pt: { title: 'Você foi mencionado', body: ({ name }) => `${name} te mencionou no fórum.` },
     },
+    // The meadow (2026-11-17): a friend poked a dozing ghost. Opt-in topic `social`.
+    socialPoke: {
+        en: { title: 'You were poked', body: ({ name }) => `${name} poked you: today's games are open.` },
+        pt: { title: 'Você foi cutucado', body: ({ name }) => `${name} te cutucou: os jogos do dia estão abertos.` },
+    },
     dailyChallenge: {
         en: { title: 'Cynthia has a new team!', body: () => "Today's Champion team is in — walk up to her and battle." },
         pt: { title: 'A Cynthia tem um time novo!', body: () => 'O time da Campeã de hoje chegou — vá até ela e batalhe.' },
@@ -114,7 +119,7 @@ const GROUPS = {
 };
 
 /** Which tray entry each kind collapses into; anything else is battle-shaped. */
-const GROUP_OF = { dailyPuzzle: 'puzzle', dailyChallenge: 'challenge', socialReply: 'social', socialMention: 'social' };
+const GROUP_OF = { dailyPuzzle: 'puzzle', dailyChallenge: 'challenge', socialReply: 'social', socialMention: 'social', socialPoke: 'social' };
 
 /** Topics a device must have turned on (absent = off), unlike the battle ones. */
 const OPT_IN_TOPICS = new Set(['social']);

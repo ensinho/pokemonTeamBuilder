@@ -65,6 +65,9 @@
     letter-spacing: -0.02em;
 }
 
+/* The day's receipt (2026-11-17): its own size, under the line it belongs to. */
+.games-day__receipt { align-self: flex-start; margin-top: var(--space-2); }
+
 .games-day__clock {
     display: flex;
     flex-wrap: wrap;

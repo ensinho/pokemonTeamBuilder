@@ -1,14 +1,11 @@
 import React, { useMemo } from 'react';
 import { useFriendActivity } from '../../hooks/useFriendActivity';
 import { useTranslation } from '../../hooks/useTranslation';
-import { openTrainerCard } from '../../store/useTrainerCardStore';
 import { localDayKey } from '../../utils/dailyCheckin';
-import { FramedAvatar } from '../rewards/FramedAvatar';
-import { AvatarSprite } from '../AvatarSprite';
 import { EmptyState } from '../EmptyState';
 import { Loader } from '../Loader';
-import { PokeballIcon } from '../icons';
 import { FriendActivityList } from './FriendActivityList';
+import { Meadow } from './Meadow';
 
 /** Which heading a line sits under: its own day when it has one, else its local date. */
 const dayOf = (event) => event.dayKey || (event.at ? localDayKey(new Date(event.at)) : null);
@@ -20,7 +17,7 @@ const dayOf = (event) => event.dayKey || (event.at ? localDayKey(new Date(event.
  */
 export function FriendActivityTab({ onFind, onPlay, isLoadingFriends = false }) {
     const { t } = useTranslation();
-    const { events, activeToday, hasFriends, isLoaded, today, braToday } = useFriendActivity();
+    const { events, hasFriends, isLoaded, today, braToday } = useFriendActivity();
 
     const groups = useMemo(() => {
         const yesterday = localDayKey(new Date(Date.now() - 86400000));
@@ -51,37 +48,8 @@ export function FriendActivityTab({ onFind, onPlay, isLoadingFriends = false }) 
 
     return (
         <div className="fa-tab">
-            {activeToday.length > 0 && (
-                <section className="fa-today" aria-label={t('social.activity.activeToday')}>
-                    <h2 className="friends-section-title">{t('social.activity.activeToday')}</h2>
-                    <ul className="fa-today__faces">
-                        {activeToday.map((f) => (
-                            <li key={f.userId}>
-                                <button
-                                    type="button"
-                                    className="fa-today__face"
-                                    onClick={() => openTrainerCard({
-                                        userId: f.userId,
-                                        name: f.displayName || t('friends.unknownTrainer'),
-                                        avatar: f.avatarPokemonId,
-                                        isShiny: f.avatarIsShiny,
-                                        trainerSprite: f.trainerSprite,
-                                        selectedBadgeId: f.selectedBadgeId || null,
-                                        frameId: f.frameId || null,
-                                        titleId: f.titleId || null,
-                                    })}
-                                >
-                                    <FramedAvatar uid={f.userId} stampedFrameId={f.frameId} className="fa-today__avatar">
-                                        <AvatarSprite trainerSprite={f.trainerSprite} pokemonId={f.avatarPokemonId} isShiny={f.avatarIsShiny}
-                                            fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />} />
-                                    </FramedAvatar>
-                                    <span className="fa-today__name">{f.displayName || t('friends.unknownTrainer')}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )}
+            {/* The meadow (2026-11-17): who played today, and who is still dozing. */}
+            <Meadow size="lg" max={6} />
 
             {groups.length === 0 ? (
                 <EmptyState

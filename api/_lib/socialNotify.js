@@ -145,3 +145,40 @@ export async function notifyFriendRequest({ db, appId, callerUid, to }) {
     });
     return { sent: 1 };
 }
+
+/**
+ * A poke (2026-11-17, "Fantasminha de plantão" — the meadow): a friend whose
+ * ghost is dozing gets a nudge that the day's games are open. Only between
+ * friends (the friendship document is the proof), once per pair per day (the
+ * entry's id is the poker's, and it carries the day), never to oneself.
+ */
+export const pokeEntryId = (fromUid) => `poke_${fromUid}`;
+
+/** True when a poke from this trainer may land today (`prev`: the entry already there, if any). */
+export const pokeAllowed = (prev, day) => !(prev && prev.day === day);
+
+export async function notifyPoke({ db, appId, callerUid, to, day }) {
+    if (!to || to === callerUid) return { sent: 0 };
+    const pair = [callerUid, to].sort().join('_');
+    const friendship = await db.doc(`artifacts/${appId}/friendships/${pair}`).get();
+    const members = friendship.exists ? friendship.data().members || [] : [];
+    if (!members.includes(callerUid) || !members.includes(to)) return { sent: 0 };
+    const ref = db.doc(`${inboxPath(appId, to)}/${pokeEntryId(callerUid)}`);
+    const prev = await ref.get();
+    if (!pokeAllowed(prev.exists ? prev.data() : null, day)) return { sent: 0, already: true };
+    const profile = await db.doc(`artifacts/${appId}/publicProfiles/${callerUid}`).get();
+    const p = profile.exists ? profile.data() : {};
+    const fromName = String(p.displayName || 'Trainer').slice(0, 40);
+    await ref.set({
+        kind: 'poke',
+        fromUid: callerUid,
+        fromName,
+        fromAvatar: Number.isInteger(p.avatarPokemonId) ? p.avatarPokemonId : null,
+        fromSprite: typeof p.trainerSprite === 'string' ? p.trainerSprite : null,
+        day,
+        createdAt: new Date().toISOString(),
+        read: false,
+    });
+    await sendPushToUser({ db, appId, uid: to, topic: 'social', kind: 'socialPoke', params: { name: fromName }, url: '/games' });
+    return { sent: 1 };
+}

@@ -13,7 +13,9 @@ import { COSTUMES } from '../utils/mascot/assistant';
  *   is what he wears (`none`, `persona` — the trainer's persona's outfit —
  *   or one of `COSTUMES`, utils/mascot/assistant.js). `form` is how the
  *   playgrounds draw him: `bot` (the 3D body, 2026-11-11) or `line` (the icon's
- *   drawing).
+ *   drawing). `share` (2026-11-17): friends see the tone and costume on
+ *   this trainer's ghost in the meadow (`publicProfiles.mascot`); off, they
+ *   see the brand's violet.
  * - `reaction`, a one-shot the app asks for (`hop` on a saved team, `oops`
  *   on an error); only the mascot holding the stage plays it — one per screen.
  * - `beat`, a game/forum moment for the companion (2026-11-11): `emitBeat('posted')`
@@ -25,7 +27,7 @@ export const MASCOT_PREFS_KEY = 'ptb:mascot';
 export const MASCOT_TONE_CHOICES = ['brand', 'persona', ...TONES, 'shiny'];
 export const MASCOT_COSTUME_CHOICES = ['none', 'persona', ...COSTUMES];
 export const MASCOT_FORM_CHOICES = ['bot', 'line'];
-const DEFAULT_PREFS = Object.freeze({ tone: 'brand', reactions: true, shinyFound: false, costume: 'none', form: 'bot' });
+const DEFAULT_PREFS = Object.freeze({ tone: 'brand', reactions: true, shinyFound: false, costume: 'none', form: 'bot', share: true });
 
 export function normalizeMascotPrefs(raw) {
     const v = raw && typeof raw === 'object' ? raw : {};
@@ -33,7 +35,7 @@ export function normalizeMascotPrefs(raw) {
     const tone = MASCOT_TONE_CHOICES.includes(v.tone) && (v.tone !== 'shiny' || shinyFound) ? v.tone : 'brand';
     const costume = MASCOT_COSTUME_CHOICES.includes(v.costume) ? v.costume : 'none';
     const form = MASCOT_FORM_CHOICES.includes(v.form) ? v.form : 'bot';
-    return { tone, reactions: v.reactions !== false, shinyFound, costume, form };
+    return { tone, reactions: v.reactions !== false, shinyFound, costume, form, share: v.share !== false };
 }
 
 const readPrefs = () => {

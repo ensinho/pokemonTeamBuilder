@@ -33,6 +33,8 @@ import { isCrawler } from '../utils/crawler';
 import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
 import { wipeBrowserUserStorage, LEFT_SESSION_KEY } from '../utils/sessionWipe';
+import { useMascotStore } from './useMascotStore';
+import { costumeHat } from '../utils/mascot/assistant';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -900,11 +902,15 @@ export const useAuthStore = create((set, get) => {
                 persona: derivePersona(trainerProfile)?.id || null,
                 memberSince: createdAt && !Number.isNaN(createdAt.getTime()) ? createdAt.toISOString().slice(0, 7) : null,
             };
+            // The meadow (2026-11-17): the ghost friends see — the tone and the
+            // costume as they resolve here (a persona's), or none when the
+            // trainer keeps them to themselves (Profile → Mascote).
+            const withMascot = { ...withCard, mascot: publicMascot(useMascotStore.getState().prefs, trainerProfile) };
             try {
                 // Rules from before a field (`hasOnly`) refuse the whole write:
                 // step down to the last shape they accept, so the directory
                 // entry stays current until firestore.rules is deployed.
-                for (const payload of [withCard, withRewards, base]) {
+                for (const payload of [withMascot, withCard, withRewards, base]) {
                     try {
                         await setDoc(profileRef, payload, { merge: true });
                         break;
@@ -1239,3 +1245,28 @@ export const useAuthStore = create((set, get) => {
 
 /** Record a journey mark from outside React (stores, handlers). */
 export const markJourney = (mark) => useAuthStore.getState().markJourney(mark);
+
+/**
+ * What friends see of this trainer's mascot (`publicProfiles.mascot`):
+ * `{ tone, hat }` resolved (a persona's tone and outfit become the real ones),
+ * or null when the trainer keeps them private.
+ */
+export function publicMascot(prefs, trainerProfile) {
+    if (!prefs || prefs.share === false) return null;
+    const persona = derivePersona(trainerProfile);
+    const tone = prefs.tone === 'brand' ? null
+        : prefs.tone === 'persona' ? (persona?.tone || null)
+            : prefs.tone === 'shiny' ? (prefs.shinyFound ? 'shiny' : null)
+                : prefs.tone;
+    return { tone: tone || null, hat: costumeHat(prefs.costume, persona?.id) || null };
+}
+
+// The ghost friends see follows Profile → Mascote, a moment after the last change.
+let mascotSyncTimer = 0;
+useMascotStore.subscribe((state, prev) => {
+    const a = state.prefs;
+    const b = prev.prefs;
+    if (a.tone === b.tone && a.costume === b.costume && a.share === b.share) return;
+    clearTimeout(mascotSyncTimer);
+    mascotSyncTimer = setTimeout(() => useAuthStore.getState().syncPublicProfile(), 1500);
+});

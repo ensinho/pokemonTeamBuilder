@@ -27,6 +27,8 @@ export function describeInboxEntry(entry) {
             params: { name, champion: entry.champion === 'blue' ? 'Blue' : 'Cynthia' },
             to: `/challenge?champion=${entry.champion === 'blue' ? 'blue' : 'cynthia'}`,
         };
+        // The meadow (2026-11-17): a friend poked this trainer's dozing ghost.
+        case 'poke': return { key: 'pokegear.poke', params: { name }, to: '/games' };
         default: return { key: 'pokegear.generic', params: { name }, to: '/' };
     }
 }
