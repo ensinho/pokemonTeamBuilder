@@ -258,7 +258,8 @@ Enzo approved three small moves after the games-first pass. All three read one
 device record of what was played today:
 
 - **The record.** `hooks/useGamesToday.js` keeps the device key `ptb:gamesToday`.
-  It is a trainer's key, so `leaveSession` wipes it.
+  It is a trainer's key, so `leaveSession` wipes it. Since 2026-11-17 the
+  account's preferences doc keeps today's part too (`gamesToday`; games.md).
 - **The rules.** They live in the pure, tested `utils/gamesToday.js`. Each game
   keeps its own day: the Champion's turns at midnight in São Paulo, the
   PokéPuzzle's at the trainer's own midnight.

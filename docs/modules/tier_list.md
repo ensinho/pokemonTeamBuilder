@@ -65,10 +65,21 @@ touch device that can share files, downloaded elsewhere. `track('tierlist_export
 
 ## Storage and privacy
 
-`ptb:tierList:v1` — `{ current, boards: { [templateId]: board } }`, written
-250ms after the last change. A trainer's key (not in `DEVICE_KEYS`), so
-`leaveSession` wipes it. Nothing reaches Firestore. The privacy page says the
-tier lists never leave the device (2026-11-15).
+`ptb:tierList:v1` — `{ current, boards: { [templateId]: board }, stamps: { [templateId]: ms } }`,
+written 250ms after the last change; every board that changed since the last
+write is stamped then (`stampChangedBoards`). A trainer's key (not in
+`DEVICE_KEYS`), so `leaveSession` wipes it.
+
+**In the account since 2026-11-17** (Enzo: a list made in one browser read
+"Aberto hoje" in another, its board empty): `services/tierListSync.js` keeps
+`{ boards, stamps }` in `users/{uid}/tierLists/boards` (owner-only by the users
+rule; `tierLists` is in `accountDeletion` `USER_COLLECTIONS`). The view reads it
+once per account, merges board by board — the later stamp wins, a board only
+one copy has is kept, the open template stays the device's (`mergeTierStores`,
+tested) — and writes back 1.5 s after a change. A board pulled from the account
+is folded into the last-saved copy so it is not re-stamped as an edit here.
+The privacy page says the lists (names included) are kept in the account,
+visible only to the trainer; a shared link or post still carries ids only.
 
 ## SEO
 

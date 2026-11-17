@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-17 — The quiz and the tier list played in one browser read "Aberto hoje" in another `bug`
+- **Symptom:** Enzo played the quiz and the tier list of the day, signed in to another browser, and the Jogos page said 2 of 4 — the Champion and the PokéPuzzle "Feito hoje", the other two open (and the tier list's board empty).
+- **Root cause:** "played today" is `ptb:gamesToday`, a device-only record. The Champion and the PokéPuzzle were re-marked from server data wherever the Home reads them (`useChallengeSummary`, `useDailyPuzzle`); the quiz was only re-marked with its page open, and the tier list's boards (`ptb:tierList:v1`) never left the device at all.
+- **Fix:** today's record goes to the account's preferences doc (`gamesToday`; `markGameDone` pushes, the profile read merges with `mergeGameRecords`, the full sync carries it); the quiz is re-marked from `categoryGuesserRuns` at boot; the tier list boards live in `users/{uid}/tierLists/boards`, merged per board on a change stamp (`mergeTierStores`). Privacy page and `USER_COLLECTIONS` updated.
+- **Correct pattern:** anything a surface counts as the trainer's progress must follow the account — a device record is only the first paint. Before shipping a "done" mark, ask: does a second browser signed in to the same account derive it? If not, mirror it to the account and merge on read.
+- **Files:** `src/hooks/useGamesToday.js`, `src/utils/gamesToday.js`, `src/store/useAuthStore.js`, `src/store/useCategoryGuesserStore.js`, `src/services/tierListSync.js`, `src/utils/tierList.js`, `src/components/views/TierListView.jsx`, `src/services/accountDeletion.js`, `src/content/sitePages.js`
+
 ### 2026-11-17 — The forum showed Portuguese readers English stand-ins ("Champion Challenge result") `bug`
 - **Symptom:** in the feed and the pinned rooms, a topic whose last reply was only an attachment read "↩ Champion Challenge result", "Quiz result", "Shared team: X" — in English, in the PT site.
 - **Root cause:** `useForumStore.sendMessage` writes a fixed English string as the topic's `lastMessageText` when the message has no text; `ThreadCard` and `ForumRooms` printed it verbatim. Display copy had been stored as data.
