@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-16 — A longer `includeFiles` made Vercel reject the whole deployment before building `bug`
+- **Symptom:** PR #161 (the OG pass) showed "Vercel — Deployment has failed" seconds after the push, with no preview URL and no build log on GitHub. `npx vercel inspect --logs` needs a login, so from here it looked opaque. The dashboard said: `functions.api/og.js.includeFiles should NOT be longer than 256 characters`.
+- **Root cause:** Vercel validates `vercel.json` against a schema **before** any build, and caps a function's `includeFiles`/`excludeFiles` at 256 characters. The pass listed the wordmark, the 512px icon, the type icons and three data files one by one, which pushed `api/og.js`'s glob to 300+.
+- **Fix:** the same files as one nested-brace glob (238 characters; checked with `picomatch`), plus a guard in `api/og.test.js` that fails when any function's `includeFiles`/`excludeFiles` passes 256.
+- **Correct pattern:** group paths with nested braces (`dist/{data/{a,b}.json,logo.svg}`), never a flat list. A Vercel failure with no preview URL is a config rejection, not a build error: check `vercel.json` first.
+- **Files:** `vercel.json`, `api/og.test.js`
+
 ### 2026-11-15 — The Jogos page's cards and belt took another sheet's styles `dispattern`
 - **Symptom:** on the first build of `/games` each card had a foreign padding and a grey slab where its platform should be, and the day's four Poké Balls were flat dashed lines.
 - **Root cause:** two new class names already existed. `.game-card` is the game-version picker's card (`game-cover.css`) and `.day-ball` the week strip's ball (`rewards.css`); both sheets are loaded by the time the page opens, so their rules applied to the new elements. The balls also sized a `<span>` with `width`/`height` while it was still inline. Nothing fails on a name collision — no test, no lint, no build warning — and it was only found by looking at the page.

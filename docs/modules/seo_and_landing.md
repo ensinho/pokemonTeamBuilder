@@ -197,6 +197,49 @@ and links, and checks every link is a real route. Only claim what the site
 does today and what a competitor's own pages say (Pikalytics, checked
 2026-10-30). In the Competitive nav section and the sitemap.
 
+### Link previews and search thumbnails (the OG pass, 2026-11-16)
+
+Enzo, 2026-11-16, with a photo of Google showing a competitor with a picture
+beside its result and ours without: "vamos visitar TODOS os OG cards… e criar
+alguns faltantes". Every page now has its own card, all drawn by **one
+endpoint**, `api/og.js` (the function count stays 9 of 12), from **one frame**
+in `api/_lib/ogImage.js`:
+
+- **The frame:** the brand's night, the wordmark (`public/logo-wordmark.svg`)
+  top left, the domain top right, the copy on the left, one action pill at the
+  foot. The scene is absolute layers behind it, in the creative direction's
+  devices: a type colour as a **lamp** (radial light), official artwork
+  standing **on a platform**, a **silhouette** with a "?" for what is not known
+  (the quiz, the PokéPuzzle), an **evolution line** for progress (Journeys),
+  **gold** only for earned things (the Champion, best teams, a won result).
+- **Who gets what** (`seoPages.js` `pageMeta` → `image`): every `STATIC_PAGES`
+  key → `?page=<key>` (`PAGE_CARDS`, a test checks none is missing; the English
+  home keeps the static `public/og-image.png`, the same card); a Pokémon →
+  `?pokemon=`; a type → `?type=`; a move/ability/item the dex knows →
+  `?move=|ability=|item=<showdown id>` (else the list's card); a guide →
+  `?guide=`; a tournament team → `?tteam=`; a shared team → `?team=`; a shared
+  result → `?puzzle=|challenge=|tierlist=`.
+- **The dex's effect text is English**, so only the English move/ability/item
+  card prints it. Nothing a visitor typed is ever drawn (forum topics keep the
+  feed's card).
+- **Google's thumbnail** is the engine's choice, but it reads three things we
+  now send: `<meta name="robots" content="…max-image-preview:large…">` on every
+  indexable page (render-meta; `ROBOTS_INDEXABLE`), a `WebPage` JSON-LD block
+  with `primaryImageOfPage` on every page, and on the home a second, **square**
+  image (`?page=home&format=square`) — Google crops a result's picture to a
+  square, so the home card is centred (mascot + wordmark survive any crop).
+  Favicons at 48/96/192 px (`index.html`): Google draws a result's favicon from
+  a multiple of 48.
+- **`npm run og:images`** redraws `public/og-image.png` from the home tree —
+  run it after touching the frame. `npm run og:images -- --preview <dir>` draws
+  every card in both languages into `<dir>`: the review sheet for a design pass.
+- The function reads the wordmark, the 512px icon, the type icons and three
+  data files from disk — they are in `vercel.json`'s `includeFiles` for
+  `api/og.js`; a new asset goes there too, or the card quietly loses it.
+- Satori can: SVG and PNG data URIs, `filter` (`brightness(0) invert(1)` is the
+  silhouette), several gradients, absolute layers, `transform: scaleX(-1)`. It
+  cannot read woff2, so the cards are Space Grotesk (500/700) only.
+
 ## 4. Sitemap
 
 `scripts/build-sitemap.mjs` (prebuild) lists each page once per language with

@@ -74,9 +74,21 @@ export const STATIC_PAGES = {
  *  feature list in content/structuredCopy.js). */
 const TOOL_PAGES = new Set(['home', 'builder', 'damageCalculator', 'speedTiers', 'meta', 'pokedex', 'types']);
 
-const PAGE_IMAGES = {
-    pokepuzzle: `${SITE_URL}/pokepuzzle-og.png`,
-    challenge: `${SITE_URL}/challenge-og.png`,
+/**
+ * A page's link-preview picture, drawn by api/og.js (api/_lib/ogImage.js
+ * PAGE_CARDS has a card for every STATIC_PAGES key — a test checks). The
+ * English home is the static public/og-image.png (`npm run og:images`), the
+ * same card, so the site's own front door never waits on a function.
+ */
+export const ogImageUrl = (params, language) => `${SITE_URL}/api/og?${params}&lang=${language}`;
+const pageImage = (key, language) => (key === 'home' && language === 'en'
+    ? DEFAULT_IMAGE
+    : ogImageUrl(`page=${key}`, language));
+/** The Showdown id a dex page's slug names (`/moves/fire-blast` → `fireblast`). */
+const dexSlugId = (slug) => {
+    let text = slug || '';
+    try { text = decodeURIComponent(text); } catch { /* keep the raw slug */ }
+    return text.toLowerCase().replace(/[^a-z0-9]/g, '');
 };
 
 /** The daily games whose links can carry a result, and the code each takes. */
@@ -212,7 +224,7 @@ export function pageMeta(appPath, language, context = {}) {
             key: staticKey,
             title: staticKey === 'home' ? t('seo.home.title') : withBrand(t(`seo.${staticKey}.title`)),
             description: t(`seo.${staticKey}.description`),
-            image: PAGE_IMAGES[staticKey] || DEFAULT_IMAGE,
+            image: pageImage(staticKey, language),
             breadcrumbs: staticKey === 'home' ? [] : crumbsFor(language, [staticCrumb(language, staticKey, path)]),
             isStatic: true,
         };
@@ -231,7 +243,7 @@ export function pageMeta(appPath, language, context = {}) {
             { name, path: canonicalPath },
         ]);
         // The card api/og.js draws for it: art, types, weaknesses (2026-10-24).
-        const image = pokemon?.id ? `${SITE_URL}/api/og?pokemon=${pokemon.id}&lang=${language}` : DEFAULT_IMAGE;
+        const image = pokemon?.id ? ogImageUrl(`pokemon=${pokemon.id}`, language) : pageImage(parentKey, language);
         if (section === 'pokemon') {
             const types = (pokemon?.types || []).map(chartKey).filter((x) => typeChart[x]);
             const weak = weaknessesOf(types).map((w) => typeName(w.type, language));
@@ -264,6 +276,7 @@ export function pageMeta(appPath, language, context = {}) {
                 ...base,
                 key: 'tournamentTeam',
                 title: withBrand(team.title),
+                image: ogImageUrl(`tteam=${encodeURIComponent(team.id)}`, language),
                 description: t('seo.tournamentTeam.description', { event }),
                 breadcrumbs: [...breadcrumbs, { name: team.title, path }],
             };
@@ -273,6 +286,7 @@ export function pageMeta(appPath, language, context = {}) {
             key: 'tournamentTeam',
             title: withBrand(t('seo.tournamentTeam.title')),
             description: t('seo.tournamentTeam.fallbackDescription'),
+            image: pageImage('tournaments', language),
             breadcrumbs,
         };
     }
@@ -291,7 +305,7 @@ export function pageMeta(appPath, language, context = {}) {
                 key: 'sharedTeamPage',
                 title: withBrand(t('seo.sharedTeamPage.title', { name })),
                 description: t('seo.sharedTeamPage.description', { members }),
-                image: `${SITE_URL}/api/og?team=${encodeURIComponent(param)}&lang=${language}`,
+                image: ogImageUrl(`team=${encodeURIComponent(param)}`, language),
                 breadcrumbs: crumbs(name),
             };
         }
@@ -317,6 +331,8 @@ export function pageMeta(appPath, language, context = {}) {
             key,
             title: withBrand(t(`seo.${key}.title`, { name })),
             description: t(`seo.${key}.description`, { name }),
+            // Its own card when the dex knows it (the server's lookup named it), else the list's.
+            image: context.name ? ogImageUrl(`${key}=${dexSlugId(param)}`, language) : pageImage(section, language),
             breadcrumbs: crumbsFor(language, [staticCrumb(language, section, `/${section}`), { name, path }]),
         };
     }
@@ -333,6 +349,7 @@ export function pageMeta(appPath, language, context = {}) {
                 updated: guide.updated,
                 title: withBrand(guide.title),
                 description: guide.description,
+                image: ogImageUrl(`guide=${encodeURIComponent(guide.slug)}`, language),
                 breadcrumbs: crumbsFor(language, [staticCrumb(language, 'guides', '/guides'), { name: guide.title, path }]),
             };
         }
@@ -352,7 +369,7 @@ export function pageMeta(appPath, language, context = {}) {
                 weaknesses: joinList(weak, language) || none,
                 strong: joinList(strong, language) || none,
             }),
-            image: `${SITE_URL}/api/og?type=${param}&lang=${language}`,
+            image: ogImageUrl(`type=${param}`, language),
             breadcrumbs: crumbsFor(language, [staticCrumb(language, 'types', '/types'), { name: type, path }]),
         };
     }
@@ -471,8 +488,27 @@ export function structuredData(meta, language, extras = {}) {
             })),
         });
     }
+    // The page and the picture that stands for it (2026-11-16): what Google
+    // reads to choose a result's thumbnail. The home adds its square cut,
+    // the one a square crop keeps whole.
+    const image = { '@type': 'ImageObject', url: meta.image || DEFAULT_IMAGE, width: 1200, height: 630 };
+    blocks.push({
+        '@context': context,
+        '@type': 'WebPage',
+        name: meta.title,
+        url: abs(meta.canonicalPath || '/'),
+        inLanguage,
+        isPartOf: { '@id': WEBSITE_ID },
+        primaryImageOfPage: image,
+        image: meta.key === 'home'
+            ? [image, { '@type': 'ImageObject', url: ogImageUrl('page=home&format=square', language), width: 1200, height: 1200 }]
+            : [image],
+    });
     return blocks;
 }
+
+/** The robots line for an indexable page: let search show the large preview. */
+export const ROBOTS_INDEXABLE = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
 /** JSON for a `<script type="application/ld+json">`, safe to inline in HTML. */
 export const jsonLdScript = (data) => JSON.stringify(data).replace(/</g, '\\u003c');

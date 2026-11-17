@@ -8,7 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useChampionChallenge } from '../../../hooks/useChampionChallenge';
 import { useConsoleInput } from '../../../hooks/useConsoleInput';
 import { useConsoleLayout, useRailMode } from '../../../hooks/useConsoleLayout';
-import { SITE_URL, useDocumentMeta } from '../../../hooks/useDocumentMeta';
+import { useDocumentMeta } from '../../../hooks/useDocumentMeta';
 import { useFirestoreTeams } from '../../../hooks/useFirestoreTeams';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -98,7 +98,7 @@ export function ChampionChallengeView() {
     const arenaInput = useRef(null);
     const screenInput = useRef(null);
 
-    useDocumentMeta({ title: t('challenge.title'), description: t('challenge.metaDescription'), image: `${SITE_URL}/challenge-og.png`, path: '/challenge' });
+    useDocumentMeta({ title: t('challenge.title'), description: t('challenge.metaDescription'), path: '/challenge' });
 
     // Load on arrival and whenever the account changes (another uid wipes the
     // previous one's state; a guest who signs in keeps theirs).
