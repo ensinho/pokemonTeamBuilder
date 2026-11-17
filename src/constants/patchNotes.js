@@ -49,9 +49,9 @@ export const RELEASES = [
                 path: '/games',
             },
             { key: 'meadow', icon: 'heart', title: 'patchNotes.meadowTitle', description: 'patchNotes.meadowDesc', cta: 'patchNotes.meadowCta', path: '/friends?tab=activity' },
-            { key: 'mascot-duty-games', icon: 'pokeball', title: 'patchNotes.mascotDutyGamesTitle', description: 'patchNotes.mascotDutyGamesDesc', cta: 'patchNotes.mascotDutyGamesCta', path: '/quiz?tab=categories&daily=1' },
-            // Fixed rule (Enzo, 2026-11-11): every release asks for support.
-            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL },
+            // Fixed rule (Enzo, 2026-11-11): every release asks for support. Here the
+            // side's focus (Enzo, 2026-11-17): the cup and the purple button.
+            { key: 'buy-me-a-coffee', icon: 'coffee', title: 'patchNotes.supportTitle', description: 'patchNotes.supportShort', cta: 'patchNotes.supportCta', href: SUPPORT_URL, prominent: true },
         ],
     },
     {

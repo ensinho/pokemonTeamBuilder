@@ -193,21 +193,27 @@ const TierListVisual = () => (
 // The day's belt (1.27.0): four games, the first two already caught.
 const GAMES_DAY = [['Campeã', 'Champion', true], ['Puzzle', 'Puzzle', true], ['Quiz', 'Quiz', false], ['Tier list', 'Tier list', false]];
 // 1.28.0 — "Fantasminha de plantão": the round's receipt on its pixel morning.
+// It fills the featured card's cover (h-full, like the champions' day), the
+// scene behind as its sky; the stamp steps aside on a phone, where the cover
+// is the card's width alone.
 const MascotShiftVisual = ({ language }) => {
     const pt = language === 'pt';
     return (
-        <div className="relative h-[9.5rem] overflow-hidden bg-bg" aria-hidden="true">
+        <div className="relative flex h-full min-h-[13rem] w-full overflow-hidden bg-bg" aria-hidden="true">
             <PixelScene kind="morning" seed={5} className="absolute inset-0 h-full w-full" />
-            <div className="relative flex h-full items-center justify-center gap-3 p-3">
-                <Mascot size="lg" mood="feliz" pose="analisando" framing="body" seasonal={false} />
-                <div className="receipt-share__paper w-44">
+            <div className="relative flex w-full items-center justify-center gap-4 p-4">
+                <Mascot size="lg" mood="feliz" pose="analisando" framing="body" seasonal={false} className="shrink-0" />
+                <div className="receipt-share__paper w-56 min-w-0 shrink">
                     <ul className="receipt__rows">
                         <ReceiptRow label="Champion" value={pt ? 'time novo' : 'new team'} />
                         <ReceiptRow label="PokéPuzzle" value={pt ? 'aberto' : 'open'} />
-                        <ReceiptRow label={pt ? 'Sua liga · Bia' : 'Your league · Bia'} value={pt ? 'te passou' : 'passed you'} bold />
+                        <ReceiptRow label="Quiz" value={pt ? 'aberto' : 'open'} />
+                        <ReceiptRow label="Bia" value={pt ? 'te passou' : 'passed you'} bold />
                     </ul>
                 </div>
-                <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={pt ? 'Dia completo' : 'Full day'} word={pt ? '4 de 4' : '4 of 4'} />
+                <span className="hidden shrink-0 sm:block">
+                    <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={pt ? 'Dia completo' : 'Full day'} word={pt ? '4 de 4' : '4 of 4'} />
+                </span>
             </div>
         </div>
     );
@@ -925,7 +931,9 @@ function NoteCard({ note, featured = false, alone = false, onActivate, expanded,
     // Alone beside the featured note (1.26.0: the tier list and the donation
     // card, Enzo), a link note takes the centred form too — the cup, the
     // title, a real button — and keeps its pull instead of a quiet row.
-    const centred = Boolean(note.href) && (featured || alone);
+    // `prominent` (1.28.0, Enzo): the donation card keeps that form — the cup and
+    // the purple button — even beside another note, so it stays the side's focus.
+    const centred = Boolean(note.href) && (featured || alone || note.prominent);
     const Card = note.href ? 'a' : 'button';
     const cardProps = note.href
         ? { href: note.href, target: '_blank', rel: 'noopener noreferrer' }

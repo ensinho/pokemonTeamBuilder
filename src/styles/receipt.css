@@ -75,7 +75,7 @@
 .receipt__totals > .is-status dt { color: var(--receipt-ink); font-size: 0.72rem; }
 
 .receipt__columns { display: flex; justify-content: space-between; margin: 0; }
-.receipt__rows { display: grid; gap: var(--space-0_5); margin: 0; padding: 0; list-style: none; }
+.receipt__rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-0_5); margin: 0; padding: 0; list-style: none; }
 .receipt__row { display: flex; align-items: baseline; gap: var(--space-2); }
 .receipt__name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .receipt__lead {
