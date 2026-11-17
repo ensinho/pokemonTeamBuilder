@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { X } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -25,6 +25,12 @@ import { monLabel } from '../../utils/tierList';
 import { PixelScene } from './PixelScene';
 import { Receipt, ReceiptStamp } from './Receipt';
 import { Loader } from '../Loader';
+import { InstagramIcon, XIcon } from '../icons';
+import { useToastStore } from '../../store/useToastStore';
+import { receiptFileName, receiptPostText, xIntentUrl } from '../../utils/receiptShare';
+import { localizePath } from '../../utils/localePath';
+import { SITE_URL } from '../../utils/seoPages';
+import { renderReceiptShareBlob } from './drawReceiptShare';
 
 /**
  * The mascot's receipt as a dialog (2026-11-17, "Fantasminha de plantão"):
@@ -79,6 +85,26 @@ export function RoundReceiptDialog() {
     const locale = language === 'pt' ? 'pt-BR' : 'en-GB';
     const quizTitle = quiz ? quiz.list.title[language === 'pt' ? 'pt' : 'en'] : '';
 
+    const rowLabel = (row) => {
+        switch (row.id) {
+            case 'challenge': return t('receipt.row.challenge');
+            // the round's row carries the puzzle's number; the day's row carries
+            // the attempts in `n`, so its number is always today's
+            case 'puzzle': return t('receipt.row.puzzle', { n: row.params?.n || puzzleNumberOn(dayKey) });
+            case 'pokepuzzle': return t('receipt.row.puzzle', { n: puzzleNumberOn(dayKey) });
+            case 'quiz': return t('receipt.row.quiz', { title: quizTitle });
+            case 'tier':
+            case 'tierList': {
+                // a theme the catalogue no longer has reads as the day's list, never as a key
+                const id = TEMPLATES_BY_ID[row.params?.theme] ? row.params.theme : theme?.id;
+                return id ? t('receipt.row.tier', { theme: t(`tierList.templates.${id}.name`) }) : t('receipt.row.tierShort');
+            }
+            case 'passed': return t('receipt.row.passed', { name: row.params.name });
+            case 'streak': return t('receipt.row.streak');
+            case 'meta': return t('receipt.row.meta', { name: row.params.name });
+            default: return row.id;
+        }
+    };
     // ── The round: taken once, on open ──────────────────────────────────────
     const [round, setRound] = useState(null);
     useEffect(() => {
@@ -137,29 +163,116 @@ export function RoundReceiptDialog() {
     }) : null), [day, dayKey, done, facts, notes, fullDays]);
     const diary = useDiaryShare(share ? `receipt:${dayKey}:${share.games.length}` : null);
 
+    // ── The day as an image (save, Instagram, X) ────────────────────────────
+    // Drawn as soon as the day's receipt opens, so the tap that shares it
+    // calls `navigator.share` at once — a phone refuses a share that comes
+    // after awaited work (drawPuzzleShare.js).
+    const imageRef = useRef(null);
+    const [imageReady, setImageReady] = useState(false);
+    const showToast = useToastStore((s) => s.showToast);
+    const playUrl = `${SITE_URL}${localizePath('/games', language)}`;
+    const imageSpec = useMemo(() => {
+        if (mode !== 'day' || !day) return null;
+        return {
+            rows: day.rows.map((row) => ({ label: rowLabel(row), value: t(`receipt.value.${row.value}`, row.params || {}), bold: row.bold })),
+            totals: [
+                [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: day.played, total: day.total })],
+                [t('receipt.totals.fullDays'), String(fullDays)],
+                [t('receipt.totals.status'), t(day.complete ? 'receipt.totals.complete' : 'receipt.totals.partial')],
+            ],
+            date: [t('receipt.meta.date'), new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now))],
+            stamp: day.complete
+                ? { gold: true, sub: t('receipt.stampFull'), word: t('receipt.stampFour') }
+                : { gold: false, sub: t('receipt.stampDay'), word: t('receipt.stampSoFar', { n: day.played }) },
+            code: { code: trainerNumber(userId || 'guest'), label: t('receipt.trainerId') },
+            labels: {
+                brand: t('receipt.brand'),
+                kind: t('receipt.kindDay'),
+                kicker: t('receipt.image.kicker'),
+                score: `${day.played}/${day.total}`,
+                play: t('receipt.image.play'),
+                site: playUrl.replace(/^https?:\/\//, ''),
+            },
+            logoUrl: `${import.meta.env.BASE_URL}logo-mark.webp`,
+            playUrl,
+        };
+        // `t`, `rowLabel` and `locale` follow `language`; the rest is the day.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mode, day, fullDays, language, userId]);
+    useEffect(() => {
+        imageRef.current = null;
+        setImageReady(false);
+        if (!imageSpec) return undefined;
+        let alive = true;
+        renderReceiptShareBlob(imageSpec).catch(() => null).then((blob) => {
+            if (!alive) return;
+            imageRef.current = blob;
+            setImageReady(Boolean(blob));
+        });
+        return () => { alive = false; };
+    }, [imageSpec]);
+
+    const postText = day ? receiptPostText(t, day) : '';
+    const fileName = receiptFileName(dayKey, language);
+    const coarse = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    const imageFile = () => (imageRef.current ? new File([imageRef.current], fileName, { type: 'image/png' }) : null);
+    // A phone hands the picture to its share sheet (Instagram, X, Save Image).
+    const shareSheet = async (file, extra = {}) => {
+        if (!coarse || !file || !navigator.canShare?.({ files: [file] })) return false;
+        try {
+            await navigator.share({ files: [file], ...extra });
+            return true;
+        } catch (err) {
+            return err?.name === 'AbortError'; // refused (no gesture left, a WebView): the fallback below
+        }
+    };
+    const download = () => {
+        const url = URL.createObjectURL(imageRef.current);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+    };
+    const onSave = async () => {
+        const file = imageFile();
+        if (!file) { showToast(t('receipt.image.error'), 'error'); return; }
+        if (await shareSheet(file)) { track('receipt_share', { channel: 'save' }); return; }
+        download();
+        track('receipt_share', { channel: 'download' });
+        showToast(t('receipt.image.saved'), 'success');
+    };
+    const onInstagram = async () => {
+        const file = imageFile();
+        if (!file) { showToast(t('receipt.image.error'), 'error'); return; }
+        if (await shareSheet(file, { text: postText })) { track('receipt_share', { channel: 'instagram' }); return; }
+        // Instagram has no web composer to fill: the picture is saved and the site opened.
+        download();
+        window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+        track('receipt_share', { channel: 'instagram_web' });
+        showToast(t('receipt.image.savedForInstagram'), 'success');
+    };
+    const onX = async () => {
+        if (await shareSheet(imageFile(), { text: `${postText} ${playUrl}` })) { track('receipt_share', { channel: 'x' }); return; }
+        // X's composer takes words and a link, never a file: the picture goes to
+        // the clipboard first (while the page still has focus), ready to paste.
+        let copied = Promise.resolve(false);
+        if (imageRef.current && typeof window.ClipboardItem === 'function' && navigator.clipboard?.write) {
+            copied = navigator.clipboard.write([new window.ClipboardItem({ 'image/png': imageRef.current })]).then(() => true, () => false);
+        }
+        window.open(xIntentUrl(postText, playUrl), '_blank', 'noopener,noreferrer');
+        track('receipt_share', { channel: 'x_web' });
+        if (await copied) showToast(t('receipt.image.copiedForX'), 'success');
+    };
+
     if (!mode) return null;
 
     // ── Wording ─────────────────────────────────────────────────────────────
     const date = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now));
     const time = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(now));
-    const label = (row) => {
-        switch (row.id) {
-            case 'challenge': return t('receipt.row.challenge');
-            case 'puzzle':
-            case 'pokepuzzle': return t('receipt.row.puzzle', { n: row.params?.n || puzzleNumberOn(dayKey) });
-            case 'quiz': return t('receipt.row.quiz', { title: quizTitle });
-            case 'tier':
-            case 'tierList': {
-                // a theme the catalogue no longer has reads as the day's list, never as a key
-                const id = TEMPLATES_BY_ID[row.params?.theme] ? row.params.theme : theme?.id;
-                return id ? t('receipt.row.tier', { theme: t(`tierList.templates.${id}.name`) }) : t('receipt.row.tierShort');
-            }
-            case 'passed': return t('receipt.row.passed', { name: row.params.name });
-            case 'streak': return t('receipt.row.streak');
-            case 'meta': return t('receipt.row.meta', { name: row.params.name });
-            default: return row.id;
-        }
-    };
+    const label = rowLabel;
     const value = (row) => t(`receipt.value.${row.value}`, row.params || {});
     const code = { code: trainerNumber(userId || 'guest'), label: t('receipt.trainerId') };
 
@@ -236,6 +349,22 @@ export function RoundReceiptDialog() {
                             {t('receipt.postDiary')}
                         </button>
                     )
+                )}
+                {day && (
+                    <div className="receipt__share" role="group" aria-label={t('receipt.image.group')}>
+                        <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onSave} aria-label={t('receipt.image.saveLong')}>
+                            {imageReady ? <Download className="w-4 h-4" aria-hidden="true" /> : <Loader size="xs" />}
+                            <span aria-hidden="true">{t('receipt.image.save')}</span>
+                        </button>
+                        <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onInstagram}>
+                            <InstagramIcon className="w-4 h-4" />
+                            Instagram
+                        </button>
+                        <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onX} aria-label={t('receipt.image.x')}>
+                            <XIcon className="w-4 h-4" />
+                            <span aria-hidden="true">X</span>
+                        </button>
+                    </div>
                 )}
             </Receipt>
         );
