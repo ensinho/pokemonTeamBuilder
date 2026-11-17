@@ -66,10 +66,13 @@ export function puzzleEvents(rows, dayKey) {
 }
 
 /** What a Diário message carried, for the line's wording. */
-const attachmentOf = (message) => (message.sharedPuzzle ? 'puzzle'
-    : message.sharedChallenge ? 'challenge'
-        : message.sharedTeam ? 'team'
-            : null);
+const attachmentOf = (message) => (message.sharedReceipt ? 'receipt'
+    : message.sharedPuzzle ? 'puzzle'
+        : message.sharedChallenge ? 'challenge'
+            : message.sharedQuiz ? 'quiz'
+                : message.sharedTierList ? 'tierlist'
+                    : message.sharedTeam ? 'team'
+                        : null);
 
 /** A friend's messages in a room (the Diário do dia). */
 export function postEvents(messages, topicId, friendIds, dayKey = null) {

@@ -76,6 +76,16 @@ a trainer's key — wiped by `leaveSession`).
   already exist (`game-cover.css`, `rewards.css`) and took the first build's
   cards over (`docs/wounds.md`, 2026-11-15).
 
+## The day's receipt (2026-11-17)
+
+Once any game is played, the Jogos page offers the mascot's **receipt of the
+day** ("O recibo até agora"; at four of four "O recibo do dia", stamped in
+gold): one row per game from what each noted, the count of full days, and
+"Postar no Diário" — `sharedReceipt` (`gameShare.js`, ids and figures,
+`ReceiptShareCard` in the thread). The full day is counted the moment the
+fourth game is marked (`useRoundStore` listens to `ptb:games-today`). The
+rules are mascot.md's "O plantão".
+
 ## The forum
 
 `utils/gameShare.js` (pure, tested): two attachments on a forum message, both
@@ -122,6 +132,8 @@ Each parameter is read once and leaves the URL.
   `prerenderHome.mjs`, `seoSnapshot.js`).
 - A count of how many played the day's quiz / ranked the day's theme (the
   Diário's tally is the only crowd figure for them).
-- A streak of full days (four of four).
-- The mascot's Home note and the daily push still know only the Champion and
-  the puzzle.
+- ~~A streak of full days~~ — built 2026-11-17 as a *count* of full days, never a
+  streak (`roundReceipt.js` `withFullDay`, shown on the day's receipt; a gap takes
+  nothing away). See mascot.md, "O plantão".
+- The daily push still knows only the Champion and the puzzle (the mascot's
+  receipt now names all four).

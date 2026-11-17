@@ -335,10 +335,13 @@ export const useForumStore = create((set, get) => ({
         // boot path, where this store lives).
         let sharedTierList = null;
         let sharedQuiz = null;
-        if (attachments?.sharedTierList || attachments?.sharedQuiz) {
-            const { cleanTierListShare, cleanQuizShare } = await import('../utils/gameShare');
+        let sharedReceipt = null;
+        if (attachments?.sharedTierList || attachments?.sharedQuiz || attachments?.sharedReceipt) {
+            const { cleanTierListShare, cleanQuizShare, cleanReceiptShare } = await import('../utils/gameShare');
             sharedTierList = cleanTierListShare(attachments.sharedTierList);
             sharedQuiz = cleanQuizShare(attachments.sharedQuiz);
+            // The mascot's receipt of the day (2026-11-17, "Fantasminha de plantão").
+            sharedReceipt = cleanReceiptShare(attachments.sharedReceipt);
         }
         if (!db) return false;
         const authState = useAuthStore.getState();
@@ -351,7 +354,7 @@ export const useForumStore = create((set, get) => ({
         }
 
         const cleanText = text.trim();
-        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge && !sharedTierList && !sharedQuiz && !rating) {
+        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge && !sharedTierList && !sharedQuiz && !sharedReceipt && !rating) {
             return false;
         }
 
@@ -415,6 +418,7 @@ export const useForumStore = create((set, get) => ({
                 // Only when there is one: older messages never had the field.
                 ...(sharedTierList ? { sharedTierList } : {}),
                 ...(sharedQuiz ? { sharedQuiz } : {}),
+                ...(sharedReceipt ? { sharedReceipt } : {}),
                 // "Avalie meu time" (2026-11-06, social-heart B4).
                 ...(['ready', 'almost', 'train'].includes(rating) ? { rating } : {}),
                 // A day's result the diary could not take (postToDiary).
@@ -444,7 +448,8 @@ export const useForumStore = create((set, get) => ({
                         : (sharedPuzzle ? 'PokéPuzzle result'
                             : sharedChallenge ? 'Champion Challenge result'
                                 : sharedTierList ? 'Tier list'
-                                    : sharedQuiz ? 'Quiz result' : 'Battle invite'))
+                                    : sharedQuiz ? 'Quiz result'
+                                        : sharedReceipt ? "The day's receipt" : 'Battle invite'))
             });
 
             // The Pokégear: a reply, a mention or a comment on someone's post
@@ -455,7 +460,7 @@ export const useForumStore = create((set, get) => ({
             }
             forumBeat('commented');
             track(replyRef ? 'forum_reply' : 'forum_post', {
-                kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : sharedTierList ? 'tierlist' : sharedQuiz ? 'quiz' : battleInvite ? 'invite' : 'text',
+                kind: serializedAttachedTeam ? 'team' : sharedPuzzle ? 'puzzle' : sharedChallenge ? 'challenge' : sharedTierList ? 'tierlist' : sharedQuiz ? 'quiz' : sharedReceipt ? 'receipt' : battleInvite ? 'invite' : 'text',
             });
             // The id is truthy, so callers that read a boolean keep working.
             return messageRef.id;

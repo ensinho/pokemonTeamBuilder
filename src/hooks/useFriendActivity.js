@@ -5,6 +5,7 @@ import { useFriendsStore } from '../store/useFriendsStore';
 import { useForumStore } from '../store/useForumStore';
 import { useCenterPolling, useCenterStore } from '../store/useCenterStore';
 import { buildFriendActivity, centerCounts, friendsActiveToday } from '../utils/friendActivity';
+import { meadowRoster } from '../utils/meadow';
 import { dayKeyAt } from '../utils/challengeDay';
 import { localDayKey } from '../utils/dailyCheckin';
 import { diaryTopicId } from '../utils/forumDiary';
@@ -51,6 +52,14 @@ export function useFriendActivity({ myPuzzle = null } = {}) {
     }), [realFriends, uid, ranks, puzzles, posts, topics, today, myWon, myGuesses]);
 
     const activeToday = useMemo(() => friendsActiveToday(events, [today, braToday]), [events, today, braToday]);
+    // The meadow (2026-11-17): every friend's day, not just the latest lines,
+    // so a quiet friend's morning puzzle still wakes their ghost.
+    const meadow = useMemo(() => meadowRoster({
+        friends: realFriends,
+        events: buildFriendActivity({ friends: realFriends, selfUid: uid, ranks, puzzles, posts, topics: [], today, limit: 1000 }),
+        todayKeys: [today, braToday],
+        max: 1000,
+    }), [realFriends, uid, ranks, puzzles, posts, today, braToday]);
     const counts = useMemo(() => centerCounts({ puzzleDay, ranks: todayRanks }), [puzzleDay, todayRanks]);
     const diaryTopic = useMemo(() => topics.find((tp) => tp.id === diaryTopicId(braToday)) || null, [topics, braToday]);
     const weeklyTopic = useMemo(() => topics.find((tp) => tp.id === weeklyTopicId(currentWeekKey())) || null, [topics]);
@@ -58,6 +67,7 @@ export function useFriendActivity({ myPuzzle = null } = {}) {
     return {
         events,
         activeToday,
+        meadow,
         counts,
         diaryTopic,
         diaryTopicId: diaryTopicId(braToday),

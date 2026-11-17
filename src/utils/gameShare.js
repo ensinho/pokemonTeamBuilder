@@ -88,3 +88,54 @@ export function cleanTierListShare(share) {
     const read = readTierListShare(share);
     return read ? { v: 1, code: read.code } : null;
 }
+
+// ── The day's receipt ───────────────────────────────────────────────────────
+// `sharedReceipt` (2026-11-17, "Fantasminha de plantão"): the four games of a
+// day as the mascot's receipt — which were played, the figures each one
+// noted, the theme's id, and how many full days the trainer has had.
+// `{ v: 1, day, games: [...], challenge, puzzle, quiz, tier, full }`.
+
+const DAY_KEY = /^\d{4}-\d{1,2}-\d{1,2}$/;
+const THEME_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
+const RECEIPT_GAMES = ['challenge', 'pokepuzzle', 'quiz', 'tierList'];
+const int = (value, max) => (Number.isInteger(value) && value >= 0 && value <= max ? value : null);
+
+/** A `sharedReceipt` checked and clamped — what Firestore gets and what a reader draws. */
+export function cleanReceiptShare(share) {
+    if (!share || share.v !== 1 || !DAY_KEY.test(share.day || '')) return null;
+    const games = Array.isArray(share.games) ? RECEIPT_GAMES.filter((game) => share.games.includes(game)) : [];
+    if (!games.length) return null;
+    const c = share.challenge;
+    const p = share.puzzle;
+    const q = share.quiz;
+    const challenge = games.includes('challenge') && c && typeof c === 'object'
+        ? { won: c.won === true, turns: int(c.turns, 999) }
+        : null;
+    const puzzle = games.includes('pokepuzzle') && p && typeof p === 'object'
+        ? { solved: p.solved === true, attempts: int(p.attempts, 99) }
+        : null;
+    const quizTotal = q && int(q.total, MAX_CATEGORY_TOTAL);
+    // more found than there are is a forged figure, not a rounding: refused, like readQuizShare
+    const quizFound = quizTotal ? int(q.found, quizTotal) : null;
+    const quiz = games.includes('quiz') && quizTotal && quizFound !== null
+        ? { found: quizFound, total: quizTotal }
+        : null;
+    const tier = games.includes('tierList') && THEME_ID.test(share.tier || '') ? share.tier : null;
+    return { v: 1, day: share.day, games, challenge, puzzle, quiz, tier, full: int(share.full, 100000) ?? 0 };
+}
+
+/** The attachment for a day, or null when nothing was played. */
+export function buildReceiptShare({ day, done = {}, challenge = null, puzzle = null, quiz = null, tier = null, full = 0 }) {
+    return cleanReceiptShare({
+        v: 1,
+        day,
+        games: RECEIPT_GAMES.filter((game) => done[game]),
+        challenge,
+        puzzle,
+        quiz,
+        tier,
+        full,
+    });
+}
+
+export const readReceiptShare = cleanReceiptShare;

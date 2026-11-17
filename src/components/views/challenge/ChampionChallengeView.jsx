@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Clock, Crown, FastForward, Flame, Music, Trophy, Volume2, VolumeX,
+    Clock, Crown, FastForward, Flame, GalleryHorizontal, Music, Trophy, Volume2, VolumeX,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -49,6 +49,8 @@ import { useWeeklyRecap } from '../../../hooks/useWeeklyRecap';
 
 // Last week's podium: its own chunk, fetched the first time it opens.
 const WeeklyRecapDialog = lazy(() => import('./WeeklyRecapDialog'));
+// The battle's comic strip, by the mascot (2026-11-17, "Fantasminha de plantão").
+const BattleStripDialog = lazy(() => import('./BattleStripDialog'));
 
 /**
  * `/challenge` — the daily battle against the Champion, in a DS console
@@ -87,6 +89,7 @@ export function ChampionChallengeView() {
 
     const [stage, setStage] = useState('arena');
     const [showRanks, setShowRanks] = useState(false);
+    const [showStrip, setShowStrip] = useState(false);
     const [showRecap, setShowRecap] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     // Sound, music and speed — the bar's switches, unlocked by the first press.
@@ -390,6 +393,12 @@ export function ChampionChallengeView() {
             {/* After today's win: the moment tomorrow's team is worth a nudge. */}
             <ReminderOffer variant="chip" topic="challenge" active={challenge.run?.status === 'won' && !challenge.run?.practice} />
             {/* From the daily duel to a friend's (2026-11-06, social-heart C5). */}
+            {stage === 'result' && challenge.run?.lines?.length > 0 && (
+                <button type="button" className="ds-chip is-button" onClick={() => setShowStrip(true)}>
+                    <GalleryHorizontal className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                    <span>{t('challenge.strip.chip')}</span>
+                </button>
+            )}
             {stage === 'result' && !isAnonymous && (
                 <Link to="/battles?new=1" className="ds-chip is-button">{t('challenge.result.challengeFriend')}</Link>
             )}
@@ -463,10 +472,27 @@ export function ChampionChallengeView() {
     const ranksRail = railsOn && (
         <ChallengeRanking key={championId} ranksByChampion={challenge.ranksByChampion} championId={championId} defaultBoard={defaultBoard} stats={recordStats} onOpenRecap={weeklyRecap.hasRecap ? openRecap : null} />
     );
-    const recapDialog = showRecap && weeklyRecap.recaps && (
-        <Suspense fallback={null}>
-            <WeeklyRecapDialog weekKey={weeklyRecap.weekKey} recaps={weeklyRecap.recaps} championId={championId} onClose={() => setShowRecap(false)} />
-        </Suspense>
+    const recapDialog = (
+        <>
+            {showRecap && weeklyRecap.recaps && (
+                <Suspense fallback={null}>
+                    <WeeklyRecapDialog weekKey={weeklyRecap.weekKey} recaps={weeklyRecap.recaps} championId={championId} onClose={() => setShowRecap(false)} />
+                </Suspense>
+            )}
+            {showStrip && challenge.run && (
+                <Suspense fallback={null}>
+                    <BattleStripDialog
+                        run={challenge.run}
+                        championId={championId}
+                        championName={championName}
+                        dayKey={challenge.dayKey}
+                        difficulty={challenge.day?.difficulty}
+                        streak={challenge.stats?.streak || 0}
+                        onClose={() => setShowStrip(false)}
+                    />
+                </Suspense>
+            )}
+        </>
     );
     const railsWith = (start) => (railsOn ? { mode: railMode, start, end: ranksRail } : null);
 

@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { Check, ChevronRight, CircleHelp, Crown, Layers, MessageCircle, Puzzle, Rows3, ShieldHalf } from 'lucide-react';
+import { Check, ChevronRight, CircleHelp, Crown, Layers, MessageCircle, Puzzle, ReceiptText, Rows3, ShieldHalf } from 'lucide-react';
 
 import { useAuthStore } from '../../store/useAuthStore';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -23,10 +23,13 @@ import { CHAMPION_IDS } from '../../utils/challengeChampions';
 import { CHAMPION_FACES } from '../../utils/championFaces';
 import { diaryTopicId, todayDiaryKey } from '../../utils/forumDiary';
 import { navHue } from '../../utils/navHue';
+import { useRoundStore } from '../../store/useRoundStore';
 import '../../styles/games-hub.css';
 
 // "Hoje no Centro": the Home's own card (it polls the day's public counters).
 const CenterToday = lazy(() => import('../home/CenterToday').then((m) => ({ default: m.CenterToday })));
+// The friends' meadow (2026-11-17): their ghosts, awake once they played today.
+const Meadow = lazy(() => import('../social/Meadow').then((m) => ({ default: m.Meadow })));
 
 /*
  * Jogos (`/games`, 2026-11-15 — Enzo: "facilitar achar eles… que joguem os
@@ -209,6 +212,14 @@ export function GamesView() {
         },
     };
 
+    // The day's receipt (2026-11-17): what the opener already holds goes with it.
+    const openReceipt = useRoundStore((s) => s.openReceipt);
+    const openDayReceipt = () => openReceipt('day', {
+        // the outcome only when the Champion's summary says it; otherwise the row reads "jogado"
+        challenge: done.challenge && plan ? { won: beaten } : null,
+        puzzle: done.pokepuzzle && puzzle.summary ? { solved: Boolean(puzzle.summary.solved), attempts: puzzle.summary.attempts || 0 } : null,
+    });
+
     const locale = language === 'pt' ? 'pt-BR' : 'en-GB';
     const dateLine = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(now));
     const left = tally.total - tally.played;
@@ -237,6 +248,16 @@ export function GamesView() {
                                 : t('gamesHub.day.sub')}
                             <span className="games-day__reset">{t('gamesHub.day.resets', { time: clock })}</span>
                         </p>
+                        {tally.played > 0 && (
+                            <button
+                                type="button"
+                                className={`btn btn-sm games-day__receipt ${tally.complete ? 'btn-primary' : 'btn-ghost'}`}
+                                onClick={openDayReceipt}
+                            >
+                                <ReceiptText aria-hidden="true" />
+                                {t(tally.complete ? 'gamesHub.day.receiptFull' : 'gamesHub.day.receipt')}
+                            </button>
+                        )}
                     </div>
                     <ol className="games-day__belt" aria-label={t('nav.gamesDone', { n: tally.played, total: tally.total })}>
                         {DAILY_GAMES.map((game) => (
@@ -315,7 +336,10 @@ export function GamesView() {
 
             <aside className="games-page__rail">
                 <Suspense fallback={null}>
-                    <CenterToday variant="rail" />
+                    <Meadow />
+                </Suspense>
+                <Suspense fallback={null}>
+                    <CenterToday variant="rail" friends={false} />
                 </Suspense>
             </aside>
         </main>

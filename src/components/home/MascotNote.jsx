@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { MascotFace } from '../Mascot';
+import { useRoundStore } from '../../store/useRoundStore';
 
 /**
  * The mascot's note of the day (2026-11-10): his face is the readout, the
@@ -17,6 +18,7 @@ import { MascotFace } from '../Mascot';
  */
 export function MascotNote({ note, onOpenStreak, face = true }) {
     const { t } = useTranslation();
+    const openReceipt = useRoundStore((s) => s.openReceipt);
     if (!note) return null;
 
     const inner = (
@@ -24,10 +26,14 @@ export function MascotNote({ note, onOpenStreak, face = true }) {
             {/* the greeting's circle shows him now (face={false}); elsewhere the sticker */}
             {face && <MascotFace mood={note.mood} size="xs" className="mascot-note__face" />}
             <span className="mascot-note__text">{t(`mascot.note.${note.id}`, { n: note.n })}</span>
-            {(note.to || note.action === 'streak') && <ChevronRight className="mascot-note__go" aria-hidden="true" />}
+            {(note.to || note.action) && <ChevronRight className="mascot-note__go" aria-hidden="true" />}
         </>
     );
     if (note.to) return <Link to={note.to} className="mascot-note" data-note={note.id}>{inner}</Link>;
+    // The round's receipt (2026-11-17): the line hands it over.
+    if (note.action === 'receipt') {
+        return <button type="button" className="mascot-note" data-note={note.id} onClick={() => openReceipt('morning')}>{inner}</button>;
+    }
     if (note.action === 'streak') {
         return <button type="button" className="mascot-note" data-note={note.id} onClick={onOpenStreak}>{inner}</button>;
     }

@@ -36,6 +36,7 @@ import { Loader } from '../Loader';
 import { MascotCompanion } from '../MascotCompanion';
 import { useMascotBeat } from '../../hooks/useMascotBeat';
 import { DecryptText } from '../DecryptText';
+import { PixelReveal } from '../mascot/PixelReveal';
 import { TypeChip } from '../TypeChip';
 import { GameHistoryDialog } from '../GameHistoryDialog';
 import { ReminderOffer } from '../ReminderOffer';
@@ -557,7 +558,8 @@ export default function PokePuzzleView() {
     const requestHint = () => {
         if (nextHint < 0) return;
         addHint(nextHint);
-        emitBeat('hint');
+        // He holds up the sign with the letter (2026-11-17, "Fantasminha de plantão").
+        emitBeat('hint', { letter: targetNormalized[nextHint] });
         setHintNote(t('pokepuzzle.hint.revealed', { pos: nextHint + 1, letter: targetNormalized[nextHint].toUpperCase() }));
         track('puzzle_hint', { mode, n: hints.length + 1 });
     };
@@ -1419,7 +1421,9 @@ export default function PokePuzzleView() {
 
                                     <div className="pokepuzzle-result-entry">
                                     <div className="pokepuzzle-result-sprite-box">
-                                        <img
+                                        {/* A win just made resolves from pixels to the artwork (2026-11-17). */}
+                                        <PixelReveal
+                                            play={solvedNow && isWon}
                                             src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
                                             alt={formatPokemonDisplayName(targetPokemon.name)}
                                             width="85"

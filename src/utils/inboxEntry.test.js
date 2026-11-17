@@ -15,3 +15,9 @@ describe('describeInboxEntry', () => {
         expect(describeInboxEntry({ kind: 'passed', fromName: 'Bia', champion: 'blue' }).to).toBe('/challenge?champion=blue');
     });
 });
+
+describe('a poke (the meadow, 2026-11-17)', () => {
+    it("names who poked and goes to the day's games", () => {
+        expect(describeInboxEntry({ kind: 'poke', fromName: 'Ana' })).toEqual({ key: 'pokegear.poke', params: { name: 'Ana' }, to: '/games' });
+    });
+});

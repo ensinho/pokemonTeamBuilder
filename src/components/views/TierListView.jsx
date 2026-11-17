@@ -6,6 +6,7 @@ import { BottomSheet } from '../BottomSheet';
 import { Loader } from '../Loader';
 import { NextGameCard } from '../NextGameCard';
 import { DiaryShareButton } from '../DiaryShareButton';
+import { TierOpinion } from '../tierList/TierOpinion';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
@@ -766,6 +767,9 @@ export function TierListView() {
                     <span>{t('tierList.restart')}</span>
                 </button>
             </div>
+
+            {/* His opinion on a complete themed list (2026-11-17). */}
+            {complete && !isChart && board.templateId !== 'free' && mons && <TierOpinion board={board} monsById={monsById} />}
 
             <NextGameCard game="challenge" from="tierList" />
 

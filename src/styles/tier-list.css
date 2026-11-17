@@ -961,3 +961,47 @@
         animation: none;
     }
 }
+
+/* ── His opinion (2026-11-17, "Fantasminha de plantão" — TierOpinion.jsx) ──
+   One card: his face, how much the lists agree as a figure and a split bar,
+   the Pokémon they disagree on most, his method, his list on request. */
+.tier-opinion {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+.tier-opinion__face { flex: none; }
+.tier-opinion__text { display: grid; gap: var(--space-2); min-width: 0; }
+.tier-opinion__title { margin: 0; font-size: var(--text-base); font-weight: 600; }
+.tier-opinion__line { margin: 0; color: var(--color-muted); }
+.tier-opinion__line strong { color: var(--color-fg); }
+.tier-opinion__bar {
+    display: block;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--type-psychic, #F95587) 55%, var(--color-surface-raised));
+    overflow: hidden;
+}
+.tier-opinion__same {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: color-mix(in srgb, var(--type-grass, #7AC74C) 80%, var(--color-fg));
+    transform: scaleX(var(--share, 0));
+    transform-origin: left;
+    transition: transform var(--duration-glide) var(--ease-glide);
+}
+.tier-opinion__worst,
+.tier-opinion__method { margin: 0; font-size: var(--text-sm); color: var(--color-muted); }
+.tier-opinion__method { font-size: var(--text-xs); }
+.tier-opinion__toggle { justify-self: start; }
+.tier-opinion__toggle[aria-expanded="true"] svg { rotate: 180deg; }
+.tier-opinion__list { display: grid; gap: var(--space-1); margin: 0; font-size: var(--text-sm); }
+.tier-opinion__list > div { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: var(--space-2); }
+.tier-opinion__list dt { font: 700 var(--text-sm)/1.4 var(--font-mono); color: var(--color-fg); }
+.tier-opinion__list dd { margin: 0; color: var(--color-muted); }

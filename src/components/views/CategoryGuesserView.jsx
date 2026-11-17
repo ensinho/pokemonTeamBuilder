@@ -64,6 +64,8 @@ import { toast } from '../../store/useToastStore';
 import { confirmAction } from '../../store/useConfirmStore';
 import { nudgeSupport, cancelSupportNudge } from '../../services/supportNudge';
 import { track } from '../../services/analytics';
+import { loadStaticData } from '../../services/staticData';
+import { mimeFor, pickMime } from '../../utils/mascot/mime';
 import { NextGameCard } from '../NextGameCard';
 import { DiaryShareButton } from '../DiaryShareButton';
 import { useDiaryShare } from '../../hooks/useDiaryShare';
@@ -638,6 +640,27 @@ export function CategoryGuesserView({ showDetails }) {
         }
     }, [activeRun, getRandomUnplayedListId, categoryListMap, startNewRun, resumeRun, language, t]);
 
+    // The mascot's mime (2026-11-17, "Fantasminha de plantão"): once a run he
+    // imitates one of the missing — the type's colour and gesture, and the
+    // figures (height, generation) under him. A free lifeline, never a name.
+    const [mime, setMime] = useState(null);
+    const mimeUsed = Boolean(mime && mime.runId === activeRun?.id);
+    const askMime = useCallback(async () => {
+        if (!activeRun || mimeUsed || remainingPokemon.length === 0) return;
+        const name = pickMime(remainingPokemon.map((p) => p.name), `${activeRun.id}:${foundNames.size}`);
+        const entry = pokemonByName.get(name) || null;
+        let dex = null;
+        try {
+            const data = await loadStaticData('battle-dex.json');
+            const row = data?.species?.[String(name).toLowerCase().replace(/[^a-z0-9]/g, '')];
+            if (Array.isArray(row)) dex = { height: row[4] };
+        } catch { /* the line goes without the height */ }
+        const look = mimeFor(entry || {}, dex);
+        setMime({ runId: activeRun.id, look });
+        emitBeat('mime', { mime: look });
+        track('mime_ask', { list: activeRun.id });
+    }, [activeRun, mimeUsed, remainingPokemon, foundNames, pokemonByName, emitBeat]);
+
     const handleManualHint = useCallback(() => {
         if (availableHints <= 0 || remainingPokemon.length === 0) return;
         const randomPokemon = remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
@@ -876,6 +899,19 @@ export function CategoryGuesserView({ showDetails }) {
                                 </p>
                             </div>
 
+                            {mimeUsed && (
+                                <div className="generation-quiz__tip-banner quiz-mime">
+                                    <Ghost className="w-4 h-4" aria-hidden="true" />
+                                    <span className="generation-quiz__tip-text">
+                                        {[
+                                            t('quiz.mime.type', { type: t(`types.${mime.look.type}`) }),
+                                            mime.look.height ? t('quiz.mime.height', { m: mime.look.height.toLocaleString(language === 'pt' ? 'pt-BR' : 'en-GB') }) : null,
+                                            mime.look.gen ? t('quiz.mime.gen', { n: mime.look.gen }) : null,
+                                        ].filter(Boolean).join(' · ')}
+                                    </span>
+                                </div>
+                            )}
+
                             {manualHint && (
                                 <div className="generation-quiz__tip-banner">
                                     <HelpCircle className="w-4 h-4" aria-hidden="true" />
@@ -893,6 +929,15 @@ export function CategoryGuesserView({ showDetails }) {
                                 <Sparkles className="text-accent" aria-hidden="true" />
                                 <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
                                 <span className="count-badge">{availableHints}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={askMime}
+                                className="btn btn-ghost btn-block"
+                                disabled={mimeUsed || remainingPokemon.length === 0 || isOver}
+                            >
+                                <Ghost aria-hidden="true" />
+                                <span>{t(mimeUsed ? 'quiz.mime.used' : 'quiz.mime.ask')}</span>
                             </button>
                         </section>
                     </aside>

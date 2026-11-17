@@ -261,6 +261,14 @@ const MascotSection = () => {
                 label={t('profile.mascotReactions')}
                 description={t('profile.mascotReactionsDesc')}
             />
+            {/* The meadow (2026-11-17): friends see this tone and costume on the trainer's ghost. */}
+            <Switch
+                variant="row"
+                checked={prefs.share}
+                onChange={(next) => setPrefs({ share: next })}
+                label={t('profile.mascotShare')}
+                description={t('profile.mascotShareDesc')}
+            />
         </Section>
     );
 };

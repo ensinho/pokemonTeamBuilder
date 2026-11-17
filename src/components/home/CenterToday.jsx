@@ -23,7 +23,7 @@ const STACK = 4;
  * `variant="rail"` is the desktop rail's narrow card (two lines of activity);
  * `"full"` is the Community tab (five).
  */
-export function CenterToday({ variant = 'full', myPuzzle = null }) {
+export function CenterToday({ variant = 'full', myPuzzle = null, friends = true }) {
     const { t } = useTranslation();
     const {
         events, activeToday, counts, diaryTopic, diaryTopicId, weeklyTopic, isGuest, hasFriends, isLoaded,
@@ -105,7 +105,8 @@ export function CenterToday({ variant = 'full', myPuzzle = null }) {
                 })}
             </ul>
 
-            {friendsLine}
+            {/* the meadow beside it already shows who played today (2026-11-17) */}
+            {friends && friendsLine}
 
             {lines.length > 0 && <FriendActivityList events={lines} compact={isRail} />}
 

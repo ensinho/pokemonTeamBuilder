@@ -16,6 +16,8 @@ import '../../styles/champion-day.css';
 import { BrandWordmark } from '../BrandWordmark';
 import { LogoMark } from '../LogoMark';
 import { Mascot } from '../Mascot';
+import { ReceiptRow, ReceiptStamp } from '../mascot/Receipt';
+import { PixelScene } from '../mascot/PixelScene';
 import { SOCIAL_HANDLE, SOCIAL_LINKS } from '../../constants/social';
 import { POKEAPI_SPRITES_BASE } from '../../utils/assetHost';
 
@@ -190,6 +192,27 @@ const TierListVisual = () => (
 
 // The day's belt (1.27.0): four games, the first two already caught.
 const GAMES_DAY = [['Campeã', 'Champion', true], ['Puzzle', 'Puzzle', true], ['Quiz', 'Quiz', false], ['Tier list', 'Tier list', false]];
+// 1.28.0 — "Fantasminha de plantão": the round's receipt on its pixel morning.
+const MascotShiftVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="relative h-[9.5rem] overflow-hidden bg-bg" aria-hidden="true">
+            <PixelScene kind="morning" seed={5} className="absolute inset-0 h-full w-full" />
+            <div className="relative flex h-full items-center justify-center gap-3 p-3">
+                <Mascot size="lg" mood="feliz" pose="analisando" framing="body" seasonal={false} />
+                <div className="receipt-share__paper w-44">
+                    <ul className="receipt__rows">
+                        <ReceiptRow label="Champion" value={pt ? 'time novo' : 'new team'} />
+                        <ReceiptRow label="PokéPuzzle" value={pt ? 'aberto' : 'open'} />
+                        <ReceiptRow label={pt ? 'Sua liga · Bia' : 'Your league · Bia'} value={pt ? 'te passou' : 'passed you'} bold />
+                    </ul>
+                </div>
+                <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={pt ? 'Dia completo' : 'Full day'} word={pt ? '4 de 4' : '4 of 4'} />
+            </div>
+        </div>
+    );
+};
+
 const GamesDayVisual = ({ language }) => (
     <div className="flex h-[9.5rem] items-center justify-center gap-4 bg-bg p-3" aria-hidden="true">
         {GAMES_DAY.map(([pt, en, caught]) => (
@@ -830,6 +853,7 @@ const NOTE_ICONS = {
 
 const NOTE_VISUALS = {
     gamesDay: GamesDayVisual,
+    mascotShift: MascotShiftVisual,
     tierList: TierListVisual,
     brand: BrandVisual,
     champions: ChampionsDexVisual,

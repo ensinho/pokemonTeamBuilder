@@ -31,6 +31,13 @@ the persona journeys' chapter 2 walking each trainer in.
 | **Hoje no Centro** (2026-11-09) | `home/CenterToday.jsx`, `hooks/useFriendActivity.js`, `store/useCenterStore.js` | Home (desktop rail under the check-in, phone after the day's cards, the Community tab in full): three doors with the day's crowd (puzzle `total`, both champions' `played`, the Diário's `messageCount`), the friends who played today, their last lines, the week's Torneio. Numbers are `RollingNumber`s. |
 | **Atividade dos amigos** (2026-11-09) | `utils/friendActivity.js` (pure, tested), `social/FriendActivityList.jsx`, `social/FriendActivityTab.jsx` | The Friends page's first tab: "Jogaram hoje" faces, then Hoje / Ontem / Antes. Events from the Champion boards, friends' puzzle rows, their Diário messages, topics they opened, a streak milestone reached today, a friendship this week. Each line goes where it happened; a line arriving later slides in once. |
 
+## The meadow and the poke (2026-11-17, "Fantasminha de plantão")
+
+| Feature | Where | Notes |
+|---|---|---|
+| **A campina** | `social/Meadow.jsx`, `utils/meadow.js` (pure, tested), `components/mascot/PixelScene.jsx` | The friends as ghosts in a pixel field at dusk — the tone and costume each picked (`publicProfiles.mascot = { tone, hat }`, resolved by `publicMascot()` in useAuthStore; Profile → Aparência → "Mostrar meu tom e traje aos amigos" turns it off). Awake with the day's pips once they played (a Champion board, a puzzle row, a Diário post with a quiz, a tier list or a day's receipt — `useFriendActivity().meadow`, the Centre's own reads); dozing otherwise. On /games (beside "Hoje no Centro", whose friends row steps aside) and at the top of Amigos → Atividade (it replaced the "Jogaram hoje" faces). No count of who did not play. |
+| **Cutucar** | `Meadow.jsx` → `notifySocial({ kind: 'poke', to })`, `api/_lib/socialNotify.js` `notifyPoke` | Only between friends (the friendship doc is checked), once per pair per day (`users/{to}/inbox/poke_{from}` carries the Champion's day), never oneself. The Pokégear line goes to /games; push on the opt-in `social` topic (`socialPoke`). The device remembers today's pokes (`ptb:pokes`, a trainer key). |
+
 ## Invariants
 
 - **The Center polls, it doesn't listen** (`useCenterStore`): a read on mount, every 2 min while the tab is visible, on coming back to it, never twice within 30 s for the same friend list; yesterday is read once. A listener on counters every finished run moves would bill one read per run per open Home. Nothing new is stored — every source was already public (rules unchanged).

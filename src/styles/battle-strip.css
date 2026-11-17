@@ -1,0 +1,39 @@
+/* ============================================================
+   The mascot's comic strip of a battle (2026-11-17, "Fantasminha de
+   plantão" — components/BattleStrip.jsx). Three panels in a row, the
+   comic's own device: a frame each, his face in it, the battle's line
+   under it. App UI (never inside a .ds-screen).
+   ============================================================ */
+
+.battle-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.battle-strip__panel {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    min-width: 0;
+}
+.battle-strip__lines {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    font: 500 var(--text-xs)/1.4 var(--font-mono);
+    color: var(--color-fg);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.battle-strip--compact { margin-top: var(--space-3); }
+.battle-strip--compact .battle-strip__panel { padding: var(--space-2) var(--space-1_5); }
+.battle-strip--compact .battle-strip__lines { font-size: 0.68rem; }
+.battle-strip__empty { margin: 0; color: var(--color-muted); }
+.battle-strip-dialog { max-width: 36rem; }

@@ -203,3 +203,24 @@ describe('the game companion', () => {
         expect(battleBeat(null)).toBeNull();
     });
 });
+
+describe('the mascot on duty (2026-11-17)', () => {
+    it("hands over the round's receipt as the day's first line, after a friend waiting", () => {
+        expect(homeNote({ hour: 9, receipt: true, puzzle: 'open' })).toMatchObject({ id: 'receipt', action: 'receipt' });
+        expect(homeNote({ hour: 9, receipt: true, battlesWaiting: 1 }).id).toBe('battleOne');
+        expect(homeNote({ hour: 9, receipt: false, puzzle: 'open' }).id).toBe('puzzle');
+        expect(homeNote({ hour: 9, receipt: true, isNew: true })).toBe(null);
+    });
+
+    it('holds up the sign with the letter for a hint', () => {
+        expect(gameBeat('hint', { letter: 'r' })).toMatchObject({ pose: 'segurandoPlaca', extra: { signText: 'R' }, framing: 'body' });
+        expect(gameBeat('hint').pose).toBeUndefined();
+        expect(gameBeat('hint', { letter: '<b>' }).pose).toBeUndefined();
+    });
+
+    it("mimes with the type's colour and gesture, and never celebrates it", () => {
+        expect(gameBeat('mime', { mime: { mood: 'confiante', pose: 'segurandoChama', tone: 'fire' } })).toMatchObject({ mood: 'confiante', pose: 'segurandoChama', tone: 'fire', framing: 'body' });
+        expect(gameBeat('mime', {})).toBe(null);
+        expect(GAME_BEATS.mime.play).not.toBe('celebrate');
+    });
+});

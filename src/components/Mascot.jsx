@@ -70,7 +70,8 @@ export function Mascot({
 
     const px = MASCOT_SIZES[size] ?? (size === 'fill' ? 240 : 48);
     const view = VIEWS[framing] || (playground ? VIEWS.wide : px <= 64 ? VIEWS.head : VIEWS.body);
-    const tone = toneProp ?? toneOf(prefs, trainerProfile);
+    // `tone="brand"` forces the brand's violet (a friend's ghost that has no colour of its own)
+    const tone = toneProp === 'brand' ? null : (toneProp ?? toneOf(prefs, trainerProfile));
     const playName = play || (cheer ? 'hop' : null);
     const live = interactive || stage || playground || (isBot && Boolean(playName || coverable));
     const bodyReady = !isBot || Boolean(botMod);
