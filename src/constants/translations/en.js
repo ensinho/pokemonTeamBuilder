@@ -79,6 +79,21 @@ export default {
         shareTitle: "The day's receipt",
         shareFull: '{{n}} full days',
         sharePlay: "Play today's",
+        // The day's receipt as an image (2026-11-17): save, Instagram, X.
+        image: {
+            group: 'Share the receipt as an image',
+            save: 'Save',
+            saveLong: 'Save the receipt image',
+            x: 'Share on X',
+            kicker: "Today's games",
+            play: "Play today's",
+            post: "I played {{n}} of {{total}} of today's games on PokemonBuilder. The little ghost brought the receipt 👻",
+            postFull: "Full day: all 4 of today's games on PokemonBuilder. The little ghost stamped it gold 👻🏆",
+            saved: 'Receipt image saved',
+            savedForInstagram: 'Image saved — just post it on Instagram',
+            copiedForX: 'Image copied — paste it into your X post',
+            error: "Couldn't make the image",
+        },
     },
     island: {
         day: {
