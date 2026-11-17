@@ -12,6 +12,9 @@ import { SHOWDOWN_SPRITES_BASE } from './assetHost';
 
 const speciesOf = (details) => String(details || '').split(',')[0].trim();
 
+/** `|-heal|p1: Samurott|80/160|[from] move: Revival Blessing` — a fainted Pokémon brought back. */
+const isRevival = (parts) => parts[1] === '-heal' && parts.some((part) => /Revival Blessing/i.test(part));
+
 const lastRequest = (lines) => {
     for (let i = lines.length - 1; i >= 0; i -= 1) {
         if (!lines[i].startsWith('|request|')) continue;
@@ -62,6 +65,8 @@ export const championRoster = (lines = [], lineup = []) => {
         } else if (parts[1] === 'faint' && parts[2]?.startsWith('p2')) {
             const species = seen.get(parts[2].split(': ')[1]);
             if (species) fainted.add(species);
+        } else if (isRevival(parts) && parts[2]?.startsWith('p2')) {
+            fainted.delete(seen.get(parts[2].split(': ')[1]));
         }
     }
     const seenSpecies = new Set(seen.values());
@@ -122,6 +127,8 @@ export const faintedSpecies = (lines = [], side = 'p1') => {
         } else if (parts[1] === 'faint' && parts[2]?.startsWith(side)) {
             const species = names.get(parts[2].split(': ')[1]);
             if (species) fainted.add(species);
+        } else if (isRevival(parts) && parts[2]?.startsWith(side)) {
+            fainted.delete(names.get(parts[2].split(': ')[1]));
         }
     }
     return fainted;

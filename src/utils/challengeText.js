@@ -73,6 +73,7 @@ export const eventText = (event, { t, mySide = 'p1', championName, foeSimName = 
             const item = fromItem(event.from);
             if (item) return say(event.heal ? 'challenge.text.healItem' : 'challenge.text.hurtItem', { item });
             const source = event.from.replace(/^(move|ability):\s*/, '');
+            if (source === 'Revival Blessing') return say('challenge.text.revived');
             if (STATUSES.has(source)) return say(`challenge.text.hurtStatus.${source === 'tox' ? 'psn' : source}`);
             if (source === 'Recoil' || source === 'recoil') return say('challenge.text.recoil');
             if (event.heal) return say('challenge.text.healed');

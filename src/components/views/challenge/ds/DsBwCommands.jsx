@@ -190,7 +190,7 @@ function PartySheet({ cmd, sheet }) {
     const shown = sheet[cmd.member];
     const send = cmd.switchable && (
         <button type="button" className="bw-btn is-pokemon bw-party__send" onClick={() => cmd.chooseSwitch(cmd.switchable)}>
-            {t('challenge.sheet.switchIn', { name: shown?.species || cmd.switchable.name })}
+            {t(cmd.reviving ? 'challenge.sheet.revive' : 'challenge.sheet.switchIn', { name: shown?.species || cmd.switchable.name })}
         </button>
     );
 
@@ -212,7 +212,7 @@ function PartySheet({ cmd, sheet }) {
             <div className="bw-party__foot">
                 {send || (
                     <p className="bw-party__prompt" role="status">
-                        {t(cmd.forced ? 'challenge.command.chooseWho' : 'challenge.sheet.choose')}
+                        {t(cmd.reviving ? 'challenge.command.chooseRevive' : cmd.forced ? 'challenge.command.chooseWho' : 'challenge.sheet.choose')}
                     </p>
                 )}
                 <button type="button" className="bw-cancel bw-party__summary" onClick={() => { play('confirm'); setSummary(true); }} disabled={!shown}>
