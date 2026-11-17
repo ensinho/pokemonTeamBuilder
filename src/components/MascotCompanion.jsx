@@ -41,9 +41,12 @@ export function MascotCompanion({ beat: own, listen = false, rest = 'feliz', res
     return (
         <Mascot
             size={size}
-            framing={framing}
+            // a beat may need his body (a sign held up, a mime's prop) and a colour (a mime's type)
+            framing={held?.framing || framing}
             mood={held?.mood || rest}
             pose={held?.pose || restPose}
+            extra={held?.extra}
+            tone={held?.tone}
             play={beat?.play}
             playKey={beat?.id}
             interactive

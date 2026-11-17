@@ -5,6 +5,7 @@ import { Crown } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { CHAMPION_NAMES, difficultyLabel } from '../utils/challengeChampions';
 import { readChallengeShare } from '../utils/challengeShare';
+import { BattleStrip } from './BattleStrip';
 
 /**
  * A Champion Challenge result inside a forum message: the day, the outcome
@@ -66,6 +67,8 @@ export function ChallengeShareCard({ share }) {
                     {t('forum.challengePlay')}
                 </button>
             </div>
+            {/* The battle as the mascot's comic strip (2026-11-17), when posted from it. */}
+            {card.strip && <BattleStrip panels={card.strip} championName={CHAMPION_NAMES[card.champion] || 'Cynthia'} size="md" compact />}
         </div>
     );
 }

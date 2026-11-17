@@ -4,6 +4,7 @@
  * The win-chance curve travels as a sparkline of block characters.
  */
 
+import { cleanStrip, readStrip } from './battleStrip.js';
 import { isChampion } from './challengeChampions';
 
 const BLOCKS = '▁▂▃▄▅▆▇█';
@@ -55,7 +56,7 @@ const count = (value, max) => {
  * ranking (server-written) is where results are authoritative.
  */
 export const buildChallengeShare = ({
-    dayKey, championId = null, difficulty, status, result = {}, streak = 0, place = null, board = null, curve = [],
+    dayKey, championId = null, difficulty, status, result = {}, streak = 0, place = null, board = null, curve = [], strip = null,
 }) => ({
     v: 1,
     dayKey: String(dayKey || ''),
@@ -70,6 +71,8 @@ export const buildChallengeShare = ({
     place: place ? count(place, 999) : null,
     board: BOARD_KEYS.has(board) ? board : null,
     spark: sparkline(curve),
+    // The mascot's comic strip of the battle (2026-11-17, utils/battleStrip.js), when posted from it.
+    ...(cleanStrip(strip) ? { strip: cleanStrip(strip) } : {}),
 });
 
 /**
@@ -78,6 +81,7 @@ export const buildChallengeShare = ({
  */
 export const readChallengeShare = (payload) => {
     if (!payload || payload.v !== 1) return null;
+    const strip = readStrip(payload.strip);
     return {
         dayKey: /^\d{4}-\d{2}-\d{2}$/.test(payload.dayKey) ? payload.dayKey : null,
         champion: isChampion(payload.champion) ? payload.champion : 'cynthia',
@@ -90,5 +94,6 @@ export const readChallengeShare = (payload) => {
         place: payload.place ? count(payload.place, 999) || null : null,
         board: BOARD_KEYS.has(payload.board) ? payload.board : null,
         spark: typeof payload.spark === 'string' && SPARK_CHARS.test(payload.spark) ? payload.spark : '',
+        ...(strip ? { strip } : {}),
     };
 };
