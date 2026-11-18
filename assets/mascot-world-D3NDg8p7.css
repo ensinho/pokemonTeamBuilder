@@ -1,1 +1,0 @@
-.pixel-scene{display:block;image-rendering:pixelated;image-rendering:crisp-edges}.pixel-reveal{position:relative;display:inline-grid}.pixel-reveal>*{grid-area:1 / 1}.pixel-reveal.is-revealing .pixel-reveal__img{opacity:0}.pixel-reveal__pixels{width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}

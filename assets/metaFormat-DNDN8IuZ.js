@@ -1,0 +1,1 @@
+const e=(s="")=>String(s).replace(/-/g," "),n=(s,p)=>p>0?Math.round(s/p*100):0,t={hp:"HP",atk:"Atk",def:"Def",spa:"SpA",spd:"SpD",spe:"Spe"},a=["hp","atk","def","spa","spd","spe"],o=(s={})=>a.filter(p=>(s[p]||0)>0).map(p=>`${s[p]} ${t[p]}`).join(" / ");export{e as a,o as f,n as p};
