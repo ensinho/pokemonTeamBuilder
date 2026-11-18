@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokemonBuilder · Próximo Salto de UI/UX — Cenas Vivas &amp; Instrumentos Táticos</title>
+    <link rel="icon" type="image/svg+xml" href="../../public/favicon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+    <header class="lab-header">
+        <div class="lab-header__inner">
+            <div class="lab-brand">
+                <div class="lab-brand__tile" id="brand-mascot"></div>
+                <div class="lab-brand__meta">
+                    <span class="lab-brand__name">PokemonBuilder</span>
+                    <span class="lab-brand__sub">DS v4 · Cenas Vivas &amp; Instrumentos</span>
+                </div>
+            </div>
+
+            <nav class="segmented lab-nav-desktop" aria-label="Telas do laboratório" role="tablist">
+                <button type="button" class="segmented__item" role="tab" data-view="narrativa" aria-selected="true">
+                    <span class="seg-num">C2</span>
+                    <span>Narrativa</span>
+                </button>
+                <button type="button" class="segmented__item" role="tab" data-view="builder" aria-selected="false">
+                    <span class="seg-num">01</span>
+                    <span>Inspetor</span>
+                </button>
+                <button type="button" class="segmented__item" role="tab" data-view="pokedex" aria-selected="false">
+                    <span class="seg-num">02</span>
+                    <span>Pokédex v4</span>
+                </button>
+                <button type="button" class="segmented__item" role="tab" data-view="meta" aria-selected="false">
+                    <span class="seg-num">03</span>
+                    <span>Meta VGC</span>
+                </button>
+                <button type="button" class="segmented__item" role="tab" data-view="profile" aria-selected="false">
+                    <span class="seg-num">04</span>
+                    <span>Dossiê</span>
+                </button>
+            </nav>
+
+            <div class="lab-controls">
+                <div class="segmented segmented--sm segmented--quiet viewport-toggle" role="group" aria-label="Prévia de viewport">
+                    <button type="button" class="segmented__item" data-viewport="desktop" aria-pressed="true">Desktop 1440</button>
+                    <button type="button" class="segmented__item" data-viewport="mobile" aria-pressed="false">Mobile 390</button>
+                </div>
+
+                <button type="button" id="sprite-mode-btn" class="btn btn-secondary btn--sm" aria-pressed="false" title="Alternar entre ilustrações vetoriais offline e sprites PokéAPI CDN">
+                    <span>Sprites: Vetor</span>
+                </button>
+
+                <button type="button" id="theme-toggle-btn" class="btn btn-secondary btn--sm" aria-label="Alternar tema claro e escuro">
+                    <span id="theme-toggle-icon" aria-hidden="true">☀</span>
+                    <span id="theme-toggle-label">Claro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="lab-stage" class="lab-stage">
+        <!-- C2 · Capítulo 2 Narrativa & Cenas Vivas -->
+        <section id="view-narrativa" class="view-panel is-active" aria-label="Capítulo 2 Narrativa"></section>
+
+        <!-- 01 · Inspetor Tático (Builder × AffectUI) -->
+        <section id="view-builder" class="view-panel" aria-label="Inspetor Tático"></section>
+
+        <!-- 02 · Pokédex Instrumento v4 (M3 Expressive × Detail) -->
+        <section id="view-pokedex" class="view-panel" aria-label="Pokédex Instrumento v4"></section>
+
+        <!-- 03 · Telemetria VGC & Meta (AffectUI Waterfall × Torneios) -->
+        <section id="view-meta" class="view-panel" aria-label="Telemetria VGC e Meta"></section>
+
+        <!-- 04 · Dossiê do Treinador & Fase 3 (Profile × Living Scene) -->
+        <section id="view-profile" class="view-panel" aria-label="Dossiê do Treinador e Fase 3"></section>
+
+        <!-- Mobile Bottom Dock -->
+        <nav class="mobile-dock" aria-label="Navegação móvel">
+            <button type="button" class="dock-btn is-active" data-view="narrativa">
+                <span class="figure">C2</span>
+                <span>Tudo</span>
+            </button>
+            <button type="button" class="dock-btn" data-view="builder">
+                <span class="figure">01</span>
+                <span>Inspetor</span>
+            </button>
+            <button type="button" class="dock-btn" data-view="pokedex">
+                <span class="figure">02</span>
+                <span>Pokédex</span>
+            </button>
+            <button type="button" class="dock-btn" data-view="meta">
+                <span class="figure">03</span>
+                <span>Meta</span>
+            </button>
+            <button type="button" class="dock-btn" data-view="profile">
+                <span class="figure">04</span>
+                <span>Dossiê</span>
+            </button>
+        </nav>
+    </main>
+
+    <!-- M3 Sheet Drawer for Tournament Team Inspection -->
+    <div id="sheet-scrim" class="sheet-scrim" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+        <div class="sheet-panel" id="sheet-panel"></div>
+    </div>
+
+    <!-- Undo / Feedback Toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite">
+        <span id="toast-msg"></span>
+        <button type="button" id="toast-action" class="btn btn-secondary btn--sm" hidden></button>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
