@@ -71,3 +71,4 @@ mascot-export/
 # Local verification & prototype screenshot binaries (kept on disk, not in git)
 scratch/disruptive-design-lab/shots/
 scratch/app-verified-shots/
+scratch/verify-ui-pass/
