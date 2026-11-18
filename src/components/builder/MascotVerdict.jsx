@@ -15,9 +15,10 @@ import { COACH_DISMISS_EVENT, isCoachDismissed } from './coachState';
  *
  * He cheers only a step up the trainer just made (a weakness covered, the
  * sixth member) — never a team that loaded, never a step down. While the
- * beginner's coach is on screen he is the voice there, and this stays out.
+ * beginner's coach or the tactical decision card is holding the mascot's
+ * stage, this stays out so two mascots never share the composer.
  */
-export function MascotVerdict({ analysis, teamSize = 0, className = '' }) {
+export function MascotVerdict({ analysis, teamSize = 0, suppressed = false, className = '' }) {
     const { t } = useTranslation();
     const isBeginner = useAuthStore((s) => isBeginnerTrainer(s.trainerProfile));
     const [coachGone, setCoachGone] = useState(isCoachDismissed);
@@ -36,7 +37,7 @@ export function MascotVerdict({ analysis, teamSize = 0, className = '' }) {
         previous.current = id;
     }, [verdict?.id]);
 
-    if (!verdict || (isBeginner && !coachGone)) return null;
+    if (suppressed || !verdict || (isBeginner && !coachGone)) return null;
 
     const types = verdict.types.slice(0, 3).map((type) => t(`types.${type}`)).join(', ');
     const peak = verdict.id === 'complete' || verdict.id === 'coverage';
