@@ -350,14 +350,22 @@
 
 .daily-mime.is-in-diary {
     grid-column: 1 / -1;
-    margin-top: var(--space-1_5);
+    margin-top: var(--space-1);
     padding: var(--space-3);
     gap: var(--space-3);
     background: var(--color-surface);
 }
 
 .daily-mime.is-in-diary .daily-mime__stage {
-    min-height: 12.75rem;
+    min-height: 11.5rem;
+}
+
+.daily-mime.is-in-diary .daily-mime__side {
+    gap: var(--space-2);
+}
+
+.daily-mime.is-in-diary .daily-mime__clues {
+    gap: var(--space-1);
 }
 
 @media (min-width: 768px) {
