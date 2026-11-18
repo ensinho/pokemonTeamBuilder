@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ROUND_KEY, normalizeRound, receiptReady, withBaseline, withFullDay } from '../utils/mascot/roundReceipt';
+import { ROUND_KEY, mergeRounds, normalizeRound, receiptReady, withBaseline, withFullDay } from '../utils/mascot/roundReceipt';
 import { dayTally, gamesDoneToday } from '../utils/gamesToday';
 import { localDayKey } from '../utils/dailyCheckin';
 
@@ -7,7 +7,9 @@ import { localDayKey } from '../utils/dailyCheckin';
  * The mascot's round (2026-11-17, "Fantasminha de plantão"): the device's
  * record of what he saw last (`utils/mascot/roundReceipt.js` holds the
  * rules), and which receipt is open. A trainer's key (`ptb:mascot:round`),
- * so `leaveSession` wipes it with the rest of the trainer.
+ * so `leaveSession` wipes it with the rest of the trainer, and synced to
+ * the account preferences (`mascotRound`) so `fullDays` and the 5-day egg
+ * cycle persist across browsers.
  *
  * `open` is 'morning' (the round's receipt) or 'day' (the day's, at four of
  * four); AppLayout draws the dialog. `facts` are what the opener already
@@ -16,6 +18,9 @@ import { localDayKey } from '../utils/dailyCheckin';
  */
 
 const GAMES_KEY = 'ptb:gamesToday';
+
+let toAccount = null;
+export const setRoundToAccount = (push) => { toAccount = push; };
 
 const read = () => {
     try {
@@ -38,9 +43,28 @@ export const useRoundStore = create((set, get) => ({
     /** Re-read the record (another tab, a day that turned while away). */
     refresh: () => set({ round: read() }),
     update: (change) => {
-        const next = normalizeRound(change(get().round));
+        const prev = get().round;
+        const next = normalizeRound(change(prev));
+        if (JSON.stringify(prev) === JSON.stringify(next)) return;
         write(next);
         set({ round: next });
+        if (
+            prev.fullDays !== next.fullDays
+            || prev.lastFullDay !== next.lastFullDay
+            || prev.seenDay !== next.seenDay
+            || prev.daySeen !== next.daySeen
+        ) {
+            Promise.resolve(toAccount?.(next)).catch(() => {});
+        }
+    },
+    hydrate: (remote) => {
+        const prev = get().round;
+        const merged = mergeRounds(prev, remote);
+        if (JSON.stringify(prev) !== JSON.stringify(merged)) {
+            write(merged);
+            set({ round: merged });
+        }
+        return merged;
     },
     openReceipt: (mode, facts = null) => set({ open: mode, facts }),
     closeReceipt: () => set({ open: null, facts: null }),

@@ -106,7 +106,8 @@ export function renderSnapshot({ meta, language, appPath, pokemon = null, team =
         body.push(list([
             ['/challenge', 'challenge'],
             ['/pokepuzzle', 'puzzle'],
-            ['/tier-list', 'tierList'],
+            ['/quiz?tab=categories&daily=1', 'quiz'],
+            ['/tier-list?daily=1', 'tierList'],
         ].map(([to, key]) => `<h3>${link(to, t(`landing.playToday.${key}.name`))}</h3><p>${escapeHtml(t(`landing.playToday.${key}.line`))}</p>`)));
         body.push(`<h2>${escapeHtml(t('landing.featuresTitle'))}</h2>`);
         body.push(list(LANDING_FEATURES.map((f) => `<h3>${link(LANDING_LINKS[f], t(`landing.features.${f}.title`))}</h3><p>${escapeHtml(t(`landing.features.${f}.body`))}</p>`)));

@@ -1,5 +1,5 @@
 import { useTranslation } from '../../hooks/useTranslation';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 
 import { AnchoredPopover } from '../AnchoredPopover';
@@ -19,7 +19,7 @@ import { typeChart, typeColors, typeIcons } from '../../constants/types';
 const ALL_TYPES = Object.keys(typeChart);
 
 /** Rows of the picker list. Selection is a fill + a check, not a border. */
-function FormatOption({ format, active, onPick }) {
+const FormatOption = memo(function FormatOption({ format, active, onPick }) {
     return (
         <button
             type="button"
@@ -37,7 +37,7 @@ function FormatOption({ format, active, onPick }) {
             {active && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
         </button>
     );
-}
+});
 
 /** The searchable, grouped body — identical in the sheet and the popover. */
 function FormatList({ formats, value, onPick, pt, autoFocus }) {
@@ -57,7 +57,7 @@ function FormatList({ formats, value, onPick, pt, autoFocus }) {
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={pt ? 'Buscar formato…' : 'Search format…'}
                     aria-label={pt ? 'Buscar formato' : 'Search format'}
-                    className="w-full rounded-lg bg-surface-raised py-2 pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="w-full rounded-lg bg-surface-raised py-2 pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:outline-none"
                 />
             </div>
 
@@ -128,7 +128,7 @@ export function FormatPicker({ formats = [], value, onChange, pt = false, classN
                 onClick={() => setOpen((v) => !v)}
                 aria-haspopup="listbox"
                 aria-expanded={open}
-                className={`flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-left transition-colors hover:border-primary focus:outline-none ${compact ? 'py-1.5' : 'py-2'}  ${className}`}
+                className={`meta-format-trigger ${compact ? 'meta-format-trigger--compact' : ''} ${className}`}
             >
                 <span className="min-w-0 flex-1">
                     {current?.group && !compact && (
@@ -143,9 +143,7 @@ export function FormatPicker({ formats = [], value, onChange, pt = false, classN
 
             {open && isMobile && (
                 <BottomSheet onClose={() => setOpen(false)} title={pt ? 'Formato' : 'Format'}>
-                    {/* The sheet body scrolls; the list gets a bounded height so
-                        its search field stays put while the options move. */}
-                    <div className="flex max-h-[60vh] flex-col">
+                    <div className="meta-format-sheet__list">
                         <FormatList formats={formats} value={value} onPick={pick} pt={pt} autoFocus={false} />
                     </div>
                 </BottomSheet>
@@ -158,10 +156,10 @@ export function FormatPicker({ formats = [], value, onChange, pt = false, classN
                     popoverRef={popoverRef}
                     role="dialog"
                     ariaLabel={pt ? 'Escolher formato' : 'Choose format'}
-                    className="w-[20rem] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-2 shadow-elevation-3"
+                    className="meta-format-popover"
                     zIndex={90}
                 >
-                    <div className="flex max-h-[26rem] flex-col">
+                    <div className="meta-format-popover__list">
                         <FormatList formats={formats} value={value} onPick={pick} pt={pt} autoFocus />
                     </div>
                 </AnchoredPopover>
@@ -208,42 +206,35 @@ export function CutoffSelect({ cutoffs = [], value, onChange, pt = false, classN
 /**
  * Type filter. Collapsed to a single button by default — eighteen chips on a
  * phone is the definition of polluting the screen — and the button carries the
- * count so the filter can never be on without saying so.
+ * count as a figure (`.count-badge`, never a second Volt pill).
  */
 export function TypeFilter({ selected = [], onChange, pt = false, inline = false }) {
-    // The type's name in the UI language (it printed the raw id, "fire", in PT).
     const { t } = useTranslation();
-    // `inline`: the chips alone, always open — inside the phone's Filtros sheet,
-    // where a toggle to reveal them would be a second step for nothing.
     const [isOpen, setOpen] = useState(false);
     const open = inline || isOpen;
     const count = selected.length;
 
     const toggle = (type) => {
-        onChange(selected.includes(type) ? selected.filter((t) => t !== type) : [...selected, type]);
+        onChange(selected.includes(type) ? selected.filter((tp) => tp !== type) : [...selected, type]);
     };
 
     return (
         <div className="contents">
-            {!inline && <button
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                aria-expanded={open}
-                className={`flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus:outline-none ${
-                    count ? 'border-primary text-primary' : 'border-border bg-surface text-muted hover:text-fg'
-                }`}
-            >
-                {pt ? 'Tipos' : 'Types'}
-                {count > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono text-2xs tabular-nums text-on-primary">
-                        {count}
-                    </span>
-                )}
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
-            </button>}
+            {!inline && (
+                <button
+                    type="button"
+                    onClick={() => setOpen((v) => !v)}
+                    aria-expanded={open}
+                    className={`meta-type-trigger ${count ? 'is-active' : ''}`}
+                >
+                    <span>{pt ? 'Tipos' : 'Types'}</span>
+                    {count > 0 && <span className="count-badge">{count}</span>}
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </button>
+            )}
 
             {open && (
-                <div className={inline ? 'w-full' : 'w-full rounded-xl border border-border bg-surface p-2'}>
+                <div className={inline ? 'w-full' : 'meta-type-panel'}>
                     <div className="flex flex-wrap gap-1.5">
                         {ALL_TYPES.map((type) => {
                             const active = selected.includes(type);
@@ -261,7 +252,7 @@ export function TypeFilter({ selected = [], onChange, pt = false, inline = false
                                         backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
                                         color: `color-mix(in srgb, ${color} 45%, var(--color-fg))`,
                                     } : undefined}
-                                    className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-1 text-2xs font-semibold capitalize transition-colors focus:outline-none ${
+                                    className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-2xs font-semibold capitalize transition-colors focus:outline-none ${
                                         active ? '' : 'border-transparent bg-surface-raised text-muted hover:bg-surface-hover hover:text-fg'
                                     }`}
                                 >

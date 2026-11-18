@@ -44,6 +44,7 @@ import { useCardFx } from '../../hooks/useCardFx';
 import '../../styles/card-fx.css';
 import { HomeParty } from '../home/HomeParty';
 import { DayRoute } from '../home/DayRoute';
+import { DailyMimeMiniCard } from '../home/DailyMimeMiniCard';
 import { PersonaDoors } from '../home/PersonaDoors';
 import { TeamDeck } from '../home/TeamDeck';
 import { dayRoute, routeOrder } from '../../utils/dayRoute';
@@ -1027,6 +1028,9 @@ export function CozyHomeView({
             onOpenStreak={() => setIsStreakOpen(true)}
         />
     );
+    const mimeMiniCard = (
+        <DailyMimeMiniCard onOpen={() => navigate('/games?view=mime')} />
+    );
     // The persona orders the day's blocks (personaHomeOrder); phones carry no
     // teams block (the party and "Ver todos" stand for it there).
     const homeOrder = personaHomeOrder(trainerProfile);
@@ -1062,6 +1066,7 @@ export function CozyHomeView({
                     {isPhone ? (
                         <>
                             {party}
+                            {mimeMiniCard}
                             {journeyFocus}
                             {ordered}
                             {forYouSetup}
@@ -1083,6 +1088,7 @@ export function CozyHomeView({
                     <aside className="cozy-rail">
                         {guestCard}
                         {checkinWeek}
+                        {mimeMiniCard}
                         {/* The day as a place, right under the trainer's own check-in (2026-11-09). */}
                         {centerToday('rail')}
                         {forYouSetup}

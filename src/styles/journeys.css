@@ -39,9 +39,19 @@
 }
 
 .journeys-view__progress {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    margin-inline-start: var(--space-1);
     color: var(--color-muted);
     white-space: nowrap;
+}
+
+.journeys-view__figure {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
+    color: var(--color-fg);
 }
 
 @media (min-width: 640px) {
@@ -624,8 +634,6 @@ button.mission:active { background: var(--color-surface-active); }
     color: var(--color-muted);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
 }
 
 /* A chapter 2 not open yet (2026-11-06): its tile in silhouette, like the

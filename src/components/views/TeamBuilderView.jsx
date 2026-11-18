@@ -18,11 +18,13 @@ import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { MascotVerdict } from '../builder/MascotVerdict';
+import { TacticalDecisionCard } from '../builder/TacticalDecisionCard';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
 import { RecentTeamsCard, RecentTeamsDialog } from '../builder/RecentTeams';
 import { coreIconFor } from '../coreIcons';
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildSynergySuggestions } from '../../utils/synergySuggestions';
+import { buildTacticalDecision } from '../../utils/tacticalDecision';
 import { buildTeamThreats } from '../../utils/teamThreats';
 import { TeamThreats } from '../TeamThreats';
 import { buildGameSections } from '../../utils/gameDex';
@@ -62,7 +64,7 @@ import { PartyPips } from '../PartyPips';
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
 function typeDiscStyle(pokemon) {
     const types = pokemon?.types || [];
-    const a = typeColors[types[0]] || '#6390F0';
+    const a = typeColors[types[0]] || 'var(--color-primary)';
     const b = typeColors[types[1]] || a;
     return { '--type-a': a, '--type-b': b };
 }
@@ -557,6 +559,30 @@ export function TeamBuilderView({
     // revealed so far (50 at a time), and both builders printed that as if it
     // were the total.
     const filteredPokemons = usePokedexStore((s) => s.filteredPokemons);
+    const allPokedexPokemons = usePokedexStore((s) => s.pokemons);
+    const legacyTypes = useActiveTeamStore((s) => s.legacyTypes);
+    const suggestedPokemonIds = useActiveTeamStore((s) => s.suggestedPokemonIds);
+    const [isDecisionVisible, setIsDecisionVisible] = React.useState(false);
+
+    const decisionAllowedIds = React.useMemo(() => {
+        const gameIds = (selectedGame && selectedGame !== 'all' && gamePokemonIds) ? gamePokemonIds : null;
+        if (!tierLegalIds) return gameIds;
+        return gameIds ? new Set([...gameIds].filter((id) => tierLegalIds.has(id))) : tierLegalIds;
+    }, [selectedGame, gamePokemonIds, tierLegalIds]);
+
+    const decisionPool = pokemonIndex.length > 0 ? pokemonIndex : allPokedexPokemons;
+    const tacticalDecision = React.useMemo(() => buildTacticalDecision(
+        currentTeam,
+        teamAnalysis,
+        decisionPool,
+        {
+            legacyTypes,
+            speciesClause: !isPlaythrough,
+            allowedIds: decisionAllowedIds,
+            metaUsage: isPlaythrough ? null : metaUsageMap,
+            suggestedPokemonIds,
+        },
+    ), [currentTeam, teamAnalysis, decisionPool, legacyTypes, isPlaythrough, decisionAllowedIds, metaUsageMap, suggestedPokemonIds]);
     const totalCount = React.useMemo(() => {
         if (isGameFilterActive) return gameVisibleCount;
         if (tierRoster) return tierRoster.length;
@@ -652,6 +678,7 @@ export function TeamBuilderView({
                     handleShareTeam={handleShareTeam}
                     handleExportToShowdown={handleExportToShowdown}
                     teamAnalysis={teamAnalysis}
+                    tacticalDecision={tacticalDecision}
                     teamThreats={teamThreats}
                     searchInput={searchInput}
                     setSearchInput={setSearchInput}
@@ -845,7 +872,16 @@ export function TeamBuilderView({
                             </p>
                         ) : (
                             <>
-                                <MascotVerdict analysis={teamAnalysis} teamSize={currentTeam.length} />
+                                <TacticalDecisionCard
+                                    decision={tacticalDecision}
+                                    currentTeam={currentTeam}
+                                    onAppliedVisibilityChange={setIsDecisionVisible}
+                                />
+                                <MascotVerdict
+                                    analysis={teamAnalysis}
+                                    teamSize={currentTeam.length}
+                                    suppressed={Boolean(tacticalDecision) || isDecisionVisible}
+                                />
                                 <TeamIdentitySummary team={currentTeam} analysis={teamAnalysis} />
                             </>
                         )}

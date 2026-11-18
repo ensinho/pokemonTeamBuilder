@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CircleHelp, Crown, Puzzle, Rows3 } from 'lucide-react';
 import { Mascot } from '../Mascot';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { DailyMimeCard } from './DailyMimeCard';
 
 /**
  * The Diário do dia's header (2026-11-06, docs/plans/social-heart.md B1):
@@ -67,6 +68,7 @@ export function DiaryBanner({ messages = [], isToday, t, silhouette = null }) {
                     </Link>
                 </div>
             )}
+            {isToday && <DailyMimeCard inDiary />}
         </div>
     );
 }

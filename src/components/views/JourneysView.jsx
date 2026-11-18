@@ -52,7 +52,15 @@ export function JourneysView() {
                     rolagem"): it was a line of its own between the tabs and the list. */}
                 {allDone
                     ? <><strong>{t('journeys.allDoneTitle')}</strong>{t('journeys.allDoneSub')}</>
-                    : <>{t('journeys.subtitle')} <span className="journeys-view__progress">{t('journeys.missionsProgress', { done: totals.missionsDone, total: totals.missionsTotal })}</span></>}
+                    : (
+                        <>
+                            {t('journeys.subtitle')}{' '}
+                            <span className="journeys-view__progress">
+                                <span className="journeys-view__figure">{totals.missionsDone}/{totals.missionsTotal}</span>
+                                <span>{t('journeys.missionsDoneLabel')}</span>
+                            </span>
+                        </>
+                    )}
             </MascotTip>
 
             <div className="segmented segmented--block journeys-view__tabs" role="tablist" aria-label={t('journeys.tabsLabel')}>

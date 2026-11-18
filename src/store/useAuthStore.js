@@ -34,8 +34,11 @@ import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '..
 import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
 import { wipeBrowserUserStorage, LEFT_SESSION_KEY } from '../utils/sessionWipe';
 import { useMascotStore } from './useMascotStore';
+import { useRoundStore, setRoundToAccount } from './useRoundStore';
 import { accountGamesRecord, applyAccountGames, setGamesToAccount } from '../hooks/useGamesToday';
 import { costumeHat } from '../utils/mascot/assistant';
+import { applyAccountEgg, readEggState, setEggToAccount } from '../utils/mascotEgg';
+import { applyAccountMime, readMimeDayState, setMimeToAccount } from '../utils/dailyMime';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -470,6 +473,13 @@ export const useAuthStore = create((set, get) => {
         // today in any browser of the account is played here.
         applyAccountGames(data.gamesToday);
 
+        // 5.28 Phase 3 ("Fantasminha de plantão"): round fullDays, surprise egg,
+        // daily mime progress, and mascot costume/tone prefs persist in the account.
+        if (data.mascotRound) useRoundStore.getState().hydrate(data.mascotRound);
+        if (data.mascotEgg) applyAccountEgg(data.mascotEgg);
+        if (data.dailyMime) applyAccountMime(data.dailyMime, localDayKey());
+        if (data.mascotPrefs) useMascotStore.getState().hydrate(data.mascotPrefs);
+
         // 5.3 Rewards (useRewardsStore): XP never drops,
         // unlocks are a union, the account's equip wins.
         useRewardsStore.getState().hydrate(data.rewards);
@@ -732,6 +742,10 @@ export const useAuthStore = create((set, get) => {
                 badgeCase,
                 rewards: useRewardsStore.getState().snapshot(),
                 gamesToday: accountGamesRecord(),
+                mascotRound: useRoundStore.getState().round,
+                mascotEgg: readEggState(),
+                dailyMime: readMimeDayState(localDayKey()),
+                mascotPrefs: useMascotStore.getState().prefs,
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
@@ -1254,6 +1268,10 @@ export const markJourney = (mark) => useAuthStore.getState().markJourney(mark);
 
 // A game marked played (hooks/useGamesToday.markGameDone) is saved to the account too.
 setGamesToAccount((gamesToday) => useAuthStore.getState().savePreferences({ gamesToday }));
+// Phase 3 ("Fantasminha de plantão") state is saved to the account whenever it advances.
+setRoundToAccount((mascotRound) => useAuthStore.getState().savePreferences({ mascotRound }));
+setEggToAccount((mascotEgg) => useAuthStore.getState().savePreferences({ mascotEgg }));
+setMimeToAccount((dailyMime) => useAuthStore.getState().savePreferences({ dailyMime }));
 
 /**
  * What friends see of this trainer's mascot (`publicProfiles.mascot`):
@@ -1275,6 +1293,15 @@ let mascotSyncTimer = 0;
 useMascotStore.subscribe((state, prev) => {
     const a = state.prefs;
     const b = prev.prefs;
+    if (
+        a.tone === b.tone
+        && a.costume === b.costume
+        && a.share === b.share
+        && a.form === b.form
+        && a.reactions === b.reactions
+        && a.shinyFound === b.shinyFound
+    ) return;
+    useAuthStore.getState().savePreferences({ mascotPrefs: a });
     if (a.tone === b.tone && a.costume === b.costume && a.share === b.share) return;
     clearTimeout(mascotSyncTimer);
     mascotSyncTimer = setTimeout(() => useAuthStore.getState().syncPublicProfile(), 1500);

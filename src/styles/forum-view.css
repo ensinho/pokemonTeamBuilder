@@ -24,12 +24,28 @@
    a guess about the chrome above and below it, and it goes stale the moment
    either moves (see docs/wounds.md, 2026-09-10).
    -------------------------------------------------------------------------- */
+.app-shell__content:has(.forum-view) {
+    overflow-y: hidden;
+}
+
+@media (min-width: 1024px) {
+    .app-shell__content:has(.forum-view),
+    html[data-island] .app-shell__content:has(.forum-view) {
+        padding-bottom: 0;
+        scroll-padding-bottom: 0;
+    }
+}
+
 .app-shell__content:has(.forum-view) .app-shell__body,
 .app-shell__content:has(.forum-view) .app-shell__page-frame {
     display: flex;
     flex-direction: column;
     flex: 1 1 0;
     min-height: 0;
+}
+
+.app-shell__content:has(.forum-view) .app-shell__body {
+    padding-block: 0;
 }
 
 .forum-view {
@@ -1613,7 +1629,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
-    padding-bottom: var(--space-6);
+    padding-bottom: calc(var(--space-6) + var(--island-room, 0px));
 }
 
 /* Switching between the feed and a post is a cross-fade, not a cut. */
@@ -1636,6 +1652,7 @@
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    padding-bottom: calc(var(--space-6) + var(--island-room, 0px));
 }
 
 @media (min-width: 1024px) {
@@ -2637,7 +2654,7 @@ summary.forum-explorer__heading:focus-visible {
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
-    padding: var(--space-5) var(--space-3) var(--space-6) 0;
+    padding: var(--space-2_5) var(--space-3) var(--space-6) 0;
 }
 
 /* Room for an avatar's reward frame (rewards, 2026-10-17): the rings sit
@@ -2661,9 +2678,9 @@ summary.forum-explorer__heading:focus-visible {
 .thread-post {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    margin-bottom: var(--space-5);
-    padding-bottom: var(--space-5);
+    gap: var(--space-2_5);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-4);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -3110,7 +3127,7 @@ summary.forum-explorer__heading:focus-visible {
 
 .thread-composer-dock {
     flex-shrink: 0;
-    padding: var(--space-3) 0;
+    padding: var(--space-2) 0 var(--space-2_5);
     border-top: 1px solid var(--color-border);
 }
 

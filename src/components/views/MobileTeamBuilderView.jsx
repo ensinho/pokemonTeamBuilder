@@ -17,6 +17,7 @@ import { MetaCoresModal } from '../modals/MetaCoresModal';
 import { coreIconFor } from '../coreIcons';
 import { TeamRatingBadge } from '../TeamIdentitySummary';
 import { MascotVerdict } from '../builder/MascotVerdict';
+import { TacticalDecisionCard } from '../builder/TacticalDecisionCard';
 import { MascotFace } from '../Mascot';
 import { teamVerdict } from '../../utils/mascot/assistant';
 import { detectTeamCores } from '../../utils/metaCores';
@@ -321,6 +322,7 @@ export const MobileTeamBuilderView = ({
     handleShareTeam,
     handleExportToShowdown,
     teamAnalysis,
+    tacticalDecision = null,
     teamThreats = [],
     searchInput,
     setSearchInput,
@@ -730,21 +732,27 @@ export const MobileTeamBuilderView = ({
                                     </button>
                                 </p>
                             ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => setAnalysisOpen(true)}
-                                    aria-haspopup="dialog"
-                                    className="team-builder-mobile__analysis-chip"
-                                    aria-label={`${t('builder.analysisTitle')}: ${t(`builder.grade.${rating.grade}`)} ${rating.score}, ${t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}`}
-                                >
-                                    {/* The mascot's face is the verdict at a glance (utils/mascot/assistant.js). */}
-                                    <MascotFace mood={teamVerdict(teamAnalysis, teamSize)?.mood} className="team-builder-mobile__analysis-face" />
-                                    <TeamRatingBadge score={rating.score} grade={rating.grade} compact />
-                                    <span className="team-builder-mobile__analysis-chip-counts">
-                                        {t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}
-                                    </span>
-                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-                                </button>
+                                <>
+                                    <TacticalDecisionCard
+                                        decision={tacticalDecision}
+                                        currentTeam={currentTeam}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setAnalysisOpen(true)}
+                                        aria-haspopup="dialog"
+                                        className="team-builder-mobile__analysis-chip"
+                                        aria-label={`${t('builder.analysisTitle')}: ${t(`builder.grade.${rating.grade}`)} ${rating.score}, ${t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}`}
+                                    >
+                                        {/* The mascot's face is the verdict at a glance (utils/mascot/assistant.js). */}
+                                        <MascotFace mood={teamVerdict(teamAnalysis, teamSize)?.mood} className="team-builder-mobile__analysis-face" />
+                                        <TeamRatingBadge score={rating.score} grade={rating.grade} compact />
+                                        <span className="team-builder-mobile__analysis-chip-counts">
+                                            {t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}
+                                        </span>
+                                        <ChevronRight className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>

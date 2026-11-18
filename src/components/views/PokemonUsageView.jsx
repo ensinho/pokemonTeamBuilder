@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import '../../styles/entity-detail-view.css';
+import '../../styles/meta-view.css';
 import {
-    ChevronLeft, TrendingUp, Users, Swords, Sparkles, Package,
+    ChevronLeft, TrendingUp, Swords, Sparkles, Package,
     Zap, BookOpen, Trophy, ArrowUpRight,
 } from 'lucide-react';
 
@@ -23,7 +24,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useEntityNavigate, useSmartBack } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
-import { UsageBar, MonSprite, MoveChip, Panel, SourceCredit } from './metaShared';
+import { Loader } from '../Loader';
+import { UsageBar, MoveChip, Panel, SourceCredit } from './metaShared';
 import { pretty, pctOf, formatUsageSpread } from '../../utils/metaFormat';
 import { FormatPicker } from './metaControls';
 
@@ -39,35 +41,41 @@ const pikalyticsUrl = (formatId, name) => {
 };
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 
-function MetricTile({ icon, value, label, accent }) {
+// Borderless figure + muted word readout (<dl>/<dd>/<dt>, zero nested tiles or icon clutter).
+function HeroMetric({ value, label, tone = '' }) {
     return (
-        <div className="flex flex-col items-center rounded-xl border border-border bg-surface px-3 py-2.5 text-center">
-            <span className="mb-0.5 text-muted" style={accent ? { color: accent } : undefined}>{icon}</span>
-            <span className="figure text-lg font-semibold text-fg">{value}</span>
-            <span className="text-2xs font-semibold text-muted">{label}</span>
+        <div className="usage-hero__metric">
+            <dd className={`usage-hero__metric-val ${tone}`}>{value}</dd>
+            <dt className="usage-hero__metric-lbl">{label}</dt>
         </div>
     );
 }
 
 /**
- * Focused per-Pokémon usage page (pikalytics-style), driven by real Smogon ladder
- * stats for the selected regulation: usage %, the items / moves / abilities / EV
- * spreads / Tera it actually runs, its most common teammates, curated Smogon sets,
- * and the recent tournament teams that featured it. The regulation is carried in
- * the ?fmt query param so it stays in sync with the Meta page.
+ * Focused per-Pokémon usage page, driven by real Smogon ladder stats for the
+ * selected regulation: usage %, the items / moves / abilities / EV spreads /
+ * Tera it actually runs, its most common teammates, curated Smogon sets, and
+ * the recent tournament teams that featured it.
  */
 export function PokemonUsageView() {
     const { idOrName } = useParams();
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
-    const { language } = useTranslation();
+    const { t, language } = useTranslation();
     const { goToMove, goToAbility, goToItem, linkState } = useEntityNavigate();
     const pt = language === 'pt';
+    const locale = pt ? 'pt-BR' : 'en-US';
     const { goBack, backLabel } = useSmartBack('/meta', pt);
 
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
-    React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+    useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+
+    const typesById = useMemo(() => {
+        const map = new Map();
+        for (const p of pokemonIndex) if (!map.has(p.id) && p.types?.length) map.set(p.id, p.types);
+        return map;
+    }, [pokemonIndex]);
 
     const { formats, defaultFormatId } = useUsageIndex();
     const fmtId = params.get('fmt') || defaultFormatId || '';
@@ -110,12 +118,9 @@ export function PokemonUsageView() {
         [teams, id, pokemonIndex, byStone],
     );
 
-    // Tera: real usage Tera types; fall back to the Tera on curated Smogon sets
-    // (Pokémon Champions has no Tera, so those formats leave this empty).
+    // Tera: real usage Tera types; fall back to curated Smogon sets (never on Champions).
     const teraList = useMemo(() => {
         if (usage?.tera?.length) return usage.tera.map((t) => ({ name: t.name, count: t.count }));
-        // Champions has no Terastallization: borrowing an older game's set Tera
-        // here printed "Fire 0%" under a format where nobody can use it.
         if (/champions/.test(fmtId)) return [];
         const m = new Map();
         for (const set of smogon?.sets || []) for (const t of set.tera || []) m.set(t, (m.get(t) || 0) + 1);
@@ -130,15 +135,14 @@ export function PokemonUsageView() {
         title: `${displayName} Usage & Sets`,
         description: `${displayName} competitive usage, items, EV spreads, and top teammates${format?.name ? ` in ${format.name}` : ''}${usage?.usage ? ` — ${usage.usage.toFixed(1)}% usage` : ''} on PokemonBuilder.`,
         image: getPokemonArtworkSpriteUrl(entry.id),
-        // Always canonicalize to the name slug so /meta/25 and /meta/raichu consolidate.
         path: `/meta/${entry.name}`,
     } : undefined);
 
     if (pokemonIndex.length && !entry) {
         return (
-            <main className="mx-auto max-w-5xl px-4 py-10">
+            <main className="edv-page usage-view">
                 <button type="button" onClick={goBack} className="edv-back mb-4">
-                    <ChevronLeft className="h-4 w-4 shrink-0" />
+                    <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span className="hidden sm:inline">{backLabel}</span>
                     <span className="sm:hidden">{pt ? 'Voltar' : 'Back'}</span>
                 </button>
@@ -148,22 +152,24 @@ export function PokemonUsageView() {
     }
 
     if (!entry) {
-        return <div className="mx-auto max-w-5xl px-4 py-16 text-center text-sm text-muted">{pt ? 'Carregando…' : 'Loading…'}</div>;
+        return <Loader size="lg" scene="pokedex" block />;
     }
 
-    const types = entry.types || [];
-    const accent = typeColors[types[0]] || 'var(--color-primary)';
+    const resolvedHero = resolveMegaPokemonEntry({ id, name: usage?.name || entry.name }, pokemonIndex, byStone);
+    const heroTypes = typesById.get(resolvedHero.spriteId) || entry.types || [];
+    const accent = typeColors[heroTypes[0]] || 'var(--color-primary)';
     const n = usage?.n || 0;
     const hasUsage = Boolean(usage && n > 0);
     const usageLoading = fmtStatus === 'loading' && !byId;
-    // Pokémon Champions ladders report spreads in Stat Points (0–32), not EVs.
     const spreadsInSp = Boolean(usage?.spreads?.length) && usage.spreads.every((sp) => looksLikeStatPoints(sp.evs) || !Object.keys(sp.evs || {}).length);
+    const rankTone = rank === 1 ? 'is-gold' : (rank === 2 || rank === 3) ? 'is-top' : '';
+    const pikaHref = pikalyticsUrl(fmtId, usage?.name);
 
     return (
-        <main className="edv-page usage-view mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
+        <main className="edv-page usage-view">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <button type="button" onClick={goBack} className="edv-back">
-                    <ChevronLeft className="h-4 w-4 shrink-0" />
+                    <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span className="hidden sm:inline">{backLabel}</span>
                     <span className="sm:hidden">{pt ? 'Voltar' : 'Back'}</span>
                 </button>
@@ -172,43 +178,59 @@ export function PokemonUsageView() {
                 )}
             </div>
 
-            {/* Header */}
-            <section
-                className="mb-5 overflow-hidden rounded-2xl border border-border bg-surface"
-                style={{ borderTop: `4px solid ${accent}` }}
-            >
-                <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-                    <div className="relative flex items-center justify-center p-3 rounded-xl bg-surface-raised shrink-0 self-start">
+            {/* Hero — official artwork on its type platform + borderless figure+word telemetry */}
+            <section className="usage-hero">
+                <div className="usage-hero__inner">
+                    <div className="usage-hero__stage type-platform" style={{ '--card-type': accent }}>
                         <img
-                            src={getPokemonFrontSpriteUrl(id)}
-                            alt={entry.name}
-                            className="h-20 w-20 shrink-0 object-contain image-pixelated"
-                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                            src={getPokemonArtworkSpriteUrl(resolvedHero.spriteId)}
+                            alt={pretty(usage?.name || entry.name)}
+                            className="usage-hero__art"
+                            decoding="async"
+                            onError={(e) => {
+                                const fallback = getPokemonFrontSpriteUrl(resolvedHero.spriteId);
+                                if (e.currentTarget.src !== fallback) {
+                                    e.currentTarget.src = fallback;
+                                } else {
+                                    e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
+                                }
+                            }}
                         />
                     </div>
-                    <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2.5">
-                            <h1 className="min-w-0 break-words text-2xl capitalize text-fg sm:text-3xl">{pretty(entry.name)}</h1>
-                            <span className="figure text-sm text-muted">#{String(id).padStart(4, '0')}</span>
+                    <div className="usage-hero__body">
+                        <div className="usage-hero__title-row">
+                            <h1 className="usage-hero__name">{pretty(usage?.name || entry.name)}</h1>
+                            <span className="usage-hero__dex">#{String(id).padStart(4, '0')}</span>
                         </div>
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                            {types.map((tp) => (
-                                <span key={tp} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-semibold capitalize" style={{ color: toneInk(typeColors[tp]), backgroundColor: toneWash(typeColors[tp]) }}>
-                                    {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3.5 w-3.5" />}{cap(tp)}
-                                </span>
-                            ))}
+                        <div className="usage-hero__types">
+                            {heroTypes.map((tp) => {
+                                const c = typeColors[tp];
+                                const typeKey = `types.${tp}`;
+                                const typeLabel = t(typeKey);
+                                return (
+                                    <span
+                                        key={tp}
+                                        className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-2xs font-semibold capitalize"
+                                        style={c ? {
+                                            color: toneInk(c),
+                                            backgroundColor: toneWash(c, 14),
+                                            borderColor: toneWash(c, 45),
+                                        } : undefined}
+                                    >
+                                        {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3.5 w-3.5" aria-hidden="true" />}
+                                        {typeLabel !== typeKey ? typeLabel : cap(tp)}
+                                    </span>
+                                );
+                            })}
                         </div>
-                        <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-xs font-semibold text-fg transition-colors hover:bg-surface-hover">
-                                <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
+                        <div className="usage-hero__links">
+                            <Link to={`/pokemon/${id}`} state={linkState} className="btn btn-secondary btn-sm">
+                                <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>{pt ? 'Ficha completa' : 'Full Pokédex entry'}</span>
                             </Link>
                             {format && (
-                                // The band is part of the claim, not decoration: only
-                                // one cutoff's full breakdown is baked, so the page
-                                // names the one it is showing even when the Meta list
-                                // that linked here was ranked at another.
                                 <span
-                                    className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs font-semibold text-muted"
+                                    className="usage-hero__pill"
                                     title={detailCutoff > 0
                                         ? (pt ? `Partidas entre jogadores com rating ${detailCutoff} ou mais` : `Games between players rated ${detailCutoff} and above`)
                                         : undefined}
@@ -217,68 +239,62 @@ export function PokemonUsageView() {
                                 </span>
                             )}
                             {usage?.tour && (
-                                // The tournament lens next to the ladder one: how often it
-                                // was registered at Limitless events and how those teams did.
                                 <span
-                                    className="figure rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs text-muted"
+                                    className="usage-hero__pill figure"
                                     title={pt ? 'Times registrados em torneios do Limitless' : 'Teams registered at Limitless tournaments'}
                                 >
-                                    {pt ? 'Torneios' : 'Tournaments'}: {usage.tour.usage}%
-                                    {Number.isFinite(usage.tour.winRate) && ` · ${usage.tour.winRate}% ${pt ? 'vit.' : 'WR'}`}
+                                    {pt ? 'Torneios' : 'Tournaments'}: {Number(usage.tour.usage).toFixed(1)}%
+                                    {Number.isFinite(usage.tour.winRate) && ` · ${Number(usage.tour.winRate).toFixed(1)}% ${pt ? 'vit.' : 'WR'}`}
                                     {usage.tour.topCut > 0 && ` · ${usage.tour.topCut} top 8`}
                                 </span>
                             )}
-                            {pikalyticsUrl(fmtId, usage?.name) && (
+                            {pikaHref && (
                                 <a
-                                    href={pikalyticsUrl(fmtId, usage?.name)}
+                                    href={pikaHref}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs font-semibold text-muted transition-colors hover:text-primary"
+                                    className="btn btn-ghost btn-sm"
                                 >
-                                    Pikalytics <ArrowUpRight className="h-3 w-3" />
+                                    <span>Pikalytics</span>
+                                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                                 </a>
                             )}
                         </div>
                     </div>
-                    <div className="grid shrink-0 grid-cols-3 gap-2 sm:w-64">
-                        <MetricTile icon={<TrendingUp className="h-4 w-4" />} value={hasUsage ? `${usage.usage}%` : '—'} label={pt ? 'Uso' : 'Usage'} />
-                        <MetricTile icon={<Trophy className="h-4 w-4" />} value={rank ? `#${rank}` : '—'} label={pt ? 'Ranking' : 'Rank'} />
-                        <MetricTile icon={<Users className="h-4 w-4" />} value={hasUsage ? (usage.rawCount ?? usage.teams ?? usage.n ?? 0).toLocaleString(pt ? 'pt-BR' : 'en-US') : '—'} label={pt ? 'Partidas' : 'Games'} />
-                    </div>
+                    <dl className="usage-hero__metrics">
+                        <HeroMetric
+                            value={hasUsage ? `${Number(usage.usage).toFixed(1)}%` : '—'}
+                            label={pt ? 'Uso' : 'Usage'}
+                        />
+                        <HeroMetric
+                            value={rank ? `#${rank}` : '—'}
+                            label={pt ? 'Ranking' : 'Rank'}
+                            tone={rankTone}
+                        />
+                        <HeroMetric
+                            value={hasUsage ? (usage.rawCount ?? usage.teams ?? usage.n ?? 0).toLocaleString(locale) : '—'}
+                            label={pt ? 'Partidas' : 'Games'}
+                        />
+                    </dl>
                 </div>
             </section>
 
             {usageLoading && (
-                <p className="mb-4 text-sm text-muted">{pt ? 'Carregando dados de uso…' : 'Loading usage data…'}</p>
+                <Loader size="md" scene="pokedex" block />
             )}
             {!usageLoading && !hasUsage && (
-                <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted">
+                <div className="meta-panel mb-4 text-sm text-muted">
                     {pt
-                        ? `Sem dados de uso para ${entry.name} em ${format?.label || 'este formato'}. Tente outro formato acima.`
+                        ? `Sem dados de uso para ${pretty(entry.name)} em ${format?.label || 'este formato'}. Tente outro formato acima.`
                         : `No ${format?.label || 'this format'} usage data for ${pretty(entry.name)}. Try another format above.`}
                 </div>
             )}
 
-            {/* Usage breakdowns */}
+            {/* Usage breakdowns — balanced two-column masonry (zero stretched dead space), zero nested borders */}
             {hasUsage && (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <Panel title={pt ? 'Itens' : 'Held items'} icon={<Package className="h-4 w-4 text-primary" />}>
-                            <div className="space-y-1.5">
-                                {usage.items.map((it) => (
-                                    <UsageBar
-                                        key={it.slug}
-                                        label={pretty(it.name)}
-                                        icon={<img src={itemSpriteUrl(it.slug)} alt="" className="h-4 w-4 image-pixelated" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}
-                                        pct={pctOf(it.count, n)}
-                                        count={it.count}
-                                        onClick={(e) => goToItem(it.slug, e)}
-                                    />
-                                ))}
-                            </div>
-                        </Panel>
-
-                        <Panel title={pt ? 'Golpes' : 'Moves'} icon={<Swords className="h-4 w-4 text-primary" />}>
+                <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+                    <div className="space-y-4 min-w-0">
+                        <Panel title={pt ? 'Golpes' : 'Moves'} icon={<Swords className="h-4 w-4 text-muted" aria-hidden="true" />}>
                             <div className="space-y-1.5">
                                 {usage.moves.slice(0, 12).map((mv) => {
                                     const mt = typeForMove(mv.name);
@@ -286,10 +302,10 @@ export function PokemonUsageView() {
                                         <UsageBar
                                             key={mv.name}
                                             label={pretty(mv.name)}
-                                            icon={mt && typeIcons[mt] ? <img src={typeIcons[mt]} alt="" className="h-4 w-4" /> : undefined}
+                                            icon={mt && typeIcons[mt] ? <img src={typeIcons[mt]} alt="" className="h-4 w-4" aria-hidden="true" /> : undefined}
                                             pct={pctOf(mv.count, n)}
                                             count={mv.count}
-                                            color={mt ? (typeColors[mt] || 'var(--color-success)') : 'var(--color-success)'}
+                                            color={mt ? (typeColors[mt] || accent) : accent}
                                             onClick={(e) => goToMove(mv.name, e)}
                                         />
                                     );
@@ -297,73 +313,128 @@ export function PokemonUsageView() {
                             </div>
                         </Panel>
 
-                        <Panel title={pt ? 'Habilidades' : 'Abilities'} icon={<Zap className="h-4 w-4 text-primary" />}>
-                            <div className="space-y-1.5">
-                                {usage.abilities.map((ab) => (
-                                    <UsageBar key={ab.name} label={pretty(ab.name)} pct={pctOf(ab.count, n)} count={ab.count} onClick={(e) => goToAbility(ab.name, e)} />
-                                ))}
-                            </div>
-                        </Panel>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        {/* Real EV spreads (nature + investment) */}
                         {usage.spreads?.length > 0 && (
                             <Panel
                                 title={spreadsInSp
                                     ? (pt ? 'Spreads (Stat Points)' : 'Common spreads (Stat Points)')
                                     : (pt ? 'Spreads (EVs reais)' : 'Common spreads')}
-                                icon={<TrendingUp className="h-4 w-4 text-primary" />}
+                                icon={<TrendingUp className="h-4 w-4 text-muted" aria-hidden="true" />}
                             >
                                 <div className="space-y-1.5">
                                     {usage.spreads.slice(0, 6).map((sp, i) => {
                                         const spread = formatUsageSpread(sp.evs);
+                                        const pct = pctOf(sp.count, n);
                                         return (
-                                            <div key={`${sp.nature}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2">
-                                                <span className="shrink-0 rounded bg-surface-raised px-2 py-0.5 text-2xs font-semibold text-fg">{sp.nature}</span>
-                                                <span className="min-w-0 flex-1 truncate font-mono text-2xs text-muted">{spread || (pt ? 'sem EVs' : 'no EVs')}</span>
-                                                <span className="figure shrink-0 text-2xs font-semibold text-primary">{pctOf(sp.count, n)}%</span>
+                                            <div key={`${sp.nature}-${i}`} className="usage-spread" style={{ '--bar-tone': accent }}>
+                                                <div className="usage-spread__top">
+                                                    <span className="usage-spread__nature">{sp.nature}</span>
+                                                    <span className="usage-spread__evs">{spread || (pt ? 'sem EVs' : 'no EVs')}</span>
+                                                    <span className="usage-spread__pct">{pct}%</span>
+                                                </div>
+                                                <span className="usage-bar__track" aria-hidden="true">
+                                                    <span className="usage-bar__fill" style={{ width: `${Math.min(Math.max(pct, 2), 100)}%` }} />
+                                                </span>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </Panel>
                         )}
+                    </div>
 
-                        <Panel title={pt ? 'Tera & Parceiros' : 'Tera & Teammates'} icon={<Sparkles className="h-4 w-4 text-primary" />}>
+                    <div className="space-y-4 min-w-0">
+                        <Panel title={pt ? 'Itens' : 'Held items'} icon={<Package className="h-4 w-4 text-muted" aria-hidden="true" />}>
+                            <div className="space-y-1.5">
+                                {usage.items.map((it) => (
+                                    <UsageBar
+                                        key={it.slug}
+                                        label={pretty(it.name)}
+                                        icon={(
+                                            <img
+                                                src={itemSpriteUrl(it.slug)}
+                                                alt=""
+                                                className="h-4 w-4 image-pixelated"
+                                                onError={(e) => {
+                                                    if (e.currentTarget.parentElement) e.currentTarget.parentElement.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                        pct={pctOf(it.count, n)}
+                                        count={it.count}
+                                        color={accent}
+                                        onClick={(e) => goToItem(it.slug, e)}
+                                    />
+                                ))}
+                            </div>
+                        </Panel>
+
+                        <Panel title={pt ? 'Habilidades' : 'Abilities'} icon={<Zap className="h-4 w-4 text-muted" aria-hidden="true" />}>
+                            <div className="space-y-1.5">
+                                {usage.abilities.map((ab) => (
+                                    <UsageBar
+                                        key={ab.name}
+                                        label={pretty(ab.name)}
+                                        pct={pctOf(ab.count, n)}
+                                        count={ab.count}
+                                        color={accent}
+                                        onClick={(e) => goToAbility(ab.name, e)}
+                                    />
+                                ))}
+                            </div>
+                        </Panel>
+
+                        <Panel title={pt ? 'Tera & Parceiros' : 'Tera & Teammates'} icon={<Sparkles className="h-4 w-4 text-muted" aria-hidden="true" />}>
                             {teraList.length > 0 && (
                                 <div className="mb-4 flex flex-wrap gap-1.5">
                                     {teraList.slice(0, 6).map((tt) => {
-                                        const c = typeColors[tt.name?.toLowerCase()] || 'var(--color-muted)';
+                                        const low = tt.name?.toLowerCase();
+                                        const c = typeColors[low] || null;
+                                        const tKey = `types.${low}`;
+                                        const tName = low && t(tKey) !== tKey ? t(tKey) : tt.name;
                                         return (
-                                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-semibold capitalize" style={{ color: toneInk(c), backgroundColor: toneWash(c) }}>
-                                                {typeIcons[tt.name?.toLowerCase()] && <img src={typeIcons[tt.name.toLowerCase()]} alt="" className="h-3.5 w-3.5" />}
-                                                {tt.name}{n > 0 && tt.count ? <span className="figure">{` ${pctOf(tt.count, n)}%`}</span> : ''}
+                                            <span
+                                                key={tt.name}
+                                                className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-2xs font-semibold capitalize"
+                                                style={c ? {
+                                                    color: toneInk(c),
+                                                    backgroundColor: toneWash(c, 14),
+                                                    borderColor: toneWash(c, 45),
+                                                } : { borderColor: 'transparent', backgroundColor: 'var(--color-surface-raised)', color: 'var(--color-fg)' }}
+                                            >
+                                                {typeIcons[low] && <img src={typeIcons[low]} alt="" className="h-3.5 w-3.5" aria-hidden="true" />}
+                                                {tName}
+                                                {n > 0 && tt.count ? <span className="figure">{pctOf(tt.count, n)}%</span> : ''}
                                             </span>
                                         );
                                     })}
                                 </div>
                             )}
                             {usage.teammates?.length > 0 ? (
-                                <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 xl:grid-cols-6">
+                                <div className="usage-teammates">
                                     {usage.teammates.slice(0, 12).map((tm) => {
                                         const resolvedTeam = resolveMegaPokemonEntry(tm, pokemonIndex, byStone);
+                                        const mateTone = typeColors[typesById.get(resolvedTeam.spriteId)?.[0] || typesById.get(tm.id)?.[0]];
+                                        const pct = pctOf(tm.count, n);
                                         return (
                                             <button
                                                 key={tm.id}
                                                 type="button"
                                                 onClick={() => navigate(fmtId ? `/meta/${resolvedTeam.spriteId}?fmt=${fmtId}` : `/meta/${resolvedTeam.spriteId}`, { state: linkState })}
-                                                title={`${pretty(resolvedTeam.name)} · ${pctOf(tm.count, n)}%`}
-                                                className="group flex flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 transition-colors hover:border-primary"
+                                                title={`${pretty(resolvedTeam.name)} · ${pct}%`}
+                                                className="usage-teammate"
                                             >
-                                                <img
-                                                    src={getPokemonFrontSpriteUrl(resolvedTeam.spriteId)}
-                                                    alt={resolvedTeam.name}
-                                                    className="h-10 w-10 image-pixelated shrink-0 object-contain"
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                />
-                                                <span className="text-2xs font-semibold text-fg truncate w-full text-center capitalize">{pretty(resolvedTeam.name).split('-')[0]}</span>
-                                                <span className="figure text-2xs font-semibold text-primary">{pctOf(tm.count, n)}%</span>
+                                                <span className="type-platform inline-flex" style={mateTone ? { '--card-type': mateTone } : undefined}>
+                                                    <img
+                                                        src={getPokemonFrontSpriteUrl(resolvedTeam.spriteId)}
+                                                        alt={resolvedTeam.name}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="h-10 w-10 shrink-0 object-contain image-pixelated"
+                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    />
+                                                </span>
+                                                <span className="usage-teammate__name">{pretty(resolvedTeam.name)}</span>
+                                                <span className="usage-teammate__pct">{pct}%</span>
                                             </button>
                                         );
                                     })}
@@ -378,59 +449,68 @@ export function PokemonUsageView() {
 
             {/* Curated Smogon sets (named sets with reasoning) */}
             {smogon?.sets?.length > 0 && (
-                <div className="mt-6">
-                    <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold text-muted">
-                        <Sparkles className="h-4 w-4" /> {pt ? 'Sets recomendados (Smogon)' : 'Recommended sets (Smogon)'}
+                <section className="mt-6">
+                    <h2 className="mb-3 flex items-center gap-1.5 text-md font-semibold text-fg">
+                        <Sparkles className="h-4 w-4 text-muted" aria-hidden="true" /> {pt ? 'Sets recomendados (Smogon)' : 'Recommended sets (Smogon)'}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                         {smogon.sets.map((set, i) => {
                             const { unit: spreadUnit, text: spread } = setSpreadParts(set);
+                            const teraColor = set.tera?.length > 0 ? typeColors[set.tera[0]?.toLowerCase()] : null;
                             return (
-                                <article
-                                    key={`${set.name}-${i}`}
-                                    className="rounded-2xl border border-border bg-surface p-4"
-                                >
+                                <article key={`${set.name}-${i}`} className="usage-set-card">
                                     <div className="mb-2.5 flex items-center justify-between gap-2">
                                         <h3 className="truncate text-sm font-semibold text-fg">{set.name}</h3>
-                                        {set.source && <span className="shrink-0 rounded-full bg-surface-raised px-2.5 py-0.5 text-2xs font-semibold text-muted uppercase tracking-[0.06em]">{set.source}</span>}
+                                        {set.source && <span className="usage-set-card__source">{set.source}</span>}
                                     </div>
                                     <div className="mb-3 flex flex-wrap gap-1.5 text-2xs">
                                         {set.item && (
-                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none">
-                                                <img src={itemSpriteUrl(slugify(set.item))} alt="" className="h-4 w-4 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-0.5 capitalize text-fg transition-colors hover:bg-surface-hover hover:text-primary focus:outline-none">
+                                                <img src={itemSpriteUrl(slugify(set.item))} alt="" className="h-4 w-4 shrink-0 image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                                 {pretty(set.item)}
                                             </button>
                                         )}
                                         {set.ability && (
-                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none">
+                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md bg-surface-raised px-2 py-0.5 capitalize text-fg transition-colors hover:bg-surface-hover hover:text-primary focus:outline-none">
                                                 {pretty(set.ability)}
                                             </button>
                                         )}
-                                        {set.nature && <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-fg">{set.nature}</span>}
+                                        {set.nature && <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">{set.nature}</span>}
                                         {set.tera?.length > 0 && (
-                                            <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold" style={{ color: toneInk(typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-primary)'), backgroundColor: toneWash(typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-muted)') }}>
-                                                <Sparkles className="h-3 w-3 shrink-0" /> {pt ? 'Tera' : 'Tera'} {set.tera[0]}
+                                            <span
+                                                className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold"
+                                                style={teraColor ? {
+                                                    color: toneInk(teraColor),
+                                                    backgroundColor: toneWash(teraColor, 14),
+                                                } : { backgroundColor: 'var(--color-surface-raised)', color: 'var(--color-fg)' }}
+                                            >
+                                                <Sparkles className="h-3 w-3 shrink-0" aria-hidden="true" /> {pt ? 'Tera' : 'Tera'} {set.tera[0]}
                                             </span>
                                         )}
                                     </div>
-                                    {spread && <p className="mb-3 text-2xs text-muted"><span className="font-semibold text-fg">{spreadUnit}:</span> {spread}</p>}
+                                    {spread && (
+                                        <p className="mb-3 text-2xs text-muted">
+                                            <span className="font-semibold text-fg">{spreadUnit}:</span>{' '}
+                                            <span className="figure">{spread}</span>
+                                        </p>
+                                    )}
                                     <div className="grid grid-cols-2 gap-1.5">
                                         {primaryMoves(set).map((mv) => (
-                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg text-2xs" />
+                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full justify-center rounded-lg py-1.5 text-center text-2xs" />
                                         ))}
                                     </div>
                                 </article>
                             );
                         })}
                     </div>
-                </div>
+                </section>
             )}
 
             {/* Recent tournament teams featuring this Pokémon */}
             {featuredTeams.length > 0 && (
-                <div className="mt-6">
-                    <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold text-muted">
-                        <Trophy className="h-4 w-4" /> {pt ? 'Times recentes com este Pokémon' : 'Recent teams featuring it'}
+                <section className="mt-6">
+                    <h2 className="mb-3 flex items-center gap-1.5 text-md font-semibold text-fg">
+                        <Trophy className="h-4 w-4 text-muted" aria-hidden="true" /> {pt ? 'Times recentes com este Pokémon' : 'Recent teams featuring it'}
                     </h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {featuredTeams.map((tm) => (
@@ -438,9 +518,9 @@ export function PokemonUsageView() {
                                 key={tm.id}
                                 type="button"
                                 onClick={() => navigate(`/tournaments/team/${tm.id}`, { state: linkState })}
-                                className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none"
+                                className="usage-featured-team group"
                             >
-                                <div className="flex shrink-0 -space-x-2">
+                                <div className="usage-featured-team__roster">
                                     {(tm.pokemons || []).slice(0, 6).map((p, i) => {
                                         const resolvedTourneyMon = resolveMegaPokemonEntry(p, pokemonIndex, byStone);
                                         return (
@@ -448,21 +528,23 @@ export function PokemonUsageView() {
                                                 key={`${p.id}-${i}`}
                                                 src={getPokemonFrontSpriteUrl(resolvedTourneyMon.spriteId)}
                                                 alt={resolvedTourneyMon.name}
-                                                className="h-8 w-8 image-pixelated shrink-0 object-contain bg-surface-raised rounded-full border border-surface"
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="usage-featured-team__mini image-pixelated"
                                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                             />
                                         );
                                     })}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-semibold text-fg group-hover:text-primary transition-colors">{tm.tournament || tm.title}</p>
-                                    <p className="truncate text-2xs font-semibold text-muted mt-0.5">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
+                                    <p className="truncate text-xs font-semibold text-fg transition-colors group-hover:text-primary">{tm.tournament || tm.title}</p>
+                                    <p className="mt-0.5 truncate text-2xs font-semibold tabular-nums text-muted">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
                                 </div>
-                                <ArrowUpRight className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-primary" />
+                                <ArrowUpRight className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-primary" aria-hidden="true" />
                             </button>
                         ))}
                     </div>
-                </div>
+                </section>
             )}
 
             <SourceCredit pt={pt} sources={['smogon', 'vgcpastes', 'pikalytics']} className="mt-8 border-t border-border pt-4" />

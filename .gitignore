@@ -62,3 +62,13 @@ keys/
 
 # npm run mascot:export output (docs/modules/mascot.md)
 mascot-export/
+
+# Third-party skills are tracked via skills-lock.json (commit 9db2dd42).
+# Project skills are tracked in .claude/skills/**/*.md.
+# .agents/skills/ is a merged discovery folder: never commit it.
+.agents/skills/
+
+# Local verification & prototype screenshot binaries (kept on disk, not in git)
+scratch/disruptive-design-lab/shots/
+scratch/app-verified-shots/
+scratch/verify-ui-pass/

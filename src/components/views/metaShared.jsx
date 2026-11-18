@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { ArrowUpRight, Info } from 'lucide-react';
 import { getPokemonFrontSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
@@ -8,23 +8,25 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { pretty } from '../../utils/metaFormat';
 import { toneInk, toneWash } from '../../utils/toneInk';
+import '../../styles/meta-view.css';
 
 /**
  * A move name rendered as a compact chip, tinted by its type (with the type
- * icon) when a type is known. Falls back to a neutral chip otherwise.
+ * icon) when a type is known. Falls back to a borderless raised chip otherwise
+ * so it never draws a nested border inside a card.
  * Clicking opens the move's detail page (accepts slugs or Showdown names).
  */
-export function MoveChip({ name, type, className = '' }) {
+export const MoveChip = memo(function MoveChip({ name, type, className = '' }) {
     const { goToMove } = useEntityNavigate();
     const color = type ? (typeColors[type] || null) : null;
     const style = color
-        ? { color: toneInk(color), backgroundColor: toneWash(color, 10), borderColor: toneWash(color, 33) }
+        ? { color: toneInk(color), backgroundColor: toneWash(color, 14), borderColor: toneWash(color, 45) }
         : undefined;
     return (
         <button
             type="button"
             onClick={(e) => goToMove(name, e)}
-            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-semibold capitalize transition-opacity hover:opacity-75 focus:outline-none ${color ? '' : 'border-border bg-surface-raised text-fg'}  ${className}`}
+            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-semibold capitalize transition-colors focus:outline-none ${color ? 'hover:opacity-80' : 'border-transparent bg-surface-raised text-fg hover:bg-surface-hover'} ${className}`}
             style={style}
             title={pretty(name)}
         >
@@ -32,7 +34,7 @@ export function MoveChip({ name, type, className = '' }) {
             <span className="truncate">{pretty(name)}</span>
         </button>
     );
-}
+});
 
 /**
  * The regulation / format selector shown on the Meta pages. Groups options by
@@ -51,7 +53,7 @@ export function RegulationSelect({ formats = [], value, onChange, pt = false, cl
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             aria-label={pt ? 'Regulamento' : 'Regulation'}
-            className={`rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg focus:border-primary focus:outline-none ${className}`}
+            className={`rounded-xl border border-border-strong bg-surface px-3 py-2 text-sm font-semibold text-fg focus:border-primary focus:outline-none ${className}`}
         >
             {groups.map((g) => (
                 <optgroup key={g.name} label={g.name}>
@@ -63,37 +65,48 @@ export function RegulationSelect({ formats = [], value, onChange, pt = false, cl
 }
 
 /**
- * A labelled horizontal percentage bar (pikalytics-style). `pct` drives the fill
- * width; `count` shows the raw frequency; `color` tints the fill. When used as a
- * button, `active` highlights the current selection and `trailing` renders an
- * affordance (e.g. a + / ✓ icon) at the end.
+ * AffectUI-inspired horizontal proportion bar. `pct` drives the crisp track
+ * width; `count` shows the raw frequency in tabular numerals; `color` sets
+ * `--bar-tone` (mixed into theme tokens in CSS, never raw hex ink). Borderless
+ * fill inside panels (0-1-2 containment); `active` uses an inset selection ring.
  */
-export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary)', onClick, title, active = false, trailing }) {
+export const UsageBar = memo(function UsageBar({
+    label,
+    icon,
+    pct,
+    count,
+    color = 'var(--color-primary)',
+    onClick,
+    title,
+    active = false,
+    trailing,
+}) {
     const Comp = onClick ? 'button' : 'div';
-    // The bar keeps the raw tone; the figure is a word, so it takes the
-    // legible ink (Volt's own text colour when the tone is the primary).
-    const ink = color === 'var(--color-primary)' ? 'var(--color-primary-text)' : toneInk(color);
+    const clampedPct = Math.min(Math.max(Number(pct) || 0, 2), 100);
+    const formattedCount = typeof count === 'number' ? count.toLocaleString() : count;
+
     return (
         <Comp
             type={onClick ? 'button' : undefined}
             onClick={onClick}
             title={title}
             aria-pressed={onClick ? active : undefined}
-            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border bg-surface px-2.5 py-1.5 text-left ${active ? 'border-primary ring-1 ring-primary/40' : 'border-border'}  ${onClick ? 'transition-colors hover:border-primary focus:outline-none' : ''}`}
+            className={`usage-bar ${active ? 'is-active' : ''}`}
+            style={{ '--bar-tone': color }}
         >
-            <span
-                className="absolute inset-y-0 left-0 rounded-lg opacity-15 transition-all"
-                style={{ width: `${Math.max(pct, 3)}%`, backgroundColor: color }}
-                aria-hidden="true"
-            />
-            {icon && <span className="relative z-10 flex h-4 w-4 shrink-0 items-center justify-center">{icon}</span>}
-            <span className="relative z-10 min-w-0 flex-1 truncate text-xs font-semibold capitalize text-fg">{label}</span>
-            <span className="figure relative z-10 shrink-0 text-2xs font-semibold" style={{ color: ink }}>{pct}%</span>
-            {count != null && <span className="figure relative z-10 shrink-0 text-2xs text-muted">{count}</span>}
-            {trailing && <span className="relative z-10 flex shrink-0 items-center justify-center">{trailing}</span>}
+            <span className="usage-bar__top">
+                {icon && <span className="usage-bar__icon">{icon}</span>}
+                <span className="usage-bar__label">{label}</span>
+                <span className="usage-bar__pct">{pct}%</span>
+                {formattedCount != null && <span className="usage-bar__count">{formattedCount}</span>}
+                {trailing && <span className="usage-bar__trailing">{trailing}</span>}
+            </span>
+            <span className="usage-bar__track" aria-hidden="true">
+                <span className="usage-bar__fill" style={{ width: `${clampedPct}%` }} />
+            </span>
         </Comp>
     );
-}
+});
 
 // Canonical credit links for the competitive datasets + design inspirations.
 const SOURCE_LINKS = {
@@ -107,35 +120,35 @@ const SOURCE_LINKS = {
  * A subtle, inline credit strip linking out to the data sources / inspirations.
  * `sources` picks which links to show (defaults to all).
  */
-export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'limitless', 'pikalytics'], className = '' }) {
+export const SourceCredit = memo(function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'limitless', 'pikalytics'], className = '' }) {
     const links = sources.map((k) => SOURCE_LINKS[k]).filter(Boolean);
     return (
         <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted ${className}`}>
             <span className="inline-flex items-center gap-1 font-medium">
-                <Info className="h-3 w-3" /> {pt ? 'Fontes' : 'Sources'}
+                <Info className="h-3 w-3" aria-hidden="true" /> {pt ? 'Fontes' : 'Sources'}
             </span>
             {links.map((s, i) => (
                 <React.Fragment key={s.url}>
-                    {i > 0 && <span className="opacity-40" aria-hidden="true">·</span>}
+                    {i > 0 && <span aria-hidden="true">·</span>}
                     <a
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="touch-target inline-flex items-center gap-0.5 underline-offset-2 transition-colors hover:text-primary hover:underline"
                     >
-                        {s.label}<ArrowUpRight className="h-2.5 w-2.5" />
+                        {s.label}<ArrowUpRight className="h-2.5 w-2.5" aria-hidden="true" />
                     </a>
                 </React.Fragment>
             ))}
         </div>
     );
-}
+});
 
 // A compact pixel sprite for a species id, with pokéball fallback.
-export function MonSprite({ id, name, item, className = 'h-12 w-12 image-pixelated' }) {
+export const MonSprite = memo(function MonSprite({ id, name, item, alt, className = 'h-12 w-12 image-pixelated' }) {
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const byStone = useMegaStones();
-    
+
     let resolvedId = id;
     if (name || item) {
         const resolved = resolveMegaPokemonEntry({ id, name, item }, pokemonIndex, byStone);
@@ -146,20 +159,21 @@ export function MonSprite({ id, name, item, className = 'h-12 w-12 image-pixelat
         <img
             src={getPokemonFrontSpriteUrl(resolvedId)}
             onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-            alt={name || ''}
+            alt={alt !== undefined ? alt : (name || '')}
             loading="lazy"
+            decoding="async"
             className={className}
         />
     );
-}
+});
 
-// Section wrapper matching the app's panel styling.
-export function Panel({ title, icon, children, right }) {
+// Section wrapper matching the app's 0-1-2 containment panel styling.
+export function Panel({ title, icon, children, right, className = '' }) {
     return (
-        <section className="rounded-2xl border border-border bg-surface p-4">
+        <section className={`meta-panel ${className}`}>
             {(title || right) && (
-                <div className="mb-3 flex items-center justify-between gap-2">
-                    <h2 className="flex items-center gap-1.5 text-sm font-bold text-fg">{icon}{title}</h2>
+                <div className="meta-panel__head">
+                    <h2 className="meta-panel__title">{icon}{title}</h2>
                     {right}
                 </div>
             )}

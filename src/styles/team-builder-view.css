@@ -2814,8 +2814,11 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Phone: the analysis chip (opens the sheet). */
+/* Phone: the analysis chip (opens the sheet) and Mascot Decision Card. */
 .team-builder-mobile__composer-analysis {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
     margin-top: var(--space-2_5);
 }
 
@@ -3608,4 +3611,213 @@
 
 .team-builder-mobile-card__info:focus-visible {
     box-shadow: var(--ring-logo-inset);
+}
+
+/* ==========================================================================
+   Mascot Tactical Decision Card (AffectUI × M3 Expressive, Peça 01).
+   Lives inside the bordered composer panel (depth 2): borderless tonal
+   `--color-surface-raised`, concentric `--radius-md`, zero nested 1px lines.
+   ========================================================================== */
+.tb-decision {
+    --mascot-bg: var(--color-surface-raised);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2_5);
+    min-width: 0;
+    padding: var(--space-3);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.tb-decision.is-applied {
+    --mascot-bg: color-mix(in srgb, var(--color-success) 8%, var(--color-surface-raised));
+    background: var(--mascot-bg);
+}
+
+.tb-decision__head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2_5);
+    min-width: 0;
+}
+
+.tb-decision__mascot {
+    flex-shrink: 0;
+}
+
+.tb-decision__lead {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.tb-decision__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-2);
+    min-width: 0;
+}
+
+.tb-decision__synergy {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.tb-decision__synergy-label {
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.tb-decision__synergy-nums {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg);
+}
+
+.tb-decision__arrow {
+    color: var(--color-muted);
+}
+
+.tb-decision__after,
+.tb-decision.is-applied .tb-decision__synergy-nums {
+    color: color-mix(in srgb, var(--color-success) 75%, var(--color-fg));
+}
+
+.tb-decision__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.3;
+    color: var(--color-fg);
+}
+
+.tb-decision__reason {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.45;
+    color: var(--color-fg-secondary);
+}
+
+.tb-decision__candidate {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2_5);
+    min-width: 0;
+}
+
+.tb-decision__stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+}
+
+.tb-decision__sprite {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.tb-decision__candidate-info {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.tb-decision__candidate-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.tb-decision__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.tb-decision__mult {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, var(--color-success) 75%, var(--color-fg));
+}
+
+.tb-decision__types {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.tb-decision__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+/* Soft Volt affirmative action with inset ring (zero 1px border inside card,
+   keeps Save as the sole filled Volt CTA on the Builder screen). */
+.tb-decision .tb-decision__apply {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-color: transparent;
+    background: var(--color-primary-soft);
+    color: var(--color-primary-text);
+    box-shadow: var(--ring-primary);
+    font-weight: var(--weight-semibold);
+}
+
+.tb-decision .tb-decision__apply:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-primary) 20%, var(--color-surface-raised));
+}
+
+.tb-decision .tb-decision__apply:active:not(:disabled) {
+    background: color-mix(in srgb, var(--color-primary) 26%, var(--color-surface-raised));
+}
+
+.tb-decision .tb-decision__apply:focus-visible {
+    box-shadow: var(--ring-logo);
+}
+
+.tb-decision .tb-decision__cycle {
+    flex: 0 1 auto;
+    min-width: 0;
+    border-color: transparent;
+    color: var(--color-fg-secondary);
+}
+
+.tb-decision__option-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
 }

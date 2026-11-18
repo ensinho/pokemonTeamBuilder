@@ -8,7 +8,7 @@
 import { getDaysSinceLaunch } from './pokePuzzle.js';
 
 /** The games of the band, in Enzo's order; the tier list closes it. */
-export const PLAY_TODAY_GAMES = ['challenge', 'pokepuzzle', 'tierList'];
+export const PLAY_TODAY_GAMES = ['challenge', 'pokepuzzle', 'quiz', 'tierList'];
 
 /** `11h07`, `0h45` — the time left until `resetAt`, never negative. */
 export function countdownLabel(now, resetAt) {
