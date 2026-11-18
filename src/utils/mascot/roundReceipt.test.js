@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-    dayReceipt, normalizeRound, receiptBars, receiptReady, roundReceipt, trainerNumber, withBaseline, withFullDay, withRoundTaken,
+    dayReceipt, mergeRounds, normalizeRound, receiptBars, receiptReady, roundReceipt, trainerNumber, withBaseline, withFullDay, withRoundTaken,
 } from './roundReceipt';
 
 const today = (over = {}) => ({
@@ -46,6 +46,17 @@ describe('the round record', () => {
         r = withFullDay(r, '2026-11-18');
         expect(r.fullDays).toBe(2);
         expect(r.lastFullDay).toBe('2026-11-18');
+    });
+
+    it('merges local and account round records keeping the larger fullDays and latest day', () => {
+        const merged = mergeRounds(
+            { fullDays: 2, lastFullDay: '2026-11-15', seenDay: '2026-11-15' },
+            { fullDays: 4, lastFullDay: '2026-11-18', seenDay: '2026-11-18', daySeen: '2026-11-18' }
+        );
+        expect(merged.fullDays).toBe(4);
+        expect(merged.lastFullDay).toBe('2026-11-18');
+        expect(merged.seenDay).toBe('2026-11-18');
+        expect(merged.daySeen).toBe('2026-11-18');
     });
 });
 

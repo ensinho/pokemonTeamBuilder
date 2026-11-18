@@ -38,6 +38,17 @@ export function normalizeMascotPrefs(raw) {
     return { tone, reactions: v.reactions !== false, shinyFound, costume, form, share: v.share !== false };
 }
 
+export function mergeMascotPrefs(local, remote) {
+    const a = normalizeMascotPrefs(local);
+    if (!remote || typeof remote !== 'object') return a;
+    const shinyFound = Boolean(a.shinyFound || remote.shinyFound);
+    return normalizeMascotPrefs({
+        ...a,
+        ...remote,
+        shinyFound,
+    });
+}
+
 const readPrefs = () => {
     try { return normalizeMascotPrefs(JSON.parse(localStorage.getItem(MASCOT_PREFS_KEY) || 'null')); } catch { return { ...DEFAULT_PREFS }; }
 };
@@ -59,6 +70,15 @@ export const useMascotStore = create((set, get) => ({
         const prefs = normalizeMascotPrefs({ ...get().prefs, ...patch });
         writePrefs(prefs);
         set({ prefs });
+    },
+    hydrate: (remote) => {
+        const prev = get().prefs;
+        const prefs = mergeMascotPrefs(prev, remote);
+        if (JSON.stringify(prev) !== JSON.stringify(prefs)) {
+            writePrefs(prefs);
+            set({ prefs });
+        }
+        return prefs;
     },
     /** The easter egg: three taps on the sparks. Unlocks the shiny tone for good. */
     foundShiny: () => { if (!get().prefs.shinyFound) get().setPrefs({ shinyFound: true }); },

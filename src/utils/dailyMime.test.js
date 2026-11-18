@@ -8,16 +8,19 @@ import { isDeviceKey, wipeUserStorage } from './sessionWipe.js';
 import {
     MIME_POOL,
     MIME_STORAGE_KEY,
+    applyAccountMime,
     applyMimeGuess,
     applyMimeNextClue,
     dailyMimeFor,
     formatMimeShareLine,
     formatMimeSquares,
     heightScaleMetrics,
+    mergeMimeDayStates,
     mimeClueSquares,
     mimeStageState,
     normalizeMimeDayState,
     pickMimeCandidates,
+    readMimeDayState,
 } from './dailyMime.js';
 
 const pokemonIndexJson = JSON.parse(
@@ -157,5 +160,29 @@ describe('dailyMime', () => {
         };
         const removed = wipeUserStorage({ local });
         expect(removed).toContain(MIME_STORAGE_KEY);
+    });
+
+    it('merges local and account mime progress for the same day', () => {
+        const dayKey = '2026-11-18';
+        const merged = mergeMimeDayStates(
+            { dayKey, clue: 2, wrongIds: [37], solved: false },
+            { dayKey, clue: 3, wrongIds: [58], solved: true, solvedAtClue: 3, shared: true },
+            dayKey
+        );
+        expect(merged.solved).toBe(true);
+        expect(merged.solvedAtClue).toBe(3);
+        expect(merged.wrongIds).toEqual([37, 58]);
+        expect(merged.shared).toBe(true);
+
+        const map = new Map();
+        const storage = {
+            get length() { return map.size; },
+            key: (i) => Array.from(map.keys())[i] ?? null,
+            getItem: (k) => map.get(k) ?? null,
+            setItem: (k, v) => map.set(k, String(v)),
+            removeItem: (k) => map.delete(k),
+        };
+        applyAccountMime(merged, dayKey, storage);
+        expect(readMimeDayState(dayKey, storage)).toEqual(merged);
     });
 });

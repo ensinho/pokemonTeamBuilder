@@ -155,6 +155,55 @@ export function withFullDay(round, dayKey) {
     return { ...round, fullDays: round.fullDays + 1, lastFullDay: dayKey };
 }
 
+const dayTuple = (day) => (isDay(day) ? day.split('-').map(Number) : null);
+
+const laterDay = (a, b) => {
+    const ta = dayTuple(a);
+    const tb = dayTuple(b);
+    if (!ta) return isDay(b) ? b : null;
+    if (!tb) return a;
+    for (let i = 0; i < 3; i += 1) {
+        if (ta[i] !== tb[i]) return ta[i] > tb[i] ? a : b;
+    }
+    return a;
+};
+
+/**
+ * Merge this device's round record with the account's persisted copy so
+ * `fullDays` (which drives the 5-day Surprise Egg) and receipt state follow
+ * the trainer across browsers and devices.
+ */
+export function mergeRounds(local, remote) {
+    const a = normalizeRound(local);
+    const b = normalizeRound(remote);
+    let last = a.last;
+    if (!last) last = b.last;
+    else if (b.last) {
+        if ((b.last.at || 0) > (a.last.at || 0)) last = b.last;
+        else if ((b.last.at || 0) === (a.last.at || 0) && laterDay(a.last.day, b.last.day) === b.last.day) last = b.last;
+    }
+
+    let fullDays = Math.max(a.fullDays, b.fullDays);
+    if (
+        a.fullDays > 0
+        && a.fullDays === b.fullDays
+        && a.lastFullDay
+        && b.lastFullDay
+        && a.lastFullDay !== b.lastFullDay
+    ) {
+        fullDays = a.fullDays + 1;
+    }
+
+    return normalizeRound({
+        v: 1,
+        last,
+        seenDay: laterDay(a.seenDay, b.seenDay),
+        fullDays,
+        lastFullDay: laterDay(a.lastFullDay, b.lastFullDay),
+        daySeen: laterDay(a.daySeen, b.daySeen),
+    });
+}
+
 /**
  * The day's receipt: one row per game, in the day's order.
  *

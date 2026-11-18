@@ -761,7 +761,6 @@ export function ProfileView({
     const dossierTone = typeColors[persona?.tone || mastery.tone] || undefined;
     const uidSeed = userId || 'guest';
     const shortTrainerCode = useMemo(() => trainerNumber(uidSeed).slice(0, 9), [uidSeed]);
-    const isDossierTab = activeTab === 'trainer';
 
     const heroCard = (
         <header className="profile-hero" style={dossierTone ? { '--dossier-tone': dossierTone } : undefined}>
@@ -883,49 +882,45 @@ export function ProfileView({
     );
 
     return (
-        <div className={`profile-view ${isDossierTab ? 'profile-view--dossier' : ''}`.trim()}>
-            {isDossierTab ? (
-                <div className="profile-dossier">
-                    <div className="profile-dossier__main">
-                        {heroCard}
-                        <MasteryEvolutionSection mastery={mastery} />
+        <div className="profile-view profile-view--dossier">
+            <div className="profile-layout">
+                <div className="profile-layout__main">
+                    {heroCard}
+
+                    {/* Four tabs instead of one long scroll. The tab lives in the URL (?tab=). */}
+                    <div role="tablist" aria-label={t('profile.tabsAria')} className="tabs profile-tabs">
+                        {PROFILE_TABS.map((tab) => (
+                            <button
+                                key={tab}
+                                type="button"
+                                role="tab"
+                                id={`profile-tab-${tab}`}
+                                aria-selected={activeTab === tab}
+                                aria-controls="profile-tab-panel"
+                                onClick={() => setActiveTab(tab)}
+                                className="tabs__item"
+                            >
+                                {t(`profile.tab_${tab}`)}
+                            </button>
+                        ))}
                     </div>
-                    <ProfileReceiptCard userId={uidSeed} fullDays={fullDays} isAnonymous={isAnonymous} />
-                </div>
-            ) : heroCard}
 
-            {/* Four tabs instead of one long scroll. The tab lives in the URL (?tab=). */}
-            <div role="tablist" aria-label={t('profile.tabsAria')} className="tabs profile-tabs">
-                {PROFILE_TABS.map((tab) => (
-                    <button
-                        key={tab}
-                        type="button"
-                        role="tab"
-                        id={`profile-tab-${tab}`}
-                        aria-selected={activeTab === tab}
-                        aria-controls="profile-tab-panel"
-                        onClick={() => setActiveTab(tab)}
-                        className="tabs__item"
+                    <div
+                        role="tabpanel"
+                        id="profile-tab-panel"
+                        aria-labelledby={`profile-tab-${activeTab}`}
+                        className="profile-panel"
                     >
-                        {t(`profile.tab_${tab}`)}
-                    </button>
-                ))}
-            </div>
+                        {activeTab === 'trainer' && (
+                            <>
+                                <MasteryEvolutionSection mastery={mastery} />
 
-            <div
-                role="tabpanel"
-                id="profile-tab-panel"
-                aria-labelledby={`profile-tab-${activeTab}`}
-                className="profile-panel"
-            >
-                {activeTab === 'trainer' && (
-                    <>
-                        {/* Both faces side by side (2026-11-12, "menos rolagem"): each
-                            tile is the face, its picker, and — once both exist — the
-                            choice of which one is public (the ring). It replaced two
-                            rows plus a third "main avatar" switch; frame and title,
-                            which dress the same face, joined as one row. */}
-                        <Section title={t('profile.sectionAvatar')} description={t('profile.sectionAvatarDesc')}>
+                                {/* Both faces side by side (2026-11-12, "menos rolagem"): each
+                                    tile is the face, its picker, and — once both exist — the
+                                    choice of which one is public (the ring). It replaced two
+                                    rows plus a third "main avatar" switch; frame and title,
+                                    which dress the same face, joined as one row. */}
+                                <Section title={t('profile.sectionAvatar')} description={t('profile.sectionAvatarDesc')}>
                             <div className="profile-faces" role={bothFaces ? 'radiogroup' : undefined} aria-label={bothFaces ? t('profile.avatarChoiceLabel') : undefined}>
                                 <FaceTile
                                     label={t('profile.avatarChoicePokemon')}
@@ -1191,6 +1186,12 @@ export function ProfileView({
                         )}
                     </>
                 )}
+                    </div>
+                </div>
+
+                <div className="profile-layout__aside">
+                    <ProfileReceiptCard userId={uidSeed} fullDays={fullDays} isAnonymous={isAnonymous} />
+                </div>
             </div>
         </div>
     );

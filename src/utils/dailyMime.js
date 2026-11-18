@@ -18,7 +18,11 @@
  */
 
 export const MIME_STORAGE_KEY = 'ptb:dailyMime';
+export const MIME_SYNC_EVENT = 'ptb:daily-mime';
 export const MIME_CLUE_COUNT = 5;
+
+let toAccount = null;
+export const setMimeToAccount = (push) => { toAccount = push; };
 export const TRAINER_HEIGHT_M = 1.6;
 export const MIME_EPOCH_DAY = 20740;
 /** Coprime with `MIME_POOL.length` (30): `gcd(7, 30) === 1` → full rotation. */
@@ -457,6 +461,41 @@ export function formatMimeShareLine({ number, clue, t }) {
     return `Mímica nº ${number} · na ${safeClue}ª pista ${squares}`;
 }
 
+/**
+ * Merge local and account copies of today's Mímica state:
+ * - solved in either is solved here (keeping the earliest solvedAtClue)
+ * - wrong guesses are a union, and open clue count is at least max(a, b, wrong+1)
+ * - shared to Diário in either is shared here
+ */
+export function mergeMimeDayStates(local, remote, dayKey) {
+    const a = normalizeMimeDayState(local, dayKey);
+    const b = normalizeMimeDayState(remote, dayKey);
+    const wrongIds = Array.from(new Set([...a.wrongIds, ...b.wrongIds])).slice(0, 4);
+    const solved = a.solved || b.solved;
+    const clue = Math.max(
+        a.clue,
+        b.clue,
+        Math.min(MIME_CLUE_COUNT, wrongIds.length + 1)
+    );
+    let solvedAtClue = null;
+    if (solved) {
+        if (a.solved && b.solved) {
+            solvedAtClue = Math.min(a.solvedAtClue || a.clue, b.solvedAtClue || b.clue);
+        } else {
+            solvedAtClue = a.solved ? (a.solvedAtClue || a.clue) : (b.solvedAtClue || b.clue);
+        }
+    }
+    return normalizeMimeDayState({
+        v: 1,
+        dayKey,
+        clue,
+        wrongIds,
+        solved,
+        solvedAtClue,
+        shared: a.shared || b.shared,
+    }, dayKey);
+}
+
 export function readMimeDayState(dayKey, storage = typeof window !== 'undefined' ? window.localStorage : null) {
     try {
         if (!storage) return normalizeMimeDayState(null, dayKey);
@@ -466,10 +505,29 @@ export function readMimeDayState(dayKey, storage = typeof window !== 'undefined'
     }
 }
 
-export function writeMimeDayState(state, storage = typeof window !== 'undefined' ? window.localStorage : null) {
+export function writeMimeDayState(
+    state,
+    storage = typeof window !== 'undefined' ? window.localStorage : null,
+    { syncAccount = true } = {}
+) {
     const clean = normalizeMimeDayState(state, state?.dayKey || '');
     try {
         if (storage) storage.setItem(MIME_STORAGE_KEY, JSON.stringify(clean));
     } catch { /* private mode */ }
+    const isBrowserDefault = typeof window !== 'undefined' && storage === window.localStorage;
+    if (isBrowserDefault) {
+        window.dispatchEvent(new CustomEvent(MIME_SYNC_EVENT));
+        if (syncAccount) {
+            Promise.resolve(toAccount?.(clean)).catch(() => {});
+        }
+    }
     return clean;
+}
+
+/** Merge the account's persisted `dailyMime` into local storage without echoing a write back. */
+export function applyAccountMime(remote, dayKey, storage = typeof window !== 'undefined' ? window.localStorage : null) {
+    const local = readMimeDayState(dayKey, storage);
+    const merged = mergeMimeDayStates(local, remote, dayKey);
+    if (JSON.stringify(merged) === JSON.stringify(local)) return merged;
+    return writeMimeDayState(merged, storage, { syncAccount: false });
 }

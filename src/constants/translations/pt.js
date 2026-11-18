@@ -4644,6 +4644,13 @@ export default {
         openDiaryRoom: 'Ir ao Diário do dia',
         doorLabel: 'Mímica do dia',
         doorHint: 'Adivinhe quem o mascote imita em 5 pistas',
+        beltShort: 'Mímica',
+        tabAll: 'Jogos do dia ({{n}}/{{total}})',
+        tabMime: 'A Mímica nº {{n}}',
+        clueProgress: 'Pista {{n}}/5',
+        solvedBadge: 'Resolvida ({{n}}/5)',
+        miniPlayCta: 'Adivinhar mímica',
+        miniSeeCta: 'Ver mímica do dia',
         shareFormat: 'Mímica nº {{n}} · na {{clue}}ª pista {{squares}}',
     },
 };

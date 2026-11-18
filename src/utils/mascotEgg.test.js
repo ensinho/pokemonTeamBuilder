@@ -7,8 +7,10 @@ import {
     EGG_CYCLE_DAYS,
     EGG_HATS,
     EGG_STORAGE_KEY,
+    applyAccountEgg,
     deriveEggProgress,
     hatchEggCycle,
+    mergeEggStates,
     normalizeEggState,
     readEggState,
     rewardForCycle,
@@ -94,5 +96,30 @@ describe('mascotEgg', () => {
         const equipped = withEquippedEggHat(base, 'witch');
         expect(equipped.equippedHat).toBe('witch');
         expect(withEquippedEggHat(equipped, null).equippedHat).toBeNull();
+    });
+
+    it('merges local and account egg progress without losing hatched cycles or unlocked hats', () => {
+        const local = makeMemoryStorage();
+        writeEggState({ hatchedCycles: 1, unlocked: ['witch'], equippedHat: null }, local);
+        const merged = applyAccountEgg(
+            { hatchedCycles: 2, unlocked: ['witch', 'cap'], equippedHat: 'cap' },
+            local
+        );
+        expect(merged).toEqual({
+            v: 1,
+            hatchedCycles: 2,
+            unlocked: ['witch', 'cap'],
+            equippedHat: 'cap',
+        });
+        expect(readEggState(local)).toEqual(merged);
+
+        // Local higher cycle wins when account is older
+        const ahead = mergeEggStates(
+            { hatchedCycles: 3, unlocked: ['witch', 'cap', 'headphones'], equippedHat: 'headphones' },
+            { hatchedCycles: 1, unlocked: ['witch'], equippedHat: null }
+        );
+        expect(ahead.hatchedCycles).toBe(3);
+        expect(ahead.unlocked).toEqual(['witch', 'cap', 'headphones']);
+        expect(ahead.equippedHat).toBe('headphones');
     });
 });

@@ -4682,6 +4682,13 @@ export default {
         openDiaryRoom: 'Open Diary thread',
         doorLabel: 'Daily Mime',
         doorHint: 'Guess who the mascot imitates in 5 clues',
+        beltShort: 'Mime',
+        tabAll: 'Daily games ({{n}}/{{total}})',
+        tabMime: 'Daily Mime #{{n}}',
+        clueProgress: 'Clue {{n}}/5',
+        solvedBadge: 'Solved ({{n}}/5)',
+        miniPlayCta: 'Play Daily Mime',
+        miniSeeCta: 'View Daily Mime',
         shareFormat: 'Daily Mime #{{n}} · clue {{clue}}/5 {{squares}}',
     },
 };

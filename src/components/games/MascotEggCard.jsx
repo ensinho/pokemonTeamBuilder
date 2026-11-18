@@ -11,6 +11,7 @@ import { toast } from '../../store/useToastStore';
 import { derivePersona } from '../../utils/trainerProfile';
 import {
     EGG_CYCLE_DAYS,
+    EGG_SYNC_EVENT,
     deriveEggProgress,
     hatchEggCycle,
     readEggState,
@@ -38,7 +39,7 @@ const CRACK_PATHS = [
  * the egg to reveal `<Mascot mood="radiante" pose="comemorando" hat={...} />`
  * + a Gold `ReceiptStamp`, with 1-tap equipping on `useMascotStore`.
  */
-export function MascotEggCard({ className = '' }) {
+export function MascotEggCard({ variant = 'rail', className = '' }) {
     const { t } = useTranslation();
     const fullDays = useRoundStore((s) => s.round?.fullDays || 0);
     const prefs = useMascotStore((s) => s.prefs);
@@ -51,11 +52,18 @@ export function MascotEggCard({ className = '' }) {
     const [wobbling, setWobbling] = useState(false);
 
     useEffect(() => {
-        const sync = () => {
-            if (document.visibilityState === 'visible') setEggState(readEggState());
+        const refresh = () => setEggState(readEggState());
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') refresh();
         };
-        document.addEventListener('visibilitychange', sync);
-        return () => document.removeEventListener('visibilitychange', sync);
+        window.addEventListener(EGG_SYNC_EVENT, refresh);
+        window.addEventListener('storage', refresh);
+        document.addEventListener('visibilitychange', onVisible);
+        return () => {
+            window.removeEventListener(EGG_SYNC_EVENT, refresh);
+            window.removeEventListener('storage', refresh);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
     }, []);
 
     const mascotToneCss = useMemo(() => {
@@ -129,42 +137,36 @@ export function MascotEggCard({ className = '' }) {
                 : t('egg.stageAria', { n: stepPillsFilled }),
         };
 
+    const isRail = variant === 'rail';
+
     return (
         <section
-            className={`mascot-egg-card ${progress.readyToHatch ? 'is-ready' : ''} ${isHatched ? 'is-hatched' : ''} ${className}`}
+            className={`mascot-egg-card ${isRail ? 'is-rail' : ''} ${progress.readyToHatch ? 'is-ready' : ''} ${isHatched ? 'is-hatched' : ''} ${className}`}
             style={{ '--egg-tone': mascotToneCss }}
             aria-label={t('egg.eyebrow')}
         >
-            <StageTag {...stageProps}>
-                <PixelScene kind={isHatched ? 'morning' : 'dusk'} seed={19} className="mascot-egg-card__scene" />
-                <span className="mascot-egg-card__aura" aria-hidden="true" />
+            <div className="mascot-egg-card__head">
+                <p className="mascot-egg-card__eyebrow">{t('egg.eyebrow')}</p>
+                <span className="mascot-egg-card__meter-text">
+                    {t('egg.meterLabel', { n: stepPillsFilled })}
+                </span>
+            </div>
 
-                <span className={`mascot-egg-card__egg ${wobbling ? 'is-wobbling' : ''}`} aria-hidden="true">
-                    <svg viewBox="0 0 132 168" focusable="false">
-                        <path
-                            d="M66 164C33 164 6 140 6 104c0-6 .7-12 2-18L21 95 34 84 47 95 60 84 73 95 86 84 99 95 112 84 124 86c1.3 6 2 12 2 18 0 36-27 60-60 60Z"
-                            fill="var(--receipt-paper)"
-                        />
-                        <circle cx="92" cy="118" r="15" fill="var(--egg-spot)" />
-                        <circle cx="52" cy="138" r="9" fill="var(--egg-spot)" />
-                        <g fill="none" stroke="var(--brand-ink)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                            {CRACK_PATHS.filter((c) => !c.top).map((c) => (
-                                <path
-                                    key={c.k}
-                                    d={c.d}
-                                    className={`mascot-egg-card__crack ${!isHatched && c.k < progress.crackCountVisible ? 'is-on' : ''}`}
-                                />
-                            ))}
-                        </g>
-                        <g className="mascot-egg-card__shell-top">
+            <div className="mascot-egg-card__main">
+                <StageTag {...stageProps}>
+                    <PixelScene kind={isHatched ? 'morning' : 'dusk'} seed={19} className="mascot-egg-card__scene" />
+                    <span className="mascot-egg-card__aura" aria-hidden="true" />
+
+                    <span className={`mascot-egg-card__egg ${wobbling ? 'is-wobbling' : ''}`} aria-hidden="true">
+                        <svg viewBox="0 0 132 168" focusable="false">
                             <path
-                                d="M66 4C38 4 15 42 8 86L21 95 34 84 47 95 60 84 73 95 86 84 99 95 112 84 124 86C117 42 94 4 66 4Z"
+                                d="M66 164C33 164 6 140 6 104c0-6 .7-12 2-18L21 95 34 84 47 95 60 84 73 95 86 84 99 95 112 84 124 86c1.3 6 2 12 2 18 0 36-27 60-60 60Z"
                                 fill="var(--receipt-paper)"
                             />
-                            <circle cx="44" cy="56" r="12" fill="var(--egg-spot)" />
-                            <circle cx="86" cy="32" r="7" fill="var(--egg-spot)" />
+                            <circle cx="92" cy="118" r="15" fill="var(--egg-spot)" />
+                            <circle cx="52" cy="138" r="9" fill="var(--egg-spot)" />
                             <g fill="none" stroke="var(--brand-ink)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                                {CRACK_PATHS.filter((c) => c.top).map((c) => (
+                                {CRACK_PATHS.filter((c) => !c.top).map((c) => (
                                     <path
                                         key={c.k}
                                         d={c.d}
@@ -172,94 +174,102 @@ export function MascotEggCard({ className = '' }) {
                                     />
                                 ))}
                             </g>
-                        </g>
-                    </svg>
-                </span>
-
-                {isHatched && (
-                    <span className="mascot-egg-card__hatchling">
-                        <Mascot
-                            size="xl"
-                            framing="body"
-                            mood="radiante"
-                            pose="comemorando"
-                            hat={unlockedHat}
-                            seasonal={false}
-                            play={justHatched ? 'celebrate' : undefined}
-                        />
+                            <g className="mascot-egg-card__shell-top">
+                                <path
+                                    d="M66 4C38 4 15 42 8 86L21 95 34 84 47 95 60 84 73 95 86 84 99 95 112 84 124 86C117 42 94 4 66 4Z"
+                                    fill="var(--receipt-paper)"
+                                />
+                                <circle cx="44" cy="56" r="12" fill="var(--egg-spot)" />
+                                <circle cx="86" cy="32" r="7" fill="var(--egg-spot)" />
+                                <g fill="none" stroke="var(--brand-ink)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                    {CRACK_PATHS.filter((c) => c.top).map((c) => (
+                                        <path
+                                            key={c.k}
+                                            d={c.d}
+                                            className={`mascot-egg-card__crack ${!isHatched && c.k < progress.crackCountVisible ? 'is-on' : ''}`}
+                                        />
+                                    ))}
+                                </g>
+                            </g>
+                        </svg>
                     </span>
-                )}
-            </StageTag>
 
-            <div className="mascot-egg-card__body">
+                    {isHatched && (
+                        <span className="mascot-egg-card__hatchling">
+                            <Mascot
+                                size={isRail ? 'lg' : 'xl'}
+                                framing="body"
+                                mood="radiante"
+                                pose="comemorando"
+                                hat={unlockedHat}
+                                seasonal={false}
+                                play={justHatched ? 'celebrate' : undefined}
+                            />
+                        </span>
+                    )}
+                </StageTag>
+
                 <div className="mascot-egg-card__copy">
-                    <div className="mascot-egg-card__head">
-                        <p className="mascot-egg-card__eyebrow">{t('egg.eyebrow')}</p>
-                        {unlockedTotal > 0 && (
-                            <span className="mascot-egg-card__unlocked">
-                                {unlockedTotal === 1
-                                    ? t('egg.unlockedOne')
-                                    : t('egg.unlockedCount', { n: unlockedTotal })}
-                            </span>
-                        )}
-                    </div>
                     <h3 className="mascot-egg-card__title">{title}</h3>
                     <p className="mascot-egg-card__sub">{subtitle}</p>
+                    {unlockedTotal > 0 && (
+                        <span className="mascot-egg-card__unlocked">
+                            {unlockedTotal === 1
+                                ? t('egg.unlockedOne')
+                                : t('egg.unlockedCount', { n: unlockedTotal })}
+                        </span>
+                    )}
                 </div>
+            </div>
 
-                <ol className="mascot-egg-card__steps" aria-label={t('egg.meterLabel', { n: stepPillsFilled })}>
-                    {[1, 2, 3, 4, 5].map((step) => (
-                        <li
-                            key={step}
-                            className={`mascot-egg-card__pill ${step <= stepPillsFilled ? 'is-filled' : ''}`}
+            <ol className="mascot-egg-card__steps" aria-label={t('egg.meterLabel', { n: stepPillsFilled })}>
+                {[1, 2, 3, 4, 5].map((step) => (
+                    <li
+                        key={step}
+                        className={`mascot-egg-card__pill ${step <= stepPillsFilled ? 'is-filled' : ''}`}
+                    >
+                        {t('egg.dayPill', { n: step })}
+                    </li>
+                ))}
+            </ol>
+
+            {(progress.readyToHatch || isHatched) && (
+                <div className="mascot-egg-card__actions">
+                    {progress.readyToHatch && (
+                        <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={handleStageInteract}
                         >
-                            {t('egg.dayPill', { n: step })}
-                        </li>
-                    ))}
-                </ol>
+                            <Sparkles aria-hidden="true" />
+                            {t('egg.hatchCta')}
+                        </button>
+                    )}
 
-                <div className="mascot-egg-card__footer">
-                    <span className="mascot-egg-card__meter-text">
-                        {t('egg.meterLabel', { n: stepPillsFilled })}
-                    </span>
-
-                    <div className="mascot-egg-card__actions">
-                        {progress.readyToHatch && (
+                    {isHatched && (
+                        <>
+                            <div className="mascot-egg-card__stamp-wrap">
+                                <ReceiptStamp
+                                    gold
+                                    press={justHatched}
+                                    mood="radiante"
+                                    hat={unlockedHat}
+                                    sub={t('egg.stampSub')}
+                                    word={t(`egg.hats.${unlockedHat}`)}
+                                />
+                            </div>
                             <button
                                 type="button"
                                 className="btn btn-secondary btn-sm"
-                                onClick={handleStageInteract}
+                                disabled={isEquipped}
+                                onClick={handleEquip}
                             >
-                                <Sparkles aria-hidden="true" />
-                                {t('egg.hatchCta')}
+                                {isEquipped ? t('egg.equipped') : t('egg.equipCta')}
                             </button>
-                        )}
-
-                        {isHatched && (
-                            <>
-                                <div className="mascot-egg-card__stamp-wrap">
-                                    <ReceiptStamp
-                                        gold
-                                        press={justHatched}
-                                        mood="radiante"
-                                        hat={unlockedHat}
-                                        sub={t('egg.stampSub')}
-                                        word={t(`egg.hats.${unlockedHat}`)}
-                                    />
-                                </div>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary btn-sm"
-                                    disabled={isEquipped}
-                                    onClick={handleEquip}
-                                >
-                                    {isEquipped ? t('egg.equipped') : t('egg.equipCta')}
-                                </button>
-                            </>
-                        )}
-                    </div>
+                        </>
+                    )}
                 </div>
-            </div>
+            )}
         </section>
     );
 }

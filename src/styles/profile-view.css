@@ -18,22 +18,25 @@
 
 .profile-view {
     width: 100%;
-    max-width: 46rem;
+    max-width: 66rem;
     margin: 0 auto;
-    padding-block: var(--space-2) var(--space-16);
+    padding-block: var(--space-2) var(--space-12);
 }
 
-.profile-dossier {
+.profile-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
     align-items: start;
 }
 
-.profile-dossier__main {
+.profile-layout__main {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    min-width: 0;
+}
+
+.profile-layout__aside {
     min-width: 0;
 }
 
@@ -52,7 +55,7 @@
 
 .profile-hero__banner {
     position: relative;
-    height: 6.5rem;
+    height: 5.5rem;
     overflow: hidden;
     background:
         radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--dossier-tone) 68%, var(--color-fg)) 0%, transparent 70%),
@@ -106,8 +109,8 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: end;
-    gap: var(--space-4);
-    padding: 0 var(--space-6) var(--space-6);
+    gap: var(--space-3_5);
+    padding: 0 var(--space-5) var(--space-5);
 }
 
 /* Round at every size: an equipped frame makes it round anyway, and a square
@@ -324,13 +327,13 @@
 
 /* ---- Tabs and sections -------------------------------------------------------- */
 
-.profile-tabs { margin-top: var(--space-6); }
+.profile-tabs { margin-top: var(--space-4); }
 
 .profile-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
-    margin-top: var(--space-5);
+    gap: var(--space-5);
+    margin-top: var(--space-4);
 }
 
 .profile-panel > .section + .section { margin-top: 0; }
@@ -698,8 +701,8 @@
 .profile-mastery {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
-    padding: var(--space-5) var(--space-6);
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-surface);
@@ -860,13 +863,13 @@
 .profile-receipt {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2_5);
-    width: min(100%, 21rem);
+    gap: var(--space-2);
+    width: min(100%, 20.5rem);
     margin-inline: auto;
 }
 
 .profile-receipt__sky-wrap {
-    height: 3.5rem;
+    height: 2.75rem;
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
     overflow: hidden;
@@ -879,12 +882,12 @@
 }
 
 .profile-receipt .receipt {
-    gap: var(--space-2_5);
-    padding: var(--space-4) var(--space-4) calc(var(--space-5) + var(--tear));
+    gap: var(--space-2);
+    padding: var(--space-3_5) var(--space-4) calc(var(--space-4) + var(--tear));
 }
 
 .profile-receipt .receipt__bars {
-    height: 1.75rem;
+    height: 1.5rem;
 }
 
 /* Paper stays light on every theme (--receipt-paper), so secondary/ghost
@@ -911,11 +914,17 @@
 
 @media (min-width: 1024px) {
     .profile-view.profile-view--dossier {
-        max-width: 64rem;
+        max-width: 66rem;
     }
 
-    .profile-dossier {
-        grid-template-columns: minmax(0, 1fr) 21rem;
+    .profile-layout {
+        grid-template-columns: minmax(0, 1fr) 20.5rem;
+        gap: var(--space-6);
+    }
+
+    .profile-layout__aside {
+        position: sticky;
+        top: calc(var(--app-shell-top-band-height, 3.75rem) + var(--space-4));
     }
 
     .profile-receipt {

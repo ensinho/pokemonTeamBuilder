@@ -24,12 +24,20 @@
    a guess about the chrome above and below it, and it goes stale the moment
    either moves (see docs/wounds.md, 2026-09-10).
    -------------------------------------------------------------------------- */
+.app-shell__content:has(.forum-view) {
+    overflow-y: hidden;
+}
+
 .app-shell__content:has(.forum-view) .app-shell__body,
 .app-shell__content:has(.forum-view) .app-shell__page-frame {
     display: flex;
     flex-direction: column;
     flex: 1 1 0;
     min-height: 0;
+}
+
+.app-shell__content:has(.forum-view) .app-shell__body {
+    padding-block: var(--space-2) 0;
 }
 
 .forum-view {
@@ -2637,7 +2645,7 @@ summary.forum-explorer__heading:focus-visible {
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
-    padding: var(--space-5) var(--space-3) var(--space-6) 0;
+    padding: var(--space-3) var(--space-3) var(--space-5) 0;
 }
 
 /* Room for an avatar's reward frame (rewards, 2026-10-17): the rings sit
@@ -3110,7 +3118,7 @@ summary.forum-explorer__heading:focus-visible {
 
 .thread-composer-dock {
     flex-shrink: 0;
-    padding: var(--space-3) 0;
+    padding: var(--space-2_5) 0 var(--space-3);
     border-top: 1px solid var(--color-border);
 }
 

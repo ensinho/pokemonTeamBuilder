@@ -15,7 +15,11 @@
  */
 
 export const EGG_STORAGE_KEY = 'ptb:mascot:egg';
+export const EGG_SYNC_EVENT = 'ptb:mascot-egg';
 export const EGG_CYCLE_DAYS = 5;
+
+let toAccount = null;
+export const setEggToAccount = (push) => { toAccount = push; };
 
 /**
  * Surprise hats unlocked across 5-day cycles. Every key is a real entry in
@@ -170,6 +174,25 @@ export function storeCostumeForEggHat(hat) {
     return EGG_COSTUME_MAP[hat] || 'none';
 }
 
+/**
+ * Merge local and account egg records: hatched cycles never decrease,
+ * unlocked hats are a union, and the equipped hat follows the account
+ * (falling back to local if account has none).
+ */
+export function mergeEggStates(local, remote) {
+    const a = normalizeEggState(local);
+    const b = normalizeEggState(remote);
+    const hatchedCycles = Math.max(a.hatchedCycles, b.hatchedCycles);
+    const unlocked = [...a.unlocked, ...b.unlocked];
+    const candidateHat = b.equippedHat || a.equippedHat || null;
+    return normalizeEggState({
+        v: 1,
+        hatchedCycles,
+        unlocked,
+        equippedHat: candidateHat,
+    });
+}
+
 export function readEggState(storage = typeof window !== 'undefined' ? window.localStorage : null) {
     try {
         if (!storage) return normalizeEggState(null);
@@ -179,10 +202,29 @@ export function readEggState(storage = typeof window !== 'undefined' ? window.lo
     }
 }
 
-export function writeEggState(state, storage = typeof window !== 'undefined' ? window.localStorage : null) {
+export function writeEggState(
+    state,
+    storage = typeof window !== 'undefined' ? window.localStorage : null,
+    { syncAccount = true } = {}
+) {
     const clean = normalizeEggState(state);
     try {
         if (storage) storage.setItem(EGG_STORAGE_KEY, JSON.stringify(clean));
     } catch { /* private mode: persists for this session */ }
+    const isBrowserDefault = typeof window !== 'undefined' && storage === window.localStorage;
+    if (isBrowserDefault) {
+        window.dispatchEvent(new Event(EGG_SYNC_EVENT));
+        if (syncAccount) {
+            Promise.resolve(toAccount?.(clean)).catch(() => {});
+        }
+    }
     return clean;
+}
+
+/** Merge the account's persisted `mascotEgg` into local storage without echoing a write back. */
+export function applyAccountEgg(remote, storage = typeof window !== 'undefined' ? window.localStorage : null) {
+    const local = readEggState(storage);
+    const merged = mergeEggStates(local, remote);
+    if (JSON.stringify(merged) === JSON.stringify(local)) return merged;
+    return writeEggState(merged, storage, { syncAccount: false });
 }
