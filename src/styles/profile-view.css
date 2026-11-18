@@ -177,24 +177,23 @@
 .profile-stat {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-0_5);
     min-width: 0;
+    padding-inline: var(--space-2);
+    text-align: center;
 }
 
 .profile-stat + .profile-stat {
-    padding-left: var(--space-4);
     box-shadow: inset 1px 0 0 var(--color-border);
 }
 
 .profile-stat dt {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1_5);
     font-size: var(--text-xs);
     color: var(--color-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    order: 1;
 }
 
 .profile-stat__icon {
@@ -622,12 +621,11 @@
     }
 
     .profile-stat {
-        padding-right: var(--space-3);
+        padding-inline: var(--space-4);
     }
 
     .profile-stat + .profile-stat,
     .profile-stat:first-child {
-        padding-left: var(--space-4);
         box-shadow: inset 1px 0 0 var(--color-border);
     }
 }
@@ -763,7 +761,6 @@ button.profile-face__choose:focus-visible { outline: none; box-shadow: var(--rin
     .profile-avatar-button__sprite { width: 3.25rem; height: 3.25rem; }
     .profile-hero__name { font-size: var(--text-xl); }
     .profile-stats { padding-top: var(--space-4); }
-    .profile-stat + .profile-stat { padding-left: var(--space-3); }
     .profile-stat dd { font-size: var(--text-lg); }
     .profile-hero__actions .btn { flex: 1 1 0; }
     .profile-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

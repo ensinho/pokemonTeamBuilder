@@ -22,9 +22,9 @@ import { auth } from '../../services/firebase';
 import { sendEmailVerification } from 'firebase/auth';
 import { useToastStore } from '../../store/useToastStore';
 import {
-    EditIcon, StarsIcon, SavedTeamsIcon, SunIcon, MoonIcon, RefreshIcon,
+    EditIcon, SunIcon, MoonIcon, RefreshIcon,
 } from '../icons';
-import { Flame, Languages, Lock, Check, ChevronRight, Type } from 'lucide-react';
+import { Languages, Lock, Check, ChevronRight, Type } from 'lucide-react';
 import { TextSizeControl } from '../TextSizeControl';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
@@ -548,7 +548,6 @@ export function ProfileView({
 
     // The streak as it stands today: a lapsed one reads 0 (utils/dailyCheckin.js).
     const streakCount = liveStreak(streak);
-    const streakLongest = Math.max(streak?.longest || 0, streakCount);
     const partnerSrc = greetingPokemonId ? getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny }) : null;
     const trainerSrc = trainerSprite ? trainerSpriteUrl(trainerSprite) : null;
     const bothFaces = Boolean(trainerSprite && greetingPokemonId);
@@ -641,19 +640,16 @@ export function ProfileView({
 
                 <dl className="profile-stats">
                     <div className="profile-stat">
-                        <dt title={t('profile.currentStreak')}><Flame className="profile-stat__icon" aria-hidden="true" />{t('profile.streakShort')}</dt>
+                        <dt title={t('profile.currentStreak')}>{t('profile.streakShort')}</dt>
                         <dd>{streakCount}<span className="profile-stat__unit">d</span></dd>
-                        <dd className="profile-stat__note">{t('profile.bestStreak', { count: streakLongest })}</dd>
                     </div>
                     <div className="profile-stat">
-                        <dt><SavedTeamsIcon className="profile-stat__icon" aria-hidden="true" />{t('profile.statsTeams')}</dt>
+                        <dt>{t('profile.statsTeams')}</dt>
                         <dd>{savedTeamsCount}</dd>
-                        <dd className="profile-stat__note">{t('profile.statsTeamsSaved')}</dd>
                     </div>
                     <div className="profile-stat">
-                        <dt><StarsIcon className="profile-stat__icon" aria-hidden="true" />{t('profile.statsFavorites')}</dt>
+                        <dt>{t('profile.statsFavorites')}</dt>
                         <dd>{favoritePokemonsCount}</dd>
-                        <dd className="profile-stat__note">{t('profile.statsFavoritesPokemon')}</dd>
                     </div>
                 </dl>
 

@@ -8,6 +8,7 @@ import { championArt } from '../../utils/challengeArt';
 import { nextResetAt } from '../../utils/challengeDay';
 import { localDayKey } from '../../utils/dailyCheckin';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+import { navHue } from '../../utils/navHue';
 import { countdownLabel, crowdLine, puzzleNumberOn } from '../../utils/playToday';
 import { TIER_BALLS } from '../../utils/tierList';
 
@@ -15,11 +16,13 @@ import { TIER_BALLS } from '../../utils/tierList';
  * "Jogue hoje" (2026-11-15, the proposal's option A — Enzo): the day's games
  * right under the landing's hero, so the draw starts before any sign-up. The
  * Champion leads as the band's one loud object (the hero's tint, the Volt
- * action), then the PokéPuzzle and the tier list, calm. The figures are the
- * day's own: the clock to the next team, the puzzle's number, how many played
- * (useTodayCrowd, read once the page is idle). The rules are utils/playToday.js.
+ * action), then PokéPuzzle, Quiz of the Day and Tier List of the Day, calm.
+ * The figures are the day's own: the clock to the next team, the puzzle's
+ * number, how many played (useTodayCrowd, read once the page is idle).
+ * The rules are utils/playToday.js.
  */
 
+const QUIZ_ART = [133, 196, 197];
 const TIER_ART = [['S', [7, 4]], ['A', [1, 393]], ['B', [155]]];
 
 function Crowd({ line, game }) {
@@ -70,7 +73,7 @@ export function LandingPlayToday({ onLeave }) {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/pokepuzzle" className="play-card" style={{ '--hero-type': typeColors.ghost }} onClick={() => onLeave('play_puzzle')}>
+                    <Link to="/pokepuzzle" className="play-card" style={{ '--hero-type': navHue('pokepuzzle') }} onClick={() => onLeave('play_puzzle')}>
                         <span className="play-card__text">
                             <span className="play-card__kicker">{t('landing.playToday.puzzle.kicker', { n: puzzleNumberOn(localDayKey(new Date(now))) })}</span>
                             <span className="play-card__name">{t('landing.playToday.puzzle.name')}</span>
@@ -85,9 +88,33 @@ export function LandingPlayToday({ onLeave }) {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/tier-list" className="play-card" style={{ '--hero-type': typeColors.ice }} onClick={() => onLeave('play_tierlist')}>
+                    <Link to="/quiz?tab=categories&daily=1" className="play-card" style={{ '--hero-type': navHue('generationQuiz') }} onClick={() => onLeave('play_quiz')}>
                         <span className="play-card__text">
-                            <span className="play-card__kicker">{t('nav.tierList')}</span>
+                            <span className="play-card__kicker">{t('landing.playToday.quiz.kicker')}</span>
+                            <span className="play-card__name">{t('landing.playToday.quiz.name')}</span>
+                            <span className="play-card__line">{t('landing.playToday.quiz.line')}</span>
+                            <span className="btn btn-secondary btn-sm play-card__cta">{t('landing.playToday.quiz.cta')}</span>
+                        </span>
+                        <span className="play-card__art play-card__art--quiz" aria-hidden="true">
+                            {QUIZ_ART.map((id, idx) => (
+                                <img
+                                    key={id}
+                                    className={`play-card__quiz-sprite ${idx > 0 ? 'is-unknown' : ''}`}
+                                    src={getPokemonFrontSpriteUrl(id)}
+                                    alt=""
+                                    width={56}
+                                    height={56}
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                            ))}
+                        </span>
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/tier-list?daily=1" className="play-card" style={{ '--hero-type': navHue('tierList') }} onClick={() => onLeave('play_tierlist')}>
+                        <span className="play-card__text">
+                            <span className="play-card__kicker">{t('landing.playToday.tierList.kicker')}</span>
                             <span className="play-card__name">{t('landing.playToday.tierList.name')}</span>
                             <span className="play-card__line">{t('landing.playToday.tierList.line')}</span>
                             <span className="btn btn-secondary btn-sm play-card__cta">{t('landing.playToday.tierList.cta')}</span>

@@ -6,6 +6,11 @@ describe('playToday', () => {
         expect(PLAY_TODAY_GAMES.slice(0, 2)).toEqual(['challenge', 'pokepuzzle']);
     });
 
+    it('showcases all four daily games', () => {
+        expect(PLAY_TODAY_GAMES).toEqual(['challenge', 'pokepuzzle', 'quiz', 'tierList']);
+        expect(PLAY_TODAY_GAMES).toHaveLength(4);
+    });
+
     it('counts down in hours and padded minutes, never below zero', () => {
         const now = Date.UTC(2026, 10, 15, 12, 53);
         expect(countdownLabel(now, now + (11 * 60 + 7) * 60000)).toBe('11h07');
