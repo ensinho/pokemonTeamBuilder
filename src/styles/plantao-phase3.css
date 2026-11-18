@@ -1,0 +1,723 @@
+/* ==========================================================================
+   Fase 3 — "Fantasminha de Plantão" (Peça 05: O Ovo Surpresa & A Mímica)
+   --------------------------------------------------------------------------
+   Strict M3 Expressive + Neon Sticker discipline:
+   - Borderless tonal containment (0 nested solid borders; concentric radii)
+   - 100% --space-* spacing grid, 0 raw hex / rgb / rgba, 0 viewport units
+   - Gold (--brand-gold) strictly reserved for earned/hatched states
+   - Official silhouette ONLY on clue 5; celebration ONLY on fresh user act
+   ========================================================================== */
+
+/* ── 1. O Ovo Surpresa (components/games/MascotEggCard.jsx) ─────────────── */
+
+.mascot-egg-card {
+    --egg-tone: var(--mascot-brand);
+    --egg-spot: color-mix(in srgb, var(--egg-tone) 74%, var(--receipt-paper));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .mascot-egg-card {
+        grid-template-columns: 13.5rem minmax(0, 1fr);
+        align-items: stretch;
+        gap: var(--space-5);
+    }
+}
+
+.mascot-egg-card__stage {
+    position: relative;
+    display: grid;
+    place-items: end center;
+    min-height: 11.5rem;
+    padding: var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.mascot-egg-card__stage.is-interactive {
+    cursor: pointer;
+}
+
+.mascot-egg-card__stage:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.mascot-egg-card__scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* Soft concentric aura ring (never conic rays per loaded-symbol rule) */
+.mascot-egg-card__aura {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-3);
+    width: 8.5rem;
+    height: 8.5rem;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        color-mix(in srgb, var(--brand-gold) 44%, transparent) 0%,
+        color-mix(in srgb, var(--brand-gold) 18%, transparent) 48%,
+        transparent 72%
+    );
+    opacity: 0;
+    scale: 0.7;
+    pointer-events: none;
+    z-index: 1;
+    transition:
+        opacity var(--duration-slow) var(--ease-smooth),
+        scale var(--duration-glide) var(--ease-glide);
+}
+
+.mascot-egg-card.is-hatched .mascot-egg-card__aura {
+    opacity: 1;
+    scale: 1;
+}
+
+.mascot-egg-card__egg {
+    position: relative;
+    z-index: 2;
+    width: 5.75rem;
+    height: 7.25rem;
+    transform-origin: 50% 92%;
+    transition:
+        opacity var(--duration-slow) var(--ease-smooth),
+        scale var(--duration-pop) var(--ease-pop);
+}
+
+.mascot-egg-card__egg svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.mascot-egg-card__crack {
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.mascot-egg-card__crack.is-on {
+    opacity: 1;
+}
+
+.mascot-egg-card__shell-top {
+    transform-origin: 50% 60%;
+    transition:
+        transform var(--duration-pop) var(--ease-pop),
+        opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.mascot-egg-card.is-hatched .mascot-egg-card__shell-top {
+    transform: translate(0.9rem, -2.6rem) rotate(24deg);
+    opacity: 0;
+}
+
+.mascot-egg-card.is-hatched .mascot-egg-card__egg {
+    opacity: 0.22;
+    scale: 0.88;
+}
+
+.mascot-egg-card__hatchling {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-2);
+    z-index: 3;
+    translate: -50% 0.75rem;
+    scale: 0.5;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        translate var(--duration-pop) var(--ease-pop),
+        scale var(--duration-pop) var(--ease-pop),
+        opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.mascot-egg-card.is-hatched .mascot-egg-card__hatchling {
+    translate: -50% 0;
+    scale: 1;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .mascot-egg-card__egg.is-wobbling {
+        animation: mascot-egg-wobble 520ms var(--ease-pop) 1;
+    }
+
+    .mascot-egg-card.is-ready .mascot-egg-card__egg {
+        animation: mascot-egg-ready 2400ms var(--ease-smooth) infinite;
+    }
+}
+
+@keyframes mascot-egg-wobble {
+    0%, 100% { rotate: 0deg; }
+    25% { rotate: -8deg; }
+    55% { rotate: 7deg; }
+    80% { rotate: -4deg; }
+}
+
+@keyframes mascot-egg-ready {
+    0%, 82%, 100% { rotate: 0deg; }
+    88% { rotate: -5deg; }
+    94% { rotate: 5deg; }
+}
+
+.mascot-egg-card__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.mascot-egg-card__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.mascot-egg-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.mascot-egg-card__eyebrow {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+}
+
+.mascot-egg-card__unlocked {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.mascot-egg-card__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--color-fg);
+}
+
+.mascot-egg-card__sub {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    line-height: 1.45;
+}
+
+.mascot-egg-card__steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mascot-egg-card__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-full);
+    border: 1.5px dashed var(--color-border-strong);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+}
+
+.mascot-egg-card__pill.is-filled {
+    border-style: solid;
+    border-color: transparent;
+    background: color-mix(in srgb, var(--egg-tone) 16%, transparent);
+    color: color-mix(in srgb, var(--egg-tone) 45%, var(--color-fg));
+}
+
+/* Gold ONLY when hatched */
+.mascot-egg-card.is-hatched .mascot-egg-card__pill.is-filled {
+    background: var(--brand-gold);
+    color: var(--brand-on-gold);
+    font-weight: var(--weight-semibold);
+}
+
+.mascot-egg-card__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.mascot-egg-card__meter-text {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.mascot-egg-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.mascot-egg-card__stamp-wrap {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--receipt-paper);
+}
+
+.mascot-egg-card__stamp-wrap .receipt-stamp {
+    font-size: var(--text-xs);
+    padding: var(--space-1_5) var(--space-3);
+}
+
+.mascot-egg-card__stamp-wrap .receipt-stamp.is-pressed {
+    animation-delay: 60ms;
+}
+
+/* ── 2. A Mímica no Diário (components/forum/DailyMimeCard.jsx) ─────────── */
+
+.daily-mime-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.daily-mime-section__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.daily-mime-section__title {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+}
+
+.daily-mime {
+    --mime-tone: var(--mascot-brand);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    min-width: 0;
+}
+
+.daily-mime.is-in-diary {
+    grid-column: 1 / -1;
+    margin-top: var(--space-2);
+    background: var(--color-surface);
+}
+
+@media (min-width: 768px) {
+    .daily-mime {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        align-items: stretch;
+        gap: var(--space-5);
+    }
+}
+
+.daily-mime__stage {
+    position: relative;
+    min-height: 16.5rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.daily-mime__scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.daily-mime__bot-anchor {
+    position: absolute;
+    left: 54%;
+    z-index: 2;
+    translate: -50% -86%;
+    pointer-events: none;
+}
+
+/* Clue 2+: 1.6 m trainer vs Pokémon height scale visual */
+.daily-mime__ruler {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2_5);
+    height: 5.25rem;
+    padding: var(--space-2) var(--space-2_5);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--brand-ink) 76%, transparent);
+    color: var(--mascot-white);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.daily-mime__figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    height: 100%;
+    margin: 0;
+}
+
+.daily-mime__bar-wrap {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.daily-mime__trainer-svg {
+    display: block;
+    width: 1rem;
+    height: var(--bar-h, 100%);
+    min-height: 0.75rem;
+    color: var(--mascot-white);
+}
+
+.daily-mime__mon-pillar {
+    display: block;
+    width: 1.125rem;
+    height: var(--bar-h, 50%);
+    min-height: 0.625rem;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: color-mix(in srgb, var(--mime-tone) 78%, var(--mascot-white));
+}
+
+.daily-mime__figcap {
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Clue 4+: region & habitat badge on stage */
+.daily-mime__place {
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    z-index: 3;
+    margin: 0;
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--brand-ink) 76%, transparent);
+    color: var(--mascot-white);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+}
+
+/* Clue 5 ONLY: official artwork silhouette (lifts to full colour on solve) */
+.daily-mime__art-frame {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 5.25rem;
+    height: 5.25rem;
+    padding: var(--space-1_5);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--brand-ink) 76%, transparent);
+}
+
+.daily-mime__artwork {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: none;
+    opacity: 1;
+    transition:
+        filter var(--duration-slow) var(--ease-smooth),
+        opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.daily-mime__artwork.is-silhouette {
+    filter:
+        brightness(0)
+        invert(1)
+        drop-shadow(0 0 0.25rem color-mix(in srgb, var(--mime-tone) 65%, transparent));
+    opacity: 0.88;
+}
+
+.daily-mime__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.daily-mime__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.daily-mime__eyebrow {
+    margin: 0;
+    color: var(--color-primary-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.daily-mime__diary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+}
+
+.daily-mime__diary-link:hover {
+    color: var(--color-fg);
+    text-decoration: underline;
+}
+
+.daily-mime__diary-link svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.daily-mime__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    color: var(--color-fg);
+}
+
+/* 5 progressive clues */
+.daily-mime__clues {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.daily-mime__clue {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.daily-mime__clue-num {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px dashed var(--color-border-strong);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.daily-mime__clue.is-open {
+    color: var(--color-fg);
+}
+
+.daily-mime__clue.is-open .daily-mime__clue-num {
+    border: 0;
+    background: color-mix(in srgb, var(--mime-tone) 18%, transparent);
+    color: color-mix(in srgb, var(--mime-tone) 45%, var(--color-fg));
+}
+
+.daily-mime__clue-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1_5);
+    min-width: 0;
+    padding-top: var(--space-0_5);
+}
+
+.daily-mime__clue-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+}
+
+.daily-mime__clue-text {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+}
+
+/* 4 candidate buttons (borderless raised surfaces, zero nested borders) */
+.daily-mime__guesses {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.daily-mime__guess {
+    min-height: var(--control-h-md);
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-align: center;
+    cursor: pointer;
+    transition:
+        background-color var(--duration-fast) var(--ease-smooth),
+        color var(--duration-fast) var(--ease-smooth),
+        scale var(--duration-press) var(--ease-out);
+}
+
+.daily-mime__guess:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+}
+
+.daily-mime__guess:active:not(:disabled) {
+    scale: var(--press-scale);
+}
+
+.daily-mime__guess:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.daily-mime__guess.is-wrong {
+    color: var(--color-muted);
+    text-decoration: line-through;
+    cursor: default;
+}
+
+.daily-mime__guess.is-right {
+    background: var(--color-success);
+    color: var(--color-bg);
+    cursor: default;
+}
+
+.daily-mime__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+}
+
+.daily-mime__status strong {
+    color: var(--color-fg);
+}
+
+.daily-mime__squares {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.daily-mime__square {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px dashed var(--color-border-strong);
+    background: transparent;
+}
+
+.daily-mime__square.is-used {
+    border: 0;
+    background: var(--color-primary);
+}
+
+.daily-mime__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: auto;
+}
+
+@media (max-width: 1023px) {
+    .daily-mime__stage {
+        min-height: 14rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mascot-egg-card__aura,
+    .mascot-egg-card__egg,
+    .mascot-egg-card__shell-top,
+    .mascot-egg-card__hatchling,
+    .daily-mime__artwork,
+    .daily-mime__guess {
+        transition: none;
+        animation: none;
+    }
+}

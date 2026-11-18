@@ -24,6 +24,8 @@ import { CHAMPION_FACES } from '../../utils/championFaces';
 import { diaryTopicId, todayDiaryKey } from '../../utils/forumDiary';
 import { navHue } from '../../utils/navHue';
 import { useRoundStore } from '../../store/useRoundStore';
+import { MascotEggCard } from '../games/MascotEggCard';
+import { DailyMimeCard } from '../forum/DailyMimeCard';
 import '../../styles/games-hub.css';
 
 // "Hoje no Centro": the Home's own card (it polls the day's public counters).
@@ -270,6 +272,8 @@ export function GamesView() {
                     </ol>
                 </header>
 
+                <MascotEggCard />
+
                 <ul className="games-grid">
                     {DAILY_GAMES.map((game) => {
                         const card = cards[game];
@@ -312,6 +316,13 @@ export function GamesView() {
                         );
                     })}
                 </ul>
+
+                <section className="daily-mime-section" aria-labelledby="games-mime-title">
+                    <div className="daily-mime-section__head">
+                        <h2 id="games-mime-title" className="daily-mime-section__title">{t('mime.sectionKicker')}</h2>
+                    </div>
+                    <DailyMimeCard />
+                </section>
 
                 <section className="games-anytime" aria-labelledby="games-anytime-title">
                     <h2 id="games-anytime-title" className="games-anytime__title">{t('gamesHub.anytime.title')}</h2>
