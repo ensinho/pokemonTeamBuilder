@@ -22,6 +22,7 @@ import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { Loader } from '../Loader';
 import { ProfessorEntry } from '../pokedex/ProfessorEntry';
+import { StatBenchLv50 } from '../pokedex/StatBenchLv50';
 import { TournamentPresence } from '../TournamentPresence';
 import { useTournamentPresence } from '../../hooks/useTournamentPresence';
 import { useSharePage } from '../../hooks/useSharePage';
@@ -228,9 +229,10 @@ export function PokemonDetailPanel({
         return pokemonIndex.find((p) => Number(p.id) === Number(entry?.id))?.types || [];
     };
 
-    /* ── Moves tab state ──────────────────────────────────────────────────── */
+    /* ── Moves & stats bench state ────────────────────────────────────────── */
     const [moveMethod, setMoveMethod] = useState('levelUp');
     const [moveQuery, setMoveQuery] = useState('');
+    const [statMode, setStatMode] = useState('lv50');
 
     const stats = selectedPokemonDetails?.stats || [];
     const statTotal = stats.reduce((sum, s) => sum + (s.base_stat || 0), 0);
@@ -265,17 +267,49 @@ export function PokemonDetailPanel({
         return (
             <div className="pdd-data">
                 <div className="pdd-data__main">
-                    <div className="pdd-duo">
+                    <div className={`pdd-duo ${statMode === 'lv50' ? 'pdd-duo--bench' : ''}`}>
                         {stats.length > 0 && (
                             <Card
                                 title={t('pokedex.baseStats')}
-                                meta={<span className="pdd-card__meta">{t('pokedex.statTotal')} <b>{statTotal}</b></span>}
+                                meta={(
+                                    <div className="pdd-stats-head">
+                                        {statMode === 'base' && (
+                                            <span className="pdd-card__meta">{t('pokedex.statTotal')} <b>{statTotal}</b></span>
+                                        )}
+                                        <div className="segmented segmented--quiet segmented--sm" role="group" aria-label={t('pokedex.baseStats')}>
+                                            <button
+                                                type="button"
+                                                className="segmented__item"
+                                                aria-pressed={statMode === 'base'}
+                                                onClick={() => setStatMode('base')}
+                                            >
+                                                {t('pokedex.bench.modeBase')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="segmented__item"
+                                                aria-pressed={statMode === 'lv50'}
+                                                onClick={() => setStatMode('lv50')}
+                                            >
+                                                {t('pokedex.bench.modeLv50')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             >
-                                <div className="pdd-stats">
-                                    {stats.map((stat) => (
-                                        <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} peak={peakStat > 0 && stat.base_stat === peakStat} />
-                                    ))}
-                                </div>
+                                {statMode === 'lv50' ? (
+                                    <StatBenchLv50
+                                        pokemonId={favoriteId}
+                                        stats={stats}
+                                        build={build}
+                                    />
+                                ) : (
+                                    <div className="pdd-stats">
+                                        {stats.map((stat) => (
+                                            <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} peak={peakStat > 0 && stat.base_stat === peakStat} />
+                                        ))}
+                                    </div>
+                                )}
                             </Card>
                         )}
 
