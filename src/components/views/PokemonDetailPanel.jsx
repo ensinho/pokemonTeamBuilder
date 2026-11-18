@@ -234,7 +234,7 @@ export function PokemonDetailPanel({
 
     const stats = selectedPokemonDetails?.stats || [];
     const statTotal = stats.reduce((sum, s) => sum + (s.base_stat || 0), 0);
-    const peakStat = stats.length ? Math.max(...stats.map((s) => s.base_stat)) : null;
+    const peakStat = stats.length ? Math.max(...stats.map((s) => s.base_stat || 0)) : 0;
 
     const defenseGroups = DEFENSE_TIERS
         .map((multiplier) => ({
@@ -273,7 +273,7 @@ export function PokemonDetailPanel({
                             >
                                 <div className="pdd-stats">
                                     {stats.map((stat) => (
-                                        <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} peak={stat.base_stat === peakStat} />
+                                        <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} peak={peakStat > 0 && stat.base_stat === peakStat} />
                                     ))}
                                 </div>
                             </Card>
@@ -493,7 +493,7 @@ export function PokemonDetailPanel({
         return (
             <div className="pdd-stack">
                 <div className="pdd-toolbar">
-                    <div className="segmented" role="group" aria-label={t('pokedex.movesTitle')}>
+                    <div className="segmented segmented--quiet" role="group" aria-label={t('pokedex.movesTitle')}>
                         {MOVE_METHODS.map((key) => (
                             <button
                                 key={key}
@@ -541,43 +541,45 @@ export function PokemonDetailPanel({
                     {rows.length === 0 ? (
                         <p className="pdd-card__note">{t('search.noResults', { query: moveQuery.trim() })}</p>
                     ) : (
-                        <table className="pdd-moves">
-                            <thead>
-                                <tr>
-                                    <th className="pdd-moves__slot">{slotHeader[method]}</th>
-                                    <th>{t('pokedex.movesHeaderName')}</th>
-                                    <th>{t('pokedex.movesHeaderType')}</th>
-                                    <th>{t('pokedex.movesHeaderClass')}</th>
-                                    <th className="pdd-moves__num">{t('pokedex.movesHeaderPower')}</th>
-                                    <th className="pdd-moves__num">{t('pokedex.movesHeaderAcc')}</th>
-                                    <th className="pdd-moves__num">{t('pokedex.movesHeaderPp')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((move, index) => {
-                                    const category = move.damageClass === 'physical' || move.damageClass === 'special' ? move.damageClass : 'status';
-                                    return (
-                                        <tr key={`${move.name}-${index}`} onClick={(event) => goToMove(move.name, event)}>
-                                            <td className="pdd-moves__slot pdd-mono">
-                                                {method === 'levelUp' ? (move.level === 0 ? 'Evo' : (move.level || '—'))
-                                                    : method === 'machine' ? (move.tmName ? formatTmName(move.tmName) : '—')
-                                                        : cleanName(move.learnMethod || '—')}
-                                            </td>
-                                            <td>
-                                                <button type="button" className="pdd-moves__name" onClick={(event) => goToMove(move.name, event)}>
-                                                    {cleanName(move.name)}
-                                                </button>
-                                            </td>
-                                            <td>{move.type && <TypeChip type={move.type} size="sm" />}</td>
-                                            <td><span className={`ref-cat ref-cat--${category}`}>{t(`db.${category}`)}</span></td>
-                                            <td className="pdd-moves__num pdd-mono">{move.power ?? '—'}</td>
-                                            <td className="pdd-moves__num pdd-mono">{move.accuracy ? `${move.accuracy}%` : '—'}</td>
-                                            <td className="pdd-moves__num pdd-mono">{move.pp ?? '—'}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                        <div className="pdd-moves-wrap">
+                            <table className="pdd-moves">
+                                <thead>
+                                    <tr>
+                                        <th className="pdd-moves__slot">{slotHeader[method]}</th>
+                                        <th>{t('pokedex.movesHeaderName')}</th>
+                                        <th>{t('pokedex.movesHeaderType')}</th>
+                                        <th>{t('pokedex.movesHeaderClass')}</th>
+                                        <th className="pdd-moves__num">{t('pokedex.movesHeaderPower')}</th>
+                                        <th className="pdd-moves__num">{t('pokedex.movesHeaderAcc')}</th>
+                                        <th className="pdd-moves__num">{t('pokedex.movesHeaderPp')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows.map((move, index) => {
+                                        const category = move.damageClass === 'physical' || move.damageClass === 'special' ? move.damageClass : 'status';
+                                        return (
+                                            <tr key={`${move.name}-${index}`} onClick={(event) => goToMove(move.name, event)}>
+                                                <td className="pdd-moves__slot pdd-mono">
+                                                    {method === 'levelUp' ? (move.level === 0 ? 'Evo' : (move.level || '—'))
+                                                        : method === 'machine' ? (move.tmName ? formatTmName(move.tmName) : '—')
+                                                            : cleanName(move.learnMethod || '—')}
+                                                </td>
+                                                <td>
+                                                    <button type="button" className="pdd-moves__name" onClick={(event) => goToMove(move.name, event)}>
+                                                        {cleanName(move.name)}
+                                                    </button>
+                                                </td>
+                                                <td>{move.type && <TypeChip type={move.type} size="sm" />}</td>
+                                                <td><span className={`ref-cat ref-cat--${category}`}>{t(`db.${category}`)}</span></td>
+                                                <td className="pdd-moves__num pdd-mono">{move.power ?? '—'}</td>
+                                                <td className="pdd-moves__num pdd-mono">{move.accuracy ? `${move.accuracy}%` : '—'}</td>
+                                                <td className="pdd-moves__num pdd-mono">{move.pp ?? '—'}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </section>
             </div>
@@ -690,7 +692,7 @@ export function PokemonDetailPanel({
                         {onAdd && (
                             <button
                                 type="button"
-                                className={`btn ${isOnTeam ? 'btn-secondary' : 'btn-primary'} btn-sm`}
+                                className={`btn ${isOnTeam ? 'btn-secondary' : 'btn-primary'} pdd-hero__cta`}
                                 onClick={() => onAdd({ id: favoriteId, name: identity.name, types })}
                                 disabled={!identity.name || isOnTeam || isTeamFull}
                             >
@@ -717,7 +719,17 @@ export function PokemonDetailPanel({
                     <div className="pdd-hero__identity">
                         <p className="pdd-hero__dex">{padDex(identity.id)}</p>
                         <h1 className="pdd-hero__name">{cleanName(identity.name)}</h1>
-                        {pokemonGenus && isGenusLocal && <p className="pdd-hero__genus">{pokemonGenus}</p>}
+                        {((pokemonGenus && isGenusLocal) || build) && (
+                            <p className="pdd-hero__genus">
+                                {pokemonGenus && isGenusLocal ? <span>{pokemonGenus}</span> : null}
+                                {pokemonGenus && isGenusLocal && build ? <span aria-hidden="true"> · </span> : null}
+                                {build ? (
+                                    <span className="pdd-hero__usage">
+                                        {t('pdetail.build.in', { format: build.format, usage: build.data.usage })}
+                                    </span>
+                                ) : null}
+                            </p>
+                        )}
                         <div className="pdd-hero__types">
                             {types.map((type) => <TypeChip key={type} type={type} />)}
                         </div>
