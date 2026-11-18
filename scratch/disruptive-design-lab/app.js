@@ -100,24 +100,6 @@ function typeChipHtml(type, { sm = false } = {}) {
     `;
 }
 
-function animateFigure(el, fromVal, toVal, suffix = '') {
-    if (!el) return;
-    if (prefersReducedMotion() || fromVal === toVal) {
-        el.textContent = `${toVal}${suffix}`;
-        return;
-    }
-    const start = performance.now();
-    const dur = 420;
-    const tick = (now) => {
-        const p = Math.min(1, (now - start) / dur);
-        const eased = 1 - Math.pow(1 - p, 3);
-        const cur = Math.round(fromVal + (toVal - fromVal) * eased);
-        el.textContent = `${cur}${suffix}`;
-        if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-}
-
 let toastTimer = null;
 function showToast(msg, { actionLabel = '', onAction = null } = {}) {
     const toast = document.getElementById('toast');
@@ -164,10 +146,7 @@ function computeTeamAnalysis(slots) {
     const offensiveSet = new Set();
     active.forEach((mon) => {
         mon.moves.forEach((mv) => {
-            const chartEntry = ALL_TYPES.filter((t) => {
-                const target = t.charAt(0).toUpperCase() + t.slice(1);
-                return defMultiplier(mv.type, [t], '') > 1;
-            });
+            const chartEntry = ALL_TYPES.filter((t) => defMultiplier(mv.type, [t], '') > 1);
             chartEntry.forEach((t) => offensiveSet.add(t));
         });
     });
@@ -252,7 +231,6 @@ function renderBuilderView() {
         .join('');
 
     const groundRow = analysis.typeRows.find((r) => r.type === 'ground');
-    const mascotMood = resolved ? 'brilhando' : 'preocupado';
 
     const covCellsHtml = analysis.typeRows
         .map((row) => {

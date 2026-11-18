@@ -13,7 +13,7 @@ const browserGlobals = { ...cleanGlobals(globals.es2021), ...cleanGlobals(global
 const nodeGlobals = cleanGlobals(globals.node)
 
 export default [
-  { ignores: ['dist', 'src/vendor'] },
+  { ignores: ['dist', 'src/vendor', '.agents', '.claude', 'social'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
