@@ -23,34 +23,114 @@
     padding-block: var(--space-2) var(--space-16);
 }
 
+.profile-dossier {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+}
+
+.profile-dossier__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+}
+
 /* ---- The trainer card -------------------------------------------------------- */
 
 .profile-hero {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: var(--space-5);
-    padding: var(--space-6);
+    --dossier-tone: var(--color-primary);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-surface);
+    overflow: hidden;
+}
+
+.profile-hero__banner {
+    position: relative;
+    height: 6.5rem;
+    overflow: hidden;
+    background:
+        radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--dossier-tone) 68%, var(--color-fg)) 0%, transparent 70%),
+        color-mix(in srgb, var(--dossier-tone) 82%, var(--color-bg));
+    color: color-mix(in srgb, var(--dossier-tone) 32%, var(--color-surface));
+}
+
+@supports (color: light-dark(red, oklch(from red l c h))) {
+    .profile-hero__banner {
+        background: light-dark(
+            color-mix(in srgb, var(--dossier-tone) 30%, var(--color-surface-raised)),
+            oklch(from var(--dossier-tone) 0.34 calc(c * 0.55) h)
+        );
+        color: light-dark(
+            color-mix(in srgb, var(--dossier-tone) 52%, var(--color-fg)),
+            color-mix(in srgb, var(--dossier-tone) 42%, var(--color-bg))
+        );
+    }
+}
+
+.profile-hero__pixels {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.profile-hero__pixels .is-accent {
+    fill: var(--brand-gold);
+}
+
+.profile-hero__partner {
+    position: absolute;
+    right: var(--space-3);
+    bottom: calc(var(--space-4) * -1);
+    width: 7.5rem;
+    height: 7.5rem;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.profile-hero__mascot {
+    position: absolute;
+    right: var(--space-4);
+    bottom: calc(var(--space-2) * -1);
+    pointer-events: none;
+}
+
+.profile-hero__body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: var(--space-4);
+    padding: 0 var(--space-6) var(--space-6);
 }
 
 /* Round at every size: an equipped frame makes it round anyway, and a square
    that turns into a circle when a frame goes on read as two different things. */
 .profile-avatar-button {
     position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 4.5rem;
-    height: 4.5rem;
+    width: 4.75rem;
+    height: 4.75rem;
+    margin-top: calc(var(--space-6) * -1);
     border: none;
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     color: var(--color-fg);
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-avatar-button:not([data-frame]) {
+    box-shadow: 0 0 0 var(--space-1) var(--color-surface);
 }
 
 .profile-avatar-button:hover { background: var(--color-surface-hover); }
@@ -101,8 +181,9 @@
 .profile-hero__identity {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-1_5);
     min-width: 0;
+    padding-top: var(--space-3);
 }
 
 .profile-hero__name-button {
@@ -150,6 +231,16 @@
 
 .profile-hero__meta a.badge { text-decoration: none; }
 
+.profile-hero__uid {
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
 .profile-hero__status {
     font-size: var(--text-xs);
     color: var(--color-muted);
@@ -164,13 +255,13 @@
 
 .profile-name-input { flex: 1; min-width: 0; }
 
-/* Three figures in a row, under a hairline — figures, not three more boxes. */
+/* Four figures in a row, under a hairline — figures, not four more boxes. */
 .profile-stats {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     margin: 0;
-    padding-top: var(--space-5);
+    padding-top: var(--space-4);
     box-shadow: inset 0 1px 0 var(--color-border);
 }
 
@@ -602,31 +693,238 @@
 
 /* ---- Phones (< 1024px): the page is the panel ------------------------------------ */
 
-/* ---- Desktop: the trainer card is one row (2026-11-12, "menos rolagem") -----------
-   Face · name · the three figures at the right edge, each figure split from
-   the next by a hairline — the card loses the second band it used to stack
-   the figures in, about 9rem of page. */
+/* ---- Living Dossier: Mastery Evolution Line + Thermal Receipt (2026-11-18) --- */
+
+.profile-mastery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+}
+
+.profile-mastery__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-3);
+}
+
+.profile-mastery__head a.badge {
+    text-decoration: none;
+}
+
+.profile-mastery__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.profile-mastery__title {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--color-fg);
+}
+
+.profile-mastery__sub {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.profile-mastery__track {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Town-Map dashed path connecting the three stage pedestals. */
+.profile-mastery__track::before {
+    content: '';
+    position: absolute;
+    top: 2.25rem;
+    left: 16.67%;
+    right: 16.67%;
+    border-top: 2px dashed var(--color-border-strong);
+    pointer-events: none;
+}
+
+.profile-mastery__stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    text-align: center;
+}
+
+.profile-mastery__pedestal {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+}
+
+.profile-mastery__stage.is-current .profile-mastery__pedestal {
+    box-shadow: var(--ring-primary);
+}
+
+.profile-mastery__stage.is-completed:last-child .profile-mastery__pedestal {
+    box-shadow: 0 0 0 2px var(--brand-gold);
+}
+
+.profile-mastery__sprite {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.profile-mastery__sprite.is-silhouette {
+    filter: brightness(0);
+    opacity: 0.45;
+}
+
+.profile-mastery__question {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-elevated);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+}
+
+.profile-mastery__name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.profile-mastery__stage.is-locked .profile-mastery__name {
+    color: var(--color-muted);
+}
+
+.profile-mastery__pill {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--color-muted);
+}
+
+.profile-mastery__pill.is-done {
+    background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface-raised));
+    color: var(--color-success);
+}
+
+.profile-mastery__pill.is-current,
+.profile-mastery__pill.is-next {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-text);
+}
+
+.profile-receipt {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2_5);
+    width: min(100%, 21rem);
+    margin-inline: auto;
+}
+
+.profile-receipt__sky-wrap {
+    height: 3.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    overflow: hidden;
+}
+
+.profile-receipt__sky {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.profile-receipt .receipt {
+    gap: var(--space-2_5);
+    padding: var(--space-4) var(--space-4) calc(var(--space-5) + var(--tear));
+}
+
+.profile-receipt .receipt__bars {
+    height: 1.75rem;
+}
+
+/* Paper stays light on every theme (--receipt-paper), so secondary/ghost
+   actions inside the receipt read in receipt ink instead of dark-theme tokens. */
+.profile-receipt .receipt .btn.btn-secondary {
+    border-color: color-mix(in srgb, var(--receipt-ink) 18%, transparent);
+    background: color-mix(in srgb, var(--receipt-ink) 8%, var(--receipt-paper));
+    color: var(--receipt-ink);
+}
+
+.profile-receipt .receipt .btn.btn-secondary:hover {
+    background: color-mix(in srgb, var(--receipt-ink) 14%, var(--receipt-paper));
+    color: var(--receipt-ink);
+}
+
+.profile-receipt .receipt .btn.btn-ghost {
+    color: var(--receipt-muted);
+}
+
+.profile-receipt .receipt .btn.btn-ghost:hover {
+    background: color-mix(in srgb, var(--receipt-ink) 8%, transparent);
+    color: var(--receipt-ink);
+}
+
 @media (min-width: 1024px) {
-    .profile-hero {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        gap: var(--space-5);
-        padding: var(--space-5);
+    .profile-view.profile-view--dossier {
+        max-width: 64rem;
     }
 
-    .profile-stats {
-        grid-column: auto;
-        grid-template-columns: repeat(3, minmax(6rem, auto));
-        padding-top: 0;
-        box-shadow: none;
+    .profile-dossier {
+        grid-template-columns: minmax(0, 1fr) 21rem;
+    }
+
+    .profile-receipt {
+        width: 100%;
+        margin-inline: 0;
     }
 
     .profile-stat {
-        padding-inline: var(--space-4);
-    }
-
-    .profile-stat + .profile-stat,
-    .profile-stat:first-child {
-        box-shadow: inset 1px 0 0 var(--color-border);
+        padding-inline: var(--space-3);
     }
 }
 
@@ -740,13 +1038,18 @@ button.profile-face__choose:focus-visible { outline: none; box-shadow: var(--rin
 
 @media (max-width: 1023px) {
     .profile-hero,
+    .profile-mastery,
     .card.profile-section__body {
         border-color: transparent;
     }
 
-    .profile-hero {
+    .profile-hero__body {
         gap: var(--space-4);
-        padding: var(--space-5) var(--space-4);
+        padding: 0 var(--space-4) var(--space-5);
+    }
+
+    .profile-mastery {
+        padding: var(--space-4);
     }
 
     .card.profile-section__body { padding-inline: var(--space-4); }
@@ -757,12 +1060,20 @@ button.profile-face__choose:focus-visible { outline: none; box-shadow: var(--rin
 }
 
 @media (max-width: 640px) {
-    .profile-avatar-button { width: 4rem; height: 4rem; }
+    .profile-hero__banner { height: 5.5rem; }
+    .profile-avatar-button { width: 4rem; height: 4rem; margin-top: calc(var(--space-5) * -1); }
     .profile-avatar-button__sprite { width: 3.25rem; height: 3.25rem; }
     .profile-hero__name { font-size: var(--text-xl); }
-    .profile-stats { padding-top: var(--space-4); }
+    .profile-stats { padding-top: var(--space-3); }
+    .profile-stat { padding-inline: var(--space-1_5); }
     .profile-stat dd { font-size: var(--text-lg); }
+    .profile-stat dt { font-size: var(--text-2xs); }
     .profile-hero__actions .btn { flex: 1 1 0; }
+    .profile-mastery__track { gap: var(--space-2_5); }
+    .profile-mastery__track::before { top: 1.875rem; }
+    .profile-mastery__pedestal { width: 3.75rem; height: 3.75rem; }
+    .profile-mastery__sprite { width: 2.75rem; height: 2.75rem; }
+    .profile-mastery__pill { padding: var(--space-0_5) var(--space-1_5); }
     .profile-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     /* Half a phone cuts every hint to three words and an ellipsis; the name,
        the swatch and the lock say enough. */

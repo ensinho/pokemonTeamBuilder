@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import '../../styles/profile-view.css';
 import '../../styles/journeys.css';
 import { THEME_META } from '../../constants/theme';
-import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
 import { resolveAvatar, useAuthStore } from '../../store/useAuthStore';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
@@ -16,7 +16,14 @@ import { useShallow } from 'zustand/react/shallow';
 import { useRewardsStore, isThemeUnlocked } from '../../store/useRewardsStore';
 import { themeReward } from '../../constants/cosmetics';
 import { frameProps } from '../../utils/rewards';
-import { liveStreak } from '../../utils/dailyCheckin';
+import { liveStreak, localDayKey } from '../../utils/dailyCheckin';
+import { localDayNumber } from '../../utils/gamesToday';
+import { puzzleNumberOn } from '../../utils/playToday';
+import { trainerPixels } from '../../utils/trainerCardPattern';
+import { buildMasteryEvolution } from '../../utils/masteryEvolution';
+import { dayReceipt, trainerNumber } from '../../utils/mascot/roundReceipt';
+import { useRoundStore } from '../../store/useRoundStore';
+import { useGameNotes, useGamesToday } from '../../hooks/useGamesToday';
 import { useTranslation } from '../../hooks/useTranslation';
 import { auth } from '../../services/firebase';
 import { sendEmailVerification } from 'firebase/auth';
@@ -31,6 +38,8 @@ import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
 import { Mascot } from '../Mascot';
+import { PixelScene } from '../mascot/PixelScene';
+import { Receipt, ReceiptStamp } from '../mascot/Receipt';
 import { useMascotStore, MASCOT_COSTUME_CHOICES, MASCOT_FORM_CHOICES } from '../../store/useMascotStore';
 import { costumeHat } from '../../utils/mascot/assistant';
 import { TONES as MASCOT_TONES } from '../../utils/mascot/constants';
@@ -449,6 +458,187 @@ const FaceTile = ({ label, src, pixel = false, isMain, mainLabel, canChoose, onC
     </div>
 );
 
+const MOSAIC_COLS = 40;
+const MOSAIC_ROWS = 8;
+
+/** Deterministic UID pixel mosaic header band (trainerCardPattern.js), with the single earned gold signature pixel. */
+const ProfileMosaicBanner = ({ seed, partnerSrc }) => {
+    const pixels = useMemo(() => trainerPixels(seed, { cols: MOSAIC_COLS, rows: MOSAIC_ROWS, accents: 1 }), [seed]);
+    return (
+        <div className="profile-hero__banner" aria-hidden="true">
+            <svg className="profile-hero__pixels" viewBox={`0 0 ${MOSAIC_COLS} ${MOSAIC_ROWS}`} preserveAspectRatio="xMaxYMid slice">
+                {pixels.map((p) => (
+                    <rect
+                        key={`${p.x}-${p.y}`}
+                        x={p.x + 0.12}
+                        y={p.y + 0.12}
+                        width="0.76"
+                        height="0.76"
+                        className={p.accent ? 'is-accent' : undefined}
+                        opacity={p.accent ? 1 : p.o}
+                    />
+                ))}
+            </svg>
+            {partnerSrc ? (
+                <img className="profile-hero__partner" src={partnerSrc} alt="" width={160} height={160} decoding="async" />
+            ) : (
+                <span className="profile-hero__mascot">
+                    <Mascot size="lg" mood="feliz" seasonal={false} />
+                </span>
+            )}
+        </div>
+    );
+};
+
+/** Three-stage franchise Mastery Evolution Line connected by a Town-Map dashed path. */
+const MasteryEvolutionSection = ({ mastery }) => {
+    const { t } = useTranslation();
+
+    const renderStageBadge = (stage) => {
+        if (stage.stage === 3 && stage.completed) {
+            return (
+                <span className="badge badge--gold badge--figure">
+                    {t('profile.dossier.stageFinalDone', { min: stage.minLevel })}
+                </span>
+            );
+        }
+        if (stage.completed) {
+            return (
+                <span className="profile-mastery__pill is-done">
+                    {t('profile.dossier.stageRangeDone', { min: stage.minLevel, max: stage.maxLevel })}
+                </span>
+            );
+        }
+        if (stage.current) {
+            return (
+                <span className="profile-mastery__pill is-current">
+                    {t('profile.dossier.stageRangeCurrent', { min: stage.minLevel, max: stage.maxLevel })}
+                </span>
+            );
+        }
+        if (stage.isNext) {
+            return (
+                <span className="profile-mastery__pill is-next">
+                    {t('profile.dossier.stageNextPct', { pct: stage.progressPct, min: stage.minLevel })}
+                </span>
+            );
+        }
+        return (
+            <span className="profile-mastery__pill">
+                {t('profile.dossier.stageLocked', { min: stage.minLevel })}
+            </span>
+        );
+    };
+
+    return (
+        <section className="profile-mastery" aria-labelledby="profile-mastery-title">
+            <div className="profile-mastery__head">
+                <div className="profile-mastery__copy">
+                    <h2 id="profile-mastery-title" className="profile-mastery__title">{t('profile.dossier.masteryTitle')}</h2>
+                    <p className="profile-mastery__sub">{t('profile.dossier.masterySub', { line: mastery.lineLabel })}</p>
+                </div>
+                <Link to="/journeys?tab=rewards" className="badge badge--primary badge--figure">
+                    {t('profile.dossier.xpProgress', { xp: mastery.xp.toLocaleString() })}
+                </Link>
+            </div>
+            <ol className="profile-mastery__track">
+                {mastery.stages.map((stage) => (
+                    <li
+                        key={stage.id}
+                        className={[
+                            'profile-mastery__stage',
+                            stage.reached ? 'is-reached' : 'is-locked',
+                            stage.current ? 'is-current' : '',
+                            stage.completed ? 'is-completed' : '',
+                        ].filter(Boolean).join(' ')}
+                    >
+                        <div
+                            className={`profile-mastery__pedestal ${stage.reached ? 'type-platform' : ''}`}
+                            style={{ '--card-type': typeColors[stage.type] }}
+                        >
+                            <img
+                                src={getPokemonFrontSpriteUrl(stage.id)}
+                                alt=""
+                                width={64}
+                                height={64}
+                                decoding="async"
+                                draggable="false"
+                                className={`profile-mastery__sprite ${stage.reached ? '' : 'is-silhouette'}`}
+                            />
+                            {!stage.reached && <span className="profile-mastery__question" aria-hidden="true">?</span>}
+                        </div>
+                        <span className="profile-mastery__name">
+                            {stage.reached ? stage.name : t('profile.dossier.unknownStage')}
+                        </span>
+                        {renderStageBadge(stage)}
+                    </li>
+                ))}
+            </ol>
+        </section>
+    );
+};
+
+/** Compact tactile Thermal Receipt of today's round/games using the real Receipt & PixelScene components. */
+const ProfileReceiptCard = ({ userId, fullDays, isAnonymous }) => {
+    const { t, language } = useTranslation();
+    const done = useGamesToday();
+    const notes = useGameNotes();
+    const openReceipt = useRoundStore((s) => s.openReceipt);
+    const now = useMemo(() => Date.now(), []);
+    const dayKey = localDayKey(new Date(now));
+    const dayNumber = localDayNumber(now);
+    const locale = language === 'pt' ? 'pt-BR' : 'en-GB';
+    const dateLabel = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now));
+
+    const day = useMemo(() => dayReceipt(done, {
+        quiz: notes.quiz || null,
+        tier: notes.tierList?.theme || null,
+    }), [done, notes]);
+
+    const rowLabel = (row) => {
+        if (row.id === 'challenge') return t('receipt.row.challenge');
+        if (row.id === 'pokepuzzle') return t('receipt.row.puzzle', { n: puzzleNumberOn(dayKey) });
+        if (row.id === 'quiz') return t('receipt.row.quizShort');
+        return t('receipt.row.tierShort');
+    };
+
+    const rows = day.rows.map((row) => ({
+        label: rowLabel(row),
+        value: t(`receipt.value.${row.value}`, row.params || {}),
+        bold: Boolean(row.bold),
+    }));
+
+    return (
+        <aside className="profile-receipt" aria-label={t('receipt.titleDay')}>
+            <div className="profile-receipt__sky-wrap">
+                <PixelScene kind={day.complete ? 'dusk' : 'morning'} seed={dayNumber} className="profile-receipt__sky" />
+            </div>
+            <Receipt
+                brand={t('receipt.brand')}
+                kind={t('receipt.kindDay')}
+                meta={[[t('receipt.meta.date'), dateLabel]]}
+                columns={[t('receipt.columns.game'), t('receipt.columns.result')]}
+                rows={rows}
+                totals={[
+                    [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: day.played, total: day.total })],
+                    [t('receipt.totals.fullDays'), String(fullDays)],
+                ]}
+                stamp={day.complete
+                    ? <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={t('receipt.stampFull')} word={t('receipt.stampFour')} />
+                    : <ReceiptStamp mood="feliz" sub={t('receipt.stampDay')} word={t('receipt.stampSoFar', { n: day.played })} />}
+                code={{ code: trainerNumber(userId || 'guest'), label: t('receipt.trainerId') }}
+            >
+                <Link to="/games" className={`btn ${isAnonymous ? 'btn-secondary' : 'btn-primary'} btn-sm`}>
+                    {day.complete ? t('profile.dossier.receiptAllDone') : t('profile.dossier.receiptPlayNext', { n: day.played })}
+                </Link>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => openReceipt('day')}>
+                    {t('profile.dossier.receiptOpenFull')}
+                </button>
+            </Receipt>
+        </aside>
+    );
+};
+
 export function ProfileView({
     // identity
     userEmail,
@@ -493,11 +683,13 @@ export function ProfileView({
     const toggleSetting = (key) => setOpenSetting((current) => (current === key ? null : key));
     const uiScale = useThemeStore((s) => s.uiScale);
     const { badges, unlockedCount, totalBadgesCount, selectedBadgeId, toggleEquip } = useTrainerBadges();
-    // Rewards (2026-10-17): the equipped frame and title, the level, and which
+    // Rewards (2026-10-17): the equipped frame and title, the level, XP, and which
     // reward themes are open — all recorded, so the hero paints at once.
-    const { equipped, trainerLevel, unlocked } = useRewardsStore(useShallow((s) => ({
-        equipped: s.equipped, trainerLevel: s.level, unlocked: s.unlocked,
+    const { equipped, trainerLevel, trainerXp, unlocked } = useRewardsStore(useShallow((s) => ({
+        equipped: s.equipped, trainerLevel: s.level, trainerXp: s.xp, unlocked: s.unlocked,
     })));
+    const fullDays = useRoundStore((s) => s.round?.fullDays || 0);
+    const storedProfile = useAuthStore((s) => s.trainerProfile);
     // Only what can be shown: the earned badges, the equipped one first. The
     // whole catalogue — locked ones, progress, how to earn them — lives in
     // Journeys → Badges, one tap away (it was here too, as a second wall of
@@ -553,11 +745,28 @@ export function ProfileView({
     const bothFaces = Boolean(trainerSprite && greetingPokemonId);
     const cosmeticName = (id) => (id ? t(`rewards.items.${id}.name`) : t('profile.noneEquipped'));
 
-    return (
-        <div className="profile-view">
-            {/* The trainer card: who, what level, three figures. One box, and
-                nothing inside it draws another. */}
-            <header className="profile-hero">
+    const persona = useMemo(
+        () => (hasAnsweredProfile(storedProfile) ? derivePersona(storedProfile) : null),
+        [storedProfile],
+    );
+    const mastery = useMemo(
+        () => buildMasteryEvolution({
+            xp: trainerXp,
+            level: trainerLevel,
+            partnerId: greetingPokemonId,
+            personaId: persona?.id || null,
+        }),
+        [trainerXp, trainerLevel, greetingPokemonId, persona],
+    );
+    const dossierTone = typeColors[persona?.tone || mastery.tone] || undefined;
+    const uidSeed = userId || 'guest';
+    const shortTrainerCode = useMemo(() => trainerNumber(uidSeed).slice(0, 9), [uidSeed]);
+    const isDossierTab = activeTab === 'trainer';
+
+    const heroCard = (
+        <header className="profile-hero" style={dossierTone ? { '--dossier-tone': dossierTone } : undefined}>
+            <ProfileMosaicBanner seed={uidSeed} partnerSrc={partnerSrc} />
+            <div className="profile-hero__body">
                 <button
                     type="button"
                     onClick={onOpenPokemonSelector}
@@ -630,6 +839,7 @@ export function ProfileView({
                             {t('rewards.levelShort', { n: trainerLevel })}
                         </Link>
                         <TrainerTitle titleId={equipped.title} />
+                        <span className="profile-hero__uid">{t('profile.dossier.uidPrefix')} {shortTrainerCode}</span>
                         {/* A guest's name already reads "Convidado": the pill
                             would say it twice (audit 2026-11-09). */}
                         {!equipped.title && !(isAnonymous && trainerLabel === t('profile.guestPill')) && (
@@ -642,6 +852,10 @@ export function ProfileView({
                     <div className="profile-stat">
                         <dt title={t('profile.currentStreak')}>{t('profile.streakShort')}</dt>
                         <dd>{streakCount}<span className="profile-stat__unit">d</span></dd>
+                    </div>
+                    <div className="profile-stat">
+                        <dt title={t('profile.dossier.fullDaysTitle')}>{t('profile.dossier.fullDaysShort')}</dt>
+                        <dd>{fullDays}</dd>
                     </div>
                     <div className="profile-stat">
                         <dt>{t('profile.statsTeams')}</dt>
@@ -664,7 +878,21 @@ export function ProfileView({
                         </button>
                     </div>
                 )}
-            </header>
+            </div>
+        </header>
+    );
+
+    return (
+        <div className={`profile-view ${isDossierTab ? 'profile-view--dossier' : ''}`.trim()}>
+            {isDossierTab ? (
+                <div className="profile-dossier">
+                    <div className="profile-dossier__main">
+                        {heroCard}
+                        <MasteryEvolutionSection mastery={mastery} />
+                    </div>
+                    <ProfileReceiptCard userId={uidSeed} fullDays={fullDays} isAnonymous={isAnonymous} />
+                </div>
+            ) : heroCard}
 
             {/* Four tabs instead of one long scroll. The tab lives in the URL (?tab=). */}
             <div role="tablist" aria-label={t('profile.tabsAria')} className="tabs profile-tabs">
