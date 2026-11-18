@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Layers, X, Users, ArrowUpRight, SlidersHorizontal } from 'lucide-react';
 
@@ -43,6 +43,16 @@ const rankClass = (rank) => {
 };
 
 const isTopPlacement = (placement = '') => /^(champion|winner|1st|1º|campe)/i.test(String(placement).trim());
+
+const placeBadgeClass = (rank, placement) => {
+    if (rank === 1 || isTopPlacement(placement)) return 'meta-place-pill badge--gold';
+    if (rank === 2 || rank === 3) return 'meta-place-pill meta-place-pill--top';
+    return 'meta-place-pill';
+};
+
+const shortSpeciesLabel = (name = '') => pretty(String(name).replace(/-Mega(-[A-Z])?$/i, '-M'));
+
+const TournamentSheetModal = lazy(() => import('../modals/TournamentSheetModal').then((m) => ({ default: m.TournamentSheetModal })));
 
 // "2026-10-01" → "1 out" / "Oct 1". Parsed as a calendar day, not a UTC
 // instant, so it never slides to the previous day west of Greenwich.
@@ -161,49 +171,94 @@ const CoreRow = memo(function CoreRow({ core, rank, onOpenMon, unit = 'teams', l
 });
 
 /**
- * Tournament team composition strip (inspired by tournaments_teams_idea.png):
- * rank + placement lead | share readout | 6-Pokémon horizontal platform strip | event link.
+ * Tournament Top-Cut composition strip (Peça 03):
+ * placement badge + tabular share | title + player | 6-Pokémon platform strip | event link + Inspect Sheet CTA.
  */
-const TeamStripCard = memo(function TeamStripCard({ tm, rank, typesById, linkState, pt }) {
-    const topPlace = isTopPlacement(tm.placement);
+const TeamStripCard = memo(function TeamStripCard({
+    tm,
+    fullTeam,
+    rank,
+    typesById,
+    linkState,
+    pt,
+    t,
+    onInspect,
+}) {
     const unitLabel = tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team');
+    const placement = fullTeam?.placement || tm.placement || '';
+    const badgeLabel = [rank ? `#${rank}` : null, placement || null].filter(Boolean).join(' · ');
+    const teamTitle = fullTeam?.title || tm.tournament || (pt ? 'Time de torneio' : 'Tournament team');
+    const subLine = [fullTeam?.player, fullTeam?.format || tm.format, fullTeam?.date].filter(Boolean).join(' · ');
+    const roster = Array.isArray(fullTeam?.pokemons) && fullTeam.pokemons.length > 0
+        ? fullTeam.pokemons.slice(0, 6)
+        : tm.ids.slice(0, 6).map((id, j) => ({ id, name: tm.names[j] }));
+
     return (
-        <Link
-            to={`/tournaments/team/${tm.teamId}`}
-            state={linkState}
-            className="meta-team-card"
-        >
+        <article className="meta-team-card">
             <div className="meta-team-card__head">
                 <span className="meta-team-card__lead">
-                    <span className={rankClass(rank)}>#{rank}</span>
-                    {tm.placement && (
-                        <span className={`meta-team-card__place ${topPlace ? 'is-gold' : ''}`}>
-                            {tm.placement}
-                        </span>
-                    )}
+                    <span className={placeBadgeClass(rank, placement)}>
+                        {badgeLabel}
+                    </span>
                 </span>
                 <span className="meta-team-card__share">
                     <strong>{tm.pct}%</strong> · {tm.count} {unitLabel}
                 </span>
             </div>
+
+            <div className="meta-team-card__identity">
+                <Link
+                    to={`/tournaments/team/${tm.teamId}`}
+                    state={linkState}
+                    className="meta-team-card__title"
+                >
+                    {teamTitle}
+                </Link>
+                {subLine && <p className="meta-team-card__sub">{subLine}</p>}
+            </div>
+
             <div className="meta-team-card__roster">
-                {tm.ids.slice(0, 6).map((id, j) => (
-                    <span
-                        key={`${id}-${j}`}
-                        className="meta-team-card__slot type-platform"
-                        style={platformStyle(typesById, id)}
-                    >
-                        <MonSprite id={id} name={tm.names[j]} className="meta-team-card__sprite image-pixelated" />
+                {roster.map((mon, j) => (
+                    <span key={`${mon.id}-${j}`} className="meta-team-card__slot">
+                        <span
+                            className="meta-team-card__sprite-wrap type-platform"
+                            style={platformStyle(typesById, mon.id)}
+                        >
+                            <MonSprite
+                                id={mon.id}
+                                name={mon.name}
+                                item={mon.item}
+                                className="meta-team-card__sprite image-pixelated"
+                            />
+                        </span>
+                        <span className="meta-team-card__mon-name">
+                            {shortSpeciesLabel(mon.name)}
+                        </span>
                     </span>
                 ))}
             </div>
+
             <div className="meta-team-card__foot">
-                <span className="meta-team-card__event">
-                    {tm.tournament || (pt ? 'Time de torneio' : 'Tournament team')}
-                </span>
-                <ArrowUpRight className="meta-team-card__go h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <Link
+                    to={`/tournaments/team/${tm.teamId}`}
+                    state={linkState}
+                    className="meta-team-card__event"
+                >
+                    <span>{tm.tournament || (pt ? 'Time de torneio' : 'Tournament team')}</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                </Link>
+                {fullTeam && (
+                    <button
+                        type="button"
+                        onClick={() => onInspect(tm, rank, fullTeam)}
+                        aria-label={t('meta.sheet.inspectAria', { name: teamTitle })}
+                        className="btn btn-sm t-sheet-trigger"
+                    >
+                        {t('meta.sheet.inspect')}
+                    </button>
+                )}
             </div>
-        </Link>
+        </article>
     );
 });
 
@@ -235,6 +290,17 @@ export function MetaUsageView() {
         cutoffs, detailCutoff, activeCutoff, status: fmtStatus,
     } = useUsageFormat(fmtId, params.get('cut'));
     const { teams } = useTournamentData();
+    const teamById = useMemo(() => new Map(teams.map((tm) => [tm.id, tm])), [teams]);
+    const [inspectedSheet, setInspectedSheet] = useState(null);
+    const handleInspectSheet = useCallback((tm, rank, fullTeam) => {
+        if (!fullTeam) return;
+        setInspectedSheet({
+            team: fullTeam,
+            rank,
+            sharePct: tm.pct,
+            shareCount: tm.count,
+        });
+    }, []);
 
     // Types come from the Pokédex index (the app's canonical source) rather than
     // being duplicated into every baked usage file.
@@ -564,10 +630,13 @@ export function MetaUsageView() {
                                 <TeamStripCard
                                     key={tm.ids.join('-')}
                                     tm={tm}
+                                    fullTeam={teamById.get(tm.teamId) || null}
                                     rank={i + 1}
                                     typesById={typesById}
                                     linkState={linkState}
                                     pt={pt}
+                                    t={t}
+                                    onInspect={handleInspectSheet}
                                 />
                             ))}
                         </div>
@@ -694,6 +763,18 @@ export function MetaUsageView() {
                 className="mt-6"
                 paragraphs={metaNotes({ format: format?.label, battles: totalBattles, month, kind: format?.kind }, language)}
             />
+
+            {inspectedSheet && (
+                <Suspense fallback={null}>
+                    <TournamentSheetModal
+                        team={inspectedSheet.team}
+                        rank={inspectedSheet.rank}
+                        sharePct={inspectedSheet.sharePct}
+                        shareCount={inspectedSheet.shareCount}
+                        onClose={() => setInspectedSheet(null)}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 }
