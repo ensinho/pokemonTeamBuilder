@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Layers, X, Users, ArrowUpRight, SlidersHorizontal } from 'lucide-react';
 
@@ -25,7 +25,7 @@ import { Loader } from '../Loader';
 import { DataNotes } from '../DataNotes';
 import { metaNotes } from '../../utils/dataNotes';
 import { useUrlParam } from '../../hooks/useUrlParam';
-import { typeColors } from '../../constants/types';
+import { typeColors, typeIcons } from '../../constants/types';
 
 // --card-type for `.type-platform`: the Pokémon's first type, when the index
 // knows it (a forme the index does not list simply stands on nothing).
@@ -34,9 +34,16 @@ const platformStyle = (typesById, id) => {
     return tone ? { '--card-type': tone } : undefined;
 };
 
-// A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
-// `unit` names what `count` counts — tournament teams, or weighted ladder games
-// for a Smogon tier's teammate data. They are not the same quantity.
+// Ranked rows: #1 wears Shiny Gold ink (earned meta crown), #2-#3 wear Volt ink,
+// #4+ stay quiet muted mono. Plain numeral, never a badge chip.
+const rankClass = (rank) => {
+    if (rank === 1) return 'meta-rank is-gold';
+    if (rank === 2 || rank === 3) return 'meta-rank is-top';
+    return 'meta-rank';
+};
+
+const isTopPlacement = (placement = '') => /^(champion|winner|1st|1º|campe)/i.test(String(placement).trim());
+
 // "2026-10-01" → "1 out" / "Oct 1". Parsed as a calendar day, not a UTC
 // instant, so it never slides to the previous day west of Greenwich.
 const formatDay = (iso, pt) => {
@@ -45,33 +52,160 @@ const formatDay = (iso, pt) => {
     return new Date(y, m - 1, d).toLocaleDateString(pt ? 'pt-BR' : 'en-US', { day: 'numeric', month: 'short' });
 };
 
-function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
+/**
+ * Single-line AffectUI-inspired ranked telemetry row:
+ * tabular rank | sprite on type platform | species + types | type-tinted waterfall | tabular % & WR.
+ */
+const UsageRow = memo(function UsageRow({
+    mon,
+    rank,
+    monSuffix,
+    linkState,
+    types,
+    usingSmogon,
+    hasWinRates,
+    pt,
+}) {
+    const primaryType = types?.[0];
+    const tone = primaryType ? typeColors[primaryType] : null;
+    const pctNum = Number(mon.pct) || 0;
+    const pctLabel = usingSmogon ? pctNum.toFixed(1) : String(pctNum);
+    const hasWr = Number.isFinite(mon.winRate);
+    const wrTone = hasWr ? (mon.winRate >= 52 ? 'is-positive' : mon.winRate < 48 ? 'is-negative' : '') : '';
+    const secondaryCol = hasWinRates || !usingSmogon;
+
     return (
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
-            <span className="figure w-6 shrink-0 text-center text-2xs text-muted">#{rank}</span>
-            <div className="flex shrink-0 -space-x-1.5">
-                {core.ids.map((id) => (
-                    <button
-                        key={id}
-                        type="button"
-                        onClick={() => onOpenMon(id)}
-                        title={pretty(core.names[core.ids.indexOf(id)])}
-                        className="relative rounded-full border border-border bg-surface-raised transition-colors hover:z-10 hover:border-primary focus-visible:z-10"
-                    >
-                        <MonSprite id={id} name="" className="h-9 w-9 image-pixelated" />
-                    </button>
-                ))}
+        <li>
+            <Link
+                to={`/meta/${mon.id}${monSuffix}`}
+                state={linkState}
+                className={`meta-row ${secondaryCol ? 'has-wr' : ''}`}
+                style={tone ? { '--mon-tone': tone } : undefined}
+            >
+                <span className={`${rankClass(rank)} meta-row__rank`}>#{rank}</span>
+                <span
+                    className="meta-row__sprite-wrap type-platform"
+                    style={tone ? { '--card-type': tone } : undefined}
+                >
+                    <MonSprite id={mon.id} name={mon.name} alt="" className="meta-row__sprite image-pixelated" />
+                </span>
+                <span className="meta-row__ident">
+                    <span className="meta-row__name">{pretty(mon.name)}</span>
+                    {types?.length > 0 && (
+                        <span className="meta-row__types" aria-hidden="true">
+                            {types.slice(0, 2).map((tp) => (
+                                typeIcons[tp]
+                                    ? <img key={tp} src={typeIcons[tp]} alt="" className="meta-row__type-icon" />
+                                    : null
+                            ))}
+                        </span>
+                    )}
+                </span>
+                <span className="meta-row__track" aria-hidden="true">
+                    <span className="meta-row__fill" style={{ width: `${Math.min(Math.max(pctNum, 2), 100)}%` }} />
+                </span>
+                <span className="meta-row__stats">
+                    <span className="meta-row__pct">{pctLabel}%</span>
+                    {hasWinRates ? (
+                        <span className={`meta-row__wr ${wrTone}`}>
+                            {hasWr ? `${Number(mon.winRate).toFixed(1)}%` : '—'}
+                        </span>
+                    ) : !usingSmogon ? (
+                        <span className="meta-row__wr">
+                            {mon.count} {pt ? 'times' : 'teams'}
+                        </span>
+                    ) : null}
+                </span>
+            </Link>
+        </li>
+    );
+});
+
+/**
+ * A single core row (2- or 3-Pokémon grouping) with overlapping sprites and share.
+ * Borderless fill inside `.meta-panel` (0-1-2 containment).
+ */
+const CoreRow = memo(function CoreRow({ core, rank, onOpenMon, unit = 'teams', locale }) {
+    return (
+        <li className="meta-core-row">
+            <span className={`${rankClass(rank)} meta-core-row__rank`}>#{rank}</span>
+            <div className="meta-core-row__sprites">
+                {core.ids.map((id, idx) => {
+                    const rawName = core.names[idx] || '';
+                    const label = pretty(rawName);
+                    return (
+                        <button
+                            key={id}
+                            type="button"
+                            onClick={() => onOpenMon(id)}
+                            title={label}
+                            aria-label={label}
+                            className="meta-core-row__mon"
+                        >
+                            <MonSprite id={id} name={rawName} alt="" className="h-8 w-8 image-pixelated" />
+                        </button>
+                    );
+                })}
             </div>
-            <span className="min-w-0 flex-1 truncate text-xs font-semibold capitalize text-fg">
+            <span className="meta-core-row__name">
                 {core.names.map(pretty).join(' · ')}
             </span>
-            <div className="shrink-0 text-right">
-                <span className="figure block text-sm font-semibold text-primary">{core.pct}%</span>
-                <span className="block text-2xs text-muted"><span className="figure">{core.count.toLocaleString()}</span> {unit}</span>
+            <div className="meta-core-row__stats">
+                <span className="meta-core-row__pct">{core.pct}%</span>
+                <span className="meta-core-row__count">
+                    {core.count.toLocaleString(locale)} {unit}
+                </span>
             </div>
-        </div>
+        </li>
     );
-}
+});
+
+/**
+ * Tournament team composition strip (inspired by tournaments_teams_idea.png):
+ * rank + placement lead | share readout | 6-Pokémon horizontal platform strip | event link.
+ */
+const TeamStripCard = memo(function TeamStripCard({ tm, rank, typesById, linkState, pt }) {
+    const topPlace = isTopPlacement(tm.placement);
+    const unitLabel = tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team');
+    return (
+        <Link
+            to={`/tournaments/team/${tm.teamId}`}
+            state={linkState}
+            className="meta-team-card"
+        >
+            <div className="meta-team-card__head">
+                <span className="meta-team-card__lead">
+                    <span className={rankClass(rank)}>#{rank}</span>
+                    {tm.placement && (
+                        <span className={`meta-team-card__place ${topPlace ? 'is-gold' : ''}`}>
+                            {tm.placement}
+                        </span>
+                    )}
+                </span>
+                <span className="meta-team-card__share">
+                    <strong>{tm.pct}%</strong> · {tm.count} {unitLabel}
+                </span>
+            </div>
+            <div className="meta-team-card__roster">
+                {tm.ids.slice(0, 6).map((id, j) => (
+                    <span
+                        key={`${id}-${j}`}
+                        className="meta-team-card__slot type-platform"
+                        style={platformStyle(typesById, id)}
+                    >
+                        <MonSprite id={id} name={tm.names[j]} className="meta-team-card__sprite image-pixelated" />
+                    </span>
+                ))}
+            </div>
+            <div className="meta-team-card__foot">
+                <span className="meta-team-card__event">
+                    {tm.tournament || (pt ? 'Time de torneio' : 'Tournament team')}
+                </span>
+                <ArrowUpRight className="meta-team-card__go h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            </div>
+        </Link>
+    );
+});
 
 /**
  * Meta & Usage — the competitive command centre. Ranks Pokémon by real Smogon
@@ -84,6 +218,7 @@ function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
 export function MetaUsageView() {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
+    const locale = pt ? 'pt-BR' : 'en-US';
     useDocumentMeta({
         title: 'Meta & Usage',
         description: 'Competitive usage stats for every Smogon tier and VGC regulation: top Pokémon, items, moves, spreads, and Tera types from real ladder data.',
@@ -115,9 +250,6 @@ export function MetaUsageView() {
     // The search is in the URL too (?q=), with the format, tab, sort and cutoff.
     const [search, setSearch] = useUrlParam('q');
     // Active tab lives in the URL (?tab=teams) so it's shareable and survives back-nav.
-    // `tab` is resolved again below once we know whether the format is a tier:
-    // the tournament-team dataset is VGC-only, so "Common teams" is not a view a
-    // Smogon tier has.
     const wantsTeams = params.get('tab') === 'teams';
     const setTab = (id) => setParams((prev) => {
         const p = new URLSearchParams(prev);
@@ -125,9 +257,7 @@ export function MetaUsageView() {
         return p;
     });
 
-    // Tournament teams for the selected regulation (derive a "Reg X" token from the
-    // Smogon format label and match tournament `format`). Falls back to all teams
-    // when that regulation has no tournament teams baked yet (e.g. a brand-new reg).
+    // Tournament teams for the selected regulation.
     const regToken = (format?.label || '').replace(/vgc/i, '').replace(/\b\d{4}\b/, '').replace(/\s+/g, ' ').trim();
     const { teamsForReg, regHasTeams } = useMemo(() => {
         if (!regToken) return { teamsForReg: teams, regHasTeams: true };
@@ -136,10 +266,7 @@ export function MetaUsageView() {
     }, [teams, regToken]);
     const teamCompositions = useMemo(() => commonTeams(teamsForReg, 24), [teamsForReg]);
 
-    // Sort mode for the usage list: by raw usage (default), by tournament
-    // win-rate, or alphabetically — the last one matters now that a tier can
-    // list 200 Pokémon and "is X in this tier?" is a real question. Lives in the
-    // URL (?sort=wr) so it's shareable + survives back-nav.
+    // Sort mode for the usage list: by raw usage (default), win-rate, or A-Z.
     const SORTS = ['usage', 'wr', 'name'];
     const sortMode = SORTS.includes(params.get('sort')) ? params.get('sort') : 'usage';
     const setSortMode = (id) => setParams((prev) => {
@@ -148,8 +275,7 @@ export function MetaUsageView() {
         return p;
     }, { replace: true });
 
-    // Type filter (?type=fire,water) — also in the URL, so a filtered tier is a
-    // link you can send someone.
+    // Type filter (?type=fire,water).
     const typeFilter = useMemo(
         () => (params.get('type') || '').split(',').map((s) => s.trim()).filter(Boolean),
         [params],
@@ -160,17 +286,13 @@ export function MetaUsageView() {
         return p;
     }, { replace: true });
 
-    // Usage ranking for the selected format at the selected rating band (falls
-    // back to tournament appearance counts if the usage dataset isn't
-    // available). Carries win-rate when the dataset has it (Limitless-mined).
     const smogonRanked = useMemo(
         () => sortRows(usageRows(usageData, activeCutoff), sortMode)
             .map((r) => ({ ...r, pct: r.usage, count: r.rawCount })),
         [usageData, activeCutoff, sortMode],
     );
-    // The "#N" badge is the Pokémon's standing on the ladder, so it is computed
-    // once in usage order and looked up — not taken from its position in the
-    // list, which under A–Z sort or a type filter would say something false.
+    // The "#N" figure is the Pokémon's standing on the ladder, computed once in
+    // usage order so A-Z sort or a type filter never claims a filtered mon is #1.
     const rankById = useMemo(() => {
         const rows = usageData ? usageRows(usageData, activeCutoff) : [];
         return new Map(rows.map((r, i) => [r.id, i + 1]));
@@ -178,10 +300,7 @@ export function MetaUsageView() {
     const usingSmogon = smogonRanked.length > 0;
     const hasWinRates = useMemo(() => smogonRanked.some((r) => Number.isFinite(r.winRate)), [smogonRanked]);
     const tournamentRanked = useMemo(() => rankUsage(teams), [teams]);
-    // The tournament-team ranking is a VGC sample, so it can only stand in for a
-    // VGC regulation. Falling back to it for, say, Gen 8 Ubers would print VGC
-    // Pokémon under a tier that has never seen them — an empty state is honest
-    // and a wrong list is not.
+
     const selectedFormat = useMemo(() => formats.find((f) => f.id === fmtId) || null, [formats, fmtId]);
     const isTier = selectedFormat?.kind === 'tier';
     const tab = wantsTeams && !isTier ? 'teams' : 'usage';
@@ -190,38 +309,29 @@ export function MetaUsageView() {
         [usingSmogon, smogonRanked, isTier, tournamentRanked],
     );
 
-    // Pairs and trios come from the baked tournament teams — a VGC sample, so it
-    // can sit beside a VGC regulation but not beside Gen 8 Ubers. A tier gets the
-    // partnerships from its own ladder instead (the `teammates` counts in its
-    // usage file), which is both correct for it and better data.
     const cores2 = useMemo(
         () => (isTier ? ladderPairs(usageData, 6) : commonCores(teams, 2, 6)),
         [isTier, usageData, teams],
     );
     const cores3 = useMemo(() => (isTier ? [] : commonCores(teams, 3, 6)), [isTier, teams]);
 
-    const query = search.trim().toLowerCase();
+    const rawQuery = search.trim().toLowerCase();
+    const deferredQuery = useDeferredValue(rawQuery);
     const visible = useMemo(
-        () => filterRows(ranked, { query, types: typeFilter, typesById }),
-        [ranked, query, typeFilter, typesById],
+        () => filterRows(ranked, { query: deferredQuery, types: typeFilter, typesById }),
+        [ranked, deferredQuery, typeFilter, typesById],
     );
 
-    // On a phone the ranking is one two-column grid of every Pokémon in the
-    // format, stacked *above* the pairs and trios — ~12,000px of scroll before
-    // either is reachable. Reveal it in pages there; desktop keeps the full grid
-    // beside the cores. A new format, sort or search starts from the first page.
+    // Paged on both phone and desktop so first paint stays well within the 60-item budget.
     const isMobile = useMediaQuery(maxWidthBelow('lg'));
     const [filtersOpen, setFiltersOpen] = useState(false);
     const reveal = useProgressiveReveal(visible.length, {
-        initial: 12,
-        step: 24,
-        enabled: isMobile,
-        resetKey: `${fmtId}|${activeCutoff}|${sortMode}|${query}|${typeFilter.join(',')}`,
+        initial: isMobile ? 20 : 50,
+        step: isMobile ? 30 : 50,
+        enabled: true,
+        resetKey: `${fmtId}|${activeCutoff}|${sortMode}|${deferredQuery}|${typeFilter.join(',')}`,
     });
 
-    // Changing the format drops the rating band: the bands a format publishes
-    // differ (VGC runs 1630, OU runs 1695/1825), so carrying ?cut across would
-    // ask for one the new ladder never had. Everything else is kept.
     const setFmt = (id) => setParams((prev) => {
         const p = new URLSearchParams(prev);
         p.set('fmt', id);
@@ -235,12 +345,21 @@ export function MetaUsageView() {
         return p;
     }, { replace: true });
 
-    const monQuery = new URLSearchParams();
-    if (fmtId) monQuery.set('fmt', fmtId);
-    if (params.get('cut')) monQuery.set('cut', params.get('cut'));
-    const monSuffix = monQuery.toString() ? `?${monQuery}` : '';
-    const openMon = (id) => navigate(`/meta/${id}${monSuffix}`, { state: linkState });
-    const hasFilters = Boolean(query) || typeFilter.length > 0;
+    const cutParam = params.get('cut');
+    const monSuffix = useMemo(() => {
+        const monQuery = new URLSearchParams();
+        if (fmtId) monQuery.set('fmt', fmtId);
+        if (cutParam) monQuery.set('cut', cutParam);
+        const qs = monQuery.toString();
+        return qs ? `?${qs}` : '';
+    }, [fmtId, cutParam]);
+
+    const openMon = useCallback(
+        (id) => navigate(`/meta/${id}${monSuffix}`, { state: linkState }),
+        [navigate, monSuffix, linkState],
+    );
+
+    const hasFilters = Boolean(rawQuery) || typeFilter.length > 0;
     const clearFilters = () => {
         setSearch('');
         setTypeFilter([]);
@@ -248,15 +367,11 @@ export function MetaUsageView() {
 
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
     if (loading && !ranked.length) {
-        return (
-            <Loader size="lg" scene="pokedex" block />
-        );
+        return <Loader size="lg" scene="pokedex" block />;
     }
 
-    // A tier with no baked file is a ladder that did not run (or publish) last
-    // month — say that, and leave the picker reachable above the message.
     const noData = !ranked.length;
-    const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
+    const battlesLabel = totalBattles ? totalBattles.toLocaleString(locale) : '';
 
     const sortControl = (variant) => (
         <div className={`segmented segmented--quiet ${variant}`} role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
@@ -278,24 +393,15 @@ export function MetaUsageView() {
         </div>
     );
     const changedFilters = typeFilter.length + (sortMode !== 'usage' ? 1 : 0);
+    const secondaryHead = hasWinRates
+        ? (pt ? 'Vit.' : 'WR')
+        : (!usingSmogon ? (pt ? 'Times' : 'Teams') : null);
 
-    // Starts at the page's edge, under the hub switcher (2026-11-09): centred
-    // with its own inset, it began ~20px (and on wide screens far more) to the
-    // right of the switcher above it.
     return (
-        <div className="max-w-[1600px] sm:pb-5">
-            <header className="mb-4 sm:mb-5">
-                {/* No padding of its own on a phone: .app-shell__body is already the
-                    gutter, and a second px-3 inside it put this text 12px right
-                    of the page title above it — and its py-4 stacked into a blank
-                    band under the header. No line clamp either: a lead paragraph
-                    cut off at "clique em um..." reads as broken. The how-to clause
-                    is for a pointer; on a phone the cards are plainly tappable,
-                    so dropping it is what lets the sentence end on its own. */}
-                <p className="max-w-2xl text-sm text-muted sm:text-sm">
+        <div className="meta-page">
+            <header className="meta-header">
+                <p className="meta-lead">
                     {usingSmogon && format && activeCutoff === TOUR_BAND && tournament ? (
-                        // Ranked by tournament registrations: say how big and how
-                        // recent the sample is, since it is far smaller than the ladder.
                         <>
                             {pt
                                 ? `${format.label} em torneios: ${tournament.teamsAnalyzed.toLocaleString('pt-BR')} times de ${tournament.tournaments} torneios do Limitless`
@@ -324,18 +430,12 @@ export function MetaUsageView() {
                         ? 'Pokémon mais usados nos times recentes de torneios — clique para ver o que estão rodando.'
                         : 'Most-used Pokémon across recent tournament teams — click any to see what they run.')}
                 </p>
-                <SourceCredit pt={pt} sources={['smogon', 'limitless', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
+                <SourceCredit pt={pt} sources={['smogon', 'limitless', 'vgcpastes', 'pikalytics']} className="meta-credits" />
             </header>
 
-            {/* Tabs. Only two views exist for a VGC regulation; a Smogon tier has
-                one, because the tournament-team dataset behind "Common teams" is
-                a VGC sample and would list VGC teams under, say, Gen 8 Ubers. */}
             {!isTier && (
                 <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="tabs mb-4">
                     {[
-                        // "Pokémon", not "Uso" (2026-11-12): the hub switcher above
-                        // already says Uso, and so does the sort below — the same
-                        // word three times named three different things.
                         { id: 'usage', label: 'Pokémon' },
                         { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
                     ].map((tb) => (
@@ -353,26 +453,16 @@ export function MetaUsageView() {
                 </div>
             )}
 
-            {/* Toolbar, in two rows on a phone. Row one is the context
-                everything below depends on — which ladder, at which rating —
-                and takes the full width so it reads as the heading it is. Row
-                two is what you do to the list: search, type, order. Left to
-                wrap freely these landed in a ragged block; pinning the rows
-                keeps one top and bottom edge per row. */}
             {tab === 'usage' && (
-                <div className="meta-toolbar__context mb-3 flex flex-wrap items-center gap-2">
+                <div className="meta-toolbar__context">
                     <FormatPicker
                         formats={formats}
                         value={fmtId}
                         onChange={setFmt}
                         pt={pt}
-                        className="min-w-0 flex-1 sm:flex-none sm:min-w-[13rem]"
+                        className="min-w-0 flex-1 sm:flex-none"
                     />
                     {isMobile ? (
-                        // Phone (signed-in pass, 2026-11-09): rating, order and types
-                        // were six controls stacked above the first Pokémon. One
-                        // button holds them; its label carries the rating in force
-                        // and a count of anything else changed from the default.
                         <button
                             type="button"
                             onClick={() => setFiltersOpen(true)}
@@ -381,7 +471,7 @@ export function MetaUsageView() {
                         >
                             <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                             <span>{pt ? 'Filtros' : 'Filters'}</span>
-                            {cutoffs.length > 1 && <span className="tabular-nums text-muted">· {cutoffLabel(activeCutoff, pt)}</span>}
+                            {cutoffs.length > 1 && <span className="figure text-muted">· {cutoffLabel(activeCutoff, pt)}</span>}
                             {changedFilters > 0 && <span className="count-badge">{changedFilters}</span>}
                         </button>
                     ) : (
@@ -412,20 +502,26 @@ export function MetaUsageView() {
                     </div>
                 </BottomSheet>
             )}
-            <div className="mb-5 flex flex-wrap items-center gap-2">
+            <div className="meta-toolbar__filters">
                 {tab === 'usage' && (
-                    <div className="relative min-w-0 flex-1 basis-full sm:basis-auto">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                    <div className="meta-search">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden="true" />
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={pt ? 'Buscar Pokémon…' : 'Search Pokémon…'}
-                            className="min-h-11 w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-9 text-sm text-fg focus:border-primary focus:outline-none"
+                            aria-label={pt ? 'Buscar Pokémon' : 'Search Pokémon'}
+                            className="meta-search__input"
                         />
                         {search && (
-                            <button type="button" onClick={() => setSearch('')} className="touch-target absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-fg" aria-label={t('common.clear')}>
-                                <X className="h-4 w-4" />
+                            <button
+                                type="button"
+                                onClick={() => setSearch('')}
+                                className="touch-target absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-fg"
+                                aria-label={t('common.clear')}
+                            >
+                                <X className="h-4 w-4" aria-hidden="true" />
                             </button>
                         )}
                     </div>
@@ -450,9 +546,9 @@ export function MetaUsageView() {
                 />
             ) : tab === 'teams' ? (
                 <section>
-                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                        <h2 className="flex items-center gap-1.5 text-base font-semibold text-fg">
-                            <Users className="h-4 w-4" /> {pt ? 'Times mais usados' : 'Most-used teams'}
+                    <div className="meta-panel__head">
+                        <h2 className="meta-panel__title">
+                            <Users className="h-4 w-4 text-muted" aria-hidden="true" /> {pt ? 'Times mais usados' : 'Most-used teams'}
                         </h2>
                         {!regHasTeams && format && (
                             <span className="text-2xs text-muted">
@@ -463,138 +559,137 @@ export function MetaUsageView() {
                     {teamCompositions.length === 0 ? (
                         <EmptyState compact title={pt ? 'Sem times' : 'No teams'} message={pt ? 'Sem dados de times de torneio.' : 'No tournament team data available.'} />
                     ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="meta-teams-grid">
                             {teamCompositions.map((tm, i) => (
-                                <Link
+                                <TeamStripCard
                                     key={tm.ids.join('-')}
-                                    to={`/tournaments/team/${tm.teamId}`}
-                                    state={linkState}
-                                    className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none"
-                                >
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="figure text-2xs text-muted">#{i + 1}</span>
-                                        <span className="text-right">
-                                            <span className="figure text-sm font-semibold text-primary">{tm.count}</span>
-                                            <span className="ml-1 text-2xs text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · <span className="figure">{tm.pct}%</span></span>
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {tm.ids.map((id, j) => (
-                                            <MonSprite key={`${id}-${j}`} id={id} name={tm.names[j]} className="h-12 w-12 image-pixelated" />
-                                        ))}
-                                    </div>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="min-w-0 truncate text-2xs text-muted">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
-                                        <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-primary" />
-                                    </div>
-                                </Link>
+                                    tm={tm}
+                                    rank={i + 1}
+                                    typesById={typesById}
+                                    linkState={linkState}
+                                    pt={pt}
+                                />
                             ))}
                         </div>
                     )}
                 </section>
             ) : (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                {/* Ranked usage grid */}
-                <section className="lg:col-span-2">
-                    <h2 className="mb-3 flex items-center gap-1.5 text-base font-semibold text-fg">
-                        {pt ? 'Pokémon mais usados' : 'Top Pokémon'}
-                    </h2>
-                    {visible.length === 0 ? (
-                        <EmptyState mascot="search"
-                            compact
-                            title={pt ? 'Nenhum resultado' : 'No matches'}
-                            message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'}
-                            action={hasFilters ? { label: t('common.clearFilters'), onClick: clearFilters } : undefined}
-                        />
-                    ) : (
-                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-                            {visible.slice(0, reveal.limit).map((mon) => {
-                                // The mon's standing on the ladder, never its
-                                // position in this list — a filtered or A–Z list
-                                // renumbered 1..n would claim Pikachu is #1 in OU.
-                                const rank = rankById.get(mon.id) ?? (ranked.indexOf(mon) + 1);
-                                return (
-                                    <Link
-                                        key={mon.id}
-                                        to={`/meta/${mon.id}${monSuffix}`}
-                                        state={linkState}
-                                        className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none"
-                                    >
-                                        {/* The rank is a figure, not a chip (2026-11-12) — "#1", as the
-                                            pairs beside it write theirs; the sprite stands on its
-                                            type's platform, as on a Pokémon card. */}
-                                        <span className="figure absolute left-2.5 top-2 text-2xs text-muted">#{rank}</span>
-                                        <span className="type-platform inline-flex" style={platformStyle(typesById, mon.id)}>
-                                            <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
+                <div className="meta-layout">
+                    {/* Ranked usage waterfall */}
+                    <section className="meta-panel">
+                        <div className="meta-panel__head">
+                            <h2 className="meta-panel__title">
+                                {pt ? 'Pokémon mais usados' : 'Top Pokémon'}
+                            </h2>
+                            <span className="meta-panel__meta">{visible.length.toLocaleString(locale)}</span>
+                        </div>
+                        {visible.length === 0 ? (
+                            <EmptyState
+                                mascot="search"
+                                compact
+                                title={pt ? 'Nenhum resultado' : 'No matches'}
+                                message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'}
+                                action={hasFilters ? { label: t('common.clearFilters'), onClick: clearFilters } : undefined}
+                            />
+                        ) : (
+                            <>
+                                <div className={`meta-waterfall-head ${secondaryHead ? 'has-wr' : ''}`} aria-hidden="true">
+                                    <span className="text-right">#</span>
+                                    <span />
+                                    <span>Pokémon</span>
+                                    <span>{pt ? 'Participação' : 'Share'}</span>
+                                    <span className="meta-row__stats">
+                                        <span className="meta-row__pct" style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--weight-medium)', color: 'var(--color-muted)' }}>
+                                            {pt ? 'Uso' : 'Usage'}
                                         </span>
-                                        <span className="w-full truncate text-xs font-semibold capitalize text-fg">{pretty(mon.name)}</span>
-                                        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
-                                            <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(mon.pct, 3)}%` }} />
-                                        </div>
-                                        <span className="meta-mon-card__pct mt-1 text-2xs font-semibold text-muted">
-                                            <strong className="meta-mon-card__value figure">{mon.pct}%</strong> {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
-                                        </span>
-                                        {Number.isFinite(mon.winRate) && (
-                                            <span className="text-2xs font-semibold text-muted">
-                                                <span className="figure">{mon.winRate}%</span> {pt ? 'vit' : 'WR'}
+                                        {secondaryHead && (
+                                            <span className="meta-row__wr" style={{ fontSize: 'var(--text-2xs)' }}>
+                                                {secondaryHead}
                                             </span>
                                         )}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    )}
-                    {reveal.hasMore && (
-                        <ShowMoreButton remaining={reveal.remaining} onClick={reveal.showMore} />
-                    )}
-                </section>
+                                    </span>
+                                </div>
+                                <ol className="meta-waterfall-list">
+                                    {visible.slice(0, reveal.limit).map((mon) => {
+                                        const rank = rankById.get(mon.id) ?? (ranked.indexOf(mon) + 1);
+                                        return (
+                                            <UsageRow
+                                                key={mon.id}
+                                                mon={mon}
+                                                rank={rank}
+                                                monSuffix={monSuffix}
+                                                linkState={linkState}
+                                                types={typesById.get(mon.id)}
+                                                usingSmogon={usingSmogon}
+                                                hasWinRates={hasWinRates}
+                                                pt={pt}
+                                            />
+                                        );
+                                    })}
+                                </ol>
+                            </>
+                        )}
+                        {reveal.hasMore && (
+                            <ShowMoreButton remaining={reveal.remaining} onClick={reveal.showMore} />
+                        )}
+                    </section>
 
-                {/* Pairs — from this ladder's own teammate counts on a tier, from
-                    the tournament teams on a VGC regulation. The source is named
-                    under the heading, because "28%" means a different thing in
-                    each and the panel should not pretend otherwise. */}
-                <section className="space-y-5">
-                    <div>
-                        <h2 className="mb-1 flex items-center gap-1.5 text-base font-semibold text-fg">
-                            <Layers className="h-4 w-4" /> {pt ? 'Duplas comuns' : 'Common pairs'}
-                        </h2>
-                        <p className="mb-3 text-2xs text-muted">
-                            {isTier
-                                ? (pt ? 'Parceiros mais frequentes no ladder' : 'Most frequent partners on the ladder')
-                                : (pt ? 'De times recentes de torneios' : 'From recent tournament teams')}
-                        </p>
-                        <div className="space-y-2">
-                            {cores2.length
-                                ? cores2.map((c, i) => (
-                                    <CoreRow
-                                        key={c.ids.join('-')}
-                                        core={c}
-                                        rank={i + 1}
-                                        onOpenMon={openMon}
-                                        unit={isTier ? (pt ? 'jogos' : 'games') : (pt ? 'times' : 'teams')}
-                                    />
-                                ))
-                                : <p className="text-xs text-muted">{pt ? 'Dados insuficientes.' : 'Not enough data.'}</p>}
-                        </div>
-                    </div>
-                    {cores3.length > 0 && (
-                        <div>
-                            <h2 className="mb-3 flex items-center gap-1.5 text-base font-semibold text-fg">
-                                <Layers className="h-4 w-4" /> {pt ? 'Trios comuns' : 'Common trios'}
-                            </h2>
-                            <div className="space-y-2">
-                                {cores3.map((c, i) => (
-                                    <CoreRow key={c.ids.join('-')} core={c} rank={i + 1} onOpenMon={openMon} unit={pt ? 'times' : 'teams'} />
-                                ))}
+                    {/* Pairs & Trios supporting rail */}
+                    <aside className="meta-rail">
+                        <section className="meta-panel">
+                            <div className="meta-panel__head">
+                                <h2 className="meta-panel__title">
+                                    <Layers className="h-4 w-4 text-muted" aria-hidden="true" /> {pt ? 'Duplas comuns' : 'Common pairs'}
+                                </h2>
                             </div>
-                        </div>
-                    )}
-                </section>
-            </div>
+                            <p className="meta-panel__sub">
+                                {isTier
+                                    ? (pt ? 'Parceiros mais frequentes no ladder' : 'Most frequent partners on the ladder')
+                                    : (pt ? 'De times recentes de torneios' : 'From recent tournament teams')}
+                            </p>
+                            {cores2.length ? (
+                                <ol className="meta-core-list">
+                                    {cores2.map((c, i) => (
+                                        <CoreRow
+                                            key={c.ids.join('-')}
+                                            core={c}
+                                            rank={i + 1}
+                                            onOpenMon={openMon}
+                                            unit={isTier ? (pt ? 'jogos' : 'games') : (pt ? 'times' : 'teams')}
+                                            locale={locale}
+                                        />
+                                    ))}
+                                </ol>
+                            ) : (
+                                <p className="text-xs text-muted">{pt ? 'Dados insuficientes.' : 'Not enough data.'}</p>
+                            )}
+                        </section>
+
+                        {cores3.length > 0 && (
+                            <section className="meta-panel">
+                                <div className="meta-panel__head">
+                                    <h2 className="meta-panel__title">
+                                        <Layers className="h-4 w-4 text-muted" aria-hidden="true" /> {pt ? 'Trios comuns' : 'Common trios'}
+                                    </h2>
+                                </div>
+                                <ol className="meta-core-list">
+                                    {cores3.map((c, i) => (
+                                        <CoreRow
+                                            key={c.ids.join('-')}
+                                            core={c}
+                                            rank={i + 1}
+                                            onOpenMon={openMon}
+                                            unit={pt ? 'times' : 'teams'}
+                                            locale={locale}
+                                        />
+                                    ))}
+                                </ol>
+                            </section>
+                        )}
+                    </aside>
+                </div>
             )}
 
-            {/* Where the numbers come from, for the format on screen — the same
-                paragraphs api/render-meta.js writes for the default format. */}
             <DataNotes
                 className="mt-6"
                 paragraphs={metaNotes({ format: format?.label, battles: totalBattles, month, kind: format?.kind }, language)}
