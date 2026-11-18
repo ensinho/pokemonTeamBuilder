@@ -357,6 +357,352 @@ export const GUIDES = {
             ],
         },
     },
+
+    'pokemon-type-chart-guide': {
+        en: {
+            lede: 'Every Pokémon battle starts with type matchups: which attacks deal double or quadruple damage, which barely scratch, and which do nothing at all. This guide explains how the 18 types interact and how to check single and dual-type Pokémon.',
+            sections: [
+                {
+                    heading: 'How do weaknesses, resistances and immunities work?',
+                    paragraphs: [
+                        'When a move hits a single-type Pokémon, the type chart applies one multiplier: 2× when the move is super effective, ½× when the defender resists it, 0× when the defender is immune, and 1× for everything else.',
+                        'An immunity completely blocks damaging moves of that type: Ground moves do 0× to Flying-type Pokémon, Ghost and Normal cannot hit each other with damaging moves of those types, Fairy is immune to Dragon, Dark is immune to Psychic, Steel is immune to Poison, and Ground is immune to Electric.',
+                    ],
+                    links: [{ to: '/types', label: 'Open the type chart' }],
+                },
+                {
+                    heading: 'How do dual-type Pokémon get 4× weaknesses or ¼× resistances?',
+                    paragraphs: [
+                        'A Pokémon with two types multiplies the two values together. Charizard is Fire and Flying: Rock is 2× against Fire and 2× against Flying, so Rock deals 4× damage to Charizard. Grass is ½× against Fire and ½× against Flying, so Charizard takes only ¼× from Grass.',
+                        'If one type is weak (2×) and the other resists (½×), the two cancel out to neutral 1× damage. And if either type has a 0× immunity, the final multiplier is 0× regardless of the other type: Ground/Flying takes 0× from Electric even though Flying alone is weak to it.',
+                    ],
+                    links: [{ to: '/types', label: 'Test two-type combinations' }, { to: '/pokedex', label: 'Search the Pokédex' }],
+                },
+                {
+                    heading: 'What is STAB, and how does Terastallization change it?',
+                    paragraphs: [
+                        'STAB stands for Same-Type Attack Bonus: when a Pokémon uses a damaging move that matches one of its own types, the move gets a 1.5× power bonus before type effectiveness is applied.',
+                        'When a Pokémon Terastallizes in Generation 9, its defensive weaknesses become those of its single Tera type, while it keeps the 1.5× STAB on its original types and gains STAB on its Tera type (or 2× if the Tera type matches one of its original types).',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Test STAB and Tera in the calculator' }],
+                },
+                {
+                    heading: 'How do you balance types across a six-Pokémon team?',
+                    paragraphs: [
+                        'A balanced team avoids stacking the same weakness on three or more Pokémon and carries resistances or immunities to the types its main attackers are weak to. Classic defensive cores — such as Fire, Water and Grass, or Fairy, Dragon and Steel — cover each other because each member resists what threatens the others.',
+                        'As you add Pokémon in the team builder, the coverage table counts how many members are weak to or resist each of the 18 types, so shared holes stand out right away.',
+                    ],
+                    links: [{ to: '/builder', label: 'Check your team coverage' }, { to: '/guides/first-vgc-team', label: 'First VGC team guide' }],
+                },
+            ],
+            faq: [
+                { q: 'How many Pokémon types are there?', a: 'There are 18 official Pokémon types: Normal, Fire, Water, Electric, Grass, Ice, Fighting, Poison, Ground, Flying, Psychic, Bug, Rock, Ghost, Dragon, Dark, Steel and Fairy.' },
+                { q: 'Which type has the most resistances?', a: 'Steel resists 10 of the 18 types and is immune to Poison, making it the strongest defensive type in the game.' },
+                { q: 'Can I check two types at once on PokemonBuilder?', a: 'Yes. Open the Type chart page and pick any two types in the Combine two types tool to see all 4×, 2×, ½×, ¼× and 0× matchups and the Pokémon with that exact typing.' },
+            ],
+        },
+        pt: {
+            lede: 'Toda batalha Pokémon começa pelos confrontos de tipo: quais golpes causam o dobro ou quatro vezes o dano, quais quase não machucam e quais não fazem nada. Este guia explica como os 18 tipos interagem e como conferir Pokémon de um ou dois tipos.',
+            sections: [
+                {
+                    heading: 'Como funcionam fraquezas, resistências e imunidades?',
+                    paragraphs: [
+                        'Quando um golpe acerta um Pokémon de um único tipo, a tabela de tipos aplica um multiplicador: 2× quando o golpe é super efetivo, ½× quando o defensor resiste, 0× quando o defensor é imune e 1× nos demais casos.',
+                        'Uma imunidade bloqueia totalmente golpes de dano daquele tipo: golpes Terrestres causam 0× em Voadores, Fantasma e Normal não acertam um ao outro com golpes desses tipos, Fada é imune a Dragão, Sombrio é imune a Psíquico, Metálico é imune a Venenoso e Terrestre é imune a Elétrico.',
+                    ],
+                    links: [{ to: '/types', label: 'Abrir a tabela de tipos' }],
+                },
+                {
+                    heading: 'Como surgem as fraquezas 4× e as resistências ¼× em tipos duplos?',
+                    paragraphs: [
+                        'Um Pokémon de dois tipos multiplica os dois valores. O Charizard é Fogo e Voador: Pedra causa 2× em Fogo e 2× em Voador, então Pedra causa 4× no Charizard. Planta causa ½× em Fogo e ½× em Voador, então o Charizard recebe apenas ¼× de Planta.',
+                        'Se um tipo é fraco (2×) e o outro resiste (½×), os dois se anulam e o dano fica neutro (1×). E se qualquer um dos dois tipos tiver imunidade (0×), o resultado final é 0× mesmo que o outro seja fraco: Terrestre/Voador recebe 0× de Elétrico.',
+                    ],
+                    links: [{ to: '/types', label: 'Testar combinações de dois tipos' }, { to: '/pokedex', label: 'Pesquisar na Pokédex' }],
+                },
+                {
+                    heading: 'O que é STAB, e como a Terastalização muda isso?',
+                    paragraphs: [
+                        'STAB (Same-Type Attack Bonus) é o bônus de ataque do mesmo tipo: quando um Pokémon usa um golpe de dano do mesmo tipo que ele, o golpe recebe 1,5× de poder antes de aplicar a tabela de tipos.',
+                        'Quando um Pokémon Terastaliza na 9ª geração, as fraquezas defensivas dele passam a ser apenas as do tipo Tera, mas ele mantém o STAB de 1,5× nos tipos originais e ganha STAB no tipo Tera (ou 2× se o tipo Tera for igual a um dos tipos originais).',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Testar STAB e Tera na calculadora' }],
+                },
+                {
+                    heading: 'Como equilibrar os tipos num time de seis Pokémon?',
+                    paragraphs: [
+                        'Um time equilibrado evita repetir a mesma fraqueza em três ou mais Pokémon e traz resistências ou imunidades para os tipos que ameaçam os seus principais atacantes. Núcleos clássicos — como Fogo, Água e Planta, ou Fada, Dragão e Metálico — se cobrem porque cada um resiste ao que ameaça os outros.',
+                        'Conforme você adiciona Pokémon no montador, a tabela de cobertura conta quantos membros são fracos ou resistem a cada um dos 18 tipos, deixando qualquer brecha visível na hora.',
+                    ],
+                    links: [{ to: '/builder', label: 'Conferir a cobertura do seu time' }, { to: '/guides/first-vgc-team', label: 'Guia do primeiro time VGC' }],
+                },
+            ],
+            faq: [
+                { q: 'Quantos tipos de Pokémon existem?', a: 'Existem 18 tipos oficiais de Pokémon: Normal, Fogo, Água, Elétrico, Planta, Gelo, Lutador, Venenoso, Terrestre, Voador, Psíquico, Inseto, Pedra, Fantasma, Dragão, Sombrio, Metálico e Fada.' },
+                { q: 'Qual tipo tem mais resistências?', a: 'O tipo Metálico (Steel) resiste a 10 dos 18 tipos e é imune a Venenoso, sendo o tipo mais forte defensivamente do jogo.' },
+                { q: 'Dá para combinar dois tipos de uma vez no PokemonBuilder?', a: 'Sim. Na página da Tabela de tipos, escolha dois tipos em Combinar dois tipos para ver na hora todas as fraquezas 4× e 2×, resistências ½× e ¼×, imunidades e quais Pokémon têm essa combinação.' },
+            ],
+        },
+    },
+
+    'pokemon-speed-tiers-evs-natures': {
+        en: {
+            lede: 'In competitive Pokémon, moving first can turn a two-hit knockout into a clean sweep before the opponent acts. This guide explains how level 50 Speed is calculated from base stats, IVs, EVs, natures and Choice Scarf.',
+            sections: [
+                {
+                    heading: 'How is the Speed stat calculated at level 50?',
+                    paragraphs: [
+                        'Official VGC battles are played at level 50. With a standard 31 IV, a Pokémon with 0 EVs and a neutral nature has a level 50 Speed equal to Base Speed + 20 (rounded down when the base stat is odd allows for half-points, following the game formula).',
+                        'Investing the maximum 252 EVs adds 31 points to that stat at level 50 before the nature modifier, so a neutral 252-EV Pokémon sits at Base Speed + 52. A Speed-boosting nature (Timid, Jolly, Hasty or Naive) multiplies the final number by 1.1, rounded down.',
+                    ],
+                    links: [{ to: '/speed-tiers', label: 'Compare all level 50 Speed tiers' }],
+                },
+                {
+                    heading: 'What are the four main Speed benchmarks to compare?',
+                    paragraphs: [
+                        'Speed tiers lets you switch between the four benchmarks players check most at level 50: Base (0 EVs, neutral nature), Neutral (252 EVs, neutral nature), Positive (252 EVs with a +Speed nature), and Scarf (252 EVs with a +Speed nature holding Choice Scarf, which multiplies Speed by 1.5).',
+                        'Every Pokémon page also includes an interactive level 50 EV bench that compares your exact Speed stat against common competitive anchors as you add or remove EVs.',
+                    ],
+                    links: [{ to: '/speed-tiers', label: 'Open Speed tiers' }, { to: '/pokedex', label: 'Open a Pokémon in the Pokédex' }],
+                },
+                {
+                    heading: 'What happens when two Pokémon have the exact same Speed?',
+                    paragraphs: [
+                        'When two Pokémon are in the same priority bracket and have the exact same final Speed stat, the game decides who moves first with a 50/50 coin flip on every turn — a speed tie. Speed tiers groups Pokémon that share the same number on the same row so you can spot speed ties immediately.',
+                        'Adding even 1 extra point of Speed avoids the coin flip and guarantees moving first, which is why players check the exact number of the threat they want to outrun.',
+                    ],
+                    links: [{ to: '/meta', label: 'See the most used threats in Meta' }],
+                },
+                {
+                    heading: 'How do you balance Speed EVs with bulk and damage?',
+                    paragraphs: [
+                        'Every Pokémon has 508 usable EVs across all six stats (up to 252 in any single stat). Instead of always putting 252 EVs into Speed, many VGC players invest just enough Speed EVs to outrun a specific benchmark by 1 point and put the remaining EVs into HP, Defense or Special Defense.',
+                        'Use Speed tiers to find the target number you need to beat, then open the damage calculator to put the leftover EVs into bulk or attack.',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Open the damage calculator' }, { to: '/builder', label: 'Open the team builder' }],
+                },
+            ],
+            faq: [
+                { q: 'Which natures increase Speed?', a: 'Timid (+Speed, -Attack), Jolly (+Speed, -Special Attack), Hasty (+Speed, -Defense) and Naive (+Speed, -Special Defense) all boost Speed by 10%.' },
+                { q: 'How much does Choice Scarf increase Speed?', a: 'Choice Scarf multiplies the holder\'s Speed by 1.5× (rounded down), at the cost of locking the Pokémon into the first move it selects until it switches out.' },
+                { q: 'How do I check Tailwind Speed?', a: 'Tailwind doubles your side\'s Speed for 4 turns. Take the Pokémon\'s level 50 Speed from Speed tiers and multiply it by 2 to see what it outruns under Tailwind.' },
+            ],
+        },
+        pt: {
+            lede: 'No competitivo de Pokémon, agir primeiro pode transformar um nocaute em dois turnos numa vitória limpa antes que o adversário ataque. Este guia explica como a velocidade no nível 50 é calculada com status base, IVs, EVs, natureza e Choice Scarf.',
+            sections: [
+                {
+                    heading: 'Como a velocidade é calculada no nível 50?',
+                    paragraphs: [
+                        'As batalhas oficiais de VGC acontecem no nível 50. Com IV 31 padrão, um Pokémon sem EVs (0 EVs) e com natureza neutra fica com a velocidade igual a Velocidade Base + 20 no nível 50, seguindo a fórmula oficial de arredondamento do jogo.',
+                        'Investir o máximo de 252 EVs soma 31 pontos ao atributo no nível 50 antes da natureza, deixando o Pokémon com Velocidade Base + 52. Uma natureza favorável de Speed (Timid, Jolly, Hasty ou Naive) multiplica o valor final por 1,1, arredondado para baixo.',
+                    ],
+                    links: [{ to: '/speed-tiers', label: 'Comparar todos os Speed tiers no nível 50' }],
+                },
+                {
+                    heading: 'Quais são as quatro faixas principais de velocidade para comparar?',
+                    paragraphs: [
+                        'A página de Speed tiers permite alternar entre as quatro referências que os jogadores mais conferem no nível 50: Base (0 EVs, natureza neutra), Neutra (252 EVs, natureza neutra), Positiva (252 EVs com natureza +Speed) e Scarf (252 EVs +Speed segurando Choice Scarf, que multiplica a velocidade por 1,5).',
+                        'A página de cada Pokémon na Pokédex também traz uma bancada interativa no nível 50 que compara a sua velocidade exata com referências do competitivo enquanto você ajusta os EVs.',
+                    ],
+                    links: [{ to: '/speed-tiers', label: 'Abrir o Speed tiers' }, { to: '/pokedex', label: 'Abrir um Pokémon na Pokédex' }],
+                },
+                {
+                    heading: 'O que acontece quando dois Pokémon têm exatamente a mesma velocidade?',
+                    paragraphs: [
+                        'Quando dois Pokémon usam golpes de mesma prioridade e têm exatamente o mesmo número final de Speed, o jogo decide quem age primeiro num sorteio de 50/50 a cada turno — o famoso speed tie. O Speed tiers agrupa na mesma linha todos os Pokémon que empatam naquele valor.',
+                        'Ter apenas 1 ponto a mais de velocidade elimina o sorteio e garante agir antes, por isso os jogadores conferem o número exato da ameaça que querem ultrapassar.',
+                    ],
+                    links: [{ to: '/meta', label: 'Ver as principais ameaças no Meta' }],
+                },
+                {
+                    heading: 'Como equilibrar EVs de velocidade com resistência e dano?',
+                    paragraphs: [
+                        'Cada Pokémon tem 508 EVs úteis para distribuir entre os seis atributos (até 252 em um único atributo). Em vez de colocar sempre 252 EVs em Speed, muitos jogadores de VGC colocam só o suficiente para passar um alvo específico por 1 ponto e guardam o resto para HP, Defesa ou Ataque.',
+                        'Use o Speed tiers para achar o número que precisa superar e depois abra a calculadora de dano para investir os EVs restantes em sobrevivência ou poder de fogo.',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Abrir a calculadora de dano' }, { to: '/builder', label: 'Abrir o montador de times' }],
+                },
+            ],
+            faq: [
+                { q: 'Quais naturezas aumentam a velocidade (Speed)?', a: 'Timid (+Speed, -Ataque), Jolly (+Speed, -Ataque Especial), Hasty (+Speed, -Defesa) e Naive (+Speed, -Defesa Especial) aumentam a velocidade em 10%.' },
+                { q: 'Quanto o Choice Scarf aumenta a velocidade?', a: 'O Choice Scarf multiplica a velocidade do usuário por 1,5× (arredondado para baixo), mas trava o Pokémon no primeiro golpe que ele escolher até sair de campo.' },
+                { q: 'Como conferir a velocidade sob Tailwind?', a: 'Tailwind dobra a velocidade do seu lado por 4 turnos. Pegue a velocidade do Pokémon no nível 50 no Speed tiers e multiplique por 2 para ver quem ele ultrapassa com Tailwind ativo.' },
+            ],
+        },
+    },
+
+    'pokemon-damage-calculator-guide': {
+        en: {
+            lede: 'A damage calculator tells you before a match whether your attack is a guaranteed knockout or if your Pokémon survives a rival\'s strongest hit. Here is how to read the numbers and tune your sets.',
+            sections: [
+                {
+                    heading: 'Why does a Pokémon attack have 16 different damage numbers?',
+                    paragraphs: [
+                        'After the game calculates a move\'s base damage from level, stats, move power and modifiers, it multiplies the result by a random roll from 85% to 100% in 1% steps — 16 possible outcomes in total.',
+                        'When the lowest of those 16 rolls is at least 100% of the defender\'s HP, the move is a guaranteed OHKO (one-hit knockout). When only some of the 16 rolls reach 100%, the calculator shows the exact percentage chance of getting the knockout.',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Open the damage calculator' }],
+                },
+                {
+                    heading: 'Which modifiers change the damage calculation the most?',
+                    paragraphs: [
+                        'Type effectiveness (2× or 4×), STAB (1.5×, or 2× when Terastallized into an original type), weather (1.5× for Water in Rain or Fire in Sun), terrain and held items such as Choice Band, Choice Specs or Life Orb stack multiplicatively.',
+                        'In double battles (VGC), moves that hit more than one target — such as Heat Wave, Dazzling Gleam, Rock Slide or Earthquake — deal 0.75× damage to each target instead of full single-target power.',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Test items and Tera in the calculator' }, { to: '/types', label: 'Check the type chart' }],
+                },
+                {
+                    heading: 'How do you tune defensive EVs to survive a specific attack?',
+                    steps: [
+                        'Pick the opposing threat as the attacker and give it the item, nature, EVs and Tera type it runs most in Meta & usage.',
+                        'Pick your Pokémon as the defender and select the move you want to survive.',
+                        'Increase HP EVs first, then Defense or Special Defense EVs, until the maximum roll stays under 100% of your HP.',
+                        'Copy the final EV spread into your team in the builder.',
+                    ],
+                    links: [{ to: '/meta', label: 'Check common builds in Meta' }, { to: '/builder', label: 'Open the team builder' }],
+                },
+                {
+                    heading: 'How do you check both sides of a matchup?',
+                    paragraphs: [
+                        'Surviving an attack only helps if your Pokémon can answer back. Swap or check the reverse calculation to confirm whether your Pokémon knocks the threat out in one or two hits, and pair that with Speed tiers to know who moves first.',
+                    ],
+                    links: [{ to: '/speed-tiers', label: 'Compare speeds in Speed tiers' }],
+                },
+            ],
+            faq: [
+                { q: 'What do OHKO and 2HKO mean in the damage calculator?', a: 'OHKO means One-Hit Knockout (defeating the target from full HP in one attack), and 2HKO means Two-Hit Knockout (defeating it across two turns).' },
+                { q: 'Should I put EVs into HP or Defense first?', a: 'At level 50, investing in HP usually improves overall bulk against both physical and special attacks first, unless the Pokémon already has a much higher base HP than its defenses.' },
+                { q: 'Does the calculator work for both VGC level 50 and Smogon level 100?', a: 'Yes. You can test both VGC (level 50) and Smogon formats with custom EVs, natures, items, abilities and Tera types.' },
+            ],
+        },
+        pt: {
+            lede: 'Uma calculadora de dano mostra antes da partida se o seu golpe garante o nocaute ou se o seu Pokémon sobrevive ao ataque mais forte do rival. Veja como ler os números e ajustar os seus sets.',
+            sections: [
+                {
+                    heading: 'Por que um golpe Pokémon tem 16 valores diferentes de dano?',
+                    paragraphs: [
+                        'Depois que o jogo calcula o dano base do golpe com nível, atributos, poder do golpe e modificadores, ele multiplica o resultado por uma rolagem aleatória de 85% a 100%, de 1% em 1% — são 16 resultados possíveis no total.',
+                        'Quando até a menor das 16 rolagens tira 100% ou mais do HP do defensor, o golpe é um OHKO garantido (nocaute em um golpe). Quando só parte das 16 rolagens chega a 100%, a calculadora mostra a chance exata de conseguir o nocaute.',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Abrir a calculadora de dano' }],
+                },
+                {
+                    heading: 'Quais modificadores mais mudam o cálculo de dano?',
+                    paragraphs: [
+                        'Vantagem de tipo (2× ou 4×), STAB (1,5×, ou 2× ao Terastalizar em um dos tipos originais), clima (1,5× para Água na chuva ou Fogo no sol), terreno e itens como Choice Band, Choice Specs ou Life Orb se multiplicam entre si.',
+                        'Em batalhas em dupla (VGC), golpes que acertam mais de um alvo — como Heat Wave, Dazzling Gleam, Rock Slide ou Earthquake — causam 0,75× de dano em cada alvo em vez do poder total de alvo único.',
+                    ],
+                    links: [{ to: '/damage-calculator', label: 'Testar itens e Tera na calculadora' }, { to: '/types', label: 'Conferir a tabela de tipos' }],
+                },
+                {
+                    heading: 'Como ajustar os EVs defensivos para sobreviver a um ataque específico?',
+                    steps: [
+                        'Coloque a ameaça adversária como atacante com o item, a natureza, os EVs e o tipo Tera que ela mais usa no Meta e uso.',
+                        'Coloque o seu Pokémon como defensor e escolha o golpe a que você quer sobreviver.',
+                        'Aumente primeiro os EVs de HP e depois os de Defesa ou Defesa Especial até que a maior rolagem fique abaixo de 100% do seu HP.',
+                        'Copie a distribuição final de EVs para o seu time no montador.',
+                    ],
+                    links: [{ to: '/meta', label: 'Ver as builds mais usadas no Meta' }, { to: '/builder', label: 'Abrir o montador de times' }],
+                },
+                {
+                    heading: 'Como conferir os dois lados de um confronto?',
+                    paragraphs: [
+                        'Sobreviver a um golpe só resolve se o seu Pokémon conseguir responder à altura. Confira o cálculo inverso para ver se você derruba a ameaça em um ou dois golpes, e combine isso com o Speed tiers para saber quem age primeiro.',
+                    ],
+                    links: [{ to: '/speed-tiers', label: 'Comparar velocidades no Speed tiers' }],
+                },
+            ],
+            faq: [
+                { q: 'O que significam OHKO e 2HKO na calculadora de dano?', a: 'OHKO significa One-Hit Knockout (derrubar o alvo com a vida cheia em um único ataque), e 2HKO significa Two-Hit Knockout (derrubar em dois turnos).' },
+                { q: 'Vale mais a pena colocar EVs em HP ou em Defesa primeiro?', a: 'No nível 50, investir em HP costuma render mais resistência geral contra ataques físicos e especiais primeiro, a menos que o Pokémon já tenha o HP base muito maior que as defesas.' },
+                { q: 'A calculadora funciona tanto para VGC nível 50 quanto para Smogon nível 100?', a: 'Sim. Você pode testar formatos de VGC (nível 50) e do Smogon ajustando EVs, naturezas, itens, habilidades e tipos Tera.' },
+            ],
+        },
+    },
+
+    'daily-pokemon-games': {
+        en: {
+            lede: 'Alongside the team builder and competitive tools, PokemonBuilder has four free Pokémon games that reset every day in your browser: a battle against Champion Cynthia, a daily Pokémon guessing puzzle, a naming quiz and a tier list maker.',
+            sections: [
+                {
+                    heading: 'How does the daily Champion Challenge work?',
+                    paragraphs: [
+                        'In the Champion Challenge you play a single battle in a Nintendo DS-style arena against Champion Cynthia (or Rival Blue). Every day at midnight a new Champion team is drawn, along with a ready-to-play Team of the day you can borrow if you have not built your own yet.',
+                        'You get one official attempt per Champion per day for the daily ranking and your win streak, and you can share a replay card or comic strip of your battle with friends.',
+                    ],
+                    links: [{ to: '/challenge', label: 'Play the Champion Challenge' }, { to: '/games', label: 'Open Today\'s games' }],
+                },
+                {
+                    heading: 'How do you play PokéPuzzle, the daily Pokémon guessing game?',
+                    paragraphs: [
+                        'PokéPuzzle is a Wordle-style daily Pokémon game where you guess the secret Pokémon of the day. Each guess reveals clues comparing your pick against the answer: generation, primary and secondary types, height, weight and base stats, with arrows showing whether the answer is higher or lower.',
+                        'When you finish, you can share your spoiler-free result grid as a link, an image or a post in the community diary.',
+                    ],
+                    links: [{ to: '/pokepuzzle', label: 'Play today\'s PokéPuzzle' }],
+                },
+                {
+                    heading: 'What are the two modes in the Pokémon Quiz?',
+                    paragraphs: [
+                        'The Pokémon Quiz tests how many Pokémon you can name from memory before the timer runs out. You can play by Generation — naming as many Pokémon from Kanto through Paldea as you can — or play the daily Category challenge, where every valid answer shares an official trait, type, ability or group.',
+                    ],
+                    links: [{ to: '/quiz', label: 'Play the Pokémon Quiz' }],
+                },
+                {
+                    heading: 'How do you make and share a Pokémon tier list?',
+                    paragraphs: [
+                        'The Tier List maker lets you rank curated pools — such as all starters, box legendaries, pseudo-legendaries, Eeveelutions or your favourite Pokémon of every type and generation — into S, A, B, C and D tiers, then export a clean image or share link to compare with friends.',
+                    ],
+                    links: [{ to: '/tier-list', label: 'Open the Tier List maker' }, { to: '/feed', label: 'See daily results in the Community' }],
+                },
+            ],
+            faq: [
+                { q: 'Are the daily Pokémon games free to play?', a: 'Yes. All four games — the Champion Challenge, PokéPuzzle, the Pokémon Quiz and the Tier List maker — are 100% free in your browser on phone or desktop, with no download required.' },
+                { q: 'Is the daily Pokémon the same for everyone?', a: 'Yes. Every player gets the same daily PokéPuzzle answer, the same Champion rosters and the same daily quiz category each day, so you can compare scores fairly.' },
+                { q: 'How do I keep my daily streak across devices?', a: 'Your streak and today\'s completed games are saved on your device automatically, and signing in with a free account syncs them across your phone and computer.' },
+            ],
+        },
+        pt: {
+            lede: 'Além do montador de times e das ferramentas competitivas, o PokemonBuilder tem quatro jogos de Pokémon grátis que renovam todo dia no navegador: a batalha contra a Campeã Cynthia, o puzzle de adivinhar o Pokémon do dia, o quiz de memória e o criador de tier list.',
+            sections: [
+                {
+                    heading: 'Como funciona o Desafio da Campeã diário?',
+                    paragraphs: [
+                        'No Desafio da Campeã você joga uma batalha estilo Nintendo DS contra a Campeã Cynthia (ou o Rival Blue). Todo dia à meia-noite entra um time novo da Campeã, junto com um Time do dia pronto que você pode pegar emprestado se ainda não tiver montado o seu.',
+                        'Você tem uma tentativa oficial por Campeão por dia valendo para o ranking diário e para a sua sequência de vitórias, e pode compartilhar o card ou a tirinha da partida com os amigos.',
+                    ],
+                    links: [{ to: '/challenge', label: 'Jogar o Desafio da Campeã' }, { to: '/games', label: 'Abrir os Jogos do dia' }],
+                },
+                {
+                    heading: 'Como jogar o PokéPuzzle, o jogo de adivinhar o Pokémon do dia?',
+                    paragraphs: [
+                        'O PokéPuzzle é um jogo diário no estilo Wordle e Termo em que você descobre o Pokémon secreto do dia. Cada palpite revela pistas comparando o seu chute com a resposta: geração, tipos, altura, peso e status base, com setas indicando se o Pokémon do dia tem valores maiores ou menores.',
+                        'Ao terminar, você pode compartilhar o resultado sem dar spoiler por link, imagem ou direto no Diário do dia da comunidade.',
+                    ],
+                    links: [{ to: '/pokepuzzle', label: 'Jogar o PokéPuzzle de hoje' }],
+                },
+                {
+                    heading: 'Quais são os dois modos do Quiz Pokémon?',
+                    paragraphs: [
+                        'O Quiz Pokémon testa quantos Pokémon você consegue lembrar antes do tempo acabar. Você pode jogar por Geração — dizendo o máximo de Pokémon de Kanto até Paldea — ou jogar o desafio diário de Categorias, em que todas as respostas válidas compartilham uma característica oficial, tipo ou habilidade.',
+                    ],
+                    links: [{ to: '/quiz', label: 'Jogar o Quiz Pokémon' }],
+                },
+                {
+                    heading: 'Como montar e compartilhar uma tier list de Pokémon?',
+                    paragraphs: [
+                        'O criador de Tier List permite ranquear listas prontas — como todos os iniciais, lendários de capa, pseudo-lendários, evoluções do Eevee ou o seu Pokémon favorito de cada tipo e geração — nas faixas S, A, B, C e D, e exportar como imagem ou link para comparar com os amigos.',
+                    ],
+                    links: [{ to: '/tier-list', label: 'Abrir o criador de Tier List' }, { to: '/feed', label: 'Ver resultados na Comunidade' }],
+                },
+            ],
+            faq: [
+                { q: 'Os jogos diários de Pokémon são grátis?', a: 'Sim. Todos os quatro jogos — Desafio da Campeã, PokéPuzzle, Quiz Pokémon e Tier List — são 100% grátis no navegador do celular ou computador, sem precisar baixar nada.' },
+                { q: 'O Pokémon do dia é o mesmo para todo mundo?', a: 'Sim. Todos os jogadores enfrentam o mesmo Pokémon do dia no PokéPuzzle, os mesmos times de Campeã e a mesma categoria diária do quiz, permitindo comparar os resultados.' },
+                { q: 'Como manter a minha sequência em mais de um aparelho?', a: 'A sua sequência e os jogos feitos no dia ficam salvos automaticamente no aparelho e, ao entrar com uma conta grátis, sincronizam entre o celular e o computador.' },
+            ],
+        },
+    },
 };
 
 /** One guide's text in one language (English when the language is missing), or null. */

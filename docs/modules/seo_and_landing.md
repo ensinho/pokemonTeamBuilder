@@ -184,18 +184,43 @@ changed (Organicus AI-readiness report, Enzo):
 - **`public/llms.txt`**: what the site is, its sources, what it does not do, and
   its key pages and guides.
 
-### Guides (`/guides`, `/guides/:slug`, 2026-10-30)
+### Guides (`/guides`, `/guides/:slug`, 2026-10-30, expanded 2026-11-18)
 
 `GuidesView.jsx` over `src/content/guides.js` (text, both languages) and
 `src/content/guideIndex.js` (slug, date, title, description — small, because
-`seoPages.js` reads it on every route). Written for the questions the report
-showed the site missing from: a first VGC team (speed tiers, damage
-calculator, Switch), choosing a team from tournament data, and how team
-builders compare. Section headings are questions; every answer links to the
-tool that does it. `guides.test.js` keeps the languages on the same structure
-and links, and checks every link is a real route. Only claim what the site
-does today and what a competitor's own pages say (Pikalytics, checked
-2026-10-30). In the Competitive nav section and the sitemap.
+`seoPages.js` reads it on every route). Seven guides cover: a first VGC team
+(`first-vgc-team`), choosing a team from tournament data
+(`team-from-tournament-data`), how team builders compare
+(`pokemon-team-builders-compared`), the Pokémon type chart and dual types
+(`pokemon-type-chart-guide`), level 50 speed tiers, EVs and natures
+(`pokemon-speed-tiers-evs-natures`), how the damage calculator and rolls work
+(`pokemon-damage-calculator-guide`), and the four daily browser games
+(`daily-pokemon-games`). Section headings are questions; every answer links to
+the tool that does it. `guides.test.js` keeps the languages on the same
+structure and links, and checks every link is a real route. Only claim what the
+site does today and what a competitor's own pages say (Pikalytics, checked
+2026-10-30). Linked from the Competitive nav section, the home prerender and
+the sitemap.
+
+### Hub prerenders, internal links and level 50 Speed on Pokémon pages (2026-11-18)
+
+- **Hub lists (`api/_lib/seoSnapshot.js`):** `/moves`, `/abilities`, `/items` and
+  `/tournaments` write their entries as `<a href>` links to `/moves/:slug`,
+  `/abilities/:slug`, `/items/:slug` and `/tournaments/team/:id` so none of the
+  ~1,500 detail pages in `sitemap.xml` are orphan URLs. `/speed-tiers` writes
+  the fastest 60 Pokémon at level 50, `/gyms` writes the official games and
+  their gym leaders, and `/games` writes the four daily games. In the client UI,
+  `ItemsListView` rows are `<Link to="/items/:name">` like `/moves` and
+  `/abilities`.
+- **Pokémon & Meta detail snapshots:** `/pokemon/:name` includes the Pokémon's
+  abilities (linked to `/abilities/:slug`), Base Stat Total (BST), and its four
+  level 50 Speed benchmarks (0 EVs, 252 EVs, 252+ nature, Choice Scarf — matching
+  `StatBenchLv50` and `SpeedTiersView`). `/meta/:name` writes top moves, items,
+  abilities and teammates with links and links back to `/pokemon/:name`.
+  `/types/:type` includes resistances and immunities alongside weaknesses and
+  offensive strengths.
+- **WebApplication JSON-LD (`TOOL_PAGES`):** extended to `bestTeams`,
+  `tournaments`, `pokepuzzle`, `challenge`, `quiz`, `tierList` and `games`.
 
 ### Link previews and search thumbnails (the OG pass, 2026-11-16)
 

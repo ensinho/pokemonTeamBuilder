@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { loadStaticData } from '../../services/staticData';
@@ -7,6 +7,7 @@ import { useReferenceList } from '../../hooks/useReferenceList';
 import { useUrlParam } from '../../hooks/useUrlParam';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
@@ -39,14 +40,15 @@ const loadIndex = () => loadStaticData('item-list.json').then((data) => (data?.i
 
 const matchEntry = (entry, slugTerm, rawTerm) => entry.name.includes(slugTerm) || entry.hay.includes(rawTerm);
 
-// Memoised row with its data on it: opening one re-renders only that row.
-const ItemRow = React.memo(function ItemRow({ entry, isOpen, onToggle }) {
+// Memoised row: a real link to /items/:name (Cmd/middle-click open a tab),
+// carrying this list's URL so the detail page's back button returns to the
+// same filtered list — matching MovesListView and AbilitiesListView.
+const ItemRow = React.memo(function ItemRow({ entry, linkState }) {
     return (
-        <button
-            type="button"
-            onClick={() => onToggle(entry.name)}
-            aria-expanded={isOpen}
-            className={`ref-row ref-row--items ${isOpen ? 'is-open' : ''}`}
+        <Link
+            to={`/items/${entry.name}`}
+            state={linkState}
+            className="ref-row ref-row--items"
         >
             {entry.hasSprite
                 ? <img src={itemSpriteUrl(entry.name)} alt="" aria-hidden="true" width={32} height={32} loading="lazy" decoding="async" className="ref-sprite" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
@@ -62,11 +64,7 @@ const ItemRow = React.memo(function ItemRow({ entry, isOpen, onToggle }) {
             </span>
 
             <span className="ref-num ref-num--muted">{entry.cost || '—'}</span>
-
-            {isOpen && (
-                <span className="ref-effect">{entry.effect || '—'}</span>
-            )}
-        </button>
+        </Link>
     );
 });
 
@@ -77,13 +75,9 @@ export function ItemsListView() {
         description: 'Held items, berries, and battle items for competitive Pokémon teams, with full effect descriptions.',
         path: '/items',
     });
-    // Deep-link support: /items?q=<slug> pre-fills the search (the hook reads
-    // ?q=) and opens that item, so suggestions elsewhere (e.g. team detail) can
-    // link straight to its entry.
-    const [searchParams] = useSearchParams();
-    const [openName, setOpenName] = useState(() => searchParams.get('q'));
+    const { linkState } = useEntityNavigate();
 
-    // The group filter lives in the URL too (?g=held), like the search.
+    // The group filter lives in the URL too (?g=held), like the search (?q=).
     const [group, setGroup] = useUrlParam('g');
     const activeGroup = ITEM_GROUPS.includes(group) ? group : '';
     const filterEntry = useCallback((entry) => entry.group === activeGroup, [activeGroup]);
@@ -95,10 +89,6 @@ export function ItemsListView() {
         filterKey: activeGroup,
         listKey: 'items',
     });
-
-    const toggle = useCallback((name) => {
-        setOpenName((prev) => (prev === name ? null : name));
-    }, []);
 
     return (
         <div className="ref-view">
@@ -173,8 +163,7 @@ export function ItemsListView() {
                         <ItemRow
                             key={entry.name}
                             entry={entry}
-                            isOpen={openName === entry.name}
-                            onToggle={toggle}
+                            linkState={linkState}
                         />
                     ))}
 

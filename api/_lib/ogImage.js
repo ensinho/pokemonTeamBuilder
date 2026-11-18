@@ -790,6 +790,10 @@ export const GUIDE_ART = {
     'first-vgc-team': { tone: 'dragon', ids: [445, 248, 6] },
     'team-from-tournament-data': { tone: 'gold', ids: [727, 987, 1003] },
     'pokemon-team-builders-compared': { tone: 'violet', ids: [137, 474, 233] },
+    'pokemon-type-chart-guide': { tone: 'fire', ids: [6, 9, 3] },
+    'pokemon-speed-tiers-evs-natures': { tone: 'electric', ids: [894, 887, 987] },
+    'pokemon-damage-calculator-guide': { tone: 'fighting', ids: [445, 149, 812] },
+    'daily-pokemon-games': { tone: 'gold', ids: [445, 25, 133] },
 };
 
 /** @param {{ slug, title }} guide  guideMeta() for one language */
