@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T16:37:38.381Z",
+  "generatedAt": "2026-11-19T16:40:52.882Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -1582,7 +1582,7 @@
           "source": "VGC 2025"
         },
         {
-          "name": "Magic Guard Utility",
+          "name": "Defensive Utility",
           "item": "leftovers",
           "itemAlts": [
             "rocky-helmet"
@@ -1595,13 +1595,14 @@
               "moonblast"
             ],
             [
+              "stealth-rock",
+              "thunder-wave"
+            ],
+            [
               "flamethrower"
             ],
             [
               "moonlight"
-            ],
-            [
-              "stealth-rock"
             ]
           ],
           "evs": {
@@ -1629,7 +1630,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "With a good typing in Fairy, an amazing ability in Magic Guard to increase its longevity, and useful utility options, Clefable functions as a great utility and defensive Pokemon for bulkier and balance teams. Stealth Rock allows Clefable to chip down foes switching in for its teammates to take advantage of. Thunder…",
           "source": "Champions OU"
         },
         {
@@ -9361,8 +9362,57 @@
     "186": {
       "name": "Politoed",
       "gen": "Champions VGC",
-      "overview": "Politoed is an excellent wielder of the Drizzle ability, with good natural bulk to go with its offensive coverage options and utility that serve it well. Drizzle enables the plethora of strong Swift Swim users, such as Barraskewda, Basculegion-F, and Overqwil, while also giving Hurricane users like Kilowattrel and…",
+      "overview": "With Drizzle, Politoed can support teammates like Archaludon and Mega Golisopod or shut down the weather of foes like Mega Charizard Y and Tyranitar. Its general bulk allows it to take hits upon switching in to control the weather.",
       "sets": [
+        {
+          "name": "Offensive Support",
+          "item": "mystic-water",
+          "itemAlts": [],
+          "ability": "drizzle",
+          "nature": "modest",
+          "tera": [],
+          "moves": [
+            [
+              "weather-ball"
+            ],
+            [
+              "muddy-water"
+            ],
+            [
+              "ice-beam"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 6,
+            "speed": 0
+          },
+          "sp": {
+            "hp": 32,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 32,
+            "special-defense": 2,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Politoed has a good offensive matchup against metagame staples like Mega Charizard Y and Incineroar, as it almost always OHKOes them with Weather Ball. The combination of Drizzle and Mystic Water makes Politoed considerably strong even against neutral targets, notably letting Weather Ball OHKO Sneasler and Mega Raichu…",
+          "source": "Champions VGC"
+        },
         {
           "name": "Rain Support",
           "item": "sitrus-berry",
@@ -9506,50 +9556,6 @@
           "level": null,
           "description": "",
           "source": "UU"
-        },
-        {
-          "name": "Perish Trapper",
-          "item": "damp-rock",
-          "itemAlts": [],
-          "ability": "drizzle",
-          "nature": "timid",
-          "tera": [
-            "ghost"
-          ],
-          "moves": [
-            [
-              "whirlpool"
-            ],
-            [
-              "perish-song"
-            ],
-            [
-              "ice-beam"
-            ],
-            [
-              "encore",
-              "earth-power"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 80,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 176
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nWhirlpool is an effective means to trap unsuspecting checks like Blissey, Suicune, and Umbreon, enabling Perish Song to break through these defensive pieces. Ice Beam nails Grass- and Dragon-types like Amoonguss, Chesnaught, and Cyclizar. Encore can disrupt slower Pokemon like Reuniclus and Slowbro and put…",
-          "source": "RU"
         }
       ]
     },
