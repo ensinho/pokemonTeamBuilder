@@ -10,6 +10,8 @@ import {
     serverTimestamp,
     updateDoc,
 } from 'firebase/firestore';
+import { Heart, Meh, MessageSquareHeart, ThumbsDown, ThumbsUp } from 'lucide-react';
+import '../../styles/admin-view.css';
 import { appId, ADMIN_EMAIL_ENDPOINT } from '../../constants/firebase';
 import { SHARE_BACKGROUNDS } from '../../assets/backgrounds';
 import {
@@ -22,10 +24,23 @@ import {
     SparklesIcon,
 } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useFeedbackPulseStore } from '../../store/useFeedbackPulseStore';
+import {
+    FEEDBACK_REACTIONS,
+    FEEDBACK_REACTION_BY_ID,
+    FEEDBACK_REACTION_IDS,
+    summarizeFeedbackReactions,
+} from '../../utils/feedbackPulse';
 
-const DEFAULT_REPLY_SUBJECT = 'Thanks for your PokemonBuilder suggestion';
 const DEFAULT_REPLY_MESSAGE = 'I really appreciate you taking the time to help improve PokemonBuilder. Your feedback helps me decide what to polish next.';
-const SUGGESTIONS_LIMIT = 100;
+const SUGGESTIONS_LIMIT = 150;
+
+const REACTION_ICONS = {
+    love: Heart,
+    like: ThumbsUp,
+    neutral: Meh,
+    dislike: ThumbsDown,
+};
 
 const makeAssetUrl = (assetUrl) => {
     if (!assetUrl || typeof window === 'undefined') return assetUrl || '';
@@ -38,7 +53,6 @@ const makeAssetUrl = (assetUrl) => {
 
 const brandLogoUrl = () => {
     const base = import.meta.env.BASE_URL || '/';
-    // 64px in the reply email and the preview: the 256px copy, not the 724 KB original.
     return makeAssetUrl(`${base}${base.endsWith('/') ? '' : '/'}logo-mascot-256.png`);
 };
 
@@ -76,11 +90,14 @@ const formatDate = (value, language) => {
 };
 
 const normalizeSuggestion = (snapshotDoc) => {
-    const data = snapshotDoc.data() || {};
+    const data = typeof snapshotDoc.data === 'function' ? (snapshotDoc.data() || {}) : (snapshotDoc || {});
     const author = data.author && typeof data.author === 'object' ? data.author : {};
+    const reaction = FEEDBACK_REACTION_IDS.includes(data.reaction) ? data.reaction : null;
     return {
-        id: snapshotDoc.id,
+        id: snapshotDoc.id || data.id || '',
         text: data.text || data.suggestion || '',
+        reaction,
+        campaignVersion: data.campaignVersion || null,
         page: data.page || data.source || 'footer',
         pageTitle: data.pageTitle || (data.page ? data.page : 'Footer'),
         source: data.source || (data.page ? 'pageGuide' : 'footer'),
@@ -114,7 +131,8 @@ const buildReplyTemplate = ({ suggestion, author, subject, message, background, 
     const logoUrl = brandLogoUrl();
     const backgroundUrl = makeAssetUrl(background?.url || SHARE_BACKGROUNDS[0]?.url || '');
     const authorName = author.name || 'Trainer';
-    const suggestionText = suggestion?.text || '';
+    const reactionLabel = suggestion?.reaction ? t(`feedbackPulse.reactions.${suggestion.reaction}`) : '';
+    const suggestionText = suggestion?.text || (reactionLabel ? `[${reactionLabel}]` : '');
     const pageLabel = suggestion?.pageTitle || suggestion?.page || 'PokemonBuilder';
     const defaultMsg = t ? t('admin.defaultMessage') : DEFAULT_REPLY_MESSAGE;
     const replyMessage = message.trim() || defaultMsg;
@@ -178,14 +196,29 @@ const pickRandomBackgroundId = () => {
     return background?.id || '';
 };
 
-const getBackgroundById = (id) => SHARE_BACKGROUNDS.find(background => background.id === id) || SHARE_BACKGROUNDS[0];
+const getBackgroundById = (id) => SHARE_BACKGROUNDS.find((background) => background.id === id) || SHARE_BACKGROUNDS[0];
 
-export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
+const ReactionTag = ({ reaction, t }) => {
+    if (!reaction || !FEEDBACK_REACTION_BY_ID[reaction]) return null;
+    const meta = FEEDBACK_REACTION_BY_ID[reaction];
+    const Icon = REACTION_ICONS[reaction];
+    return (
+        <span className="admin-rx-tag" style={{ '--rx-tone': meta.tone }}>
+            <Icon aria-hidden="true" />
+            <span>{t(`feedbackPulse.reactions.${reaction}`)}</span>
+        </span>
+    );
+};
+
+export function AdminDashboardView({ db, auth, isAdmin, showToast }) {
     const { t, language } = useTranslation();
     const [suggestions, setSuggestions] = useState([]);
     const [profileMap, setProfileMap] = useState({});
     const [selectedId, setSelectedId] = useState(null);
     const [statusFilter, setStatusFilter] = useState('open');
+    const [sourceFilter, setSourceFilter] = useState('all'); // 'all' | 'pulse' | 'other'
+    const [reactionFilter, setReactionFilter] = useState('all'); // 'all' | 'love' | 'like' | 'neutral' | 'dislike'
+    const [detailTab, setDetailTab] = useState('reply'); // 'reply' | 'preview'
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -196,7 +229,15 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     const [isMarkingResponded, setIsMarkingResponded] = useState(false);
 
     useEffect(() => {
-        if (!db || !isAdmin) return undefined;
+        if (!isAdmin) return undefined;
+        // Allow headless UI verification scripts to seed mock items when no live admin auth is present.
+        if (typeof window !== 'undefined' && Array.isArray(window.__PTB_ADMIN_PREVIEW_ITEMS__)) {
+            setSuggestions(window.__PTB_ADMIN_PREVIEW_ITEMS__.map(normalizeSuggestion));
+            setIsLoading(false);
+            return undefined;
+        }
+        if (!db) return undefined;
+
         setIsLoading(true);
         setError('');
 
@@ -224,8 +265,9 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
     useEffect(() => {
         if (!db || suggestions.length === 0) return undefined;
-        const missingUserIds = Array.from(new Set(suggestions.map(suggestion => suggestion.userId).filter(Boolean)))
-            .filter(userId => !profileMap[userId]);
+        if (typeof window !== 'undefined' && Array.isArray(window.__PTB_ADMIN_PREVIEW_ITEMS__)) return undefined;
+        const missingUserIds = Array.from(new Set(suggestions.map((suggestion) => suggestion.userId).filter(Boolean)))
+            .filter((userId) => !profileMap[userId]);
 
         if (missingUserIds.length === 0) return undefined;
 
@@ -240,7 +282,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             }
         })).then((entries) => {
             if (cancelled) return;
-            setProfileMap(prev => entries.reduce((next, [userId, profile]) => ({ ...next, [userId]: profile }), prev));
+            setProfileMap((prev) => entries.reduce((next, [userId, profile]) => ({ ...next, [userId]: profile }), prev));
         });
 
         return () => { cancelled = true; };
@@ -252,23 +294,27 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             const isAnswered = Boolean(suggestion.respondedAt);
             if (statusFilter === 'open' && isAnswered) return false;
             if (statusFilter === 'answered' && !isAnswered) return false;
+            if (sourceFilter === 'pulse' && suggestion.source !== 'pulse') return false;
+            if (sourceFilter === 'other' && suggestion.source === 'pulse') return false;
+            if (reactionFilter !== 'all' && suggestion.reaction !== reactionFilter) return false;
             if (!queryText) return true;
 
             const author = getAuthorInfo(suggestion, profileMap, language);
             return [
                 suggestion.text,
+                suggestion.reaction,
                 suggestion.pageTitle,
                 suggestion.page,
                 author.name,
                 author.email,
                 author.userId,
-            ].some(value => String(value || '').toLowerCase().includes(queryText));
+            ].some((value) => String(value || '').toLowerCase().includes(queryText));
         });
-    }, [profileMap, searchTerm, statusFilter, suggestions, language]);
+    }, [profileMap, searchTerm, statusFilter, sourceFilter, reactionFilter, suggestions, language]);
 
     useEffect(() => {
         const firstId = filteredSuggestions[0]?.id || null;
-        if (!selectedId || !filteredSuggestions.some(suggestion => suggestion.id === selectedId)) {
+        if (!selectedId || !filteredSuggestions.some((suggestion) => suggestion.id === selectedId)) {
             setSelectedId(firstId);
         }
     }, [filteredSuggestions, selectedId]);
@@ -281,7 +327,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     }, [selectedId, language, t]);
 
     const selectedSuggestion = useMemo(
-        () => suggestions.find(suggestion => suggestion.id === selectedId) || null,
+        () => suggestions.find((suggestion) => suggestion.id === selectedId) || null,
         [selectedId, suggestions]
     );
 
@@ -312,8 +358,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     const hasRecipientEmail = Boolean(selectedAuthor.email);
 
     const stats = useMemo(() => {
-        const answered = suggestions.filter(suggestion => suggestion.respondedAt).length;
-        const withEmail = suggestions.filter(suggestion => getAuthorInfo(suggestion, profileMap, language).email).length;
+        const answered = suggestions.filter((suggestion) => suggestion.respondedAt).length;
+        const withEmail = suggestions.filter((suggestion) => getAuthorInfo(suggestion, profileMap, language).email).length;
         return {
             total: suggestions.length,
             open: suggestions.length - answered,
@@ -322,9 +368,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
         };
     }, [profileMap, suggestions, language]);
 
-    const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-    const secondaryButtonClassName = 'btn btn-secondary';
-    const tertiaryButtonClassName = 'btn btn-secondary btn-sm';
+    const pulseSummary = useMemo(() => summarizeFeedbackReactions(suggestions), [suggestions]);
 
     const copyToClipboard = useCallback(async (value, successMessage) => {
         if (!value) return;
@@ -420,131 +464,231 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
     if (!isAdmin) {
         return (
-            <div className="rounded-xl border border-border bg-surface p-6 text-center">
-                <p className="font-bold text-fg">{t('admin.accessUnavailable')}</p>
+            <div className="admin-denied">
+                <p>{t('admin.accessUnavailable')}</p>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto pb-10">
-            {/* A flat surface, like every other page header (Neon Sticker base
-                layer) — it was a Volt-to-gold gradient with white type. */}
-            <section className="relative mb-5 overflow-hidden rounded-2xl border border-border bg-surface p-5 text-fg md:p-6">
-                <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-14 h-14 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
-                            <ChartColumnIcon className="w-7 h-7" />
-                        </div>
-                        <div className="min-w-0">
-                            <p className="font-mono text-2xs text-muted">{t('admin.ownerPanel')}</p>
-                            <h2 className="text-2xl leading-tight">{t('admin.suggestionInbox')}</h2>
-                            <p className="text-xs md:text-sm text-muted mt-1">{t('admin.subtitle')}</p>
+        <div className="admin-view">
+            <header className="admin-hero">
+                <div className="admin-hero__top">
+                    <div className="admin-hero__id">
+                        <span className="admin-hero__icon" aria-hidden="true">
+                            <ChartColumnIcon />
+                        </span>
+                        <div>
+                            <p className="admin-hero__eyebrow">{t('admin.ownerPanel')}</p>
+                            <h2 className="admin-hero__title">{t('admin.suggestionInbox')}</h2>
+                            <p className="admin-hero__sub">{t('admin.subtitle')}</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-[min(100%,32rem)]">
-                        {[
-                            [t('admin.total'), stats.total],
-                            [t('admin.open'), stats.open],
-                            [t('admin.answered'), stats.answered],
-                            [t('admin.email'), stats.withEmail],
-                        ].map(([label, value]) => (
-                            <div key={label} className="rounded-lg bg-surface-raised px-3 py-2 text-center">
-                                <p className="text-2xs text-muted font-semibold">{label}</p>
-                                <p className="font-mono text-2xl font-semibold leading-none mt-1">{value}</p>
-                            </div>
-                        ))}
+
+                    <div className="admin-hero__tools">
+                        <span className="admin-live-pill">
+                            <span className="live-dot" aria-hidden="true" />
+                            <span>{t('admin.live')}</span>
+                        </span>
+                        <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => useFeedbackPulseStore.getState().open('manual')}
+                        >
+                            <MessageSquareHeart aria-hidden="true" />
+                            {t('admin.previewModalBtn')}
+                        </button>
                     </div>
+                </div>
+
+                <dl className="admin-stats">
+                    {[
+                        [t('admin.total'), stats.total],
+                        [t('admin.open'), stats.open],
+                        [t('admin.answered'), stats.answered],
+                        [t('admin.email'), stats.withEmail],
+                    ].map(([label, value]) => (
+                        <div key={label} className="admin-stat">
+                            <dt>{label}</dt>
+                            <dd>{value}</dd>
+                        </div>
+                    ))}
+                </dl>
+            </header>
+
+            <section className="admin-pulse" aria-label={t('admin.pulseSummaryTitle')}>
+                <div className="admin-pulse__head">
+                    <h3 className="admin-pulse__title">{t('admin.pulseSummaryTitle')}</h3>
+                    <div className="admin-pulse__meta">
+                        <span className="admin-pulse__positive">
+                            {t('admin.positiveShare', { pct: pulseSummary.positivePct })}
+                        </span>
+                        <span aria-hidden="true">·</span>
+                        <span>{t('admin.reactionsCount', { n: pulseSummary.withReaction })}</span>
+                    </div>
+                </div>
+
+                <div className="admin-pulse__bar" aria-hidden="true">
+                    {pulseSummary.breakdown.map((entry) => {
+                        if (entry.count === 0) return null;
+                        const meta = FEEDBACK_REACTION_BY_ID[entry.id];
+                        return (
+                            <span
+                                key={entry.id}
+                                className="admin-pulse__seg"
+                                style={{
+                                    width: `${entry.pct}%`,
+                                    '--rx-tone': meta.tone,
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+
+                <div className="admin-pulse__pills">
+                    {FEEDBACK_REACTIONS.map((meta) => {
+                        const Icon = REACTION_ICONS[meta.id];
+                        const count = pulseSummary.counts[meta.id] || 0;
+                        const pct = pulseSummary.withReaction > 0
+                            ? Math.round((count / pulseSummary.withReaction) * 100)
+                            : 0;
+                        const active = reactionFilter === meta.id;
+                        return (
+                            <button
+                                key={meta.id}
+                                type="button"
+                                className={`admin-rx-pill ${active ? 'is-active' : ''}`}
+                                style={{ '--rx-tone': meta.tone }}
+                                aria-pressed={active}
+                                onClick={() => setReactionFilter((prev) => (prev === meta.id ? 'all' : meta.id))}
+                            >
+                                <span className="admin-rx-pill__lead">
+                                    <span className="admin-rx-pill__icon" aria-hidden="true">
+                                        <Icon />
+                                    </span>
+                                    <span className="admin-rx-pill__label">
+                                        {t(`feedbackPulse.reactions.${meta.id}`)}
+                                    </span>
+                                </span>
+                                <span className="admin-rx-pill__count">
+                                    {count} ({pct}%)
+                                </span>
+                            </button>
+                        );
+                    })}
                 </div>
             </section>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(320px,420px)_1fr]">
-                <section className="overflow-hidden rounded-xl border border-border bg-surface">
-                    <div className="border-b border-border p-4">
-                        <div className="flex items-center justify-between gap-3 mb-3">
-                            <h3 className="font-semibold text-fg">{t('admin.suggestions')}</h3>
-                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted">
-                                <RefreshIcon className="w-3.5 h-3.5" />
-                                {t('admin.live')}
-                            </span>
-                        </div>
+            <div className="admin-workspace">
+                <section className="admin-inbox" aria-label={t('admin.suggestions')}>
+                    <div className="admin-inbox__head">
                         <input
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             placeholder={t('admin.searchPlaceholder')}
-                            className={controlClassName}
+                            className="admin-search"
                         />
-                        <div className="grid grid-cols-3 gap-2 mt-3">
+
+                        <div className="segmented segmented--sm segmented--block" role="group">
                             {[
                                 ['open', t('admin.open')],
                                 ['answered', t('admin.answered')],
                                 ['all', t('common.all')],
-                            ].map(([value, label]) => {
-                                const active = statusFilter === value;
-                                return (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        onClick={() => setStatusFilter(value)}
-                                        className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors focus:outline-none ${active ? 'bg-primary text-on-primary' : 'bg-surface-raised text-fg hover:bg-surface-hover'}`}
-                                    >
-                                        {label}
-                                    </button>
-                                );
-                            })}
+                            ].map(([value, label]) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    aria-pressed={statusFilter === value}
+                                    onClick={() => setStatusFilter(value)}
+                                    className="segmented__item"
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="admin-chips" role="group">
+                            {[
+                                ['all', t('admin.sourceAll')],
+                                ['pulse', t('admin.sourcePulse')],
+                                ['other', t('admin.sourceOther')],
+                            ].map(([value, label]) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    className={`admin-chip ${sourceFilter === value ? 'is-active' : ''}`}
+                                    aria-pressed={sourceFilter === value}
+                                    onClick={() => setSourceFilter(value)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                            {reactionFilter !== 'all' && (
+                                <button
+                                    type="button"
+                                    className="admin-chip is-active"
+                                    onClick={() => setReactionFilter('all')}
+                                >
+                                    {t('admin.reactionAll')} ×
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    <div className="max-h-[42rem] overflow-y-auto custom-scrollbar p-3 space-y-2">
+                    <div className="admin-inbox__list custom-scrollbar">
                         {isLoading && (
-                            <div className="rounded-lg bg-surface-raised p-4 text-sm text-muted">
-                                {t('admin.loading')}
-                            </div>
+                            <p className="admin-note">{t('admin.loading')}</p>
                         )}
                         {error && (
-                            <div className="p-4 text-sm rounded-lg" style={{ backgroundColor: colors.danger + '22', color: colors.danger }}>
-                                {error}
-                            </div>
+                            <div className="admin-error">{error}</div>
                         )}
                         {!isLoading && !error && filteredSuggestions.length === 0 && (
-                            <div className="rounded-lg bg-surface-raised p-5 text-center text-sm text-muted">
-                                {t('admin.noSuggestions')}
+                            <div className="admin-empty">
+                                <p className="admin-empty__sub">{t('admin.noSuggestions')}</p>
                             </div>
                         )}
                         {filteredSuggestions.map((suggestion) => {
                             const author = getAuthorInfo(suggestion, profileMap, language);
                             const active = selectedId === suggestion.id;
                             const answered = Boolean(suggestion.respondedAt);
+                            const hasText = Boolean(suggestion.text && suggestion.text.trim());
                             return (
                                 <button
                                     key={suggestion.id}
                                     type="button"
                                     onClick={() => setSelectedId(suggestion.id)}
-                                    className={`w-full rounded-lg border p-3 text-left transition-colors focus:outline-none ${active ? 'border-primary bg-primary-soft' : 'border-transparent bg-surface-raised hover:bg-surface-hover'}`}
+                                    className={`admin-item ${active ? 'is-active' : ''}`}
                                 >
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-semibold text-fg">{author.name}</p>
-                                            <p className="truncate text-2xs text-muted">{author.email || t('admin.noEmailCaptured')}</p>
+                                    <div className="admin-item__top">
+                                        <div className="admin-item__author">
+                                            <p className="admin-item__name">{author.name}</p>
+                                            <p className="admin-item__email">
+                                                {author.email || t('admin.noEmailCaptured')}
+                                            </p>
                                         </div>
-                                        {/* Open = unanswered = new: Live Pink, as a fill with the
-                                            brand ink (5.5:1) — pink as a word on its own tint
-                                            measured 3.6–4.5:1. */}
-                                        <span
-                                            className="shrink-0 px-2 py-0.5 rounded-full text-2xs font-semibold"
-                                            style={answered
-                                                ? { backgroundColor: 'color-mix(in srgb, var(--color-success) 14%, transparent)', color: 'color-mix(in srgb, var(--color-success) 55%, var(--color-fg))' }
-                                                : { backgroundColor: 'var(--brand-live)', color: 'var(--brand-on-live)' }}
-                                        >
+                                        <span className={`admin-status ${answered ? 'is-answered' : 'is-open'}`}>
                                             {answered ? t('admin.answered') : t('admin.open')}
                                         </span>
                                     </div>
-                                    <p className="mt-2 line-clamp-2 text-xs text-fg">
-                                        {suggestion.text || t('admin.emptySuggestion')}
+
+                                    {(suggestion.reaction || suggestion.source === 'pulse') && (
+                                        <div className="admin-item__badges">
+                                            <ReactionTag reaction={suggestion.reaction} t={t} />
+                                            <span className="admin-source-tag">
+                                                {suggestion.source === 'pulse'
+                                                    ? t('admin.sourceBadgePulse')
+                                                    : t('admin.sourceBadgeFooter')}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <p className={`admin-item__text ${hasText ? '' : 'is-empty'}`}>
+                                        {hasText ? suggestion.text : t('admin.reactionOnly')}
                                     </p>
-                                    <div className="mt-2 flex items-center justify-between gap-2 text-2xs text-muted">
-                                        <span className="truncate">{suggestion.pageTitle || suggestion.page}</span>
-                                        <span className="shrink-0">{formatDate(suggestion.createdAt, language)}</span>
+
+                                    <div className="admin-item__foot">
+                                        <span>{suggestion.pageTitle || suggestion.page}</span>
+                                        <span>{formatDate(suggestion.createdAt, language)}</span>
                                     </div>
                                 </button>
                             );
@@ -552,162 +696,186 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                     </div>
                 </section>
 
-                <section className="min-h-[34rem] rounded-xl border border-border bg-surface">
+                <section className="admin-detail">
                     {selectedSuggestion ? (
-                        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] gap-0">
-                            <div className="border-b border-border p-5 md:p-6 lg:border-b-0 lg:border-r">
-                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-5">
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                                                <AccountIcon className="w-5 h-5" />
-                                            </span>
-                                            <div className="min-w-0">
-                                                <h3 className="truncate text-xl font-semibold text-fg">{selectedAuthor.name}</h3>
-                                                <p className="truncate text-xs text-muted">{selectedAuthor.email || t('admin.noEmailAvailable')}</p>
-                                            </div>
-                                        </div>
-                                        {selectedAuthor.userId && (
-                                            <p className="text-2xs font-mono text-muted">#{selectedAuthor.userId}</p>
-                                        )}
-                                    </div>
-                                    <div className="text-left text-xs text-muted md:text-right">
-                                        <p className="font-semibold text-fg">{selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
-                                        <p>{formatDate(selectedSuggestion.createdAt, language)}</p>
-                                        {selectedSuggestion.respondedAt && <p>{t('admin.answeredAt', { date: formatDate(selectedSuggestion.respondedAt, language) })}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="mb-5 rounded-xl bg-surface-raised p-4">
-                                    <div className="mb-2 flex items-center gap-2 text-primary">
-                                        <InfoIcon />
-                                        <p className="text-xs font-semibold">{t('admin.suggestionLabel')}</p>
-                                    </div>
-                                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg md:text-base">
-                                        {selectedSuggestion.text || t('admin.emptySuggestion')}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="block">
-                                        <span className="mb-1 block text-xs font-semibold text-muted">{t('admin.subjectLabel')}</span>
-                                        <input
-                                            value={subject}
-                                            onChange={(event) => setSubject(event.target.value.slice(0, 120))}
-                                            className={controlClassName}
-                                        />
-                                    </label>
-                                    <label className="block">
-                                        <span className="mb-1 block text-xs font-semibold text-muted">{t('admin.messageLabel')}</span>
-                                        <textarea
-                                            value={customMessage}
-                                            onChange={(event) => setCustomMessage(event.target.value.slice(0, 1500))}
-                                            rows={7}
-                                            className={`${controlClassName} resize-y`}
-                                        />
-                                    </label>
-                                    <div className="flex flex-wrap gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleSendEmail}
-                                            disabled={!hasRecipientEmail || isSendingEmail}
-                                            className="btn btn-primary"
-                                        >
-                                            <ShareIcon />
-                                            {ADMIN_EMAIL_ENDPOINT ? (isSendingEmail ? t('admin.sending') : t('admin.sendEmail')) : t('admin.openDraft')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => copyToClipboard(htmlEmail, t('admin.copyHtmlSuccess'))}
-                                            className={secondaryButtonClassName}
-                                        >
-                                            <SparklesIcon />
-                                            {t('admin.copyHtml')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => copyToClipboard(plainTextEmail, t('admin.copyTextSuccess'))}
-                                            className="btn btn-secondary"
-                                        >
-                                            {t('admin.copyText')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => markSuggestionResponded('manual')}
-                                            disabled={isMarkingResponded}
-                                            className="btn btn-secondary"
-                                        >
-                                            <SaveIcon />
-                                            {isMarkingResponded ? t('admin.saving') : t('admin.markAnswered')}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <aside className="p-5 md:p-6">
-                                <div className="flex items-center justify-between gap-3 mb-3">
-                                    <h4 className="font-semibold text-fg">{t('admin.emailPreview')}</h4>
-                                    <button
-                                        type="button"
-                                        onClick={() => setEmailBackgroundId(pickRandomBackgroundId())}
-                                        className={tertiaryButtonClassName}
-                                    >
-                                        <RefreshIcon className="w-3.5 h-3.5" />
-                                        {t('admin.shuffle')}
-                                    </button>
-                                </div>
-                                <div className="rounded-xl overflow-hidden border" style={{ borderColor: colors.border, backgroundColor: '#fff' }}>
-                                    <div
-                                        className="p-5 text-white min-h-[180px] flex flex-col justify-end"
-                                        style={{
-                                            backgroundImage: `linear-gradient(135deg, rgba(17, 24, 39, 0.32), rgba(17, 24, 39, 0.78)), url(${selectedBackground?.url})`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                        }}
-                                    >
-                                        <img src={brandLogoUrl()} alt="PokemonBuilder" className="w-16 h-auto mb-4" />
-                                        <p className="text-2xs font-bold opacity-80">PokemonBuilder</p>
-                                        <p className="text-2xl font-extrabold leading-tight">{t('admin.emailThankYou')}</p>
-                                    </div>
-                                    <div className="p-5 space-y-3 text-sm leading-relaxed" style={{ color: '#111827' }}>
-                                        <p>{t('admin.emailGreeting', { name: selectedAuthor.name })}</p>
-                                        <p>{t('admin.emailThankYou')}</p>
-                                        <div className="rounded-lg p-3 border-l-4" style={{ backgroundColor: '#F3F4F6', borderColor: colors.primary }}>
-                                            {selectedSuggestion.text || t('admin.emptySuggestion')}
-                                        </div>
-                                        <p className="whitespace-pre-wrap">{customMessage.trim() || t('admin.defaultMessage')}</p>
-                                        <p className="text-xs" style={{ color: '#6B7280' }}>{t('admin.suggestionLabel')} context: {selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
-                                        <p>
-                                            {t('admin.emailThanksAgain').split('\n').map((line, idx) => (
-                                                <React.Fragment key={idx}>
-                                                    {line}
-                                                    {idx < t('admin.emailThanksAgain').split('\n').length - 1 ? <br /> : null}
-                                                </React.Fragment>
-                                            ))}
+                        <>
+                            <header className="admin-detail__head">
+                                <div className="admin-detail__author">
+                                    <span className="admin-detail__avatar" aria-hidden="true">
+                                        <AccountIcon />
+                                    </span>
+                                    <div>
+                                        <h3 className="admin-detail__name">{selectedAuthor.name}</h3>
+                                        <p className="admin-detail__meta">
+                                            {selectedAuthor.email || t('admin.noEmailAvailable')}
+                                            {selectedAuthor.userId ? ` · #${selectedAuthor.userId.slice(0, 8)}` : ''}
                                         </p>
                                     </div>
                                 </div>
-                                {!hasRecipientEmail && (
-                                    <p className="mt-3 text-xs text-warning">
-                                        {t('admin.noCapturedEmailWarning')}
-                                    </p>
-                                )}
-                                {!ADMIN_EMAIL_ENDPOINT && hasRecipientEmail && (
-                                    <p className="mt-3 text-xs text-muted">
-                                        {t('admin.directSendingNote')}
-                                    </p>
-                                )}
-                            </aside>
-                        </div>
-                    ) : (
-                        <div className="h-full min-h-[34rem] flex items-center justify-center p-6 text-center">
-                            <div>
-                                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                                    <ChartColumnIcon className="w-6 h-6" />
+
+                                <div className="admin-detail__right">
+                                    <div className="admin-item__badges">
+                                        <ReactionTag reaction={selectedSuggestion.reaction} t={t} />
+                                        <span className="admin-source-tag">
+                                            {selectedSuggestion.source === 'pulse'
+                                                ? t('admin.sourceBadgePulse')
+                                                : (selectedSuggestion.pageTitle || selectedSuggestion.page)}
+                                        </span>
+                                    </div>
+                                    <span>{formatDate(selectedSuggestion.createdAt, language)}</span>
+                                    {selectedSuggestion.respondedAt && (
+                                        <span>{t('admin.answeredAt', { date: formatDate(selectedSuggestion.respondedAt, language) })}</span>
+                                    )}
                                 </div>
-                                <p className="font-bold text-fg">{t('admin.noSuggestionSelected')}</p>
-                                <p className="mt-1 text-sm text-muted">{t('admin.chooseSuggestion')}</p>
+                            </header>
+
+                            <div className="admin-detail__body">
+                                <div className="admin-quote">
+                                    <div className="admin-quote__head">
+                                        <span className="admin-quote__label">
+                                            <InfoIcon aria-hidden="true" />
+                                            <span>{t('admin.suggestionLabel')}</span>
+                                        </span>
+                                        <ReactionTag reaction={selectedSuggestion.reaction} t={t} />
+                                    </div>
+                                    <p className={`admin-quote__text ${selectedSuggestion.text?.trim() ? '' : 'is-empty'}`}>
+                                        {selectedSuggestion.text?.trim() || t('admin.reactionOnly')}
+                                    </p>
+                                </div>
+
+                                <div className="admin-studio-bar">
+                                    <div className="segmented segmented--sm" role="tablist">
+                                        <button
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={detailTab === 'reply'}
+                                            className="segmented__item"
+                                            onClick={() => setDetailTab('reply')}
+                                        >
+                                            {t('admin.tabReply')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={detailTab === 'preview'}
+                                            className="segmented__item"
+                                            onClick={() => setDetailTab('preview')}
+                                        >
+                                            {t('admin.tabPreview')}
+                                        </button>
+                                    </div>
+
+                                    {detailTab === 'preview' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setEmailBackgroundId(pickRandomBackgroundId())}
+                                            className="btn btn-secondary btn-sm"
+                                        >
+                                            <RefreshIcon className="w-3.5 h-3.5" />
+                                            {t('admin.shuffle')}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {detailTab === 'reply' ? (
+                                    <div className="admin-form">
+                                        <label className="admin-field">
+                                            <span className="admin-field__label">{t('admin.subjectLabel')}</span>
+                                            <input
+                                                value={subject}
+                                                onChange={(event) => setSubject(event.target.value.slice(0, 120))}
+                                                className="admin-input"
+                                            />
+                                        </label>
+
+                                        <label className="admin-field">
+                                            <span className="admin-field__label">{t('admin.messageLabel')}</span>
+                                            <textarea
+                                                value={customMessage}
+                                                onChange={(event) => setCustomMessage(event.target.value.slice(0, 1500))}
+                                                rows={6}
+                                                className="admin-textarea"
+                                            />
+                                        </label>
+
+                                        <div className="admin-actions">
+                                            <button
+                                                type="button"
+                                                onClick={handleSendEmail}
+                                                disabled={!hasRecipientEmail || isSendingEmail}
+                                                className="btn btn-primary btn-sm"
+                                            >
+                                                <ShareIcon />
+                                                {ADMIN_EMAIL_ENDPOINT
+                                                    ? (isSendingEmail ? t('admin.sending') : t('admin.sendEmail'))
+                                                    : t('admin.openDraft')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => copyToClipboard(htmlEmail, t('admin.copyHtmlSuccess'))}
+                                                className="btn btn-secondary btn-sm"
+                                            >
+                                                <SparklesIcon />
+                                                {t('admin.copyHtml')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => copyToClipboard(plainTextEmail, t('admin.copyTextSuccess'))}
+                                                className="btn btn-secondary btn-sm"
+                                            >
+                                                {t('admin.copyText')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => markSuggestionResponded('manual')}
+                                                disabled={isMarkingResponded}
+                                                className="btn btn-secondary btn-sm"
+                                            >
+                                                <SaveIcon />
+                                                {isMarkingResponded ? t('admin.saving') : t('admin.markAnswered')}
+                                            </button>
+                                        </div>
+
+                                        {!hasRecipientEmail && (
+                                            <p className="admin-note admin-note--warning">
+                                                {t('admin.noCapturedEmailWarning')}
+                                            </p>
+                                        )}
+                                        {!ADMIN_EMAIL_ENDPOINT && hasRecipientEmail && (
+                                            <p className="admin-note">
+                                                {t('admin.directSendingNote')}
+                                            </p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="admin-email-paper">
+                                        <div
+                                            className="admin-email-paper__hero"
+                                            style={{
+                                                backgroundImage: `linear-gradient(135deg, rgba(17, 24, 39, 0.34), rgba(17, 24, 39, 0.78)), url(${selectedBackground?.url})`,
+                                            }}
+                                        >
+                                            <img src={brandLogoUrl()} alt="PokemonBuilder" width={56} height={56} />
+                                            <strong>{t('admin.emailThankYou')}</strong>
+                                        </div>
+                                        <div className="admin-email-paper__body">
+                                            <p>{t('admin.emailGreeting', { name: selectedAuthor.name })}</p>
+                                            <div className="admin-email-paper__quote">
+                                                {selectedSuggestion.text?.trim() || t('admin.reactionOnly')}
+                                            </div>
+                                            <p>{customMessage.trim() || t('admin.defaultMessage')}</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
+                        </>
+                    ) : (
+                        <div className="admin-empty">
+                            <span className="admin-hero__icon" aria-hidden="true">
+                                <ChartColumnIcon />
+                            </span>
+                            <p className="admin-empty__title">{t('admin.noSuggestionSelected')}</p>
+                            <p className="admin-empty__sub">{t('admin.chooseSuggestion')}</p>
                         </div>
                     )}
                 </section>

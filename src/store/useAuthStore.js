@@ -39,6 +39,7 @@ import { accountGamesRecord, applyAccountGames, setGamesToAccount } from '../hoo
 import { costumeHat } from '../utils/mascot/assistant';
 import { applyAccountEgg, readEggState, setEggToAccount } from '../utils/mascotEgg';
 import { applyAccountMime, readMimeDayState, setMimeToAccount } from '../utils/dailyMime';
+import { applyAccountFeedbackPulse, readFeedbackPulse, setFeedbackPulseToAccount } from '../utils/feedbackPulse';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -479,6 +480,7 @@ export const useAuthStore = create((set, get) => {
         if (data.mascotEgg) applyAccountEgg(data.mascotEgg);
         if (data.dailyMime) applyAccountMime(data.dailyMime, localDayKey());
         if (data.mascotPrefs) useMascotStore.getState().hydrate(data.mascotPrefs);
+        if (data.feedbackPulse) applyAccountFeedbackPulse(data.feedbackPulse);
 
         // 5.3 Rewards (useRewardsStore): XP never drops,
         // unlocks are a union, the account's equip wins.
@@ -746,6 +748,7 @@ export const useAuthStore = create((set, get) => {
                 mascotEgg: readEggState(),
                 dailyMime: readMimeDayState(localDayKey()),
                 mascotPrefs: useMascotStore.getState().prefs,
+                feedbackPulse: readFeedbackPulse(),
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
@@ -1272,6 +1275,7 @@ setGamesToAccount((gamesToday) => useAuthStore.getState().savePreferences({ game
 setRoundToAccount((mascotRound) => useAuthStore.getState().savePreferences({ mascotRound }));
 setEggToAccount((mascotEgg) => useAuthStore.getState().savePreferences({ mascotEgg }));
 setMimeToAccount((dailyMime) => useAuthStore.getState().savePreferences({ dailyMime }));
+setFeedbackPulseToAccount((feedbackPulse) => useAuthStore.getState().savePreferences({ feedbackPulse }));
 
 /**
  * What friends see of this trainer's mascot (`publicProfiles.mascot`):
