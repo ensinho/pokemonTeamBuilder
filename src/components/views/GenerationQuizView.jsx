@@ -1,5 +1,5 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { CheckCircle2, HelpCircle, LayoutGrid, Swords } from 'lucide-react';
+import { Check, CheckCircle2, Compass, HelpCircle, Layers, LayoutGrid, Play, ShieldAlert, Swords, Timer } from 'lucide-react';
 
 import '../../styles/generation-quiz-view.css';
 
@@ -18,6 +18,7 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../util
 import { EmptyState } from '../EmptyState';
 import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutocomplete';
 import { PokemonGenerationQuizCard } from '../PokemonGenerationQuizCard';
+import { RollingNumber } from '../RollingNumber';
 import {
     CloseIcon,
     PokeballIcon,
@@ -79,6 +80,12 @@ const REGIONS = Object.freeze({
 // Every region's starters are grass, fire and water, in that order: each
 // stands on a battle platform in its own type colour (2026-11-12).
 const STARTER_TYPES = ['grass', 'fire', 'water'];
+
+const REGION_PRESETS = Object.freeze([
+    { id: 'classic', labelPt: 'Clássicos I–III', labelEn: 'Classics I–III', keys: ['generation-i', 'generation-ii', 'generation-iii'] },
+    { id: 'mid', labelPt: 'Meio IV–VI', labelEn: 'Mid IV–VI', keys: ['generation-iv', 'generation-v', 'generation-vi'] },
+    { id: 'modern', labelPt: 'Modernos VII–IX', labelEn: 'Modern VII–IX', keys: ['generation-vii', 'generation-viii', 'generation-ix'] },
+]);
 
 // Three stars: half the region, four fifths, all of it (utils/quizProgress.js).
 function Stars({ count, label }) {
@@ -174,7 +181,10 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [searchParams] = useSearchParams();
     const duel = useMemo(() => decodeQuizDuel(searchParams.get('duel')), [searchParams]);
     const [selectedGenerationKeys, setSelectedGenerationKeys] = useState(() => new Set(duel ? duel.generations : ['generation-i']));
+    const [isMixMode, setIsMixMode] = useState(() => Boolean(duel && duel.generations.length > 1 && duel.generations.length < QUIZ_GENERATION_KEYS.length));
     const [answerInput, setAnswerInput] = useState('');
+    const [inputPulse, setInputPulse] = useState(null);
+    const inputPulseTimerRef = useRef(0);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [currentTip, setCurrentTip] = useState('');
     const [manualHint, setManualHint] = useState('');
@@ -206,7 +216,20 @@ export function GenerationQuizView({ showDetails, showToast }) {
         wonRef.current = false;
         if (kind) emitBeat(kind);
     }, [feedback, emitBeat]);
-    useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
+    useEffect(() => () => {
+        clearTimeout(celebrateTimerRef.current);
+        clearTimeout(inputPulseTimerRef.current);
+    }, []);
+
+    const triggerInputPulse = useCallback((state) => {
+        clearTimeout(inputPulseTimerRef.current);
+        setInputPulse(null);
+        // Trigger on next frame so consecutive hits/misses replay the ring/shake.
+        window.requestAnimationFrame(() => {
+            setInputPulse(state);
+            inputPulseTimerRef.current = window.setTimeout(() => setInputPulse(null), 420);
+        });
+    }, []);
 
     useEffect(() => {
         setFeedback((current) => (
@@ -510,6 +533,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         const nextFoundOrder = [...activeRun.foundOrder, matchedPokemonId];
         setNewlyFoundId(matchedPokemonId);
         setCombo((value) => value + 1);
+        triggerInputPulse('hit');
 
         updateActiveRunProgress(nextFoundIdsArray, nextFoundOrder, activeRun.invalidGuesses, 0);
 
@@ -525,12 +549,27 @@ export function GenerationQuizView({ showDetails, showToast }) {
         setAnswerInput('');
         setActiveSuggestionIndex(0);
         if (nextFoundIdsArray.length === activeRun.totalCount) celebrate();
-    }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount, activeRun, updateActiveRunProgress, language, celebrate, modeOver]);
+    }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount, activeRun, updateActiveRunProgress, language, celebrate, modeOver, triggerInputPulse]);
 
     useEffect(() => {
         if (!quizStarted) return;
         inputRef.current?.focus();
     }, [quizStarted]);
+
+    // Global `/` shortcut to jump straight back to the guess input while playing.
+    useEffect(() => {
+        if (!quizStarted || isComplete || modeOver || isHistoryOpen || isCelebrationOpen) return undefined;
+        const handleGlobalKeyDown = (event) => {
+            if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+            const active = document.activeElement;
+            const tag = active?.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active?.isContentEditable) return;
+            event.preventDefault();
+            inputRef.current?.focus();
+        };
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, [quizStarted, isComplete, modeOver, isHistoryOpen, isCelebrationOpen]);
 
     const suggestions = useMemo(() => {
         if (!hasAutocompleteAccess || normalizedAnswerInput.length < MIN_AUTOCOMPLETE_CHARACTERS) return [];
@@ -584,10 +623,48 @@ export function GenerationQuizView({ showDetails, showToast }) {
     }, [availableHints, remainingEntries, language]);
 
     const toggleGeneration = useCallback((generationKey) => {
-        setSelectedGenerationKeys(new Set([generationKey]));
+        setSelectedGenerationKeys((current) => {
+            if (!isMixMode) {
+                return new Set([generationKey]);
+            }
+            // In mix mode, toggling a region adds/removes it while keeping at least one selected.
+            if (current.size === QUIZ_GENERATION_KEYS.length) {
+                return new Set([generationKey]);
+            }
+            const next = new Set(current);
+            if (next.has(generationKey)) {
+                if (next.size > 1) {
+                    next.delete(generationKey);
+                }
+            } else {
+                next.add(generationKey);
+            }
+            return next;
+        });
+    }, [isMixMode]);
+
+    const applyPreset = useCallback((keys) => {
+        setSelectedGenerationKeys(new Set(keys));
+        setIsMixMode(keys.length > 1 && keys.length < QUIZ_GENERATION_KEYS.length);
+    }, []);
+
+    const toggleMixMode = useCallback(() => {
+        setIsMixMode((current) => {
+            const next = !current;
+            if (!next) {
+                // Returning to single-region mode: keep the first selected region (unless All is active).
+                setSelectedGenerationKeys((selected) => {
+                    if (selected.size === QUIZ_GENERATION_KEYS.length || selected.size <= 1) return selected;
+                    const first = sortGenerationKeys(Array.from(selected))[0] || 'generation-i';
+                    return new Set([first]);
+                });
+            }
+            return next;
+        });
     }, []);
 
     const toggleAllGenerations = useCallback(() => {
+        setIsMixMode(false);
         setSelectedGenerationKeys((current) => {
             if (current.size === QUIZ_GENERATION_KEYS.length) {
                 return new Set(['generation-i']);
@@ -677,6 +754,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         const nextFoundOrder = [...activeRun.foundOrder, pokemonId];
         setNewlyFoundId(pokemonId);
         setCombo((value) => value + 1);
+        triggerInputPulse('hit');
 
         updateActiveRunProgress(nextFoundIdsArray, nextFoundOrder, activeRun.invalidGuesses, 0);
 
@@ -692,7 +770,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         setAnswerInput('');
         setActiveSuggestionIndex(0);
         if (nextFoundIdsArray.length === activeRun.totalCount) celebrate();
-    }, [activeRun, foundIds, pokemonById, totalCount, updateActiveRunProgress, language, celebrate]);
+    }, [activeRun, foundIds, pokemonById, totalCount, updateActiveRunProgress, language, celebrate, triggerInputPulse]);
 
     const handleSelectSuggestion = useCallback((pokemonId) => {
         commitFoundPokemon(pokemonId);
@@ -731,6 +809,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
             }
 
             if (!matchedPokemonId) {
+                triggerInputPulse('miss');
                 if (activeRun) {
                     updateActiveRunProgress(
                         activeRun.foundIds,
@@ -748,7 +827,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                 setFeedback({ tone: 'danger', message: language === 'pt' ? 'Nenhum Pokémon corresponde a esse palpite.' : 'No Pokémon match that guess yet.' });
             }
         }
-    }, [activeSuggestionIndex, answerInput, answerLookup, foundIds, handleSelectSuggestion, suggestions, activeRun, updateActiveRunProgress, language, runMode]);
+    }, [activeSuggestionIndex, answerInput, answerLookup, foundIds, handleSelectSuggestion, suggestions, activeRun, updateActiveRunProgress, language, runMode, triggerInputPulse]);
 
     const inspectPokemon = useCallback(async (pokemon) => {
         if (!pokemon || loadingDetailId) return;
@@ -840,13 +919,15 @@ export function GenerationQuizView({ showDetails, showToast }) {
         ? (language === 'pt' ? 'A maratona' : 'The marathon')
         : selectedGenerationList.map((key) => GENERATION_LABELS[key]).join(' · ');
     const MODE_COPY = {
-        classic: { label: language === 'pt' ? 'Clássico' : 'Classic', hint: language === 'pt' ? 'Sem relógio. O progresso fica salvo e você continua depois.' : 'No clock. Your progress is saved and you can come back.' },
-        sprint: { label: 'Sprint 60s', hint: language === 'pt' ? 'Quantos nomes você acerta em um minuto.' : 'How many you can name in one minute.' },
-        flawless: { label: language === 'pt' ? 'Sem erros' : 'Flawless', hint: language === 'pt' ? 'A partida acaba no primeiro palpite errado.' : 'The run ends on the first wrong guess.' },
+        classic: { icon: <Compass aria-hidden="true" />, label: language === 'pt' ? 'Clássico' : 'Classic', hint: language === 'pt' ? 'Sem relógio. O progresso fica salvo e você continua depois.' : 'No clock. Your progress is saved and you can come back.' },
+        sprint: { icon: <Timer aria-hidden="true" />, label: 'Sprint 60s', hint: language === 'pt' ? 'Quantos nomes você acerta em um minuto.' : 'How many you can name in one minute.' },
+        flawless: { icon: <ShieldAlert aria-hidden="true" />, label: language === 'pt' ? 'Sem erros' : 'Flawless', hint: language === 'pt' ? 'A partida acaba no primeiro palpite errado.' : 'The run ends on the first wrong guess.' },
     };
     const starsLabel = (count) => (language === 'pt' ? `${count} de 3 estrelas` : `${count} of 3 stars`);
     const lastFind = recentFinds[0] || null;
     const previousFinds = recentFinds.slice(1);
+    const nextHintProgress = foundCount % 10;
+    const catchesToNextHint = 10 - nextHintProgress;
 
     const gridFilterOptions = [
         { key: 'all', icon: <LayoutGrid aria-hidden="true" />, label: language === 'pt' ? 'Todos' : 'All', count: totalCount },
@@ -856,7 +937,63 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
     // History lists what can be resumed; a Sprint or Flawless run cannot (its
     // best mark shows in the picker instead).
-    const visibleRuns = quizRuns.filter((run) => !runDeletes.hidden.has(run.id) && modeOfRun(run) === 'classic');
+    const visibleRuns = useMemo(
+        () => quizRuns.filter((run) => !runDeletes.hidden.has(run.id) && modeOfRun(run) === 'classic'),
+        [quizRuns, runDeletes.hidden]
+    );
+
+    const resumableClassicById = useMemo(() => {
+        const map = new Map();
+        visibleRuns.forEach((run) => {
+            const isRunComplete = run.isComplete || (run.totalCount > 0 && run.foundIds.length >= run.totalCount);
+            if (!isRunComplete && run.foundIds.length > 0) {
+                map.set(run.id, run);
+            }
+        });
+        return map;
+    }, [visibleRuns]);
+
+    const inProgressRun = mode === 'classic' ? (resumableClassicById.get(selectionSignature) || null) : null;
+
+    const handleResumeInProgress = useCallback(() => {
+        if (!inProgressRun) return;
+        sessionRunRef.current = inProgressRun.id;
+        resumeRun(inProgressRun.id);
+        setCombo(0);
+        setModeOver(null);
+        setAnswerInput('');
+        setGridFilter('all');
+        setActiveSuggestionIndex(0);
+        setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida retomada. Boa sorte!' : 'Run resumed. Good luck!' });
+    }, [inProgressRun, resumeRun, language]);
+
+    // Live stage preview sprites for the launch sidebar:
+    // - 1 region: its 3 starters on grass/fire/water platforms
+    // - 2–3 regions: the lead starter of each selected region
+    // - 4+ or all: marathon emblem
+    const stagePreviewStarters = useMemo(() => {
+        if (selectedRegion) {
+            return selectedRegion.starters.map((id, i) => ({
+                id,
+                type: STARTER_TYPES[i],
+                spriteUrl: pokemonById.get(id)?.spriteUrl,
+                isUnknown: selectionBest === 0,
+            }));
+        }
+        if (selectedGenerationList.length >= 2 && selectedGenerationList.length <= 3) {
+            return selectedGenerationList.map((genKey, i) => {
+                const region = REGIONS[genKey];
+                const id = region?.starters[i % 3] || region?.starters[0];
+                return {
+                    id,
+                    type: STARTER_TYPES[i % 3],
+                    spriteUrl: pokemonById.get(id)?.spriteUrl,
+                    isUnknown: false,
+                };
+            });
+        }
+        return null;
+    }, [selectedRegion, selectedGenerationList, pokemonById, selectionBest]);
 
     const historyButton = (
         <button
@@ -925,80 +1062,173 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         </div>
                     ) : (
                         <div className="quiz-picker">
-                            <div className="quiz-picker__regions" role="group" aria-label={language === 'pt' ? 'Escolher região' : 'Choose a region'}>
-                                {regionCards.map((region) => {
-                                    const active = !allGenerationsSelected && selectedGenerationKeys.has(region.key);
-                                    return (
+                            <div className="quiz-picker__main">
+                                <div className="quiz-picker__toolbar" role="toolbar" aria-label={language === 'pt' ? 'Atalhos de seleção' : 'Selection presets'}>
+                                    <div className="quiz-picker__presets">
+                                        {REGION_PRESETS.map((preset) => {
+                                            const isPresetActive = selectionSignature === buildSelectionSignature(preset.keys);
+                                            return (
+                                                <button
+                                                    key={preset.id}
+                                                    type="button"
+                                                    onClick={() => applyPreset(preset.keys)}
+                                                    aria-pressed={isPresetActive}
+                                                    className={`quiz-picker__chip ${isPresetActive ? 'is-active' : ''}`}
+                                                >
+                                                    {language === 'pt' ? preset.labelPt : preset.labelEn}
+                                                </button>
+                                            );
+                                        })}
                                         <button
-                                            key={region.key}
                                             type="button"
-                                            onClick={() => toggleGeneration(region.key)}
-                                            aria-pressed={active}
-                                            className={`quiz-region ${active ? 'is-active' : ''} ${region.found === 0 ? 'is-unknown' : ''}`}
+                                            onClick={toggleAllGenerations}
+                                            aria-pressed={allGenerationsSelected}
+                                            className={`quiz-picker__chip ${allGenerationsSelected ? 'is-active' : ''}`}
                                         >
-                                            {/* Never played: the starters are silhouettes — "who's that Pokémon?". */}
-                                            <span className="quiz-region__starters" aria-hidden="true">
-                                                {region.starters.map((id, i) => (
-                                                    <span key={id} className="quiz-region__starter" style={{ '--type': typeColors[STARTER_TYPES[i]] }}>
-                                                        <img src={pokemonById.get(id)?.spriteUrl} alt="" className="image-pixelated" loading="lazy" />
-                                                    </span>
-                                                ))}
-                                            </span>
-                                            <span className="quiz-region__head">
-                                                <span className="quiz-region__name">{region.name}</span>
-                                                <Stars count={region.stars} label={starsLabel(region.stars)} />
-                                            </span>
-                                            <span className={`quiz-region__bar ${region.stars >= 2 ? 'is-gold' : ''}`} aria-hidden="true">
-                                                <i style={{ width: `${region.total ? Math.round((region.found / region.total) * 100) : 0}%` }} />
-                                            </span>
-                                            <span className="quiz-region__figure">
-                                                {region.found > 0 ? region.found : '—'} / {region.total} · {GENERATION_LABELS[region.key]}
-                                            </span>
+                                            {language === 'pt' ? `Todas · ${catalogTotal}` : `All · ${catalogTotal}`}
                                         </button>
-                                    );
-                                })}
-                                <button
-                                    type="button"
-                                    onClick={toggleAllGenerations}
-                                    aria-pressed={allGenerationsSelected}
-                                    className={`quiz-region quiz-region--all ${allGenerationsSelected ? 'is-active' : ''}`}
-                                >
-                                    <span className="quiz-region__all" aria-hidden="true">{catalogTotal}</span>
-                                    <span className="quiz-region__head">
-                                        <span className="quiz-region__name">{language === 'pt' ? 'Todas' : 'All'}</span>
-                                        <Stars count={starsFor(allBest?.bestFound || 0, catalogTotal)} label={starsLabel(starsFor(allBest?.bestFound || 0, catalogTotal))} />
-                                    </span>
-                                    <span className="quiz-region__figure">{language === 'pt' ? 'a maratona' : 'the marathon'}</span>
-                                </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={toggleMixMode}
+                                        aria-pressed={isMixMode}
+                                        className={`quiz-picker__mix-toggle ${isMixMode ? 'is-active' : ''}`}
+                                        title={language === 'pt' ? 'Ative para selecionar várias regiões juntas' : 'Enable to select multiple regions together'}
+                                    >
+                                        <Layers aria-hidden="true" />
+                                        <span>{language === 'pt' ? 'Combinar regiões' : 'Mix regions'}</span>
+                                        {isMixMode && selectedGenerationList.length > 1 && !allGenerationsSelected && (
+                                            <span className="quiz-picker__mix-count">{selectedGenerationList.length}</span>
+                                        )}
+                                    </button>
+                                </div>
+
+                                <div className="quiz-picker__regions" role="group" aria-label={language === 'pt' ? 'Escolher região' : 'Choose a region'}>
+                                    {regionCards.map((region) => {
+                                        const active = !allGenerationsSelected && selectedGenerationKeys.has(region.key);
+                                        const regionInProgress = resumableClassicById.get(region.key);
+                                        const masteryPct = region.total > 0 ? Math.round((region.found / region.total) * 100) : 0;
+                                        return (
+                                            <button
+                                                key={region.key}
+                                                type="button"
+                                                onClick={() => toggleGeneration(region.key)}
+                                                aria-pressed={active}
+                                                className={`quiz-region ${active ? 'is-active' : ''} ${region.found === 0 ? 'is-unknown' : ''}`}
+                                            >
+                                                {(regionInProgress || active) && (
+                                                    <span className="quiz-region__status-row">
+                                                        {regionInProgress ? (
+                                                            <span className="quiz-region__live">
+                                                                <span className="live-dot" aria-hidden="true" />
+                                                                {language === 'pt' ? 'Em andamento' : 'In progress'}
+                                                            </span>
+                                                        ) : <span />}
+                                                        {active && (
+                                                            <span className="quiz-region__check" aria-hidden="true">
+                                                                <Check />
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                )}
+                                                {/* Never played: the starters are silhouettes — "who's that Pokémon?". */}
+                                                <span className="quiz-region__starters" aria-hidden="true">
+                                                    {region.starters.map((id, i) => (
+                                                        <span key={id} className="quiz-region__starter" style={{ '--type': typeColors[STARTER_TYPES[i]] }}>
+                                                            <img src={pokemonById.get(id)?.spriteUrl} alt="" className="image-pixelated" loading="lazy" />
+                                                        </span>
+                                                    ))}
+                                                </span>
+                                                <span className="quiz-region__head">
+                                                    <span className="quiz-region__name">{region.name}</span>
+                                                    <Stars count={region.stars} label={starsLabel(region.stars)} />
+                                                </span>
+                                                <span className={`quiz-region__bar ${region.stars >= 2 ? 'is-gold' : ''}`} aria-hidden="true">
+                                                    <i style={{ width: `${masteryPct}%` }} />
+                                                </span>
+                                                <span className="quiz-region__figure">
+                                                    <span>
+                                                        {region.found > 0 ? region.found : '—'} / {region.total} · {GENERATION_LABELS[region.key]}
+                                                    </span>
+                                                    {region.found > 0 && (
+                                                        <span className="quiz-region__pct">{masteryPct}%</span>
+                                                    )}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                    <button
+                                        type="button"
+                                        onClick={toggleAllGenerations}
+                                        aria-pressed={allGenerationsSelected}
+                                        className={`quiz-region quiz-region--all ${allGenerationsSelected ? 'is-active' : ''}`}
+                                    >
+                                        <span className="quiz-region__all" aria-hidden="true">{catalogTotal}</span>
+                                        <span className="quiz-region__head">
+                                            <span className="quiz-region__name">{language === 'pt' ? 'Todas' : 'All'}</span>
+                                            <Stars count={starsFor(allBest?.bestFound || 0, catalogTotal)} label={starsLabel(starsFor(allBest?.bestFound || 0, catalogTotal))} />
+                                            {resumableClassicById.get('all') && (
+                                                <span className="quiz-region__live">
+                                                    <span className="live-dot" aria-hidden="true" />
+                                                    {language === 'pt' ? 'Em andamento' : 'In progress'}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className="quiz-region__figure">{language === 'pt' ? 'a maratona' : 'the marathon'}</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <aside className="quiz-picker__panel" aria-live="polite">
+                                <div className="quiz-picker__stage" aria-hidden="true">
+                                    {stagePreviewStarters ? (
+                                        <span className={`quiz-picker__stage-starters ${stagePreviewStarters.every((s) => s.isUnknown) ? 'is-unknown' : ''}`}>
+                                            {stagePreviewStarters.map((starter) => (
+                                                <span key={starter.id} className="quiz-region__starter" style={{ '--type': typeColors[starter.type] }}>
+                                                    <img src={starter.spriteUrl} alt="" className="image-pixelated" />
+                                                </span>
+                                            ))}
+                                        </span>
+                                    ) : (
+                                        <div className="quiz-picker__stage-emblem">
+                                            <PokeballIcon />
+                                            <span>
+                                                {selectedGenerationList.length} {language === 'pt' ? 'regiões' : 'regions'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div>
                                     <span className="quiz-picker__eyebrow">{selectionEyebrow}</span>
                                     <h3 className="quiz-picker__name">{selectionName}</h3>
                                 </div>
                                 <dl className="quiz-picker__facts">
                                     <div>
-                                        <dd>{selectionBest > 0 ? selectionBest : '—'}<span> / {selectionTotal}</span></dd>
+                                        <dd>
+                                            {selectionBest > 0 ? <RollingNumber value={selectionBest} /> : '—'}
+                                            <span> / <RollingNumber value={selectionTotal} /></span>
+                                        </dd>
                                         <dt>{language === 'pt' ? 'seu recorde' : 'your best'}</dt>
                                     </div>
                                     {bestRun && (
                                         <div>
-                                            <dd>{bestRun.accuracyPercent}%</dd>
+                                            <dd><RollingNumber value={bestRun.accuracyPercent} format={(v) => `${v}%`} /></dd>
                                             <dt>{language === 'pt' ? 'precisão' : 'accuracy'}</dt>
                                         </div>
                                     )}
                                     {selectionGoal && (
                                         <div>
-                                            <dd>{selectionGoal.missing}</dd>
+                                            <dd><RollingNumber value={selectionGoal.missing} /></dd>
                                             <dt>{language === 'pt' ? `para a ${selectionGoal.star}ª estrela` : `to star ${selectionGoal.star}`}</dt>
                                         </div>
                                     )}
                                 </dl>
-                                <div className="segmented segmented--quiet segmented--block" role="group" aria-label={language === 'pt' ? 'Modo de jogo' : 'Game mode'}>
+                                <div className="segmented segmented--quiet segmented--block quiz-picker__modes" role="group" aria-label={language === 'pt' ? 'Modo de jogo' : 'Game mode'}>
                                     {QUIZ_MODES.map((key) => (
                                         <button key={key} type="button" className="segmented__item" aria-pressed={mode === key} onClick={() => setMode(key)}>
-                                            {MODE_COPY[key].label}
+                                            {MODE_COPY[key].icon}
+                                            <span>{MODE_COPY[key].label}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -1008,15 +1238,31 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         <> {language === 'pt' ? 'Seu melhor:' : 'Your best:'} <strong>{bestOf(selectedGenerationList, mode).bestFound}</strong>.</>
                                     )}
                                 </p>
-                                <button
-                                    type="button"
-                                    onClick={startQuiz}
-                                    disabled={isLoadingIndex || selectionTotal === 0}
-                                    className="btn btn-primary btn-lg quiz-picker__start"
-                                >
-                                    <PokeballIcon />
-                                    {language === 'pt' ? `Começar · ${selectionTotal} Pokémon` : `Start · ${selectionTotal} Pokémon`}
-                                </button>
+                                <div className="quiz-picker__actions">
+                                    {inProgressRun && (
+                                        <button
+                                            type="button"
+                                            onClick={handleResumeInProgress}
+                                            className="btn btn-secondary btn-lg quiz-picker__resume"
+                                        >
+                                            <Play aria-hidden="true" />
+                                            {language === 'pt'
+                                                ? `Continuar partida (${inProgressRun.foundIds.length}/${inProgressRun.totalCount})`
+                                                : `Continue run (${inProgressRun.foundIds.length}/${inProgressRun.totalCount})`}
+                                        </button>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={startQuiz}
+                                        disabled={isLoadingIndex || selectionTotal === 0}
+                                        className="btn btn-primary btn-lg quiz-picker__start"
+                                    >
+                                        <PokeballIcon />
+                                        {inProgressRun
+                                            ? (language === 'pt' ? 'Nova partida do zero' : 'Start fresh run')
+                                            : (language === 'pt' ? `Começar · ${selectionTotal} Pokémon` : `Start · ${selectionTotal} Pokémon`)}
+                                    </button>
+                                </div>
                             </aside>
                         </div>
                     )}
@@ -1089,12 +1335,16 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                             inputRef={inputRef}
                                             placeholder={language === 'pt' ? 'Digite para adivinhar…' : 'Type to guess…'}
                                             minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
+                                            feedbackState={inputPulse}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="generation-quiz__progress-bar" aria-hidden="true">
-                                    <span className="generation-quiz__progress-fill" style={{ width: `${completionPercent}%` }} />
+                                    <span
+                                        className={`generation-quiz__progress-fill ${completionPercent > 0 ? 'has-progress' : ''}`}
+                                        style={{ width: `${completionPercent}%` }}
+                                    />
                                 </div>
 
                                 <div className="generation-quiz__console-status">
@@ -1115,7 +1365,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         </span>
                                     )}
                                     <span className="generation-quiz__console-inline-metrics">
-                                        {foundCount}/{totalCount} · {accuracyPercent}%
+                                        <RollingNumber value={foundCount} />/{totalCount} · <RollingNumber value={accuracyPercent} format={(v) => `${v}%`} />
                                     </span>
                                 </div>
 
@@ -1139,15 +1389,15 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
                                 <div className="generation-quiz__console-metrics">
                                     <div className="generation-quiz__console-stat">
-                                        <strong>{foundCount}/{totalCount}</strong>
+                                        <strong><RollingNumber value={foundCount} />/{totalCount}</strong>
                                         <span>{language === 'pt' ? 'Encontrados' : 'Found'}</span>
                                     </div>
                                     <div className="generation-quiz__console-stat">
-                                        <strong>{completionPercent}%</strong>
+                                        <strong><RollingNumber value={completionPercent} format={(v) => `${v}%`} /></strong>
                                         <span>{language === 'pt' ? 'Completo' : 'Complete'}</span>
                                     </div>
                                     <div className="generation-quiz__console-stat">
-                                        <strong>{accuracyPercent}%</strong>
+                                        <strong><RollingNumber value={accuracyPercent} format={(v) => `${v}%`} /></strong>
                                         <span>{language === 'pt' ? 'Precisão' : 'Accuracy'}</span>
                                     </div>
                                 </div>
@@ -1177,11 +1427,17 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         type="button"
                                         onClick={handleManualHint}
                                         disabled={availableHints <= 0 || isComplete}
-                                        className="generation-quiz__compact-reset-btn generation-quiz__hint-btn"
-                                        title={language === 'pt' ? 'Ganhe 1 dica a cada 10 acertos' : 'Earn 1 hint every 10 catches'}
+                                        className={`generation-quiz__compact-reset-btn generation-quiz__hint-btn ${availableHints > 0 && !isComplete ? 'is-ready' : ''}`}
+                                        title={availableHints > 0
+                                            ? (language === 'pt' ? 'Usar 1 dica' : 'Use 1 hint')
+                                            : (language === 'pt'
+                                                ? `Faltam ${catchesToNextHint} acertos para a próxima dica`
+                                                : `${catchesToNextHint} more catches for next hint`)}
                                     >
                                         <SparklesIcon /> {language === 'pt' ? 'Dica' : 'Hint'}
-                                        <span className="generation-quiz__hint-count">{availableHints}</span>
+                                        <span className={`generation-quiz__hint-count ${availableHints === 0 ? 'generation-quiz__hint-count--progress' : ''}`}>
+                                            {availableHints > 0 ? availableHints : `${nextHintProgress}/10`}
+                                        </span>
                                     </button>
                                     <button type="button" onClick={restartRun} className="generation-quiz__compact-reset-btn">
                                         <RefreshIcon /> {t('games.restart')}

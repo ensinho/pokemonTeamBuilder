@@ -304,8 +304,17 @@
     background: var(--color-surface-hover);
 }
 
+.team-builder-slot:not(.team-builder-slot--empty):active {
+    background: var(--color-surface-active);
+}
+
 .team-builder-slot.is-dragging {
     opacity: 0.35;
+}
+
+.team-builder-slot.is-drop-target {
+    background: var(--color-primary-soft);
+    box-shadow: var(--slot-sticker), var(--ring-primary);
 }
 
 .team-builder-slot__media {
@@ -343,12 +352,20 @@
     cursor: pointer;
     transition: opacity var(--duration-fast) var(--ease-smooth),
                 color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth);
+                background-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
 .team-builder-slot__control svg { width: 0.875rem; height: 0.875rem; }
 
-.team-builder-slot__control:hover { color: var(--color-fg); }
+.team-builder-slot__control:hover {
+    color: var(--color-fg);
+    background: var(--color-surface-hover);
+}
+
+.team-builder-slot__control:active {
+    scale: var(--press-scale);
+}
 
 .team-builder-slot__control--edit {
     left: var(--space-1);
@@ -360,6 +377,7 @@
 
 .team-builder-slot__control--remove:hover {
     color: var(--color-danger);
+    background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
 }
 
 .team-builder-slot:hover .team-builder-slot__control,
@@ -370,7 +388,7 @@
 
 .team-builder-slot__control:focus-visible {
     outline: none;
-    box-shadow: var(--ring-focus);
+    box-shadow: var(--ring-logo);
 }
 
 /* No hover on a touch screen (a tablet at desktop width): the hover gate means
@@ -394,13 +412,63 @@
     border: 1px dashed var(--color-border-strong);
     border-radius: var(--radius-lg);
     background: transparent;
-    cursor: default;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
+
+.team-builder-slot--empty:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-hover);
+}
+
+.team-builder-slot--empty:active {
+    border-color: var(--color-primary);
+    background: var(--color-surface-active);
+}
+
+.team-builder-slot--empty:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-surface-hover);
+    box-shadow: var(--ring-logo);
 }
 
 .team-builder-slot__placeholder {
     width: 1.5rem;
     height: 1.5rem;
     color: var(--color-border-strong);
+    transition: color var(--duration-fast) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-slot__add-cue {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-soft);
+    color: var(--color-primary-text);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-slot__add-cue svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.team-builder-slot--empty:hover .team-builder-slot__placeholder,
+.team-builder-slot--empty:focus-visible .team-builder-slot__placeholder {
+    opacity: 0;
+}
+
+.team-builder-slot--empty:hover .team-builder-slot__add-cue,
+.team-builder-slot--empty:focus-visible .team-builder-slot__add-cue {
+    opacity: 1;
 }
 
 .team-builder-action-row,
@@ -645,10 +713,24 @@
     border: none;
     color: var(--color-fg);
     cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
 .team-builder-picker-summary--clear:hover {
     background: var(--color-surface-hover);
+}
+
+.team-builder-picker-summary--clear:active {
+    background: var(--color-surface-active);
+    scale: var(--press-scale);
+}
+
+.team-builder-picker-summary--clear:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 /* Borderless: this sits directly inside .team-builder-panel, which already
@@ -750,9 +832,14 @@
     background: var(--color-surface-raised);
     padding: var(--space-1_5);
     cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
 .team-builder-type-button:hover { background: var(--color-surface-hover); }
+
+.team-builder-type-button:active { scale: var(--press-scale); }
 
 .team-builder-type-button--compact {
     width: 2rem;
@@ -974,6 +1061,7 @@
 
 .tb-core-row:hover { background: var(--color-surface-hover); }
 .tb-core-row:active { background: var(--color-surface-active); }
+.tb-core-row:focus-visible { outline: none; box-shadow: var(--ring-logo); }
 
 .tb-core-row__icon {
     width: 1rem;
@@ -1383,7 +1471,7 @@
 
 .team-builder-mobile__search-icon {
     position: absolute;
-    left: 0.7rem;
+    left: var(--space-3);
     width: 1rem;
     height: 1rem;
     color: var(--color-muted);
@@ -1392,6 +1480,7 @@
 
 .team-builder-mobile__search-field {
     padding-left: var(--space-8);
+    padding-right: var(--space-8);
 }
 
 .team-builder-mobile__filter-toggle {
@@ -1418,6 +1507,11 @@
 .team-builder-mobile__filter-toggle:active {
     background: var(--color-surface-active);
     border-color: var(--color-border-hover);
+}
+
+.team-builder-mobile__filter-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 .team-builder-mobile__filter-chevron {
@@ -1627,10 +1721,16 @@
 
 .team-builder-mobile-slot.is-empty {
     border-style: dashed;
+    border-color: var(--color-border-strong);
+    cursor: pointer;
 }
 
-/* An empty slot is a disabled button (nothing to edit yet): no dimming, the
-   dashed edge already says "empty". */
+.team-builder-mobile-slot.is-empty:active {
+    border-color: var(--color-primary);
+    background: var(--color-surface-active);
+}
+
+/* Keep disabled fallback clean if a slot is explicitly disabled. */
 .team-builder-mobile-slot:disabled {
     opacity: 1;
     cursor: default;
@@ -1732,12 +1832,23 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth),
         border-color var(--duration-fast) var(--ease-smooth),
-        background-color var(--duration-fast) var(--ease-smooth);
+        background-color var(--duration-fast) var(--ease-smooth),
+        box-shadow var(--duration-fast) var(--ease-smooth),
+        scale var(--duration-press) var(--ease-out);
 }
 
 .team-builder-filter-toggle:hover {
     color: var(--color-fg);
     border-color: var(--color-border-hover);
+}
+
+.team-builder-filter-toggle:active {
+    scale: var(--press-scale);
+}
+
+.team-builder-filter-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 /* Open is a fill, like a pressed toggle — the brand colour stays on the dot
@@ -1757,11 +1868,11 @@
 
 .team-builder-filter-toggle__dot {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
+    top: var(--space-1);
+    right: var(--space-1);
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: var(--radius-full);
     background: var(--color-primary);
     box-shadow: 0 0 0 2px var(--color-surface);
 }
@@ -1841,12 +1952,24 @@
     align-items: center;
     padding: var(--space-0_5);
     border-radius: var(--radius-sm);
-    transition: color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
+    transition: color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
 .team-builder-search-clear:hover {
     color: var(--color-fg);
-    background: var(--color-surface-raised);
+    background: var(--color-surface-hover);
+}
+
+.team-builder-search-clear:active {
+    scale: var(--press-scale);
+}
+
+.team-builder-search-clear:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 .team-builder-select-wrap {
@@ -1868,7 +1991,7 @@
 .team-builder-select-wrap:focus-within {
     border-color: var(--color-primary);
     background: var(--color-surface);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 .team-builder-unified-toolbar .team-builder-select {
@@ -1912,9 +2035,8 @@
 }
 
 .team-builder-unified-toolbar .team-builder-toggle--compact:focus-visible {
-    border-radius: var(--radius-md);
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 /* ============================================================
@@ -1971,7 +2093,7 @@
 }
 
 .pokedex-mobile-type-badge:active {
-    transform: scale(0.95);
+    scale: var(--press-scale);
 }
 
 /* Sprite Gen Grid (Mobile replacements for Sprites Table) */
@@ -2398,8 +2520,26 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .team-builder-mobile__composer-fold {
+    .team-builder-mobile__composer-fold,
+    .team-builder-slot,
+    .team-builder-slot__control,
+    .team-builder-slot__placeholder,
+    .team-builder-slot__add-cue,
+    .team-builder-type-button,
+    .team-builder-filter-toggle,
+    .team-builder-filter-toggle__chevron,
+    .team-builder-search-clear,
+    .team-builder-picker-summary--clear {
         transition-duration: 0.001ms;
+    }
+
+    .team-builder-slot__control:active,
+    .team-builder-type-button:active,
+    .team-builder-filter-toggle:active,
+    .team-builder-search-clear:active,
+    .team-builder-picker-summary--clear:active,
+    .pokedex-mobile-type-badge:active {
+        scale: none;
     }
 }
 
@@ -2441,6 +2581,11 @@
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
     color: var(--color-primary-text);
+}
+
+.team-builder-mobile__saved-icon:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 .team-builder-mobile__saved-icon-badge {
@@ -2809,6 +2954,11 @@
     background: var(--color-surface-active);
 }
 
+.team-builder-mobile__format-chip:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
+}
+
 .team-builder-mobile__result-count {
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
@@ -2841,6 +2991,11 @@
 
 .team-builder-mobile__analysis-chip:active {
     background: var(--color-surface-active);
+}
+
+.team-builder-mobile__analysis-chip:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
 }
 
 /* The verdict's face, ahead of the grade (MascotFace). */

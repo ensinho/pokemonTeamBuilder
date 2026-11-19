@@ -1,5 +1,26 @@
 import React, { useId, useState } from 'react';
+import { Search, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+
+function renderHighlightedName(displayName, query) {
+    if (!query) return displayName;
+    const lowerName = displayName.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const matchIndex = lowerName.indexOf(lowerQuery);
+    if (matchIndex === -1) return displayName;
+
+    const before = displayName.slice(0, matchIndex);
+    const matched = displayName.slice(matchIndex, matchIndex + query.length);
+    const after = displayName.slice(matchIndex + query.length);
+
+    return (
+        <>
+            {before}
+            <mark className="generation-quiz-autocomplete__match">{matched}</mark>
+            {after}
+        </>
+    );
+}
 
 export function PokemonGenerationQuizAutocomplete({
     value = '',
@@ -13,14 +34,31 @@ export function PokemonGenerationQuizAutocomplete({
     helperText = '',
     placeholder = '',
     minCharacters = 2,
+    feedbackState = null,
+    shortcutHint = '/',
 }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const listboxId = useId();
     const [isInputArmed, setIsInputArmed] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const safeValue = String(value || '');
     const trimmedValue = safeValue.trim();
+    const hasValue = safeValue.length > 0;
     const isOpen = !disabled && trimmedValue.length >= minCharacters && (suggestions || []).length > 0;
     const activeSuggestion = isOpen ? (suggestions || [])[activeIndex] : null;
+
+    const handleClear = () => {
+        onChange('');
+        inputRef?.current?.focus();
+    };
+
+    const wrapClasses = [
+        'generation-quiz-autocomplete__input-wrap',
+        isFocused ? 'is-focused' : '',
+        hasValue ? 'has-value' : '',
+        feedbackState === 'hit' ? 'is-hit' : '',
+        feedbackState === 'miss' ? 'is-miss' : '',
+    ].filter(Boolean).join(' ');
 
     return (
         <div className="generation-quiz-autocomplete">
@@ -30,7 +68,10 @@ export function PokemonGenerationQuizAutocomplete({
             </div>
             <label className="generation-quiz__field" htmlFor="generation-quiz-answer">
                 <span className="sr-only">{t('games.guessInput')}</span>
-                <div className="generation-quiz-autocomplete__input-wrap">
+                <div className={wrapClasses}>
+                    <span className="generation-quiz-autocomplete__icon" aria-hidden="true">
+                        <Search />
+                    </span>
                     <input
                         ref={inputRef}
                         id="generation-quiz-answer"
@@ -49,7 +90,11 @@ export function PokemonGenerationQuizAutocomplete({
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
                         onKeyDown={onKeyDown}
-                        onFocus={() => setIsInputArmed(true)}
+                        onFocus={() => {
+                            setIsInputArmed(true);
+                            setIsFocused(true);
+                        }}
+                        onBlur={() => setIsFocused(false)}
                         disabled={disabled}
                         readOnly={!isInputArmed}
                         className="generation-quiz__input"
@@ -60,9 +105,33 @@ export function PokemonGenerationQuizAutocomplete({
                         aria-activedescendant={activeSuggestion ? `${listboxId}-${activeSuggestion.id}` : undefined}
                         aria-describedby={helperText ? 'generation-quiz-helper' : undefined}
                     />
+                    {!disabled && (
+                        <div className="generation-quiz-autocomplete__suffix">
+                            {hasValue ? (
+                                <>
+                                    <kbd className="generation-quiz-autocomplete__kbd generation-quiz-autocomplete__kbd--enter" aria-hidden="true">
+                                        Enter
+                                    </kbd>
+                                    <button
+                                        type="button"
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={handleClear}
+                                        className="generation-quiz-autocomplete__clear"
+                                        aria-label={language === 'pt' ? 'Limpar palpite' : 'Clear guess'}
+                                    >
+                                        <X aria-hidden="true" />
+                                    </button>
+                                </>
+                            ) : (!isFocused && shortcutHint ? (
+                                <kbd className="generation-quiz-autocomplete__kbd" aria-hidden="true">
+                                    {shortcutHint}
+                                </kbd>
+                            ) : null)}
+                        </div>
+                    )}
                     {isOpen && (
                         <div className="generation-quiz-autocomplete__panel elevation-2">
-                            <ul id={listboxId} role="listbox" className="generation-quiz-autocomplete__list">
+                            <ul id={listboxId} role="listbox" className="generation-quiz-autocomplete__list custom-scrollbar">
                                 {suggestions.map((suggestion, index) => (
                                     <li key={suggestion.id} role="presentation">
                                         <button
@@ -74,12 +143,20 @@ export function PokemonGenerationQuizAutocomplete({
                                             onMouseDown={(event) => event.preventDefault()}
                                             onClick={() => onSelectSuggestion(suggestion.id)}
                                         >
-                                            <span className="generation-quiz-autocomplete__name">{suggestion.displayName}</span>
-                                            <span className="generation-quiz-autocomplete__meta">#{suggestion.id}</span>
+                                            <span className="generation-quiz-autocomplete__name">
+                                                {renderHighlightedName(suggestion.displayName, trimmedValue)}
+                                            </span>
+                                            <span className="generation-quiz-autocomplete__meta">
+                                                #{String(suggestion.id).padStart(3, '0')}
+                                            </span>
                                         </button>
                                     </li>
                                 ))}
                             </ul>
+                            <div className="generation-quiz-autocomplete__footer" aria-hidden="true">
+                                <span><kbd>↑</kbd><kbd>↓</kbd> {language === 'pt' ? 'navegar' : 'navigate'}</span>
+                                <span><kbd>Enter</kbd> {language === 'pt' ? 'selecionar' : 'select'}</span>
+                            </div>
                         </div>
                     )}
                 </div>

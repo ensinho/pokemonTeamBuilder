@@ -33,7 +33,7 @@ import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtwork
 import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import { useTranslation } from '../../hooks/useTranslation';
 import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
-import { ShowdownIcon, StarIcon } from '../icons';
+import { ClearIcon, ShowdownIcon, StarIcon } from '../icons';
 import { Loader } from '../Loader';
 import { TeamShareRow } from '../TeamShareRow';
 import { openTeamCompare } from '../../store/useTeamCompareStore';
@@ -268,7 +268,7 @@ function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough,
     );
 }
 
-const MobileTeamSlot = ({ pokemon, index, onEdit, peeling = false, onSettle }) => {
+const MobileTeamSlot = ({ pokemon, index, onEdit, onFocusSearch, peeling = false, onSettle }) => {
     const { t } = useTranslation();
     const megaStones = useMegaStones();
     const mega = pokemon ? megaFormFor(pokemon, megaStones) : null;
@@ -279,12 +279,11 @@ const MobileTeamSlot = ({ pokemon, index, onEdit, peeling = false, onSettle }) =
     return (
         <button
             type="button"
-            onClick={() => pokemon && onEdit?.(pokemon)}
+            onClick={() => (pokemon ? onEdit?.(pokemon) : onFocusSearch?.())}
             className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'} ${peeling ? 'is-peeling' : ''}`}
             onAnimationEnd={(e) => { if (pokemon && e.animationName === 'sticker-peel') onSettle?.(pokemon.instanceId); }}
             style={pokemon ? typeVars(mega ? { types: mega.types } : pokemon) : undefined}
             aria-label={pokemon ? t('builder.editAria', { name: displayName }) : t('builder.emptySlotAria', { slot: index + 1 })}
-            disabled={!pokemon}
         >
             {pokemon ? (
                 <Sprite src={mega ? getPokemonFrontSpriteUrl(mega.spriteId) : getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(mega ? mega.spriteId : pokemon.id)} alt={displayName} className="h-9 w-9" />
@@ -571,6 +570,13 @@ export const MobileTeamBuilderView = ({
     // A taken name is said under the field, which takes focus on every failed
     // save (`at` changes each time).
     const nameInputRef = useRef(null);
+    const mobileSearchInputRef = useRef(null);
+    const handleFocusMobileSearch = React.useCallback(() => {
+        const input = mobileSearchInputRef.current;
+        if (!input) return;
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        input.focus({ preventScroll: true });
+    }, []);
     React.useEffect(() => {
         if (nameError) nameInputRef.current?.focus();
     }, [nameError]);
@@ -652,6 +658,7 @@ export const MobileTeamBuilderView = ({
                                 pokemon={currentTeam[index]}
                                 index={index}
                                 onEdit={onEditTeamPokemon}
+                                onFocusSearch={handleFocusMobileSearch}
                                 peeling={Boolean(currentTeam[index]) && !settledSlotIds.has(currentTeam[index].instanceId)}
                                 onSettle={settleSlot}
                             />
@@ -766,6 +773,7 @@ export const MobileTeamBuilderView = ({
                         {/* Search keyboard, search return key, and no
                             autocorrect mangling Pokémon names. */}
                         <input
+                            ref={mobileSearchInputRef}
                             type="text"
                             inputMode="search"
                             enterKeyHint="search"
@@ -775,9 +783,28 @@ export const MobileTeamBuilderView = ({
                             placeholder={t('pokedex.searchPlaceholderShort')}
                             value={searchInput}
                             onChange={(event) => setSearchInput(event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Escape' && searchInput) {
+                                    event.preventDefault();
+                                    setSearchInput('');
+                                }
+                            }}
                             className="team-builder-field team-builder-mobile__search-field"
                             aria-label={t('common.search')}
                         />
+                        {searchInput && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearchInput('');
+                                    mobileSearchInputRef.current?.focus();
+                                }}
+                                className="team-builder-search-clear"
+                                aria-label={t('common.clear')}
+                            >
+                                <ClearIcon className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                     <button
                         type="button"
