@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T16:41:28.742Z",
+  "generatedAt": "2026-11-20T16:16:29.659Z",
   "source": "limitless tournament standings",
   "species": 144,
   "totalTeams": 8684,
@@ -6051,11 +6051,11 @@
           "count": 2
         },
         {
-          "name": "Assurance",
+          "name": "Rock Tomb",
           "count": 1
         },
         {
-          "name": "Rock Tomb",
+          "name": "Assurance",
           "count": 1
         },
         {
@@ -15428,11 +15428,11 @@
           "count": 2
         },
         {
-          "name": "Shadow Punch",
+          "name": "Brick Break",
           "count": 2
         },
         {
-          "name": "Brick Break",
+          "name": "Shadow Punch",
           "count": 2
         },
         {
@@ -15440,11 +15440,11 @@
           "count": 1
         },
         {
-          "name": "Drain Punch",
+          "name": "Knock Off",
           "count": 1
         },
         {
-          "name": "Knock Off",
+          "name": "Drain Punch",
           "count": 1
         }
       ],
@@ -23108,13 +23108,13 @@
           "count": 4
         },
         {
-          "id": 903,
-          "name": "Sneasler",
+          "id": 445,
+          "name": "Garchomp",
           "count": 4
         },
         {
-          "id": 445,
-          "name": "Garchomp",
+          "id": 903,
+          "name": "Sneasler",
           "count": 4
         },
         {
@@ -25726,13 +25726,13 @@
           "count": 9
         },
         {
-          "id": 26,
-          "name": "Raichu",
+          "id": 937,
+          "name": "Ceruledge",
           "count": 9
         },
         {
-          "id": 937,
-          "name": "Ceruledge",
+          "id": 26,
+          "name": "Raichu",
           "count": 9
         },
         {
@@ -26811,11 +26811,11 @@
           "count": 5
         },
         {
-          "name": "Brick Break",
+          "name": "Encore",
           "count": 4
         },
         {
-          "name": "Encore",
+          "name": "Brick Break",
           "count": 4
         },
         {

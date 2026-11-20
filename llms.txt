@@ -29,6 +29,10 @@ What it does not do: it does not connect to a game console, it has no battle lad
 - [How to build a competitive Pokémon VGC team, step by step](https://pokemonbuilder.app/guides/first-vgc-team)
 - [How to choose a Pokémon team using tournament data](https://pokemonbuilder.app/guides/team-from-tournament-data)
 - [Pokémon team builders compared: PokemonBuilder, Showdown and Pikalytics](https://pokemonbuilder.app/guides/pokemon-team-builders-compared)
+- [Pokémon type chart guide: weaknesses, resistances and dual types](https://pokemonbuilder.app/guides/pokemon-type-chart-guide)
+- [Pokémon speed tiers, EVs and natures explained for level 50](https://pokemonbuilder.app/guides/pokemon-speed-tiers-evs-natures)
+- [How to use a Pokémon damage calculator: rolls, STAB and EVs](https://pokemonbuilder.app/guides/pokemon-damage-calculator-guide)
+- [Daily Pokémon games in your browser: puzzle, quiz and battle](https://pokemonbuilder.app/guides/daily-pokemon-games)
 
 ## About the site
 
@@ -38,8 +42,10 @@ What it does not do: it does not connect to a game console, it has no battle lad
 
 ## Optional
 
+- [Today's Pokémon games](https://pokemonbuilder.app/games): all four daily browser games in one hub.
 - [PokéPuzzle](https://pokemonbuilder.app/pokepuzzle): a daily Pokémon guessing game.
 - [Champion Challenge](https://pokemonbuilder.app/challenge): a daily DS-style battle against Cynthia.
 - [Pokémon Quiz](https://pokemonbuilder.app/quiz): name every Pokémon of a generation or of an official trait.
+- [Pokémon Tier List Maker](https://pokemonbuilder.app/tier-list): rank Pokémon from S to D and export as an image.
 - [Community](https://pokemonbuilder.app/feed): teams and posts shared by players.
 - [Sitemap](https://pokemonbuilder.app/sitemap.xml)
