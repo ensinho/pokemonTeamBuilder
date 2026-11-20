@@ -47,11 +47,21 @@ try {
 // tooltips' dex, abilities and items from seo-dex.json (scripts/build-seo-dex.mjs).
 // Keyed by Showdown id — the page slug without its hyphens.
 let dex = null;
+let battleItems = [];
+let gymGames = [];
 try {
     const dir = path.join(process.cwd(), 'dist', 'data');
     const battle = JSON.parse(fs.readFileSync(path.join(dir, 'battle-dex.json'), 'utf8'));
     const seo = JSON.parse(fs.readFileSync(path.join(dir, 'seo-dex.json'), 'utf8'));
     dex = { move: battle.moves || {}, ability: seo.abilities || {}, item: seo.items || {} };
+    const bItemsPath = path.join(dir, 'battle-items.json');
+    if (fs.existsSync(bItemsPath)) {
+        battleItems = JSON.parse(fs.readFileSync(bItemsPath, 'utf8')).items || [];
+    }
+    const gymsPath = path.join(dir, 'gym-leaders.json');
+    if (fs.existsSync(gymsPath)) {
+        gymGames = JSON.parse(fs.readFileSync(gymsPath, 'utf8')).games || [];
+    }
 } catch (e) {
     console.error("Failed to load the move/ability/item dex in render-meta:", e?.message || e);
 }
@@ -273,11 +283,21 @@ export function buildPage(shell, { urlPath, search = '', topicMeta = null, share
         : meta.key === 'meta' && usage
             ? { format: usage.label, battles: usage.totalBattles, month: usage.month, kind: usage.kind }
             : null;
+    const allBattleItems = data.battleItems === undefined ? battleItems : data.battleItems;
+    const allGymGames = data.gymGames === undefined ? gymGames : data.gymGames;
+    const pokemonUsage = meta.key === 'metaPokemon' && context.pokemon && usage?.byId?.[context.pokemon.id]
+        ? { format: usage.label, entry: usage.byId[context.pokemon.id] }
+        : null;
     const snapshot = renderSnapshot({
         meta: { ...meta, title, description }, language, appPath,
         pokemon: context.pokemon, team: context.team, sharedTeam: context.sharedTeam,
         presence, bestTeams, build, pokemons: allPokemons,
         smogon: meta.key === 'pokemon' && context.pokemon ? smogonSets[context.pokemon.id] || null : null,
+        dex: ['pokemon', 'moves', 'abilities', 'items'].includes(meta.key) ? allDex : null,
+        battleItems: meta.key === 'items' ? allBattleItems : null,
+        teams: meta.key === 'tournaments' ? allTeams : null,
+        gymGames: meta.key === 'gyms' ? allGymGames : null,
+        pokemonUsage,
         entity, guide, sitePage: sitePageContent(meta.key, language), usage: meta.key === 'meta' ? usage : null, notes, notFound: status === 404,
     });
     set(/<div id="root"><\/div>/i, `<div id="root">${snapshot}</div>`);

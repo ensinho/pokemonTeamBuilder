@@ -72,7 +72,7 @@ export const STATIC_PAGES = {
 
 /** The pages that are a tool you use (WebApplication JSON-LD, with the
  *  feature list in content/structuredCopy.js). */
-const TOOL_PAGES = new Set(['home', 'builder', 'damageCalculator', 'speedTiers', 'meta', 'pokedex', 'types']);
+const TOOL_PAGES = new Set(['home', 'builder', 'damageCalculator', 'speedTiers', 'meta', 'pokedex', 'types', 'bestTeams', 'tournaments', 'pokepuzzle', 'challenge', 'quiz', 'tierList', 'games']);
 
 /**
  * A page's link-preview picture, drawn by api/og.js (api/_lib/ogImage.js

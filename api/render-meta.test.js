@@ -326,4 +326,26 @@ describe('render-meta: existence, indexing and the content AI crawlers read', ()
         expect(footer).toContain('<a href="/pt/privacy">Privacidade</a>');
         expect(footer).toContain('<a href="/pt/about">Sobre</a>');
     });
+
+    it('links hub pages (/moves, /abilities, /items, /tournaments, /speed-tiers, /games) to their child pages and writes BST, level 50 Speed and abilities on Pokémon pages', () => {
+        const pkm = main(build('/pt/pokemon/charizard').html);
+        expect(pkm).toContain('Total: 534');
+        expect(pkm).toContain('<h2>Velocidade no nível 50</h2>');
+        expect(pkm).toContain('252 EVs (natureza +Speed): 167');
+        expect(pkm).toContain('Choice Scarf (252+): 250');
+        expect(pkm).toContain('<a href="/pt/abilities/blaze">Blaze</a>');
+
+        const metaPkm = main(build('/pt/meta/charizard').html);
+        expect(metaPkm).toContain('href="/pt/pokemon/charizard"');
+        expect(metaPkm).toContain('<a href="/pt/moves/heat-wave">Heat Wave</a> (90%)');
+        expect(metaPkm).toContain('<a href="/pt/items/charizardite-y">Charizardite Y</a> (61%)');
+
+        expect(main(build('/moves').html)).toContain('<a href="/moves/karate-chop">Karate Chop</a>');
+        expect(main(build('/abilities').html)).toContain('<a href="/abilities/blaze">Blaze</a>');
+        expect(main(build('/items').html)).toContain('<a href="/items/charizardite-y">Charizardite Y</a>');
+        expect(main(build('/tournaments').html)).toContain('href="/tournaments/team/w1"');
+        expect(main(build('/speed-tiers').html)).toContain('<a href="/pokemon/charizard">Charizard</a> — 167');
+        expect(main(build('/pt/games').html)).toContain('href="/pt/challenge"');
+        expect(main(build('/types/fire').html)).toContain('<h2>Resists</h2>');
+    });
 });

@@ -135,10 +135,10 @@ const main = async () => {
         if (team?.id) entries.push({ loc: `/tournaments/team/${team.id}`, changefreq: 'monthly', priority: '0.5' });
     }
 
-    // /moves/:name and /abilities/:name detail pages. There is no local index
-    // with the API name slugs (move-types.json keys are normalized), so ask
-    // PokéAPI for the lists directly; skip silently when offline — the script
-    // is failure-safe and the rest of the sitemap still gets written.
+    // /moves/:name and /abilities/:name detail pages. Abilities come from the
+    // baked ability-list.json; moves ask PokéAPI when online and keep the
+    // existing sitemap's move slugs when offline so an offline build never
+    // strips them out.
     const fetchApiNames = async (url) => {
         try {
             const res = await fetch(url);
@@ -149,10 +149,24 @@ const main = async () => {
             return [];
         }
     };
-    for (const name of (await fetchApiNames('https://pokeapi.co/api/v2/move?limit=1000')).filter(described(battleDex?.moves))) {
+    const existingSlugs = async (section) => {
+        try {
+            const prev = await fs.readFile(path.join(PUBLIC_DIR, 'sitemap.xml'), 'utf8');
+            const re = new RegExp(`<loc>${SITE_URL}/${section}/([^<]+)</loc>`, 'g');
+            return [...new Set([...prev.matchAll(re)].map((m) => m[1]))];
+        } catch {
+            return [];
+        }
+    };
+    const fetchedMoves = await fetchApiNames('https://pokeapi.co/api/v2/move?limit=1000');
+    const moveSlugs = fetchedMoves.length ? fetchedMoves : await existingSlugs('moves');
+    for (const name of moveSlugs.filter(described(battleDex?.moves))) {
         entries.push({ loc: `/moves/${name}`, changefreq: 'monthly', priority: '0.5' });
     }
-    for (const name of (await fetchApiNames('https://pokeapi.co/api/v2/ability?limit=500')).filter(described(seoDex?.abilities))) {
+    const abilityList = await readJson(DATA_DIR, 'ability-list.json');
+    const localAbilities = (abilityList?.abilities || []).map((a) => a?.n).filter(Boolean);
+    const abilitySlugs = localAbilities.length ? localAbilities : await fetchApiNames('https://pokeapi.co/api/v2/ability?limit=500');
+    for (const name of abilitySlugs.filter(described(seoDex?.abilities))) {
         entries.push({ loc: `/abilities/${name}`, changefreq: 'monthly', priority: '0.5' });
     }
     for (const guide of GUIDE_INDEX) {
