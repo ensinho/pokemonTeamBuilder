@@ -16,6 +16,8 @@ import { openWeekCard } from './openWeekCard';
 import { CloseIcon, PokeballIcon } from '../../icons';
 import { FramedAvatar } from '../../rewards/FramedAvatar';
 import { TrainerTitle } from '../../rewards/TrainerTitle';
+import { TrainerBadge } from '../../TrainerBadge';
+import { SpecialRoleBadge } from '../../SpecialRoleBadge';
 
 const BOARDS = ['daily', 'free'];
 const TEAM_SIZE = 6;
@@ -38,6 +40,8 @@ function useRowFace(entry) {
         frameId: stamped.frameId || null,
         titleId: cosmetics.titleId,
         level: cosmetics.level ?? stamped.level ?? null,
+        selectedBadgeId: cosmetics.selectedBadgeId || null,
+        specialBadge: cosmetics.specialBadge || null,
         pokemonId: own ? own.pokemonId : stamped.avatarPokemonId,
         isShiny: own ? own.isShiny : stamped.avatarIsShiny,
         trainerSprite: own ? own.trainerSprite : stamped.trainerSprite,
@@ -74,6 +78,8 @@ export function RankRow({ entry, place, onOpen }) {
                 <span className="flex min-w-0 flex-col gap-0.5">
                     <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
                         <span className="truncate">{entry.name}</span>
+                        {face.selectedBadgeId && <TrainerBadge badgeId={face.selectedBadgeId} size="xs" />}
+                        {face.specialBadge && <SpecialRoleBadge role={face.specialBadge} size="xs" />}
                         {entry.me && <span className="shrink-0 rounded-full bg-primary-soft px-1.5 text-2xs text-primary">{t('challenge.ranking.youTag')}</span>}
                     </span>
                     <span className="truncate text-2xs text-muted">
@@ -108,7 +114,10 @@ export function PodiumStep({ entry, place, onOpen }) {
                 aria-label={t('challenge.ranking.rowLabel', { place, name: entry.name, score: entry.score })}
             >
                 <RankAvatar face={face} name="" size={place === 1 ? 'md' : 'sm'} />
-                <span className="challenge-podium__name">{entry.name}</span>
+                <span className="challenge-podium__name inline-flex items-center justify-center gap-1">
+                    <span className="truncate">{entry.name}</span>
+                    {face.specialBadge && <SpecialRoleBadge role={face.specialBadge} size="xs" />}
+                </span>
                 <span className="challenge-podium__score">{entry.score}</span>
             </button>
             <span className="challenge-podium__block" aria-hidden="true">{place}</span>

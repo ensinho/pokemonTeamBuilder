@@ -102,6 +102,13 @@ async function main() {
         updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
 
+    const nextSpecialBadge = args.grant
+        ? 'admin'
+        : (nextClaims.devFriend === true ? 'dev_friend' : null);
+    await db.doc(`artifacts/${appId}/publicProfiles/${user.uid}`).set({
+        specialBadge: nextSpecialBadge,
+    }, { merge: true });
+
     console.log(JSON.stringify({
         ok: true,
         projectId,
@@ -110,6 +117,7 @@ async function main() {
         email: user.email || null,
         emailVerified: Boolean(user.emailVerified),
         admin: args.grant,
+        specialBadge: nextSpecialBadge,
         roleVersion,
         refreshTokensRevoked: Boolean(!args.grant && args.revokeTokens),
     }, null, 2));

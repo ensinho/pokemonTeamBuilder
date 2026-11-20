@@ -356,23 +356,26 @@ export const useAuthStore = create((set, get) => {
 
     const syncClaimsFromUser = async (user, { forceRefresh = false } = {}) => {
         if (!user || user.isAnonymous) {
-            set({ isAdmin: false, claimsVersion: null });
-            return { isAdmin: false, claimsVersion: null };
+            set({ isAdmin: false, specialBadge: null, claimsVersion: null });
+            return { isAdmin: false, specialBadge: null, claimsVersion: null };
         }
         try {
             const tokenResult = await user.getIdTokenResult(forceRefresh);
             // Guard against stale async completion after account switch or sign-out.
             if (leavingSession || auth.currentUser?.uid !== user.uid) {
-                return { isAdmin: false, claimsVersion: null };
+                return { isAdmin: false, specialBadge: null, claimsVersion: null };
             }
             const claims = tokenResult?.claims || {};
             const isAdminUser = Boolean(claims.admin === true && claims.email_verified === true);
+            const specialBadge = isAdminUser
+                ? 'admin'
+                : (claims.devFriend === true ? 'dev_friend' : null);
             const claimsVersion = typeof claims.roleVersion === 'number' ? claims.roleVersion : null;
-            set({ isAdmin: isAdminUser, claimsVersion });
-            return { isAdmin: isAdminUser, claimsVersion };
+            set({ isAdmin: isAdminUser, specialBadge, claimsVersion });
+            return { isAdmin: isAdminUser, specialBadge, claimsVersion };
         } catch (_) {
-            set({ isAdmin: false, claimsVersion: null });
-            return { isAdmin: false, claimsVersion: null };
+            set({ isAdmin: false, specialBadge: null, claimsVersion: null });
+            return { isAdmin: false, specialBadge: null, claimsVersion: null };
         }
     };
 
@@ -621,6 +624,7 @@ export const useAuthStore = create((set, get) => {
         // Never seeded from cache — a privileged flag must come from the signed
         // Firebase ID token's Custom Claims (`admin === true && email_verified === true`).
         isAdmin: false,
+        specialBadge: null,
         claimsVersion: null,
         displayName: '',
         // Showdown trainer-sprite id available as an avatar (see
@@ -663,7 +667,7 @@ export const useAuthStore = create((set, get) => {
                     if (leavingSession) return;
                     leavingSession = true;
                     clearAuthSnapshot();
-                    set({ isAdmin: false, claimsVersion: null, userId: null, userEmail: null });
+                    set({ isAdmin: false, specialBadge: null, claimsVersion: null, userId: null, userEmail: null });
                     runSessionCleanup();
                     navigateTo('/');
                     try { sessionStorage.setItem(LEFT_SESSION_KEY, kind); } catch (_) { /* ignore */ }
@@ -676,7 +680,7 @@ export const useAuthStore = create((set, get) => {
                     const isSameIdentity = activeHydratedUid === user.uid
                         && activeHydratedAnon === Boolean(user.isAnonymous);
 
-                    const { isAdmin: isAdminUser, claimsVersion } = await syncClaimsFromUser(user, { forceRefresh: false });
+                    const { isAdmin: isAdminUser, specialBadge, claimsVersion } = await syncClaimsFromUser(user, { forceRefresh: false });
                     if (leavingSession || auth.currentUser?.uid !== user.uid) return;
 
                     set({
@@ -684,6 +688,7 @@ export const useAuthStore = create((set, get) => {
                         isAnonymous: !!user.isAnonymous,
                         userEmail: user.email || null,
                         isAdmin: isAdminUser,
+                        specialBadge,
                         claimsVersion,
                     });
 
@@ -752,7 +757,7 @@ export const useAuthStore = create((set, get) => {
                     detachAuthMetaListener();
                     activeHydratedUid = null;
                     activeHydratedAnon = null;
-                    set({ isAdmin: false, claimsVersion: null });
+                    set({ isAdmin: false, specialBadge: null, claimsVersion: null });
                     // An account is leaving: the reload in leaveSession starts
                     // the guest from a clean page instead.
                     if (leavingSession) return;
@@ -1340,7 +1345,7 @@ export const useAuthStore = create((set, get) => {
             leavingSession = true;
             // Immediately drop privileged state in memory and synchronously
             // tear down all registered Firestore listeners before signOut().
-            set({ sessionTransition: { kind }, isAdmin: false, claimsVersion: null });
+            set({ sessionTransition: { kind }, isAdmin: false, specialBadge: null, claimsVersion: null });
             runSessionCleanup();
             const minimum = new Promise((resolve) => setTimeout(resolve, 900));
             try {

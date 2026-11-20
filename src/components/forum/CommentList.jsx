@@ -3,6 +3,7 @@ import { CircleMinus, CirclePlus } from 'lucide-react';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { AdminBadge } from '../AdminBadge';
+import { SpecialRoleBadge } from '../SpecialRoleBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../icons';
 import { Check, Flag as FlagIcon } from 'lucide-react';
@@ -63,6 +64,7 @@ const CommentNode = memo(function CommentNode({
                 @{comment.creatorName}
             </button>
             {comment.creatorBadgeId && <TrainerBadge badgeId={comment.creatorBadgeId} size="xs" />}
+            <SpecialRoleBadge uid={comment.createdBy} fallbackRole={comment.authorRole} size="xs" />
             {isOP && <span className="cmt__tag cmt__tag--op" title="Original Poster">OP</span>}
             {isAdminAuthor(comment) && <AdminBadge size="xs" />}
             {!isAdminAuthor(comment) && isSystemAuthor(comment) && (

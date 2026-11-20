@@ -5,6 +5,7 @@ import { MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
 import { originFromEvent } from '../utils/themeTransition';
 import { TrainerBadge } from './TrainerBadge';
 import { AdminBadge } from './AdminBadge';
+import { SpecialRoleBadge } from './SpecialRoleBadge';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -59,9 +60,10 @@ export function SidebarAccountMenu({
     onSignOut,
 }) {
     const { t, language, setLanguage } = useTranslation();
-    const { selectedBadgeId, isAdmin } = useAuthStore(useShallow((s) => ({
+    const { selectedBadgeId, isAdmin, specialBadge } = useAuthStore(useShallow((s) => ({
         selectedBadgeId: s.selectedBadgeId,
         isAdmin: s.isAdmin,
+        specialBadge: s.specialBadge,
     })));
     // Rewards (2026-10-17): the frame around the avatar, the title under the
     // name, the level, and only the themes this trainer has unlocked.
@@ -208,6 +210,7 @@ export function SidebarAccountMenu({
                         <p className="app-shell__account-name flex items-center gap-1.5" title={accountName}>
                             <span className="truncate">{accountName}</span>
                             {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
+                            {specialBadge && <SpecialRoleBadge role={specialBadge} size="xs" />}
                             {isAdmin && <AdminBadge size="xs" />}
                         </p>
                         <p className="app-shell__account-subline">{t('accountMenu.profileLabel')}</p>
@@ -234,6 +237,7 @@ export function SidebarAccountMenu({
                         <p className="app-shell__account-name flex items-center gap-1.5" title={accountName}>
                             <span className="truncate">{accountName}</span>
                             {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
+                            {specialBadge && <SpecialRoleBadge role={specialBadge} size="xs" />}
                             {isAdmin && <AdminBadge size="xs" />}
                         </p>
                         <TrainerTitle titleId={titleId} className="app-shell__account-subline" />
@@ -293,6 +297,7 @@ export function SidebarAccountMenu({
                                 <span className="account-quick__name">
                                     <span className="truncate">{accountName}</span>
                                     {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
+                                    {specialBadge && <SpecialRoleBadge role={specialBadge} size="xs" />}
                                 </span>
                                 <span className="account-quick__sub">{t('rewards.levelShort', { n: trainerLevel })} · {t('accountMenu.profileAndSettings')}</span>
                             </span>
@@ -323,6 +328,7 @@ export function SidebarAccountMenu({
                             <span className="account-menu__name">
                                 <span className="truncate">{accountName}</span>
                                 {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
+                                {specialBadge && <SpecialRoleBadge role={specialBadge} size="xs" />}
                             </span>
                             <span className="account-menu__sub" title={email || undefined}>
                                 {t('rewards.levelShort', { n: trainerLevel })}
