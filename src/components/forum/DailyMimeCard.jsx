@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, MessageCircle, Share2 } from 'lucide-react';
+import { Check, ChevronRight, MessageCircle, Share2 } from 'lucide-react';
 
 import '../../styles/plantao-phase3.css';
 import { typeColors } from '../../constants/types';
@@ -248,8 +248,14 @@ export function DailyMimeCard({ inDiary = false, compact = false, className = ''
         </div>
     );
 
+    const isCompactSolved = compact && state.solved;
+    const isInitialPrompt = !state.solved && !lastWrongName && state.clue === 1;
+
     const statusNode = (
-        <p className="daily-mime__status" aria-live="polite">
+        <p
+            className={`daily-mime__status ${isInitialPrompt ? 'daily-mime__status--prompt' : ''}`}
+            aria-live="polite"
+        >
             {state.solved ? <strong>{statusLine}</strong> : <span>{statusLine}</span>}
             {squares && (
                 <span
@@ -270,7 +276,7 @@ export function DailyMimeCard({ inDiary = false, compact = false, className = ''
 
     return (
         <article
-            className={`daily-mime ${inDiary ? 'is-in-diary' : ''} ${compact ? 'daily-mime--compact' : ''} ${className}`}
+            className={`daily-mime ${inDiary ? 'is-in-diary' : ''} ${compact ? 'daily-mime--compact' : ''} ${isCompactSolved ? 'is-solved-compact' : ''} ${className}`}
             style={{ '--mime-tone': typeColors[entry.type] || 'var(--mascot-brand)' }}
             aria-label={t('mime.eyebrow', { n: number })}
         >
@@ -299,7 +305,7 @@ export function DailyMimeCard({ inDiary = false, compact = false, className = ''
                     />
                 </span>
 
-                {stage.showRuler && (
+                {stage.showRuler && !isCompactSolved && (
                     <div className="daily-mime__ruler" aria-hidden="true">
                         <figure className="daily-mime__figure">
                             <span className="daily-mime__bar-wrap">
@@ -336,7 +342,7 @@ export function DailyMimeCard({ inDiary = false, compact = false, className = ''
                     </div>
                 )}
 
-                {stage.showRegion && (
+                {stage.showRegion && !isCompactSolved && (
                     <p className="daily-mime__place">
                         {t(`mime.regions.${entry.region}`)} · {t(`mime.habitats.${entry.habitat}`)}
                     </p>
@@ -371,81 +377,96 @@ export function DailyMimeCard({ inDiary = false, compact = false, className = ''
                     )}
                 </div>
 
-                <h3 className="daily-mime__title">{t('mime.title')}</h3>
+                {isCompactSolved ? (
+                    <div className="daily-mime__solved-body">
+                        <span className="daily-mime__guess is-right daily-mime__solved-answer">
+                            <Check aria-hidden="true" />
+                            <span>{entry.name}</span>
+                        </span>
+                        <div className="daily-mime__footer">
+                            {statusNode}
+                            {actionsNode}
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <h3 className="daily-mime__title">{t('mime.title')}</h3>
 
-                {compact ? (
-                    <div className="daily-mime__compact-clues">
-                        <div className="daily-mime__clue-pills" role="tablist" aria-label={t('games.hints')}>
-                            {clueList.map((item, idx) => {
-                                const open = state.solved || idx < state.clue;
-                                const isActive = idx === activeClueIdx;
+                        {compact ? (
+                            <div className="daily-mime__compact-clues">
+                                <div className="daily-mime__clue-pills" role="tablist" aria-label={t('games.hints')}>
+                                    {clueList.map((item, idx) => {
+                                        const open = state.solved || idx < state.clue;
+                                        const isActive = idx === activeClueIdx;
+                                        return (
+                                            <button
+                                                key={item.key}
+                                                type="button"
+                                                role="tab"
+                                                aria-selected={isActive}
+                                                disabled={!open}
+                                                className={`daily-mime__clue-pill ${open ? 'is-open' : ''} ${isActive ? 'is-active' : ''}`}
+                                                onClick={() => setSelectedClueIdx(idx)}
+                                            >
+                                                <span className="daily-mime__clue-pill-num" aria-hidden="true">{idx + 1}</span>
+                                                <span className="daily-mime__clue-pill-label">{item.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <p className="daily-mime__active-clue">
+                                    <strong className="daily-mime__clue-label">{activeClue.label}</strong>
+                                    <span className="daily-mime__clue-text">{activeClue.text}</span>
+                                </p>
+                            </div>
+                        ) : (
+                            <ol className="daily-mime__clues">
+                                {clueList.map((item, idx) => {
+                                    const open = state.solved || idx < state.clue;
+                                    return (
+                                        <li key={item.key} className={`daily-mime__clue ${open ? 'is-open' : ''}`}>
+                                            <span className="daily-mime__clue-num" aria-hidden="true">{idx + 1}</span>
+                                            <span className="daily-mime__clue-body">
+                                                <strong className="daily-mime__clue-label">{item.label}</strong>
+                                                <span className="daily-mime__clue-text">
+                                                    {open ? item.text : t('mime.lockedClue')}
+                                                </span>
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                        )}
+
+                        <div className="daily-mime__guesses" role="group" aria-label={t('mime.guessesAria')}>
+                            {candidates.map((cand) => {
+                                const isWrong = state.wrongIds.includes(cand.id);
+                                const isRight = state.solved && cand.id === entry.id;
                                 return (
                                     <button
-                                        key={item.key}
+                                        key={cand.id}
                                         type="button"
-                                        role="tab"
-                                        aria-selected={isActive}
-                                        disabled={!open}
-                                        className={`daily-mime__clue-pill ${open ? 'is-open' : ''} ${isActive ? 'is-active' : ''}`}
-                                        onClick={() => setSelectedClueIdx(idx)}
+                                        disabled={state.solved || isWrong}
+                                        className={`daily-mime__guess ${isWrong ? 'is-wrong' : ''} ${isRight ? 'is-right' : ''}`}
+                                        onClick={() => handleGuess(cand)}
                                     >
-                                        <span className="daily-mime__clue-pill-num" aria-hidden="true">{idx + 1}</span>
-                                        <span className="daily-mime__clue-pill-label">{item.label}</span>
+                                        {cand.name}
                                     </button>
                                 );
                             })}
                         </div>
-                        <p className="daily-mime__active-clue">
-                            <strong className="daily-mime__clue-label">{activeClue.label}</strong>
-                            <span className="daily-mime__clue-text">{activeClue.text}</span>
-                        </p>
-                    </div>
-                ) : (
-                    <ol className="daily-mime__clues">
-                        {clueList.map((item, idx) => {
-                            const open = state.solved || idx < state.clue;
-                            return (
-                                <li key={item.key} className={`daily-mime__clue ${open ? 'is-open' : ''}`}>
-                                    <span className="daily-mime__clue-num" aria-hidden="true">{idx + 1}</span>
-                                    <span className="daily-mime__clue-body">
-                                        <strong className="daily-mime__clue-label">{item.label}</strong>
-                                        <span className="daily-mime__clue-text">
-                                            {open ? item.text : t('mime.lockedClue')}
-                                        </span>
-                                    </span>
-                                </li>
-                            );
-                        })}
-                    </ol>
-                )}
 
-                <div className="daily-mime__guesses" role="group" aria-label={t('mime.guessesAria')}>
-                    {candidates.map((cand) => {
-                        const isWrong = state.wrongIds.includes(cand.id);
-                        const isRight = state.solved && cand.id === entry.id;
-                        return (
-                            <button
-                                key={cand.id}
-                                type="button"
-                                disabled={state.solved || isWrong}
-                                className={`daily-mime__guess ${isWrong ? 'is-wrong' : ''} ${isRight ? 'is-right' : ''}`}
-                                onClick={() => handleGuess(cand)}
-                            >
-                                {cand.name}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {compact ? (
-                    <div className="daily-mime__footer">
-                        {statusNode}
-                        {actionsNode}
-                    </div>
-                ) : (
-                    <>
-                        {statusNode}
-                        {actionsNode}
+                        {compact ? (
+                            <div className="daily-mime__footer">
+                                {statusNode}
+                                {actionsNode}
+                            </div>
+                        ) : (
+                            <>
+                                {statusNode}
+                                {actionsNode}
+                            </>
+                        )}
                     </>
                 )}
             </div>
