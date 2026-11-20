@@ -3958,6 +3958,8 @@ export default {
     admin: {
         accessUnavailable: 'Admin access unavailable.',
         ownerPanel: 'Owner panel',
+        badgeLabel: 'Admin',
+        badgeTooltip: 'Verified Admin access · Open dashboard',
         suggestionInbox: 'Suggestion inbox',
         subtitle: 'Live feedback, user identity, reply draft, and response tracking.',
         total: 'Total',

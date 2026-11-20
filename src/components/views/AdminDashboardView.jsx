@@ -25,6 +25,7 @@ import {
 } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useFeedbackPulseStore } from '../../store/useFeedbackPulseStore';
+import { registerSessionCleanup } from '../../utils/sessionRegistry';
 import {
     FEEDBACK_REACTIONS,
     FEEDBACK_REACTION_BY_ID,
@@ -229,7 +230,12 @@ export function AdminDashboardView({ db, auth, isAdmin, showToast }) {
     const [isMarkingResponded, setIsMarkingResponded] = useState(false);
 
     useEffect(() => {
-        if (!isAdmin) return undefined;
+        if (!isAdmin) {
+            setSuggestions([]);
+            setProfileMap({});
+            setSelectedId(null);
+            return undefined;
+        }
         // Allow headless UI verification scripts to seed mock items when no live admin auth is present.
         if (typeof window !== 'undefined' && Array.isArray(window.__PTB_ADMIN_PREVIEW_ITEMS__)) {
             setSuggestions(window.__PTB_ADMIN_PREVIEW_ITEMS__.map(normalizeSuggestion));
@@ -260,7 +266,17 @@ export function AdminDashboardView({ db, auth, isAdmin, showToast }) {
             }
         );
 
-        return () => unsubscribe();
+        const unregister = registerSessionCleanup(() => {
+            unsubscribe();
+            setSuggestions([]);
+            setProfileMap({});
+            setSelectedId(null);
+        });
+
+        return () => {
+            unregister();
+            unsubscribe();
+        };
     }, [db, isAdmin, t]);
 
     useEffect(() => {

@@ -14,7 +14,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn()
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['enzopo625@gmail.com'];
+        && request.auth.token.admin == true;
     }
 
     // Auth starts anonymous and upgrades via email link. Anything social
@@ -43,6 +43,14 @@ service cloud.firestore {
       match /users/{userId}/profile/{docId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isOwner(userId);
+      }
+
+      // Server-managed claim version signal for real-time cross-device Custom
+      // Claims refresh. Lives outside `users/{userId}/{document=**}` so no
+      // wildcard rule can ever grant client writes; only the Admin SDK writes.
+      match /authMeta/{userId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
       }
 
       // Public trainer directory. Exists so trainers can find each other to add
@@ -492,6 +500,7 @@ service cloud.firestore {
       match /public/data/forumTopics/{topicId} {
         allow read: if true;
         allow create: if isSignedIn()
+          && validAuthorRole()
           && (request.resource.data.createdBy == request.auth.uid || validDiaryTopic() || validWeeklyTopic());
         allow update: if isAdmin()
           || (isSignedIn() && resource.data.createdBy == request.auth.uid)
@@ -499,6 +508,11 @@ service cloud.firestore {
           || (isSignedIn() && touchesOnlyOwnTopicLike())
           || (isSignedIn() && touchesOnlyOwnReaction())
           || (isSignedIn() && touchesOnlyOwnReport());
+
+        function validAuthorRole() {
+          let role = request.resource.data.get('authorRole', null);
+          return role == null || (role == 'admin' && isAdmin());
+        }
 
         // The Torneio da semana (2026-11-06, utils/forumWeekly.js): the first
         // trainer to need the week's topic creates it — id is the ISO week,
@@ -562,6 +576,7 @@ service cloud.firestore {
           allow read: if true;
           allow create: if isSignedIn()
             && request.resource.data.createdBy == request.auth.uid
+            && validAuthorRole()
             && dayResultsOnlyInDiary();
           allow update: if isAdmin()
             || (isSignedIn() && resource.data.createdBy == request.auth.uid)

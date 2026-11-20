@@ -10,6 +10,7 @@ import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { PERSONAS, derivePersona, hasAnsweredProfile } from '../../utils/trainerProfile';
 import { Sprite } from '../Sprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { AdminBadge } from '../AdminBadge';
 import { TrainerTitle } from '../rewards/TrainerTitle';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useShallow } from 'zustand/react/shallow';
@@ -690,6 +691,7 @@ export function ProfileView({
     })));
     const fullDays = useRoundStore((s) => s.round?.fullDays || 0);
     const storedProfile = useAuthStore((s) => s.trainerProfile);
+    const isAdmin = useAuthStore((s) => s.isAdmin);
     // Only what can be shown: the earned badges, the equipped one first. The
     // whole catalogue — locked ones, progress, how to earn them — lives in
     // Journeys → Badges, one tap away (it was here too, as a second wall of
@@ -837,6 +839,7 @@ export function ProfileView({
                         <Link to="/journeys?tab=rewards" className="badge badge--primary badge--figure" title={t('rewards.customize')}>
                             {t('rewards.levelShort', { n: trainerLevel })}
                         </Link>
+                        {isAdmin && <AdminBadge size="sm" asLink />}
                         <TrainerTitle titleId={equipped.title} />
                         <span className="profile-hero__uid">{t('profile.dossier.uidPrefix')} {shortTrainerCode}</span>
                         {/* A guest's name already reads "Convidado": the pill

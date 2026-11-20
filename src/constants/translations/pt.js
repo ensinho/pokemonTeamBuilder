@@ -3922,6 +3922,8 @@ export default {
     admin: {
         accessUnavailable: 'Acesso de administrador não disponível.',
         ownerPanel: 'Painel do proprietário',
+        badgeLabel: 'Admin',
+        badgeTooltip: 'Acesso Admin verificado · Abrir painel',
         suggestionInbox: 'Caixa de entrada de sugestões',
         subtitle: 'Feedback em tempo real, identidade do usuário, rascunho de resposta e rastreamento de status.',
         total: 'Total',

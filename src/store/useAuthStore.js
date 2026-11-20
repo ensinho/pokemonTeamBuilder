@@ -3,7 +3,7 @@ import { track } from '../services/analytics';
 import { auth, db } from '../services/firebase';
 import {
     signInAnonymously,
-    onAuthStateChanged,
+    onIdTokenChanged,
     signInWithCustomToken,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -15,8 +15,8 @@ import {
     sendPasswordResetEmail,
     deleteUser,
 } from 'firebase/auth';
-import { doc, getDoc, runTransaction, setDoc } from 'firebase/firestore';
-import { appId, ADMIN_EMAILS } from '../constants/firebase';
+import { doc, getDoc, onSnapshot, runTransaction, setDoc } from 'firebase/firestore';
+import { appId } from '../constants/firebase';
 import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useThemeStore } from './useThemeStore';
 import { toast } from './useToastStore';
@@ -33,6 +33,12 @@ import { isCrawler } from '../utils/crawler';
 import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
 import { wipeBrowserUserStorage, LEFT_SESSION_KEY } from '../utils/sessionWipe';
+import {
+    registerSessionCleanup,
+    runSessionCleanup,
+    broadcastSessionEnd,
+    subscribeSessionEnd,
+} from '../utils/sessionRegistry';
 import { useMascotStore } from './useMascotStore';
 import { useRoundStore, setRoundToAccount } from './useRoundStore';
 import { accountGamesRecord, applyAccountGames, setGamesToAccount } from '../hooks/useGamesToday';
@@ -307,6 +313,12 @@ const writeTrainerProfile = (profile) => {
 
 export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
+    let authMetaUnsubscribe = null;
+    let unregisterAuthMetaCleanup = null;
+    let detachCrossTabListener = null;
+    let lastForcedRoleVersion = null;
+    let activeHydratedUid = null;
+    let activeHydratedAnon = null;
     let syncNudgeTimer = null;
     let detachActiveDayListener = null;
     let profileHydratedFromFirestore = false;
@@ -330,6 +342,66 @@ export const useAuthStore = create((set, get) => {
     // syncing. It now rides on the first team save (nudgeSyncAfterSave), as a
     // toast — the moment losing the account starts to cost something
     // (2026-10-06). This only clears a timer a previous build may have set.
+    const detachAuthMetaListener = () => {
+        if (unregisterAuthMetaCleanup) {
+            unregisterAuthMetaCleanup();
+            unregisterAuthMetaCleanup = null;
+        }
+        if (authMetaUnsubscribe) {
+            try { authMetaUnsubscribe(); } catch (_) { /* ignore */ }
+            authMetaUnsubscribe = null;
+        }
+        lastForcedRoleVersion = null;
+    };
+
+    const syncClaimsFromUser = async (user, { forceRefresh = false } = {}) => {
+        if (!user || user.isAnonymous) {
+            set({ isAdmin: false, claimsVersion: null });
+            return { isAdmin: false, claimsVersion: null };
+        }
+        try {
+            const tokenResult = await user.getIdTokenResult(forceRefresh);
+            // Guard against stale async completion after account switch or sign-out.
+            if (leavingSession || auth.currentUser?.uid !== user.uid) {
+                return { isAdmin: false, claimsVersion: null };
+            }
+            const claims = tokenResult?.claims || {};
+            const isAdminUser = Boolean(claims.admin === true && claims.email_verified === true);
+            const claimsVersion = typeof claims.roleVersion === 'number' ? claims.roleVersion : null;
+            set({ isAdmin: isAdminUser, claimsVersion });
+            return { isAdmin: isAdminUser, claimsVersion };
+        } catch (_) {
+            set({ isAdmin: false, claimsVersion: null });
+            return { isAdmin: false, claimsVersion: null };
+        }
+    };
+
+    const attachAuthMetaListener = (user) => {
+        detachAuthMetaListener();
+        if (!user || user.isAnonymous) return;
+
+        const metaRef = doc(db, `artifacts/${appId}/authMeta`, user.uid);
+        authMetaUnsubscribe = onSnapshot(
+            metaRef,
+            (snap) => {
+                if (leavingSession || auth.currentUser?.uid !== user.uid) return;
+                if (!snap.exists()) return;
+                const remoteVersion = snap.data()?.roleVersion;
+                if (typeof remoteVersion !== 'number') return;
+                const currentVersion = get().claimsVersion;
+                if (remoteVersion !== currentVersion && lastForcedRoleVersion !== remoteVersion) {
+                    lastForcedRoleVersion = remoteVersion;
+                    void syncClaimsFromUser(user, { forceRefresh: true });
+                }
+            },
+            () => {
+                // Permission denied or offline: fail closed if token was revoked;
+                // normal offline reads keep current verified claims until reconnect.
+            },
+        );
+        unregisterAuthMetaCleanup = registerSessionCleanup(detachAuthMetaListener);
+    };
+
     const startSyncNudgeTimer = () => {
         if (syncNudgeTimer) clearTimeout(syncNudgeTimer);
         syncNudgeTimer = null;
@@ -546,8 +618,10 @@ export const useAuthStore = create((set, get) => {
         // Splash-only: anything that reads Firestore still waits on
         // isAuthReady, which this does not touch.
         isNewVisitor: false,
-        // Never seeded from cache — a privileged flag must come from the token.
+        // Never seeded from cache — a privileged flag must come from the signed
+        // Firebase ID token's Custom Claims (`admin === true && email_verified === true`).
         isAdmin: false,
+        claimsVersion: null,
         displayName: '',
         // Showdown trainer-sprite id available as an avatar (see
         // src/hooks/useTrainerSprites.js).
@@ -584,21 +658,49 @@ export const useAuthStore = create((set, get) => {
                 }
             } catch (_) { /* storage blocked: no hand-off, no toast */ }
 
-            authUnsubscribe = onAuthStateChanged(auth, async (user) => {
-                profileHydratedFromFirestore = false;
+            if (!detachCrossTabListener) {
+                detachCrossTabListener = subscribeSessionEnd(({ kind }) => {
+                    if (leavingSession) return;
+                    leavingSession = true;
+                    clearAuthSnapshot();
+                    set({ isAdmin: false, claimsVersion: null, userId: null, userEmail: null });
+                    runSessionCleanup();
+                    navigateTo('/');
+                    try { sessionStorage.setItem(LEFT_SESSION_KEY, kind); } catch (_) { /* ignore */ }
+                    window.location.reload();
+                });
+            }
+
+            authUnsubscribe = onIdTokenChanged(auth, async (user) => {
                 if (user) {
-                    const normalizedEmail = (user.email || '').trim().toLowerCase();
-                    const isAdminUser = Boolean(normalizedEmail && ADMIN_EMAILS.includes(normalizedEmail));
+                    const isSameIdentity = activeHydratedUid === user.uid
+                        && activeHydratedAnon === Boolean(user.isAnonymous);
+
+                    const { isAdmin: isAdminUser, claimsVersion } = await syncClaimsFromUser(user, { forceRefresh: false });
+                    if (leavingSession || auth.currentUser?.uid !== user.uid) return;
 
                     set({
                         userId: user.uid,
                         isAnonymous: !!user.isAnonymous,
                         userEmail: user.email || null,
                         isAdmin: isAdminUser,
-                        // DO NOT set isAuthReady: true yet. We will set it in the finally block after firestore hydration.
+                        claimsVersion,
                     });
 
-                    // Start sync nudge nudge if anonymous
+                    // Token refresh for the same signed-in identity only needs
+                    // claims reconciliation — skip redundant Firestore profile hydration.
+                    if (isSameIdentity && get().isAuthReconciled) {
+                        return;
+                    }
+
+                    activeHydratedUid = user.uid;
+                    activeHydratedAnon = Boolean(user.isAnonymous);
+                    profileHydratedFromFirestore = false;
+
+                    // Real-time cross-device claim sync for authenticated accounts.
+                    attachAuthMetaListener(user);
+
+                    // Start sync nudge if anonymous
                     if (user.isAnonymous) {
                         startSyncNudgeTimer();
                     } else {
@@ -619,7 +721,12 @@ export const useAuthStore = create((set, get) => {
                         get().bumpActiveDay();
                         if (!detachActiveDayListener && typeof document !== 'undefined') {
                             const onVisible = () => {
-                                if (document.visibilityState === 'visible') get().bumpActiveDay();
+                                if (document.visibilityState === 'visible') {
+                                    get().bumpActiveDay();
+                                    if (auth.currentUser && !auth.currentUser.isAnonymous) {
+                                        void syncClaimsFromUser(auth.currentUser, { forceRefresh: false });
+                                    }
+                                }
                             };
                             document.addEventListener('visibilitychange', onVisible);
                             detachActiveDayListener = () => document.removeEventListener('visibilitychange', onVisible);
@@ -642,6 +749,10 @@ export const useAuthStore = create((set, get) => {
                         });
                     }
                 } else {
+                    detachAuthMetaListener();
+                    activeHydratedUid = null;
+                    activeHydratedAnon = null;
+                    set({ isAdmin: false, claimsVersion: null });
                     // An account is leaving: the reload in leaveSession starts
                     // the guest from a clean page instead.
                     if (leavingSession) return;
@@ -1071,8 +1182,8 @@ export const useAuthStore = create((set, get) => {
                 set({
                     isAnonymous: false,
                     userEmail: result.user.email || email,
-                    isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
                 });
+                await syncClaimsFromUser(result.user, { forceRefresh: false });
 
                 toast.success(t('toast.accountCreated'), {
                     description: t('toast.accountCreatedDesc', { email: result.user.email || email }),
@@ -1094,8 +1205,8 @@ export const useAuthStore = create((set, get) => {
                 set({
                     isAnonymous: false,
                     userEmail: result.user.email || email,
-                    isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
                 });
+                await syncClaimsFromUser(result.user, { forceRefresh: false });
                 toast.success(t('toast.welcomeBack', { email: result.user.email || email }));
             }
             set({ showSyncPrompt: false });
@@ -1121,8 +1232,8 @@ export const useAuthStore = create((set, get) => {
             set({
                 isAnonymous: false,
                 userEmail: result.user.email || email,
-                isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
             });
+            await syncClaimsFromUser(result.user, { forceRefresh: false });
             toast.success(t('toast.signedIn', { email: result.user.email || email }));
             set({ showSyncPrompt: false });
         },
@@ -1168,9 +1279,9 @@ export const useAuthStore = create((set, get) => {
             set({
                 isAnonymous: false,
                 userEmail: email,
-                isAdmin: Boolean(email && ADMIN_EMAILS.includes(email.trim().toLowerCase())),
                 showSyncPrompt: false,
             });
+            await syncClaimsFromUser(user, { forceRefresh: false });
             const googleName = String(user?.displayName || '').trim().slice(0, 24);
             if (googleName && !get().displayName) {
                 set({ displayName: googleName });
@@ -1227,7 +1338,10 @@ export const useAuthStore = create((set, get) => {
         // page (LEFT_SESSION_KEY, read in initAuth).
         leaveSession: async (kind, work) => {
             leavingSession = true;
-            set({ sessionTransition: { kind } });
+            // Immediately drop privileged state in memory and synchronously
+            // tear down all registered Firestore listeners before signOut().
+            set({ sessionTransition: { kind }, isAdmin: false, claimsVersion: null });
+            runSessionCleanup();
             const minimum = new Promise((resolve) => setTimeout(resolve, 900));
             try {
                 await Promise.all([work?.(), minimum]);
@@ -1236,6 +1350,7 @@ export const useAuthStore = create((set, get) => {
                 set({ sessionTransition: null });
                 throw e;
             }
+            broadcastSessionEnd(kind);
             // Home first, so a view with a beforeunload guard (a quiz mid-run)
             // has unmounted before the reload asks it.
             navigateTo('/');

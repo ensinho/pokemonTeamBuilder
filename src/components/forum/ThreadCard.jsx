@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { AdminBadge } from '../AdminBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { Pin } from 'lucide-react';
 import { PokeballIcon, MessageIcon, HeartIcon, ShareIcon, ReplyIcon, SparklesIcon } from '../icons';
@@ -93,6 +94,7 @@ export const ThreadCard = memo(function ThreadCard({
                     @{topic.creatorName}
                 </button>
                 {topic.creatorBadgeId && <TrainerBadge badgeId={topic.creatorBadgeId} size="xs" />}
+                {topic.authorRole === 'admin' && <AdminBadge size="xs" />}
                 <span className="post-row__dot" aria-hidden="true">·</span>
                 <time className="post-row__time" dateTime={when}>{formatForumTime(when, language)}</time>
 
