@@ -197,6 +197,7 @@ const TrainerProfileSection = () => {
 
 // The faces offered beside the playground: one tap shows each mood on the big one.
 const MASCOT_MOODS = ['feliz', 'animado', 'travesso', 'apaixonado', 'pensando', 'surpreso', 'determinado', 'sonolento'];
+const MASCOT_STATES = ['idle', 'thinking', 'working', 'done'];
 
 /**
  * The mascot's room (2026-11-06): the full playground — pet it, hold it for a
@@ -214,6 +215,8 @@ const MascotSection = () => {
     // "The profile's" is offered once there is a profile to follow.
     const costumes = MASCOT_COSTUME_CHOICES.filter((k) => k !== 'persona' || (personaId && hasAnsweredProfile(trainerProfile)));
     const [mood, setMood] = useState('feliz');
+    const [botState, setBotState] = useState('idle');
+    const [stateKey, setStateKey] = useState(0);
     const tones = ['brand', ...(personaTone ? ['persona'] : []), ...MASCOT_TONES, ...(prefs.shinyFound ? ['shiny'] : [])];
     const toneLabel = (k) => (k === 'brand' ? t('profile.mascotToneBrand')
         : k === 'persona' ? t('profile.mascotTonePersona', { type: t(`types.${personaTone}`, { defaultValue: personaTone }) })
@@ -224,7 +227,16 @@ const MascotSection = () => {
         <Section title={t('profile.sectionMascot')} description={t('profile.sectionMascotDesc')}>
             <div className="profile-mascot">
                 <div className="mascot-stage profile-mascot__stage">
-                    <Mascot size="fill" mood={mood} playground stage loop="breathe" label={t('mascot.label')} />
+                    <Mascot
+                        size="fill"
+                        mood={mood}
+                        state={prefs.form === 'bot' ? botState : undefined}
+                        stateKey={stateKey}
+                        playground
+                        stage
+                        loop="breathe"
+                        label={t('mascot.label')}
+                    />
                 </div>
                 <div className="profile-mascot__side">
                     <div className="segmented segmented--block" role="group" aria-label={t('profile.mascotForm')}>
@@ -243,6 +255,24 @@ const MascotSection = () => {
                             </button>
                         ))}
                     </div>
+                    {prefs.form === 'bot' && (
+                        <div className="segmented segmented--block segmented--quiet profile-mascot__states" role="group" aria-label={t('profile.mascotStates')}>
+                            {MASCOT_STATES.map((st) => (
+                                <button
+                                    key={st}
+                                    type="button"
+                                    className="segmented__item"
+                                    aria-pressed={botState === st}
+                                    onClick={() => {
+                                        setBotState(st);
+                                        setStateKey((k) => k + 1);
+                                    }}
+                                >
+                                    {t(`mascot.states.${st}`)}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="profile-row profile-row--stacked">

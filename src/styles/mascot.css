@@ -13,20 +13,20 @@
     position: relative;
     display: inline-block;
     flex-shrink: 0;
-    width: 3rem;
-    height: 3rem;
+    width: 3.3rem;
+    height: 3.3rem;
     line-height: 0;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-.mascot--xs { width: 1.5rem; height: 1.5rem; }
-.mascot--sm { width: 2.25rem; height: 2.25rem; }
-.mascot--md { width: 3rem; height: 3rem; }
-.mascot--lg { width: 4rem; height: 4rem; }
-.mascot--xl { width: 7.5rem; height: 7.5rem; }
-.mascot--hero { width: 11rem; height: 11rem; }
+.mascot--xs { width: 1.65rem; height: 1.65rem; }
+.mascot--sm { width: 2.5rem; height: 2.5rem; }
+.mascot--md { width: 3.3rem; height: 3.3rem; }
+.mascot--lg { width: 4.4rem; height: 4.4rem; }
+.mascot--xl { width: 8.25rem; height: 8.25rem; }
+.mascot--hero { width: 12.1rem; height: 12.1rem; }
 .mascot--fill { width: 100%; height: auto; max-width: 100%; aspect-ratio: 1; }
 
 .mascot__svg {
@@ -92,6 +92,72 @@
 .mascot--bot .bs9 { fill: color-mix(in srgb, var(--bot-face) 80%, var(--bot-rim)); }
 .mascot--bot .bs10 { fill: color-mix(in srgb, var(--bot-face) 100%, var(--bot-rim)); }
 .mascot--bot .bot-shadow { fill: var(--m-shadow); }
+
+/* 3D ribbon orbits for `working` (1 hoop) and `done` (3-hoop celebration cage).
+   100% tokenized so front/back depth and hoop accents hold across all 10 themes. */
+.mascot--bot .bot-ribbon {
+    fill: var(--ribbon-fill, var(--bot-rim));
+}
+
+/* Working state: single hoop with bright inner rim fading to deep outer back. */
+.mascot--bot .bot-ribbons.is-working .bot-ribbon--l0 {
+    --ribbon-fill: color-mix(in srgb, var(--bot-rim) 58%, var(--color-fg));
+}
+.mascot--bot .bot-ribbons.is-working .bot-ribbon--l1 {
+    --ribbon-fill: var(--bot-rim);
+}
+.mascot--bot .bot-ribbons.is-working .bot-ribbon--l2 {
+    --ribbon-fill: color-mix(in srgb, var(--bot-rim) 48%, var(--bot-back));
+}
+
+/* Done state: 3-hoop celebration cage — Rim (h0), Shiny Gold (h1), Live Pink (h2). */
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h0.bot-ribbon--l0 {
+    --ribbon-fill: color-mix(in srgb, var(--bot-rim) 62%, var(--mascot-white));
+}
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h0.bot-ribbon--l1 {
+    --ribbon-fill: var(--bot-rim);
+}
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h0.bot-ribbon--l2 {
+    --ribbon-fill: color-mix(in srgb, var(--bot-rim) 55%, var(--bot-back));
+}
+
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h1.bot-ribbon--l0 {
+    --ribbon-fill: color-mix(in srgb, var(--brand-gold) 78%, var(--mascot-white));
+}
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h1.bot-ribbon--l1 {
+    --ribbon-fill: var(--brand-gold);
+}
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h1.bot-ribbon--l2 {
+    --ribbon-fill: color-mix(in srgb, var(--brand-gold) 62%, var(--bot-rim));
+}
+
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h2.bot-ribbon--l0 {
+    --ribbon-fill: color-mix(in srgb, var(--brand-live) 72%, var(--mascot-white));
+}
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h2.bot-ribbon--l1 {
+    --ribbon-fill: var(--brand-live);
+}
+.mascot--bot .bot-ribbons.is-done .bot-ribbon--h2.bot-ribbon--l2 {
+    --ribbon-fill: color-mix(in srgb, var(--brand-live) 60%, var(--bot-rim));
+}
+
+/* Back segments: deeper & muted so the 3D front-vs-back wrap reads immediately. */
+.mascot--bot .bot-ribbon.is-back,
+.mascot--bot .bot-ribbons--back .bot-ribbon {
+    fill: color-mix(in srgb, var(--ribbon-fill, var(--bot-rim)) 78%, var(--bot-back));
+    opacity: 0.78;
+}
+
+/* Celebratory glow on front done ribbons. */
+.mascot--bot .bot-ribbons--front.is-done {
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--bot-rim) 45%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mascot--bot .bot-ribbons {
+        display: none;
+    }
+}
 
 .mascot.is-interactive { cursor: pointer; touch-action: manipulation; }
 .mascot.is-playground { cursor: grab; touch-action: none; }

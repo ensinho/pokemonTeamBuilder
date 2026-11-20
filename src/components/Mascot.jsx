@@ -52,7 +52,7 @@ const COVER_POSE = {
 };
 
 export function Mascot({
-    size = 'md', mood, pose, hat, extra, tone: toneProp, framing, loop, play, playKey, cheer = false,
+    size = 'md', mood, pose, state, stateKey, hat, extra, tone: toneProp, framing, loop, play, playKey, cheer = false,
     interactive = false, stage = false, playground = false, coverable = false, seasonal, label, className = '', idleMs, bot,
 }) {
     const engine = useMascotEngine();
@@ -69,15 +69,16 @@ export function Mascot({
     const [bubble, setBubble] = useState(null);
 
     const px = MASCOT_SIZES[size] ?? (size === 'fill' ? 240 : 48);
-    const view = VIEWS[framing] || (playground ? VIEWS.wide : px <= 64 ? VIEWS.head : VIEWS.body);
+    const view = VIEWS[framing] || (playground ? VIEWS.wide : px <= 70 ? VIEWS.head : VIEWS.body);
     // `tone="brand"` forces the brand's violet (a friend's ghost that has no colour of its own)
     const tone = toneProp === 'brand' ? null : (toneProp ?? toneOf(prefs, trainerProfile));
     const playName = play || (cheer ? 'hop' : null);
-    const live = interactive || stage || playground || (isBot && Boolean(playName || coverable));
+    const hasActiveState = Boolean(state && state !== 'idle');
+    const live = interactive || stage || playground || (isBot && Boolean(playName || coverable || hasActiveState));
     const bodyReady = !isBot || Boolean(botMod);
     const uid = `${id.replace(/[^a-zA-Z0-9]/g, '')}-`;
-    const motionRef = useRef({ mood, pose });
-    motionRef.current = { mood, pose };
+    const motionRef = useRef({ mood, pose, state, stateKey });
+    motionRef.current = { mood, pose, state, stateKey };
     const extraKey = extra ? JSON.stringify(extra) : '';
 
     const base = useMemo(() => {
@@ -102,7 +103,7 @@ export function Mascot({
         if (stageRef.current) { stageRef.current.poke(); stageRef.current.renderStill(); }
         else if (botMod) svg.innerHTML = botMod.botStill(base, { uid, px, view });
         else svg.innerHTML = engine.mascotInner(base);
-    }, [engine, botMod, bodyReady, base, px, uid, view]);
+    }, [engine, botMod, bodyReady, base, px, uid, view, state, stateKey]);
 
     // interactive: one controller while mounted
     useEffect(() => {
@@ -112,7 +113,9 @@ export function Mascot({
         const ctl = new Stage({
             wrapper: wrapRef.current, svg: svgRef.current, view, playground,
             getMotion: botMod ? () => botMod.botMotion(motionRef.current.mood, motionRef.current.pose) : undefined,
-            fps: px <= 64 ? 30 : 60,
+            getState: botMod ? () => (botMod.botState ? botMod.botState(motionRef.current.mood, motionRef.current.pose, motionRef.current.state) : (motionRef.current.state || 'idle')) : undefined,
+            getStateKey: botMod ? () => motionRef.current.stateKey : undefined,
+            fps: px <= 70 ? 30 : 60,
             idleMs: idleMs ?? (engine.isNight() ? 12000 : 25000),
             getBase: () => baseRef.current || {},
             onShiny: () => useMascotStore.getState().foundShiny(),
@@ -162,6 +165,7 @@ export function Mascot({
         <span
             ref={wrapRef}
             className={`mascot ${sizeClass}${loopClass}${live ? ' is-interactive' : ''}${playground ? ' is-playground' : ''}${botMod ? ' mascot--bot' : ''} ${className}`}
+            data-state={state || undefined}
             {...a11y}
             tabIndex={playground ? 0 : undefined}
         >
@@ -174,10 +178,10 @@ export function Mascot({
 }
 
 /** The mascot saying something: the mascot, then a speech bubble. */
-export function MascotTip({ children, size = 'md', cheer = false, mood, pose, play, playKey, className = '' }) {
+export function MascotTip({ children, size = 'md', cheer = false, mood, pose, state, stateKey, play, playKey, className = '' }) {
     return (
         <div className={`mascot-tip mascot-tip--${size} ${className}`}>
-            <Mascot size={size} cheer={cheer} mood={mood} pose={pose} play={play} playKey={playKey} interactive stage />
+            <Mascot size={size} cheer={cheer} mood={mood} pose={pose} state={state} stateKey={stateKey} play={play} playKey={playKey} interactive stage />
             <div className="mascot-tip__bubble">{children}</div>
         </div>
     );

@@ -202,6 +202,12 @@ export default {
             determinado: 'Determined',
             sonolento: 'Sleepy',
         },
+        states: {
+            idle: 'Idle',
+            thinking: 'Thinking',
+            working: 'Working',
+            done: 'Done',
+        },
     },
     supportNudge: {
         title: 'Enjoyed that one?',
@@ -1894,6 +1900,7 @@ export default {
         mascotTryBot: 'Try it: it follows your pointer around the page. Click, double-click, hold for a Shadow Ball, rub the top of its head, drag it (it leans into it), or tap the sparks three times.',
         mascotTry: 'Try it: click, double-click, hold for a Shadow Ball, rub the top of its head, drag it, or tap the sparks three times.',
         mascotMoods: 'Mascot moods',
+        mascotStates: 'State',
         mascotTone: 'Mascot colour',
         mascotToneBrand: 'Icon violet',
         mascotTonePersona: 'Your persona’s ({{type}})',

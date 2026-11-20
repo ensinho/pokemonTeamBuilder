@@ -19,9 +19,9 @@
 import { MascotStage } from './stage.js';
 import { addJob } from './ticker.js';
 import { clamp } from '../../utils/mascot/rig.js';
-import { botInner, botDefs, botMotion } from '../../utils/mascot/bot/frame.js';
+import { botInner, botDefs, botMotion, botState } from '../../utils/mascot/bot/frame.js';
 import { RIG_SCALE } from '../../utils/mascot/bot/definition.js';
-import { createAnimator } from '../../vendor/open-bot-avatar/animator.js';
+import { createBotAnimator } from '../../utils/mascot/bot/state.js';
 import { pointerGaze } from '../../vendor/open-bot-avatar/follow.js';
 
 const now = () => performance.now();
@@ -33,11 +33,13 @@ let seq = 0;
 export class BotStage extends MascotStage {
     constructor(options) {
         super(options);
-        const { getMotion, followPointer = true, fps = 60 } = options;
+        const { getMotion, getState, getStateKey, followPointer = true, fps = 60 } = options;
         this.frameMs = 1000 / fps - 1;
         this.getMotion = getMotion || (() => 'idle');
+        this.getState = getState || null;
+        this.getStateKey = getStateKey || null;
         this.uid = `mb${(seq += 1)}-`;
-        this.animator = createAnimator();
+        this.animator = createBotAnimator();
         this.t0 = now();
         this.client = null;
         this.svg.innerHTML = `<defs>${botDefs(this.uid)}</defs><g class="bot-frame"></g>`;
@@ -100,6 +102,15 @@ export class BotStage extends MascotStage {
         }
     }
 
+    state() {
+        switch (this.mode) {
+            case 'drag': case 'pet': case 'sleep': case 'yawn': case 'tired': case 'charge': case 'angry': case 'hidden':
+                return 'idle';
+            default:
+                return this.getState ? this.getState() : undefined;
+        }
+    }
+
     target(t) {
         if (this.mode === 'sleep' || this.mode === 'yawn' || this.mode === 'hidden') return null;
         const p = this.client;
@@ -113,11 +124,24 @@ export class BotStage extends MascotStage {
         // ~60 fps is all the motion needs (30 for a small one): a 120/144 Hz screen would paint twice the markup for nothing
         if (frameT != null && t - (this.lastDraw || 0) < this.frameMs) return;
         this.lastDraw = t;
-        const step = this.animator.step({ now: t, motion: this.motion(), target: this.target(t), hold: this.mode === 'drag', reducedMotion: this.reduced });
+        const motion = this.motion();
+        const state = this.state();
+        const stateKey = this.getStateKey ? this.getStateKey() : undefined;
+        const step = this.animator.step({
+            now: t,
+            state,
+            motion,
+            stateKey,
+            target: this.target(t),
+            hold: this.mode === 'drag',
+            reducedMotion: this.reduced,
+        });
         const lean = this.mode === 'drag' ? { yaw: clamp(this.pos.vx * 0.03, -0.7, 0.7), pitch: clamp(-this.pos.vy * 0.015, -0.35, 0.35) } : undefined;
         this.host.innerHTML = botInner(pose, {
             time: (t - this.t0) / 1000,
-            motion: this.motion(),
+            state,
+            stateAge: step.stateAge,
+            motion,
             gaze: step.gaze,
             motionBlend: step.motionBlend,
             view: lean,
@@ -128,4 +152,4 @@ export class BotStage extends MascotStage {
     }
 }
 
-export { botMotion };
+export { botMotion, botState };

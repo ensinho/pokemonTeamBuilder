@@ -18,7 +18,7 @@ export function QuizDuelBanner({ duel, found = null, t }) {
     const gens = duel.generations.map((key) => key.replace('generation-', '').toUpperCase()).join(' · ');
     return (
         <div className={`quiz-duel ${passed ? 'is-passed' : ''}`} role="status" aria-live="polite">
-            <Mascot size="sm" mood={passed ? 'radiante' : 'desafiador'} play={passed ? 'celebrate' : undefined} playKey={passed ? 1 : 0} />
+            <Mascot size="sm" mood={passed ? 'radiante' : 'desafiador'} state={passed ? 'done' : undefined} play={passed ? 'celebrate' : undefined} playKey={passed ? 1 : 0} />
             <div className="quiz-duel__text">
                 <span className="quiz-duel__title">{t(passed ? 'quiz.duel.passed' : 'quiz.duel.title')}</span>
                 <span className="quiz-duel__sub">{t('quiz.duel.sub', { found: duel.found, total: duel.total, gens })}</span>

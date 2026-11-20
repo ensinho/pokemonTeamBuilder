@@ -17,7 +17,7 @@ import { gameBeat } from '../utils/mascot/assistant';
  *
  * Decorative: the game's copy says what happened; he is `aria-hidden`.
  */
-export function MascotCompanion({ beat: own, listen = false, rest = 'feliz', restPose, size = 'md', framing, stage = true, className = '' }) {
+export function MascotCompanion({ beat: own, listen = false, rest = 'feliz', restPose, state, size = 'md', framing, stage = true, className = '' }) {
     const appBeat = useMascotStore((s) => (listen ? s.beat : null));
     const mountedAt = useRef(useMascotStore.getState().beat?.id ?? 0);
     const heard = useMemo(() => {
@@ -38,6 +38,7 @@ export function MascotCompanion({ beat: own, listen = false, rest = 'feliz', res
         const id = window.setTimeout(() => setHeld((h) => (h?.id === beat.id ? null : h)), beat.hold);
         return () => window.clearTimeout(id);
     }, [beat]);
+    const activeState = state ?? (held?.play === 'celebrate' ? 'done' : undefined);
     return (
         <Mascot
             size={size}
@@ -45,6 +46,8 @@ export function MascotCompanion({ beat: own, listen = false, rest = 'feliz', res
             framing={held?.framing || framing}
             mood={held?.mood || rest}
             pose={held?.pose || restPose}
+            state={activeState}
+            stateKey={beat?.id}
             extra={held?.extra}
             tone={held?.tone}
             play={beat?.play}

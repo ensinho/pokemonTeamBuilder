@@ -13,7 +13,7 @@ export const VIEWS = {
 };
 
 /** Named sizes, in CSS px at the default UI scale (the wrapper is sized in rem). */
-export const MASCOT_SIZES = { xs: 24, sm: 36, md: 48, lg: 64, xl: 120, hero: 176 };
+export const MASCOT_SIZES = { xs: 26, sm: 40, md: 53, lg: 70, xl: 132, hero: 194 };
 
 /**
  * The loader's scenes (Loader.jsx `scene`): what the mascot does while a region
