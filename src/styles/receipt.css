@@ -44,11 +44,16 @@
     to { transform: translateY(0); }
 }
 
+.receipt__header {
+    display: grid;
+    gap: var(--space-1_5);
+}
 .receipt__brand {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
+    margin: 0;
     font: 600 1rem/1 var(--font-body);
 }
 .receipt__kind,
@@ -60,7 +65,7 @@
     text-transform: uppercase;
     font-size: 0.68rem;
 }
-.receipt__kind { text-align: center; letter-spacing: 0.24em; }
+.receipt__kind { margin: 0; text-align: center; letter-spacing: 0.24em; }
 .receipt__rule {
     width: 100%;
     margin: 0;
@@ -71,6 +76,39 @@
 .receipt__meta { display: grid; gap: var(--space-0_5); margin: 0; }
 .receipt__meta > div { display: flex; justify-content: space-between; gap: var(--space-3); }
 .receipt__meta dd { margin: 0; text-align: right; }
+
+/* Compact header strip: keeps rotina/data/hora/você quiet so the games list owns the receipt */
+.receipt__meta--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1) var(--space-3);
+    margin-top: var(--space-1);
+    padding-top: var(--space-2);
+    border-top: 1px dashed var(--receipt-rule);
+    font-size: 0.7rem;
+    line-height: 1.25;
+}
+.receipt__meta--compact > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+.receipt__meta--compact > div:nth-child(even) {
+    align-items: flex-end;
+    text-align: right;
+}
+.receipt__meta--compact dt {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+}
+.receipt__meta--compact dd {
+    text-align: inherit;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
 .receipt__totals > .is-status { font-weight: 700; font-size: 0.92rem; }
 .receipt__totals > .is-status dt { color: var(--receipt-ink); font-size: 0.72rem; }
 

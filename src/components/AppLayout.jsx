@@ -35,8 +35,7 @@ import { MascotIcon } from './Mascot';
 import { Loader } from './Loader';
 import { loadMascotEngine, warmMascotBot } from './mascot/useMascotEngine';
 import { useMascotReactions } from '../hooks/useMascotReactions';
-import { getStaticPokemonDetail } from '../services/pokemonDataCache';
-import { doc, getDoc } from 'firebase/firestore';
+import { resolvePokemonDetail } from '../services/pokemonDataCache';
 import { auth, db } from '../services/firebase';
 import { BREAKPOINTS } from '../constants/breakpoints';
 import { setNavigator, setPartnerPicker, setSignInPrompt } from '../utils/navigation';
@@ -62,7 +61,7 @@ import { SyncPromptModal } from './modals/SyncPromptModal';
 import { VersionUpdateModal } from './modals/VersionUpdateModal';
 
 import {
-    GithubIcon, LinkedinIcon, SocialIcon, CollapseLeftIcon, CollapseRightIcon,
+    YoutubeIcon, LinkedinIcon, SocialIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
     HomeIcon, AccountIcon, ChartColumnIcon,
     MapPinIcon, MessageIcon,
@@ -1330,27 +1329,18 @@ export default function AppLayout() {
             .slice(0, 3);
     }, [savedTeams]);
 
-    // Fetch details helper (caches detail docs)
+    // Fetch details helper (caches resolved detail docs — Firestore, static,
+    // live PokéAPI, index fallback & base-species inheritance for Mega/Gmax forms).
     const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
             return pokemonDetailsCache[pokemonId];
         }
 
         try {
-            const staticDetail = await getStaticPokemonDetail(pokemonId);
-            if (staticDetail) {
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: staticDetail }));
-                return staticDetail;
-            }
-
-            if (!db) return null;
-
-            const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const pokemonData = docSnap.data();
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: pokemonData }));
-                return pokemonData;
+            const detail = await resolvePokemonDetail(pokemonId);
+            if (detail) {
+                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: detail }));
+                return detail;
             }
             return null;
         } catch (error) {
@@ -1385,7 +1375,47 @@ export default function AppLayout() {
 
         try {
             const stored = Array.isArray(team.pokemons) ? team.pokemons.filter(Boolean) : [];
-            const details = await Promise.all(stored.map((p) => fetchPokemonDetails(p.id).catch(() => null)));
+            const details = await Promise.all(stored.map(async (p) => {
+                const resolved = await fetchPokemonDetails(p.id).catch(() => null);
+                if (resolved) return resolved;
+                // Secondary fallback: if a saved form carries a baseId (e.g. a brand-new
+                // Mega/Dynamax form offline or unlisted on PokéAPI), resolve its base
+                // species and preserve the saved member's id/name/types/sprite.
+                const baseId = Number(p.baseId || p.speciesId);
+                if (Number.isInteger(baseId) && baseId > 0 && baseId !== Number(p.id)) {
+                    const baseDetail = await fetchPokemonDetails(baseId).catch(() => null);
+                    if (baseDetail) {
+                        return {
+                            ...baseDetail,
+                            id: p.id,
+                            name: p.name || baseDetail.name,
+                            types: Array.isArray(p.types) && p.types.length ? p.types : baseDetail.types,
+                            sprite: p.sprite || baseDetail.sprite,
+                            shinySprite: p.shinySprite || baseDetail.shinySprite,
+                            animatedSprite: p.animatedSprite || baseDetail.animatedSprite,
+                        };
+                    }
+                }
+                // Last-resort synthesis from the saved record itself when it already
+                // has identity + types so a saved team never becomes unopenable.
+                if (p.id && (p.name || (Array.isArray(p.types) && p.types.length))) {
+                    const savedMoves = Array.isArray(p.customization?.moves)
+                        ? p.customization.moves.filter(Boolean).map((m) => (typeof m === 'string' ? { name: m } : m))
+                        : [];
+                    return {
+                        id: p.id,
+                        name: p.name || `pokemon-${p.id}`,
+                        types: Array.isArray(p.types) ? p.types : [],
+                        abilities: p.customization?.ability ? [{ name: p.customization.ability }] : [],
+                        moves: savedMoves,
+                        stats: Array.isArray(p.stats) ? p.stats : [],
+                        sprite: p.sprite || getPokemonFrontSpriteUrl(p.id),
+                        shinySprite: p.shinySprite || getPokemonFrontSpriteUrl(p.id, { shiny: true }),
+                        animatedSprite: p.animatedSprite || getPokemonFrontSpriteUrl(p.id),
+                    };
+                }
+                return null;
+            }));
 
             if (details.some((detail) => !detail)) {
                 showToast(t('layout.teamLoadFailed', { name: team.name }), 'error', {
@@ -2348,7 +2378,7 @@ export default function AppLayout() {
                                     {/* Text size left the footer on 2026-10-06: it lives in
                                         Profile, which guests now reach from the rail
                                         ("Perfil e preferências"), and in the account menu. */}
-                                    <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
+                                    <a href="https://www.youtube.com/@PokemonBuilderApp" target="_blank" rel="noopener noreferrer" aria-label="PokemonBuilder — YouTube" title="YouTube · @PokemonBuilderApp" className="app-shell__footer-link"><YoutubeIcon /></a>
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
                                     {SOCIAL_LINKS.map(({ id, name, href }) => (
                                         <a key={id} href={href} target="_blank" rel="noopener noreferrer" aria-label={`PokemonBuilder — ${name}`} title={`${name} · ${SOCIAL_HANDLE}`} className="app-shell__footer-link"><SocialIcon id={id} /></a>

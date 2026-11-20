@@ -25,7 +25,7 @@ import { championArt } from '../../../utils/challengeArt';
 import { CHAMPION_IDS, CHAMPION_NAMES, difficultyLabel as championDifficulty, isChampion } from '../../../utils/challengeChampions';
 import { championRoster, railTeams, timeUntil } from '../../../utils/challengeView';
 import { EmptyState } from '../../EmptyState';
-import { Loader } from '../../Loader';
+import { ChallengeLoader } from './ChallengeLoader';
 import { DsArena } from './ds/DsArena';
 import { DsBattleReport } from './ds/DsBattleReport';
 import { IslandChip } from '../../IslandChip';
@@ -442,7 +442,7 @@ export function ChampionChallengeView() {
                         action={{ label: t('challenge.retry'), onClick: load }}
                     />
                 ) : (
-                    <div className="challenge-loading"><Loader size="lg" scene="battle" block label={t('challenge.loading', { name: championName })} /></div>
+                    <ChallengeLoader championId={championId} championName={championName} />
                 )}
             </div>
         );

@@ -83,7 +83,7 @@ export function WeeklyRecapDialog({ weekKey, recaps, championId, onClose }) {
                 aria-modal="true"
                 aria-labelledby="weekly-recap-title"
                 tabIndex={-1}
-                className="modal-panel modal-panel--sm weekly-recap"
+                className="modal-panel weekly-recap"
             >
                 <div className="modal-header">
                     <div className="min-w-0 flex-1">
@@ -100,7 +100,7 @@ export function WeeklyRecapDialog({ weekKey, recaps, championId, onClose }) {
 
                 <div className="modal-body weekly-recap__body">
                     {available.length > 1 && (
-                        <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('challenge.recap.championLabel')}>
+                        <div className="segmented segmented--sm segmented--block weekly-recap__switcher" role="group" aria-label={t('challenge.recap.championLabel')}>
                             {available.map((id) => (
                                 <button key={id} type="button" className="segmented__item" aria-pressed={shownId === id} onClick={() => setShownId(id)}>
                                     <ChampionFace championId={id} size="xs" />
@@ -111,21 +111,23 @@ export function WeeklyRecapDialog({ weekKey, recaps, championId, onClose }) {
                     )}
 
                     {recap && (
-                        <>
-                            <ol className="challenge-podium weekly-recap__podium" aria-label={t('challenge.recap.podiumLabel')}>
-                                {[1, 0, 2].map((index) => (recap.podium[index] ? (
-                                    <PodiumStep
-                                        key={`${shownId}-${index}`}
-                                        entry={recap.podium[index]}
-                                        place={index + 1}
-                                        onOpen={() => openWeekCard(recap.podium[index])}
-                                    />
-                                ) : <li key={`${shownId}-${index}`} aria-hidden="true" />))}
-                            </ol>
+                        <div className={`weekly-recap__grid ${recap.rest.length > 0 ? 'has-rest' : ''}`}>
+                            <div className="weekly-recap__hero">
+                                <ol className="challenge-podium weekly-recap__podium" aria-label={t('challenge.recap.podiumLabel')}>
+                                    {[1, 0, 2].map((index) => (recap.podium[index] ? (
+                                        <PodiumStep
+                                            key={`${shownId}-${index}`}
+                                            entry={recap.podium[index]}
+                                            place={index + 1}
+                                            onOpen={() => openWeekCard(recap.podium[index])}
+                                        />
+                                    ) : <li key={`${shownId}-${index}`} aria-hidden="true" />))}
+                                </ol>
 
-                            <MascotTip size="sm" className="weekly-recap__note" {...MASCOT[recap.outcome]}>
-                                <RecapMessage recap={recap} t={t} />
-                            </MascotTip>
+                                <MascotTip size="sm" className="weekly-recap__note" {...MASCOT[recap.outcome]}>
+                                    <RecapMessage recap={recap} t={t} />
+                                </MascotTip>
+                            </div>
 
                             {recap.rest.length > 0 && (
                                 <ol className="challenge-rank__list weekly-recap__list m-0 list-none p-0">
@@ -134,12 +136,12 @@ export function WeeklyRecapDialog({ weekKey, recaps, championId, onClose }) {
                                     ))}
                                 </ol>
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
 
-                <div className="modal-footer">
-                    <button type="button" className="btn btn-primary btn-block" onClick={onClose}>
+                <div className="modal-footer weekly-recap__footer">
+                    <button type="button" className="btn btn-primary btn-block weekly-recap__cta" onClick={onClose}>
                         {t('challenge.recap.cta')}
                     </button>
                 </div>

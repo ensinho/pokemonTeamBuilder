@@ -22,11 +22,11 @@
 
 export const TRAINER_PROFILE_VERSION = 1;
 
-/** What a trainer can say they came for. Both is the common case. */
-export const INTERESTS = ['competitive', 'minigames'];
+/** What a trainer can say they came for. Picking all three makes a Master. */
+export const INTERESTS = ['competitive', 'franchise', 'minigames'];
 
-/** Interests the onboarding no longer asks, read as the one that absorbed them. */
-export const LEGACY_INTERESTS = { franchise: 'minigames' };
+/** Legacy interest remapping (kept empty while all three profiles are active). */
+export const LEGACY_INTERESTS = {};
 
 /** How deep into competitive play, asked only when `competitive` is picked. */
 export const COMPETITIVE_LEVELS = ['new', 'casual', 'ranked'];
@@ -37,18 +37,17 @@ export const BATTLE_FORMATS = ['singles', 'doubles', 'both'];
 /**
  * The personas. `art` is the National Dex id drawn for it (official artwork),
  * `tone` the type colour its card and scene take. One per interest, plus the
- * trainer who picked both. `traveler` is no longer derived (2026-11-15) — it
- * stays so another trainer's older public profile still reads as a persona.
+ * trainer who picked all three.
  */
 export const PERSONAS = {
     strategist: { id: 'strategist', interest: 'competitive', art: 445, tone: 'dragon' },
-    traveler: { id: 'traveler', interest: null, art: 25, tone: 'electric', legacy: true },
+    traveler: { id: 'traveler', interest: 'franchise', art: 25, tone: 'electric' },
     challenger: { id: 'challenger', interest: 'minigames', art: 150, tone: 'psychic' },
     master: { id: 'master', interest: null, art: 94, tone: 'ghost' },
 };
 
 /** The persona each interest leads to, in priority order. */
-const PERSONA_BY_INTEREST = { competitive: 'strategist', minigames: 'challenger' };
+const PERSONA_BY_INTEREST = { competitive: 'strategist', franchise: 'traveler', minigames: 'challenger' };
 
 /** The competitive level drawn as an evolution line: Gible → Gabite → Garchomp. */
 export const LEVEL_ART = { new: 443, casual: 444, ranked: 445 };
@@ -160,9 +159,8 @@ const PICKS_BY_INTEREST = {
         casual: ['builder', 'damageCalc', 'bestTeams', 'meta'],
         ranked: ['meta', 'speedTiers', 'tournaments', 'damageCalc'],
     },
-    // The games and the minigames, one interest since 2026-11-15: the daily
-    // two first, then what a player makes and looks up.
-    minigames: ['challenge', 'pokepuzzle', 'tierList', 'generationQuiz', 'battles', 'pokedex', 'gyms'],
+    franchise: ['pokedex', 'gyms', 'types', 'builder', 'moves'],
+    minigames: ['challenge', 'pokepuzzle', 'tierList', 'generationQuiz', 'battles', 'pokedex'],
 };
 
 const picksFor = (interest, profile) => {
@@ -191,6 +189,7 @@ export function personaPicks(profile, max = 4) {
 /** Where a trainer goes next once their own picks are already on the Home, most useful first. */
 const MORE_BY_INTEREST = {
     competitive: ['meta', 'damageCalc', 'speedTiers', 'bestTeams', 'guides', 'types', 'tournaments'],
+    franchise: ['pokedex', 'gyms', 'types', 'moves', 'builder', 'guides'],
     minigames: ['tierList', 'generationQuiz', 'pokedex', 'gyms', 'types', 'moves'],
 };
 
@@ -221,6 +220,7 @@ export const DEFAULT_NAV_ORDER = ['teamBuilding', 'guessing', 'database', 'dashb
 /** The sections an interest pulls to the top. */
 const NAV_BY_INTEREST = {
     competitive: ['teamBuilding'],
+    franchise: ['database', 'teamBuilding'],
     minigames: ['guessing', 'database'],
 };
 
@@ -262,7 +262,7 @@ export function sortNavGroups(groups, profile) {
  */
 export function personaDockSlot(profile) {
     const interests = orderedInterests(profile);
-    if (interests.length === 0 || interests.includes('minigames')) return 'games';
+    if (interests.length === 0 || interests.includes('minigames') || interests.includes('franchise')) return 'games';
     return 'meta';
 }
 
@@ -270,6 +270,7 @@ export function personaDockSlot(profile) {
 
 const JOURNEYS_BY_INTEREST = {
     competitive: ['first-team', 'strategy'],
+    franchise: ['first-steps', 'first-team', 'league'],
     minigames: ['league', 'champions', 'first-steps'],
 };
 
@@ -369,8 +370,9 @@ export function personaDayCards(profile) {
 export const HOME_HEROES = ['team', 'challenge', 'badges'];
 
 export function personaHero(profile) {
-    const persona = hasAnsweredProfile(profile) ? derivePersona(profile) : null;
-    return persona?.id === 'strategist' ? 'team' : 'challenge';
+    if (!hasAnsweredProfile(profile)) return 'challenge';
+    const interests = orderedInterests(profile);
+    return interests.length === 1 && interests[0] === 'competitive' ? 'team' : 'challenge';
 }
 
 /** Whether the builder should coach (competitive, just starting). */

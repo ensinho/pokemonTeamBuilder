@@ -698,7 +698,48 @@ const normalizePokemonApiData = (apiData) => {
 const hasUsableMoves = (detail) =>
     Array.isArray(detail?.moves) && detail.moves.length > 0 && Boolean(detail.moves[0]?.name);
 
-export const resolvePokemonDetail = async (pokemonId) => {
+const STAT_ORDER = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+
+const statsFromBaseStats = (baseStats) => {
+    if (!baseStats || typeof baseStats !== 'object') return [];
+    return STAT_ORDER
+        .filter((name) => Number.isFinite(Number(baseStats[name])))
+        .map((name) => ({ name, base_stat: Number(baseStats[name]) }));
+};
+
+const detailFromIndexEntry = (entry) => {
+    if (!entry) return null;
+    const id = Number(entry.id);
+    return {
+        id,
+        name: entry.name || entry.apiName || `pokemon-${id}`,
+        types: Array.isArray(entry.types) ? entry.types.filter(Boolean) : [],
+        abilities: Array.isArray(entry.abilities) ? entry.abilities : [],
+        moves: Array.isArray(entry.moves) ? entry.moves : [],
+        stats: Array.isArray(entry.stats) && entry.stats.length ? entry.stats : statsFromBaseStats(entry.baseStats),
+        sprite: entry.sprite || getPokemonArtworkSpriteUrl(id),
+        shinySprite: entry.shinySprite || getPokemonArtworkSpriteUrl(id, { shiny: true }),
+        animatedSprite: entry.animatedSprite || getPokemonFrontSpriteUrl(id),
+        animatedShinySprite: entry.animatedShinySprite || getPokemonFrontSpriteUrl(id, { shiny: true }),
+        ...(entry.baseId ? { baseId: entry.baseId } : {}),
+        ...(entry.isForm ? { isForm: true } : {}),
+    };
+};
+
+// Look up an entry in the pre-baked index (cached in memory after first load).
+// Used both to inherit moves/abilities from a form's base species (Gigantamax,
+// Legends Z-A Megas, etc. often ship with empty moves on PokéAPI) and as a
+// resilient fallback when a brand-new form isn't on PokéAPI or offline.
+const findIndexEntryById = async (id) => {
+    try {
+        const index = await loadPokemonIndex();
+        return Array.isArray(index) ? index.find((entry) => Number(entry.id) === id) || null : null;
+    } catch (_) {
+        return null;
+    }
+};
+
+export const resolvePokemonDetail = async (pokemonId, { _inherited = false } = {}) => {
     const id = Number.parseInt(pokemonId, 10);
     if (!Number.isInteger(id) || id <= 0) return null;
 
@@ -727,15 +768,50 @@ export const resolvePokemonDetail = async (pokemonId) => {
         partialDetail = partialDetail || staticDetail;
     }
 
-    // 3) Live PokéAPI, normalized to the fat shape (always includes moves).
+    // 3) Live PokéAPI, normalized to the fat shape.
+    let resolved = null;
     try {
         const apiData = await getPokemonApiData(id);
-        if (apiData) return normalizePokemonApiData(apiData);
+        if (apiData) resolved = normalizePokemonApiData(apiData);
     } catch (_) {
-        // Offline / API down — a moveless doc is still better than nothing.
+        // Offline / 404 (e.g. recent form not yet in PokéAPI) — fall back below.
     }
 
-    return partialDetail;
+    let detail = resolved || partialDetail;
+
+    // 4) Index fallback & base-species inheritance for forms (Gigantamax,
+    // Dynamax, recent Mega Evolutions like Legends Z-A) that may lack moves,
+    // abilities, or a PokéAPI entry altogether.
+    const needsIndexOrBase = !detail || !hasUsableMoves(detail) || !detail.abilities?.length || !detail.stats?.length;
+    if (needsIndexOrBase) {
+        const indexEntry = await findIndexEntryById(id);
+        if (!detail && indexEntry) {
+            detail = detailFromIndexEntry(indexEntry);
+        } else if (detail && indexEntry) {
+            detail = {
+                ...detail,
+                types: detail.types?.length ? detail.types : (indexEntry.types || []),
+                stats: detail.stats?.length ? detail.stats : statsFromBaseStats(indexEntry.baseStats),
+                ...(indexEntry.baseId && !detail.baseId ? { baseId: indexEntry.baseId } : {}),
+                ...(indexEntry.isForm && !detail.isForm ? { isForm: true } : {}),
+            };
+        }
+
+        const baseId = Number(detail?.baseId || indexEntry?.baseId);
+        if (detail && !_inherited && Number.isInteger(baseId) && baseId > 0 && baseId !== id
+            && (!hasUsableMoves(detail) || !detail.abilities?.length)) {
+            const baseDetail = await resolvePokemonDetail(baseId, { _inherited: true }).catch(() => null);
+            if (baseDetail) {
+                detail = {
+                    ...detail,
+                    moves: hasUsableMoves(detail) ? detail.moves : (baseDetail.moves || []),
+                    abilities: detail.abilities?.length ? detail.abilities : (baseDetail.abilities || []),
+                };
+            }
+        }
+    }
+
+    return detail;
 };
 
 /**
