@@ -61,13 +61,8 @@ const statusTone = (view) => {
     return 'is-waiting';
 };
 
-export function BattleListView() {
+export function BattleListContent() {
     const { t } = useTranslation();
-    useDocumentMeta({
-        title: 'Battles',
-        description: 'Your turn-by-turn battles against friends.',
-        path: '/battles',
-    });
 
     const navigate = useNavigate();
     const userId = useAuthStore((state) => state.userId);
@@ -258,4 +253,13 @@ export function BattleListView() {
             />
         </div>
     );
+}
+
+export function BattleListView() {
+    useDocumentMeta({
+        title: 'Battles',
+        description: 'Your turn-by-turn battles against friends.',
+        path: '/battles',
+    });
+    return <BattleListContent />;
 }

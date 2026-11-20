@@ -48,22 +48,26 @@ export function FriendActivityTab({ onFind, onPlay, isLoadingFriends = false }) 
 
     return (
         <div className="fa-tab">
-            {/* The meadow (2026-11-17): who played today, and who is still dozing. */}
-            <Meadow size="lg" max={6} />
+            <div className="fa-tab__feed">
+                {groups.length === 0 ? (
+                    <EmptyState
+                        compact
+                        title={t('social.activity.emptyTitle')}
+                        message={t('social.activity.emptyMessage')}
+                        action={{ label: t('social.activity.emptyCta'), onClick: onPlay }}
+                    />
+                ) : groups.map(([key, label, list]) => (
+                    <section key={key} className="fa-group">
+                        <h2 className="friends-section-title">{label}</h2>
+                        <FriendActivityList events={list} />
+                    </section>
+                ))}
+            </div>
 
-            {groups.length === 0 ? (
-                <EmptyState
-                    compact
-                    title={t('social.activity.emptyTitle')}
-                    message={t('social.activity.emptyMessage')}
-                    action={{ label: t('social.activity.emptyCta'), onClick: onPlay }}
-                />
-            ) : groups.map(([key, label, list]) => (
-                <section key={key} className="fa-group">
-                    <h2 className="friends-section-title">{label}</h2>
-                    <FriendActivityList events={list} />
-                </section>
-            ))}
+            {/* The meadow (2026-11-17): who played today, and who is still dozing. */}
+            <aside className="fa-tab__meadow">
+                <Meadow size="lg" max={6} moreTo="/friends?tab=friends" />
+            </aside>
         </div>
     );
 }

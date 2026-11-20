@@ -3976,3 +3976,59 @@
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
 }
+
+/* Progressive reveal for competitive / meta suggestions above "All Pokémon". */
+.tb-suggestions-more {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2) 0 var(--space-1);
+}
+
+.tb-suggestions-more--mobile {
+    padding: var(--space-2) 0 0;
+}
+
+.tb-suggestions-more__btn {
+    max-width: 100%;
+    padding-inline: var(--space-3);
+    transition:
+        background-color var(--duration-fast) var(--ease-smooth),
+        border-color var(--duration-fast) var(--ease-smooth),
+        color var(--duration-fast) var(--ease-smooth),
+        scale var(--duration-press) var(--ease-out);
+}
+
+.tb-suggestions-more__btn:active:not(:disabled) {
+    scale: var(--press-scale);
+}
+
+.tb-suggestions-more__btn:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-logo);
+}
+
+.tb-suggestions-more__count {
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    margin-left: var(--space-1);
+}
+
+@media (max-width: 1023px) {
+    .tb-suggestions-more--mobile .tb-suggestions-more__btn {
+        width: 100%;
+        justify-content: center;
+        background: var(--color-surface);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tb-suggestions-more__btn {
+        transition: none;
+    }
+
+    .tb-suggestions-more__btn:active:not(:disabled) {
+        scale: none;
+    }
+}

@@ -10,7 +10,8 @@ describe('navHubs', () => {
         expect(hubForPath('/meta/pikachu')).toBeNull();
         expect(hubForPath('/builder')).toBeNull();
         expect(hubForPath('/speed-tiers')).toBe('tools');
-        expect(hubForPath('/friends')).toBe('community');
+        expect(hubForPath('/friends')).toBeNull();
+        expect(hubForPath('/battles')).toBeNull();
     });
 
     it('lists member page keys in switcher order', () => {

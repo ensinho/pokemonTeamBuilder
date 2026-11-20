@@ -38,6 +38,26 @@ describe('meadowRoster', () => {
         expect(ghosts).toHaveLength(2);
         expect(more).toBe(1);
     });
+
+    it('orders awake friends by most recent activity first, then sleeping friends by recency', () => {
+        const rosterFriends = [
+            { userId: 'ana', displayName: 'Ana', streak: { lastVisit: '2026-11-12' } },
+            { userId: 'bia', displayName: 'Bia', updatedAt: '2026-11-16T18:00:00Z' },
+            { userId: 'caio', displayName: 'Caio', streak: { lastVisit: '2026-11-15' } },
+            { userId: 'duda', displayName: 'Duda' },
+            { userId: 'enzo', displayName: 'Enzo' },
+        ];
+        const events = [
+            // Ana played earlier today (2 games), Enzo played more recently today (1 game)
+            { uid: 'ana', kind: 'champion', dayKey: '2026-11-17', at: '2026-11-17T08:00:00Z' },
+            { uid: 'ana', kind: 'puzzle', dayKey: '2026-11-17', at: '2026-11-17T09:00:00Z' },
+            { uid: 'enzo', kind: 'puzzle', dayKey: '2026-11-17', at: '2026-11-17T14:30:00Z' },
+            // Duda is sleeping today but had an event on Nov 16 at 20:00 (newer than Bia's 18:00)
+            { uid: 'duda', kind: 'puzzle', dayKey: '2026-11-16', at: '2026-11-16T20:00:00Z' },
+        ];
+        const { ghosts } = meadowRoster({ friends: rosterFriends, events, todayKeys: ['2026-11-17'] });
+        expect(ghosts.map((g) => g.uid)).toEqual(['enzo', 'ana', 'duda', 'bia', 'caio']);
+    });
 });
 
 describe('pokes', () => {

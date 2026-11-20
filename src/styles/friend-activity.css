@@ -196,8 +196,34 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    /* A line reads as one sentence; past ~46rem the picture drifts away from it. */
-    max-inline-size: 46rem;
+    width: 100%;
+}
+
+.fa-tab__feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+}
+
+.fa-tab__meadow {
+    order: -1;
+    min-width: 0;
+}
+
+@media (min-width: 1024px) {
+    .fa-tab {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) clamp(22rem, 38%, 30rem);
+        gap: var(--page-gap, var(--space-6));
+        align-items: start;
+    }
+
+    .fa-tab__meadow {
+        order: 0;
+        position: sticky;
+        top: var(--space-4);
+    }
 }
 
 .fa-group,

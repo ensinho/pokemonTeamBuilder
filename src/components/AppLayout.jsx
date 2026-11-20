@@ -178,7 +178,7 @@ const ROUTE_CHUNKS = {
     gyms: () => import('./views/GymsView'), generationQuiz: () => import('./views/QuizView'),
     tierList: () => import('./views/TierListView'),
     journeys: () => import('./views/JourneysView'),
-    friends: () => import('./views/FriendsView'), battles: () => import('./views/battle/BattleListView'),
+    friends: () => import('./views/FriendsView'), battles: () => import('./views/FriendsView'),
     profile: () => import('./views/ProfileView'), admin: () => import('./views/AdminDashboardView'),
 };
 const prefetchRoute = (key) => { ROUTE_CHUNKS[key]?.().catch(() => {}); };
@@ -213,7 +213,6 @@ const GamesView = lazy(() => loadGamesView().then((m) => ({ default: m.GamesView
 const PokedexView = lazy(() => loadPokedexView().then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
-const BattleListView = lazy(() => import('./views/battle/BattleListView').then((m) => ({ default: m.BattleListView })));
 const BattleDetailView = lazy(() => import('./views/battle/BattleDetailView').then((m) => ({ default: m.BattleDetailView })));
 const TeamBuilderView = lazy(() => loadTeamBuilderView().then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
@@ -1123,10 +1122,9 @@ export default function AppLayout() {
                     // The trainer's own ranking (2026-11-15): the one game here you make.
                     { key: 'tierList', label: t('nav.tierList'), path: '/tier-list', icon: <Rows3 className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <CircleHelp className="w-5 h-5 shrink-0" /> },
-                    // Battles and friends: one entry, its badge the sum of both
-                    // (a battle on your turn, a request waiting) — 2026-11-10;
-                    // the Community section it was alone in is gone.
-                    { key: 'community', label: t('nav.community'), path: '/battles', icon: <ShieldHalf className="w-5 h-5 shrink-0" />, members: hubMembers('community'), prefetchKey: 'battles', badge: battlesAwaitingMe + pendingFriendRequests },
+                    // Friends & battles: unified in FriendsView (Friends-first; Battles is a tab),
+                    // badge sums battles awaiting your turn + pending friend requests.
+                    { key: 'community', label: t('nav.community'), path: '/friends', icon: <ShieldHalf className="w-5 h-5 shrink-0" />, members: ['friends', 'battles'], prefetchKey: 'friends', badge: battlesAwaitingMe + pendingFriendRequests },
                 ]
             },
             {
@@ -2255,7 +2253,7 @@ export default function AppLayout() {
                                         />
                                     } />
                                     <Route path="/friends" element={<FriendsView />} />
-                                    <Route path="/battles" element={<BattleListView />} />
+                                    <Route path="/battles" element={<FriendsView defaultTab="battles" />} />
                                     <Route path="/battles/:battleId" element={<BattleDetailView />} />
                                     <Route path="/profile" element={
                                         <ProfileView

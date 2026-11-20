@@ -417,43 +417,55 @@
 @media (min-width: 768px) {
     .games-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--space-4);
+        gap: var(--space-3);
     }
 
-    /* Room for the art: inset living scene on top, body below. */
+    /* Option 2 — Horizontal Compact cards aligned with solved A Mímica & Home. */
     .daygame {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto 1fr;
+        grid-template-columns: 8.75rem minmax(0, 1fr);
+        grid-template-rows: 1fr;
+        align-items: stretch;
         gap: var(--space-3);
-        padding: var(--space-3);
+        padding: var(--space-2_5);
     }
 
     .daygame__stage {
-        min-height: 8.25rem;
-        padding-bottom: var(--space-2_5);
+        min-height: 7.5rem;
+        height: 100%;
+        padding-bottom: var(--space-2);
     }
 
     .daygame__stage::before {
-        bottom: var(--space-2);
-        width: 8.5rem;
+        bottom: var(--space-1_5);
+        width: 5.75rem;
     }
 
     .daygame__sprite {
-        width: 5.5rem;
-        height: 5.5rem;
+        width: 4.5rem;
+        height: 4.5rem;
     }
 
     .daygame__sprite:nth-child(n + 3) {
-        display: block;
+        display: none;
     }
 
     .daygame__body {
-        gap: var(--space-1_5);
-        padding: 0 var(--space-1) var(--space-1);
+        gap: var(--space-1);
+        padding: var(--space-0_5) var(--space-1) var(--space-0_5) 0;
     }
 
     .daygame__line {
-        min-height: 2.8em;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        min-height: 0;
+        font-size: var(--text-xs);
+    }
+
+    .daygame__line + .daygame__cta {
+        margin-top: auto;
     }
 }
 

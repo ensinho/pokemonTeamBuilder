@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
+import { Check, Hand, UserMinus } from 'lucide-react';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { openTrainerCard } from '../../store/useTrainerCardStore';
 
 import { useFriends } from '../../hooks/useFriends';
+import { useBattles } from '../../hooks/useBattles';
 import { useBattlesStore } from '../../store/useBattlesStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
@@ -18,8 +20,10 @@ import '../../styles/friends-view.css';
 import { Loader } from '../Loader';
 import { promptSignIn } from '../../utils/navigation';
 import { FriendActivityTab } from '../social/FriendActivityTab';
+import { usePokes } from '../social/usePokes';
+import { BattleListContent } from './battle/BattleListView';
 
-const TABS = ['activity', 'friends', 'requests', 'find'];
+const TABS = ['activity', 'friends', 'battles', 'requests', 'find'];
 
 /**
  * One trainer row: avatar, name, and whatever actions the caller supplies.
@@ -49,12 +53,21 @@ function TrainerRow({ profile, subtitle, actions }) {
     );
 }
 
-export function FriendsView() {
+export function FriendsView({ defaultTab = 'activity' } = {}) {
     const { t, language } = useTranslation();
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabParam = searchParams.get('tab');
+    // Activity first (2026-11-09): what the friends did is why the page is opened,
+    // while `/battles` or `?tab=battles` lands directly on the Battles tab.
+    const activeTab = TABS.includes(tabParam) ? tabParam : defaultTab;
+
     useDocumentMeta({
-        title: 'Friends',
-        description: 'Add trainer friends and battle them turn by turn.',
-        path: '/friends',
+        title: activeTab === 'battles' ? 'Battles' : 'Friends',
+        description: activeTab === 'battles'
+            ? 'Your turn-by-turn battles against friends.'
+            : 'Add trainer friends and battle them turn by turn.',
+        path: activeTab === 'battles' ? '/battles' : '/friends',
     });
 
     const userId = useAuthStore((state) => state.userId);
@@ -67,14 +80,11 @@ export function FriendsView() {
         sendRequest, acceptRequest, declineRequest, removeRequest, removeFriend,
         loadProfile,
     } = useFriends();
+    const { awaitingMeCount } = useBattles();
+    const { isPoked, pokeFriend } = usePokes();
 
     const navigate = useNavigate();
     const challengeFriend = useBattlesStore((state) => state.challengeFriend);
-
-    const [searchParams, setSearchParams] = useSearchParams();
-    const tabParam = searchParams.get('tab');
-    // Activity first (2026-11-09): what the friends did is why the page is opened.
-    const activeTab = TABS.includes(tabParam) ? tabParam : 'activity';
 
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 350);
@@ -124,8 +134,14 @@ export function FriendsView() {
     useEffect(() => () => clearSearch(), [clearSearch]);
 
     const setTab = (tab) => {
+        if (location.pathname === '/battles') {
+            if (tab === 'battles') return;
+            navigate(tab === 'activity' ? '/friends' : `/friends?tab=${tab}`, { replace: true });
+            return;
+        }
         const next = new URLSearchParams(searchParams);
-        next.set('tab', tab);
+        if (tab === 'activity') next.delete('tab');
+        else next.set('tab', tab);
         setSearchParams(next, { replace: true });
     };
 
@@ -186,10 +202,11 @@ export function FriendsView() {
     }
 
     const pendingCount = incomingRequests.length;
+    const tabLabel = (tab) => (tab === 'battles' ? t('nav.battles') : t(`friends.tab_${tab}`));
 
     return (
         <div className="friends-view">
-            <div className="tabs" role="tablist">
+            <div className="tabs friends-tabs" role="tablist">
                 {TABS.map((tab) => (
                     <button
                         key={tab}
@@ -199,9 +216,12 @@ export function FriendsView() {
                         onClick={() => setTab(tab)}
                         className="tabs__item"
                     >
-                        {t(`friends.tab_${tab}`)}
+                        {tabLabel(tab)}
                         {tab === 'friends' && friends.length > 0 && (
                             <span className="count-badge">{friends.length}</span>
+                        )}
+                        {tab === 'battles' && awaitingMeCount > 0 && (
+                            <span className="count-badge friends-count--alert">{awaitingMeCount}</span>
                         )}
                         {tab === 'requests' && pendingCount > 0 && (
                             <span className="count-badge friends-count--alert">{pendingCount}</span>
@@ -218,6 +238,8 @@ export function FriendsView() {
                 />
             )}
 
+            {activeTab === 'battles' && <BattleListContent />}
+
             {activeTab === 'friends' && (
                 isLoadingFriends && friends.length === 0 ? (
                     <div className="friends-loading"><Loader scene="search" /></div>
@@ -229,15 +251,18 @@ export function FriendsView() {
                     />
                 ) : (
                     <ul className="friends-grid">
-                        {friends.map((friend) => (
+                        {friends.map((friend) => {
+                            const alreadyPoked = isPoked(friend.userId);
+                            const friendName = friend.displayName || t('friends.unknownTrainer');
+                            return (
                             <li key={friend.userId} className="friend-card">
                                 <button
                                     type="button"
                                     className="friend-card__header"
-                                    aria-label={t('trainerCard.open', { name: friend.displayName || t('friends.unknownTrainer') })}
+                                    aria-label={t('trainerCard.open', { name: friendName })}
                                     onClick={() => openTrainerCard({
                                         userId: friend.userId,
-                                        name: friend.displayName || t('friends.unknownTrainer'),
+                                        name: friendName,
                                         avatar: friend.avatarPokemonId,
                                         isShiny: friend.avatarIsShiny,
                                         trainerSprite: friend.trainerSprite,
@@ -256,7 +281,7 @@ export function FriendsView() {
                                     </FramedAvatar>
                                     <span className="friend-card__identity">
                                         <span className="friend-card__name">
-                                            {friend.displayName || t('friends.unknownTrainer')}
+                                            {friendName}
                                         </span>
                                         {friend.since && (
                                             <span className="friend-card__meta">
@@ -303,23 +328,37 @@ export function FriendsView() {
                                             </button>
                                             <button
                                                 type="button"
-                                                className="btn btn-ghost btn-sm text-muted hover:text-red-400"
+                                                className={`btn btn-secondary btn-sm friend-card__poke-btn ${alreadyPoked ? 'is-poked' : ''}`}
+                                                disabled={alreadyPoked}
+                                                onClick={() => pokeFriend(friend.userId, friendName)}
+                                                aria-label={alreadyPoked ? t('meadow.pokedToday') : `${t('meadow.poke')} ${friendName}`}
+                                            >
+                                                {alreadyPoked
+                                                    ? <Check className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                    : <Hand className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
+                                                <span>{alreadyPoked ? t('meadow.pokedToday') : t('meadow.poke')}</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-sm btn-icon friend-card__remove-btn"
                                                 title={t('friends.remove')}
+                                                aria-label={t('friends.remove')}
                                                 onClick={() => setConfirmingRemoval(friend.userId)}
                                             >
-                                                {t('friends.remove')}
+                                                <UserMinus className="w-4 h-4" aria-hidden="true" />
                                             </button>
                                         </>
                                     )}
                                 </div>
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
                 )
             )}
 
             {activeTab === 'requests' && (
-                <div className="friends-sections">
+                <div className="friends-sections friends-sections--split">
                     <section>
                         <h2 className="friends-section-title">{t('friends.incomingTitle')}</h2>
                         {incomingRequests.length === 0 ? (
@@ -371,7 +410,7 @@ export function FriendsView() {
             )}
 
             {activeTab === 'find' && (
-                <div className="friends-sections">
+                <div className="friends-sections friends-sections--find">
                     <section>
                         <h2 className="friends-section-title">{t('friends.findTitle')}</h2>
                         <input

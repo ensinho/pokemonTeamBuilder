@@ -32,6 +32,14 @@
     list-style: none;
 }
 
+@media (min-width: 900px) {
+    .battle-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+    }
+}
+
 .battle-card {
     display: flex;
     align-items: center;
