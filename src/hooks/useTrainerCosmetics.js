@@ -12,7 +12,11 @@ import { useTrainerCosmeticsStore } from '../store/useTrainerCosmeticsStore';
  * (`stamped`) standing in until that answers, or when they have none.
  */
 export function useTrainerCosmetics(uid, stamped = {}) {
-    const ownUid = useAuthStore((s) => s.userId);
+    const { ownUid, ownBadgeId, ownSpecialBadge } = useAuthStore(useShallow((s) => ({
+        ownUid: s.userId,
+        ownBadgeId: s.selectedBadgeId,
+        ownSpecialBadge: s.specialBadge,
+    })));
     const isOwn = Boolean(uid) && uid === ownUid;
     const own = useRewardsStore(useShallow((s) => ({ frameId: s.equipped.frame, titleId: s.equipped.title, level: s.level })));
     const entry = useTrainerCosmeticsStore((s) => (uid && !isOwn ? s.byUid[uid] : undefined));
@@ -22,7 +26,19 @@ export function useTrainerCosmetics(uid, stamped = {}) {
         if (uid && !isOwn) request(uid);
     }, [uid, isOwn, request]);
 
-    if (isOwn) return own;
+    if (isOwn) {
+        return {
+            ...own,
+            selectedBadgeId: ownBadgeId || null,
+            specialBadge: ownSpecialBadge || null,
+        };
+    }
     if (entry) return entry;
-    return { frameId: stamped.frameId || null, titleId: stamped.titleId || null, level: null };
+    return {
+        frameId: stamped.frameId || null,
+        titleId: stamped.titleId || null,
+        level: null,
+        selectedBadgeId: stamped.selectedBadgeId || null,
+        specialBadge: stamped.specialBadge || null,
+    };
 }

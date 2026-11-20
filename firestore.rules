@@ -111,12 +111,18 @@ service cloud.firestore {
           let priorRecord = resource == null
             ? { 'wins': 0, 'losses': 0 }
             : resource.data.get('battleRecord', { 'wins': 0, 'losses': 0 });
+          let priorSpecialBadge = resource == null
+            ? null
+            : resource.data.get('specialBadge', null);
           return d.keys().hasOnly([
               'displayName', 'displayNameLower', 'avatarPokemonId',
               'avatarIsShiny', 'trainerSprite', 'selectedBadgeId', 'battleRecord', 'updatedAt',
               'frameId', 'titleId', 'trainerLevel',
-              'streak', 'persona', 'memberSince', 'mascot'
+              'streak', 'persona', 'memberSince', 'mascot', 'specialBadge'
             ])
+            // Server-only special role badge ('admin' | 'dev_friend'): clients
+            // must preserve whatever the Admin SDK stamped and can never forge it.
+            && d.get('specialBadge', null) == priorSpecialBadge
             && d.displayName is string
             && d.displayName.size() >= 1 && d.displayName.size() <= 40
             // Mirrored lowercase copy backs prefix search; must match the name

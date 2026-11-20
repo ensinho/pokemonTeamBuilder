@@ -11,6 +11,7 @@ import { PERSONAS, derivePersona, hasAnsweredProfile } from '../../utils/trainer
 import { Sprite } from '../Sprite';
 import { TrainerBadge } from '../TrainerBadge';
 import { AdminBadge } from '../AdminBadge';
+import { SpecialRoleBadge } from '../SpecialRoleBadge';
 import { TrainerTitle } from '../rewards/TrainerTitle';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useShallow } from 'zustand/react/shallow';
@@ -691,7 +692,10 @@ export function ProfileView({
     })));
     const fullDays = useRoundStore((s) => s.round?.fullDays || 0);
     const storedProfile = useAuthStore((s) => s.trainerProfile);
-    const isAdmin = useAuthStore((s) => s.isAdmin);
+    const { isAdmin, specialBadge } = useAuthStore(useShallow((s) => ({
+        isAdmin: s.isAdmin,
+        specialBadge: s.specialBadge,
+    })));
     // Only what can be shown: the earned badges, the equipped one first. The
     // whole catalogue — locked ones, progress, how to earn them — lives in
     // Journeys → Badges, one tap away (it was here too, as a second wall of
@@ -831,6 +835,7 @@ export function ProfileView({
                             <h1 className="profile-hero__name">
                                 <span className="truncate">{trainerLabel}</span>
                                 {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="md" showTooltip />}
+                                {specialBadge && <SpecialRoleBadge role={specialBadge} size="md" showTooltip />}
                             </h1>
                             <EditIcon className="profile-hero__name-icon" color="currentColor" />
                         </button>

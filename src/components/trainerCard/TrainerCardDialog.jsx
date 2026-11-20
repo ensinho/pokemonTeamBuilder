@@ -18,6 +18,7 @@ import { FriendActionButton } from '../FriendActionButton';
 import { PokeballIcon } from '../icons';
 import { Sprite } from '../Sprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { SpecialRoleBadge } from '../SpecialRoleBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { TrainerTitle } from '../rewards/TrainerTitle';
 
@@ -149,6 +150,7 @@ export function TrainerCardDialog() {
                     <h2 id="trainer-card-name" className="trainer-card__name">
                         <span>{name}</span>
                         {profile.selectedBadgeId && <TrainerBadge badgeId={profile.selectedBadgeId} size="sm" />}
+                        <SpecialRoleBadge uid={profile.userId} size="sm" />
                     </h2>
                     <p className="trainer-card__handle">
                         <span>@{name.toLowerCase().replace(/\s+/g, '')}</span>

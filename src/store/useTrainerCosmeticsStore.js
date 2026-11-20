@@ -27,10 +27,14 @@ const PERSONA_IDS = new Set(['strategist', 'traveler', 'challenger', 'master']);
  * card shows (2026-11-05) — the streak as stored (`liveStreak` judges it on
  * render), the persona, the month they joined and the battle record.
  */
+const SPECIAL_BADGES = new Set(['admin', 'dev_friend']);
+
 export const publicCard = (data = {}) => ({
     frameId: validEquip(data.frameId, 'frame'),
     titleId: validEquip(data.titleId, 'title'),
     level: Number.isInteger(data.trainerLevel) ? data.trainerLevel : null,
+    selectedBadgeId: typeof data.selectedBadgeId === 'string' && data.selectedBadgeId.length <= 50 ? data.selectedBadgeId : null,
+    specialBadge: SPECIAL_BADGES.has(data.specialBadge) ? data.specialBadge : null,
     streak: data.streak && typeof data.streak === 'object' ? data.streak : null,
     persona: PERSONA_IDS.has(data.persona) ? data.persona : null,
     memberSince: typeof data.memberSince === 'string' && /^\d{4}-\d{2}$/.test(data.memberSince) ? data.memberSince : null,
