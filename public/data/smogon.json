@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T16:40:52.882Z",
+  "generatedAt": "2026-11-20T16:16:05.848Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -15200,7 +15200,7 @@
     "282": {
       "name": "Gardevoir",
       "gen": "Champions VGC",
-      "overview": "Gardevoir graces RU with a strong offensive typing and good utility in Trace, Trick, and Healing Wish, making it one of the tier's premier Choice Scarf users. Very few Pokemon in the tier are able to come in on its STAB combination, and the few that do, like Registeel and Hisuian Goodra, often find themselves crippled…",
+      "overview": "Mega Gardevoir is a strong offensive Mega Evolution with access to a strong set of spread attacks that complement each other. Mega Gardevoir's Speed tier puts it in a fantastic position to exploit both Trick Room and Tailwind, allowing it to choose which foes it outruns and control the pace of the battle to its…",
       "sets": [
         {
           "name": "Bulky Attacker",
@@ -15211,18 +15211,17 @@
           "tera": [],
           "moves": [
             [
+              "expanding-force"
+            ],
+            [
               "hyper-voice"
             ],
             [
               "protect"
             ],
             [
-              "psyshock",
-              "psychic"
-            ],
-            [
-              "trick-room",
-              "calm-mind"
+              "calm-mind",
+              "trick-room"
             ]
           ],
           "evs": {
@@ -15250,7 +15249,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Mega Gardevoir uses Pixilate-boosted Hyper Voice in tandem with its high Special Attack to become a potent spread attacker, threatening the likes of Garchomp, Dragonite, and Hydreigon with heavy damage. Its Psychic-type STAB options notably OHKO Sneasler and threaten Toxapex, while Trick Room allows it to support…",
+          "description": "The power of both Terrain-boosted Expanding Force and Pixilated-boosted Hyper Voice limits answers to Mega Gardevoir, allowing it to generally enjoy dealing unimpeded spread damage and threatening targets like Sneasler, Mega Staraptor, Mega Salamence, and Garchomp. These STAB moves also force the opposing team to…",
           "source": "Champions VGC"
         },
         {
@@ -28631,16 +28630,13 @@
           "source": "Champions OU"
         },
         {
-          "name": "Sand Sweeper",
-          "item": "life-orb",
+          "name": "Choice Scarf",
+          "item": "choice-scarf",
           "itemAlts": [],
-          "ability": "",
-          "nature": "adamant",
+          "ability": "mold-breaker",
+          "nature": "jolly",
           "tera": [],
           "moves": [
-            [
-              "swords-dance"
-            ],
             [
               "earthquake"
             ],
@@ -28648,8 +28644,11 @@
               "iron-head"
             ],
             [
-              "rock-slide",
               "rapid-spin"
+            ],
+            [
+              "stealth-rock",
+              "rock-slide"
             ]
           ],
           "evs": {
@@ -28677,7 +28676,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Excadrill serves as a competent Choice Scarf user due to its great Attack and serviceable Speed, which let it get the jump on Pokemon such as Cinderace and +1 Blaziken, as well as its added utility with Rapid Spin and Stealth Rock. Mold Breaker allows Excadrill to hit Mega Delphox and Rotom-Wash super effectively with…",
           "source": "Champions OU"
         }
       ]
