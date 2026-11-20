@@ -259,6 +259,7 @@ export const useForumStore = create((set, get) => ({
                 // The author's equipped rewards, stamped like the badge (2026-10-17).
                 creatorFrameId: useRewardsStore.getState().equipped.frame || null,
                 creatorTitleId: useRewardsStore.getState().equipped.title || null,
+                ...(authState.isAdmin ? { authorRole: 'admin' } : {}),
                 lastActivityAt: new Date().toISOString(),
                 messageCount: 1,
                 lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : ''),
@@ -287,6 +288,7 @@ export const useForumStore = create((set, get) => ({
                 // The author's equipped rewards, stamped like the badge (2026-10-17).
                 creatorFrameId: useRewardsStore.getState().equipped.frame || null,
                 creatorTitleId: useRewardsStore.getState().equipped.title || null,
+                ...(authState.isAdmin ? { authorRole: 'admin' } : {}),
                 sharedTeam: serializedAttachedTeam,
                 // The Traveler's Badge Case card (2026-11-06, social-heart B5).
                 ...(sharedBadgeCase ? { sharedBadgeCase } : {}),
@@ -403,6 +405,7 @@ export const useForumStore = create((set, get) => ({
                 // The author's equipped rewards, stamped like the badge (2026-10-17).
                 creatorFrameId: useRewardsStore.getState().equipped.frame || null,
                 creatorTitleId: useRewardsStore.getState().equipped.title || null,
+                ...(authState.isAdmin ? { authorRole: 'admin' } : {}),
                 sharedTeam: serializedAttachedTeam,
                 battleInvite: battleInvite && battleInvite.battleId
                     ? {

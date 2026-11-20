@@ -62,6 +62,8 @@ export const verifyCaller = async (req) => {
     return {
         uid,
         email: payload.email ? String(payload.email).toLowerCase() : null,
+        emailVerified: payload.email_verified === true,
+        isAdmin: payload.admin === true && payload.email_verified === true,
         isAnonymous: payload.firebase?.sign_in_provider === 'anonymous',
     };
 };

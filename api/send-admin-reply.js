@@ -1,59 +1,13 @@
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 import nodemailer from 'nodemailer';
+import { HttpError, setCorsHeaders, verifyCaller } from './_lib/serverAuth.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_TEXT_LENGTH = 12000;
 const MAX_HTML_LENGTH = 80000;
-const FIREBASE_CERTS = createRemoteJWKSet(
-    new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
-);
-
-const splitList = (value) => String(value || '')
-    .split(',')
-    .map(entry => entry.trim().toLowerCase())
-    .filter(Boolean);
 
 const cleanHeaderValue = (value, fallback = '') => String(value || fallback)
     .replace(/[\r\n]+/g, ' ')
     .trim();
-
-const getFirebaseProjectId = () => process.env.FIREBASE_PROJECT_ID
-    || process.env.VITE_FIREBASE_PROJECT_ID
-    || 'pokemonbuilder-8f80d';
-
-const getAllowedOrigins = () => splitList(process.env.EMAIL_ALLOWED_ORIGINS || '')
-    .concat([
-        'https://pokemonbuilder.app',
-        'https://ensinho.github.io',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        'http://localhost:4173',
-        'http://127.0.0.1:4173',
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-    ]);
-
-const setCorsHeaders = (req, res) => {
-    const origin = req.headers.origin || '';
-    const allowedOrigins = getAllowedOrigins();
-    const normalizedOrigin = origin.toLowerCase();
-    const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}`.toLowerCase() : '';
-    const isAllowed = !origin
-        || allowedOrigins.includes('*')
-        || allowedOrigins.includes(normalizedOrigin)
-        || (vercelUrl && normalizedOrigin === vercelUrl);
-
-    if (origin && isAllowed) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-
-    res.setHeader('Vary', 'Origin');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-    res.setHeader('Access-Control-Max-Age', '3600');
-
-    return isAllowed;
-};
 
 const parseRequestBody = (body) => {
     if (!body) return {};
@@ -67,42 +21,12 @@ const parseRequestBody = (body) => {
     return body;
 };
 
-const getBearerToken = (req) => {
-    const authHeader = req.headers.authorization || '';
-    const match = authHeader.match(/^Bearer\s+(.+)$/i);
-    return match ? match[1] : '';
-};
-
-const verifyAdminToken = async (req) => {
-    const token = getBearerToken(req);
-    if (!token) {
-        const error = new Error('Missing Firebase ID token.');
-        error.status = 401;
-        throw error;
+const verifyAdminCaller = async (req) => {
+    const caller = await verifyCaller(req);
+    if (!caller.isAdmin) {
+        throw new HttpError(403, 'Admin access required.');
     }
-
-    const projectId = getFirebaseProjectId();
-    let payload;
-    try {
-        ({ payload } = await jwtVerify(token, FIREBASE_CERTS, {
-            issuer: `https://securetoken.google.com/${projectId}`,
-            audience: projectId,
-        }));
-    } catch (_) {
-        const error = new Error('Invalid Firebase ID token.');
-        error.status = 401;
-        throw error;
-    }
-
-    const email = String(payload.email || '').trim().toLowerCase();
-    const allowedAdminEmails = splitList(process.env.ADMIN_EMAILS || process.env.VITE_ADMIN_EMAILS || 'enzopo625@gmail.com');
-    if (!email || !allowedAdminEmails.includes(email)) {
-        const error = new Error('Admin access required.');
-        error.status = 403;
-        throw error;
-    }
-
-    return payload;
+    return caller;
 };
 
 const validatePayload = (payload) => {
@@ -132,9 +56,7 @@ const createTransport = () => {
     const password = process.env.ADMIN_EMAIL_APP_PASSWORD?.trim();
 
     if (!password) {
-        const error = new Error('Email password is not configured.');
-        error.status = 500;
-        throw error;
+        throw new HttpError(500, 'Email password is not configured.');
     }
 
     return nodemailer.createTransport({
@@ -167,7 +89,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        await verifyAdminToken(req);
+        await verifyAdminCaller(req);
 
         const payload = parseRequestBody(req.body);
         const validation = validatePayload(payload);

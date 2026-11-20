@@ -6,6 +6,7 @@ import { ThreadDetailSkeleton } from './ForumSkeletons';
 import { ForumTeamCard } from './ForumTeamCard';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { AdminBadge } from '../AdminBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, HeartIcon, MessageIcon, ShareIcon, SparklesIcon } from '../icons';
 import { ReactionBar } from './ReactionBar';
@@ -218,6 +219,7 @@ export function ThreadDetail({
                             @{topic.creatorName}
                         </button>
                         {topic.creatorBadgeId && <TrainerBadge badgeId={topic.creatorBadgeId} size="xs" />}
+                        {topic.authorRole === 'admin' && <AdminBadge size="xs" />}
                         {topic.createdBy === 'system' && (
                             <span className="forum-flair forum-flair--official">
                                 <SparklesIcon className="w-3 h-3" />

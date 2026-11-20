@@ -1,0 +1,73 @@
+/* ==========================================================================
+   AdminBadge — tonal Gold verified-admin pill (Option C: Sidebar, Profile,
+   and Forum). Zero raw colors; uses --color-accent-soft / --color-accent.
+   ========================================================================== */
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.admin-badge--xs {
+    padding: 0.1875rem var(--space-1_5);
+    font-size: var(--text-2xs);
+}
+
+.admin-badge--xs svg {
+    width: 0.7rem;
+    height: 0.7rem;
+    flex-shrink: 0;
+}
+
+.admin-badge--sm {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-2xs);
+}
+
+.admin-badge--sm svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+}
+
+.admin-badge--interactive {
+    cursor: pointer;
+    transition:
+        background-color var(--duration-fast) var(--ease-smooth),
+        scale var(--duration-press) var(--ease-out);
+}
+
+.admin-badge--interactive:hover {
+    background: color-mix(in srgb, var(--brand-gold) 22%, var(--color-surface-raised));
+}
+
+.admin-badge--interactive:active {
+    scale: var(--press-scale);
+}
+
+.admin-badge--interactive:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-badge--interactive {
+        transition: none;
+    }
+
+    .admin-badge--interactive:active {
+        scale: none;
+    }
+}

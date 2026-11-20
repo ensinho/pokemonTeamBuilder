@@ -2,6 +2,7 @@ import React, { memo, useState, useMemo, useCallback } from 'react';
 import { CircleMinus, CirclePlus } from 'lucide-react';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { AdminBadge } from '../AdminBadge';
 import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../icons';
 import { Check, Flag as FlagIcon } from 'lucide-react';
@@ -18,7 +19,8 @@ import { ChallengeShareCard } from '../ChallengeShareCard';
 import { GameShares } from './GameShares';
 import { ForumTeamCard } from './ForumTeamCard';
 
-const isStaff = (c) => c.createdBy === 'system' || c.creatorName === 'Professor Oak' || c.userEmail === 'enzopo625@gmail.com';
+const isSystemAuthor = (c) => c.createdBy === 'system' || c.creatorName === 'Professor Oak';
+const isAdminAuthor = (c) => c.authorRole === 'admin';
 
 /**
  * One comment and everything under it, Reddit style: avatar and byline, the
@@ -62,8 +64,9 @@ const CommentNode = memo(function CommentNode({
             </button>
             {comment.creatorBadgeId && <TrainerBadge badgeId={comment.creatorBadgeId} size="xs" />}
             {isOP && <span className="cmt__tag cmt__tag--op" title="Original Poster">OP</span>}
-            {isStaff(comment) && (
-                <span className="cmt__tag cmt__tag--staff">{comment.creatorName === 'Professor Oak' ? 'System' : 'Admin'}</span>
+            {isAdminAuthor(comment) && <AdminBadge size="xs" />}
+            {!isAdminAuthor(comment) && isSystemAuthor(comment) && (
+                <span className="cmt__tag cmt__tag--staff">System</span>
             )}
             <span className="cmt__dot" aria-hidden="true">·</span>
             <time className="cmt__time" dateTime={comment.createdAt}>{formatForumTime(comment.createdAt, language)}</time>
