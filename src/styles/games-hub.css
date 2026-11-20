@@ -120,6 +120,7 @@
 
 .games-day__belt {
     display: flex;
+    align-items: flex-end;
     gap: var(--space-4);
     margin: 0;
     padding: 0;
@@ -201,8 +202,8 @@
     display: grid;
     place-items: center;
     box-sizing: border-box;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border: 2px dashed var(--color-border-strong);
     border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--tone, var(--color-primary)) 16%, var(--color-surface));
@@ -616,10 +617,19 @@
         gap: var(--space-1);
     }
 
-    .belt-ball__ball,
-    .belt-ball__mime-ring {
+    .belt-ball__ball {
         width: 2rem;
         height: 2rem;
+    }
+
+    .belt-ball__mime-ring {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .belt-ball__mime-ring .mascot {
+        width: 1.9rem;
+        height: 1.9rem;
     }
 
     /* The Mais sheet's tile: the icon over its name, three to a row. */

@@ -298,6 +298,9 @@ export function DailyMimeCard({ inDiary = false, compact = false, className = ''
                         tone={stage.mascotTone}
                         mood={stage.mascotMood}
                         pose={stage.mascotPose}
+                        state={state.solved ? 'done' : undefined}
+                        stateKey={animKey}
+                        interactive
                         seasonal={false}
                         play={justWon ? 'celebrate' : wrongFlash ? 'shake' : undefined}
                         playKey={animKey}

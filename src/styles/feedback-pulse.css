@@ -91,7 +91,7 @@
 
 .feedback-pulse__stage {
     position: relative;
-    height: 9.25rem;
+    height: 10rem;
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
     overflow: hidden;
@@ -344,7 +344,7 @@
     }
 
     .feedback-pulse__stage {
-        height: 8rem;
+        height: 9rem;
     }
 
     .feedback-pulse__reactions {

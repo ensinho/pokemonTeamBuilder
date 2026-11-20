@@ -20,9 +20,10 @@
  * becomes the side of a solid.
  */
 import { preparedVolume, viewBasis, activeStack, planeMatrix, sidePlaneMatrix, projectPoint } from '../../../vendor/open-bot-avatar/render.js';
-import { computePose, hashString } from '../../../vendor/open-bot-avatar/motion.js';
+import { hashString } from '../../../vendor/open-bot-avatar/motion.js';
 import { HEAD_PIVOT, FOOT, mascotPieces, f, clamp } from '../rig.js';
 import { BOT_DEFINITION, RIG_TO_BOX, RIG_SCALE } from './definition.js';
+import { computeBotPose, isBotState, ribbonPieces, ribbonRims } from './state.js';
 
 /** The engine's volume amount (0 flat … 14): 4 keeps the icon's line about as thick as it is drawn. */
 export const BOT_DEPTH = 4;
@@ -72,8 +73,10 @@ export function botVolume() {
             (axis === 'z' ? part.zSlices : part.xSlices).forEach((s, j) => slices.push({ id: `p${i}${axis}${j}`, part: i, axis, index: j, s }));
         }
     });
+    const headPolys = vol.parts[0]?.polys;
+    const rims = headPolys?.length ? ribbonRims(headPolys, b) : undefined;
     prepared = {
-        def, vol, slices,
+        def, vol, slices, rims,
         seed: hashString(def.id),
         pivot: [(b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2],
         base: [(b.minX + b.maxX) / 2, b.maxY],
@@ -93,6 +96,13 @@ const THINKING = new Set(['pensando', 'confuso', 'concentrado', 'desconfiado', '
 /** The engine's motion for a mood and a pose: a hop for joy, the tilted look-up for thinking, idle otherwise. */
 export function botMotion(mood, pose) {
     if (HAPPY.has(mood) || HAPPY.has(pose)) return 'happy';
+    if (THINKING.has(mood) || THINKING.has(pose)) return 'thinking';
+    return 'idle';
+}
+
+/** Resolve the bot's state (`idle`, `thinking`, `working`, `done`) from an explicit state or mood/pose. */
+export function botState(mood, pose, explicitState) {
+    if (isBotState(explicitState)) return explicitState;
     if (THINKING.has(mood) || THINKING.has(pose)) return 'thinking';
     return 'idle';
 }
@@ -145,11 +155,11 @@ function shadeOf(P, x, depthRank, lineK = 1) {
  * `view`, `reducedMotion`. `uid` prefixes the ids of `botDefs(uid)`, which
  * must already be in the document (`standalone` inlines the ones it uses).
  */
-export function botInner(pose, { time = 0, motion = 'idle', gaze, motionBlend, view, reducedMotion = false, uid = 'mb-', pxPerUnit = 0, standalone = false } = {}) {
+export function botInner(pose, { time = 0, state, mood, motion = 'idle', stateAge, gaze, motionBlend, view, reducedMotion = false, uid = 'mb-', pxPerUnit = 0, standalone = false } = {}) {
     const P = botVolume();
     const pieces = mascotPieces(pose);
     const { p } = pieces;
-    const e = computePose({ seed: P.seed, time, motion, gaze, reducedMotion, view, blend: motionBlend });
+    const e = computeBotPose({ seed: P.seed, time, state, mood, motion, stateAge, gaze, reducedMotion, view, blend: motionBlend });
     const v = viewBasis(e.yaw, e.pitch);
     const { stack, list } = drawn(P, v, pxPerUnit);
 
@@ -201,6 +211,25 @@ export function botInner(pose, { time = 0, motion = 'idle', gaze, motionBlend, v
     const [bx, by] = P.base;
     const root = mul([1, 0, 0, 1, 0, e.lift], mul([1, 0, 0, 1, bx, by], mul(mul([Math.cos(rr), Math.sin(rr), -Math.sin(rr), Math.cos(rr), 0, 0], [e.sx, 0, 0, e.sy, 0, 0]), [1, 0, 0, 1, -bx, -by])));
 
+    // orbiting celebration / working ribbons in box-space, following lift + sy smoothly around center (outside roll)
+    let backRibbons = '';
+    let frontRibbons = '';
+    if (!reducedMotion && e.ribbons > 0.01) {
+        const rim = P.rims ? (e.cage >= 0.5 ? P.rims.cage : P.rims.work) : undefined;
+        const rPieces = ribbonPieces(P.vol.bounds, e.ribbons, P.seed, time, e.sweep, e.cage, rim);
+        if (rPieces.length) {
+            const [px, py] = P.pivot;
+            const ribbonsFollow = mat(mul([1, 0, 0, 1, 0, e.lift], mul([1, 0, 0, 1, px, py], mul([1, 0, 0, e.sy, 0, 0], [1, 0, 0, 1, -px, -py]))));
+            const modeClass = e.cage >= 0.5 ? 'is-done' : 'is-working';
+            const op = r4(e.ribbons);
+            const pathOf = (r) => `<path class="bot-ribbon bot-ribbon--h${r.hoop} bot-ribbon--l${r.lane}${r.front ? '' : ' is-back'}" d="${r.d}"/>`;
+            const backPaths = rPieces.filter((r) => !r.front).map(pathOf).join('');
+            const frontPaths = rPieces.filter((r) => r.front).map(pathOf).join('');
+            if (backPaths) backRibbons = `<g class="bot-ribbons bot-ribbons--back ${modeClass}" opacity="${op}" transform="${ribbonsFollow}">${backPaths}</g>`;
+            if (frontPaths) frontRibbons = `<g class="bot-ribbons bot-ribbons--front ${modeClass}" opacity="${op}" transform="${ribbonsFollow}">${frontPaths}</g>`;
+        }
+    }
+
     // the line mascot's own transforms, in rig space (mascotInner's, minus the icon's tilt that the body already has)
     const bodyT = `translate(0 ${FOOT}) scale(${r4(p.sx)} ${r4(p.sy)}) translate(0 ${-FOOT})`;
     const toneAttr = pieces.tone ? ` style="${pieces.tone}"` : '';
@@ -214,9 +243,13 @@ export function botInner(pose, { time = 0, motion = 'idle', gaze, motionBlend, v
         + `<g class="m-root bot-root" transform="translate(${f(p.x)} ${f(p.y)}) rotate(${f(p.rot)}) scale(${r4(p.scale)})" opacity="${r4(p.opacity)}"${toneAttr}>`
         + `<g transform="${bodyT}">`
         + pieces.behind
-        + `<g transform="rotate(${f((p.tilt - TILT) * TILT_SHARE)} ${HEAD_PIVOT[0]} ${HEAD_PIVOT[1]})"><g transform="${BOX_TO_RIG}"><g transform="${mat(root)}">`
+        + `<g transform="rotate(${f((p.tilt - TILT) * TILT_SHARE)} ${HEAD_PIVOT[0]} ${HEAD_PIVOT[1]})"><g transform="${BOX_TO_RIG}">`
+        + backRibbons
+        + `<g transform="${mat(root)}">`
         + slices + face + dress
-        + '</g></g></g>'
+        + '</g>'
+        + frontRibbons
+        + '</g></g>'
         + '</g>'
         + pieces.fx
         + '</g>';

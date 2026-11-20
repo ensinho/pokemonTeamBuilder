@@ -202,6 +202,12 @@ export default {
             determinado: 'Determinado',
             sonolento: 'Sonolento',
         },
+        states: {
+            idle: 'Livre',
+            thinking: 'Pensando',
+            working: 'Focado',
+            done: 'Concluído',
+        },
     },
     supportNudge: {
         title: 'Curtiu essa?',
@@ -1860,6 +1866,7 @@ export default {
         mascotTryBot: 'Experimente: ele segue o seu ponteiro pela página. Clique, dê dois cliques, segure para uma Shadow Ball, esfregue o topo da cabeça, arraste (ele se inclina junto), ou toque três vezes nas faíscas.',
         mascotTry: 'Experimente: clique, dê dois cliques, segure para uma Shadow Ball, esfregue o topo da cabeça, arraste, ou toque três vezes nas faíscas.',
         mascotMoods: 'Humores do mascote',
+        mascotStates: 'Estado',
         mascotTone: 'Cor do mascote',
         mascotToneBrand: 'Roxo do ícone',
         mascotTonePersona: 'Da sua persona ({{type}})',

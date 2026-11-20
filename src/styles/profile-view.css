@@ -1113,6 +1113,15 @@ button.profile-face__choose:focus-visible { outline: none; box-shadow: var(--rin
     line-height: 1.5;
     color: var(--color-muted);
 }
+.profile-mascot__states {
+    width: 100%;
+    min-width: 0;
+}
+.profile-mascot__states .segmented__item {
+    padding-inline: var(--space-2);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+}
 .profile-mascot__moods {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
