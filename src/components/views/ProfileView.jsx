@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import '../../styles/profile-view.css';
 import '../../styles/journeys.css';
@@ -24,6 +24,8 @@ import { puzzleNumberOn } from '../../utils/playToday';
 import { trainerPixels } from '../../utils/trainerCardPattern';
 import { buildMasteryEvolution } from '../../utils/masteryEvolution';
 import { dayReceipt, trainerNumber } from '../../utils/mascot/roundReceipt';
+import { MIME_SYNC_EVENT, readMimeDayState } from '../../utils/dailyMime';
+import { mimeReceiptRow } from '../../utils/receiptShare';
 import { useRoundStore } from '../../store/useRoundStore';
 import { useGameNotes, useGamesToday } from '../../hooks/useGamesToday';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -591,11 +593,27 @@ const ProfileReceiptCard = ({ userId, fullDays, isAnonymous }) => {
     const dayNumber = localDayNumber(now);
     const locale = language === 'pt' ? 'pt-BR' : 'en-GB';
     const dateLabel = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now));
+    const [mimeState, setMimeState] = useState(() => readMimeDayState(dayKey));
+
+    useEffect(() => {
+        const refresh = () => setMimeState(readMimeDayState(dayKey));
+        refresh();
+        if (typeof window === 'undefined') return undefined;
+        window.addEventListener(MIME_SYNC_EVENT, refresh);
+        window.addEventListener('storage', refresh);
+        return () => {
+            window.removeEventListener(MIME_SYNC_EVENT, refresh);
+            window.removeEventListener('storage', refresh);
+        };
+    }, [dayKey]);
 
     const day = useMemo(() => dayReceipt(done, {
         quiz: notes.quiz || null,
         tier: notes.tierList?.theme || null,
     }), [done, notes]);
+
+    const mimeRow = useMemo(() => mimeReceiptRow(mimeState, dayNumber, language), [mimeState, dayNumber, language]);
+    const hasActivity = day.played > 0 || Boolean(mimeRow);
 
     const rowLabel = (row) => {
         if (row.id === 'challenge') return t('receipt.row.challenge');
@@ -604,11 +622,22 @@ const ProfileReceiptCard = ({ userId, fullDays, isAnonymous }) => {
         return t('receipt.row.tierShort');
     };
 
-    const rows = day.rows.map((row) => ({
+    const baseRows = day.rows.map((row) => ({
         label: rowLabel(row),
         value: t(`receipt.value.${row.value}`, row.params || {}),
         bold: Boolean(row.bold),
     }));
+    const rows = mimeRow
+        ? [...baseRows, { label: mimeRow.label, value: mimeRow.value, bold: mimeRow.bold }]
+        : baseRows;
+
+    const stamp = day.complete
+        ? <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={t('receipt.stampFull')} word={t('receipt.stampFour')} />
+        : day.played > 0
+            ? <ReceiptStamp mood="feliz" sub={language === 'pt' ? 'Parcial' : 'In progress'} word={t('receipt.stampSoFar', { n: day.played })} />
+            : mimeRow
+                ? <ReceiptStamp mood="feliz" sub={language === 'pt' ? 'Bônus' : 'Bonus'} word={language === 'pt' ? 'Mímica' : 'Mime'} />
+                : <ReceiptStamp mood="feliz" sub={t('receipt.stampDay')} word={t('receipt.stampSoFar', { n: 0 })} />;
 
     return (
         <aside className="profile-receipt" aria-label={t('receipt.titleDay')}>
@@ -625,15 +654,13 @@ const ProfileReceiptCard = ({ userId, fullDays, isAnonymous }) => {
                     [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: day.played, total: day.total })],
                     [t('receipt.totals.fullDays'), String(fullDays)],
                 ]}
-                stamp={day.complete
-                    ? <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={t('receipt.stampFull')} word={t('receipt.stampFour')} />
-                    : <ReceiptStamp mood="feliz" sub={t('receipt.stampDay')} word={t('receipt.stampSoFar', { n: day.played })} />}
+                stamp={stamp}
                 code={{ code: trainerNumber(userId || 'guest'), label: t('receipt.trainerId') }}
             >
                 <Link to="/games" className={`btn ${isAnonymous ? 'btn-secondary' : 'btn-primary'} btn-sm`}>
                     {day.complete ? t('profile.dossier.receiptAllDone') : t('profile.dossier.receiptPlayNext', { n: day.played })}
                 </Link>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => openReceipt('day')}>
+                <button type="button" className={`btn ${hasActivity ? 'btn-secondary' : 'btn-ghost'} btn-sm`} onClick={() => openReceipt('day')}>
                     {t('profile.dossier.receiptOpenFull')}
                 </button>
             </Receipt>

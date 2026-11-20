@@ -527,6 +527,9 @@
 }
 
 .daily-mime__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
     margin: 0;
     color: var(--color-primary-text);
     font-family: var(--font-mono);
@@ -722,6 +725,181 @@
 @media (max-width: 1023px) {
     .daily-mime__stage {
         min-height: 14rem;
+    }
+}
+
+/* Compact playable variant for the top of /games (above-the-fold alongside the 2x2 grid) */
+.daily-mime--compact {
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+}
+
+.daily-mime--compact .daily-mime__stage {
+    min-height: 8.5rem;
+}
+
+.daily-mime--compact .daily-mime__ruler {
+    top: var(--space-2);
+    left: var(--space-2);
+    gap: var(--space-2);
+    height: 4.25rem;
+    padding: var(--space-1_5) var(--space-2);
+}
+
+.daily-mime--compact .daily-mime__place {
+    left: var(--space-2);
+    bottom: var(--space-2);
+    padding: var(--space-0_5) var(--space-2);
+}
+
+.daily-mime--compact .daily-mime__art-frame {
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 4rem;
+    height: 4rem;
+    padding: var(--space-1);
+}
+
+.daily-mime--compact .daily-mime__side {
+    gap: var(--space-2);
+}
+
+.daily-mime--compact .daily-mime__title {
+    font-size: var(--text-sm);
+    line-height: 1.25;
+}
+
+.daily-mime__compact-clues {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.daily-mime__clue-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.daily-mime__clue-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 1.625rem;
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    border: 1.5px dashed var(--color-border-strong);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    cursor: default;
+    transition:
+        background-color var(--duration-fast) var(--ease-smooth),
+        color var(--duration-fast) var(--ease-smooth),
+        box-shadow var(--duration-fast) var(--ease-smooth),
+        scale var(--duration-press) var(--ease-out);
+}
+
+.daily-mime__clue-pill.is-open {
+    border-color: transparent;
+    border-style: solid;
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    cursor: pointer;
+}
+
+.daily-mime__clue-pill.is-open:hover {
+    background: var(--color-surface-hover);
+}
+
+.daily-mime__clue-pill.is-open:active {
+    scale: var(--press-scale);
+}
+
+.daily-mime__clue-pill.is-open:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.daily-mime__clue-pill.is-active {
+    background: color-mix(in srgb, var(--mime-tone) 18%, var(--color-surface-raised));
+    color: color-mix(in srgb, var(--mime-tone) 45%, var(--color-fg));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mime-tone) 45%, transparent);
+}
+
+.daily-mime__clue-pill-num {
+    font-variant-numeric: tabular-nums;
+}
+
+.daily-mime__clue-pill-label {
+    font-family: var(--font-body);
+    font-weight: var(--weight-medium);
+}
+
+.daily-mime__active-clue {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: var(--space-1_5) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    min-width: 0;
+}
+
+.daily-mime--compact .daily-mime__guesses {
+    gap: var(--space-1_5);
+}
+
+.daily-mime--compact .daily-mime__guess {
+    min-height: var(--control-h-sm);
+    padding: var(--space-1_5) var(--space-2_5);
+    font-size: var(--text-xs);
+}
+
+.daily-mime__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-top: auto;
+}
+
+.daily-mime__footer .daily-mime__actions {
+    margin-top: 0;
+}
+
+@media (min-width: 768px) {
+    .daily-mime--compact {
+        grid-template-columns: minmax(11.5rem, 15.5rem) minmax(0, 1fr);
+        align-items: stretch;
+        gap: var(--space-4);
+        padding: var(--space-3);
+    }
+
+    .daily-mime--compact .daily-mime__stage {
+        min-height: 10.5rem;
+    }
+}
+
+@media (max-width: 479px) {
+    .daily-mime__clue-pill-label {
+        display: none;
+    }
+
+    .daily-mime__clue-pill {
+        justify-content: center;
+        min-width: 1.75rem;
+        padding: var(--space-0_5) var(--space-1_5);
     }
 }
 
