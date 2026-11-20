@@ -14,14 +14,10 @@ export const NAV_HUBS = {
         { key: 'items', path: '/items', labelKey: 'nav.items' },
     ],
     // 2026-11-10 (Enzo, "reduzir carga cognitiva"): the two competitive
-    // calculators, and the two halves of playing with friends.
+    // calculators. (Friends & Battles unified into FriendsView's own tab bar.)
     tools: [
         { key: 'damageCalc', path: '/damage-calculator', labelKey: 'nav.damageCalcShort' },
         { key: 'speedTiers', path: '/speed-tiers', labelKey: 'nav.speedTiersShort' },
-    ],
-    community: [
-        { key: 'battles', path: '/battles', labelKey: 'nav.battles' },
-        { key: 'friends', path: '/friends', labelKey: 'nav.friends' },
     ],
     meta: [
         { key: 'meta', path: '/meta', labelKey: 'nav.hubUsage' },

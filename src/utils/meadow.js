@@ -41,6 +41,27 @@ const gameOfEvent = (e) => {
     return [];
 };
 
+/** Parse an ISO string, YYYY-MM-DD day key, number, or Firestore Timestamp into ms (0 if invalid). */
+const timestampMs = (value) => {
+    if (!value) return 0;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    if (typeof value === 'object' && typeof value.toMillis === 'function') {
+        const ms = value.toMillis();
+        return Number.isFinite(ms) ? ms : 0;
+    }
+    if (typeof value === 'object' && typeof value.seconds === 'number') {
+        return value.seconds * 1000;
+    }
+    const str = String(value).trim();
+    if (!str) return 0;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const ms = Date.parse(`${str}T00:00:00Z`);
+        return Number.isFinite(ms) ? ms : 0;
+    }
+    const ms = Date.parse(str);
+    return Number.isFinite(ms) ? ms : 0;
+};
+
 /**
  * @param {object} p
  * @param {object[]} p.friends        useFriendsStore friends (public profiles)
@@ -52,8 +73,13 @@ const gameOfEvent = (e) => {
 export function meadowRoster({ friends = [], events = [], todayKeys = [], max = MEADOW_MAX } = {}) {
     const days = new Set(todayKeys.filter(Boolean));
     const played = new Map();
+    const lastEventAt = new Map();
     events.forEach((e) => {
         if (!e?.uid) return;
+        const eventMs = Math.max(timestampMs(e.at), timestampMs(e.dayKey));
+        if (eventMs > (lastEventAt.get(e.uid) || 0)) {
+            lastEventAt.set(e.uid, eventMs);
+        }
         const isToday = e.dayKey ? days.has(e.dayKey) : days.has(String(e.at || '').slice(0, 10));
         if (!isToday) return;
         const games = gameOfEvent(e);
@@ -66,6 +92,12 @@ export function meadowRoster({ friends = [], events = [], todayKeys = [], max = 
         .filter((f) => f?.userId)
         .map((f) => {
             const games = played.get(f.userId) || new Set();
+            const lastActivityAt = Math.max(
+                lastEventAt.get(f.userId) || 0,
+                timestampMs(f.lastActiveAt),
+                timestampMs(f.updatedAt),
+                timestampMs(f.streak?.lastVisit),
+            );
             return {
                 uid: f.userId,
                 name: f.displayName || null,
@@ -73,11 +105,17 @@ export function meadowRoster({ friends = [], events = [], todayKeys = [], max = 
                 games: Object.fromEntries(DAILY_GAMES.map((game) => [game, games.has(game)])),
                 played: games.size,
                 awake: games.size > 0,
+                lastActivityAt,
                 profile: f,
             };
         })
-        // the awake first (most played first), then the dozing, by name
-        .sort((a, b) => (b.played - a.played) || String(a.name || '').localeCompare(String(b.name || '')));
+        // Awake today first (most recent activity first, then games played),
+        // then sleeping friends ordered by most recent activity / streak.lastVisit / updatedAt,
+        // falling back to name only as a tiebreaker.
+        .sort((a, b) => (Number(b.awake) - Number(a.awake))
+            || (b.lastActivityAt - a.lastActivityAt)
+            || (b.played - a.played)
+            || String(a.name || '').localeCompare(String(b.name || '')));
     return { ghosts: ghosts.slice(0, max), more: Math.max(0, ghosts.length - max) };
 }
 

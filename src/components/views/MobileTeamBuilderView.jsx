@@ -6,7 +6,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
 import {
     Dices, Trophy, ShieldCheck, Sparkles, SlidersHorizontal, Search, HelpCircle, Info,
-    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, BoxIcon, Check, Share2, Trash2, ArrowLeftRight,
+    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, BoxIcon, Check, Share2, Trash2, ArrowLeftRight, Plus,
 } from 'lucide-react';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
@@ -350,6 +350,10 @@ export const MobileTeamBuilderView = ({
     gamePokemonIds,
     gameDexes,
     synergySuggestions = [],
+    visibleSuggestionsLimit = 30,
+    maxSuggestionsLimit = 60,
+    suggestionsStep = 5,
+    onLoadMoreSuggestions,
     handleAddPokemonToTeam,
     handleRandomizeTeam,
     isRandomizing,
@@ -366,7 +370,7 @@ export const MobileTeamBuilderView = ({
     setShowOnlyFavorites,
     onOpenOnboarding,
 }) => {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
@@ -462,19 +466,26 @@ export const MobileTeamBuilderView = ({
     }, [synergySuggestions, displayedPokemons, selectedTypes, typeMatchMode, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
 
     const synergyReasonById = React.useMemo(
-        () => new Map(activeFilteredSuggestions.map((s) => [s.id, quietReason(s.primary)])),
-        [activeFilteredSuggestions]
+        () => new Map(activeFilteredSuggestions.slice(0, visibleSuggestionsLimit).map((s) => [s.id, quietReason(s.primary)])),
+        [activeFilteredSuggestions, visibleSuggestionsLimit]
     );
 
     // Synergy-only picks not in the displayed list, prepended to grid.
     const displayedIdSet = React.useMemo(() => new Set(displayedPokemons.map((p) => p.id)), [displayedPokemons]);
-    const synergyOnlyCards = React.useMemo(() => {
+    const allSynergyOnlyCards = React.useMemo(() => {
         // While searching, show the matching Pokémon first (no synergy prepend).
         if (searchInput.trim() || !activeFilteredSuggestions.length) return [];
         return activeFilteredSuggestions
             .filter((s) => !displayedIdSet.has(s.id))
+            .slice(0, maxSuggestionsLimit)
             .map((s) => ({ ...s, primary: quietReason(s.primary), _synergyOnly: true }));
-    }, [activeFilteredSuggestions, displayedIdSet, searchInput]);
+    }, [activeFilteredSuggestions, displayedIdSet, maxSuggestionsLimit, searchInput]);
+    const synergyOnlyCards = React.useMemo(
+        () => allSynergyOnlyCards.slice(0, visibleSuggestionsLimit),
+        [allSynergyOnlyCards, visibleSuggestionsLimit],
+    );
+    const remainingSuggestionsCount = Math.max(0, allSynergyOnlyCards.length - synergyOnlyCards.length);
+    const nextSuggestionsBatch = Math.min(suggestionsStep, remainingSuggestionsCount);
     const suggestionHeading = synergyOnlyCards.length > 0
         ? (synergyOnlyCards.every((c) => c.primary?.kind === 'meta') ? t('builder.metaPicksHeading') : t('builder.suggestionsHeading'))
         : null;
@@ -997,6 +1008,30 @@ export const MobileTeamBuilderView = ({
                                                     usage={metaUsageById?.[pokemon.id]?.usage}
                                                 />
                                             ))}
+                                            {suggestionHeading && remainingSuggestionsCount > 0 && onLoadMoreSuggestions && (
+                                                <div className="tb-suggestions-more tb-suggestions-more--mobile">
+                                                    <button
+                                                        type="button"
+                                                        onClick={onLoadMoreSuggestions}
+                                                        className="btn btn-secondary btn-sm tb-suggestions-more__btn"
+                                                        aria-label={language === 'pt'
+                                                            ? `Mostrar mais ${nextSuggestionsBatch} sugestões competitivas (${remainingSuggestionsCount} restantes)`
+                                                            : `Show ${nextSuggestionsBatch} more competitive suggestions (${remainingSuggestionsCount} left)`}
+                                                    >
+                                                        <Plus aria-hidden="true" />
+                                                        <span>
+                                                            {language === 'pt'
+                                                                ? `+${nextSuggestionsBatch} sugestões competitivas`
+                                                                : `+${nextSuggestionsBatch} competitive suggestions`}
+                                                        </span>
+                                                        <span className="count-badge tb-suggestions-more__count">
+                                                            {language === 'pt'
+                                                                ? `${remainingSuggestionsCount} restantes`
+                                                                : `${remainingSuggestionsCount} left`}
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            )}
                                             {suggestionHeading && (
                                                 <h4 className="pokedex-section-title pokedex-section-title--mobile pokedex-section-title--national">{t('builder.allPokemonHeading')}</h4>
                                             )}

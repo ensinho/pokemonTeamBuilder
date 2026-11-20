@@ -88,6 +88,10 @@ function AnalysisTypeBadge({ type }) {
 // pick" ×30 with an empty team), so the group carries one heading instead.
 const META_REASON = { kind: 'meta' };
 const quietReason = (reason) => (reason?.kind === 'meta' ? META_REASON : reason);
+const BASE_SUGGESTIONS_LIMIT = 30;
+const SUGGESTIONS_STEP = 5;
+const MAX_SUGGESTIONS_LIMIT = 60;
+const SUGGESTIONS_POOL_LIMIT = MAX_SUGGESTIONS_LIMIT + 15;
 
 // The composer's secondary actions (desktop). Save and Export are the two
 // things people come to do, so they are labelled buttons; the rest — randomise,
@@ -432,6 +436,21 @@ export function TeamBuilderView({
         [currentTeam, smogonById, usageById, isPlaythrough]
     );
 
+    // Progressive reveal for the competitive/meta suggestions shelf: starts at
+    // BASE_SUGGESTIONS_LIMIT and appends +5 ranked picks per click, resetting
+    // whenever the format, game, or search query changes.
+    const [extraSuggestionsCount, setExtraSuggestionsCount] = React.useState(0);
+    React.useEffect(() => {
+        setExtraSuggestionsCount(0);
+    }, [activeRegulationId, selectedGame, searchInput]);
+    const visibleSuggestionsLimit = Math.min(
+        MAX_SUGGESTIONS_LIMIT,
+        BASE_SUGGESTIONS_LIMIT + extraSuggestionsCount,
+    );
+    const handleLoadMoreSuggestions = React.useCallback(() => {
+        setExtraSuggestionsCount((count) => Math.min(MAX_SUGGESTIONS_LIMIT - BASE_SUGGESTIONS_LIMIT, count + SUGGESTIONS_STEP));
+    }, []);
+
     // Team-aware synergy suggestions: by ability/core, tournament partner, and
     // type coverage — ranked across the whole relevant dex, reactive to the team.
     const synergySuggestions = React.useMemo(() => {
@@ -458,7 +477,7 @@ export function TeamBuilderView({
             usageById,
             popular: metaRanked.length ? metaRanked : popular,
             metaUsage: metaUsageMap,
-            limit: 30,
+            limit: SUGGESTIONS_POOL_LIMIT,
             allowedIds,
         });
     }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds, tierLegalIds, isPlaythrough]);
@@ -495,21 +514,28 @@ export function TeamBuilderView({
 
     // Map synergy id → primary reason for in-grid border/icon rendering.
     const synergyReasonById = React.useMemo(
-        () => new Map(activeFilteredSuggestions.map((s) => [s.id, quietReason(s.primary)])),
-        [activeFilteredSuggestions]
+        () => new Map(activeFilteredSuggestions.slice(0, visibleSuggestionsLimit).map((s) => [s.id, quietReason(s.primary)])),
+        [activeFilteredSuggestions, visibleSuggestionsLimit]
     );
 
     // Synergy-only picks that aren't already in the displayed list, prepended as
     // enriched cards at the top of the grid so the user sees them immediately.
     const displayedIdSet = React.useMemo(() => new Set(displayedPokemons.map((p) => p.id)), [displayedPokemons]);
-    const synergyOnlyCards = React.useMemo(() => {
+    const allSynergyOnlyCards = React.useMemo(() => {
         // While searching, surface the matching Pokémon first — don't prepend
         // synergy suggestions ahead of the actual search results.
         if (searchInput.trim() || !activeFilteredSuggestions.length) return [];
         return activeFilteredSuggestions
             .filter((s) => !displayedIdSet.has(s.id) && suggestionIndexById.has(s.id))
+            .slice(0, MAX_SUGGESTIONS_LIMIT)
             .map((s) => ({ ...suggestionIndexById.get(s.id), ...s, primary: quietReason(s.primary), _synergyOnly: true }));
     }, [activeFilteredSuggestions, displayedIdSet, suggestionIndexById, searchInput]);
+    const synergyOnlyCards = React.useMemo(
+        () => allSynergyOnlyCards.slice(0, visibleSuggestionsLimit),
+        [allSynergyOnlyCards, visibleSuggestionsLimit],
+    );
+    const remainingSuggestionsCount = Math.max(0, allSynergyOnlyCards.length - synergyOnlyCards.length);
+    const nextSuggestionsBatch = Math.min(SUGGESTIONS_STEP, remainingSuggestionsCount);
     const suggestionHeading = synergyOnlyCards.length > 0
         ? (synergyOnlyCards.every((c) => c.primary?.kind === 'meta') ? t('builder.metaPicksHeading') : t('builder.suggestionsHeading'))
         : null;
@@ -710,6 +736,10 @@ export function TeamBuilderView({
                     gamePokemonIds={gamePokemonIds}
                     gameDexes={gameDexes}
                     synergySuggestions={synergySuggestions}
+                    visibleSuggestionsLimit={visibleSuggestionsLimit}
+                    maxSuggestionsLimit={MAX_SUGGESTIONS_LIMIT}
+                    suggestionsStep={SUGGESTIONS_STEP}
+                    onLoadMoreSuggestions={handleLoadMoreSuggestions}
                     handleAddPokemonToTeam={handleAddPokemonWithClear}
                     handleRandomizeTeam={handleRandomizeTeam}
                     isRandomizing={isRandomizing}
@@ -1286,6 +1316,30 @@ export function TeamBuilderView({
                                                         usage={isRanked && !isPlaythrough ? metaById?.[pokemon.id]?.usage : undefined}
                                                     />
                                                 ))}
+                                                {suggestionHeading && remainingSuggestionsCount > 0 && (
+                                                    <div className="tb-suggestions-more">
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleLoadMoreSuggestions}
+                                                            className="btn btn-secondary btn-sm tb-suggestions-more__btn"
+                                                            aria-label={language === 'pt'
+                                                                ? `Mostrar mais ${nextSuggestionsBatch} sugestões competitivas (${remainingSuggestionsCount} restantes)`
+                                                                : `Show ${nextSuggestionsBatch} more competitive suggestions (${remainingSuggestionsCount} left)`}
+                                                        >
+                                                            <Plus aria-hidden="true" />
+                                                            <span>
+                                                                {language === 'pt'
+                                                                    ? `+${nextSuggestionsBatch} sugestões competitivas`
+                                                                    : `+${nextSuggestionsBatch} competitive suggestions`}
+                                                            </span>
+                                                            <span className="count-badge tb-suggestions-more__count">
+                                                                {language === 'pt'
+                                                                    ? `${remainingSuggestionsCount} restantes`
+                                                                    : `${remainingSuggestionsCount} left`}
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                )}
                                                 {suggestionHeading && <h4 className="pokedex-section-title pokedex-section-title--national">{t('builder.allPokemonHeading')}</h4>}
                                                 {grid.visibleList.map((pokemon, index) => (
                                                     <PokemonCard

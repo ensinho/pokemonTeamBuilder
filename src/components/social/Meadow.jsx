@@ -6,16 +6,13 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useFriendActivity } from '../../hooks/useFriendActivity';
 import { useGamesToday } from '../../hooks/useGamesToday';
 import { openTrainerCard } from '../../store/useTrainerCardStore';
-import { toast } from '../../store/useToastStore';
-import { notifySocial } from '../../services/socialNotify';
-import { track } from '../../services/analytics';
 import { DAILY_GAMES, GAME_NAV_KEYS } from '../../utils/gamesToday';
-import { POKES_KEY, meadowSpots, normalizePokes, pokedToday, withPoke } from '../../utils/meadow';
+import { meadowSpots } from '../../utils/meadow';
 import { groundAt } from '../../utils/pixelScene';
-import { dayKeyAt } from '../../utils/challengeDay';
 import { navHue } from '../../utils/navHue';
 import { Mascot } from '../Mascot';
 import { PixelScene } from '../mascot/PixelScene';
+import { usePokes } from './usePokes';
 
 /**
  * The meadow (2026-11-17, "Fantasminha de plantão"): the dusk bot's row of
@@ -27,16 +24,11 @@ import { PixelScene } from '../mascot/PixelScene';
  * the rules; everything is read from the Centre's store, no read of its own.
  */
 
-const readPokes = (day) => {
-    try { return normalizePokes(JSON.parse(localStorage.getItem(POKES_KEY) || 'null'), day); } catch { return normalizePokes(null, day); }
-};
-
-export function Meadow({ max = 4, size = 'md', className = '' }) {
+export function Meadow({ max = 4, size = 'md', className = '', moreTo = '/friends?tab=friends' }) {
     const { t } = useTranslation();
     const { meadow, hasFriends, isGuest, isLoaded } = useFriendActivity();
     const mine = useGamesToday();
-    const day = dayKeyAt(Date.now());
-    const [pokes, setPokes] = useState(() => readPokes(day));
+    const { isPoked, pokeFriend } = usePokes();
     const [startled, setStartled] = useState(null);
     const [openUid, setOpenUid] = useState(null);
     const [scene, setScene] = useState(null);
@@ -68,16 +60,10 @@ export function Meadow({ max = 4, size = 'md', className = '' }) {
     }, [openUid]);
 
     const poke = useCallback((ghost) => {
-        if (pokedToday(pokes, ghost.uid)) return;
-        const next = withPoke(pokes, ghost.uid);
-        setPokes(next);
-        try { localStorage.setItem(POKES_KEY, JSON.stringify(next)); } catch { /* the server still keeps it to one a day */ }
-        notifySocial({ kind: 'poke', to: ghost.uid });
-        track('poke_send');
+        if (!pokeFriend(ghost.uid, ghost.name)) return;
         setStartled(ghost.uid);
         window.setTimeout(() => setStartled((uid) => (uid === ghost.uid ? null : uid)), 900);
-        toast.success(t('meadow.poked', { name: ghost.name || t('friends.unknownTrainer') }));
-    }, [pokes, t]);
+    }, [pokeFriend]);
 
     const moodOf = (ghost) => {
         if (startled === ghost.uid) return 'surpreso';
@@ -134,13 +120,13 @@ export function Meadow({ max = 4, size = 'md', className = '' }) {
                                         ? <Mascot size={size} mood={moodOf(ghost)} className="meadow__bot" />
                                         : <Mascot size={size} mood={moodOf(ghost)} tone={ghost.tone || 'brand'} hat={ghost.hat || undefined} seasonal={false} className="meadow__bot" />}
                                     <span className="meadow__name">{name}</span>
-                                    {!ghost.self && pokedToday(pokes, ghost.uid) && !ghost.awake && <span className="meadow__poked" aria-hidden="true">!</span>}
+                                    {!ghost.self && isPoked(ghost.uid) && !ghost.awake && <span className="meadow__poked" aria-hidden="true">!</span>}
                                 </button>
                             </li>
                         );
                     })}
                 </ul>
-                {more > 0 && <Link to="/friends?tab=activity" className="meadow__more">{t('meadow.more', { n: more })}</Link>}
+                {more > 0 && <Link to={moreTo} className="meadow__more">{t('meadow.more', { n: more })}</Link>}
 
                 {open && (
                     <div
@@ -165,8 +151,8 @@ export function Meadow({ max = 4, size = 'md', className = '' }) {
                         )}
                         {open.self && <p className="meadow__card-sub"><Link to="/profile?tab=appearance">{t('meadow.youLook')}</Link></p>}
                         {!open.self && !open.awake && (
-                            <button type="button" className="btn btn-primary btn-sm" disabled={pokedToday(pokes, open.uid)} onClick={() => poke(open)}>
-                                {pokedToday(pokes, open.uid) ? t('meadow.pokedToday') : t('meadow.poke')}
+                            <button type="button" className="btn btn-primary btn-sm" disabled={isPoked(open.uid)} onClick={() => poke(open)}>
+                                {isPoked(open.uid) ? t('meadow.pokedToday') : t('meadow.poke')}
                             </button>
                         )}
                         {!open.self && open.awake && open.profile && (

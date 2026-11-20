@@ -6,12 +6,28 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
+    width: 100%;
 }
 
 /* ── Tabs ─────────────────────────────────────────────────────────── */
 /* The strip and its counters are the shared .tabs / .count-badge (index.css).
    A pending request is the one count that asks for action, so it alone is
    filled — in Live Pink, with the brand ink (5.5:1), since it is new. */
+.friends-tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+}
+
+.friends-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.friends-tabs .tabs__item {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .friends-count--alert {
     background: var(--brand-live);
     color: var(--brand-on-live);
@@ -23,6 +39,22 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+}
+
+@media (min-width: 1024px) {
+    .friends-sections--split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--page-gap, var(--space-6));
+        align-items: start;
+    }
+
+    .friends-sections--find {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.9fr);
+        gap: var(--page-gap, var(--space-6));
+        align-items: start;
+    }
 }
 
 .friends-sections section {
@@ -206,7 +238,7 @@
     }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
     .friends-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -297,9 +329,41 @@
 }
 
 .friend-card__battle-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-1_5);
+    flex: 1;
+    min-width: 0;
     font-weight: var(--weight-semibold);
+}
+
+.friend-card__poke-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1_5);
+    flex: 1;
+    min-width: 0;
+    font-weight: var(--weight-semibold);
+}
+
+.friend-card__poke-btn span,
+.friend-card__battle-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.friend-card__poke-btn.is-poked {
+    color: var(--color-muted);
+}
+
+.friend-card__remove-btn {
+    flex-shrink: 0;
+    color: var(--color-muted);
+}
+
+.friend-card__remove-btn:hover {
+    color: var(--color-danger);
 }
