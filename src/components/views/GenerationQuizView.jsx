@@ -1,5 +1,5 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, CheckCircle2, Compass, HelpCircle, Layers, LayoutGrid, Play, ShieldAlert, Swords, Timer } from 'lucide-react';
+import { Check, CheckCircle2, Compass, HelpCircle, Layers, LayoutGrid, MessageCircle, MoreHorizontal, Play, ShieldAlert, Swords, Timer } from 'lucide-react';
 
 import '../../styles/generation-quiz-view.css';
 
@@ -195,6 +195,9 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [gridFilter, setGridFilter] = useState('all'); // 'all', 'guessed', 'missing'
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+    const actionsMenuRef = useRef(null);
+    const actionsMenuTriggerRef = useRef(null);
     // How the next run is played, and the live parts of one in progress: the
     // run of right answers, a Sprint's clock, and how a Sprint or Flawless
     // run ended. None of it is saved — only the run's best mark is.
@@ -332,6 +335,37 @@ export function GenerationQuizView({ showDetails, showToast }) {
             setVisibleHistoryLimit(10);
         }
     }, [isHistoryOpen]);
+
+    useEffect(() => {
+        if (!quizStarted) {
+            setIsActionsMenuOpen(false);
+        }
+    }, [quizStarted]);
+
+    useEffect(() => {
+        if (!isActionsMenuOpen) return undefined;
+
+        const handlePointerDown = (event) => {
+            if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target)) {
+                setIsActionsMenuOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                setIsActionsMenuOpen(false);
+                actionsMenuTriggerRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isActionsMenuOpen]);
 
     const foundOrder = activeRun ? activeRun.foundOrder : NO_ITEMS;
     const invalidGuesses = activeRun ? activeRun.invalidGuesses : 0;
@@ -1434,30 +1468,91 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                                 ? `Faltam ${catchesToNextHint} acertos para a próxima dica`
                                                 : `${catchesToNextHint} more catches for next hint`)}
                                     >
-                                        <SparklesIcon /> {language === 'pt' ? 'Dica' : 'Hint'}
+                                        <SparklesIcon />
+                                        <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
                                         <span className={`generation-quiz__hint-count ${availableHints === 0 ? 'generation-quiz__hint-count--progress' : ''}`}>
                                             {availableHints > 0 ? availableHints : `${nextHintProgress}/10`}
                                         </span>
                                     </button>
                                     <button type="button" onClick={restartRun} className="generation-quiz__compact-reset-btn">
-                                        <RefreshIcon /> {t('games.restart')}
+                                        <RefreshIcon />
+                                        <span>{t('games.restart')}</span>
                                     </button>
-                                    {foundCount > 0 && (
-                                        <button type="button" onClick={shareDuel} className="generation-quiz__compact-reset-btn">
-                                            <Swords aria-hidden="true" /> {t('quiz.duel.share')}
+                                    <div className="generation-quiz__actions-menu-wrap" ref={actionsMenuRef}>
+                                        <button
+                                            ref={actionsMenuTriggerRef}
+                                            type="button"
+                                            onClick={() => setIsActionsMenuOpen((open) => !open)}
+                                            className={`generation-quiz__compact-reset-btn generation-quiz__actions-menu-trigger ${isActionsMenuOpen ? 'is-open' : ''}`}
+                                            aria-haspopup="menu"
+                                            aria-expanded={isActionsMenuOpen}
+                                            aria-label={language === 'pt' ? 'Mais ações' : 'More actions'}
+                                            title={language === 'pt' ? 'Mais ações' : 'More actions'}
+                                        >
+                                            <MoreHorizontal aria-hidden="true" />
                                         </button>
-                                    )}
-                                    {foundCount > 0 && (
-                                        <DiaryShareButton share={diary} onPost={postRun} className="generation-quiz__compact-reset-btn" />
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={handleExitQuizClick}
-                                        className="generation-quiz__compact-reset-btn"
-                                        title={t('games.changeGensTitle')}
-                                    >
-                                        {t('games.changeGens')}
-                                    </button>
+                                        {isActionsMenuOpen && (
+                                            <div
+                                                className="menu-surface generation-quiz__actions-menu"
+                                                role="menu"
+                                                aria-label={language === 'pt' ? 'Mais ações' : 'More actions'}
+                                            >
+                                                {foundCount > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        role="menuitem"
+                                                        className="menu-item generation-quiz__actions-menu-item"
+                                                        onClick={() => {
+                                                            setIsActionsMenuOpen(false);
+                                                            shareDuel();
+                                                        }}
+                                                    >
+                                                        <Swords aria-hidden="true" />
+                                                        <span>{language === 'pt' ? 'Desafiar amigo' : 'Challenge friend'}</span>
+                                                    </button>
+                                                )}
+                                                {foundCount > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        role="menuitem"
+                                                        className="menu-item generation-quiz__actions-menu-item"
+                                                        disabled={diary.status === 'posting'}
+                                                        onClick={() => {
+                                                            setIsActionsMenuOpen(false);
+                                                            if (diary.status === 'posted') {
+                                                                diary.openDiary();
+                                                            } else {
+                                                                postRun();
+                                                            }
+                                                        }}
+                                                    >
+                                                        {diary.status === 'posting' ? (
+                                                            <Loader size="xs" />
+                                                        ) : diary.status === 'posted' ? (
+                                                            <Check aria-hidden="true" />
+                                                        ) : (
+                                                            <MessageCircle aria-hidden="true" />
+                                                        )}
+                                                        <span>{diary.status === 'posted' ? t('games.seeDiary') : t('games.postToDiary')}</span>
+                                                    </button>
+                                                )}
+                                                {foundCount > 0 && <div className="menu-separator" role="separator" />}
+                                                <button
+                                                    type="button"
+                                                    role="menuitem"
+                                                    className="menu-item generation-quiz__actions-menu-item"
+                                                    onClick={() => {
+                                                        setIsActionsMenuOpen(false);
+                                                        handleExitQuizClick();
+                                                    }}
+                                                    title={t('games.changeGensTitle')}
+                                                >
+                                                    <Layers aria-hidden="true" />
+                                                    <span>{language === 'pt' ? 'Trocar gerações' : 'Change generations'}</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </section>
                         </div>

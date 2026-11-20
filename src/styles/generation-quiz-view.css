@@ -232,15 +232,18 @@
 }
 
 .generation-quiz__console-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
     gap: var(--space-2);
     margin-top: auto;
 }
 
-.generation-quiz__console-actions .generation-quiz__compact-reset-btn {
+.generation-quiz__console-actions > .generation-quiz__compact-reset-btn {
+    flex: 1 1 0;
+    min-width: 0;
     justify-content: center;
-    padding: 0 var(--space-1_5);
+    padding: 0 var(--space-2);
 }
 
 /* A hint is earned (one per ten catches), so a banked one wears Shiny Gold
@@ -681,18 +684,107 @@
     font-weight: var(--weight-semibold);
     white-space: nowrap;
     cursor: pointer;
-    transition: transform var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
 }
 
-.generation-quiz__compact-reset-btn:hover {
+.generation-quiz__compact-reset-btn:hover:not(:disabled) {
     background: var(--color-surface-hover);
     border-color: var(--color-primary);
     color: var(--color-primary-text);
 }
 
+.generation-quiz__compact-reset-btn:active:not(:disabled) {
+    scale: var(--press-scale);
+}
+
+.generation-quiz__compact-reset-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
 .generation-quiz__compact-reset-btn svg {
     width: 0.85rem;
     height: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* Overflow actions popover anchored to the console actions row */
+.generation-quiz__actions-menu-wrap {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.generation-quiz__console-actions .generation-quiz__actions-menu-trigger {
+    width: 2.15rem;
+    min-width: 2.15rem;
+    padding: 0;
+    justify-content: center;
+}
+
+.generation-quiz__console-actions .generation-quiz__actions-menu-trigger svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.generation-quiz__console-actions .generation-quiz__actions-menu-trigger.is-open,
+.generation-quiz__console-actions .generation-quiz__actions-menu-trigger[aria-expanded='true'] {
+    background: var(--color-surface-active);
+    border-color: var(--color-primary);
+    color: var(--color-primary-text);
+}
+
+.menu-surface.generation-quiz__actions-menu {
+    position: absolute;
+    bottom: calc(100% + var(--space-2));
+    right: 0;
+    z-index: var(--z-dropdown);
+    min-width: 13rem;
+    max-width: min(16rem, calc(100vw - var(--space-8)));
+    padding: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    box-shadow: var(--elevation-3);
+    animation: generation-quiz-menu-up var(--duration-fast) var(--ease-smooth);
+}
+
+.generation-quiz__actions-menu-item {
+    font-size: var(--text-sm);
+    white-space: nowrap;
+}
+
+.generation-quiz__actions-menu-item:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.generation-quiz__actions-menu-item:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes generation-quiz-menu-up {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes generation-quiz-menu-down {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Roster grid styles */
@@ -1056,6 +1148,19 @@
     .generation-quiz__console-actions .generation-quiz__compact-reset-btn {
         min-height: 1.95rem;
         font-size: var(--text-xs);
+    }
+
+    .generation-quiz__console-actions .generation-quiz__actions-menu-trigger {
+        width: 1.95rem;
+        min-width: 1.95rem;
+        padding: 0;
+    }
+
+    /* Console is sticky near the top of the phone viewport, so open downward. */
+    .menu-surface.generation-quiz__actions-menu {
+        top: calc(100% + var(--space-2));
+        bottom: auto;
+        animation-name: generation-quiz-menu-down;
     }
 
     /* Panel header: title + history on row 1, filters full-width on row 2 */
@@ -2056,6 +2161,7 @@
 @media (prefers-reduced-motion: reduce) {
     .quiz-combo,
     .quiz-region__check,
+    .generation-quiz__actions-menu,
     .generation-quiz-card.is-new::after,
     .generation-quiz-autocomplete__input-wrap.is-miss,
     .generation-quiz-autocomplete__input-wrap.is-hit .generation-quiz__input {

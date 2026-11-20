@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, MessageCircle, Share2 } from 'lucide-react';
+import { Check, ChevronRight, MessageCircle, Share2 } from 'lucide-react';
 
 import '../../styles/plantao-phase3.css';
 import { typeColors } from '../../constants/types';
@@ -42,7 +42,7 @@ const SYNC_EVENT = 'ptb:daily-mime';
  * trainer height scale visual (clue 2+), and the official artwork CSS
  * silhouette strictly on clue 5.
  */
-export function DailyMimeCard({ inDiary = false, className = '' }) {
+export function DailyMimeCard({ inDiary = false, compact = false, className = '' }) {
     const { t, language } = useTranslation();
     const dayKey = localDayKey();
     const dayNumber = localDayNumber(Date.now());
@@ -57,6 +57,7 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
     const [animKey, setAnimKey] = useState(0);
     const [lastWrongName, setLastWrongName] = useState('');
     const [posting, setPosting] = useState(false);
+    const [selectedClueIdx, setSelectedClueIdx] = useState(null);
 
     useEffect(() => {
         let alive = true;
@@ -135,6 +136,7 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
     const handleNextClue = useCallback(() => {
         if (state.solved || state.clue >= MIME_CLUE_COUNT) return;
         setLastWrongName('');
+        setSelectedClueIdx(null);
         commitState(applyMimeNextClue(state));
     }, [state, commitState]);
 
@@ -145,11 +147,13 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
         if (outcome === 'won') {
             setWrongFlash(false);
             setLastWrongName('');
+            setSelectedClueIdx(null);
             setJustWon(true);
             setAnimKey((k) => k + 1);
             return;
         }
         setLastWrongName(candidate.name);
+        setSelectedClueIdx(null);
         setWrongFlash(true);
         setAnimKey((k) => k + 1);
         window.setTimeout(() => setWrongFlash(false), 850);
@@ -204,10 +208,75 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
 
     const groundY = groundAt(scene, 0.54) * 100;
     const squares = state.solved ? mimeClueSquares(state.solvedAtClue || state.clue) : null;
+    const maxOpenClue = state.solved ? MIME_CLUE_COUNT : state.clue;
+    const activeClueIdx = selectedClueIdx !== null && selectedClueIdx < maxOpenClue
+        ? selectedClueIdx
+        : Math.max(0, Math.min(state.clue, MIME_CLUE_COUNT) - 1);
+    const activeClue = clueList[activeClueIdx] || clueList[0];
+
+    const actionsNode = (
+        <div className="daily-mime__actions">
+            {!state.solved && state.clue < MIME_CLUE_COUNT && (
+                <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleNextClue}
+                >
+                    {t('mime.nextClue', { n: state.clue + 1 })}
+                    <ChevronRight aria-hidden="true" />
+                </button>
+            )}
+
+            {state.solved && !state.shared && (
+                <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    disabled={posting}
+                    onClick={handleShareToDiary}
+                >
+                    <Share2 aria-hidden="true" />
+                    {t('games.postToDiary')}
+                </button>
+            )}
+
+            {state.solved && state.shared && !inDiary && (
+                <Link to={diaryUrl} className="btn btn-ghost btn-sm">
+                    <MessageCircle aria-hidden="true" />
+                    {t('games.seeDiary')}
+                </Link>
+            )}
+        </div>
+    );
+
+    const isCompactSolved = compact && state.solved;
+    const isInitialPrompt = !state.solved && !lastWrongName && state.clue === 1;
+
+    const statusNode = (
+        <p
+            className={`daily-mime__status ${isInitialPrompt ? 'daily-mime__status--prompt' : ''}`}
+            aria-live="polite"
+        >
+            {state.solved ? <strong>{statusLine}</strong> : <span>{statusLine}</span>}
+            {squares && (
+                <span
+                    className="daily-mime__squares"
+                    aria-label={t('mime.squaresAria', { n: state.solvedAtClue || state.clue })}
+                >
+                    {squares.map((used, idx) => (
+                        <i
+                            key={idx}
+                            className={`daily-mime__square ${used ? 'is-used' : ''}`}
+                            aria-hidden="true"
+                        />
+                    ))}
+                </span>
+            )}
+        </p>
+    );
 
     return (
         <article
-            className={`daily-mime ${inDiary ? 'is-in-diary' : ''} ${className}`}
+            className={`daily-mime ${inDiary ? 'is-in-diary' : ''} ${compact ? 'daily-mime--compact' : ''} ${isCompactSolved ? 'is-solved-compact' : ''} ${className}`}
             style={{ '--mime-tone': typeColors[entry.type] || 'var(--mascot-brand)' }}
             aria-label={t('mime.eyebrow', { n: number })}
         >
@@ -224,7 +293,7 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
                     style={{ top: `${groundY}%` }}
                 >
                     <Mascot
-                        size="xl"
+                        size={compact ? 'lg' : 'xl'}
                         framing="body"
                         tone={stage.mascotTone}
                         mood={stage.mascotMood}
@@ -236,7 +305,7 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
                     />
                 </span>
 
-                {stage.showRuler && (
+                {stage.showRuler && !isCompactSolved && (
                     <div className="daily-mime__ruler" aria-hidden="true">
                         <figure className="daily-mime__figure">
                             <span className="daily-mime__bar-wrap">
@@ -273,7 +342,7 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
                     </div>
                 )}
 
-                {stage.showRegion && (
+                {stage.showRegion && !isCompactSolved && (
                     <p className="daily-mime__place">
                         {t(`mime.regions.${entry.region}`)} · {t(`mime.habitats.${entry.habitat}`)}
                     </p>
@@ -296,7 +365,10 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
 
             <div className="daily-mime__side">
                 <div className="daily-mime__top">
-                    <p className="daily-mime__eyebrow">{t('mime.eyebrow', { n: number })}</p>
+                    <p className="daily-mime__eyebrow">
+                        {compact && !state.solved && <span className="live-dot" aria-hidden="true" />}
+                        <span>{t('mime.eyebrow', { n: number })}</span>
+                    </p>
                     {!inDiary && (
                         <Link to={diaryUrl} className="daily-mime__diary-link">
                             <MessageCircle aria-hidden="true" />
@@ -305,92 +377,98 @@ export function DailyMimeCard({ inDiary = false, className = '' }) {
                     )}
                 </div>
 
-                <h3 className="daily-mime__title">{t('mime.title')}</h3>
-
-                <ol className="daily-mime__clues">
-                    {clueList.map((item, idx) => {
-                        const open = state.solved || idx < state.clue;
-                        return (
-                            <li key={item.key} className={`daily-mime__clue ${open ? 'is-open' : ''}`}>
-                                <span className="daily-mime__clue-num" aria-hidden="true">{idx + 1}</span>
-                                <span className="daily-mime__clue-body">
-                                    <strong className="daily-mime__clue-label">{item.label}</strong>
-                                    <span className="daily-mime__clue-text">
-                                        {open ? item.text : t('mime.lockedClue')}
-                                    </span>
-                                </span>
-                            </li>
-                        );
-                    })}
-                </ol>
-
-                <div className="daily-mime__guesses" role="group" aria-label={t('mime.guessesAria')}>
-                    {candidates.map((cand) => {
-                        const isWrong = state.wrongIds.includes(cand.id);
-                        const isRight = state.solved && cand.id === entry.id;
-                        return (
-                            <button
-                                key={cand.id}
-                                type="button"
-                                disabled={state.solved || isWrong}
-                                className={`daily-mime__guess ${isWrong ? 'is-wrong' : ''} ${isRight ? 'is-right' : ''}`}
-                                onClick={() => handleGuess(cand)}
-                            >
-                                {cand.name}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                <p className="daily-mime__status" aria-live="polite">
-                    {state.solved ? <strong>{statusLine}</strong> : <span>{statusLine}</span>}
-                    {squares && (
-                        <span
-                            className="daily-mime__squares"
-                            aria-label={t('mime.squaresAria', { n: state.solvedAtClue || state.clue })}
-                        >
-                            {squares.map((used, idx) => (
-                                <i
-                                    key={idx}
-                                    className={`daily-mime__square ${used ? 'is-used' : ''}`}
-                                    aria-hidden="true"
-                                />
-                            ))}
+                {isCompactSolved ? (
+                    <div className="daily-mime__solved-body">
+                        <span className="daily-mime__guess is-right daily-mime__solved-answer">
+                            <Check aria-hidden="true" />
+                            <span>{entry.name}</span>
                         </span>
-                    )}
-                </p>
+                        <div className="daily-mime__footer">
+                            {statusNode}
+                            {actionsNode}
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <h3 className="daily-mime__title">{t('mime.title')}</h3>
 
-                <div className="daily-mime__actions">
-                    {!state.solved && state.clue < MIME_CLUE_COUNT && (
-                        <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            onClick={handleNextClue}
-                        >
-                            {t('mime.nextClue', { n: state.clue + 1 })}
-                            <ChevronRight aria-hidden="true" />
-                        </button>
-                    )}
+                        {compact ? (
+                            <div className="daily-mime__compact-clues">
+                                <div className="daily-mime__clue-pills" role="tablist" aria-label={t('games.hints')}>
+                                    {clueList.map((item, idx) => {
+                                        const open = state.solved || idx < state.clue;
+                                        const isActive = idx === activeClueIdx;
+                                        return (
+                                            <button
+                                                key={item.key}
+                                                type="button"
+                                                role="tab"
+                                                aria-selected={isActive}
+                                                disabled={!open}
+                                                className={`daily-mime__clue-pill ${open ? 'is-open' : ''} ${isActive ? 'is-active' : ''}`}
+                                                onClick={() => setSelectedClueIdx(idx)}
+                                            >
+                                                <span className="daily-mime__clue-pill-num" aria-hidden="true">{idx + 1}</span>
+                                                <span className="daily-mime__clue-pill-label">{item.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <p className="daily-mime__active-clue">
+                                    <strong className="daily-mime__clue-label">{activeClue.label}</strong>
+                                    <span className="daily-mime__clue-text">{activeClue.text}</span>
+                                </p>
+                            </div>
+                        ) : (
+                            <ol className="daily-mime__clues">
+                                {clueList.map((item, idx) => {
+                                    const open = state.solved || idx < state.clue;
+                                    return (
+                                        <li key={item.key} className={`daily-mime__clue ${open ? 'is-open' : ''}`}>
+                                            <span className="daily-mime__clue-num" aria-hidden="true">{idx + 1}</span>
+                                            <span className="daily-mime__clue-body">
+                                                <strong className="daily-mime__clue-label">{item.label}</strong>
+                                                <span className="daily-mime__clue-text">
+                                                    {open ? item.text : t('mime.lockedClue')}
+                                                </span>
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                        )}
 
-                    {state.solved && !state.shared && (
-                        <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            disabled={posting}
-                            onClick={handleShareToDiary}
-                        >
-                            <Share2 aria-hidden="true" />
-                            {t('games.postToDiary')}
-                        </button>
-                    )}
+                        <div className="daily-mime__guesses" role="group" aria-label={t('mime.guessesAria')}>
+                            {candidates.map((cand) => {
+                                const isWrong = state.wrongIds.includes(cand.id);
+                                const isRight = state.solved && cand.id === entry.id;
+                                return (
+                                    <button
+                                        key={cand.id}
+                                        type="button"
+                                        disabled={state.solved || isWrong}
+                                        className={`daily-mime__guess ${isWrong ? 'is-wrong' : ''} ${isRight ? 'is-right' : ''}`}
+                                        onClick={() => handleGuess(cand)}
+                                    >
+                                        {cand.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
 
-                    {state.solved && state.shared && !inDiary && (
-                        <Link to={diaryUrl} className="btn btn-ghost btn-sm">
-                            <MessageCircle aria-hidden="true" />
-                            {t('games.seeDiary')}
-                        </Link>
-                    )}
-                </div>
+                        {compact ? (
+                            <div className="daily-mime__footer">
+                                {statusNode}
+                                {actionsNode}
+                            </div>
+                        ) : (
+                            <>
+                                {statusNode}
+                                {actionsNode}
+                            </>
+                        )}
+                    </>
+                )}
             </div>
         </article>
     );

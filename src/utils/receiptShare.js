@@ -1,3 +1,5 @@
+import { mimeNumberFor } from './dailyMime.js';
+
 /**
  * The day's receipt as a picture to post (2026-11-17, Enzo: "o recibo do dia
  * deve ter a opção de salvar/exportar imagem, e share via Instagram ou X").
@@ -12,15 +14,15 @@ export const RECEIPT_IMAGE = { width: 1080, height: 1350 };
 
 // The paper and its bands, top to bottom. Heights are in canvas pixels.
 const PAPER_W = 760;
-const PAPER_TOP = 160;
+const PAPER_TOP = 150;
 const PAD = 56;
 const HEAD = 180;      // brand, kind, rule, date line, rule
-const ROW = 58;
+const ROW = 54;
 const TOTALS = 168;    // rule, three totals
 const STAMP = 200;
 const CODE = 116;      // bars + digits
 const TEAR = 18;
-export const MAX_IMAGE_ROWS = 4; // the day has four games
+export const MAX_IMAGE_ROWS = 5; // four daily games + optional Mímica bonus row
 
 /**
  * Where each band of the paper goes for `rowCount` rows. The paper grows with
@@ -50,11 +52,40 @@ export function receiptImageLayout(rowCount) {
     };
 }
 
+/**
+ * Optional bonus receipt row for today's solved Mímica (read via `readMimeDayState`).
+ * Returns `null` when Mímica was not solved today so unplayed days stay clean.
+ */
+export function mimeReceiptRow(mimeState, dayNumber, language = 'pt') {
+    if (!mimeState?.solved) return null;
+    const number = mimeNumberFor(dayNumber);
+    const clue = Math.max(1, Math.min(5, Math.floor(Number(mimeState.solvedAtClue || mimeState.clue) || 1)));
+    return {
+        id: 'mime',
+        number,
+        clue,
+        label: language === 'pt' ? `Mímica nº ${number}` : `Mime #${number}`,
+        value: language === 'pt' ? `na ${clue}ª pista` : `clue ${clue}`,
+        bold: clue === 1,
+    };
+}
+
 /** The post's line: what the day was, then the invitation. */
-export function receiptPostText(t, { played = 0, total = 4, complete = false } = {}) {
-    return complete
+export function receiptPostText(t, { played = 0, total = 4, complete = false, mime = null } = {}) {
+    if (played === 0 && mime?.line) {
+        return `${mime.line} — PokemonBuilder`;
+    }
+    const base = complete
         ? t('receipt.image.postFull')
         : t('receipt.image.post', { n: played, total });
+    return mime?.line ? `${base}\n${mime.line}` : base;
+}
+
+/** Spoiler-free plain-text receipt summary for clipboard fallback. */
+export function receiptCopyText({ brand = 'PokemonBuilder', kind = '', date = '', rows = [], status = '', playUrl = '' } = {}) {
+    const header = [brand, kind, date ? `(${date})` : ''].filter(Boolean).join(' · ');
+    const lines = rows.map((row) => `${row.label} · ${row.value}`);
+    return [header, ...lines, status, playUrl].filter(Boolean).join('\n');
 }
 
 /** X's composer, filled — the text and the link (its card is the page's). */

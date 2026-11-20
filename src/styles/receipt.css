@@ -132,8 +132,15 @@
 .receipt__id { letter-spacing: 0.28em; font-size: 0.62rem; }
 
 .receipt__actions { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-2); }
-/* the day as an image: save, Instagram, X — one row under the Diário */
+/* the day as an image: save, copy, Instagram, X — one row under the Diário */
 .receipt__share { display: flex; flex-basis: 100%; justify-content: center; flex-wrap: wrap; gap: var(--space-2); }
+.receipt__hint {
+    flex-basis: 100%;
+    margin: 0;
+    text-align: center;
+    font: 400 0.82rem/1.45 var(--font-body);
+    color: var(--receipt-muted);
+}
 
 /* ── The dialog: the receipt standing in a pixel morning ──────────────── */
 .round-receipt__body { padding: 0; }

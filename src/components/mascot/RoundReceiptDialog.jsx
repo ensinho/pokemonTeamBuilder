@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { Download, X } from 'lucide-react';
+import { Check, Copy, Download, X } from 'lucide-react';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -12,6 +12,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useInboxStore } from '../../store/useInboxStore';
 import { useFriendsStore } from '../../store/useFriendsStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
+import { useForumStore } from '../../store/useForumStore';
 import { loadStaticData } from '../../services/staticData';
 import { track } from '../../services/analytics';
 import { dayReceipt, roundReceipt, trainerNumber, withRoundTaken } from '../../utils/mascot/roundReceipt';
@@ -22,12 +23,14 @@ import { dailyQuizFor } from '../../utils/dailyQuiz';
 import { TEMPLATES_BY_ID, dailyTierTemplate } from '../../utils/tierTemplates';
 import { puzzleNumberOn } from '../../utils/playToday';
 import { monLabel } from '../../utils/tierList';
+import { MIME_SYNC_EVENT, formatMimeShareLine, readMimeDayState } from '../../utils/dailyMime';
+import { diaryTopicId, todayDiaryKey } from '../../utils/forumDiary';
 import { PixelScene } from './PixelScene';
 import { Receipt, ReceiptStamp } from './Receipt';
 import { Loader } from '../Loader';
 import { InstagramIcon, XIcon } from '../icons';
 import { useToastStore } from '../../store/useToastStore';
-import { receiptFileName, receiptPostText, xIntentUrl } from '../../utils/receiptShare';
+import { mimeReceiptRow, receiptCopyText, receiptFileName, receiptPostText, xIntentUrl } from '../../utils/receiptShare';
 import { localizePath } from '../../utils/localePath';
 import { SITE_URL } from '../../utils/seoPages';
 import { renderReceiptShareBlob } from './drawReceiptShare';
@@ -140,18 +143,43 @@ export function RoundReceiptDialog() {
 
     // ── The day ─────────────────────────────────────────────────────────────
     const fullDays = useRoundStore((s) => s.round.fullDays);
+    const [mimeState, setMimeState] = useState(() => readMimeDayState(dayKey));
+    useEffect(() => {
+        const refresh = () => setMimeState(readMimeDayState(dayKey));
+        refresh();
+        if (typeof window === 'undefined') return undefined;
+        window.addEventListener(MIME_SYNC_EVENT, refresh);
+        window.addEventListener('storage', refresh);
+        return () => {
+            window.removeEventListener(MIME_SYNC_EVENT, refresh);
+            window.removeEventListener('storage', refresh);
+        };
+    }, [dayKey, mode]);
+
     const day = useMemo(() => (mode === 'day' ? dayReceipt(done, {
         challenge: facts?.challenge || null,
         puzzle: facts?.puzzle || null,
         quiz: notes.quiz || null,
         tier: notes.tierList?.theme || null,
     }) : null), [mode, done, notes, facts]);
+
+    const mimeRow = useMemo(() => mimeReceiptRow(mimeState, dayNumber, language), [mimeState, dayNumber, language]);
+    const mimeShareLine = useMemo(
+        () => (mimeRow ? formatMimeShareLine({ number: mimeRow.number, clue: mimeRow.clue, t }) : null),
+        [mimeRow, t],
+    );
+    const dayPlayed = day?.played || 0;
+    const dayTotal = day?.total || 4;
+    const dayComplete = Boolean(day?.complete);
+    const hasActivity = dayPlayed > 0 || Boolean(mimeRow);
+
     useEffect(() => {
         if (mode !== 'day') return;
         update((r) => ({ ...r, daySeen: dayKey }));
-        track('receipt_open', { mode: 'day', played: day?.played || 0 });
+        track('receipt_open', { mode: 'day', played: dayPlayed, mime: Boolean(mimeRow) });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode]);
+
     const share = useMemo(() => (day ? buildReceiptShare({
         day: dayKey,
         done,
@@ -161,44 +189,78 @@ export function RoundReceiptDialog() {
         tier: notes.tierList?.theme || null,
         full: fullDays,
     }) : null), [day, dayKey, done, facts, notes, fullDays]);
-    const diary = useDiaryShare(share ? `receipt:${dayKey}:${share.games.length}` : null);
+    const diary = useDiaryShare(share ? `receipt:${dayKey}:${share.games.length}:${mimeRow ? 1 : 0}` : null);
+    const [mimePosting, setMimePosting] = useState(false);
+    const [mimePostedDay, setMimePostedDay] = useState(null);
+    const mimeOnlyPosted = mimePostedDay === dayKey;
 
-    // ── The day as an image (save, Instagram, X) ────────────────────────────
-    // Drawn as soon as the day's receipt opens, so the tap that shares it
-    // calls `navigator.share` at once — a phone refuses a share that comes
-    // after awaited work (drawPuzzleShare.js).
+    const dayRows = useMemo(() => {
+        if (!day) return [];
+        const base = day.rows.map((row) => ({
+            label: rowLabel(row),
+            value: t(`receipt.value.${row.value}`, row.params || {}),
+            bold: row.bold,
+        }));
+        return mimeRow
+            ? [...base, { label: mimeRow.label, value: mimeRow.value, bold: mimeRow.bold }]
+            : base;
+        // `rowLabel` and `t` follow `language`.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [day, mimeRow, language, dayKey, quizTitle, theme]);
+
+    const dayStatusLabel = dayComplete
+        ? t('receipt.totals.complete')
+        : dayPlayed > 0
+            ? `${t('receipt.totals.gamesOf', { n: dayPlayed, total: dayTotal })} · ${language === 'pt' ? 'parcial' : 'in progress'}`
+            : mimeRow
+                ? (language === 'pt' ? 'mímica bônus' : 'bonus mime')
+                : t('receipt.totals.partial');
+
+    const dayStampSpec = dayComplete
+        ? { gold: true, sub: t('receipt.stampFull'), word: t('receipt.stampFour'), mood: 'orgulhoso', hat: 'crown', press: true }
+        : dayPlayed > 0
+            ? { gold: false, sub: language === 'pt' ? 'Parcial' : 'In progress', word: t('receipt.stampSoFar', { n: dayPlayed }), mood: 'feliz', press: true }
+            : mimeRow
+                ? { gold: false, sub: language === 'pt' ? 'Bônus' : 'Bonus', word: language === 'pt' ? 'Mímica' : 'Mime', mood: 'feliz', press: true }
+                : { gold: false, sub: t('receipt.stampDay'), word: t('receipt.stampSoFar', { n: 0 }), mood: 'feliz', press: false };
+
+    // ── The day as an image (save, copy, Instagram, X) ──────────────────────
+    // Drawn as soon as the day's receipt opens with activity, so the tap that
+    // shares it calls `navigator.share` at once — a phone refuses a share that
+    // comes after awaited work (drawPuzzleShare.js).
     const imageRef = useRef(null);
+    const copyTimerRef = useRef(null);
     const [imageReady, setImageReady] = useState(false);
+    const [copiedReceipt, setCopiedReceipt] = useState(false);
     const showToast = useToastStore((s) => s.showToast);
     const playUrl = `${SITE_URL}${localizePath('/games', language)}`;
+    const dateFormatted = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now));
     const imageSpec = useMemo(() => {
-        if (mode !== 'day' || !day) return null;
+        if (mode !== 'day' || !day || !hasActivity) return null;
         return {
-            rows: day.rows.map((row) => ({ label: rowLabel(row), value: t(`receipt.value.${row.value}`, row.params || {}), bold: row.bold })),
+            rows: dayRows,
             totals: [
-                [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: day.played, total: day.total })],
+                [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: dayPlayed, total: dayTotal })],
                 [t('receipt.totals.fullDays'), String(fullDays)],
-                [t('receipt.totals.status'), t(day.complete ? 'receipt.totals.complete' : 'receipt.totals.partial')],
+                [t('receipt.totals.status'), dayStatusLabel],
             ],
-            date: [t('receipt.meta.date'), new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now))],
-            stamp: day.complete
-                ? { gold: true, sub: t('receipt.stampFull'), word: t('receipt.stampFour') }
-                : { gold: false, sub: t('receipt.stampDay'), word: t('receipt.stampSoFar', { n: day.played }) },
+            date: [t('receipt.meta.date'), dateFormatted],
+            stamp: { gold: dayStampSpec.gold, sub: dayStampSpec.sub, word: dayStampSpec.word },
             code: { code: trainerNumber(userId || 'guest'), label: t('receipt.trainerId') },
             labels: {
                 brand: t('receipt.brand'),
                 kind: t('receipt.kindDay'),
                 kicker: t('receipt.image.kicker'),
-                score: `${day.played}/${day.total}`,
+                score: dayPlayed === 0 && mimeRow ? (language === 'pt' ? 'Mímica' : 'Mime') : `${dayPlayed}/${dayTotal}`,
                 play: t('receipt.image.play'),
                 site: playUrl.replace(/^https?:\/\//, ''),
             },
             logoUrl: `${import.meta.env.BASE_URL}logo-mark.webp`,
             playUrl,
         };
-        // `t`, `rowLabel` and `locale` follow `language`; the rest is the day.
+        // `t` and `dateFormatted` follow `language`.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mode, day, fullDays, language, userId]);
+    }, [mode, day, hasActivity, dayRows, dayPlayed, dayTotal, dayStatusLabel, dayStampSpec.gold, dayStampSpec.sub, dayStampSpec.word, fullDays, language, userId, mimeRow]);
     useEffect(() => {
         imageRef.current = null;
         setImageReady(false);
@@ -211,8 +273,18 @@ export function RoundReceiptDialog() {
         });
         return () => { alive = false; };
     }, [imageSpec]);
+    useEffect(() => () => {
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    }, []);
 
-    const postText = day ? receiptPostText(t, day) : '';
+    const postText = day
+        ? receiptPostText(t, {
+            played: dayPlayed,
+            total: dayTotal,
+            complete: dayComplete,
+            mime: mimeShareLine ? { line: mimeShareLine } : null,
+        })
+        : '';
     const fileName = receiptFileName(dayKey, language);
     const coarse = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
     const imageFile = () => (imageRef.current ? new File([imageRef.current], fileName, { type: 'image/png' }) : null);
@@ -244,6 +316,54 @@ export function RoundReceiptDialog() {
         track('receipt_share', { channel: 'download' });
         showToast(t('receipt.image.saved'), 'success');
     };
+    const onCopy = async () => {
+        let copied = false;
+        if (imageRef.current && typeof window.ClipboardItem === 'function' && navigator.clipboard?.write) {
+            copied = await navigator.clipboard
+                .write([new window.ClipboardItem({ 'image/png': imageRef.current })])
+                .then(() => true, () => false);
+        }
+        if (!copied && navigator.clipboard?.writeText) {
+            const summary = receiptCopyText({
+                brand: t('receipt.brand'),
+                kind: t('receipt.kindDay'),
+                date: dateFormatted,
+                rows: dayRows,
+                status: `${t('receipt.totals.status')}: ${dayStatusLabel}`,
+                playUrl,
+            });
+            copied = await navigator.clipboard.writeText(summary).then(() => true, () => false);
+        }
+        if (!copied) {
+            showToast(t('receipt.image.error'), 'error');
+            return;
+        }
+        track('receipt_share', { channel: 'copy' });
+        setCopiedReceipt(true);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(() => setCopiedReceipt(false), 1800);
+        showToast(language === 'pt' ? 'Recibo copiado!' : 'Receipt copied!', 'success');
+    };
+    const onPostMimeOnly = async () => {
+        if (mimePosting || !mimeShareLine) return;
+        const forum = useForumStore.getState();
+        if (!useAuthStore.getState().userId) {
+            await forum.sendMessage(diaryTopicId(todayDiaryKey()), mimeShareLine);
+            return;
+        }
+        setMimePosting(true);
+        try {
+            const diaryId = await forum.ensureDiary();
+            const ok = diaryId ? await forum.sendMessage(diaryId, mimeShareLine) : false;
+            if (ok) {
+                setMimePostedDay(dayKey);
+                track('receipt_post', { played: 0, mime: true });
+                showToast(t('games.postedToDiary'), 'success');
+            }
+        } finally {
+            setMimePosting(false);
+        }
+    };
     const onInstagram = async () => {
         const file = imageFile();
         if (!file) { showToast(t('receipt.image.error'), 'error'); return; }
@@ -270,7 +390,7 @@ export function RoundReceiptDialog() {
     if (!mode) return null;
 
     // ── Wording ─────────────────────────────────────────────────────────────
-    const date = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(now));
+    const date = dateFormatted;
     const time = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(now));
     const label = rowLabel;
     const value = (row) => t(`receipt.value.${row.value}`, row.params || {});
@@ -309,7 +429,8 @@ export function RoundReceiptDialog() {
             </Receipt>
         );
     } else {
-        const complete = Boolean(day?.complete);
+        const diaryPosted = share ? diary.status === 'posted' : mimeOnlyPosted;
+        const diaryPosting = share ? diary.status === 'posting' : mimePosting;
         body = (
             <Receipt
                 printing
@@ -322,49 +443,77 @@ export function RoundReceiptDialog() {
                     [t('receipt.meta.you'), t('receipt.meta.awake')],
                 ]}
                 columns={[t('receipt.columns.game'), t('receipt.columns.result')]}
-                rows={(day?.rows || []).map((row) => ({ label: label(row), value: value(row), bold: row.bold }))}
+                rows={dayRows}
                 totals={[
-                    [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: day?.played || 0, total: day?.total || 4 })],
+                    [t('receipt.totals.games'), t('receipt.totals.gamesOf', { n: dayPlayed, total: dayTotal })],
                     [t('receipt.totals.fullDays'), String(fullDays)],
-                    [t('receipt.totals.status'), t(complete ? 'receipt.totals.complete' : 'receipt.totals.partial')],
+                    [t('receipt.totals.status'), dayStatusLabel],
                 ]}
                 next={[t('receipt.next'), t('receipt.nextMidnight')]}
-                stamp={complete
-                    ? <ReceiptStamp mood="orgulhoso" hat="crown" gold sub={t('receipt.stampFull')} word={t('receipt.stampFour')} press />
-                    : <ReceiptStamp mood="feliz" sub={t('receipt.stampDay')} word={t('receipt.stampSoFar', { n: day?.played || 0 })} />}
-                bye={t(complete ? 'receipt.byeDay' : 'receipt.byePartial')}
+                stamp={(
+                    <ReceiptStamp
+                        mood={dayStampSpec.mood}
+                        hat={dayStampSpec.hat}
+                        gold={dayStampSpec.gold}
+                        sub={dayStampSpec.sub}
+                        word={dayStampSpec.word}
+                        press={dayStampSpec.press}
+                    />
+                )}
+                bye={t(dayComplete ? 'receipt.byeDay' : 'receipt.byePartial')}
                 code={code}
             >
-                {share && (
-                    diary.status === 'posted' ? (
-                        <button type="button" className="btn btn-secondary" onClick={() => { close(); diary.openDiary(); }}>{t('games.seeDiary')}</button>
-                    ) : (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            disabled={diary.status === 'posting'}
-                            onClick={async () => { if (await diary.post({ sharedReceipt: share })) track('receipt_post', { played: share.games.length }); }}
-                        >
-                            {diary.status === 'posting' ? <Loader size="xs" /> : null}
-                            {t('receipt.postDiary')}
+                {hasActivity ? (
+                    <>
+                        {diaryPosted ? (
+                            <button type="button" className="btn btn-secondary" onClick={() => { close(); diary.openDiary(); }}>{t('games.seeDiary')}</button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={diaryPosting}
+                                onClick={async () => {
+                                    if (share) {
+                                        if (await diary.post({ sharedReceipt: share })) track('receipt_post', { played: share.games.length, mime: Boolean(mimeRow) });
+                                    } else {
+                                        await onPostMimeOnly();
+                                    }
+                                }}
+                            >
+                                {diaryPosting ? <Loader size="xs" /> : null}
+                                {t('receipt.postDiary')}
+                            </button>
+                        )}
+                        <div className="receipt__share" role="group" aria-label={t('receipt.image.group')}>
+                            <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onSave} aria-label={t('receipt.image.saveLong')}>
+                                {imageReady ? <Download className="w-4 h-4" aria-hidden="true" /> : <Loader size="xs" />}
+                                <span aria-hidden="true">{t('receipt.image.save')}</span>
+                            </button>
+                            <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onCopy}>
+                                {copiedReceipt ? <Check className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
+                                <span>{language === 'pt' ? (copiedReceipt ? 'Copiado' : 'Copiar') : (copiedReceipt ? 'Copied' : 'Copy')}</span>
+                            </button>
+                            <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onInstagram}>
+                                <InstagramIcon className="w-4 h-4" />
+                                Instagram
+                            </button>
+                            <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onX} aria-label={t('receipt.image.x')}>
+                                <XIcon className="w-4 h-4" />
+                                <span aria-hidden="true">X</span>
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <p className="receipt__hint">
+                            {language === 'pt'
+                                ? 'Jogue pelo menos 1 jogo hoje para emitir e postar seu recibo.'
+                                : 'Play at least 1 game today to emit and post your receipt.'}
+                        </p>
+                        <button type="button" className="btn btn-primary" onClick={() => { close(); navigate('/games'); }}>
+                            {t('receipt.openGames')}
                         </button>
-                    )
-                )}
-                {day && (
-                    <div className="receipt__share" role="group" aria-label={t('receipt.image.group')}>
-                        <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onSave} aria-label={t('receipt.image.saveLong')}>
-                            {imageReady ? <Download className="w-4 h-4" aria-hidden="true" /> : <Loader size="xs" />}
-                            <span aria-hidden="true">{t('receipt.image.save')}</span>
-                        </button>
-                        <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onInstagram}>
-                            <InstagramIcon className="w-4 h-4" />
-                            Instagram
-                        </button>
-                        <button type="button" className="btn btn-secondary btn-sm" disabled={!imageReady} onClick={onX} aria-label={t('receipt.image.x')}>
-                            <XIcon className="w-4 h-4" />
-                            <span aria-hidden="true">X</span>
-                        </button>
-                    </div>
+                    </>
                 )}
             </Receipt>
         );

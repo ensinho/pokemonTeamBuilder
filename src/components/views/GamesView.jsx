@@ -276,16 +276,25 @@ export function GamesView() {
                                 : t('gamesHub.day.sub')}
                             <span className="games-day__reset">{t('gamesHub.day.resets', { time: clock })}</span>
                         </p>
-                        {tally.played > 0 && (
-                            <button
-                                type="button"
-                                className={`btn btn-sm games-day__receipt ${tally.complete ? 'btn-primary' : 'btn-ghost'}`}
-                                onClick={openDayReceipt}
-                            >
-                                <ReceiptText aria-hidden="true" />
-                                {t(tally.complete ? 'gamesHub.day.receiptFull' : 'gamesHub.day.receipt')}
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            className={`btn btn-sm games-day__receipt ${tally.complete ? 'btn-primary' : tally.played > 0 ? 'btn-secondary' : 'btn-ghost'}`}
+                            onClick={openDayReceipt}
+                        >
+                            <ReceiptText aria-hidden="true" />
+                            <span>
+                                {tally.complete
+                                    ? t('gamesHub.day.receiptFull')
+                                    : tally.played > 0
+                                        ? t('gamesHub.day.receipt')
+                                        : t('island.receipt.label')}
+                            </span>
+                            {!tally.complete && (
+                                <span className="games-day__receipt-count">
+                                    ({tally.played}/{tally.total})
+                                </span>
+                            )}
+                        </button>
                     </div>
                     <ol className="games-day__belt" aria-label={t('nav.gamesDone', { n: tally.played, total: tally.total })}>
                         {DAILY_GAMES.map((game) => (
@@ -320,94 +329,50 @@ export function GamesView() {
                     </ol>
                 </header>
 
-                <div className="games-view-tabs" role="tablist" aria-label={t('seo.games.title')}>
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={activeView === 'all'}
-                        className={`games-view-tab ${activeView === 'all' ? 'is-active' : ''}`}
-                        onClick={() => setView('all')}
-                    >
-                        <span>{t('mime.tabAll', { n: tally.played, total: tally.total })}</span>
-                    </button>
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={activeView === 'mime'}
-                        className={`games-view-tab games-view-tab--mime ${activeView === 'mime' ? 'is-active' : ''} ${mimeState.solved ? 'is-solved' : ''}`}
-                        style={{ '--mime-tone': typeColors[mimeEntry.type] || 'var(--mascot-brand)' }}
-                        onClick={() => setView('mime')}
-                    >
-                        {!mimeState.solved && <span className="live-dot" aria-hidden="true" />}
-                        <span>{t('mime.tabMime', { n: mimeNumber })}</span>
-                        <span className="games-view-tab__badge">
-                            {mimeState.solved
-                                ? t('mime.solvedBadge', { n: mimeState.solvedAtClue || mimeState.clue })
-                                : t('mime.clueProgress', { n: mimeState.clue })}
-                        </span>
-                    </button>
-                </div>
+                <DailyMimeCard compact={activeView !== 'mime'} />
 
-                {activeView === 'mime' ? (
-                    <section className="daily-mime-section" aria-labelledby="games-mime-title">
-                        <div className="daily-mime-section__head">
-                            <h2 id="games-mime-title" className="daily-mime-section__title">{t('mime.sectionKicker')}</h2>
-                        </div>
-                        <DailyMimeCard />
-                    </section>
-                ) : (
-                    <>
-                        <ul className="games-grid">
-                            {DAILY_GAMES.map((game) => {
-                                const card = cards[game];
-                                const Icon = ICONS[game];
-                                const isDone = done[game];
-                                const isNext = next?.game === game;
-                                const open = () => navigate(PATHS[game]);
-                                return (
-                                    <li key={game}>
-                                        {/* The whole card answers a click; its button is the keyboard's way in. */}
-                                        <article
-                                            className={`daygame ${isDone ? 'is-done' : 'is-open'} ${isNext ? 'is-next' : ''}`}
-                                            style={{ '--tone': card.tone }}
-                                            onClick={(event) => { if (!(event.target instanceof Element && event.target.closest('button, a'))) open(); }}
+                <ul className="games-grid">
+                    {DAILY_GAMES.map((game) => {
+                        const card = cards[game];
+                        const Icon = ICONS[game];
+                        const isDone = done[game];
+                        const isNext = next?.game === game;
+                        const open = () => navigate(PATHS[game]);
+                        return (
+                            <li key={game}>
+                                {/* The whole card answers a click; its button is the keyboard's way in. */}
+                                <article
+                                    className={`daygame ${isDone ? 'is-done' : 'is-open'} ${isNext ? 'is-next' : ''}`}
+                                    style={{ '--tone': card.tone }}
+                                    onClick={(event) => { if (!(event.target instanceof Element && event.target.closest('button, a'))) open(); }}
+                                >
+                                    <div className="daygame__stage" aria-hidden="true">
+                                        <span className="daygame__art">{card.art}</span>
+                                        {isDone && <span className="daygame__mark"><Check /></span>}
+                                    </div>
+                                    <div className="daygame__body">
+                                        <p className="daygame__kicker">
+                                            {isDone
+                                                ? <span className="daygame__state is-done">{t('nav.playedToday')}</span>
+                                                : <span className="daygame__state"><span className="live-dot" aria-hidden="true" />{t('nav.openToday')}</span>}
+                                            <span className="daygame__meta">{card.kicker}</span>
+                                        </p>
+                                        <h3 className="daygame__title"><Icon aria-hidden="true" />{card.title}</h3>
+                                        <p className="daygame__line">{card.line}</p>
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm daygame__cta ${isNext ? 'btn-primary' : isDone ? 'btn-ghost' : 'btn-secondary'}`}
+                                            onClick={open}
                                         >
-                                            <div className="daygame__stage" aria-hidden="true">
-                                                <span className="daygame__art">{card.art}</span>
-                                                {isDone && <span className="daygame__mark"><Check /></span>}
-                                            </div>
-                                            <div className="daygame__body">
-                                                <p className="daygame__kicker">
-                                                    {isDone
-                                                        ? <span className="daygame__state is-done">{t('nav.playedToday')}</span>
-                                                        : <span className="daygame__state"><span className="live-dot" aria-hidden="true" />{t('nav.openToday')}</span>}
-                                                    <span className="daygame__meta">{card.kicker}</span>
-                                                </p>
-                                                <h3 className="daygame__title"><Icon aria-hidden="true" />{card.title}</h3>
-                                                <p className="daygame__line">{card.line}</p>
-                                                <button
-                                                    type="button"
-                                                    className={`btn btn-sm daygame__cta ${isNext ? 'btn-primary' : isDone ? 'btn-ghost' : 'btn-secondary'}`}
-                                                    onClick={open}
-                                                >
-                                                    {card.cta}
-                                                    <ChevronRight aria-hidden="true" />
-                                                </button>
-                                            </div>
-                                        </article>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-
-                        <section className="daily-mime-section" aria-labelledby="games-mime-title">
-                            <div className="daily-mime-section__head">
-                                <h2 id="games-mime-title" className="daily-mime-section__title">{t('mime.sectionKicker')}</h2>
-                            </div>
-                            <DailyMimeCard />
-                        </section>
-                    </>
-                )}
+                                            {card.cta}
+                                            <ChevronRight aria-hidden="true" />
+                                        </button>
+                                    </div>
+                                </article>
+                            </li>
+                        );
+                    })}
+                </ul>
 
                 <section className="games-anytime" aria-labelledby="games-anytime-title">
                     <h2 id="games-anytime-title" className="games-anytime__title">{t('gamesHub.anytime.title')}</h2>
