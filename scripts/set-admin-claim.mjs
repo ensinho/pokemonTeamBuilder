@@ -20,7 +20,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminAuth, getAdminFirestore, getAppId, getFirebaseProjectId } from '../api/_lib/serverAuth.js';
 
 function loadLocalEnv() {
-    const candidates = ['.env.local', '.env'];
+    const candidates = ['.env.local', '.env', 'functions/.env.local', 'functions/.env'];
     for (const file of candidates) {
         const fullPath = path.resolve(process.cwd(), file);
         if (!fs.existsSync(fullPath)) continue;
