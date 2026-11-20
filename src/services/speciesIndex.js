@@ -10,11 +10,14 @@ import { buildBaseIdLookup } from '../utils/teamUniqueness';
  * no extra request once the builder or the Pokédex has booted.
  */
 
+const normKey = (name) => String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 const EMPTY = Object.freeze({
     list: [],
     ready: false,
     baseIdOf: () => null,
     entryById: () => null,
+    entryByName: () => null,
 });
 
 let current = EMPTY;
@@ -32,11 +35,29 @@ export const ensureSpeciesIndex = async () => {
                 const list = await loadPokemonIndex();
                 if (Array.isArray(list) && list.length > 0) {
                     const byId = new Map(list.map((entry) => [entry.id, entry]));
+                    const byName = new Map();
+                    for (const entry of list) {
+                        if (entry.apiName) byName.set(normKey(entry.apiName), entry);
+                        if (entry.name) byName.set(normKey(entry.name), entry);
+                    }
                     current = {
                         list,
                         ready: true,
                         baseIdOf: buildBaseIdLookup(list),
                         entryById: (id) => byId.get(Number(id)) || null,
+                        entryByName: (name) => {
+                            const key = normKey(name);
+                            if (!key) return null;
+                            if (byName.has(key)) return byName.get(key);
+                            // Showdown uses "Garchomp-Mega-Z" → "garchompmegaz", while
+                            // display names use "Mega Garchomp Z" → "megagarchompz".
+                            const megaMatch = String(name || '').match(/^([a-z0-9\s.'’-]+)-mega(?:-([xyz]))?$/i);
+                            if (megaMatch) {
+                                const alt = normKey(`mega ${megaMatch[1]} ${megaMatch[2] || ''}`);
+                                if (byName.has(alt)) return byName.get(alt);
+                            }
+                            return null;
+                        },
                     };
                 }
             } catch (_) {

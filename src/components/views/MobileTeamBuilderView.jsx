@@ -371,7 +371,7 @@ export const MobileTeamBuilderView = ({
     onOpenOnboarding,
 }) => {
     const { t, language } = useTranslation();
-    const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
+    const [pickerModalMode, setPickerModalMode] = React.useState(null); // null | 'games' | 'meta'
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
     const [savedTeamsOpen, setSavedTeamsOpen] = React.useState(false);
@@ -840,9 +840,23 @@ export const MobileTeamBuilderView = ({
                                     <GameFilterChip
                                         games={games}
                                         selectedGame={selectedGame}
-                                        onOpen={() => { setFiltersExpanded(false); setIsGamePickerOpen(true); }}
+                                        onOpen={() => { setFiltersExpanded(false); setPickerModalMode('games'); }}
                                         className="w-full"
                                     />
+                                </div>
+                            )}
+                            {(regulations.length > 0 || tiers.length > 0) && onSelectRegulation && (
+                                <div className="team-builder-mobile__filter-block">
+                                    <span className="team-builder-control__label">{t('builder.metaFilterLabel')}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setFiltersExpanded(false); setPickerModalMode('meta'); }}
+                                        className="game-filter-chip w-full"
+                                        aria-haspopup="dialog"
+                                    >
+                                        <Trophy className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+                                        <span className="game-filter-chip__label">{formatLabel || t('builder.pickerTabMeta')}</span>
+                                    </button>
                                 </div>
                             )}
 
@@ -934,7 +948,7 @@ export const MobileTeamBuilderView = ({
                 <div className="team-builder-mobile__result-head mb-2.5">
                     <button
                         type="button"
-                        onClick={() => setIsGamePickerOpen(true)}
+                        onClick={() => setPickerModalMode('games')}
                         className="team-builder-mobile__format-chip"
                         aria-haspopup="dialog"
                         aria-label={t('builder.formatAria', { label: formatChipLabel })}
@@ -1203,8 +1217,9 @@ export const MobileTeamBuilderView = ({
             )}
 
             <GamePickerModal
-                isOpen={isGamePickerOpen}
-                onClose={() => setIsGamePickerOpen(false)}
+                isOpen={Boolean(pickerModalMode)}
+                mode={pickerModalMode || 'games'}
+                onClose={() => setPickerModalMode(null)}
                 games={games}
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}

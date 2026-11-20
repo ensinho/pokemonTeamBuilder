@@ -2,7 +2,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    max-width: 92vw;
+    width: 100%;
+    max-width: 78rem;
     margin: 0 auto;
 }
 
@@ -109,12 +110,11 @@
     margin-top: var(--space-4);
 }
 
-/* Roster is the hero of the header: large sprites, tight spacing. */
+/* Roster is the hero of the header: symmetrical 6-slot strip on desktop. */
 .team-detail-roster {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    gap: var(--space-2);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+    gap: var(--space-2_5);
     width: 100%;
 }
 
@@ -123,10 +123,8 @@
     flex-direction: column;
     align-items: center;
     gap: var(--space-1);
-    flex: 1 1 5rem;
-    max-width: 7rem;
-    min-width: 4.75rem;
-    padding: var(--space-2) var(--space-1) var(--space-1_5);
+    min-width: 0;
+    padding: var(--space-2_5) var(--space-2) var(--space-2);
     border-radius: var(--radius-lg);
     /* A fill inside the bordered header, not a second border. */
     border: none;
@@ -207,7 +205,40 @@
     color: var(--color-muted);
 }
 
+.team-detail-more-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-0_5) var(--space-2);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-detail-more-chip:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
 /* Members */
+.team-detail-members-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+.team-detail-members-head .team-detail-section-title {
+    margin-bottom: 0;
+}
+
 .team-detail-section-title {
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
@@ -215,10 +246,52 @@
     margin-bottom: var(--space-4);
 }
 
+/* Symmetrical 3x2 grid on desktop (6 Pokémon), 2x3 on tablet, 1-col on phone */
 .team-detail-members {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
+    align-items: stretch;
+}
+
+@media (min-width: 640px) {
+    .team-detail-members {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .team-detail-members {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.team-detail-member__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+}
+
+.team-detail-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.team-detail-stat-pill strong {
+    color: var(--color-fg);
+    font-weight: 700;
+}
+
+.team-detail-stat-pill.is-bst strong {
+    color: var(--color-primary-text);
 }
 
 .team-detail-member {

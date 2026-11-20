@@ -56,6 +56,35 @@ export function GameCoverBanner({ games = [], selectedGame, onOpen, note = null,
 }
 
 // ---------------------------------------------------------------------------
+// Meta cover banner — sibling of GameCoverBanner in the builder header so
+// the user sees Game (Pokédex) and Meta (Format/Regulation) as two distinct,
+// clearly labeled choices rather than hidden inside one combined modal.
+// ---------------------------------------------------------------------------
+export function MetaCoverBanner({ label, isPlaythrough = false, onOpen, className = '' }) {
+    const { t } = useTranslation();
+    return (
+        <button
+            type="button"
+            onClick={onOpen}
+            className={`game-cover game-cover--meta ${className}`}
+            aria-haspopup="dialog"
+            title={t('builder.changeMeta')}
+        >
+            <span className={`game-cover__icon-tile ${isPlaythrough ? 'is-playthrough' : ''}`} aria-hidden="true">
+                {isPlaythrough ? <MapIcon className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
+            </span>
+            <span className="game-cover__meta">
+                <span className="game-cover__eyebrow">{t('builder.metaFilterLabel')}</span>
+                <span className="game-cover__label">
+                    {label || (isPlaythrough ? t('builder.playthroughTitle') : t('builder.pickerTabMeta'))}
+                </span>
+                <span className="game-cover__hint">{t('builder.changeMeta')}</span>
+            </span>
+        </button>
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Compact game control for the filter bar — same job as the banner, smaller.
 // ---------------------------------------------------------------------------
 export function GameFilterChip({ games = [], selectedGame, onOpen, className = '' }) {
@@ -124,6 +153,7 @@ const tierShortLabel = (tier) => {
 export function GamePickerModal({
     isOpen,
     onClose,
+    mode = 'both', // 'games' | 'meta' | 'both'
     games = [],
     selectedGame,
     onSelectGame,
@@ -147,7 +177,7 @@ export function GamePickerModal({
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const bodyRef = useRef(null);
     // The component stays mounted while closed (it renders null), so the picker
-    // reopens on the tab it was left on.
+    // reopens on the tab it was left on when mode === 'both'.
     const [tab, setTab] = useState('games');
 
     if (!isOpen) return null;
@@ -157,11 +187,15 @@ export function GamePickerModal({
         onSelectGame?.(key);
         onClose?.();
     };
-    // Regulation picks tune the competitive data only — they don't filter the
-    // Pokédex, so keep the modal open so the user can also pick a game.
-    const chooseRegulation = (id) => onSelectRegulation?.(id);
+    const isMetaOnly = mode === 'meta';
+    const isGamesOnly = mode === 'games';
+    const chooseRegulation = (id) => {
+        onSelectRegulation?.(id);
+        if (isMetaOnly) onClose?.();
+    };
     const hasRegulations = (regulations.length > 0 || tiers.length > 0) && typeof onSelectRegulation === 'function';
-    const activeTab = hasRegulations ? tab : 'games';
+    const showTabs = mode === 'both' && hasRegulations;
+    const activeTab = isMetaOnly ? 'meta' : (isGamesOnly || !hasRegulations ? 'games' : tab);
     const selectTab = (id) => {
         setTab(id);
         // Each tab starts at its top, not wherever the other one was scrolled to.
@@ -175,7 +209,7 @@ export function GamePickerModal({
         selectTab(next);
         document.getElementById(`game-picker-tab-${next}`)?.focus();
     };
-    const panelProps = (id) => (hasRegulations
+    const panelProps = (id) => (showTabs
         ? { role: 'tabpanel', id: `game-picker-panel-${id}`, 'aria-labelledby': `game-picker-tab-${id}` }
         : {});
 
@@ -198,6 +232,17 @@ export function GamePickerModal({
         { id: 'meta', label: t('builder.pickerTabMeta'), icon: <Trophy aria-hidden="true" /> },
     ];
 
+    const modalTitle = showTabs
+        ? t('builder.pickerTitle')
+        : isMetaOnly
+            ? t('builder.chooseMetaTitle')
+            : t('builder.chooseGameTitle');
+    const modalSubtitle = showTabs
+        ? null
+        : isMetaOnly
+            ? t('builder.chooseMetaSubtitle')
+            : t('builder.chooseGameSubtitle');
+
     // Portaled to <body> for the same reason <BottomSheet> is: the picker is
     // opened *from* a sheet on mobile, and a picker left inside the page tree
     // renders before the sheet's portal node and so paints underneath it.
@@ -213,16 +258,16 @@ export function GamePickerModal({
                 aria-modal="true"
                 aria-labelledby="game-picker-title"
                 tabIndex={-1}
-                className={`game-picker game-picker--catalog ${hasRegulations ? 'game-picker--tabbed' : ''} w-full max-w-3xl rounded-2xl bg-surface shadow-elevation-3 focus:outline-none`}
+                className={`game-picker game-picker--catalog ${showTabs ? 'game-picker--tabbed' : ''} w-full max-w-3xl rounded-2xl bg-surface shadow-elevation-3 focus:outline-none`}
                 onClick={(event) => event.stopPropagation()}
             >
-                <div className={`game-picker__head ${hasRegulations ? 'game-picker__head--tabbed' : ''}`}>
+                <div className={`game-picker__head ${showTabs ? 'game-picker__head--tabbed' : ''}`}>
                     <div className="min-w-0">
                         <h2 id="game-picker-title" className="game-picker__title">
-                            {hasRegulations ? t('builder.pickerTitle') : t('builder.chooseGameTitle')}
+                            {modalTitle}
                         </h2>
-                        {!hasRegulations && (
-                            <p className="game-picker__subtitle">{t('builder.chooseGameSubtitle')}</p>
+                        {modalSubtitle && (
+                            <p className="game-picker__subtitle">{modalSubtitle}</p>
                         )}
                     </div>
                     <button
@@ -235,7 +280,7 @@ export function GamePickerModal({
                     </button>
                 </div>
 
-                {hasRegulations && (
+                {showTabs && (
                     <div className="game-picker__tabbar">
                         <div
                             role="tablist"

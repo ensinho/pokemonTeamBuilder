@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslation } from '../../../../hooks/useTranslation';
-import { getBattleIcon } from '../../../../utils/battleSprites';
+import { getBattleIcon, handleBattleSpriteError } from '../../../../utils/battleSprites';
 import { timeUntil } from '../../../../utils/challengeView';
 
 const APPS = ['party', 'dossier', 'clock', 'counter'];
@@ -46,7 +46,7 @@ export function DsPoketch({ team = [], foe = null, championName = 'Cynthia', nex
                             return (
                                 // The team's order is fixed for the battle.
                                 <li key={`${mon.species}-${index}`} className={`ds-poketch__mon ${mon.fainted ? 'is-fainted' : ''}`}>
-                                    {icon.url && <img src={icon.url} alt={mon.species} width={40} height={30} decoding="async" draggable="false" />}
+                                    {icon.url && <img src={icon.url} alt={mon.species} width={40} height={30} decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />}
                                     <span className="ds-poketch__hp" aria-hidden="true">
                                         <span style={{ '--hp': (mon.hpPct ?? 100) / 100 }} />
                                     </span>
@@ -64,7 +64,7 @@ export function DsPoketch({ team = [], foe = null, championName = 'Cynthia', nex
                                 // Her sending order is fixed for the day.
                                 <li key={index} className={`ds-poketch__foe ${mon.revealed ? 'is-revealed' : ''} ${mon.fainted ? 'is-fainted' : ''}`}>
                                     {icon?.url
-                                        ? <img src={icon.url} alt={name} width={40} height={30} decoding="async" draggable="false" />
+                                        ? <img src={icon.url} alt={name} width={40} height={30} decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />
                                         : <span className="ds-poketch__unknown" aria-label={name}>?</span>}
                                     <span className="ds-poketch__name">{name}</span>
                                 </li>

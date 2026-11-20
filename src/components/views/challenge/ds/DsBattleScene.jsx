@@ -3,7 +3,7 @@ import { memo, useLayoutEffect, useRef } from 'react';
 import { typeColors } from '../../../../constants/types';
 import { useSpriteFeet } from '../../../../hooks/useSpriteFeet';
 import { useTranslation } from '../../../../hooks/useTranslation';
-import { getDsSprite, spriteFeet } from '../../../../utils/battleSprites';
+import { getDsSprite, handleBattleSpriteError, spriteFeet } from '../../../../utils/battleSprites';
 import { FLARE_VARIANTS, flareOf } from '../../../../utils/battleFlare';
 import { BOOST_STATS, CONDITIONS, boostMultiplier, fieldConditions, hpTone, sideConditions } from '../../../../utils/battleState';
 import { trainerSpriteUrl } from '../../../../utils/challengeView';
@@ -264,7 +264,17 @@ function Combatant({ mon, side, current, feetTable, reducedMotion }) {
     return (
         <div className={classes} style={{ '--feet': spriteFeet(feetTable, sprite.url, { back: mine }) }}>
             <div className="ds-mon__body" ref={bodyRef}>
-                {sprite.url && <img src={sprite.url} alt={mon.species} width={96} height={96} decoding="async" draggable="false" />}
+                {sprite.url && (
+                    <img
+                        src={sprite.url}
+                        alt={mon.species}
+                        width={96}
+                        height={96}
+                        decoding="async"
+                        draggable="false"
+                        onError={(e) => handleBattleSpriteError(e, mon.transformedInto || mon.species, { back: mine, shiny: mon.shiny })}
+                    />
+                )}
             </div>
         </div>
     );

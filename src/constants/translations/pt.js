@@ -1664,6 +1664,10 @@ export default {
         regulationSectionSub: 'Alinha as sugestões e os dados de uso ao meta escolhido — ou desliga tudo',
         chooseGameTitle: 'Escolha um jogo',
         chooseGameSubtitle: 'Escolha um título para focar a Pokédex na sua região',
+        metaFilterLabel: 'Meta',
+        changeMeta: 'Trocar meta',
+        chooseMetaTitle: 'Escolher meta',
+        chooseMetaSubtitle: 'Define sugestões competitivas, uso e regras do formato',
         pickerTitle: 'Jogo e meta',
         pickerTabsAria: 'O que escolher',
         pickerTabGames: 'Jogos',
@@ -2183,6 +2187,12 @@ export default {
         },
     },
     pokepuzzle: {
+        buddy: {
+            watch: 'Tô de olho! Toque se quiser uma dica.',
+            askHint: 'Travou? Toque em mim pra revelar uma letra!',
+            almostThere: 'Você tá quase lá, manda ver!',
+            cheer: 'Animar o Fantasminha',
+        },
         hint: {
             button: 'Dica',
             ask: 'Pedir uma dica: revela uma letra do nome no lugar dela ({{left}} restantes)',
@@ -2478,6 +2488,10 @@ export default {
         defense: 'Resistências',
         weaknesses: 'Fraquezas',
         roster: 'Integrantes',
+        viewModeAria: 'Modo de visualização dos integrantes',
+        modeSimple: 'Resumo',
+        modeCompetitive: 'Competitivo',
+        bstShort: 'Total',
         weakTo: 'Fraco contra',
         tournamentItems: 'Itens de torneio',
         smogonItems: 'Recomendado pelo Smogon',
@@ -3077,6 +3091,12 @@ export default {
                 arena: { greet1: 'Então você chegou até aqui. Eu sou {{name}}, o Campeão.' },
                 difficulty: { dp: 'Red & Blue', platinum: 'Yellow', rematch: 'Revanche', world: 'Campeão Mundial' },
             },
+        },
+        buddy: {
+            watch: 'Tô de olho! Toque se quiser uma dica.',
+            askHint: 'Travou? Toque em mim pra revelar uma letra!',
+            almostThere: 'Você tá quase lá, manda ver!',
+            cheer: 'Animar o Fantasminha',
         },
         hint: {
             title: '{{name}} está esperando',

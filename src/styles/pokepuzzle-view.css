@@ -17,11 +17,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3);
     width: 100%;
     max-width: 37.5rem;
     margin: 0 auto;
-    padding: 0 var(--space-2) var(--space-8) var(--space-2);
+    padding: 0 var(--space-2) var(--space-6) var(--space-2);
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo);
 }
 
@@ -85,7 +85,7 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    padding: var(--space-2) var(--space-4) var(--space-4);
+    padding: var(--space-2) var(--space-3_5) var(--space-3);
 }
 
 /* Tabs and the game's two numbers share one row and one rule. */
@@ -93,8 +93,71 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2_5);
     box-shadow: inset 0 -1px 0 var(--color-border);
+}
+
+.pokepuzzle-tip-body {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.pokepuzzle-tip-body > .pokepuzzle-tip-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Interactive Mascot buddy watching the puzzle and reacting to hints */
+.pokepuzzle-buddy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+    width: 7.5rem;
+    padding: var(--space-1_5) var(--space-2);
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
+}
+
+.pokepuzzle-buddy:hover {
+    background: var(--color-surface-hover);
+}
+
+.pokepuzzle-buddy:active {
+    scale: var(--press-scale);
+}
+
+.pokepuzzle-buddy.is-hinting {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.pokepuzzle-buddy__bubble {
+    color: var(--color-muted);
+    font-size: var(--text-2xs);
+    line-height: 1.25;
+}
+
+.pokepuzzle-buddy.is-hinting .pokepuzzle-buddy__bubble {
+    color: var(--color-primary-text);
+    font-weight: var(--weight-semibold);
+}
+
+@media (max-width: 540px) {
+    .pokepuzzle-buddy {
+        width: 5.5rem;
+        padding: var(--space-1) var(--space-1_5);
+    }
+
+    .pokepuzzle-buddy__bubble {
+        font-size: 0.625rem;
+    }
 }
 
 /* Compound selector: index.css (loaded after this file) owns .tabs. */
@@ -630,8 +693,8 @@
 }
 .pokepuzzle-result-badge.has-mascot .mascot { width: 100%; height: 100%; }
 
-/* 48 px so the face reads; it overhangs the row instead of growing it */
-.pokepuzzle-companion { margin-block: calc(-1 * var(--space-2)); }
+/* Companion sits cleanly inside .pokepuzzle-buddy without overhanging */
+.pokepuzzle-companion { margin-block: 0; }
 
 .pokepuzzle-result-title {
     font-size: var(--text-xl);
@@ -876,9 +939,9 @@
     }
 
     .pokepuzzle-game-container.has-standings {
-        grid-template-columns: var(--page-rail-width, 19rem) minmax(0, 1fr) 21rem;
+        grid-template-columns: var(--page-rail-width, 18.5rem) minmax(0, 1fr) 20.5rem;
         grid-template-areas: "left main right";
-        gap: var(--page-gap, var(--space-6));
+        gap: var(--space-4);
     }
 
     .pokepuzzle-game-container.has-standings > .pokepuzzle-game-main {
@@ -890,7 +953,7 @@
         position: static;
         display: flex;
         flex-direction: column;
-        gap: var(--space-4);
+        gap: var(--space-3);
     }
 
     .pokepuzzle-standings {

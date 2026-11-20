@@ -19,6 +19,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useThemeStore } from '../../store/useThemeStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { hasAnsweredProfile } from '../../utils/trainerProfile';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useSmogonData } from '../../hooks/useSmogonData';
@@ -58,6 +60,17 @@ export function TeamDetailView({
     const navigate = useNavigate();
     const { t, language } = useTranslation();
     const showTeraType = useThemeStore((state) => state.showTeraType);
+    const trainerProfile = useAuthStore((state) => state.trainerProfile);
+    const prefersCompetitive = React.useMemo(() => {
+        if (!hasAnsweredProfile(trainerProfile)) return true;
+        return Boolean(trainerProfile?.interests?.includes('competitive'));
+    }, [trainerProfile]);
+    const [detailMode, setDetailMode] = React.useState(() => (prefersCompetitive ? 'competitive' : 'simple'));
+    const [showAllCoverage, setShowAllCoverage] = React.useState(false);
+    React.useEffect(() => {
+        setDetailMode(prefersCompetitive ? 'competitive' : 'simple');
+    }, [prefersCompetitive]);
+    const isSimpleMode = detailMode === 'simple';
     const { goToMove, goToAbility, goToItem } = useEntityNavigate();
 
     const team = React.useMemo(() => teams.find((tm) => tm.id === id) || null, [teams, id]);
@@ -237,8 +250,13 @@ export function TeamDetailView({
                         </h3>
                         <div className="team-detail-chips">
                             {resistEntries.length > 0
-                                ? resistEntries.map(([type, count]) => <CoverageChip key={type} type={type} count={count} />)
+                                ? (showAllCoverage ? resistEntries : resistEntries.slice(0, 8)).map(([type, count]) => <CoverageChip key={type} type={type} count={count} />)
                                 : <p className="team-detail-note">{t('builder.noResistances')}</p>}
+                            {!showAllCoverage && resistEntries.length > 8 && (
+                                <button type="button" className="team-detail-more-chip" onClick={() => setShowAllCoverage(true)}>
+                                    +{resistEntries.length - 8}
+                                </button>
+                            )}
                         </div>
                     </div>
                     <div className="team-detail-coverage__col">
@@ -248,8 +266,13 @@ export function TeamDetailView({
                         </h3>
                         <div className="team-detail-chips">
                             {offenseTypes.length > 0
-                                ? offenseTypes.map((type) => <CoverageChip key={type} type={type} />)
+                                ? (showAllCoverage ? offenseTypes : offenseTypes.slice(0, 8)).map((type) => <CoverageChip key={type} type={type} />)
                                 : <p className="team-detail-note">{t('builder.noOffense')}</p>}
+                            {!showAllCoverage && offenseTypes.length > 8 && (
+                                <button type="button" className="team-detail-more-chip" onClick={() => setShowAllCoverage(true)}>
+                                    +{offenseTypes.length - 8}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -257,19 +280,43 @@ export function TeamDetailView({
 
             {/* Members */}
             <section className="team-builder-panel team-detail-members-panel p-5 md:p-6">
-                <h2 className="team-detail-section-title">{t('savedTeams.roster')}</h2>
+                <div className="team-detail-members-head">
+                    <h2 className="team-detail-section-title">{t('savedTeams.roster')}</h2>
+                    <div className="segmented segmented--quiet segmented--sm" role="group" aria-label={t('savedTeams.viewModeAria')}>
+                        <button
+                            type="button"
+                            className="segmented__item"
+                            aria-pressed={isSimpleMode}
+                            onClick={() => setDetailMode('simple')}
+                        >
+                            {t('savedTeams.modeSimple')}
+                        </button>
+                        <button
+                            type="button"
+                            className="segmented__item"
+                            aria-pressed={!isSimpleMode}
+                            onClick={() => setDetailMode('competitive')}
+                        >
+                            {t('savedTeams.modeCompetitive')}
+                        </button>
+                    </div>
+                </div>
                 <div className="team-detail-members">
                     {members.map((m) => {
                         const cz = m.customization || {};
-                        const weaknesses = getPokemonWeaknessEntries(m.types || []).slice(0, 6);
+                        const weaknesses = getPokemonWeaknessEntries(m.types || []).slice(0, isSimpleMode ? 4 : 6);
                         // Keyed by base species: a Mega or a form asks for its species'.
                         const dataId = speciesIdOf(m, baseIdOf);
                         const usage = usageFor(dataId);
                         const smogon = smogonFor(dataId);
-                        const itemPicks = suggestItemsForPokemon(m, language, usage, smogon);
+                        const itemPicks = isSimpleMode ? [] : suggestItemsForPokemon(m, language, usage, smogon);
                         const itemsFromMeta = Boolean(usage && usage.n >= 2 && usage.items?.length);
                         const itemsFromSmogon = !itemsFromMeta && Boolean(smogon?.sets?.length);
                         const moves = (cz.moves || []).filter(Boolean);
+                        const bst = Array.isArray(m.stats) ? m.stats.reduce((sum, s) => sum + (Number(s.base_stat) || 0), 0) : 0;
+                        const topStats = Array.isArray(m.stats)
+                            ? [...m.stats].sort((a, b) => (b.base_stat || 0) - (a.base_stat || 0)).slice(0, 2)
+                            : [];
                         return (
                             <article key={m.instanceId || m.id} className="team-detail-member">
                                 <div className="team-detail-member__head">
@@ -284,7 +331,7 @@ export function TeamDetailView({
                                             <button type="button" onClick={() => showDetails?.(m)} className="team-detail-member__name">
                                                 {m.name} <span className="team-detail-member__id">#{m.id}</span>
                                             </button>
-                                            {usageMap.get(m.id) > 0 && (
+                                            {!isSimpleMode && usageMap.get(m.id) > 0 && (
                                                 <span className="team-detail-meta-pill" title={t('savedTeams.appearsIn', { count: usageMap.get(m.id) })}>
                                                     <Trophy className="w-2.5 h-2.5" />{usageMap.get(m.id)}
                                                 </span>
@@ -297,32 +344,49 @@ export function TeamDetailView({
                                 </div>
 
                                 {/* Build line */}
-                                <div className="team-detail-member__build">
-                                    {cz.item && (
-                                        <span className="team-detail-build-pill">
-                                            <img src={itemSpriteUrl(cz.item)} alt="" className="w-4 h-4 image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                            {cz.item.replace(/-/g, ' ')}
-                                        </span>
-                                    )}
-                                    {cz.ability && cz.ability !== 'unknown' && (
-                                        <button type="button" onClick={(e) => goToAbility(cz.ability, e)} className="team-detail-build-pill capitalize cursor-pointer transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                            {cz.ability.replace(/-/g, ' ')}
-                                        </button>
-                                    )}
-                                    {showTeraType && cz.teraType && (
-                                        <span className="team-detail-build-pill team-detail-build-pill--tera" style={{ '--type-chip': typeColors[cz.teraType] }}>
-                                            <Sparkles className="w-3 h-3" /> Tera {cz.teraType}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Stats */}
-                                {m.stats?.length > 0 && (
-                                    <div className="team-detail-member__stats">
-                                        {m.stats.map((s) => (
-                                            <CompactStatBar key={s.name} stat={s.name} value={s.base_stat} />
-                                        ))}
+                                {(cz.item || (cz.ability && cz.ability !== 'unknown') || (showTeraType && cz.teraType)) && (
+                                    <div className="team-detail-member__build">
+                                        {cz.item && (
+                                            <span className="team-detail-build-pill">
+                                                <img src={itemSpriteUrl(cz.item)} alt="" className="w-4 h-4 image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                {cz.item.replace(/-/g, ' ')}
+                                            </span>
+                                        )}
+                                        {cz.ability && cz.ability !== 'unknown' && (
+                                            <button type="button" onClick={(e) => goToAbility(cz.ability, e)} className="team-detail-build-pill capitalize cursor-pointer transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                                {cz.ability.replace(/-/g, ' ')}
+                                            </button>
+                                        )}
+                                        {showTeraType && cz.teraType && (
+                                            <span className="team-detail-build-pill team-detail-build-pill--tera" style={{ '--type-chip': typeColors[cz.teraType] }}>
+                                                <Sparkles className="w-3 h-3" /> Tera {cz.teraType}
+                                            </span>
+                                        )}
                                     </div>
+                                )}
+
+                                {/* Stats: compact BST + top 2 strengths in Simple mode, full 6 bars in Competitive mode */}
+                                {m.stats?.length > 0 && (
+                                    isSimpleMode ? (
+                                        <div className="team-detail-member__summary">
+                                            <span className="team-detail-stat-pill is-bst">
+                                                <span>{t('savedTeams.bstShort')}</span>
+                                                <strong>{bst}</strong>
+                                            </span>
+                                            {topStats.map((s) => (
+                                                <span key={s.name} className="team-detail-stat-pill">
+                                                    <span>{s.name.replace('special-attack', 'SpA').replace('special-defense', 'SpD').replace('attack', 'Atk').replace('defense', 'Def').replace('speed', 'Spe').replace('hp', 'HP')}</span>
+                                                    <strong>{s.base_stat}</strong>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="team-detail-member__stats">
+                                            {m.stats.map((s) => (
+                                                <CompactStatBar key={s.name} stat={s.name} value={s.base_stat} />
+                                            ))}
+                                        </div>
+                                    )
                                 )}
 
                                 {/* Moves */}
