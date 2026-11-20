@@ -4,7 +4,7 @@ import { FileText, Info, ScrollText, Shield, Type } from 'lucide-react';
 import { ShellNavGroup } from './ShellNavGroup';
 import { FooterFeedback } from './FooterFeedback';
 import { TextSizeControl } from './TextSizeControl';
-import { GithubIcon, LinkedinIcon, SocialIcon, StarsIcon } from './icons';
+import { YoutubeIcon, LinkedinIcon, SocialIcon, StarsIcon } from './icons';
 import { SOCIAL_LINKS } from '../constants/social';
 import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useTranslation } from '../hooks/useTranslation';
@@ -87,7 +87,7 @@ export function DrawerAboutSection({ onOpenPatchNotes, onNavigate, db, userId, u
                     <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer">Enzo Esmeraldo</a>
                 </span>
                 <span className="app-shell__nav-credit-links">
-                    <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="touch-target"><GithubIcon /></a>
+                    <a href="https://www.youtube.com/@PokemonBuilderApp" target="_blank" rel="noopener noreferrer" aria-label="PokemonBuilder — YouTube" title="YouTube · @PokemonBuilderApp" className="touch-target"><YoutubeIcon /></a>
                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="touch-target"><LinkedinIcon /></a>
                     {SOCIAL_LINKS.map(({ id, name, href }) => (
                         <a key={id} href={href} target="_blank" rel="noopener noreferrer" aria-label={`PokemonBuilder — ${name}`} className="touch-target"><SocialIcon id={id} /></a>

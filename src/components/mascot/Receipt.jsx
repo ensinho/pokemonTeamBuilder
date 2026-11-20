@@ -65,17 +65,20 @@ export function Receipt({ brand, kind, meta = [], columns, rows = [], totals = [
     return (
         <div className="receipt-slot">
             <article className={`receipt ${printing ? 'is-printing' : ''}`}>
-                <p className="receipt__brand">
-                    <Mascot size="xs" mood="feliz" seasonal={false} />
-                    <span>{brand}</span>
-                </p>
-                <p className="receipt__kind">{kind}</p>
-                <hr className="receipt__rule" />
-                <dl className="receipt__meta">
-                    {meta.map(([key, value]) => (
-                        <div key={key}><dt>{key}</dt><dd>{value}</dd></div>
-                    ))}
-                </dl>
+                <header className="receipt__header">
+                    <p className="receipt__brand">
+                        <Mascot size="xs" mood="feliz" seasonal={false} />
+                        <span>{brand}</span>
+                    </p>
+                    <p className="receipt__kind">{kind}</p>
+                    {meta.length > 0 && (
+                        <dl className="receipt__meta receipt__meta--compact">
+                            {meta.map(([key, value]) => (
+                                <div key={key}><dt>{key}</dt><dd>{value}</dd></div>
+                            ))}
+                        </dl>
+                    )}
+                </header>
                 <hr className="receipt__rule" />
                 {columns && (
                     <p className="receipt__columns" aria-hidden="true"><span>{columns[0]}</span><span>{columns[1]}</span></p>

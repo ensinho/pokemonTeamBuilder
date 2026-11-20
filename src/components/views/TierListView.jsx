@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Check, Download, Link2, Plus, RotateCcw, Search, X } from 'lucide-react';
+import { Check, ChevronDown, Download, Link2, Plus, RotateCcw, Search, X } from 'lucide-react';
 
 import { BottomSheet } from '../BottomSheet';
 import { Loader } from '../Loader';
@@ -236,6 +236,8 @@ export function TierListView() {
     const [cellOpen, setCellOpen] = useState(null);
     const [cellQuery, setCellQuery] = useState('');
     const [exporting, setExporting] = useState(false);
+    const [themesOpen, setThemesOpen] = useState(false);
+    const themesBarRef = useRef(null);
     const [drag, setDrag] = useState(null);
     const [over, setOver] = useState(null);
     const dragRef = useRef({ suppressClick: false });
@@ -340,11 +342,37 @@ export function TierListView() {
     }, []);
 
     const chooseTemplate = (id) => {
+        setThemesOpen(false);
         if (id === templateId) return;
         setHeld(null);
         setQuery('');
         setStore((prev) => ({ ...prev, current: id }));
     };
+
+    // Close the desktop theme selector on outside click or Escape.
+    useEffect(() => {
+        if (!themesOpen) return undefined;
+        const onPointerDown = (event) => {
+            if (themesBarRef.current && !themesBarRef.current.contains(event.target)) {
+                setThemesOpen(false);
+            }
+        };
+        const onKey = (event) => { if (event.key === 'Escape') setThemesOpen(false); };
+        document.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [themesOpen]);
+
+    // Active theme + 2 quick-switch previews (always surfacing today's theme
+    // first when it isn't the active one).
+    const previewThemes = useMemo(() => {
+        const others = themes.filter((item) => item.id !== templateId);
+        return others.slice(0, 2);
+    }, [themes, templateId]);
+    const extraThemesCount = Math.max(0, themes.length - 1 - previewThemes.length);
 
     // ── Tap to place ───────────────────────────────────────────────────
     const place = (target, index) => {
@@ -629,37 +657,119 @@ export function TierListView() {
 
     return (
         <div className={`tier-page ${held != null ? 'is-holding' : ''}`}>
-            {/* The shell's header carries the title (and, on a desktop, this line). */}
-            <p className="tier-page__sub">{t('tierList.subtitle')}</p>
-
-            <div className="tier-themes" role="listbox" aria-label={t('tierList.themes')}>
-                {themes.map((item) => {
-                    const isToday = item.id === todayTheme.id;
-                    return (
-                        <button
-                            key={item.id}
-                            type="button"
-                            role="option"
-                            aria-selected={item.id === templateId}
-                            className={`tier-theme ${item.id === templateId ? 'is-on' : ''} ${isToday ? 'is-today' : ''}`}
-                            onClick={() => chooseTemplate(item.id)}
-                        >
-                            <span className="tier-theme__art type-platform" style={{ '--card-type': 'var(--color-primary)' }}>
-                                <img src={getPokemonArtworkSpriteUrl(item.art)} alt="" width={56} height={56} loading="lazy" decoding="async" draggable="false" />
-                            </span>
-                            <span className="tier-theme__name">{t(`tierList.templates.${item.id}.name`)}</span>
-                            {isToday ? (
-                                // The day's theme: Live while today's list is still to make.
+            {/* Compact category selector bar: shows the active list, 2 quick-switch
+                previews, and a trigger for the full list — keeping the board, pool,
+                CTA and mascot opinion visible without scrolling past 14 cards. */}
+            <div className="tier-theme-bar" ref={themesBarRef}>
+                <div className="tier-theme-bar__pills" role="group" aria-label={t('tierList.themes')}>
+                    <button
+                        type="button"
+                        className={`tier-theme-pill is-on ${template.id === todayTheme.id ? 'is-today' : ''}`}
+                        aria-expanded={themesOpen}
+                        aria-haspopup="listbox"
+                        onClick={() => setThemesOpen((open) => !open)}
+                    >
+                        <img
+                            src={getPokemonArtworkSpriteUrl(template.art)}
+                            alt=""
+                            width={32}
+                            height={32}
+                            decoding="async"
+                            draggable="false"
+                            className="tier-theme-pill__art"
+                        />
+                        <span className="tier-theme-pill__meta">
+                            <span className="tier-theme-pill__name">{t(`tierList.templates.${template.id}.name`)}</span>
+                            {template.id === todayTheme.id ? (
                                 <span className="tier-theme__today">
                                     {!gamesDone.tierList && <span className="live-dot" aria-hidden="true" />}
                                     {t('tierList.todayTheme')}
                                 </span>
                             ) : (
-                                <span className="tier-theme__kind">{t(item.kind === 'chart' ? 'tierList.kindChart' : 'tierList.kindTier')}</span>
+                                <span className="tier-theme__kind">{t(template.kind === 'chart' ? 'tierList.kindChart' : 'tierList.kindTier')}</span>
                             )}
-                        </button>
-                    );
-                })}
+                        </span>
+                        <ChevronDown className={`tier-theme-pill__chev ${themesOpen ? 'is-open' : ''}`} aria-hidden="true" />
+                    </button>
+
+                    {previewThemes.map((item) => {
+                        const isToday = item.id === todayTheme.id;
+                        return (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className={`tier-theme-pill tier-theme-pill--preview ${isToday ? 'is-today' : ''}`}
+                                onClick={() => chooseTemplate(item.id)}
+                            >
+                                <img
+                                    src={getPokemonArtworkSpriteUrl(item.art)}
+                                    alt=""
+                                    width={28}
+                                    height={28}
+                                    loading="lazy"
+                                    decoding="async"
+                                    draggable="false"
+                                    className="tier-theme-pill__art"
+                                />
+                                <span className="tier-theme-pill__meta">
+                                    <span className="tier-theme-pill__name">{t(`tierList.templates.${item.id}.name`)}</span>
+                                    {isToday && (
+                                        <span className="tier-theme__today">
+                                            {!gamesDone.tierList && <span className="live-dot" aria-hidden="true" />}
+                                            {t('tierList.todayTheme')}
+                                        </span>
+                                    )}
+                                </span>
+                            </button>
+                        );
+                    })}
+
+                    <button
+                        type="button"
+                        className={`tier-theme-more ${themesOpen ? 'is-open' : ''}`}
+                        aria-expanded={themesOpen}
+                        aria-haspopup="listbox"
+                        onClick={() => setThemesOpen((open) => !open)}
+                    >
+                        <span>{t('tierList.moreThemes', { count: extraThemesCount })}</span>
+                        <ChevronDown className={`tier-theme-pill__chev ${themesOpen ? 'is-open' : ''}`} aria-hidden="true" />
+                    </button>
+                </div>
+
+                {themesOpen && (
+                    <div className="tier-themes-popover menu-surface" role="listbox" aria-label={t('tierList.themes')}>
+                        {themes.map((item) => {
+                            const isToday = item.id === todayTheme.id;
+                            const isActive = item.id === templateId;
+                            return (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={isActive}
+                                    className={`tier-theme-option ${isActive ? 'is-on' : ''} ${isToday ? 'is-today' : ''}`}
+                                    onClick={() => chooseTemplate(item.id)}
+                                >
+                                    <span className="tier-theme-option__art type-platform" style={{ '--card-type': 'var(--color-primary)' }}>
+                                        <img src={getPokemonArtworkSpriteUrl(item.art)} alt="" width={36} height={36} loading="lazy" decoding="async" draggable="false" />
+                                    </span>
+                                    <span className="tier-theme-option__text">
+                                        <span className="tier-theme__name">{t(`tierList.templates.${item.id}.name`)}</span>
+                                        {isToday ? (
+                                            <span className="tier-theme__today">
+                                                {!gamesDone.tierList && <span className="live-dot" aria-hidden="true" />}
+                                                {t('tierList.todayTheme')}
+                                            </span>
+                                        ) : (
+                                            <span className="tier-theme__kind">{t(item.kind === 'chart' ? 'tierList.kindChart' : 'tierList.kindTier')}</span>
+                                        )}
+                                    </span>
+                                    {isActive && <Check className="w-4 h-4 tier-theme-option__check" aria-hidden="true" />}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             <div className="tier-page__body">

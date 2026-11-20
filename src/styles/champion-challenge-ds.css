@@ -33,9 +33,185 @@
     min-width: 0;
 }
 
-/* The battle scene's room (<Loader scene="battle">, which fades itself in). */
+/* Interactive battle-prep loader for the Champion Challenge. */
 .challenge-loading {
-    padding: var(--space-12) 0;
+    display: grid;
+    place-items: center;
+    min-height: 24rem;
+    padding: var(--space-8) var(--space-4);
+}
+
+.challenge-loader-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    width: min(100%, 30rem);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+}
+
+.challenge-loader-card__versus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-5);
+    width: 100%;
+}
+
+.challenge-loader-card__mascot-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    border-radius: var(--radius-lg);
+    background: transparent;
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
+}
+
+.challenge-loader-card__mascot-btn:hover {
+    background: var(--color-surface-hover);
+}
+
+.challenge-loader-card__mascot-btn:active {
+    scale: var(--press-scale);
+}
+
+.challenge-loader-card__tap-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--color-primary-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+}
+
+.challenge-loader-card__vs {
+    color: var(--color-muted);
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.challenge-loader-card__champ {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.challenge-loader-card__champ-ring {
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+.challenge-loader-card__champ-name {
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    font-weight: 700;
+}
+
+.challenge-loader-card__status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+}
+
+.challenge-loader-card__label {
+    margin: 0;
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.challenge-loader-card__steps {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.challenge-loader-card__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-border-strong);
+    transition: background-color var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+}
+
+.challenge-loader-card__dot.is-done {
+    background: var(--color-primary);
+}
+
+.challenge-loader-card__dot.is-active {
+    background: var(--color-primary);
+    transform: scale(1.35);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .challenge-loader-card__dot.is-active {
+        animation: challenge-loader-pulse 1.1s var(--ease-smooth) infinite;
+    }
+}
+
+@keyframes challenge-loader-pulse {
+    0%, 100% { opacity: 1; transform: scale(1.35); }
+    50% { opacity: 0.45; transform: scale(1); }
+}
+
+.challenge-loader-card__tip {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.challenge-loader-card__tip-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.challenge-loader-card__tip-kicker {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.challenge-loader-card__tip-next {
+    gap: var(--space-1);
+    color: var(--color-primary-text);
+}
+
+.challenge-loader-card__tip-body {
+    margin: 0;
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    line-height: 1.45;
 }
 
 /* ── The frame (app UI) ──────────────────────────────────────────────── */
@@ -4158,6 +4334,11 @@
     opacity: 0.6;
 }
 
+.weekly-recap {
+    width: 100%;
+    max-width: 28rem;
+}
+
 .weekly-recap__eyebrow {
     margin: 0 0 var(--space-0_5);
     color: var(--color-muted);
@@ -4169,7 +4350,20 @@
 .weekly-recap__body {
     display: flex;
     flex-direction: column;
+    gap: var(--space-5);
+}
+
+.weekly-recap__grid {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-4);
+}
+
+.weekly-recap__hero {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
 }
 
 .weekly-recap .segmented__item {
@@ -4194,4 +4388,40 @@
 .weekly-recap__list {
     overflow: visible;
     flex: none;
+    gap: var(--space-2);
+}
+
+@media (min-width: 768px) {
+    .weekly-recap {
+        max-width: 50rem;
+    }
+
+    .weekly-recap__switcher {
+        max-width: 22rem;
+        margin-inline: auto;
+    }
+
+    .weekly-recap__grid.has-rest {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+        gap: var(--space-6);
+        align-items: start;
+    }
+
+    .weekly-recap__hero {
+        gap: var(--space-5);
+    }
+
+    .weekly-recap__podium {
+        gap: var(--space-3);
+        padding-top: var(--space-3);
+    }
+
+    .weekly-recap__footer {
+        justify-content: center;
+    }
+
+    .weekly-recap__cta {
+        max-width: 20rem;
+    }
 }

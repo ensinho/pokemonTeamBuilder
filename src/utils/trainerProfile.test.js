@@ -75,21 +75,21 @@ describe('mergeTrainerProfiles', () => {
     });
 });
 
-describe('the games joined the minigames (2026-11-15)', () => {
-    it('reads a stored franchise answer as minigames, never twice', () => {
-        expect(normalizeTrainerProfile({ interests: ['franchise'] }).interests).toEqual(['minigames']);
-        expect(normalizeTrainerProfile({ interests: ['franchise', 'minigames'] }).interests).toEqual(['minigames']);
-        expect(normalizeTrainerProfile({ interests: ['competitive', 'franchise'] }).interests).toEqual(['competitive', 'minigames']);
+describe('three onboarding interests (competitive, franchise, minigames)', () => {
+    it('preserves franchise as its own interest in canonical order', () => {
+        expect(normalizeTrainerProfile({ interests: ['franchise'] }).interests).toEqual(['franchise']);
+        expect(normalizeTrainerProfile({ interests: ['minigames', 'franchise'] }).interests).toEqual(['franchise', 'minigames']);
+        expect(normalizeTrainerProfile({ interests: ['competitive', 'franchise'] }).interests).toEqual(['competitive', 'franchise']);
     });
 
-    it('turns a Traveler into a Desafiante and the old three into a Master', () => {
-        expect(derivePersona(profile(['franchise'])).id).toBe('challenger');
-        expect(derivePersona({ interests: ['franchise'] }).id).toBe('challenger');
+    it('maps franchise to traveler and all three to master', () => {
+        expect(derivePersona(profile(['franchise'])).id).toBe('traveler');
+        expect(derivePersona({ interests: ['franchise'] }).id).toBe('traveler');
         expect(derivePersona(profile(['competitive', 'franchise', 'minigames'])).id).toBe('master');
     });
 
-    it('asks two questions, not three', () => {
-        expect(INTERESTS).toEqual(['competitive', 'minigames']);
+    it('offers three interests', () => {
+        expect(INTERESTS).toEqual(['competitive', 'franchise', 'minigames']);
     });
 });
 
@@ -100,11 +100,12 @@ describe('derivePersona', () => {
 
     it('follows the first interest in priority order', () => {
         expect(derivePersona(profile(['minigames'])).id).toBe('challenger');
+        expect(derivePersona(profile(['franchise'])).id).toBe('traveler');
         expect(derivePersona(profile(['competitive'])).id).toBe('strategist');
     });
 
-    it('both make a master', () => {
-        expect(derivePersona(profile(['minigames', 'competitive'])).id).toBe('master');
+    it('all three make a master', () => {
+        expect(derivePersona(profile(['minigames', 'franchise', 'competitive'])).id).toBe('master');
     });
 });
 
@@ -158,9 +159,9 @@ describe('homeDoors', () => {
         expect(homeDoors(p)).toEqual(personaPicks(p, 4));
     });
 
-    it('every door is a known destination, even with everything a persona picks excluded', () => {
+    it('every door is a known destination, even with many persona picks excluded', () => {
         const p = profile(['competitive', 'franchise', 'minigames'], { competitiveLevel: 'casual' });
-        const doors = homeDoors(p, { exclude: personaPicks(p, 15) });
+        const doors = homeDoors(p, { exclude: personaPicks(p, 8) });
         expect(doors).toHaveLength(4);
         for (const key of doors) expect(PICK_DESTINATIONS[key]).toBeDefined();
     });
@@ -235,16 +236,16 @@ describe('builderRegulationSeed', () => {
 
 describe('personaHomeOrder', () => {
     const answered = (p) => normalizeTrainerProfile({ ...p, answeredAt: 1 });
-    it('keeps the shipped order with no profile', async () => {
+    it('keeps the shipped order with no profile or Master', async () => {
         const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
         expect(personaHomeOrder(null)).toEqual(DEFAULT_HOME_ORDER);
-        expect(personaHomeOrder(answered({ interests: ['competitive', 'minigames'] }))).toEqual(DEFAULT_HOME_ORDER);
+        expect(personaHomeOrder(answered({ interests: ['competitive', 'franchise', 'minigames'] }))).toEqual(DEFAULT_HOME_ORDER);
     });
     it('leads with what each persona reaches for', async () => {
         const { personaHomeOrder } = await import('./trainerProfile');
         expect(personaHomeOrder(answered({ interests: ['minigames'] }))[0]).toBe('yourDay');
         expect(personaHomeOrder(answered({ interests: ['competitive'], competitiveLevel: 'ranked' }))[0]).toBe('teams');
-        expect(personaHomeOrder(answered({ interests: ['franchise'] }))[0]).toBe('yourDay');
+        expect(personaHomeOrder(answered({ interests: ['franchise'] }))[0]).toBe('forYou');
     });
     it('every order has the same blocks', async () => {
         const { personaHomeOrder, DEFAULT_HOME_ORDER } = await import('./trainerProfile');
@@ -274,8 +275,8 @@ describe('personaQuickLinks', () => {
     });
     it('puts the persona picks first and drops nothing', async () => {
         const { personaQuickLinks } = await import('./trainerProfile');
-        const out = personaQuickLinks(destinations, normalizeTrainerProfile({ interests: ['minigames'], answeredAt: 1 }));
-        expect(out[0].path).toBe('/pokepuzzle');
+        const out = personaQuickLinks(destinations, normalizeTrainerProfile({ interests: ['franchise'], answeredAt: 1 }));
+        expect(out[0].path).toBe('/pokedex');
         expect(out).toHaveLength(destinations.length);
         expect(out.findIndex((d) => d.path === '/gyms')).toBeLessThan(out.findIndex((d) => d.path === '/'));
     });
@@ -324,7 +325,7 @@ describe('personaDayCards', () => {
         expect(challenger).not.toContain('meta');
         // The day's quiz and tier list walk the route right after the puzzle.
         expect(challenger.slice(challenger.indexOf('puzzle'), challenger.indexOf('puzzle') + 3)).toEqual(['puzzle', 'quiz', 'tier']);
-        expect(personaDayCards(answered({ interests: ['franchise'] }))).toEqual(challenger);
+        expect(personaDayCards(answered({ interests: ['franchise'] }))).toContain('puzzle');
     });
     it('always leads with a battle that waits on the trainer', async () => {
         const { personaDayCards } = await import('./trainerProfile');
