@@ -26,6 +26,7 @@ import { navHue } from '../../utils/navHue';
 import { useRoundStore } from '../../store/useRoundStore';
 import { MIME_SYNC_EVENT, dailyMimeFor, readMimeDayState } from '../../utils/dailyMime';
 import { Mascot } from '../Mascot';
+import { PixelScene } from '../mascot/PixelScene';
 import { MascotEggCard } from '../games/MascotEggCard';
 import { DailyMimeCard } from '../forum/DailyMimeCard';
 import '../../styles/games-hub.css';
@@ -55,6 +56,13 @@ const Meadow = lazy(() => import('../social/Meadow').then((m) => ({ default: m.M
  * day, the Champion's and the puzzle's summaries, the tier list's own
  * storage): the page stores nothing and adds no read of its own.
  */
+
+const GAME_SCENES = {
+    challenge: { kind: 'night', seed: 17 },
+    pokepuzzle: { kind: 'dusk', seed: 31 },
+    quiz: { kind: 'morning', seed: 53 },
+    tierList: { kind: 'night', seed: 89 },
+};
 
 const ICONS = { challenge: Crown, pokepuzzle: Puzzle, quiz: CircleHelp, tierList: Rows3 };
 const PATHS = {
@@ -347,6 +355,11 @@ export function GamesView() {
                                     onClick={(event) => { if (!(event.target instanceof Element && event.target.closest('button, a'))) open(); }}
                                 >
                                     <div className="daygame__stage" aria-hidden="true">
+                                        <PixelScene
+                                            kind={(GAME_SCENES[game] || GAME_SCENES.challenge).kind}
+                                            seed={(GAME_SCENES[game] || GAME_SCENES.challenge).seed}
+                                            className="daygame__scene"
+                                        />
                                         <span className="daygame__art">{card.art}</span>
                                         {isDone && <span className="daygame__mark"><Check /></span>}
                                     </div>

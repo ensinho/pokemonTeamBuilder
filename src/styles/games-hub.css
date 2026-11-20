@@ -234,8 +234,10 @@
 .daygame {
     display: grid;
     grid-template-columns: 7rem minmax(0, 1fr);
+    gap: var(--space-3);
     flex: 1;
     min-width: 0;
+    padding: var(--space-2_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
@@ -248,7 +250,7 @@
     background: var(--color-surface-hover);
 }
 
-/* The band: one raised surface, the game's tone a pool under the platform. */
+/* Living Scene inset window (aligned with A Mímica, A Campina & Ovo surpresa). */
 .daygame__stage {
     position: relative;
     display: flex;
@@ -256,26 +258,36 @@
     justify-content: center;
     min-height: 7rem;
     padding-bottom: var(--space-2);
-    background:
-        radial-gradient(70% 90% at 50% 100%, color-mix(in srgb, var(--tone, transparent) 30%, transparent), transparent 74%),
-        var(--color-surface-raised);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
     overflow: hidden;
+    isolation: isolate;
+}
+
+.daygame__scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
 }
 
 .daygame__stage::before {
     content: '';
     position: absolute;
-    bottom: var(--space-2);
+    bottom: var(--space-1_5);
     left: 50%;
+    z-index: 1;
     width: 5.5rem;
-    height: 1rem;
+    height: 0.9rem;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--tone, var(--color-primary)) 48%, transparent);
+    background: color-mix(in srgb, var(--tone, var(--color-primary)) 45%, transparent);
     translate: -50% 0;
 }
 
 .daygame__art {
     position: relative;
+    z-index: 2;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -300,16 +312,17 @@
     display: none;
 }
 
-/* "Quem é esse Pokémon?": not known yet — the shape, haloed in the game's tone. */
+/* "Quem é esse Pokémon?": crisp silhouette haloed so it reads over any pixel sky. */
 .daygame__sprite.is-unknown {
-    filter: brightness(0) drop-shadow(0 0 0.375rem color-mix(in srgb, var(--tone, var(--color-primary)) 60%, transparent));
-    opacity: 0.7;
+    filter: brightness(0) drop-shadow(0 0 0.375rem color-mix(in srgb, var(--mascot-white) 70%, transparent));
+    opacity: 0.88;
 }
 
 .daygame__mark {
     position: absolute;
     top: var(--space-2);
     left: var(--space-2);
+    z-index: 3;
     display: grid;
     place-items: center;
     width: 1.5rem;
@@ -331,7 +344,7 @@
     align-items: flex-start;
     gap: var(--space-1);
     min-width: 0;
-    padding: var(--space-3);
+    padding: var(--space-0_5) var(--space-1) var(--space-0_5) 0;
 }
 
 .daygame__kicker {
@@ -407,20 +420,22 @@
         gap: var(--space-4);
     }
 
-    /* Room for the art: the band on top, the party of three. */
+    /* Room for the art: inset living scene on top, body below. */
     .daygame {
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto 1fr;
+        gap: var(--space-3);
+        padding: var(--space-3);
     }
 
     .daygame__stage {
-        min-height: 8.5rem;
-        padding-bottom: var(--space-3);
+        min-height: 8.25rem;
+        padding-bottom: var(--space-2_5);
     }
 
     .daygame__stage::before {
-        bottom: var(--space-3);
-        width: 9rem;
+        bottom: var(--space-2);
+        width: 8.5rem;
     }
 
     .daygame__sprite {
@@ -434,7 +449,7 @@
 
     .daygame__body {
         gap: var(--space-1_5);
-        padding: var(--space-4);
+        padding: 0 var(--space-1) var(--space-1);
     }
 
     .daygame__line {
