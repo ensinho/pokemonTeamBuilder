@@ -1,4 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('../services/speciesIndex', () => ({
+    getSpeciesIndex: () => ({ ready: true, entryByName: () => null }),
+    ensureSpeciesIndex: async () => ({ ready: true, entryByName: () => null }),
+}));
+
 import { buildBattleSpriteFallbacks } from './battleSprites';
 
 describe('buildBattleSpriteFallbacks', () => {
