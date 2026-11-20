@@ -85,6 +85,27 @@
     color: var(--color-primary-text);
 }
 
+/* Sibling Meta banner in the Builder header */
+.game-cover--meta {
+    gap: var(--space-3);
+}
+
+.game-cover__icon-tile {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+    color: var(--color-primary-text);
+}
+
+.game-cover__icon-tile.is-playthrough {
+    background: color-mix(in srgb, var(--color-success) 16%, transparent);
+    color: var(--color-success);
+}
+
 /* Replaces the "change game" hint while playthrough mode is on, so the state is
    visible on the page and not only inside the picker that sets it. A pill (not
    more accent text) because it reports a mode rather than inviting a click. */

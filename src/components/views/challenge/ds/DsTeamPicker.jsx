@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { useSheetSources } from '../../../../hooks/useSheetSources';
 import { useTranslation } from '../../../../hooks/useTranslation';
-import { getBattleIcon } from '../../../../utils/battleSprites';
+import { getBattleIcon, handleBattleSpriteError } from '../../../../utils/battleSprites';
 import { play } from '../../../../utils/challengeSfx';
 import { sheetFromSaved, sheetFromSet } from '../../../../utils/challengeSheet';
 import { completeMember, teamCheck } from '../../../../utils/challengeTeams';
@@ -162,7 +162,7 @@ export function DsTeamPicker({
                                         aria-label={t('challenge.sheet.openOne', { name: mon.species })}
                                         onClick={() => openSheet('daily', index)}
                                     >
-                                        {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" />}
+                                        {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />}
                                         <span className="ds-picker__name">{mon.species}</span>
                                         <span className="ds-picker__info" aria-hidden="true">i</span>
                                     </button>

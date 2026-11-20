@@ -1,6 +1,6 @@
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
-import { getBattleIcon } from '../../../../utils/battleSprites';
+import { getBattleIcon, handleBattleSpriteError } from '../../../../utils/battleSprites';
 import { hpTone } from '../../../../utils/battleState';
 import { play } from '../../../../utils/challengeSfx';
 import { STAT_KEYS } from '../../../../utils/challengeSheet';
@@ -43,7 +43,7 @@ export function DsTeamSheet({ members, index, onSelect }) {
                             className={`bw-ficha__tab ${member.fainted ? 'is-fainted' : ''} ${member.active ? 'is-active' : ''}`}
                             onClick={() => pick(i)}
                         >
-                            {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" />}
+                            {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, member.species)} />}
                             {member.hp && (
                                 <span className="bw-card__hp">
                                     <span className={`ds-partymon__fill is-${hpTone(member.hp.pct)}`} style={{ '--hp': member.hp.pct / 100 }} />

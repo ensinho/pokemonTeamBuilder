@@ -12,7 +12,8 @@ Before editing code or proposing a design, check `.agents/skills/` and read the 
 
 | Task Type | Required Skills to Read First |
 | --- | --- |
-| User-reported UI bugs, visual effects, states & full-stack UX fixes | `visual-fixer` (triage → design-system/ux → frontend/store/API fix → real-browser visual proof) |
+| Absorbing user-shared sites, UI libraries, prints, or external skills | `reference-absorber` (install skills into `.agents/skills/`, archive prints in `design-references/captures/`, distill patterns into `design-references/07-*` & `08-*`) |
+| User-reported UI bugs, visual effects, states & full-stack UX fixes | `visual-fixer` (triage → design-system/ux + `design-references/` → frontend/store/API fix → real-browser visual proof) |
 | Any CSS / layout / component styling | `design-system` (strict `--space-*`, `--text-*`, `--radius-*`, `--color-*` tokens; zero raw hex/rgb/rgba; zero nested 1px borders; single Volt primary CTA) |
 | Any UX flow, list, modal, picker, loading state | `ux` (fewer taps, instant feedback, honest waits, performance budgets) |
 | Any mobile / phone screen restructure | `app-screens` + `mobile-native` |

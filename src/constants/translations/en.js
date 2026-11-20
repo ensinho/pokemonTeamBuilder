@@ -1698,6 +1698,10 @@ export default {
         regulationSectionSub: 'Pairs the builder’s suggestions & usage data to a meta — or turns them off',
         chooseGameTitle: 'Choose a game',
         chooseGameSubtitle: 'Pick a title to focus the Pokédex on its region',
+        metaFilterLabel: 'Meta',
+        changeMeta: 'Change meta',
+        chooseMetaTitle: 'Choose meta',
+        chooseMetaSubtitle: 'Sets competitive suggestions, usage stats and format rules',
         pickerTitle: 'Game & meta',
         pickerTabsAria: 'What to choose',
         pickerTabGames: 'Games',
@@ -2218,6 +2222,12 @@ export default {
         },
     },
     pokepuzzle: {
+        buddy: {
+            watch: 'Watching closely! Tap me for a hint.',
+            askHint: 'Stuck? Tap me to reveal a letter!',
+            almostThere: 'You are so close — go for it!',
+            cheer: 'Cheer the mascot on',
+        },
         hint: {
             button: 'Hint',
             ask: 'Ask for a hint: shows one letter of the name in its place ({{left}} left)',
@@ -2513,6 +2523,10 @@ export default {
         defense: 'Resistances',
         weaknesses: 'Weaknesses',
         roster: 'Roster',
+        viewModeAria: 'Roster view mode',
+        modeSimple: 'Summary',
+        modeCompetitive: 'Competitive',
+        bstShort: 'BST',
         weakTo: 'Weak to',
         tournamentItems: 'Tournament items',
         smogonItems: 'Smogon recommends',
@@ -3133,6 +3147,12 @@ export default {
                 arena: { greet1: 'So you made it here. I am {{name}}, the Champion.' },
                 difficulty: { dp: 'Red & Blue', platinum: 'Yellow', rematch: 'Rematch', world: 'World Champion' },
             },
+        },
+        buddy: {
+            watch: 'Watching closely! Tap me for a hint.',
+            askHint: 'Stuck? Tap me to reveal a letter!',
+            almostThere: 'You are so close — go for it!',
+            cheer: 'Cheer the mascot on',
         },
         hint: {
             title: '{{name}} is waiting',

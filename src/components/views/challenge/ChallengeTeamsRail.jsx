@@ -1,5 +1,5 @@
 import { useTranslation } from '../../../hooks/useTranslation';
-import { getBattleIcon } from '../../../utils/battleSprites';
+import { getBattleIcon, handleBattleSpriteError } from '../../../utils/battleSprites';
 import { hpTone } from '../../../utils/battleState';
 
 /*
@@ -35,7 +35,7 @@ export function ChallengeTeamsRail({ title, mine = [], foe = [], championName, a
                             key={`${mon.species}-${index}`}
                             className={`challenge-team__mon rounded-lg bg-surface-raised ${mon.fainted ? 'is-fainted' : ''} ${active.mine === mon.species ? 'is-active' : ''}`}
                         >
-                            {icon.url ? <img src={icon.url} alt="" width={40} height={30} loading="lazy" decoding="async" draggable="false" /> : <span />}
+                            {icon.url ? <img src={icon.url} alt="" width={40} height={30} loading="lazy" decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} /> : <span />}
                             <span className="truncate text-xs font-medium">{mon.species}</span>
                             <HpBar pct={mon.fainted ? 0 : mon.hpPct ?? 100} />
                         </li>
@@ -54,7 +54,7 @@ export function ChallengeTeamsRail({ title, mine = [], foe = [], championName, a
                             className={`challenge-team__mon rounded-lg bg-surface-raised ${mon.revealed ? 'is-revealed' : ''} ${mon.fainted ? 'is-fainted' : ''} ${mon.revealed && active.foe === mon.species ? 'is-active' : ''}`}
                         >
                             {icon?.url
-                                ? <img src={icon.url} alt={name} width={40} height={30} loading="lazy" decoding="async" draggable="false" />
+                                ? <img src={icon.url} alt={name} width={40} height={30} loading="lazy" decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />
                                 : <span className="font-display text-sm text-muted" aria-label={name}>?</span>}
                             <span className={`truncate text-xs font-medium ${mon.revealed ? '' : 'text-muted'}`}>{name}</span>
                             {mon.revealed && <HpBar pct={mon.fainted ? 0 : mon.hpPct ?? 100} />}

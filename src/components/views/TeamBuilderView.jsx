@@ -7,7 +7,7 @@ import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFron
 import { EmptyState } from '../EmptyState';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
-import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
+import { GameCoverBanner, MetaCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
 import { PokemonDetailModal } from '../modals/PokemonDetailModal';
 import { TeamBuilderOnboardingModal } from '../modals/TeamBuilderOnboardingModal';
 import { PokemonCard } from '../PokemonCard';
@@ -239,7 +239,7 @@ export function TeamBuilderView({
     }, []);
     // The member open in the editor wears the logo ring on its slot.
     const editingInstanceId = useActiveTeamStore((s) => s.editingTeamMember?.instanceId ?? null);
-    const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
+    const [pickerModalMode, setPickerModalMode] = React.useState(null); // null | 'games' | 'meta'
     const [isRecentOpen, setIsRecentOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     // The guide opens on request only. It used to open itself on the first
@@ -1132,14 +1132,17 @@ export function TeamBuilderView({
                             <GameCoverBanner
                                 games={games}
                                 selectedGame={selectedGame}
-                                // A tier is a real restriction on the roster, not
-                                // just a ranking, so the banner says which one is
-                                // narrowing the list — otherwise a short list
-                                // reads as missing data.
-                                note={formatLabel || null}
-                                onOpen={() => setIsGamePickerOpen(true)}
+                                onOpen={() => setPickerModalMode('games')}
                                 className="game-cover--compact"
                             />
+                            {(regulations.length > 0 || smogonTiers.length > 0) && (
+                                <MetaCoverBanner
+                                    label={formatLabel || null}
+                                    isPlaythrough={isPlaythrough}
+                                    onOpen={() => setPickerModalMode('meta')}
+                                    className="game-cover--compact"
+                                />
+                            )}
                             {/* The real number of matches — it showed the loaded
                                 page (50) as if it were the total. */}
                             <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0" title={t('builder.resultCount', { count: totalCount })}>{totalCount}</span>
@@ -1247,7 +1250,7 @@ export function TeamBuilderView({
                                     <GameFilterChip
                                         games={games}
                                         selectedGame={selectedGame}
-                                        onOpen={() => setIsGamePickerOpen(true)}
+                                        onOpen={() => setPickerModalMode('games')}
                                     />
                                 )}
 
@@ -1440,8 +1443,9 @@ export function TeamBuilderView({
             )}
 
             <GamePickerModal
-                isOpen={isGamePickerOpen}
-                onClose={() => setIsGamePickerOpen(false)}
+                isOpen={Boolean(pickerModalMode)}
+                mode={pickerModalMode || 'games'}
+                onClose={() => setPickerModalMode(null)}
                 games={games}
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}

@@ -13,7 +13,9 @@
     display: flex;
     flex-direction: column;
     gap: var(--page-gap, var(--space-4));
-    max-width: 84rem;
+    width: 100%;
+    max-width: 74rem;
+    margin-inline: auto;
 }
 
 /* ---- The bar: which game, and the badges won in it ---- */
@@ -22,13 +24,13 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3) var(--space-6);
+    gap: var(--space-3) var(--page-gap, var(--space-4));
 }
 
 .gyms-view .gyms-bar__game {
     width: auto;
     max-width: 100%;
-    flex: 0 1 22rem;
+    flex: 0 1 var(--page-rail-width, 19rem);
     margin: 0;
 }
 
@@ -36,6 +38,10 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
+    padding: var(--space-2) var(--space-3_5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
 }
 
 /* A badge: the eight-sided gem. Dim until the leader is beaten, then their
@@ -309,12 +315,12 @@
 }
 
 /* The team: one card per member with its whole kit. A fill inside the stage,
-   never a second outline. */
+   never a second outline. Stretched to equal height for clean symmetry. */
 .gyms-stage__team {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
     gap: var(--space-3);
-    align-items: start;
+    align-items: stretch;
 }
 
 .gyms-mon {

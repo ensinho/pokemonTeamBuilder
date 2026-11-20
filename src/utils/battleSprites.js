@@ -1,5 +1,7 @@
 import { Sprites } from '@pkmn/img';
 import { toMirrorUrl } from './assetHost';
+import { ensureSpeciesIndex, getSpeciesIndex } from '../services/speciesIndex';
+import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from './pokemonSprites';
 
 /**
  * Animated battle sprites, resolved through `@pkmn/img`.
@@ -86,3 +88,68 @@ export const getBattleIcon = (species, { shiny = false } = {}) => {
 
 /** Human-readable status label, e.g. 'brn' → 'BRN'. */
 export const statusLabel = (status) => (status ? String(status).toUpperCase() : null);
+
+/**
+ * Ordered fallback URLs when a battle sprite 404s (e.g. Legends Z-A Megas like
+ * Mega Garchomp Z whose back sprite isn't on Showdown yet, or Mega Raichu Y
+ * whose Showdown sprites don't exist yet):
+ *  1. Showdown front sprite (if the failed URL was a back sprite)
+ *  2. Site's default PokéAPI sprite & official artwork for that form's id
+ *  3. Base species Showdown sprite as a last resort
+ */
+export function buildBattleSpriteFallbacks(species, { back = false, shiny = false, entry = null } = {}) {
+    if (!species) return [];
+    const urls = [];
+    const push = (u) => { if (u && !urls.includes(u)) urls.push(u); };
+
+    if (back) {
+        const front = getDsSprite(species, { back: false, shiny });
+        push(front.url);
+    }
+
+    const matched = entry || getSpeciesIndex().entryByName(species);
+    if (matched?.id) {
+        push(getPokemonFrontSpriteUrl(matched.id, { shiny }));
+        push(getPokemonArtworkSpriteUrl(matched.id, { shiny }));
+    }
+
+    const baseName = String(species).split('-')[0];
+    if (baseName && baseName.toLowerCase() !== String(species).toLowerCase()) {
+        push(getDsSprite(baseName, { back, shiny }).url);
+        push(getDsSprite(baseName, { back: false, shiny }).url);
+    }
+    return urls;
+}
+
+/**
+ * `onError` handler for battle `<img>` tags. Walks `buildBattleSpriteFallbacks`
+ * step by step (and loads `pokemon-index.json` on demand if needed) so new
+ * forms never render as broken images inside battles.
+ */
+export function handleBattleSpriteError(event, species, { back = false, shiny = false } = {}) {
+    const img = event?.currentTarget;
+    if (!img || !species) return;
+    const tried = new Set((img.dataset.battleTried || '').split('|').filter(Boolean));
+    const currentSrc = img.currentSrc || img.src;
+    if (currentSrc) tried.add(currentSrc);
+
+    const advance = (entry = null) => {
+        const candidates = buildBattleSpriteFallbacks(species, { back, shiny, entry });
+        const next = candidates.find((u) => !tried.has(u));
+        if (!next) return;
+        tried.add(next);
+        img.dataset.battleTried = [...tried].join('|');
+        // Clear assetHost mirror flag so a new mirror URL can also fall back to its origin.
+        delete img.dataset.assetFallback;
+        img.src = next;
+    };
+
+    const idx = getSpeciesIndex();
+    if (!idx.ready) {
+        ensureSpeciesIndex().then((loaded) => {
+            if (img.isConnected) advance(loaded.entryByName(species));
+        });
+        return;
+    }
+    advance(idx.entryByName(species));
+}

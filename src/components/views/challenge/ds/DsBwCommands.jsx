@@ -3,7 +3,7 @@ import { ChevronLeft, Flag } from 'lucide-react';
 
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
-import { getBattleIcon } from '../../../../utils/battleSprites';
+import { getBattleIcon, handleBattleSpriteError } from '../../../../utils/battleSprites';
 import { hpTone } from '../../../../utils/battleState';
 import { moveMatchup, multiplierLabel } from '../../../../utils/moveMatchup';
 import { play } from '../../../../utils/challengeSfx';
@@ -182,7 +182,7 @@ function PartyGrid({ cmd, sheet, onSummary }) {
                             onClick={() => pick(index)}
                         >
                             <span className="bw-party__art" aria-hidden="true">
-                                {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" />}
+                                {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />}
                             </span>
                             <span className="bw-party__name">
                                 {mon.active && <span className="bw-party__out" aria-hidden="true" />}
@@ -273,7 +273,7 @@ function DossierGrid({ cmd, foe, championName, title, typesOf }) {
                         // Her sending order is fixed for the day.
                         <li key={index} className={`bw-card is-foe ${mon.revealed ? 'is-revealed' : ''} ${mon.fainted ? 'is-fainted' : ''}`}>
                             {icon?.url
-                                ? <img src={icon.url} alt={name} width={40} height={30} decoding="async" draggable="false" />
+                                ? <img src={icon.url} alt={name} width={40} height={30} decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />
                                 : <span className="bw-card__unknown" aria-label={name}>?</span>}
                             <span className="bw-card__text">
                                 <span className="bw-card__name">{name}</span>

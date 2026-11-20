@@ -1178,9 +1178,6 @@ export default function PokePuzzleView() {
                                         ))}
                                     </div>
                                     <span className="pokepuzzle-tip-meta">
-                                        {gameStatus === 'IN_PROGRESS' && (
-                                            <MascotCompanion beat={mascotBeat} rest="pensando" size="md" className="pokepuzzle-companion" />
-                                        )}
                                         <span>{t('games.genShort', { gen: getGenerationByPokemonId(targetPokemon.id) })}</span>
                                         <span aria-hidden="true">·</span>
                                         <span
@@ -1210,7 +1207,34 @@ export default function PokePuzzleView() {
                                     )}
                                 </div>
 
-                                <div className="pokepuzzle-tip-panel" role="tabpanel">
+                                <div className="pokepuzzle-tip-body">
+                                    {gameStatus === 'IN_PROGRESS' && (
+                                        <button
+                                            type="button"
+                                            className={`pokepuzzle-buddy ${hintNote ? 'is-hinting' : ''}`}
+                                            onClick={() => {
+                                                if (nextHint >= 0) requestHint();
+                                                else emitBeat('hint', {});
+                                            }}
+                                            title={nextHint >= 0
+                                                ? t('pokepuzzle.hint.ask', { left: hintCap - hints.length })
+                                                : t('pokepuzzle.buddy.cheer')}
+                                            aria-label={nextHint >= 0
+                                                ? t('pokepuzzle.hint.ask', { left: hintCap - hints.length })
+                                                : t('pokepuzzle.buddy.cheer')}
+                                        >
+                                            <MascotCompanion beat={mascotBeat} rest={hintNote ? 'animado' : 'pensando'} size="lg" className="pokepuzzle-companion" />
+                                            <span className="pokepuzzle-buddy__bubble">
+                                                {hintNote || (guesses.length === 0
+                                                    ? t('pokepuzzle.buddy.watch')
+                                                    : nextHint >= 0
+                                                        ? t('pokepuzzle.buddy.askHint')
+                                                        : t('pokepuzzle.buddy.almostThere'))}
+                                            </span>
+                                        </button>
+                                    )}
+
+                                    <div className="pokepuzzle-tip-panel" role="tabpanel">
                                     {activeTipTab === 'types' && (
                                         <div className="pokepuzzle-tip-card">
                                             <div className="pokepuzzle-clue-types">
@@ -1242,6 +1266,7 @@ export default function PokePuzzleView() {
                                             )}
                                         </div>
                                     ) : renderLockedTip(tipTabs[2]))}
+                                    </div>
                                 </div>
                             </section>
 
