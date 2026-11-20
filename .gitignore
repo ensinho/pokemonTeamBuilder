@@ -40,8 +40,11 @@ dist-ssr
 # Negations must come after the `*.md` rule, and `docs/` must NOT be excluded as
 # a directory — git cannot re-include a file inside an excluded directory.
 !CLAUDE.md
+!AGENTS.md
+!GEMINI.md
 !docs/**/*.md
 !.claude/skills/**/*.md
+!.agents/skills/**/*.md
 
 /design-references
 
@@ -72,3 +75,5 @@ mascot-export/
 scratch/disruptive-design-lab/shots/
 scratch/app-verified-shots/
 scratch/verify-ui-pass/
+.vercel
+.env*.local
