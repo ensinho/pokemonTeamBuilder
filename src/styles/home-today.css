@@ -539,14 +539,15 @@
     margin-top: var(--space-1);
 }
 
-/* The ▶: the page's one primary, round on a phone (its name is its
-   aria-label), with its label from a desktop up. */
+/* The primary hero CTA: matches the system's standard btn-primary (--radius-md).
+   Compact on phones, anchored bottom-right with its label on desktop. */
 .cozy-home .day-hero__play {
     flex-shrink: 0;
     width: 3.25rem;
     height: 3.25rem;
     padding: 0;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 22px -6px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 
 .cozy-home .day-hero__play svg {
@@ -949,10 +950,15 @@
         aspect-ratio: 1;
     }
 
-    /* The action sits on the team's line, at the column's edge — not floating
-       halfway up the bar (Enzo: "cta ta meio perdido"). */
+    /* Option 1 — Full-width symmetrical footer bar: 6-slot team anchored left,
+       standardized Volt btn-primary CTA anchored fixed at the bottom-right. */
     .day-hero--stage .day-hero__bar {
+        max-width: none;
+        width: 100%;
+        justify-content: space-between;
         align-items: flex-end;
+        gap: var(--space-4);
+        z-index: 4;
     }
 
     /* Her six, big enough to read (Enzo: "aumentar o time dela"). */
@@ -971,8 +977,7 @@
     }
 
     .day-hero--stage .day-hero__copy,
-    .day-hero--stage .day-hero__extra,
-    .day-hero--stage .day-hero__bar {
+    .day-hero--stage .day-hero__extra {
         max-width: min(54%, 32rem);
     }
 
@@ -1399,14 +1404,22 @@
         font-size: var(--text-3xl);
     }
 
-    .day-hero__extra,
-    .day-hero__bar {
+    .day-hero__extra {
         max-width: min(62%, 36rem);
+    }
+
+    .day-hero__bar {
+        max-width: none;
+        width: 100%;
+        justify-content: space-between;
+        align-items: flex-end;
+        z-index: 4;
     }
 
     .cozy-home .day-hero__play {
         width: auto;
         height: var(--control-h-lg);
+        margin-inline-start: auto;
         padding-inline: var(--space-5);
         gap: var(--space-2);
     }
