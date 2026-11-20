@@ -88,6 +88,8 @@ import { useTrainerCardStore } from '../store/useTrainerCardStore';
 import { useAbilityDialogStore } from '../store/useAbilityDialogStore';
 import { useInboxStore } from '../store/useInboxStore';
 import { useRoundStore, startRoundKeeper } from '../store/useRoundStore';
+import { useFeedbackPulseStore } from '../store/useFeedbackPulseStore';
+import { readFeedbackPulse, shouldShowFeedbackPulse } from '../utils/feedbackPulse';
 import { useQuickLookStore } from '../store/useQuickLookStore';
 import { PokegearButton } from './pokegear/PokegearButton';
 import { needsTrainerProfile, personaDockSlot, sortNavGroups } from '../utils/trainerProfile';
@@ -148,6 +150,7 @@ const FirstJourney = lazy(() => import('./onboarding/FirstJourney').then((m) => 
 const PokegearDialog = lazy(() => import('./pokegear/PokegearDialog').then((m) => ({ default: m.PokegearDialog })));
 // "Fantasminha de plantão" (2026-11-17): the mascot's receipt and the island, off the boot path.
 const RoundReceiptDialog = lazy(() => import('./mascot/RoundReceiptDialog').then((m) => ({ default: m.RoundReceiptDialog })));
+const FeedbackPulseModal = lazy(() => import('./modals/FeedbackPulseModal').then((m) => ({ default: m.FeedbackPulseModal })));
 const LiveIsland = lazy(() => import('./LiveIsland').then((m) => ({ default: m.LiveIsland })));
 const TrainerCardDialog = lazy(() => import('./trainerCard/TrainerCardDialog').then((m) => ({ default: m.TrainerCardDialog })));
 const AbilityDialog = lazy(() => import('./AbilityDialog').then((m) => ({ default: m.AbilityDialog })));
@@ -485,6 +488,7 @@ export default function AppLayout() {
     const isAbilityDialogOpen = useAbilityDialogStore((s) => Boolean(s.name));
     const isPokegearOpen = useInboxStore((s) => s.isOpen);
     const isReceiptOpen = useRoundStore((s) => Boolean(s.open));
+    const isFeedbackPulseOpen = useFeedbackPulseStore((s) => s.isOpen);
     const isQuickLookOpen = useQuickLookStore((s) => s.stack.length > 0);
     const isTeamCompareOpen = useTeamCompareStore((s) => s.isOpen);
     const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
@@ -690,6 +694,49 @@ export default function AppLayout() {
         onboardingOffered.current = true;
         useOnboardingStore.getState().open('auto');
     }, [isAuthReady, currentPage, isLandingOpen, showPatchNotes, isOnboardingOpen]);
+
+    // Once-per-user Mascot Feedback Pulse (2026-11-19): waits until auth +
+    // Firestore preferences have reconciled (so an account holder who answered
+    // or skipped on another device never sees it twice), never interrupts
+    // onboarding, patch notes, landing, receipt, or an active battle/challenge.
+    const feedbackPulseOffered = useRef(false);
+    useEffect(() => {
+        if (feedbackPulseOffered.current || !isAuthReady || !isAuthReconciled) return undefined;
+        if (
+            isLandingOpen
+            || showPatchNotes
+            || isOnboardingOpen
+            || isReceiptOpen
+            || isFeedbackPulseOpen
+            || isCrawler()
+            || currentPage === 'challenge'
+            || currentPage === 'admin'
+            || location.pathname.startsWith('/battles/')
+        ) {
+            return undefined;
+        }
+        if (needsTrainerProfile(useAuthStore.getState().trainerProfile) && currentPage === 'home') {
+            return undefined;
+        }
+        if (!shouldShowFeedbackPulse(readFeedbackPulse())) return undefined;
+        const timer = window.setTimeout(() => {
+            if (feedbackPulseOffered.current) return;
+            if (!shouldShowFeedbackPulse(readFeedbackPulse())) return;
+            feedbackPulseOffered.current = true;
+            useFeedbackPulseStore.getState().open('auto');
+        }, 2200);
+        return () => window.clearTimeout(timer);
+    }, [
+        isAuthReady,
+        isAuthReconciled,
+        isLandingOpen,
+        showPatchNotes,
+        isOnboardingOpen,
+        isReceiptOpen,
+        isFeedbackPulseOpen,
+        currentPage,
+        location.pathname,
+    ]);
 
     // The dock's icons play their motion when their tab becomes the current one
     // (utils/glyphMotion.js) — from the first navigation on, never on load.
@@ -1616,6 +1663,11 @@ export default function AppLayout() {
             {isOnboardingOpen && (
                 <Suspense fallback={null}>
                     <FirstJourney />
+                </Suspense>
+            )}
+            {isFeedbackPulseOpen && (
+                <Suspense fallback={null}>
+                    <FeedbackPulseModal currentPage={currentPage} />
                 </Suspense>
             )}
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Trash2, Dices, HelpCircle, Atom, ArrowLeftRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Trash2, Dices, HelpCircle, Atom, ArrowLeftRight, Plus } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
@@ -220,6 +220,11 @@ export function TeamBuilderView({
         setSearchInput('');
     }, [handleAddPokemonToTeam, setSearchInput]);
     const [dragIndex, setDragIndex] = React.useState(null);
+    const [dragOverIndex, setDragOverIndex] = React.useState(null);
+    const searchInputRef = React.useRef(null);
+    const handleFocusPickerSearch = React.useCallback(() => {
+        searchInputRef.current?.focus();
+    }, []);
     // The peel (Neon Sticker): a member that arrives while the builder is open
     // is laid down like a sticker, once. Members present when the view mounted
     // start settled, so nothing peels on load; a slot settles when its
@@ -780,7 +785,7 @@ export function TeamBuilderView({
                                 return (
                                 <div
                                     key={pokemon.instanceId}
-                                    className={`team-builder-slot group ${dragIndex === idx ? 'is-dragging' : ''} ${editingInstanceId === pokemon.instanceId ? 'is-editing' : ''} ${settledSlotIds.has(pokemon.instanceId) ? '' : 'is-peeling'}`}
+                                    className={`team-builder-slot group ${dragIndex === idx ? 'is-dragging' : ''} ${dragOverIndex === idx && dragIndex !== null && dragIndex !== idx ? 'is-drop-target' : ''} ${editingInstanceId === pokemon.instanceId ? 'is-editing' : ''} ${settledSlotIds.has(pokemon.instanceId) ? '' : 'is-peeling'}`}
                                     style={typeDiscStyle(mega ? { types: mega.types } : pokemon)}
                                     onAnimationEnd={(e) => { if (e.animationName === 'sticker-peel') settleSlot(pokemon.instanceId); }}
                                     draggable
@@ -808,14 +813,24 @@ export function TeamBuilderView({
                                     onDragOver={(e) => {
                                         e.preventDefault();
                                         e.dataTransfer.dropEffect = 'move';
+                                        if (dragOverIndex !== idx) setDragOverIndex(idx);
+                                    }}
+                                    onDragLeave={(e) => {
+                                        if (!e.currentTarget.contains(e.relatedTarget)) {
+                                            setDragOverIndex((cur) => (cur === idx ? null : cur));
+                                        }
                                     }}
                                     onDrop={(e) => {
                                         e.preventDefault();
                                         const from = Number(e.dataTransfer.getData('text/plain'));
                                         if (!Number.isNaN(from)) handleReorderTeam?.(from, idx);
                                         setDragIndex(null);
+                                        setDragOverIndex(null);
                                     }}
-                                    onDragEnd={() => setDragIndex(null)}
+                                    onDragEnd={() => {
+                                        setDragIndex(null);
+                                        setDragOverIndex(null);
+                                    }}
                                 >
                                     <div className="team-builder-slot__media tb-type-disc">
                                         <Sprite
@@ -855,9 +870,18 @@ export function TeamBuilderView({
                             })}
 
                             {Array.from({ length: 6 - currentTeam.length }).map((_, index) => (
-                                <div key={index} className="team-builder-slot team-builder-slot--empty" aria-hidden="true">
-                                    <PokeballIcon className="team-builder-slot__placeholder" />
-                                </div>
+                                <button
+                                    key={index}
+                                    type="button"
+                                    onClick={handleFocusPickerSearch}
+                                    className="team-builder-slot team-builder-slot--empty"
+                                    aria-label={t('builder.emptySlotAria', { slot: currentTeam.length + index + 1 })}
+                                >
+                                    <PokeballIcon className="team-builder-slot__placeholder" aria-hidden="true" />
+                                    <span className="team-builder-slot__add-cue" aria-hidden="true">
+                                        <Plus />
+                                    </span>
+                                </button>
                             ))}
                         </div>
 
@@ -1101,10 +1125,17 @@ export function TeamBuilderView({
                                     </svg>
                                 </span>
                                 <input
+                                    ref={searchInputRef}
                                     type="text"
                                     placeholder={t('pokedex.searchPlaceholder')}
                                     value={searchInput}
                                     onChange={(e) => setSearchInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Escape' && searchInput) {
+                                            e.preventDefault();
+                                            setSearchInput('');
+                                        }
+                                    }}
                                     className="team-builder-field team-builder-field--compact team-builder-search-input"
                                 />
                                 {searchInput && (
@@ -1150,7 +1181,21 @@ export function TeamBuilderView({
                         {filtersExpanded && (
                             <div className="team-builder-unified-toolbar mt-3">
                                 <TypeMatchToggle value={typeMatchMode} onChange={setTypeMatchMode} />
-                                <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
+                                {selectedTypeCount > 0 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            Array.from(selectedTypes).forEach((type) => handleTypeSelection(type));
+                                        }}
+                                        className="team-builder-picker-summary team-builder-picker-summary--clear"
+                                        title={t('common.clear')}
+                                    >
+                                        <span>{t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
+                                        <ClearIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                                    </button>
+                                ) : (
+                                    <span className="team-builder-picker-summary">{t('pokedex.allTypes')}</span>
+                                )}
 
                                 <div className="team-builder-select-wrap">
                                     <select

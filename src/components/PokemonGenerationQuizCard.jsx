@@ -21,6 +21,7 @@ export const PokemonGenerationQuizCard = memo(function PokemonGenerationQuizCard
     isMissed = false,
 }) {
     const { t } = useTranslation();
+    const formattedId = String(pokemon.id).padStart(3, '0');
 
     if (!isFound && !isMissed) {
         return (
@@ -29,7 +30,7 @@ export const PokemonGenerationQuizCard = memo(function PokemonGenerationQuizCard
                 role="img"
                 aria-label={t('games.hiddenPokemon', { id: pokemon.id })}
             >
-                <span className="generation-quiz-card__number" aria-hidden="true">{pokemon.id}</span>
+                <span className="generation-quiz-card__number" aria-hidden="true">#{formattedId}</span>
             </div>
         );
     }
@@ -49,7 +50,7 @@ export const PokemonGenerationQuizCard = memo(function PokemonGenerationQuizCard
                 : t('games.detailsLocked', { name: pokemon.displayName })}
         >
             <div className="generation-quiz-card__header">
-                <span className="generation-quiz-card__number">#{pokemon.id}</span>
+                <span className="generation-quiz-card__number">#{formattedId}</span>
                 {isNew && (
                     <span className="generation-quiz-card__badge">
                         <SparklesIcon />
