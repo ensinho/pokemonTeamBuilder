@@ -1,46 +1,58 @@
 /**
- * The Primeira Jornada (2026-11-12): the trainer-profile onboarding and the
- * account, merged into one conversation with the 3D mascot. Enzo approved the
- * proposal ("QUE INCRÍVEL") built from a reference video's three frames — the
- * mascot peeking from the edge, the answer as a white pill with a check, one
- * glowing promise over the mascot — and from the order that works in the
- * market (Duolingo): value first, the questions next, the account last and
- * optional. `components/onboarding/FirstJourney.jsx` draws it.
+ * The Primeira Jornada 2.0: a 4-step, value-first interactive onboarding built
+ * around the 7 activation principles:
+ * 1. Value before effort (`play`: live 4-Pokémon synergy spark using real
+ *    `analyzeTeam` / `rateTeam` before asking any question).
+ * 2. Useful questions only (`interests`, then adaptive `level` OR `partner` —
+ *    zero generic XP lecture, zero premature sign-up gate).
+ * 3. One clear action per screen, personal insight & holographic Trainer Pass,
+ *    ending with a meaningful result (`blueprint`) that launches straight into
+ *    the trainer's first Activation Moment with `JourneyCoach`.
  *
- * Pure: which screens a trainer sees, in what order, how far along they are,
- * and how the mascot looks on each — the component only animates it.
+ * Pure on purpose: which screens a trainer sees, in what order, how the mascot
+ * reacts, and what activation plan their answers build.
  */
-import { asksCompetitiveLevel, derivePersona, normalizeTrainerProfile } from './trainerProfile.js';
+import { asksCompetitiveLevel, derivePersona, normalizeTrainerProfile, personaHero, personaNavOrder } from './trainerProfile.js';
 import { PERSONA_COSTUME } from './mascot/assistant.js';
 import { XP_RULES, xpForLevel } from './trainerLevel.js';
 
-/** Every screen, in order. */
-export const JOURNEY_STEPS = ['peek', 'hello', 'tour', 'interests', 'level', 'xp', 'persona', 'account', 'done'];
+/** Canonical step universe (welcome flow uses 4 focused screens). */
+export const JOURNEY_STEPS = ['play', 'interests', 'level', 'partner', 'blueprint'];
 
 /**
  * How the journey was entered:
- * - `welcome`: the first run (the landing's way out, or Home offering it);
- * - `redo`: a trainer changing answers they already gave (Profile, Home) —
- *   straight to the questions, no tour, no promise;
- * - `signIn`: "Já tem conta? Entrar" — the account screen, then done.
+ * - `welcome`: first run — live spark → interests → calibrate (level or partner) → blueprint;
+ * - `redo`: changing existing answers from Home / Profile — straight to questions → blueprint;
+ * - `signIn`: "Já tem conta? Entrar" — account screen → done.
  */
 export const JOURNEY_ENTRIES = ['welcome', 'redo', 'signIn'];
 
 /**
- * The screens for these answers. The level is asked only of the competitive;
- * the account only of a guest (someone signed in has one).
+ * The screens for these answers. Always 4 steps on first run (3 on redo),
+ * adapting Step 3 to either competitive calibration (`level`) or picking a
+ * Partner Pokémon (`partner`), never blocking new visitors with a sign-up wall.
  */
-export function journeySteps({ interests = [], entry = 'welcome', isAnonymous = true } = {}) {
+export function journeySteps({ interests = [], entry = 'welcome' } = {}) {
     if (entry === 'signIn') return ['account', 'done'];
-    const level = asksCompetitiveLevel(interests);
-    if (entry === 'redo') return ['interests', ...(level ? ['level'] : []), 'persona', 'done'];
-    return JOURNEY_STEPS.filter((step) => (step !== 'level' || level) && (step !== 'account' || isAnonymous));
+    const calibrate = asksCompetitiveLevel(interests) ? 'level' : 'partner';
+    if (entry === 'redo') return ['interests', calibrate, 'blueprint'];
+    return ['play', 'interests', calibrate, 'blueprint'];
 }
 
-/** Screens that are a moment, not a question: no back arrow, no progress. */
-const OUTSIDE_PROGRESS = new Set(['peek', 'hello', 'done']);
+/** Screens without progress chrome (sign-in outcome). */
+const OUTSIDE_PROGRESS = new Set(['done']);
 
-/** How far along, 0…1, counting only the question screens. */
+/** Step index + total for the segmented step trail. */
+export function journeyStepMeta(steps, step) {
+    const counted = steps.filter((s) => !OUTSIDE_PROGRESS.has(s));
+    const index = counted.indexOf(step);
+    return {
+        index: index < 0 ? counted.length - 1 : index,
+        total: Math.max(1, counted.length),
+    };
+}
+
+/** How far along, 0…1, counting the active journey steps. */
 export function journeyProgress(steps, step) {
     const counted = steps.filter((s) => !OUTSIDE_PROGRESS.has(s));
     const index = counted.indexOf(step);
@@ -48,7 +60,7 @@ export function journeyProgress(steps, step) {
     return (index + 1) / counted.length;
 }
 
-/** Whether the screen shows the back arrow and the progress bar. */
+/** Whether the screen shows the back arrow and step trail. */
 export const journeyHasChrome = (step) => !OUTSIDE_PROGRESS.has(step);
 
 /** The screen after `step`, or null at the end. */
@@ -57,25 +69,47 @@ export function nextJourneyStep(steps, step) {
     return index >= 0 && index < steps.length - 1 ? steps[index + 1] : null;
 }
 
-/** Whether the trainer can leave a question screen yet. */
+/** Whether the trainer can leave a screen yet. */
 export function canContinue(step, { interests = [] } = {}) {
     if (step === 'interests') return interests.length > 0;
     return true;
 }
 
 /**
- * The tour: real screens of the app (public/onboarding/, phone captures),
- * each with what the mascot does beside it. Short on purpose — four is
- * enough to say "this is what is here" without becoming a manual.
+ * Step 1 live synergy spark: four iconic Pokémon whose typings make the real
+ * team analyzer answer immediately on tap. Starting with Charizard + Garchomp
+ * leaves Rock/Ice open; tapping Ferrothorn or Gardevoir visibly closes gaps
+ * and lifts the score in real time.
  */
-export const JOURNEY_TOUR = [
-    { id: 'builder', image: 'tour-builder.webp', mood: 'concentrado', pose: 'analisando' },
-    { id: 'pokedex', image: 'tour-pokedex.webp', mood: 'concentrado', pose: 'lendoPokedex' },
-    { id: 'puzzle', image: 'tour-puzzle.webp', mood: 'pensando', pose: 'matutando' },
-    { id: 'meta', image: 'tour-meta.webp', mood: 'curioso', pose: 'investigando' },
+export const SPARK_POOL = [
+    { id: 6, name: 'Charizard', types: ['fire', 'flying'], tone: 'fire' },
+    { id: 445, name: 'Garchomp', types: ['dragon', 'ground'], tone: 'dragon' },
+    { id: 598, name: 'Ferrothorn', types: ['grass', 'steel'], tone: 'grass' },
+    { id: 282, name: 'Gardevoir', types: ['psychic', 'fairy'], tone: 'psychic' },
 ];
-/** How long a tour card stays before the next, ms. */
-export const TOUR_MS = 3200;
+
+export const SPARK_START = [6, 445];
+
+/** Toggle a member in the Step 1 live mini-team (always keeps at least 1). */
+export function toggleSparkMember(selected, id) {
+    const has = selected.includes(id);
+    if (has && selected.length <= 1) return selected;
+    const next = has ? selected.filter((x) => x !== id) : [...selected, id];
+    return SPARK_POOL.map((p) => p.id).filter((x) => next.includes(x));
+}
+
+/**
+ * Step 3B Partner Pokémon choices (for non-competitive paths) — six distinct
+ * types that immediately personalize the Home greeting, Hero aura & Trainer Card.
+ */
+export const PARTNER_CHOICES = [
+    { id: 25, name: 'Pikachu', type: 'electric' },
+    { id: 94, name: 'Gengar', type: 'ghost' },
+    { id: 133, name: 'Eevee', type: 'normal' },
+    { id: 6, name: 'Charizard', type: 'fire' },
+    { id: 448, name: 'Lucario', type: 'fighting' },
+    { id: 282, name: 'Gardevoir', type: 'psychic' },
+];
 
 /** The mascot's face as each interest is picked (a hop with it). */
 export const INTEREST_MOOD = { competitive: 'determinado', franchise: 'animado', minigames: 'travesso' };
@@ -84,13 +118,11 @@ export const LEVEL_MOOD = { new: 'feliz', casual: 'animado', ranked: 'confiante'
 
 /** How the mascot looks on arriving at each screen. */
 export const STEP_LOOK = {
-    peek: { mood: 'curioso' },
-    hello: { mood: 'feliz', play: 'wave' },
-    tour: { mood: 'concentrado' },
-    interests: { mood: 'feliz' },
+    play: { mood: 'animado', play: 'wave' },
+    interests: { mood: 'curioso' },
     level: { mood: 'determinado' },
-    xp: { mood: 'brilhando', play: 'hop' },
-    persona: { mood: 'radiante', play: 'celebrate' },
+    partner: { mood: 'feliz', play: 'hop' },
+    blueprint: { mood: 'radiante', play: 'celebrate' },
     account: { mood: 'animado' },
     done: { mood: 'radiante', play: 'jump' },
 };
@@ -107,8 +139,48 @@ export function journeyAnswers({ interests = [], level = null, format = 'both' }
 }
 
 /**
- * The XP screen's figures — the real rules (utils/trainerLevel.js), never a
- * made-up number: one mission against the first level, and what the rest pay.
+ * The #1 Activation Moment for this trainer's profile: one unmistakable action
+ * that lands them directly in value with the matching JourneyCoach mission.
+ */
+const ACTIVATION_BY_PERSONA = {
+    strategist: {
+        id: 'builder',
+        path: '/builder',
+        missionId: 'addPokemon',
+    },
+    traveler: {
+        id: 'pokedex',
+        path: '/pokedex',
+        missionId: 'pokedex',
+    },
+    challenger: {
+        id: 'challenge',
+        path: '/challenge',
+        missionId: 'challenge',
+    },
+    master: {
+        id: 'challenge',
+        path: '/challenge',
+        missionId: 'challenge',
+    },
+};
+
+export function journeyActivation(profile) {
+    const persona = derivePersona(profile);
+    const id = persona?.id || 'challenger';
+    const base = ACTIVATION_BY_PERSONA[id] || ACTIVATION_BY_PERSONA.challenger;
+    const navTop = personaNavOrder(profile)[0] || 'teamBuilding';
+    const heroKind = personaHero({ ...profile, answeredAt: profile?.answeredAt || 1 });
+    return {
+        ...base,
+        personaId: id,
+        navTop,
+        heroKind,
+    };
+}
+
+/**
+ * Kept for backwards-compatible XP calculations on account sign-up copy.
  */
 export function journeyXp() {
     const toNext = xpForLevel(2) - xpForLevel(1);

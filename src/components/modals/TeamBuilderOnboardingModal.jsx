@@ -7,6 +7,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons } from '../../constants/types';
 import { writeLocal } from '../../utils/safeStorage';
 import { PartyPips } from '../PartyPips';
+import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 
 // Sample Pokémon for the simulated demo grid. Megas appear in BASE FORM in grid
 // and MORPH into Mega form when added to the team roster.
@@ -119,6 +120,26 @@ export function TeamBuilderOnboardingModal({ onClose }) {
     const handleDismiss = () => {
         if (dontShowAgain) writeLocal('tb-onboarding-seen', '1');
         onClose();
+    };
+
+    const handleUseDemoTeam = () => {
+        if (simulatedTeam.length === 0) {
+            handleDismiss();
+            return;
+        }
+        const store = useActiveTeamStore.getState();
+        simulatedTeam.forEach((p) => {
+            store.handleAddPokemon({
+                id: p.id,
+                name: p.name.toLowerCase().replace(/\s+/g, '-'),
+                types: p.types,
+                sprite: getPokemonArtworkSpriteUrl(p.id),
+                shinySprite: getPokemonArtworkSpriteUrl(p.id, { shiny: true }),
+                animatedSprite: getPokemonFrontSpriteUrl(p.id),
+                animatedShinySprite: getPokemonFrontSpriteUrl(p.id, { shiny: true }),
+            });
+        });
+        handleDismiss();
     };
 
     const dialogRef = useModalA11y(handleDismiss);
@@ -354,9 +375,16 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                         <span>{pt ? 'Não mostrar novamente' : "Don't show this again"}</span>
                     </label>
 
-                    <button type="button" onClick={handleDismiss} className="btn btn-primary">
-                        {pt ? 'Começar a montar' : "Start building"}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {simulatedTeam.length > 0 && (
+                            <button type="button" onClick={handleUseDemoTeam} className="btn btn-secondary">
+                                {pt ? 'Levar time ao construtor' : 'Send team to builder'}
+                            </button>
+                        )}
+                        <button type="button" onClick={handleDismiss} className="btn btn-primary">
+                            {pt ? 'Começar a montar' : "Start building"}
+                        </button>
+                    </div>
                 </footer>
             </div>
         </div>

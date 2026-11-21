@@ -7,9 +7,22 @@ import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { needsTrainerProfile } from '../../utils/trainerProfile';
 
-// Every way off the landing leads through the onboarding first (2026-11-05):
-// it opens over wherever the CTA went, so the visitor's intent still wins.
-const offerOnboarding = () => {
+// Direct activation CTAs on the landing (the live demo hand-off, today's
+// games, and direct feature links) already express clear intent — let the
+// visitor experience that value immediately instead of interrupting them with
+// a fullscreen setup overlay (Tip 1 & Tip 2: activation first, no friction).
+const DIRECT_ACTIVATION_CTAS = new Set([
+    'demo_open_builder',
+    'play_challenge',
+    'play_puzzle',
+    'play_quiz',
+    'play_tierlist',
+]);
+
+// General ways off the landing (`hero_build`, `hero_pokedex`, `skip`, etc.)
+// lead into the 4-step Primeira Jornada so the app fits the trainer right away.
+const offerOnboarding = (cta) => {
+    if (DIRECT_ACTIVATION_CTAS.has(cta) || String(cta || '').startsWith('feature_')) return;
     if (needsTrainerProfile(useAuthStore.getState().trainerProfile)) {
         useOnboardingStore.getState().open('landing');
     }
@@ -36,13 +49,13 @@ export function HomeEntry({ hasTeams, isAnonymous, children }) {
     const leave = useCallback((cta) => {
         track('landing_cta', { cta: String(cta || 'unknown') });
         markLandingSeen(storage());
-        offerOnboarding();
+        offerOnboarding(cta);
     }, []);
     const skip = useCallback(() => {
         track('landing_cta', { cta: 'skip' });
         markLandingSeen(storage());
         setIsFirstVisit(false);
-        offerOnboarding();
+        offerOnboarding('skip');
     }, []);
 
     // "Já tem conta? Entrar": the Primeira Jornada opens on its account screen

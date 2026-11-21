@@ -83,6 +83,7 @@ import { CozyHomeView } from './views/CozyHomeView';
 import { HomeEntry } from './views/HomeEntry';
 import { useLandingStore } from '../store/useLandingStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
+import { useJourneyCoachStore } from '../store/useJourneyCoachStore';
 import { useTrainerCardStore } from '../store/useTrainerCardStore';
 import { useAbilityDialogStore } from '../store/useAbilityDialogStore';
 import { useInboxStore } from '../store/useInboxStore';
@@ -482,6 +483,7 @@ export default function AppLayout() {
     // orders the rail's sections and picks the dock's fourth tab.
     const trainerProfile = useAuthStore((s) => s.trainerProfile);
     const isOnboardingOpen = useOnboardingStore((s) => s.isOpen);
+    const hasJourneyCoach = useJourneyCoachStore((s) => Boolean(s.missionId));
     const isTrainerCardOpen = useTrainerCardStore((s) => Boolean(s.profile));
     const isAbilityDialogOpen = useAbilityDialogStore((s) => Boolean(s.name));
     const isPokegearOpen = useInboxStore((s) => s.isOpen);
@@ -700,10 +702,14 @@ export default function AppLayout() {
     const feedbackPulseOffered = useRef(false);
     useEffect(() => {
         if (feedbackPulseOffered.current || !isAuthReady || !isAuthReconciled) return undefined;
+        const profile = useAuthStore.getState().trainerProfile;
+        const justOnboarded = Boolean(profile?.answeredAt) && (Date.now() - profile.answeredAt) < 10 * 60 * 1000;
         if (
             isLandingOpen
             || showPatchNotes
             || isOnboardingOpen
+            || hasJourneyCoach
+            || justOnboarded
             || isReceiptOpen
             || isFeedbackPulseOpen
             || isCrawler()
@@ -713,7 +719,7 @@ export default function AppLayout() {
         ) {
             return undefined;
         }
-        if (needsTrainerProfile(useAuthStore.getState().trainerProfile) && currentPage === 'home') {
+        if (needsTrainerProfile(profile) && currentPage === 'home') {
             return undefined;
         }
         if (!shouldShowFeedbackPulse(readFeedbackPulse())) return undefined;
@@ -730,6 +736,7 @@ export default function AppLayout() {
         isLandingOpen,
         showPatchNotes,
         isOnboardingOpen,
+        hasJourneyCoach,
         isReceiptOpen,
         isFeedbackPulseOpen,
         currentPage,
