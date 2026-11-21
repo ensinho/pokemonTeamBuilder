@@ -1,9 +1,8 @@
-/* The Primeira Jornada 2.0 (components/onboarding/FirstJourney.jsx).
+/* The Primeira Jornada 2.0 — Widescreen Living Arena (desktop) & Thumb-Zone Flow (mobile).
 
-   A brand scene, like the boot splash: one dark palette in every theme, mixed
-   from the brand layer's tokens (the mascot's white and the brand ink).
-   The ambient glow behind the stage shifts smoothly to the type colour of the
-   trainer's latest interaction (`--fj-glow`). */
+   Brand scene: one dark palette in every theme mixed from the brand layer's
+   tokens (`--mascot-white`, `--brand-ink`, `--brand-black`). The ambient glow
+   (`--fj-glow`) shifts smoothly to the canon type colour of the latest act. */
 
 @property --fj-glow {
     syntax: '<color>';
@@ -34,7 +33,7 @@
     overflow: hidden;
     color: var(--color-fg);
     background:
-        radial-gradient(115% 65% at 50% 14%, color-mix(in srgb, var(--fj-glow) 30%, transparent), transparent 62%),
+        radial-gradient(110% 70% at 32% 16%, color-mix(in srgb, var(--fj-glow) 28%, transparent), transparent 62%),
         var(--color-bg);
     transition: --fj-glow 800ms var(--ease-smooth);
     font-family: var(--font-body);
@@ -122,7 +121,7 @@
 .fj__screen:focus { outline: none; }
 .fj__grow { flex: 1 1 auto; min-height: var(--space-1); }
 
-/* Mascot slot: component measures its box and glides the 3D mascot there */
+/* Mascot slots */
 .fj__slot {
     position: relative;
     flex: 0 1 var(--slot, 30%);
@@ -132,8 +131,8 @@
 }
 .fj__slot--inline {
     flex: none;
-    width: 4.25rem;
-    height: 4.25rem;
+    width: 4rem;
+    height: 4rem;
     min-height: 0;
 }
 
@@ -192,9 +191,16 @@
 .fj__link:hover { color: var(--color-fg); }
 .fj__links { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-1) var(--space-3); }
 
-/* ── Step 1: Live Value Spark (4-Pokémon interactive analyzer) ─────────── */
+/* Responsive visibility helpers */
+.fj__stage,
+.fj__talk { display: contents; }
+.fj__desk-only { display: none; }
+.fj__mob-only { display: grid; }
+
+/* ── Step 1: Live Value Spark (Battlefield + 2×2 deck + telemetry) ────── */
 .fj-spark {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-3);
     width: 100%;
 }
@@ -207,10 +213,16 @@
     flex: 1 1 auto;
     min-width: 0;
     display: grid;
-    gap: var(--space-0_5);
+    gap: var(--space-1);
     padding: var(--space-2_5) var(--space-3_5);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
+}
+.fj-spark__bubble-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
 }
 .fj-spark__bubble-kicker {
     display: inline-flex;
@@ -227,6 +239,7 @@
     line-height: var(--leading-snug);
     color: var(--color-fg);
 }
+
 .fj-spark__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -245,6 +258,7 @@
     background: var(--color-surface);
     color: var(--color-muted);
     cursor: pointer;
+    text-align: left;
     transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
 }
 .fj-spark__card:hover { background: var(--color-surface-hover); color: var(--color-fg); }
@@ -279,14 +293,15 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 3.75rem;
-    height: 3.75rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex: none;
 }
 .fj-spark__art {
     position: relative;
     z-index: 1;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3.25rem;
+    height: 3.25rem;
     object-fit: contain;
     filter: saturate(0.45) opacity(0.72);
     transition: filter var(--duration-fast) var(--ease-smooth), transform var(--duration-glide) var(--ease-glide);
@@ -295,14 +310,29 @@
     filter: drop-shadow(0 0.375rem 0.625rem color-mix(in srgb, var(--brand-black) 48%, transparent));
     transform: translateY(calc(-1 * var(--space-0_5)));
 }
+.fj-spark__meta {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+}
 .fj-spark__name {
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
 }
+.fj-spark__types {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+.fj-spark__types img {
+    width: 0.875rem;
+    height: 0.875rem;
+    object-fit: contain;
+}
+
 .fj-spark__meter {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -314,7 +344,8 @@
 }
 .fj-spark__score {
     display: grid;
-    gap: var(--space-0_5);
+    gap: var(--space-1);
+    min-width: 5.5rem;
 }
 .fj-spark__score-label {
     font-family: var(--font-mono);
@@ -332,11 +363,28 @@
     line-height: 1;
     color: var(--color-fg);
 }
+.fj-spark__score-val.is-peak { color: var(--brand-gold); }
 .fj-spark__score-val em {
     font-style: normal;
     font-size: var(--text-xs);
     color: var(--color-muted);
 }
+.fj-spark__bar {
+    display: block;
+    height: var(--space-1);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-active);
+    overflow: hidden;
+}
+.fj-spark__bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transform-origin: left center;
+    transition: transform var(--duration-glide) var(--ease-glide), background-color var(--duration-fast) var(--ease-smooth);
+}
+.fj-spark__bar-fill.is-peak { background: var(--brand-gold); }
 .fj-spark__weak {
     display: grid;
     gap: var(--space-1);
@@ -351,13 +399,45 @@
 }
 .fj-spark__ok {
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
+    font-weight: 700;
     color: var(--brand-gold);
 }
+.fj-spark__cov {
+    gap: var(--space-1);
+    text-align: right;
+}
+.fj-spark__cov-val {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
+    color: var(--color-fg);
+}
 
-/* ── Step 2: Interests + Live App Preview strip ───────────────────────── */
-.fj-live-preview {
+/* ── Step 2: Orbit Stage + Live Preview ───────────────────────────────── */
+.fj-orbit-stage {
+    position: relative;
     display: grid;
+    place-items: center;
+    flex: 1 1 0;
+    min-height: 9.5rem;
+    width: 100%;
+}
+.fj-orbit-stage .fj__slot {
+    flex: none;
+    width: 8.5rem;
+    height: 8.5rem;
+}
+.fj-orbit-stage__rings {
+    position: absolute;
+    width: 13rem;
+    height: 13rem;
+    border-radius: 50%;
+    border: 1px dashed color-mix(in srgb, var(--fj-glow) 35%, var(--color-border-strong));
+    box-shadow: 0 0 0 2.25rem color-mix(in srgb, var(--fj-glow) 5%, transparent);
+    pointer-events: none;
+}
+
+.fj-live-preview {
     gap: var(--space-2);
     width: 100%;
     padding: var(--space-3) var(--space-3_5);
@@ -374,19 +454,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
 }
-.fj-live-preview__item {
-    display: grid;
-    gap: var(--space-0_5);
-    min-width: 0;
-}
-.fj-live-preview__label {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--color-muted);
-}
+.fj-live-preview__item { display: grid; gap: var(--space-0_5); min-width: 0; }
+.fj-live-preview__label { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-muted); }
 .fj-live-preview__value {
     font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
+    font-weight: 700;
     color: var(--color-fg);
     white-space: nowrap;
     overflow: hidden;
@@ -441,7 +513,6 @@
 .fj-chip.is-on .fj-check svg,
 .fj-check.is-on svg { opacity: 1; scale: 1; }
 
-/* Picked interests circle the mascot */
 .fj__orbit { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .fj-orb {
     position: absolute;
@@ -452,18 +523,39 @@
     filter: drop-shadow(0 0.375rem 0.625rem color-mix(in srgb, var(--brand-black) 50%, transparent));
 }
 
-/* ── Step 3A: Level (evolution line) ──────────────────────────────────── */
-.fj-evo { position: relative; display: grid; flex: none; place-items: center; height: 8.5rem; }
-.fj-evo__art { width: 8.5rem; height: 8.5rem; object-fit: contain; filter: drop-shadow(0 0.625rem 1.125rem color-mix(in srgb, var(--brand-black) 55%, transparent)); }
+/* ── Step 3A: Level (evolution stage + calibration readout) ───────────── */
+.fj-level-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+}
+.fj-evo { position: relative; display: grid; flex: none; place-items: center; height: 8rem; }
+.fj-evo__art { width: 8rem; height: 8rem; object-fit: contain; filter: drop-shadow(0 0.625rem 1.125rem color-mix(in srgb, var(--brand-black) 55%, transparent)); }
 .fj-evo__flash {
     position: absolute;
-    width: 9.5rem;
-    height: 9.5rem;
+    width: 9rem;
+    height: 9rem;
     border-radius: 50%;
     background: radial-gradient(circle, var(--mascot-white) 0, color-mix(in srgb, var(--mascot-white) 40%, transparent) 35%, transparent 70%);
     opacity: 0;
     pointer-events: none;
 }
+.fj-level-unlock {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2_5) var(--space-3_5);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+.fj-level-unlock .fj__slot--inline { width: 3.25rem; height: 3.25rem; flex: none; }
+.fj-level-unlock__copy { display: grid; gap: var(--space-0_5); min-width: 0; }
+.fj-level-unlock__kicker { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-primary-text); }
+.fj-level-unlock__copy p { margin: 0; font-size: var(--text-xs); line-height: var(--leading-snug); color: var(--color-fg); }
+
 .fj-opts { display: grid; gap: var(--space-2); }
 .fj-opt {
     display: grid;
@@ -484,10 +576,11 @@
 .fj-opt__desc { font-size: var(--text-sm); color: var(--color-muted); line-height: var(--leading-snug); }
 .fj-format-row { display: grid; gap: var(--space-1_5); }
 
-/* ── Step 3B: Partner Picker (living stage + 3×2 grid) ────────────────── */
+/* ── Step 3B: Partner Sanctuary + Shiny Toggle ────────────────────────── */
 .fj-partner-stage {
-    display: grid;
-    justify-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: var(--space-3);
     width: 100%;
 }
@@ -495,40 +588,72 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 8.5rem;
-    height: 8.5rem;
+    width: 8rem;
+    height: 8rem;
+}
+.fj-partner-stage__rings {
+    position: absolute;
+    inset: calc(-1 * var(--space-3));
+    border-radius: 50%;
+    border: 1px dashed color-mix(in srgb, var(--card-type) 42%, transparent);
+    pointer-events: none;
 }
 .fj-partner-stage__art {
     position: relative;
     z-index: 1;
-    width: 8.25rem;
-    height: 8.25rem;
+    width: 7.75rem;
+    height: 7.75rem;
     object-fit: contain;
     filter: drop-shadow(0 0.625rem 1rem color-mix(in srgb, var(--brand-black) 52%, transparent));
+}
+.fj-partner-stage__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: var(--space-2);
 }
 .fj-partner-stage__foot {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2_5);
-    padding: var(--space-1_5) var(--space-4) var(--space-1_5) var(--space-2);
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1_5);
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
 }
 .fj-partner-stage__foot .fj__slot--inline {
     flex: none;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
 }
-.fj-partner-stage__meta {
-    display: flex;
+.fj-partner-stage__meta { display: flex; align-items: center; gap: var(--space-2); }
+.fj-partner-stage__name { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-base); }
+
+.fj-shiny-btn {
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-}
-.fj-partner-stage__name {
-    font-family: var(--font-heading);
+    gap: var(--space-1_5);
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     font-weight: 700;
-    font-size: var(--text-base);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
 }
+.fj-shiny-btn svg { width: 0.875rem; height: 0.875rem; }
+.fj-shiny-btn:hover { background: var(--color-surface-hover); color: var(--color-fg); }
+.fj-shiny-btn:active { scale: var(--press-scale); }
+.fj-shiny-btn.is-on {
+    background: color-mix(in srgb, var(--brand-gold) 22%, var(--color-surface-raised));
+    color: var(--brand-gold);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-gold) 65%, transparent);
+}
+
 .fj-partners {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -553,25 +678,21 @@
     background: color-mix(in srgb, var(--tone) 20%, var(--color-surface-raised));
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tone) 80%, var(--mascot-white));
 }
-.fj-partner-tile__art {
-    display: grid;
-    place-items: center;
-    width: 3.25rem;
-    height: 3.25rem;
-}
+.fj-partner-tile__art { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; }
 .fj-partner-tile__art img { width: 3.25rem; height: 3.25rem; object-fit: contain; }
 .fj-partner-tile__name { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 
 /* ── Step 4: Blueprint (Trainer Pass + Personal Insight + 3 concrete wins) ─ */
-.fj__screen--blueprint {
-    gap: var(--space-2);
+.fj-blueprint-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2_5);
+    width: 100%;
 }
-.fj__screen--blueprint .fj__eyebrow {
-    display: none;
-}
-.fj__screen--blueprint .fj__title {
-    font-size: var(--text-xl);
-}
+.fj__screen--blueprint { gap: var(--space-2); }
+.fj__screen--blueprint .fj__eyebrow { display: none; }
+.fj__screen--blueprint .fj__title { font-size: var(--text-xl); }
 .fj-blueprint-mascot {
     display: grid;
     place-items: center;
@@ -580,10 +701,17 @@
     flex: none;
     align-self: center;
 }
+.fj-blueprint-mascot .fj__slot {
+    flex: none;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
 .fj-persona {
     position: relative;
     display: grid;
     flex: none;
+    width: 100%;
     grid-template-columns: minmax(0, 1fr) 5rem;
     align-items: end;
     gap: var(--space-2);
@@ -614,6 +742,7 @@
 
 .fj-insight {
     margin: 0;
+    width: 100%;
     padding: var(--space-2_5) var(--space-3);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
@@ -623,13 +752,7 @@
     text-align: center;
 }
 
-.fj-plan {
-    display: grid;
-    gap: var(--space-1_5);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
+.fj-plan { display: grid; gap: var(--space-1_5); margin: 0; padding: 0; list-style: none; }
 .fj-plan__item {
     display: grid;
     grid-template-columns: 2rem minmax(0, 1fr);
@@ -696,10 +819,14 @@
 
 @media (prefers-reduced-motion: no-preference) {
     .fj-orb { animation: fj-float 3.2s var(--ease-smooth) infinite; }
+    .fj-arena__mon { animation: fj-pop-in 380ms var(--ease-pop) both; }
 }
 @keyframes fj-float { 50% { translate: 0 -0.4rem; } }
+@keyframes fj-pop-in {
+    from { opacity: 0; transform: translateY(var(--space-3)) scale(0.88); }
+    to { opacity: 1; transform: none; }
+}
 
-/* Short phones: compact vertical rhythm so CTA stays in thumb zone */
 @media (max-height: 44rem) {
     .fj__title { font-size: var(--text-xl); }
     .fj-chip__desc { display: none; }
@@ -707,52 +834,66 @@
     .fj-evo__art { width: 6rem; height: 6rem; }
     .fj-partner-stage__hero { width: 6rem; height: 6rem; }
     .fj-partner-stage__art { width: 6rem; height: 6rem; }
-    .fj-blueprint-mascot { width: 5rem; height: 5rem; }
+    .fj-blueprint-mascot { width: 4rem; height: 4rem; }
 }
 
-/* Mobile-only layout helpers */
-.fj__stage,
-.fj__talk { display: contents; }
-.fj__slot--desk { display: none; }
-
-/* ── Desktop (≥ 64rem): Living Stage (left) + Focused Talk (right) ────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   DESKTOP WIDESCREEN CANVAS (≥ 64rem) — Full-viewport living Pokémon arena
+   ══════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 64rem) {
+    .fj__desk-only { display: flex; }
+    .fj__mob-only { display: none; }
+
     .fj__col {
-        max-width: 76rem;
-        height: min(100%, 48rem);
-        padding-inline: calc(env(safe-area-inset-left, 0px) + var(--space-10)) calc(env(safe-area-inset-right, 0px) + var(--space-10));
+        max-width: 100%;
+        height: 100%;
+        gap: var(--space-4);
+        padding:
+            var(--space-5)
+            var(--space-8)
+            var(--space-6)
+            var(--space-8);
     }
+
     .fj__screen {
         display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 27rem);
-        gap: var(--space-12);
+        grid-template-columns: minmax(0, 1.48fr) minmax(24rem, 30rem);
+        gap: var(--space-8);
         align-items: stretch;
     }
+
+    /* Full-height living stage with subtle dot-grid + cursor-reactive lamp */
     .fj__stage {
+        --mx: 50%;
+        --my: 42%;
         position: relative;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
+        justify-content: space-between;
         gap: var(--space-5);
         min-height: 0;
-        padding: var(--space-8);
+        padding: var(--space-6);
         border-radius: var(--radius-xl);
+        border: 1px solid var(--color-border);
         background:
-            radial-gradient(75% 60% at 50% 40%, color-mix(in srgb, var(--fj-glow) 22%, transparent), transparent 72%),
+            radial-gradient(52% 48% at var(--mx) var(--my), color-mix(in srgb, var(--fj-glow) 22%, transparent), transparent 72%),
+            radial-gradient(circle, color-mix(in srgb, var(--mascot-white) 7%, transparent) 1px, transparent 1px) 0 0 / 1.5rem 1.5rem,
             var(--color-surface);
         overflow: hidden;
     }
+
     .fj__talk {
         display: flex;
         flex-direction: column;
         justify-content: center;
         gap: var(--space-4);
         min-height: 0;
+        padding-inline: var(--space-4);
     }
     .fj__talk .fj__grow { display: none; }
     .fj__talk .fj__eyebrow { align-self: flex-start; }
-    .fj__talk .fj__title { font-size: clamp(var(--text-3xl), 3.1vw, 3rem); text-align: left; }
+    .fj__talk .fj__title { font-size: clamp(var(--text-3xl), 3.3vw, 3.25rem); text-align: left; }
     .fj__talk .fj__sub { text-align: left; font-size: var(--text-base); }
     .fj__talk .fj__link { align-self: flex-start; padding-inline: 0; }
     .fj__talk .fj__links { justify-content: flex-start; }
@@ -760,40 +901,337 @@
     .fj__stage .fj__slot { flex: 1 1 auto; width: 100%; max-height: 18rem; }
     .fj__stage .fj__slot--inline { flex: none; width: 4.5rem; height: 4.5rem; max-height: 4.5rem; }
     .fj__stage .fj-partner-stage__foot .fj__slot--inline { width: 3.5rem; height: 3.5rem; max-height: 3.5rem; }
-    .fj__slot--desk { display: block; }
+    .fj__stage .fj-level-unlock .fj__slot--inline { width: 4rem; height: 4rem; max-height: 4rem; }
 
-    /* Step 1 spark on desktop */
-    .fj-spark__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-    .fj-spark__card { padding: var(--space-3); gap: var(--space-3); }
-    .fj-spark__stage { width: 4.25rem; height: 4.25rem; flex: none; }
-    .fj-spark__art { width: 4rem; height: 4rem; }
+    /* ── Step 1 Desktop: Live Arena Battlefield + 4-column selector deck ── */
+    .fj-spark {
+        flex: 1 1 auto;
+        justify-content: space-between;
+        gap: var(--space-4);
+        min-height: 0;
+    }
+    .fj-spark__bubble {
+        background: var(--color-surface-raised);
+        padding: var(--space-3) var(--space-4);
+    }
+    .fj-arena {
+        flex: 1 1 auto;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-4) var(--space-5);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--color-bg) 52%, transparent);
+        min-height: 14rem;
+    }
+    .fj-arena__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+    }
+    .fj-arena__tag {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        color: var(--color-primary-text);
+    }
+    .fj-arena__hint {
+        font-size: var(--text-xs);
+        color: var(--color-muted);
+    }
+    .fj-arena__lineup {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        gap: var(--space-4);
+    }
+    .fj-arena__mon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-2);
+        min-width: 7.5rem;
+    }
+    .fj-arena__pedestal {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 8.5rem;
+        height: 8.5rem;
+    }
+    .fj-arena__art {
+        position: relative;
+        z-index: 1;
+        width: 8.25rem;
+        height: 8.25rem;
+        object-fit: contain;
+        filter: drop-shadow(0 0.75rem 1.25rem color-mix(in srgb, var(--brand-black) 58%, transparent));
+    }
+    .fj-arena__name {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: var(--text-sm);
+        color: var(--color-fg);
+    }
+    .fj-arena__types {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-1);
+    }
+
+    .fj-spark__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-2_5);
+    }
+    .fj-spark__card {
+        padding: var(--space-2_5) var(--space-3) var(--space-2_5) var(--space-2);
+        background: var(--color-surface-raised);
+    }
+    .fj-spark__stage { width: 3.25rem; height: 3.25rem; }
+    .fj-spark__art { width: 3rem; height: 3rem; }
     .fj-spark__name { font-size: var(--text-sm); }
 
-    /* Step 3A evolution on desktop */
-    .fj__screen--level .fj-evo { height: 14.5rem; }
-    .fj__screen--level .fj-evo__art { width: 14.5rem; height: 14.5rem; }
-    .fj__screen--level .fj-evo__flash { width: 16rem; height: 16rem; }
-    .fj__screen--level .fj__stage .fj__slot--desk { flex: 0 0 7.5rem; max-width: 7.5rem; }
+    .fj-spark__meter {
+        grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+        gap: var(--space-5);
+        padding: var(--space-3_5) var(--space-5);
+    }
+    .fj-spark__cov { display: grid; }
 
-    /* Step 3B partner on desktop */
-    .fj-partner-stage__hero { width: 14rem; height: 14rem; }
-    .fj-partner-stage__art { width: 13.5rem; height: 13.5rem; }
+    /* ── Step 2 Desktop: Orbiting Mascot + Stageshow Miniature Live App ─── */
+    .fj-orbit-stage { flex: 1 1 auto; min-height: 16rem; }
+    .fj-orbit-stage .fj__slot { width: 13.5rem; height: 13.5rem; max-height: 13.5rem; }
+    .fj-orbit-stage__rings { width: 20rem; height: 20rem; }
 
-    /* Step 4 blueprint on desktop */
-    .fj__screen--blueprint { gap: var(--space-12); }
+    .fj-mini-app {
+        flex-direction: column;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--color-bg) 68%, transparent);
+    }
+    .fj-mini-app__bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+    }
+    .fj-mini-app__dots { display: inline-flex; gap: var(--space-1_5); }
+    .fj-mini-app__dots i {
+        width: var(--space-2);
+        height: var(--space-2);
+        border-radius: 50%;
+        background: var(--color-surface-elevated);
+    }
+    .fj-mini-app__kicker {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-primary-text);
+    }
+    .fj-mini-app__body {
+        display: grid;
+        grid-template-columns: 11.5rem minmax(0, 1fr);
+        gap: var(--space-4);
+    }
+    .fj-mini-app__rail,
+    .fj-mini-app__hero {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        min-width: 0;
+    }
+    .fj-mini-app__col-label {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-muted);
+    }
+    .fj-mini-app__rail ul {
+        display: grid;
+        gap: var(--space-1_5);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .fj-mini-app__rail li {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-1_5) var(--space-2_5);
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
+        font-size: var(--text-xs);
+        color: var(--color-muted);
+        transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+    }
+    .fj-mini-app__rail li.is-top {
+        background: color-mix(in srgb, var(--preview-tone, var(--color-primary)) 24%, var(--color-surface-raised));
+        color: var(--color-fg);
+        font-weight: 700;
+    }
+    .fj-mini-app__rank {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        font-size: var(--text-xs);
+        color: var(--color-primary-text);
+    }
+    .fj-mini-app__card {
+        flex: 1 1 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 7rem;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(145deg, color-mix(in srgb, var(--preview-tone, var(--color-primary)) 34%, var(--color-bg)), var(--color-surface-raised));
+        overflow: hidden;
+    }
+    .fj-mini-app__card-copy { display: grid; gap: var(--space-1); min-width: 0; }
+    .fj-mini-app__card-copy strong {
+        font-family: var(--font-heading);
+        font-size: var(--text-base);
+        line-height: var(--leading-tight);
+        color: var(--color-fg);
+    }
+    .fj-mini-app__card-copy span {
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-muted);
+    }
+    .fj-mini-app__art {
+        width: 6.75rem;
+        height: 6.75rem;
+        object-fit: contain;
+        filter: drop-shadow(0 0.5rem 0.875rem color-mix(in srgb, var(--brand-black) 50%, transparent));
+    }
+
+    /* ── Step 3A Desktop: Interactive Evolution Pedestal Track ────────────── */
+    .fj-level-stage {
+        flex: 1 1 auto;
+        justify-content: space-between;
+        gap: var(--space-4);
+    }
+    .fj__screen--level .fj-evo { height: 15.5rem; margin-top: var(--space-2); }
+    .fj__screen--level .fj-evo__art { width: 15.5rem; height: 15.5rem; }
+    .fj__screen--level .fj-evo__flash { width: 17rem; height: 17rem; }
+
+    .fj-evo-track {
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-3);
+        width: 100%;
+    }
+    .fj-evo-track__arrow {
+        font-family: var(--font-mono);
+        font-size: var(--text-base);
+        color: var(--color-muted);
+    }
+    .fj-evo-node {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3_5);
+        border: 0;
+        border-radius: var(--radius-lg);
+        background: var(--color-surface-raised);
+        color: var(--color-muted);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), scale var(--duration-press) var(--ease-out);
+    }
+    .fj-evo-node:hover { background: var(--color-surface-hover); color: var(--color-fg); }
+    .fj-evo-node:active { scale: var(--press-scale); }
+    .fj-evo-node.is-on {
+        background: color-mix(in srgb, var(--color-primary) 24%, var(--color-surface-raised));
+        color: var(--color-fg);
+        box-shadow: var(--ring-primary);
+    }
+    .fj-evo-node__art {
+        width: 2.5rem;
+        height: 2.5rem;
+        object-fit: contain;
+        filter: brightness(0.45) saturate(0.4);
+        transition: filter var(--duration-fast) var(--ease-smooth);
+    }
+    .fj-evo-node.is-on .fj-evo-node__art { filter: none; }
+
+    .fj-level-unlock {
+        padding: var(--space-3_5) var(--space-5);
+    }
+    .fj-level-unlock__copy p { font-size: var(--text-sm); }
+
+    /* ── Step 3B Desktop: Partner Sanctuary + Home Greeting Preview ─────── */
+    .fj-partner-stage {
+        flex: 1 1 auto;
+        justify-content: space-between;
+        gap: var(--space-4);
+    }
+    .fj-partner-stage__hero { width: 15.5rem; height: 15.5rem; margin-top: var(--space-2); }
+    .fj-partner-stage__art { width: 15rem; height: 15rem; }
+
+    .fj-greeting-preview {
+        flex-direction: column;
+        gap: var(--space-2);
+        width: 100%;
+        padding: var(--space-4) var(--space-5);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--tone) 14%, var(--color-surface-raised));
+    }
+    .fj-greeting-preview__kicker {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-muted);
+    }
+    .fj-greeting-preview__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3_5);
+    }
+    .fj-greeting-preview__avatar {
+        display: grid;
+        place-items: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--tone) 28%, var(--color-bg));
+        overflow: hidden;
+        flex: none;
+    }
+    .fj-greeting-preview__avatar img { width: 3.25rem; height: 3.25rem; object-fit: contain; }
+    .fj-greeting-preview__text { display: grid; gap: var(--space-0_5); min-width: 0; }
+    .fj-greeting-preview__text strong { font-family: var(--font-heading); font-size: var(--text-base); color: var(--color-fg); }
+    .fj-greeting-preview__text span { font-size: var(--text-xs); color: var(--color-muted); }
+
+    /* ── Step 4 Desktop: Expansive Holographic Trainer Pass Showcase ────── */
+    .fj__screen--blueprint { gap: var(--space-8); }
     .fj__screen--blueprint .fj__eyebrow { display: inline-flex; }
-    .fj__screen--blueprint .fj__title { font-size: clamp(var(--text-3xl), 3.1vw, 3rem); }
-    .fj-blueprint-mascot { width: 8rem; height: 8rem; }
+    .fj__screen--blueprint .fj__title { font-size: clamp(var(--text-3xl), 3.2vw, 3.25rem); }
+    .fj-blueprint-stage {
+        flex: 1 1 auto;
+        justify-content: center;
+        gap: var(--space-5);
+        padding-inline: var(--space-4);
+    }
+    .fj-blueprint-mascot { width: 10.5rem; height: 10.5rem; }
+    .fj-blueprint-mascot .fj__slot { width: 100%; height: 100%; max-height: 100%; }
     .fj__stage .fj-persona,
     .fj__stage .fj-card,
-    .fj__stage .fj-insight { width: min(100%, 27rem); }
-    .fj__stage .fj-persona { min-height: 12.5rem; padding: var(--space-4); grid-template-columns: minmax(0, 1fr) 5.5rem; }
-    .fj__stage .fj-persona__name { font-size: var(--text-xl); }
-    .fj__stage .fj-persona__tag { font-size: var(--text-sm); }
-    .fj__stage .fj-persona__art { width: 6.5rem; height: 6.5rem; }
-    .fj-insight { text-align: left; padding: var(--space-3) var(--space-3_5); font-size: var(--text-sm); }
-    .fj-plan { gap: var(--space-2); }
-    .fj-plan__item { padding: var(--space-2_5) var(--space-3_5); gap: var(--space-3); grid-template-columns: 2.25rem minmax(0, 1fr); }
-    .fj-plan__icon { width: 2.25rem; height: 2.25rem; }
+    .fj__stage .fj-insight { width: min(100%, 34rem); }
+    .fj__stage .fj-persona {
+        min-height: 15.5rem;
+        padding: var(--space-6);
+        grid-template-columns: minmax(0, 1fr) 9.5rem;
+    }
+    .fj__stage .fj-persona__name { font-size: var(--text-2xl); }
+    .fj__stage .fj-persona__tag { font-size: var(--text-base); }
+    .fj__stage .fj-persona__art { width: 9.5rem; height: 9.5rem; margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) 0; }
+    .fj-insight { text-align: left; padding: var(--space-4) var(--space-5); font-size: var(--text-sm); }
+    .fj-plan { gap: var(--space-2_5); }
+    .fj-plan__item { padding: var(--space-3) var(--space-4); gap: var(--space-3); grid-template-columns: 2.5rem minmax(0, 1fr); }
+    .fj-plan__icon { width: 2.5rem; height: 2.5rem; }
     .fj-plan__icon svg { width: 1.125rem; height: 1.125rem; }
 }

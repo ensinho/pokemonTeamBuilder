@@ -4,16 +4,18 @@ import { ArrowLeft, ArrowRight, Check, Compass, LayoutGrid, LockKeyhole, Mail, S
 
 import { Mascot } from '../Mascot';
 import { Loader } from '../Loader';
+import { PartyPips } from '../PartyPips';
 import { RollingNumber } from '../RollingNumber';
 import { TypeChip } from '../TypeChip';
 import { PasswordField } from '../modals/auth/PasswordField';
 import { GoogleButton } from '../GoogleButton';
 import { useGoogleSignInAvailable } from '../../services/googleAvailability';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { useJourneyCoachStore } from '../../store/useJourneyCoachStore';
-import { typeColors } from '../../constants/types';
+import { typeColors, typeIcons } from '../../constants/types';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { analyzeTeam, rateTeam } from '../../utils/teamAnalysis';
 import { track } from '../../services/analytics';
@@ -31,14 +33,14 @@ import {
 import '../../styles/first-journey.css';
 
 /**
- * The Primeira Jornada 2.0 — 4-step, value-first onboarding with the persistent
- * 3D mascot. Pure state & step rules live in utils/firstJourney.js; this
- * component handles the choreography and live interactions.
+ * The Primeira Jornada 2.0 — 4-step, value-first onboarding with a widescreen
+ * interactive Living Stage on desktop and a thumb-zone layout on phones.
  *
  * Flow (first run):
- * 1. `play`      — Live interactive 4-Pokémon synergy spark (real analyzeTeam).
- * 2. `interests` — Pick 1–3 paths; live stage preview shows the app reshaping.
- * 3. `level` OR `partner` — Adaptive single-focus calibration.
+ * 1. `play`      — Live interactive 4-Pokémon arena + real analyzeTeam/rateTeam.
+ * 2. `interests` — Pick 1–3 paths; miniature live app preview rearranges live.
+ * 3. `level` OR `partner` — Interactive Gible→Gabite→Garchomp track OR Partner
+ *                           Sanctuary with live Shiny toggle + Home preview.
  * 4. `blueprint` — Holographic Trainer Pass, personal insight, 3 configured
  *                  changes, and 1-tap launch into the #1 Activation Moment.
  */
@@ -64,8 +66,8 @@ function Words({ text, accent = false }) {
 }
 
 /** Official artwork, boxed before it loads, never announced. */
-const Art = ({ id, className = '', imgRef }) => (
-    <img ref={imgRef} src={getPokemonArtworkSpriteUrl(id)} alt="" width={240} height={240} decoding="async" draggable={false} className={className} />
+const Art = ({ id, shiny = false, className = '', imgRef }) => (
+    <img ref={imgRef} src={getPokemonArtworkSpriteUrl(id, { shiny })} alt="" width={240} height={240} decoding="async" draggable={false} className={className} />
 );
 
 export function FirstJourney() {
@@ -78,15 +80,15 @@ export function FirstJourney() {
     const saved = useAuthStore((s) => s.trainerProfile);
     const setTrainerProfile = useAuthStore((s) => s.setTrainerProfile);
     const savedPartnerId = useAuthStore((s) => s.greetingPokemonId);
+    const savedPartnerShiny = useAuthStore((s) => s.greetingPokemonIsShiny);
     const setGreetingPokemon = useAuthStore((s) => s.setGreetingPokemon);
     const savedName = useAuthStore((s) => s.displayName);
 
-    // Decided once per opening: who this is does not change under them mid-flow.
     const [initialEntry] = useState(() => requestedEntry || (hasAnsweredProfile(saved) && source !== 'landing' ? 'redo' : 'welcome'));
     const [entry, setEntry] = useState(initialEntry);
     const [reduced] = useState(prefersReduced);
 
-    // Step 1: live interactive synergy spark
+    // Step 1: live interactive synergy arena
     const [sparkIds, setSparkIds] = useState(SPARK_START);
     const [sparkTouched, setSparkTouched] = useState(false);
 
@@ -95,6 +97,8 @@ export function FirstJourney() {
     const [level, setLevel] = useState(() => saved.competitiveLevel || 'casual');
     const [format, setFormat] = useState(() => saved.battleFormat || 'both');
     const [partnerId, setPartnerId] = useState(() => savedPartnerId || PARTNER_CHOICES[0].id);
+    const [partnerShiny, setPartnerShiny] = useState(() => Boolean(savedPartnerShiny));
+    const shinyBurst = useShinyBurst();
 
     const steps = useMemo(() => journeySteps({ interests, entry }), [interests, entry]);
     const [step, setStep] = useState(() => steps[0]);
@@ -117,7 +121,7 @@ export function FirstJourney() {
     );
     const sparkCoveredCount = useMemo(() => Object.keys(sparkAnalysis.defensiveCoverage || {}).length, [sparkAnalysis]);
 
-    // The mascot: one, alive, holding the stage while the journey is open
+    // The persistent 3D mascot
     const [look, setLook] = useState(STEP_LOOK[steps[0]] || { mood: 'animado' });
     const [gesture, setGesture] = useState({ name: null, id: 0 });
     const [confetti, setConfetti] = useState(false);
@@ -141,6 +145,7 @@ export function FirstJourney() {
 
     const layerRef = useRef(null);
     const screenRef = useRef(null);
+    const stageRef = useRef(null);
     const botRef = useRef(null);
     const orbitRef = useRef(null);
     const cardRef = useRef(null);
@@ -152,14 +157,28 @@ export function FirstJourney() {
     const finished = useRef(false);
     const committed = useRef(false);
     const closing = useRef(false);
+    const firstPaint = useRef(true);
+
+    /* ---------- subtle cursor spotlight on the desktop stage ---------- */
+    const handleStagePointerMove = useCallback((e) => {
+        if (reduced) return;
+        const el = stageRef.current;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        const px = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+        const py = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+        el.style.setProperty('--mx', `${px.toFixed(1)}%`);
+        el.style.setProperty('--my', `${py.toFixed(1)}%`);
+    }, [reduced]);
 
     /* ---------- the mascot's travel ---------- */
     const orbitFollow = useCallback(() => {
         const orbit = orbitRef.current;
         if (!orbit) return;
         const { x, y, size } = botBox.current;
-        const r = Math.max(50, size * 0.58);
-        const spots = [[-0.9, -0.18], [0.9, -0.18], [0, -0.76]];
+        const r = Math.max(54, size * 0.62);
+        const spots = [[-0.95, -0.16], [0.95, -0.16], [0, -0.78]];
         for (const img of orbit.children) {
             const [ox, oy] = spots[INTERESTS.indexOf(img.dataset.orb) % 3];
             img.style.left = `${x + ox * r}px`;
@@ -234,9 +253,8 @@ export function FirstJourney() {
                 if (!window.localStorage.getItem('tb-regulation')) window.localStorage.setItem('tb-regulation', seed);
             } catch { /* builder keeps its default */ }
         }
-        // If they picked a partner on Step 3B (or have no partner yet), save it now!
         if (!answers.profile.interests.includes('competitive') && partnerId) {
-            setGreetingPokemon({ pokemonId: partnerId, isShiny: false });
+            setGreetingPokemon({ pokemonId: partnerId, isShiny: partnerShiny });
         }
         track('onboarding_complete', {
             persona: answers.persona?.id || 'none',
@@ -244,7 +262,7 @@ export function FirstJourney() {
             level: profile.competitiveLevel || 'none',
             source: source || 'unknown',
         });
-    }, [answers, entry, partnerId, setGreetingPokemon, setTrainerProfile, source]);
+    }, [answers, entry, partnerId, partnerShiny, setGreetingPokemon, setTrainerProfile, source]);
 
     /* ---------- leaving ---------- */
     const close = useCallback((then) => {
@@ -316,19 +334,16 @@ export function FirstJourney() {
         goTo(prev, { push: false, dir: -1 });
     };
 
-    const firstPaint = useRef(true);
-
-    // Screen entrance choreography: place mascot BEFORE any transform starts,
-    // keep first paint instant (no blank opacity-0 flash), animate transitions.
+    // Screen entrance choreography: place mascot BEFORE transforms, instant first paint
     useLayoutEffect(() => {
         const base = STEP_LOOK[step] || {};
         setLook({ mood: base.mood, pose: base.pose });
         if (base.play) react(base.play);
-        const isFirst = firstPaint.current;
+        const isInitialEntry = firstPaint.current || (history.current.length === 0 && step === steps[0]);
         firstPaint.current = false;
-        placeBot(isFirst);
+        placeBot(isInitialEntry);
         const el = screenRef.current;
-        if (el && !reduced && !isFirst) {
+        if (el && !reduced && !isInitialEntry) {
             const glide = cssVar('--ease-glide', 'ease-out');
             const dir = navDir.current;
             el.querySelectorAll('[data-s]').forEach((n, i) => {
@@ -348,7 +363,7 @@ export function FirstJourney() {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- once per screen
     }, [step]);
 
-    // Keep mascot locked onto its slot whenever layout settles (fonts, partner pill width, resize)
+    // Keep mascot locked onto its slot whenever layout settles
     useEffect(() => {
         const el = screenRef.current;
         if (!el || typeof ResizeObserver === 'undefined') return undefined;
@@ -357,7 +372,7 @@ export function FirstJourney() {
         return () => ro.disconnect();
     }, [step, placeBot]);
 
-    // Screen side effects (orbit cleanup, blueprint reveal + 3D tilt)
+    // Screen side effects (orbit cleanup, blueprint 3D tilt + confetti)
     useEffect(() => {
         if (step === 'interests') {
             INTERESTS.filter((i) => interests.includes(i)).forEach((i) => fly(i, null));
@@ -480,6 +495,19 @@ export function FirstJourney() {
         }
     };
 
+    const togglePartnerShiny = () => {
+        const nextVal = !partnerShiny;
+        setPartnerShiny(nextVal);
+        if (nextVal) {
+            shinyBurst.fire();
+            setLook({ mood: 'brilhando' });
+            react('sparks');
+        } else {
+            setLook({ mood: 'feliz' });
+            react('nod');
+        }
+    };
+
     /* ---------- account sign-in (returning trainers) ---------- */
     const auth = useAuthStore.getState;
     const showError = (message, field = null) => { setError(message); setErrorField(field); setLook({ mood: 'preocupado' }); react('shake'); };
@@ -571,7 +599,8 @@ export function FirstJourney() {
     const stepMeta = journeyStepMeta(steps, step);
     const chrome = journeyHasChrome(step);
 
-    const previewNavKey = personaNavOrder(answers.profile)[0] || 'teamBuilding';
+    const previewNavOrder = personaNavOrder(answers.profile);
+    const previewNavKey = previewNavOrder[0] || 'teamBuilding';
     const previewHeroKind = interests.length
         ? personaHero({ ...answers.profile, answeredAt: 1 })
         : 'challenge';
@@ -594,7 +623,6 @@ export function FirstJourney() {
     );
 
     const slot = (size) => <span className="fj__slot" style={{ '--slot': size }} data-slot aria-hidden="true" />;
-    const deskSlot = <span className="fj__slot fj__slot--desk" data-slot aria-hidden="true" />;
     const inlineSlot = <span className="fj__slot fj__slot--inline" data-slot aria-hidden="true" />;
 
     const google = googleOn && mode !== 'reset' && !resetSentTo && !busy && (
@@ -613,18 +641,48 @@ export function FirstJourney() {
             : sparkTouched
                 ? 'journey.play.verdictReact'
                 : 'journey.play.verdictStart';
+        const isHighScore = sparkScore >= 90;
         stage = (
             <div className="fj-spark">
                 <div className="fj-spark__top">
                     {inlineSlot}
                     <div className="fj-spark__bubble" aria-live="polite">
-                        <span className="fj-spark__bubble-kicker">
-                            <Sparkles aria-hidden="true" />
-                            {t('journey.play.liveTag')}
+                        <span className="fj-spark__bubble-head">
+                            <span className="fj-spark__bubble-kicker">
+                                <Sparkles aria-hidden="true" />
+                                {t('journey.play.liveTag')}
+                            </span>
+                            <PartyPips team={sparkTeam} />
                         </span>
                         <span className="fj-spark__bubble-text">{t(sparkStatusKey, { count: sparkTeam.length })}</span>
                     </div>
                 </div>
+
+                {/* Desktop widescreen live battlefield: active members stand on glowing type platforms */}
+                <div className="fj-arena fj__desk-only" aria-hidden="true">
+                    <div className="fj-arena__head">
+                        <span className="fj-arena__tag">{t('journey.play.arenaLabel')}</span>
+                        <span className="fj-arena__hint">{t('journey.play.tapHint')}</span>
+                    </div>
+                    <div className="fj-arena__lineup">
+                        {sparkTeam.map((mon) => (
+                            <div
+                                key={mon.id}
+                                className="fj-arena__mon"
+                                style={{ '--tone': tone(mon.tone) }}
+                            >
+                                <span className="fj-arena__pedestal type-platform" style={{ '--card-type': tone(mon.tone) }}>
+                                    <Art id={mon.id} className="fj-arena__art" />
+                                </span>
+                                <span className="fj-arena__name">{mon.name}</span>
+                                <span className="fj-arena__types">
+                                    {mon.types.map((tp) => <TypeChip key={tp} type={tp} size="sm" />)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="fj-spark__grid" role="group" aria-label={t('journey.play.gridLabel')}>
                     {SPARK_POOL.map((mon) => {
                         const active = sparkIds.includes(mon.id);
@@ -641,17 +699,31 @@ export function FirstJourney() {
                                 <span className="fj-spark__stage type-platform" style={{ '--card-type': tone(mon.tone) }}>
                                     <Art id={mon.id} className="fj-spark__art" />
                                 </span>
-                                <span className="fj-spark__name">{mon.name}</span>
+                                <span className="fj-spark__meta">
+                                    <span className="fj-spark__name">{mon.name}</span>
+                                    <span className="fj-spark__types" aria-hidden="true">
+                                        {mon.types.map((tp) => (
+                                            <img key={tp} src={typeIcons[tp]} alt="" width={14} height={14} />
+                                        ))}
+                                    </span>
+                                </span>
                             </button>
                         );
                     })}
                 </div>
+
                 <div className="fj-spark__meter" aria-live="polite">
                     <div className="fj-spark__score">
                         <span className="fj-spark__score-label">{t('journey.play.scoreLabel')}</span>
-                        <span className="fj-spark__score-val">
+                        <span className={`fj-spark__score-val ${isHighScore ? 'is-peak' : ''}`}>
                             <RollingNumber value={sparkScore} />
                             <em>/100</em>
+                        </span>
+                        <span className="fj-spark__bar" aria-hidden="true">
+                            <span
+                                className={`fj-spark__bar-fill ${isHighScore ? 'is-peak' : ''}`}
+                                style={{ transform: `scaleX(${Math.max(0.08, Math.min(1, sparkScore / 100))})` }}
+                            />
                         </span>
                     </div>
                     <div className="fj-spark__weak">
@@ -663,6 +735,12 @@ export function FirstJourney() {
                                 ? sparkWeaknesses.map((tp) => <TypeChip key={tp} type={tp} size="sm" />)
                                 : <span className="fj-spark__ok">{t('journey.play.noWeak', { n: sparkCoveredCount })}</span>}
                         </div>
+                    </div>
+                    <div className="fj-spark__cov fj__desk-only">
+                        <span className="fj-spark__score-label">{t('journey.play.coverageBar')}</span>
+                        <strong className="fj-spark__cov-val">
+                            {t('journey.play.typesCovered', { n: sparkCoveredCount })}
+                        </strong>
                     </div>
                 </div>
             </div>
@@ -680,10 +758,17 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'interests') {
+        const previewArtId = persona?.art || (previewHeroKind === 'team' ? 445 : 150);
+        const previewTone = persona ? tone(persona.tone) : tone('psychic');
         stage = (
             <>
-                {slot('46%')}
-                <div className="fj-live-preview" data-s aria-live="polite">
+                <div className="fj-orbit-stage">
+                    <span className="fj-orbit-stage__rings" aria-hidden="true" />
+                    {slot('100%')}
+                </div>
+
+                {/* Mobile compact preview */}
+                <div className="fj-live-preview fj__mob-only" aria-live="polite">
                     <span className="fj-live-preview__kicker">{t('journey.preview.eyebrow')}</span>
                     <div className="fj-live-preview__grid">
                         <div className="fj-live-preview__item">
@@ -697,6 +782,37 @@ export function FirstJourney() {
                             <strong className="fj-live-preview__value">
                                 {t(`journey.preview.nav.${previewNavKey}`)}
                             </strong>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Desktop Stageshow miniature live app shell */}
+                <div className="fj-mini-app fj__desk-only" aria-live="polite" style={{ '--preview-tone': previewTone }}>
+                    <div className="fj-mini-app__bar">
+                        <span className="fj-mini-app__dots" aria-hidden="true"><i /><i /><i /></span>
+                        <span className="fj-mini-app__kicker">{t('journey.preview.eyebrow')}</span>
+                    </div>
+                    <div className="fj-mini-app__body">
+                        <div className="fj-mini-app__rail">
+                            <span className="fj-mini-app__col-label">{t('journey.preview.sidebarTitle')}</span>
+                            <ul>
+                                {previewNavOrder.map((navKey, idx) => (
+                                    <li key={navKey} className={idx === 0 ? 'is-top' : ''}>
+                                        <span className="fj-mini-app__rank">#{idx + 1}</span>
+                                        <span>{t(`journey.preview.nav.${navKey}`)}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="fj-mini-app__hero">
+                            <span className="fj-mini-app__col-label">{t('journey.preview.homeTitle')}</span>
+                            <div className="fj-mini-app__card">
+                                <div className="fj-mini-app__card-copy">
+                                    <strong>{previewHeroKind === 'team' ? t('journey.preview.heroTeam') : t('journey.preview.heroChallenge')}</strong>
+                                    <span>{previewHeroKind === 'team' ? t('journey.preview.heroSubTeam') : t('journey.preview.heroSubChallenge')}</span>
+                                </div>
+                                <Art id={previewArtId} className="fj-mini-app__art" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -735,14 +851,42 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'level') {
+        const activeLevel = level || 'casual';
         stage = (
-            <>
-                <div className="fj-evo" data-s aria-hidden="true">
+            <div className="fj-level-stage">
+                <div className="fj-evo" aria-hidden="true">
                     <span className="fj-evo__flash" ref={flashRef} />
-                    <Art id={LEVEL_ART[level || 'casual']} imgRef={evoRef} className="fj-evo__art" />
+                    <Art id={LEVEL_ART[activeLevel]} imgRef={evoRef} className="fj-evo__art" />
                 </div>
-                {deskSlot}
-            </>
+
+                {/* Desktop interactive 3-stage evolution track (bidirectional!) */}
+                <div className="fj-evo-track fj__desk-only" role="group" aria-label={t('onboarding.level.title')}>
+                    {COMPETITIVE_LEVELS.map((val, idx) => {
+                        const isActive = activeLevel === val;
+                        return (
+                            <React.Fragment key={val}>
+                                {idx > 0 && <span className="fj-evo-track__arrow" aria-hidden="true">→</span>}
+                                <button
+                                    type="button"
+                                    className={`fj-evo-node ${isActive ? 'is-on' : ''}`}
+                                    onClick={() => pickLevel(val)}
+                                >
+                                    <Art id={LEVEL_ART[val]} className="fj-evo-node__art" />
+                                    <span>{t(`onboarding.levelShort.${val}`)}</span>
+                                </button>
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+
+                <div className="fj-level-unlock">
+                    {inlineSlot}
+                    <div className="fj-level-unlock__copy" aria-live="polite">
+                        <span className="fj-level-unlock__kicker">{t('journey.levelUnlock.eyebrow')}</span>
+                        <p>{t(`journey.levelUnlock.${activeLevel}`, { format: t(`onboarding.format.${format}`) })}</p>
+                    </div>
+                </div>
+            </div>
         );
         talk = (
             <>
@@ -773,13 +917,40 @@ export function FirstJourney() {
         stage = (
             <div className="fj-partner-stage">
                 <div className="fj-partner-stage__hero type-platform" style={{ '--card-type': tone(chosenPartner.type) }}>
-                    <Art id={chosenPartner.id} imgRef={partnerArtRef} className="fj-partner-stage__art" />
+                    <span className="fj-partner-stage__rings" aria-hidden="true" />
+                    <Art id={chosenPartner.id} shiny={partnerShiny} imgRef={partnerArtRef} className="fj-partner-stage__art" />
                 </div>
-                <div className="fj-partner-stage__foot">
-                    {inlineSlot}
-                    <div className="fj-partner-stage__meta">
-                        <span className="fj-partner-stage__name">{chosenPartner.name}</span>
-                        <TypeChip type={chosenPartner.type} size="sm" />
+                <div className="fj-partner-stage__controls">
+                    <div className="fj-partner-stage__foot">
+                        {inlineSlot}
+                        <div className="fj-partner-stage__meta">
+                            <span className="fj-partner-stage__name">{chosenPartner.name}</span>
+                            <TypeChip type={chosenPartner.type} size="sm" />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className={`fj-shiny-btn ${partnerShiny ? 'is-on' : ''} ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
+                        aria-pressed={partnerShiny}
+                        onClick={togglePartnerShiny}
+                    >
+                        {shinyBurst.burst}
+                        <Sparkles aria-hidden="true" />
+                        <span>{t('journey.partnerShiny')}</span>
+                    </button>
+                </div>
+
+                {/* Desktop live Home greeting preview */}
+                <div className="fj-greeting-preview fj__desk-only" style={{ '--tone': tone(chosenPartner.type) }}>
+                    <span className="fj-greeting-preview__kicker">{t('journey.partnerGreeting')}</span>
+                    <div className="fj-greeting-preview__row">
+                        <span className="fj-greeting-preview__avatar">
+                            <Art id={chosenPartner.id} shiny={partnerShiny} />
+                        </span>
+                        <span className="fj-greeting-preview__text">
+                            <strong>{t('journey.partnerHello', { name: chosenPartner.name })}</strong>
+                            <span>{t('journey.preview.heroChallenge')}</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -803,7 +974,7 @@ export function FirstJourney() {
                                 onClick={() => pickPartner(choice)}
                             >
                                 <span className="fj-partner-tile__art">
-                                    <Art id={choice.id} />
+                                    <Art id={choice.id} shiny={on && partnerShiny} />
                                 </span>
                                 <span className="fj-partner-tile__name">{choice.name}</span>
                             </button>
@@ -815,7 +986,9 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'blueprint' && persona) {
-        const passArtId = !interests.includes('competitive') && partnerId ? partnerId : persona.art;
+        const useChosenPartner = !interests.includes('competitive') && Boolean(partnerId);
+        const passArtId = useChosenPartner ? partnerId : persona.art;
+        const passShiny = useChosenPartner && partnerShiny;
         const personaName = t(`onboarding.personas.${persona.id}.name`);
         const insightText = t(`journey.blueprint.insight.${persona.id}`, {
             partner: chosenPartner.name,
@@ -823,7 +996,7 @@ export function FirstJourney() {
             level: t(`onboarding.levelShort.${level || 'casual'}`),
         });
         stage = (
-            <>
+            <div className="fj-blueprint-stage">
                 <div className="fj-blueprint-mascot">
                     {slot('100%')}
                 </div>
@@ -835,11 +1008,11 @@ export function FirstJourney() {
                         <p className="fj-persona__name">{personaName}</p>
                         <p className="fj-persona__tag">{t(`onboarding.personas.${persona.id}.tagline`)}</p>
                     </div>
-                    <Art id={passArtId} className="fj-persona__art" />
+                    <Art id={passArtId} shiny={passShiny} className="fj-persona__art" />
                     <span className="fj-persona__shine" aria-hidden="true" />
                 </div>
                 <p className="fj-insight" data-s>{insightText}</p>
-            </>
+            </div>
         );
         talk = (
             <>
@@ -1029,7 +1202,11 @@ export function FirstJourney() {
                     )}
                 </div>
                 <div className={`fj__screen fj__screen--${step}`} key={step} ref={screenRef}>
-                    {stage && <div className="fj__stage">{stage}</div>}
+                    {stage && (
+                        <div className="fj__stage" ref={stageRef} onPointerMove={handleStagePointerMove}>
+                            {stage}
+                        </div>
+                    )}
                     <div className="fj__talk">{talk}</div>
                 </div>
             </div>
