@@ -1,49 +1,49 @@
 import React, { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, LockKeyhole, Mail, UserRound, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Compass, LayoutGrid, LockKeyhole, Mail, Sparkles, Target, UserRound } from 'lucide-react';
 
+import { AnimatedSprite } from '../AnimatedSprite';
 import { Mascot } from '../Mascot';
 import { Loader } from '../Loader';
+import { PartyPips } from '../PartyPips';
+import { RollingNumber } from '../RollingNumber';
+import { TypeChip } from '../TypeChip';
 import { PasswordField } from '../modals/auth/PasswordField';
 import { GoogleButton } from '../GoogleButton';
 import { useGoogleSignInAvailable } from '../../services/googleAvailability';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
-import { typeColors } from '../../constants/types';
+import { useJourneyCoachStore } from '../../store/useJourneyCoachStore';
+import { typeColors, typeIcons } from '../../constants/types';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { analyzeTeam, rateTeam } from '../../utils/teamAnalysis';
 import { track } from '../../services/analytics';
 import { authErrorField, isAuthCancel, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
-import { JOURNEYS } from '../../utils/journeys';
 import {
-    BATTLE_FORMATS, COMPETITIVE_LEVELS, INTERESTS, LEVEL_ART, PERSONAS, PICK_DESTINATIONS,
-    builderRegulationSeed, hasAnsweredProfile, personaPicks,
+    BATTLE_FORMATS, COMPETITIVE_LEVELS, INTERESTS, LEVEL_ART, PERSONAS,
+    builderRegulationSeed, hasAnsweredProfile, personaHero, personaNavOrder,
 } from '../../utils/trainerProfile';
 import {
-    INTEREST_MOOD, JOURNEY_TOUR, LEVEL_MOOD, STEP_LOOK, TOUR_MS,
-    canContinue, journeyAnswers, journeyHasChrome, journeyProgress, journeySteps, journeyXp, nextJourneyStep,
+    INTEREST_MOOD, LEVEL_MOOD, PARTNER_CHOICES, SPARK_POOL, SPARK_START, STEP_LOOK,
+    canContinue, journeyActivation, journeyAnswers, journeyHasChrome, journeyStepMeta,
+    journeySteps, journeyXp, nextJourneyStep, toggleSparkMember,
 } from '../../utils/firstJourney';
 import '../../styles/first-journey.css';
 
 /**
- * The Primeira Jornada (2026-11-12) — the onboarding and the account in one
- * conversation with the 3D mascot. What is shown, in what order, and how the
- * mascot looks on each screen is utils/firstJourney.js; this file animates it.
+ * The Primeira Jornada 2.0 — 4-step, value-first onboarding with a widescreen
+ * interactive Living Stage on desktop and a thumb-zone layout on phones.
  *
- * The choreography, from the approved proposal: ONE thing never leaves the
- * screen — the mascot. He travels to each screen's slot on the glide spring
- * while the screen that leaves rises and fades and the next one arrives in a
- * cascade (70 ms apart), the headline word by word out of a mask. Everything
- * is transform/opacity; under reduced motion every state still changes,
- * nothing travels.
- *
- * Data: the answers are `trainerProfile` (useAuthStore), saved when the
- * persona is revealed — so leaving at the account screen keeps them. The
- * account is useAuthStore's sign-up (a guest is upgraded in place, nothing is
- * lost), sign-in and reset; a guest can always go on without one. Closing it
- * any other way than finishing records a skip on a first run, so it never
- * comes back uninvited.
+ * Flow (first run):
+ * 1. `play`      — Live interactive 4-Pokémon arena + real analyzeTeam/rateTeam.
+ * 2. `interests` — Pick 1–3 paths; miniature live app preview rearranges live.
+ * 3. `level` OR `partner` — Interactive Gible→Gabite→Garchomp track OR Partner
+ *                           Sanctuary with live Shiny toggle + Home preview.
+ * 4. `blueprint` — Holographic Trainer Pass, personal insight, 3 configured
+ *                  changes, and 1-tap launch into the #1 Activation Moment.
  */
 
 const INTEREST_ART = Object.fromEntries(INTERESTS.map((i) => [i, PERSONAS[{ competitive: 'strategist', franchise: 'traveler', minigames: 'challenger' }[i]]]));
@@ -53,7 +53,6 @@ const cssVar = (name, fallback) => {
     if (typeof window === 'undefined') return fallback;
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 };
-const tourImage = (file) => `${import.meta.env.BASE_URL}onboarding/${file}`;
 
 /** A headline line, word by word, each in its own mask (the entrance lifts them out). */
 function Words({ text, accent = false }) {
@@ -68,91 +67,9 @@ function Words({ text, accent = false }) {
 }
 
 /** Official artwork, boxed before it loads, never announced. */
-const Art = ({ id, className = '', imgRef }) => (
-    <img ref={imgRef} src={getPokemonArtworkSpriteUrl(id)} alt="" width={240} height={240} decoding="async" draggable={false} className={className} />
+const Art = ({ id, shiny = false, className = '', imgRef }) => (
+    <img ref={imgRef} src={getPokemonArtworkSpriteUrl(id, { shiny })} alt="" width={240} height={240} decoding="async" draggable={false} className={className} />
 );
-
-/** The tour: real screens of the app as stories — a card turning in, a caption, the mascot's pose beside it. */
-function JourneyTour({ t, reduced, onLook, onDone, onIndex, children }) {
-    const [index, setIndex] = useState(0);
-    const stageRef = useRef(null);
-    const segRefs = useRef([]);
-    const dir = useRef(1);
-    const look = useRef(onLook);
-    look.current = onLook;
-    const done = useRef(onDone);
-    done.current = onDone;
-    const indexRef = useRef(onIndex);
-    indexRef.current = onIndex;
-
-    useEffect(() => { JOURNEY_TOUR.forEach((item) => { const img = new Image(); img.src = tourImage(item.image); }); }, []);
-
-    useEffect(() => {
-        const item = JOURNEY_TOUR[index];
-        look.current(item);
-        indexRef.current?.(index);
-        const stage = stageRef.current;
-        if (!stage) return undefined;
-        const old = stage.lastElementChild;
-        const card = document.createElement('div');
-        card.className = 'fj-shot';
-        const img = document.createElement('img');
-        img.src = tourImage(item.image);
-        img.alt = '';
-        img.decoding = 'async';
-        card.append(img);
-        stage.append(card);
-        const glide = cssVar('--ease-glide', 'ease-out');
-        if (!reduced) {
-            card.animate([
-                { transform: `translateX(${70 * dir.current}%) rotateY(${-38 * dir.current}deg) scale(0.86)`, opacity: 0 },
-                { transform: 'none', opacity: 1 },
-            ], { duration: 760, easing: glide });
-        }
-        if (old) {
-            if (reduced) old.remove();
-            else {
-                old.animate([
-                    { transform: 'none', opacity: 1 },
-                    { transform: `translateX(${-70 * dir.current}%) rotateY(${38 * dir.current}deg) scale(0.86)`, opacity: 0 },
-                ], { duration: 520, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' }).finished.then(() => old.remove(), () => old.remove());
-            }
-        }
-        segRefs.current.forEach((seg, k) => {
-            if (!seg) return;
-            seg.getAnimations().forEach((a) => a.cancel());
-            seg.style.transform = `scaleX(${k < index ? 1 : 0})`;
-        });
-        const seg = segRefs.current[index];
-        if (seg && !reduced) seg.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: TOUR_MS, easing: 'linear', fill: 'forwards' });
-        else if (seg) seg.style.transform = 'scaleX(1)';
-        const timer = setTimeout(() => {
-            if (index + 1 >= JOURNEY_TOUR.length) done.current();
-            else { dir.current = 1; setIndex(index + 1); }
-        }, TOUR_MS);
-        return () => clearTimeout(timer);
-    }, [index, reduced]);
-
-    const step = (by) => {
-        dir.current = by;
-        const next = index + by;
-        if (next >= JOURNEY_TOUR.length) done.current();
-        else setIndex(Math.max(0, next));
-    };
-    return (
-        <>
-            <div className="fj-segs" data-s aria-hidden="true">
-                {JOURNEY_TOUR.map((s, k) => <i key={s.id}><b ref={(n) => { segRefs.current[k] = n; }} /></i>)}
-            </div>
-            <div className="fj-tour" data-s>
-                <div className="fj-tour__stage" ref={stageRef} aria-hidden="true" />
-                <button type="button" className="fj-tour__zone fj-tour__zone--prev" onClick={() => step(-1)} aria-label={t('journey.tour.prev')} />
-                <button type="button" className="fj-tour__zone fj-tour__zone--next" onClick={() => step(1)} aria-label={t('journey.tour.next')} />
-            </div>
-            {children}
-        </>
-    );
-}
 
 export function FirstJourney() {
     const { t } = useTranslation();
@@ -163,35 +80,56 @@ export function FirstJourney() {
     const closeStore = useOnboardingStore((s) => s.close);
     const saved = useAuthStore((s) => s.trainerProfile);
     const setTrainerProfile = useAuthStore((s) => s.setTrainerProfile);
-    const isAnonymousNow = useAuthStore((s) => s.isAnonymous);
+    const savedPartnerId = useAuthStore((s) => s.greetingPokemonId);
+    const savedPartnerShiny = useAuthStore((s) => s.greetingPokemonIsShiny);
+    const setGreetingPokemon = useAuthStore((s) => s.setGreetingPokemon);
     const savedName = useAuthStore((s) => s.displayName);
 
-    // Decided once per opening: who this is does not change under them mid-flow.
     const [initialEntry] = useState(() => requestedEntry || (hasAnsweredProfile(saved) && source !== 'landing' ? 'redo' : 'welcome'));
     const [entry, setEntry] = useState(initialEntry);
-    const [wasGuest] = useState(() => isAnonymousNow !== false);
     const [reduced] = useState(prefersReduced);
 
+    // Step 1: live interactive synergy arena
+    const [sparkIds, setSparkIds] = useState(SPARK_START);
+    const [sparkTouched, setSparkTouched] = useState(false);
+
+    // Steps 2 & 3: answers
     const [interests, setInterests] = useState(() => (hasAnsweredProfile(saved) ? saved.interests : []));
-    const [level, setLevel] = useState(() => saved.competitiveLevel || null);
+    const [level, setLevel] = useState(() => saved.competitiveLevel || 'casual');
     const [format, setFormat] = useState(() => saved.battleFormat || 'both');
-    const steps = useMemo(() => journeySteps({ interests, entry, isAnonymous: wasGuest }), [interests, entry, wasGuest]);
+    const [partnerId, setPartnerId] = useState(() => savedPartnerId || PARTNER_CHOICES[0].id);
+    const [partnerShiny, setPartnerShiny] = useState(() => Boolean(savedPartnerShiny));
+    const shinyBurst = useShinyBurst();
+
+    const steps = useMemo(() => journeySteps({ interests, entry }), [interests, entry]);
     const [step, setStep] = useState(() => steps[0]);
     const stepRef = useRef(step);
     stepRef.current = step;
     const history = useRef([]);
+    const navDir = useRef(1);
 
     const answers = useMemo(() => journeyAnswers({ interests, level, format }), [interests, level, format]);
+    const activation = useMemo(() => journeyActivation(answers.profile), [answers.profile]);
     const xp = useMemo(() => journeyXp(), []);
 
-    // the mascot: one, alive, holding the stage while the journey is open
-    const [look, setLook] = useState(STEP_LOOK[steps[0]] || { mood: 'feliz' });
+    // Live analysis for Step 1 (`play`)
+    const sparkTeam = useMemo(() => SPARK_POOL.filter((p) => sparkIds.includes(p.id)), [sparkIds]);
+    const { teamAnalysis: sparkAnalysis } = useMemo(() => analyzeTeam(sparkTeam), [sparkTeam]);
+    const { score: sparkScore } = useMemo(() => rateTeam(sparkAnalysis, sparkTeam.length), [sparkAnalysis, sparkTeam.length]);
+    const sparkWeaknesses = useMemo(
+        () => Object.entries(sparkAnalysis.weaknesses).sort(([, a], [, b]) => b - a).slice(0, 3).map(([tp]) => tp),
+        [sparkAnalysis],
+    );
+    const sparkCoveredCount = useMemo(() => Object.keys(sparkAnalysis.defensiveCoverage || {}).length, [sparkAnalysis]);
+
+    // The persistent 3D mascot
+    const [look, setLook] = useState(STEP_LOOK[steps[0]] || { mood: 'animado' });
     const [gesture, setGesture] = useState({ name: null, id: 0 });
     const [confetti, setConfetti] = useState(false);
     const react = useCallback((name) => { if (name) setGesture((g) => ({ name, id: g.id + 1 })); }, []);
-    const hat = step === 'persona' || step === 'account' || step === 'done' ? answers.hat : null;
+    const hat = step === 'blueprint' || step === 'done' ? answers.hat : null;
 
-    // the account screen
+    // Account screen (used for `entry === 'signIn'`)
     const [mode, setMode] = useState(entry === 'signIn' ? 'signIn' : 'signUp');
     const [name, setName] = useState(savedName || '');
     const [email, setEmail] = useState('');
@@ -201,37 +139,51 @@ export function FirstJourney() {
     const [busy, setBusy] = useState(false);
     const [googleBusy, setGoogleBusy] = useState(false);
     const googleOn = useGoogleSignInAvailable();
-    const [tourIndex, setTourIndex] = useState(0);
     const [resetSentTo, setResetSentTo] = useState('');
-    const [outcome, setOutcome] = useState(null); // 'account' | 'signedIn' | 'guest' | null
+    const [outcome, setOutcome] = useState(null);
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
 
     const layerRef = useRef(null);
     const screenRef = useRef(null);
+    const stageRef = useRef(null);
     const botRef = useRef(null);
     const orbitRef = useRef(null);
     const cardRef = useRef(null);
     const evoRef = useRef(null);
     const flashRef = useRef(null);
-    const xpFillRef = useRef(null);
+    const partnerArtRef = useRef(null);
     const botBox = useRef({ x: 0, y: 0, size: 0 });
     const navBusy = useRef(false);
     const finished = useRef(false);
     const committed = useRef(false);
     const closing = useRef(false);
+    const firstPaint = useRef(true);
+
+    /* ---------- fluid cursor ambient light across the full canvas ---------- */
+    const handleCanvasPointerMove = useCallback((e) => {
+        if (reduced) return;
+        const el = layerRef.current;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        const px = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+        const py = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+        el.style.setProperty('--mx', `${px.toFixed(1)}%`);
+        el.style.setProperty('--my', `${py.toFixed(1)}%`);
+    }, [reduced]);
 
     /* ---------- the mascot's travel ---------- */
     const orbitFollow = useCallback(() => {
         const orbit = orbitRef.current;
         if (!orbit) return;
         const { x, y, size } = botBox.current;
-        const r = Math.max(56, size * 0.62);
-        const spots = [[-0.95, -0.15], [0.95, -0.2], [0, -1.05]];
+        const r = Math.max(54, size * 0.62);
+        const spots = [[-0.95, -0.16], [0.95, -0.16], [0, -0.78]];
         for (const img of orbit.children) {
             const [ox, oy] = spots[INTERESTS.indexOf(img.dataset.orb) % 3];
             img.style.left = `${x + ox * r}px`;
-            img.style.top = `${y + oy * r}px`;
+            img.style.top = `${Math.max(82, y + oy * r)}px`;
         }
     }, []);
 
@@ -241,25 +193,19 @@ export function FirstJourney() {
         if (!layer || !bot) return;
         const lr = layer.getBoundingClientRect();
         const base = bot.offsetWidth || 200;
-        let cx; let cy; let size;
         const slot = [...(screenRef.current?.querySelectorAll('[data-slot]') || [])].find((n) => n.getClientRects().length > 0);
-        if (stepRef.current === 'peek') {
-            size = Math.min(lr.width, 448) * 0.72;
-            cx = lr.width / 2;
-            cy = lr.height - size * 0.14;
-        } else if (slot) {
-            const r = slot.getBoundingClientRect();
-            size = Math.max(40, Math.min(r.width, r.height));
-            cx = r.left - lr.left + r.width / 2;
-            cy = r.top - lr.top + r.height / 2;
-        } else return;
+        if (!slot) return;
+        const r = slot.getBoundingClientRect();
+        const size = Math.max(40, Math.min(r.width, r.height));
+        const cx = r.left - lr.left + r.width / 2;
+        const cy = r.top - lr.top + r.height / 2;
         botBox.current = { x: cx, y: cy, size };
         const to = `translate(${cx - base / 2}px, ${cy - base / 2}px) scale(${size / base})`;
         const from = getComputedStyle(bot).transform;
         bot.getAnimations().forEach((a) => a.cancel());
         bot.style.transform = to;
         if (!instant && !reduced && from && from !== 'none') {
-            bot.animate([{ transform: from }, { transform: to }], { duration: 720, easing: cssVar('--ease-glide', 'ease-out') });
+            bot.animate([{ transform: from }, { transform: to }], { duration: 640, easing: cssVar('--ease-glide', 'ease-out') });
         }
         orbitFollow();
     }, [reduced, orbitFollow]);
@@ -278,23 +224,25 @@ export function FirstJourney() {
         if (fromImg && !reduced) {
             const a = fromImg.getBoundingClientRect();
             const b = img.getBoundingClientRect();
-            const dx = a.left - b.left; const dy = a.top - b.top;
+            const dx = a.left - b.left;
+            const dy = a.top - b.top;
             img.animate([
                 { transform: `translate(${dx}px, ${dy}px) scale(0.6)`, opacity: 0.4 },
-                { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 70}px) scale(1.15) rotate(-12deg)`, opacity: 1, offset: 0.55 },
+                { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 60}px) scale(1.12) rotate(-10deg)`, opacity: 1, offset: 0.55 },
                 { transform: 'none', opacity: 1 },
-            ], { duration: 760, easing: cssVar('--ease-glide', 'ease-out') });
+            ], { duration: 680, easing: cssVar('--ease-glide', 'ease-out') });
         }
     }, [orbitFollow, reduced]);
+
     const drop = useCallback((interest) => {
         const img = orbitRef.current?.querySelector(`[data-orb="${interest}"]`);
         if (!img) return;
         if (reduced) { img.remove(); return; }
-        img.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(3.5rem) scale(0.5) rotate(20deg)', opacity: 0 }], { duration: 380, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
+        img.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(3rem) scale(0.5) rotate(18deg)', opacity: 0 }], { duration: 320, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
             .finished.then(() => img.remove(), () => img.remove());
     }, [reduced]);
 
-    /* ---------- saving the answers ---------- */
+    /* ---------- saving answers & partner ---------- */
     const commitProfile = useCallback(() => {
         if (committed.current || entry === 'signIn') return;
         committed.current = true;
@@ -304,7 +252,10 @@ export function FirstJourney() {
         if (seed) {
             try {
                 if (!window.localStorage.getItem('tb-regulation')) window.localStorage.setItem('tb-regulation', seed);
-            } catch { /* the builder keeps its default */ }
+            } catch { /* builder keeps its default */ }
+        }
+        if (!answers.profile.interests.includes('competitive') && partnerId) {
+            setGreetingPokemon({ pokemonId: partnerId, isShiny: partnerShiny });
         }
         track('onboarding_complete', {
             persona: answers.persona?.id || 'none',
@@ -312,7 +263,7 @@ export function FirstJourney() {
             level: profile.competitiveLevel || 'none',
             source: source || 'unknown',
         });
-    }, [answers, entry, setTrainerProfile, source]);
+    }, [answers, entry, partnerId, partnerShiny, setGreetingPokemon, setTrainerProfile, source]);
 
     /* ---------- leaving ---------- */
     const close = useCallback((then) => {
@@ -325,9 +276,9 @@ export function FirstJourney() {
         if (bot) {
             const from = getComputedStyle(bot).transform;
             const base = bot.offsetWidth || 200;
-            bot.animate([{ transform: from }, { transform: `translate(${-base * 0.2}px, ${-base * 0.2}px) scale(0.18)`, opacity: 0.2 }], { duration: 520, easing: cssVar('--ease-glide', 'ease-out'), fill: 'forwards' });
+            bot.animate([{ transform: from }, { transform: `translate(${-base * 0.2}px, ${-base * 0.2}px) scale(0.18)`, opacity: 0.2 }], { duration: 420, easing: cssVar('--ease-glide', 'ease-out'), fill: 'forwards' });
         }
-        layer.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-1.5rem)' }], { duration: 420, delay: 80, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
+        layer.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-1rem)' }], { duration: 320, delay: 60, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
             .finished.then(done, done);
     }, [closeStore, reduced]);
 
@@ -339,9 +290,25 @@ export function FirstJourney() {
         close();
     }, [close, initialEntry, setTrainerProfile, source]);
 
+    const launchActivation = useCallback(() => {
+        commitProfile();
+        track('onboarding_activate', {
+            persona: activation.personaId,
+            target: activation.id,
+            mission: activation.missionId,
+        });
+        close(() => {
+            if (activation.missionId) {
+                useJourneyCoachStore.getState().startMission(activation.missionId);
+            }
+            navigate(activation.path);
+        });
+    }, [activation, close, commitProfile, navigate]);
+
     /* ---------- moving between screens ---------- */
-    const goTo = useCallback((next, { push = true } = {}) => {
+    const goTo = useCallback((next, { push = true, dir = 1 } = {}) => {
         if (!next || navBusy.current) return;
+        navDir.current = dir;
         const commit = () => {
             navBusy.current = false;
             if (push) history.current.push(stepRef.current);
@@ -350,94 +317,112 @@ export function FirstJourney() {
         const el = screenRef.current;
         if (reduced || !el) { commit(); return; }
         navBusy.current = true;
-        el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-1rem)' }], { duration: 200, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
+        const shift = dir > 0 ? '-1.25rem' : '1.25rem';
+        el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${shift})` }], { duration: 170, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
             .finished.then(commit, commit);
     }, [reduced]);
+
     const next = useCallback(() => {
         if (!canContinue(stepRef.current, { interests })) return;
         if (stepRef.current === 'level' && !level) setLevel('casual');
-        goTo(nextJourneyStep(steps, stepRef.current));
+        goTo(nextJourneyStep(steps, stepRef.current), { push: true, dir: 1 });
     }, [goTo, interests, level, steps]);
+
     const back = () => {
         const prev = history.current.pop();
         if (!prev) return;
-        if (!journeySteps({ interests, entry, isAnonymous: wasGuest }).includes(prev)) setEntry(initialEntry === 'signIn' ? 'welcome' : initialEntry);
-        goTo(prev, { push: false });
+        if (!journeySteps({ interests, entry }).includes(prev)) setEntry(initialEntry === 'signIn' ? 'welcome' : initialEntry);
+        goTo(prev, { push: false, dir: -1 });
     };
 
-    // each screen arriving: the mascot's look, the cascade, his travel, the focus
+    // Screen entrance choreography: place mascot BEFORE transforms, instant first paint
     useLayoutEffect(() => {
         const base = STEP_LOOK[step] || {};
         setLook({ mood: base.mood, pose: base.pose });
         if (base.play) react(base.play);
+        const isInitialEntry = firstPaint.current || (history.current.length === 0 && step === steps[0]);
+        firstPaint.current = false;
+        placeBot(isInitialEntry);
         const el = screenRef.current;
-        if (el && !reduced) {
+        if (el && !reduced && !isInitialEntry) {
             const glide = cssVar('--ease-glide', 'ease-out');
-            el.querySelectorAll('[data-s]').forEach((n, i) => n.animate(
-                [{ opacity: 0, transform: 'translateY(1.375rem)' }, { opacity: 1, transform: 'none' }],
-                { duration: 620, delay: 140 + i * 70, easing: glide, fill: 'backwards' },
-            ));
+            const dir = navDir.current;
+            el.querySelectorAll('[data-s]').forEach((n, i) => {
+                const delay = Math.min(220, 40 + i * 44);
+                n.animate(
+                    [{ opacity: 0, transform: `translate(${dir > 0 ? '0.625rem' : '-0.625rem'}, 0.375rem)` }, { opacity: 1, transform: 'none' }],
+                    { duration: 420, delay, easing: glide, fill: 'backwards' },
+                );
+            });
             el.querySelectorAll('.fj-w > span').forEach((n, i) => n.animate(
-                [{ transform: 'translateY(110%)' }, { transform: 'none' }],
-                { duration: 560, delay: 120 + i * 45, easing: glide, fill: 'backwards' },
+                [{ transform: 'translateY(105%)' }, { transform: 'none' }],
+                { duration: 420, delay: Math.min(180, 30 + i * 30), easing: glide, fill: 'backwards' },
             ));
         }
-        placeBot(false);
         const heading = el?.querySelector('h2');
         if (heading) requestAnimationFrame(() => heading.focus({ preventScroll: true }));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- once per screen
     }, [step]);
 
-    // what each screen does while it is up
+    // Keep mascot locked onto its slot whenever layout settles
     useEffect(() => {
-        if (step === 'peek') {
-            const id = setTimeout(() => goTo('hello'), 2600);
-            return () => clearTimeout(id);
-        }
+        const el = screenRef.current;
+        if (!el || typeof ResizeObserver === 'undefined') return undefined;
+        const ro = new ResizeObserver(() => placeBot(true));
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [step, placeBot]);
+
+    // Screen side effects (orbit cleanup, blueprint 3D tilt + confetti)
+    useEffect(() => {
         if (step === 'interests') {
             INTERESTS.filter((i) => interests.includes(i)).forEach((i) => fly(i, null));
             const orbit = orbitRef.current;
             return () => { if (orbit) [...orbit.children].forEach((img) => drop(img.dataset.orb)); };
         }
-        if (step === 'xp') {
-            const fill = xpFillRef.current;
-            if (fill) {
-                if (reduced) fill.style.transform = `scaleX(${xp.share})`;
-                else fill.animate([{ transform: 'scaleX(0)' }, { transform: `scaleX(${xp.share})` }], { duration: 1100, delay: 600, easing: cssVar('--ease-glide', 'ease-out'), fill: 'both' });
-            }
-            const id = setTimeout(() => react('hop'), 1300);
-            return () => clearTimeout(id);
-        }
-        if (step === 'persona') {
+        if (step === 'blueprint') {
             commitProfile();
             const card = cardRef.current;
             if (card && !reduced) {
-                card.animate([{ transform: 'perspective(56rem) rotateY(100deg) scale(0.9)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 820, delay: 200, easing: cssVar('--ease-pop', 'ease-out'), fill: 'backwards' });
+                card.animate(
+                    [{ transform: 'perspective(56rem) rotateY(70deg) scale(0.92)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+                    { duration: 760, delay: 140, easing: cssVar('--ease-pop', 'ease-out'), fill: 'backwards' },
+                );
             }
-            if (reduced) return undefined;
-            setConfetti(true);
-            const id = setTimeout(() => setConfetti(false), 2400);
-            return () => { clearTimeout(id); setConfetti(false); };
-        }
-        if (step === 'account') {
             const layer = layerRef.current;
             const tilt = (e) => {
-                const card = cardRef.current;
                 if (!card || reduced) return;
                 const r = card.getBoundingClientRect();
-                const x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / r.width));
-                const y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / r.height));
-                card.style.transform = `perspective(44rem) rotateX(${y * -8}deg) rotateY(${x * 10}deg)`;
+                const x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / Math.max(1, r.width)));
+                const y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / Math.max(1, r.height)));
+                card.style.transform = `perspective(48rem) rotateX(${y * -7}deg) rotateY(${x * 9}deg)`;
+                card.style.setProperty('--hx', `${((x + 1) * 50).toFixed(1)}%`);
+                card.style.setProperty('--hy', `${((y + 1) * 50).toFixed(1)}%`);
+            };
+            const resetTilt = () => {
+                if (!card) return;
+                card.style.transform = '';
+                card.style.setProperty('--hx', '35%');
+                card.style.setProperty('--hy', '25%');
             };
             layer?.addEventListener('pointermove', tilt);
-            return () => layer?.removeEventListener('pointermove', tilt);
+            layer?.addEventListener('pointerleave', resetTilt);
+            let confTimer;
+            if (!reduced) {
+                setConfetti(true);
+                confTimer = setTimeout(() => setConfetti(false), 2200);
+            }
+            return () => {
+                layer?.removeEventListener('pointermove', tilt);
+                layer?.removeEventListener('pointerleave', resetTilt);
+                if (confTimer) clearTimeout(confTimer);
+                setConfetti(false);
+            };
         }
-        if (step === 'done' && entry === 'redo') commitProfile();
         return undefined;
         // eslint-disable-next-line react-hooks/exhaustive-deps -- once per screen
     }, [step]);
 
-    // the layout moved (a rotation, the account form changing mode): the mascot follows
     useEffect(() => {
         const onResize = () => placeBot(true);
         window.addEventListener('resize', onResize);
@@ -445,14 +430,32 @@ export function FirstJourney() {
     }, [placeBot]);
     useLayoutEffect(() => { if (step === 'account') placeBot(false); }, [mode, step, placeBot]);
 
-    // Escape is a skip, like "Pular"
     useEffect(() => {
         const onKey = (e) => { if (e.key === 'Escape' && !busy) { e.preventDefault(); dismiss(); } };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [dismiss, busy]);
 
-    /* ---------- answers ---------- */
+    /* ---------- interactions ---------- */
+    const handleSparkToggle = (pokemon) => {
+        const nextIds = toggleSparkMember(sparkIds, pokemon.id);
+        setSparkIds(nextIds);
+        setSparkTouched(true);
+        const nextTeam = SPARK_POOL.filter((p) => nextIds.includes(p.id));
+        const { teamAnalysis } = analyzeTeam(nextTeam);
+        const weakCount = Object.keys(teamAnalysis.weaknesses || {}).length;
+        if (weakCount === 0 && nextTeam.length >= 3) {
+            setLook({ mood: 'radiante' });
+            react('jump');
+        } else if (nextIds.includes(pokemon.id)) {
+            setLook({ mood: 'animado' });
+            react('hop');
+        } else {
+            setLook({ mood: 'curioso' });
+            react('nod');
+        }
+    };
+
     const toggleInterest = (interest, fromImg) => {
         const on = !interests.includes(interest);
         setInterests((prev) => (on ? [...prev, interest] : prev.filter((i) => i !== interest)));
@@ -463,10 +466,11 @@ export function FirstJourney() {
         } else {
             drop(interest);
             const last = INTERESTS.filter((i) => i !== interest && interests.includes(i)).pop();
-            setLook({ mood: last ? INTEREST_MOOD[last] : 'feliz' });
+            setLook({ mood: last ? INTEREST_MOOD[last] : 'curioso' });
             react('nod');
         }
     };
+
     const pickLevel = (value) => {
         setLevel(value);
         setLook({ mood: LEVEL_MOOD[value] });
@@ -476,16 +480,43 @@ export function FirstJourney() {
         const src = getPokemonArtworkSpriteUrl(LEVEL_ART[value]);
         if (!img) return;
         if (reduced) { img.src = src; return; }
-        flash?.animate([{ opacity: 0, transform: 'scale(0.4)' }, { opacity: 1, transform: 'scale(1)', offset: 0.4 }, { opacity: 0, transform: 'scale(1.4)' }], { duration: 640, easing: 'cubic-bezier(0, 0, 0.2, 1)' });
-        img.animate([{ filter: 'brightness(1)', transform: 'scale(1)' }, { filter: 'brightness(0) invert(1)', transform: 'scale(1.12)' }], { duration: 220, easing: 'cubic-bezier(0, 0, 0.2, 1)', fill: 'forwards' })
+        flash?.animate([{ opacity: 0, transform: 'scale(0.4)' }, { opacity: 1, transform: 'scale(1)', offset: 0.4 }, { opacity: 0, transform: 'scale(1.35)' }], { duration: 560, easing: 'cubic-bezier(0, 0, 0.2, 1)' });
+        img.animate([{ filter: 'brightness(1)', transform: 'scale(1)' }, { filter: 'brightness(0) invert(1)', transform: 'scale(1.1)' }], { duration: 200, easing: 'cubic-bezier(0, 0, 0.2, 1)', fill: 'forwards' })
             .finished.then(() => {
                 img.src = src;
                 img.getAnimations().forEach((a) => a.cancel());
-                img.animate([{ filter: 'brightness(0) invert(1)', transform: 'scale(1.12)' }, { filter: 'brightness(1)', transform: 'scale(1)' }], { duration: 420, easing: cssVar('--ease-pop', 'ease-out') });
+                img.animate([{ filter: 'brightness(0) invert(1)', transform: 'scale(1.1)' }, { filter: 'brightness(1)', transform: 'scale(1)' }], { duration: 380, easing: cssVar('--ease-pop', 'ease-out') });
             }, () => { img.src = src; });
     };
 
-    /* ---------- the account ---------- */
+    const pickPartner = (choice) => {
+        setPartnerId(choice.id);
+        setLook({ mood: 'animado' });
+        react('hop');
+        const img = partnerArtRef.current;
+        if (img && !reduced) {
+            img.getAnimations().forEach((a) => a.cancel());
+            img.animate(
+                [{ transform: 'scale(0.84) translateY(0.5rem)', opacity: 0.6 }, { transform: 'none', opacity: 1 }],
+                { duration: 420, easing: cssVar('--ease-pop', 'ease-out') },
+            );
+        }
+    };
+
+    const togglePartnerShiny = () => {
+        const nextVal = !partnerShiny;
+        setPartnerShiny(nextVal);
+        if (nextVal) {
+            shinyBurst.fire();
+            setLook({ mood: 'brilhando' });
+            react('sparks');
+        } else {
+            setLook({ mood: 'feliz' });
+            react('nod');
+        }
+    };
+
+    /* ---------- account sign-in (returning trainers) ---------- */
     const auth = useAuthStore.getState;
     const showError = (message, field = null) => { setError(message); setErrorField(field); setLook({ mood: 'preocupado' }); react('shake'); };
     useEffect(() => {
@@ -493,23 +524,23 @@ export function FirstJourney() {
         if (errorField === 'email') emailRef.current?.focus();
         else if (errorField === 'password') passwordRef.current?.focus();
     }, [busy, error, errorField]);
+
     const switchMode = (m) => {
         setError(''); setErrorField(null); setResetSentTo('');
         setMode(m);
         setLook({ mood: m === 'signIn' ? 'feliz' : 'animado' });
         react('nod');
     };
-    // The name is kept at once and saved quietly: a save that cannot happen yet
-    // (the profile still loading, offline) is carried by the preferences sync —
-    // setDisplayName's error toast would land in the middle of the celebration.
+
     const saveName = () => {
         const clean = name.trim().slice(0, 24);
         if (!clean || clean === savedName) return;
         useAuthStore.setState({ displayName: clean });
         auth().savePreferences({ displayName: clean }).then((status) => {
             if (status === 'saved') auth().syncPublicProfile?.();
-        }, () => { /* the next preferences sync carries it */ });
+        }, () => {});
     };
+
     const submit = async (e) => {
         e.preventDefault();
         if (!EMAIL_RE.test(email.trim())) { showError(t('modals.authValidationErrorEmail'), 'email'); return; }
@@ -537,8 +568,7 @@ export function FirstJourney() {
             showError(prettifyAuthError(err, t), authErrorField(err));
         }
     };
-    // Google (2026-11-12): the popup is the whole sign-up. A name the trainer
-    // typed here wins over Google's; Google's fills the "Valeu, …!" otherwise.
+
     const googleGo = async () => {
         setError(''); setErrorField(null); setGoogleBusy(true);
         setLook({ mood: 'expectante' });
@@ -556,47 +586,53 @@ export function FirstJourney() {
             showError(prettifyAuthError(err, t));
         }
     };
-    const continueAsGuest = () => {
-        saveName();
-        setOutcome('guest');
-        goTo('done');
-    };
 
-    /* ---------- the screens ---------- */
+    /* ---------- visual tone & step chrome ---------- */
     const persona = answers.persona;
+    const chosenPartner = PARTNER_CHOICES.find((p) => p.id === partnerId) || PARTNER_CHOICES[0];
     const tone = (key) => typeColors[key] || 'var(--color-primary)';
-    const glow = step === 'interests' && interests.length ? tone(INTEREST_ART[interests[interests.length - 1]].tone)
-        : step === 'level' ? tone('dragon')
-            : step === 'xp' ? tone('electric')
-                : (step === 'persona' || step === 'account' || step === 'done') && persona && entry !== 'signIn' ? tone(persona.tone)
-                    : 'var(--color-primary)';
-    const progress = journeyProgress(steps, step);
+    const sparkLead = sparkTeam[sparkTeam.length - 1] || SPARK_POOL[0];
+    const glow = step === 'play'
+        ? tone(sparkLead.tone)
+        : step === 'interests' && interests.length
+            ? tone(INTEREST_ART[interests[interests.length - 1]].tone)
+            : step === 'level'
+                ? tone('dragon')
+                : step === 'partner'
+                    ? tone(chosenPartner.type)
+                    : (step === 'blueprint' || step === 'done') && persona && entry !== 'signIn'
+                        ? tone(persona.tone)
+                        : 'var(--color-primary)';
+
+    const stepMeta = journeyStepMeta(steps, step);
     const chrome = journeyHasChrome(step);
-    const picks = persona ? personaPicks(answers.profile, 2) : [];
+
+    const previewNavOrder = personaNavOrder(answers.profile);
+    const previewNavKey = previewNavOrder[0] || 'teamBuilding';
+    const previewHeroKind = interests.length
+        ? personaHero({ ...answers.profile, answeredAt: 1 })
+        : 'challenge';
+
     const accountTitle = mode === 'reset' ? ['accountResetTitle', 'accountResetAccent'] : mode === 'signIn' ? ['accountSignInTitle', 'accountSignInAccent'] : ['accountSignUpTitle', 'accountSignUpAccent'];
     const doneTitle = outcome === 'signedIn' || entry === 'signIn' ? ['doneSignInTitle', 'doneSignInAccent']
         : name.trim() ? ['doneTitle', 'doneAccent'] : ['doneGuestTitle', 'doneGuestAccent'];
-    const doneSub = outcome === 'signedIn' || entry === 'signIn' ? 'doneSubSignIn' : outcome === 'guest' ? 'doneSubGuest' : 'doneSub';
-    const heading = (keys) => (
+    const doneSub = outcome === 'signedIn' || entry === 'signIn' ? 'doneSubSignIn' : 'doneSub';
+
+    const heading = (keys, vars = {}) => (
         <h2 id={titleId} className="fj__title" tabIndex={-1}>
-            <Words text={t(`journey.${keys[0]}`)} /> <Words accent text={t(`journey.${keys[1]}`, { name: name.trim().split(/\s+/)[0] })} />
+            <Words text={t(`journey.${keys[0]}`, vars)} /> <Words accent text={t(`journey.${keys[1]}`, { name: name.trim().split(/\s+/)[0], ...vars })} />
         </h2>
     );
-    const cta = (label, onClick, { disabled = false, type = 'button' } = {}) => (
-        <button type={type} className="btn btn-primary btn-lg btn-block fj__cta" data-s onClick={onClick} disabled={disabled}>{label}</button>
+    const cta = (label, onClick, { disabled = false, type = 'button', icon = false } = {}) => (
+        <button type={type} className="btn btn-primary btn-lg btn-block fj__cta" data-s onClick={onClick} disabled={disabled}>
+            <span>{label}</span>
+            {icon && <ArrowRight aria-hidden="true" className="fj__cta-icon" />}
+        </button>
     );
 
-    // Each screen is a STAGE (the scene: the mascot's slot, the art, the
-    // media) and a TALK (the words and the controls). On a phone the two
-    // merge back into one column (`display: contents`, the order above the
-    // fold unchanged); from 64rem they are two panels — the stage large on
-    // the left, the conversation on the right (2026-11-12, Enzo: "no pc uma
-    // visão mais expandida"). A screen whose phone slot sits in the talk
-    // (the tour's caption, the level's action row) adds a desktop slot to
-    // its stage; the mascot flies to whichever is visible.
     const slot = (size) => <span className="fj__slot" style={{ '--slot': size }} data-slot aria-hidden="true" />;
-    const phoneSlot = <span className="fj__slot fj__slot--side fj__slot--phone" data-slot aria-hidden="true" />;
-    const deskSlot = <span className="fj__slot fj__slot--desk" data-slot aria-hidden="true" />;
+    const inlineSlot = <span className="fj__slot fj__slot--inline" data-slot aria-hidden="true" />;
+
     const google = googleOn && mode !== 'reset' && !resetSentTo && !busy && (
         <div className="fj-google" data-s>
             <GoogleButton onClick={googleGo} busy={googleBusy} label={t('modals.authGoogle')} busyLabel={t('modals.authGoogleWorking')} />
@@ -606,66 +642,192 @@ export function FirstJourney() {
 
     let stage = null;
     let talk = null;
-    if (step === 'peek') {
-        talk = (
-            <button type="button" className="fj-peek" onClick={() => goTo('hello')}>
-                <span className="fj-peek__hint" data-s>{t('journey.peekHint')}</span>
-            </button>
-        );
-    } else if (step === 'hello') {
+
+    if (step === 'play') {
+        const sparkStatusKey = sparkWeaknesses.length === 0 && sparkTeam.length >= 3
+            ? 'journey.play.verdictStrong'
+            : sparkTouched
+                ? 'journey.play.verdictReact'
+                : 'journey.play.verdictStart';
+        const isHighScore = sparkScore >= 90;
         stage = (
-            <>
-                {/* desktop: the site's own screens fanned behind him — what is here, at a glance */}
-                <span className="fj-fan" aria-hidden="true">
-                    {JOURNEY_TOUR.slice(0, 3).map((item, i) => (
-                        <img key={item.id} className={`fj-fan__shot fj-fan__shot--${i}`} src={tourImage(item.image)} alt="" decoding="async" />
-                    ))}
-                </span>
-                {slot('34%')}
-            </>
+            <div className="fj-spark">
+                <div className="fj-spark__top">
+                    {inlineSlot}
+                    <div className="fj-spark__bubble" aria-live="polite">
+                        <span className="fj-spark__bubble-head">
+                            <span className="fj-spark__bubble-kicker">
+                                <Sparkles aria-hidden="true" />
+                                {t('journey.play.liveTag')}
+                            </span>
+                            <PartyPips team={sparkTeam} />
+                        </span>
+                        <span className="fj-spark__bubble-text">{t(sparkStatusKey, { count: sparkTeam.length })}</span>
+                    </div>
+                </div>
+
+                {/* Desktop widescreen live battlefield: active Pokémon dance as animated GIFs on glowing type pedestals */}
+                <div className="fj-arena fj__desk-only" aria-hidden="true">
+                    <div className="fj-arena__head">
+                        <span className="fj-arena__tag">{t('journey.play.arenaLabel')}</span>
+                        <span className="fj-arena__hint">{t('journey.play.tapHint')}</span>
+                    </div>
+                    <div className="fj-arena__lineup">
+                        {sparkTeam.map((mon) => (
+                            <div
+                                key={mon.id}
+                                className="fj-arena__mon"
+                                style={{ '--tone': tone(mon.tone) }}
+                            >
+                                <span className="fj-arena__pedestal type-platform" style={{ '--card-type': tone(mon.tone) }}>
+                                    <AnimatedSprite id={mon.id} alt={mon.name} className="fj-arena__gif" />
+                                </span>
+                                <span className="fj-arena__name">{mon.name}</span>
+                                <span className="fj-arena__types">
+                                    {mon.types.map((tp) => <TypeChip key={tp} type={tp} size="sm" />)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="fj-spark__grid" role="group" aria-label={t('journey.play.gridLabel')}>
+                    {SPARK_POOL.map((mon) => {
+                        const active = sparkIds.includes(mon.id);
+                        return (
+                            <button
+                                key={mon.id}
+                                type="button"
+                                aria-pressed={active}
+                                className={`fj-spark__card ${active ? 'is-on' : ''}`}
+                                style={{ '--tone': tone(mon.tone) }}
+                                onClick={() => handleSparkToggle(mon)}
+                            >
+                                <span className="fj-spark__check" aria-hidden="true"><Check /></span>
+                                <span className="fj-spark__stage type-platform" style={{ '--card-type': tone(mon.tone) }}>
+                                    <Art id={mon.id} className="fj-spark__art" />
+                                </span>
+                                <span className="fj-spark__meta">
+                                    <span className="fj-spark__name">{mon.name}</span>
+                                    <span className="fj-spark__types" aria-hidden="true">
+                                        {mon.types.map((tp) => (
+                                            <img key={tp} src={typeIcons[tp]} alt="" width={14} height={14} />
+                                        ))}
+                                    </span>
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="fj-spark__meter" aria-live="polite">
+                    <div className="fj-spark__score">
+                        <span className="fj-spark__score-label">{t('journey.play.scoreLabel')}</span>
+                        <span className={`fj-spark__score-val ${isHighScore ? 'is-peak' : ''}`}>
+                            <RollingNumber value={sparkScore} />
+                            <em>/100</em>
+                        </span>
+                        <span className="fj-spark__bar" aria-hidden="true">
+                            <span
+                                className={`fj-spark__bar-fill ${isHighScore ? 'is-peak' : ''}`}
+                                style={{ transform: `scaleX(${Math.max(0.08, Math.min(1, sparkScore / 100))})` }}
+                            />
+                        </span>
+                    </div>
+                    <div className="fj-spark__weak">
+                        <span className="fj-spark__score-label">
+                            {sparkWeaknesses.length ? t('journey.play.weakLabel') : t('journey.play.coverLabel')}
+                        </span>
+                        <div className="fj-spark__chips">
+                            {sparkWeaknesses.length
+                                ? sparkWeaknesses.map((tp) => <TypeChip key={tp} type={tp} size="sm" />)
+                                : <span className="fj-spark__ok">{t('journey.play.noWeak', { n: sparkCoveredCount })}</span>}
+                        </div>
+                    </div>
+                    <div className="fj-spark__cov fj__desk-only">
+                        <span className="fj-spark__score-label">{t('journey.play.coverageBar')}</span>
+                        <strong className="fj-spark__cov-val">
+                            {t('journey.play.typesCovered', { n: sparkCoveredCount })}
+                        </strong>
+                    </div>
+                </div>
+            </div>
         );
         talk = (
             <>
                 <span className="fj__eyebrow" data-s>{t('journey.helloEyebrow')}</span>
-                {heading(['helloTitle', 'helloAccent'])}
-                <p className="fj__sub" data-s>{t('journey.helloSub')}</p>
-                <ul className="fj-here fj__desk-only" data-s>
-                    {JOURNEY_TOUR.map((item) => <li key={item.id}>{t(`journey.tour.${item.id}.title`)}</li>)}
-                </ul>
+                {heading(['playTitle', 'playAccent'])}
+                <p className="fj__sub" data-s>{t('journey.playSub')}</p>
                 <span className="fj__grow" />
-                {cta(t('journey.start'), next)}
+                {cta(t('journey.playCta'), next, { icon: true })}
                 <button type="button" className="fj__link" data-s onClick={() => { setEntry('signIn'); setMode('signIn'); goTo('account'); }}>
                     {t('journey.haveAccount')} <b>{t('journey.signIn')}</b>
                 </button>
             </>
         );
-    } else if (step === 'tour') {
+    } else if (step === 'interests') {
+        const previewArtId = persona?.art || (previewHeroKind === 'team' ? 445 : 150);
+        const previewTone = persona ? tone(persona.tone) : tone('psychic');
         stage = (
-            <JourneyTour
-                t={t}
-                reduced={reduced}
-                onLook={(item) => { setLook({ mood: item.mood, pose: item.pose }); react('nod'); }}
-                onDone={next}
-                onIndex={setTourIndex}
-            >
-                {deskSlot}
-            </JourneyTour>
-        );
-        talk = (
             <>
-                <h2 id={titleId} className="sr-only" tabIndex={-1}>{t('journey.tour.label')}</h2>
-                <div className="fj-tour__cap" data-s>
-                    {phoneSlot}
-                    <div className="fj-tour__text" key={JOURNEY_TOUR[tourIndex].id} aria-live="polite">
-                        <h3 className="fj-tour__title">{t(`journey.tour.${JOURNEY_TOUR[tourIndex].id}.title`)}</h3>
-                        <p className="fj-tour__desc">{t(`journey.tour.${JOURNEY_TOUR[tourIndex].id}.desc`)}</p>
+                <div className="fj-orbit-stage">
+                    <span className="fj-orbit-stage__rings" aria-hidden="true" />
+                    {slot('100%')}
+                </div>
+
+                {/* Mobile compact preview */}
+                <div className="fj-live-preview fj__mob-only" aria-live="polite">
+                    <span className="fj-live-preview__kicker">{t('journey.preview.eyebrow')}</span>
+                    <div className="fj-live-preview__grid">
+                        <div className="fj-live-preview__item">
+                            <span className="fj-live-preview__label">{t('journey.preview.home')}</span>
+                            <strong className="fj-live-preview__value">
+                                {previewHeroKind === 'team' ? t('journey.preview.heroTeam') : t('journey.preview.heroChallenge')}
+                            </strong>
+                        </div>
+                        <div className="fj-live-preview__item">
+                            <span className="fj-live-preview__label">{t('journey.preview.menu')}</span>
+                            <strong className="fj-live-preview__value">
+                                {t(`journey.preview.nav.${previewNavKey}`)}
+                            </strong>
+                        </div>
                     </div>
                 </div>
-                {cta(t('journey.continue'), next)}
+
+                {/* Desktop Stageshow miniature live app shell */}
+                <div className="fj-mini-app fj__desk-only" aria-live="polite" style={{ '--preview-tone': previewTone }}>
+                    <div className="fj-mini-app__bar">
+                        <span className="fj-mini-app__dots" aria-hidden="true"><i /><i /><i /></span>
+                        <span className="fj-mini-app__kicker">{t('journey.preview.eyebrow')}</span>
+                    </div>
+                    <div className="fj-mini-app__body">
+                        <div className="fj-mini-app__rail">
+                            <span className="fj-mini-app__col-label">{t('journey.preview.sidebarTitle')}</span>
+                            <ul>
+                                {previewNavOrder.map((navKey, idx) => (
+                                    <li key={navKey} className={idx === 0 ? 'is-top' : ''}>
+                                        <span className="fj-mini-app__rank">#{idx + 1}</span>
+                                        <span>{t(`journey.preview.nav.${navKey}`)}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="fj-mini-app__hero">
+                            <span className="fj-mini-app__col-label">{t('journey.preview.homeTitle')}</span>
+                            <div className="fj-mini-app__card">
+                                <div className="fj-mini-app__card-copy">
+                                    <strong>{previewHeroKind === 'team' ? t('journey.preview.heroTeam') : t('journey.preview.heroChallenge')}</strong>
+                                    <span>{previewHeroKind === 'team' ? t('journey.preview.heroSubTeam') : t('journey.preview.heroSubChallenge')}</span>
+                                </div>
+                                <span className="fj-mini-app__art-wrap">
+                                    <AnimatedSprite id={previewArtId} className="fj-mini-app__gif" />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </>
         );
-    } else if (step === 'interests') {
-        stage = slot('20%');
         talk = (
             <>
                 {heading(['interestsTitle', 'interestsAccent'])}
@@ -695,18 +857,48 @@ export function FirstJourney() {
                     })}
                 </div>
                 <span className="fj__grow" />
-                {cta(t('journey.continue'), next, { disabled: !canContinue('interests', { interests }) })}
+                {cta(t('journey.continue'), next, { disabled: !canContinue('interests', { interests }), icon: true })}
             </>
         );
     } else if (step === 'level') {
+        const activeLevel = level || 'casual';
         stage = (
-            <>
-                <div className="fj-evo" data-s aria-hidden="true">
+            <div className="fj-level-stage">
+                <div className="fj-evo" aria-hidden="true">
                     <span className="fj-evo__flash" ref={flashRef} />
-                    <Art id={LEVEL_ART[level || 'new']} imgRef={evoRef} className="fj-evo__art" />
+                    <Art id={LEVEL_ART[activeLevel]} imgRef={evoRef} className="fj-evo__art" />
                 </div>
-                {deskSlot}
-            </>
+
+                {/* Desktop interactive 3-stage evolution track with animated GIFs */}
+                <div className="fj-evo-track fj__desk-only" role="group" aria-label={t('onboarding.level.title')}>
+                    {COMPETITIVE_LEVELS.map((val, idx) => {
+                        const isActive = activeLevel === val;
+                        return (
+                            <React.Fragment key={val}>
+                                {idx > 0 && <span className="fj-evo-track__arrow" aria-hidden="true">→</span>}
+                                <button
+                                    type="button"
+                                    className={`fj-evo-node ${isActive ? 'is-on' : ''}`}
+                                    onClick={() => pickLevel(val)}
+                                >
+                                    <span className="fj-evo-node__sprite">
+                                        <AnimatedSprite id={LEVEL_ART[val]} still={!isActive} className="fj-evo-node__gif" />
+                                    </span>
+                                    <span>{t(`onboarding.levelShort.${val}`)}</span>
+                                </button>
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+
+                <div className="fj-level-unlock">
+                    {inlineSlot}
+                    <div className="fj-level-unlock__copy" aria-live="polite">
+                        <span className="fj-level-unlock__kicker">{t('journey.levelUnlock.eyebrow')}</span>
+                        <p>{t(`journey.levelUnlock.${activeLevel}`, { format: t(`onboarding.format.${format}`) })}</p>
+                    </div>
+                </div>
+            </div>
         );
         talk = (
             <>
@@ -719,69 +911,171 @@ export function FirstJourney() {
                         </button>
                     ))}
                 </div>
-                <span className="fj__label" data-s>{t('onboarding.format.label')}</span>
-                <div className="segmented segmented--block" role="group" aria-label={t('onboarding.format.label')} data-s>
-                    {BATTLE_FORMATS.map((value) => (
-                        <button key={value} type="button" className="segmented__item" aria-pressed={format === value} onClick={() => { setFormat(value); react('nod'); }}>
-                            {t(`onboarding.format.${value}`)}
-                        </button>
-                    ))}
+                <div className="fj-format-row" data-s>
+                    <span className="fj__label">{t('onboarding.format.label')}</span>
+                    <div className="segmented segmented--quiet segmented--block" role="group" aria-label={t('onboarding.format.label')}>
+                        {BATTLE_FORMATS.map((value) => (
+                            <button key={value} type="button" className="segmented__item" aria-pressed={format === value} onClick={() => { setFormat(value); react('nod'); }}>
+                                {t(`onboarding.format.${value}`)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
                 <span className="fj__grow" />
-                <div className="fj__row" data-s>
-                    {phoneSlot}
-                    <button type="button" className="btn btn-primary btn-lg btn-block fj__cta" onClick={next}>{t('journey.continue')}</button>
-                </div>
+                {cta(t('journey.buildPlan'), next, { icon: true })}
             </>
         );
-    } else if (step === 'xp') {
+    } else if (step === 'partner') {
         stage = (
-            <span className="fj__slot fj__slot--xp" style={{ '--slot': '28%' }} data-slot aria-hidden="true">
-                <span className="fj-bolt"><Zap /></span>
-            </span>
+            <div className="fj-partner-stage">
+                <div className="fj-partner-stage__hero type-platform" style={{ '--card-type': tone(chosenPartner.type) }}>
+                    <span className="fj-partner-stage__rings" aria-hidden="true" />
+                    <Art id={chosenPartner.id} shiny={partnerShiny} imgRef={partnerArtRef} className="fj-partner-stage__art" />
+                </div>
+                <div className="fj-partner-stage__controls">
+                    <div className="fj-partner-stage__foot">
+                        {inlineSlot}
+                        <div className="fj-partner-stage__meta">
+                            <span className="fj-partner-stage__name">{chosenPartner.name}</span>
+                            <TypeChip type={chosenPartner.type} size="sm" />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className={`fj-shiny-btn ${partnerShiny ? 'is-on' : ''} ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
+                        aria-pressed={partnerShiny}
+                        onClick={togglePartnerShiny}
+                    >
+                        {shinyBurst.burst}
+                        <Sparkles aria-hidden="true" />
+                        <span>{t('journey.partnerShiny')}</span>
+                    </button>
+                </div>
+
+                {/* Desktop live Home greeting preview with animated GIF */}
+                <div className="fj-greeting-preview fj__desk-only" style={{ '--tone': tone(chosenPartner.type) }}>
+                    <span className="fj-greeting-preview__kicker">{t('journey.partnerGreeting')}</span>
+                    <div className="fj-greeting-preview__row">
+                        <span className="fj-greeting-preview__avatar">
+                            <AnimatedSprite id={chosenPartner.id} alt={chosenPartner.name} className="fj-greeting-preview__gif" />
+                        </span>
+                        <span className="fj-greeting-preview__text">
+                            <strong>{t('journey.partnerHello', { name: chosenPartner.name })}</strong>
+                            <span>{t('journey.preview.heroChallenge')}</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
         );
         talk = (
             <>
-                {heading(['xpTitle', 'xpAccent'])}
-                <p className="fj__sub" data-s>{t('journey.xpSub', { mission: xp.mission, journey: xp.journey, badge: xp.badge })}</p>
-                <div className="fj-xp" data-s>
-                    <div className="fj-xp__row">
-                        <span>{t('journey.xpLevel', { n: 1 })}</span>
-                        <span><b>{xp.mission}</b> / {xp.toNext} XP</span>
-                    </div>
-                    <div className="fj-xp__track"><span className="fj-xp__fill" ref={xpFillRef} /></div>
-                    <span className="fj-xp__note">{t('journey.xpMission')} · +{xp.mission} XP</span>
+                {heading(['partnerTitle', 'partnerAccent'])}
+                <p className="fj__sub" data-s>{t('journey.partnerSub')}</p>
+                <div className="fj-partners" role="radiogroup" aria-labelledby={titleId}>
+                    {PARTNER_CHOICES.map((choice) => {
+                        const on = partnerId === choice.id;
+                        return (
+                            <button
+                                key={choice.id}
+                                type="button"
+                                role="radio"
+                                aria-checked={on}
+                                className={`fj-partner-tile ${on ? 'is-on' : ''}`}
+                                style={{ '--tone': tone(choice.type) }}
+                                data-s
+                                onClick={() => pickPartner(choice)}
+                            >
+                                <span className="fj-partner-tile__art">
+                                    <Art id={choice.id} shiny={on && partnerShiny} />
+                                </span>
+                                <span className="fj-partner-tile__name">{choice.name}</span>
+                            </button>
+                        );
+                    })}
                 </div>
-                <ul className="fj-perks" data-s>
-                    <li>{t('journey.xpPerks.streak')}</li>
-                    <li>{t('journey.xpPerks.badges')}</li>
-                    <li>{t('journey.xpPerks.journeys', { n: JOURNEYS.length })}</li>
-                </ul>
                 <span className="fj__grow" />
-                {cta(t('journey.continue'), next)}
+                {cta(t('journey.buildPlan'), next, { icon: true })}
             </>
         );
-    } else if (step === 'persona' && persona) {
+    } else if (step === 'blueprint' && persona) {
+        const useChosenPartner = !interests.includes('competitive') && Boolean(partnerId);
+        const passArtId = useChosenPartner ? partnerId : persona.art;
+        const passShiny = useChosenPartner && partnerShiny;
+        const personaName = t(`onboarding.personas.${persona.id}.name`);
+        const insightText = t(`journey.blueprint.insight.${persona.id}`, {
+            partner: chosenPartner.name,
+            format: t(`onboarding.format.${format}`),
+            level: t(`onboarding.levelShort.${level || 'casual'}`),
+        });
+        const passSquadIds = [
+            ...new Set([
+                ...(useChosenPartner ? [partnerId] : []),
+                ...persona.interests.map((i) => INTEREST_ART[i]?.art).filter(Boolean),
+                persona.art,
+            ]),
+        ].slice(0, 4);
         stage = (
-            <>
-                {slot('17%')}
-                <span className="fj__eyebrow" data-s>{t('onboarding.result.eyebrow')}</span>
+            <div className="fj-blueprint-stage" style={{ '--spark-color': tone(persona.tone) }}>
+                <span className="fj-blueprint-aura" aria-hidden="true" />
+                <div className="fj-blueprint-mascot">
+                    {slot('100%')}
+                </div>
                 <div className="fj-persona" ref={cardRef} style={{ '--tone': tone(persona.tone) }}>
-                    <div className="fj-persona__text">
-                        <span className="fj-persona__tags">{persona.interests.map((i) => t(`onboarding.interestShort.${i}`)).join(' · ')}</span>
-                        <h2 id={titleId} className="fj-persona__name" tabIndex={-1}>{t(`onboarding.personas.${persona.id}.name`)}</h2>
-                        <p className="fj-persona__tag">{t(`onboarding.personas.${persona.id}.tagline`)}</p>
+                    <div className="fj-persona__main">
+                        <div className="fj-persona__text">
+                            <span className="fj-persona__tags">
+                                {persona.interests.map((i) => t(`onboarding.interestShort.${i}`)).join(' · ')}
+                            </span>
+                            <p className="fj-persona__name">{personaName}</p>
+                            <p className="fj-persona__tag">{t(`onboarding.personas.${persona.id}.tagline`)}</p>
+                        </div>
+                        <Art id={passArtId} shiny={passShiny} className="fj-persona__art" />
                     </div>
-                    <Art id={persona.art} className="fj-persona__art" />
+                    <div className="fj-persona__squad fj__desk-only" aria-hidden="true">
+                        {passSquadIds.map((id) => (
+                            <span key={id} className="fj-persona__squad-mon">
+                                <AnimatedSprite id={id} className="fj-persona__squad-gif" />
+                            </span>
+                        ))}
+                    </div>
+                    <span className="fj-persona__foil" aria-hidden="true" />
                     <span className="fj-persona__shine" aria-hidden="true" />
                 </div>
-            </>
+                <p className="fj-insight" style={{ '--tone': tone(persona.tone) }} data-s>{insightText}</p>
+            </div>
         );
         talk = (
             <>
-                <p className="fj__sub" data-s>{t('onboarding.result.change')}</p>
+                <span className="fj__eyebrow" data-s>{t('journey.blueprint.eyebrow')}</span>
+                {heading(['blueprintTitle', 'blueprintAccent'], { persona: personaName })}
+                <ul className="fj-plan" data-s>
+                    <li className="fj-plan__item">
+                        <span className="fj-plan__icon"><LayoutGrid aria-hidden="true" /></span>
+                        <span className="fj-plan__copy">
+                            <strong>{t('journey.blueprint.homeTitle')}</strong>
+                            <span>{activation.heroKind === 'team' ? t('journey.preview.heroTeam') : t('journey.preview.heroChallenge')}</span>
+                        </span>
+                    </li>
+                    <li className="fj-plan__item">
+                        <span className="fj-plan__icon"><Compass aria-hidden="true" /></span>
+                        <span className="fj-plan__copy">
+                            <strong>{t('journey.blueprint.menuTitle')}</strong>
+                            <span>{t(`journey.preview.nav.${activation.navTop}`)}</span>
+                        </span>
+                    </li>
+                    <li className="fj-plan__item">
+                        <span className="fj-plan__icon"><Target aria-hidden="true" /></span>
+                        <span className="fj-plan__copy">
+                            <strong>{t('journey.blueprint.missionTitle')}</strong>
+                            <span>{t(`journey.blueprint.mission.${activation.id}`)}</span>
+                        </span>
+                    </li>
+                </ul>
                 <span className="fj__grow" />
-                {cta(t('journey.continue'), next)}
+                {cta(t(`journey.blueprint.cta.${activation.id}`), launchActivation, { icon: true })}
+                <button type="button" className="fj__link" data-s onClick={() => close()}>
+                    {t('journey.blueprint.goHome')}
+                </button>
             </>
         );
     } else if (step === 'account') {
@@ -798,7 +1092,7 @@ export function FirstJourney() {
                     </span>
                     <span className="fj-card__level">{t('journey.xpLevel', { n: 1 })}</span>
                 </div>
-                {slot('12%')}
+                {slot('36%')}
             </>
         );
         talk = (
@@ -882,59 +1176,35 @@ export function FirstJourney() {
                         )}
                     </div>
                 )}
-                {!busy && entry !== 'signIn' && wasGuest && (
-                    <button type="button" className="btn btn-ghost btn-block" data-s onClick={continueAsGuest}>{t('journey.guest')}</button>
-                )}
             </>
         );
     } else if (step === 'done') {
-        const rows = persona && entry !== 'signIn' ? [
-            { key: 'persona', label: t(`onboarding.personas.${persona.id}.name`), art: persona.art, tone: persona.tone },
-            ...persona.interests.slice(0, 2).map((i) => ({ key: i, label: t(`onboarding.interests.${i}.title`), art: INTEREST_ART[i].art, tone: INTEREST_ART[i].tone })),
-        ] : [];
-        stage = slot('26%');
+        stage = slot('42%');
         talk = (
             <>
                 {heading(doneTitle)}
                 <p className="fj__sub" data-s>{t(`journey.${doneSub}`)}</p>
-                {rows.length > 0 && (
-                    <ul className="fj-sum">
-                        {rows.map((row) => (
-                            <li key={row.key} className="fj-sum__row" data-s style={{ '--tone': tone(row.tone) }}>
-                                <span className="fj-sum__art"><Art id={row.art} /></span>
-                                <span className="fj-sum__label">{row.label}</span>
-                                <span className="fj-check is-on" aria-hidden="true"><Check /></span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                {picks.length > 0 && (
-                    <nav className="fj-picks" aria-label={t('journey.donePicks')} data-s>
-                        {picks.map((key) => (
-                            <button key={key} type="button" className="fj-pick" onClick={() => close(() => navigate(PICK_DESTINATIONS[key].path))}>
-                                <span className="fj-pick__title">{t(PICK_DESTINATIONS[key].labelKey)}</span>
-                                <span className="fj-pick__desc">{t(`onboarding.picks.${key}`)}</span>
-                            </button>
-                        ))}
-                    </nav>
-                )}
                 <span className="fj__grow" />
-                {cta(t('journey.doneCta'), () => close())}
+                {cta(t('journey.doneCta'), () => close(), { icon: true })}
             </>
         );
     }
 
-    const peek = step === 'peek';
     return (
         <div
             ref={layerRef}
-            className={`fj${peek ? ' is-peek' : ''}`}
+            className="fj"
             role="dialog"
             aria-modal="true"
-            aria-labelledby={peek ? undefined : titleId}
-            aria-label={peek ? t('onboarding.dialogLabel') : undefined}
+            aria-labelledby={titleId}
+            onPointerMove={handleCanvasPointerMove}
             style={{ '--fj-glow': glow, '--fj-electric': typeColors.electric }}
         >
+            <div className="fj__atmosphere" aria-hidden="true">
+                <span className="fj__orb-glow fj__orb-glow--a" />
+                <span className="fj__orb-glow fj__orb-glow--b" />
+                <span className="fj__ball-ring" />
+            </div>
             <div className="fj__col">
                 <div className={`fj__bar${chrome ? '' : ' is-quiet'}`}>
                     {chrome && history.current.length > 0 ? (
@@ -942,13 +1212,37 @@ export function FirstJourney() {
                             <ArrowLeft aria-hidden="true" />
                         </button>
                     ) : <span className="fj__back" aria-hidden="true" />}
-                    <span className="fj__progress" aria-hidden="true"><span className="fj__progress-fill" style={{ transform: `scaleX(${progress})` }} /></span>
-                    {step !== 'done' && (
+
+                    <div
+                        className="fj__steps"
+                        role="progressbar"
+                        aria-valuemin={1}
+                        aria-valuemax={stepMeta.total}
+                        aria-valuenow={stepMeta.index + 1}
+                        aria-label={t('onboarding.progress', { n: stepMeta.index + 1, total: stepMeta.total })}
+                    >
+                        {Array.from({ length: stepMeta.total }, (_, idx) => (
+                            <span
+                                key={idx}
+                                className={`fj__step-pip ${idx < stepMeta.index ? 'is-done' : idx === stepMeta.index ? 'is-active' : ''}`}
+                            />
+                        ))}
+                    </div>
+
+                    {step !== 'blueprint' && step !== 'done' ? (
                         <button type="button" className="fj__skip" onClick={dismiss}>{t('onboarding.skip')}</button>
+                    ) : (
+                        <span className="fj__step-count" aria-hidden="true">
+                            {stepMeta.index + 1}/{stepMeta.total}
+                        </span>
                     )}
                 </div>
                 <div className={`fj__screen fj__screen--${step}`} key={step} ref={screenRef}>
-                    {stage && <div className="fj__stage">{stage}</div>}
+                    {stage && (
+                        <div className="fj__stage" ref={stageRef}>
+                            {stage}
+                        </div>
+                    )}
                     <div className="fj__talk">{talk}</div>
                 </div>
             </div>

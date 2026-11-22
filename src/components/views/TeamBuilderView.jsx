@@ -1045,7 +1045,7 @@ export function TeamBuilderView({
                         )}
                     </section>
 
-                    <BuilderCoach teamSize={currentTeam.length} />
+                    <BuilderCoach teamSize={currentTeam.length} onOpenGuide={() => setIsOnboardingOpen(true)} />
                     <section className="card tb-analysis">
                         <div role="tablist" aria-label={t('builder.analysisTitle')} className="tabs">
                             {[

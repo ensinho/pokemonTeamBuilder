@@ -1,25 +1,31 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { ArrowRight, ChevronDown, ChevronUp, MessageSquarePlus, X } from 'lucide-react';
 
 import { appId } from '../constants/firebase';
 import { AnchoredPopover } from './AnchoredPopover';
 import { Mascot } from './Mascot';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTable } from '../i18n/catalog';
+import { useOnboardingStore } from '../store/useOnboardingStore';
+import '../styles/page-guide.css';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
 export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToast }) {
     const { t, language } = useTranslation();
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
+    const [showSuggest, setShowSuggest] = useState(false);
     const [suggestionEmail, setSuggestionEmail] = useState(userEmail || '');
     const [suggestionText, setSuggestionText] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [sent, setSent] = useState(false);
     const triggerRef = useRef(null);
     const popoverRef = useRef(null);
-    
+
     const guide = getTable(language)?.guide?.[pageKey] || getTable('en')?.guide?.[pageKey];
 
     useEffect(() => {
@@ -28,6 +34,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
         setSuggestionEmail(userEmail || '');
         setSuggestionText('');
         setSent(false);
+        setShowSuggest(false);
 
         const handleOutside = (event) => {
             if (triggerRef.current?.contains(event.target) || popoverRef.current?.contains(event.target)) {
@@ -104,91 +111,126 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
     const titleText = t('guide.titleText', { page: guide.title });
     const ariaLabelText = t('guide.ariaLabel', { page: guide.title });
 
+    const quickAction = pageKey === 'home'
+        ? {
+            label: t('guide.quickAction.profile'),
+            onClick: () => {
+                setIsOpen(false);
+                useOnboardingStore.getState().open('guide', { entry: 'redo' });
+            },
+        }
+        : pageKey !== 'journeys'
+            ? {
+                label: t('guide.quickAction.journeys'),
+                onClick: () => {
+                    setIsOpen(false);
+                    navigate('/journeys');
+                },
+            }
+            : null;
+
     return (
-        <div className="inline-flex items-center">
+        <div className="page-guide">
             <button
                 ref={triggerRef}
                 type="button"
                 onClick={() => setIsOpen((value) => !value)}
                 aria-label={ariaLabelText}
                 aria-expanded={isOpen}
-                className={`touch-target inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-surface-hover hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isOpen ? 'bg-primary-soft text-primary' : 'bg-transparent text-muted'}`}
+                className={`page-guide__trigger touch-target ${isOpen ? 'is-open' : ''}`}
             >
-                {/* The mascot is the app's voice for tips (2026-10-17). */}
-                <Mascot size="xs" />
+                <Mascot size="xs" mood={isOpen ? 'curioso' : undefined} />
             </button>
 
             <AnchoredPopover
                 isOpen={isOpen}
                 anchorRef={triggerRef}
                 popoverRef={popoverRef}
-                className="w-[min(20rem,calc(100vw-1.5rem))] rounded-xl shadow-2xl flex flex-col"
-                style={{
-                    backgroundColor: 'var(--color-surface)',
-                    border: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
-                }}
+                className="page-guide__popover"
                 role="dialog"
                 ariaLabel={ariaLabelText}
                 viewportPadding={12}
             >
-                <div className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Mascot size="xs" />
-                        <h4 className="text-sm font-bold text-primary">
-                            {titleText}
-                        </h4>
+                <header className="page-guide__head">
+                    <div className="page-guide__identity">
+                        <Mascot size="xs" mood="curioso" />
+                        <h4 className="page-guide__title">{titleText}</h4>
                     </div>
-                    <ul className="space-y-2">
+                    <button
+                        type="button"
+                        className="page-guide__close"
+                        onClick={() => setIsOpen(false)}
+                        aria-label={t('common.close')}
+                    >
+                        <X aria-hidden="true" />
+                    </button>
+                </header>
+
+                <div className="page-guide__body">
+                    <ul className="page-guide__tips">
                         {guide.tips.map((tip, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm leading-snug text-fg">
-                                <span className="mt-0.5 shrink-0 text-2xs font-extrabold text-primary">✦</span>
+                            <li key={index} className="page-guide__tip">
+                                <span className="page-guide__bullet" aria-hidden="true">{index + 1}</span>
                                 <span>{tip}</span>
                             </li>
                         ))}
                     </ul>
+
+                    {quickAction && (
+                        <button type="button" className="page-guide__action" onClick={quickAction.onClick}>
+                            <span>{quickAction.label}</span>
+                            <ArrowRight aria-hidden="true" />
+                        </button>
+                    )}
                 </div>
 
-                <div
-                    className="px-4 py-3 rounded-b-xl border-t"
-                    style={{ borderColor: 'var(--color-surface-raised)', backgroundColor: 'color-mix(in srgb, var(--color-bg) 60%, transparent)' }}
-                >
+                <div className="page-guide__foot">
                     {sent ? (
-                        <p className="text-center text-xs font-semibold text-primary">
-                            {t('guide.successMsg')}
-                        </p>
+                        <p className="page-guide__sent" role="status">{t('guide.successMsg')}</p>
                     ) : (
                         <>
-                            <p className="mb-2 text-2xs text-muted">
-                                {t('guide.suggestionLabel')}
-                            </p>
-                            <form onSubmit={handleSendSuggestion} className="flex flex-col gap-2">
-                                <input
-                                    type="email"
-                                    value={suggestionEmail}
-                                    onChange={(event) => setSuggestionEmail(event.target.value.slice(0, 254))}
-                                    placeholder={t('guide.emailPlaceholder')}
-                                    autoComplete="email"
-                                    maxLength={254}
-                                    className="w-full rounded-lg bg-surface-raised px-3 py-1.5 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                />
-                                <div className="flex gap-2">
+                            <button
+                                type="button"
+                                className="page-guide__suggest-toggle"
+                                aria-expanded={showSuggest}
+                                onClick={() => setShowSuggest((v) => !v)}
+                            >
+                                <span className="inline-flex items-center gap-1.5">
+                                    <MessageSquarePlus aria-hidden="true" />
+                                    {t('guide.suggestionToggle')}
+                                </span>
+                                {showSuggest ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
+                            </button>
+                            {showSuggest && (
+                                <form onSubmit={handleSendSuggestion} className="page-guide__form">
                                     <input
-                                        type="text"
-                                        value={suggestionText}
-                                        onChange={(event) => setSuggestionText(event.target.value.slice(0, 500))}
-                                        placeholder={t('guide.ideaPlaceholder')}
-                                        maxLength={500}
-                                        className="flex-1 rounded-lg bg-surface-raised px-3 py-1.5 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        type="email"
+                                        value={suggestionEmail}
+                                        onChange={(event) => setSuggestionEmail(event.target.value.slice(0, 254))}
+                                        placeholder={t('guide.emailPlaceholder')}
+                                        autoComplete="email"
+                                        maxLength={254}
+                                        className="page-guide__input"
                                     />
-                                    <button
-                                        type="submit"
-                                        disabled={isSending || !db || !userId}
-                                        className="btn btn-primary btn-sm"
-                                    >
-                                        {isSending ? t('guide.sendingBtn') : t('guide.sendBtn')}
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="page-guide__row">
+                                        <input
+                                            type="text"
+                                            value={suggestionText}
+                                            onChange={(event) => setSuggestionText(event.target.value.slice(0, 500))}
+                                            placeholder={t('guide.ideaPlaceholder')}
+                                            maxLength={500}
+                                            className="page-guide__input"
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={isSending || !db || !userId}
+                                            className="btn btn-primary btn-sm"
+                                        >
+                                            {isSending ? t('guide.sendingBtn') : t('guide.sendBtn')}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </>
                     )}
                 </div>

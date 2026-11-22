@@ -5,6 +5,8 @@ import '../styles/consent-banner.css';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAnalyticsConsent } from '../hooks/useAnalyticsConsent';
 import { analyticsAvailable } from '../services/analytics';
+import { useJourneyCoachStore } from '../store/useJourneyCoachStore';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 
 /**
  * The analytics cookie question (2026-10-30, LGPD). Asked once per device,
@@ -18,8 +20,10 @@ import { analyticsAvailable } from '../services/analytics';
 export function ConsentBanner() {
     const { t } = useTranslation();
     const [consent, setConsent] = useAnalyticsConsent();
+    const hasCoach = useJourneyCoachStore((s) => Boolean(s.missionId));
+    const isOnboarding = useOnboardingStore((s) => s.isOpen);
 
-    if (consent !== null || !analyticsAvailable()) return null;
+    if (consent !== null || !analyticsAvailable() || hasCoach || isOnboarding) return null;
 
     return (
         <section className="consent-banner" role="region" aria-labelledby="consent-banner-title">

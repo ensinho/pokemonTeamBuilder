@@ -736,7 +736,7 @@ export const MobileTeamBuilderView = ({
                             )}
                         </div>
                         {teamSize > 0 && <TeamShareRow onImage={handleShareTeam} className="mt-2" />}
-                        <BuilderCoach teamSize={teamSize} className="mt-2" />
+                        <BuilderCoach teamSize={teamSize} onOpenGuide={onOpenOnboarding} className="mt-2" />
 
                         <div className="team-builder-mobile__composer-analysis">
                             {teamSize === 0 ? (

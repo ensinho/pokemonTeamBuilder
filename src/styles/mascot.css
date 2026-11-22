@@ -349,6 +349,13 @@
     line-height: 1.45;
 }
 
+.builder-coach__action {
+    display: inline-flex;
+    margin-top: var(--space-1_5);
+    font-size: var(--text-xs);
+    font-weight: 700;
+}
+
 .builder-coach__close {
     position: absolute;
     top: var(--space-2);
