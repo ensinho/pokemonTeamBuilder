@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef,
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Compass, LayoutGrid, LockKeyhole, Mail, Sparkles, Target, UserRound } from 'lucide-react';
 
+import { AnimatedSprite } from '../AnimatedSprite';
 import { Mascot } from '../Mascot';
 import { Loader } from '../Loader';
 import { PartyPips } from '../PartyPips';
@@ -159,10 +160,10 @@ export function FirstJourney() {
     const closing = useRef(false);
     const firstPaint = useRef(true);
 
-    /* ---------- subtle cursor spotlight on the desktop stage ---------- */
-    const handleStagePointerMove = useCallback((e) => {
+    /* ---------- fluid cursor ambient light across the full canvas ---------- */
+    const handleCanvasPointerMove = useCallback((e) => {
         if (reduced) return;
-        const el = stageRef.current;
+        const el = layerRef.current;
         if (!el) return;
         const r = el.getBoundingClientRect();
         if (!r.width || !r.height) return;
@@ -394,9 +395,16 @@ export function FirstJourney() {
                 const r = card.getBoundingClientRect();
                 const x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / Math.max(1, r.width)));
                 const y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / Math.max(1, r.height)));
-                card.style.transform = `perspective(44rem) rotateX(${y * -6}deg) rotateY(${x * 8}deg)`;
+                card.style.transform = `perspective(48rem) rotateX(${y * -7}deg) rotateY(${x * 9}deg)`;
+                card.style.setProperty('--hx', `${((x + 1) * 50).toFixed(1)}%`);
+                card.style.setProperty('--hy', `${((y + 1) * 50).toFixed(1)}%`);
             };
-            const resetTilt = () => { if (card) card.style.transform = ''; };
+            const resetTilt = () => {
+                if (!card) return;
+                card.style.transform = '';
+                card.style.setProperty('--hx', '35%');
+                card.style.setProperty('--hy', '25%');
+            };
             layer?.addEventListener('pointermove', tilt);
             layer?.addEventListener('pointerleave', resetTilt);
             let confTimer;
@@ -658,7 +666,7 @@ export function FirstJourney() {
                     </div>
                 </div>
 
-                {/* Desktop widescreen live battlefield: active members stand on glowing type platforms */}
+                {/* Desktop widescreen live battlefield: active Pokémon dance as animated GIFs on glowing type pedestals */}
                 <div className="fj-arena fj__desk-only" aria-hidden="true">
                     <div className="fj-arena__head">
                         <span className="fj-arena__tag">{t('journey.play.arenaLabel')}</span>
@@ -672,7 +680,7 @@ export function FirstJourney() {
                                 style={{ '--tone': tone(mon.tone) }}
                             >
                                 <span className="fj-arena__pedestal type-platform" style={{ '--card-type': tone(mon.tone) }}>
-                                    <Art id={mon.id} className="fj-arena__art" />
+                                    <AnimatedSprite id={mon.id} alt={mon.name} className="fj-arena__gif" />
                                 </span>
                                 <span className="fj-arena__name">{mon.name}</span>
                                 <span className="fj-arena__types">
@@ -811,7 +819,9 @@ export function FirstJourney() {
                                     <strong>{previewHeroKind === 'team' ? t('journey.preview.heroTeam') : t('journey.preview.heroChallenge')}</strong>
                                     <span>{previewHeroKind === 'team' ? t('journey.preview.heroSubTeam') : t('journey.preview.heroSubChallenge')}</span>
                                 </div>
-                                <Art id={previewArtId} className="fj-mini-app__art" />
+                                <span className="fj-mini-app__art-wrap">
+                                    <AnimatedSprite id={previewArtId} className="fj-mini-app__gif" />
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -859,7 +869,7 @@ export function FirstJourney() {
                     <Art id={LEVEL_ART[activeLevel]} imgRef={evoRef} className="fj-evo__art" />
                 </div>
 
-                {/* Desktop interactive 3-stage evolution track (bidirectional!) */}
+                {/* Desktop interactive 3-stage evolution track with animated GIFs */}
                 <div className="fj-evo-track fj__desk-only" role="group" aria-label={t('onboarding.level.title')}>
                     {COMPETITIVE_LEVELS.map((val, idx) => {
                         const isActive = activeLevel === val;
@@ -871,7 +881,9 @@ export function FirstJourney() {
                                     className={`fj-evo-node ${isActive ? 'is-on' : ''}`}
                                     onClick={() => pickLevel(val)}
                                 >
-                                    <Art id={LEVEL_ART[val]} className="fj-evo-node__art" />
+                                    <span className="fj-evo-node__sprite">
+                                        <AnimatedSprite id={LEVEL_ART[val]} still={!isActive} className="fj-evo-node__gif" />
+                                    </span>
                                     <span>{t(`onboarding.levelShort.${val}`)}</span>
                                 </button>
                             </React.Fragment>
@@ -940,12 +952,12 @@ export function FirstJourney() {
                     </button>
                 </div>
 
-                {/* Desktop live Home greeting preview */}
+                {/* Desktop live Home greeting preview with animated GIF */}
                 <div className="fj-greeting-preview fj__desk-only" style={{ '--tone': tone(chosenPartner.type) }}>
                     <span className="fj-greeting-preview__kicker">{t('journey.partnerGreeting')}</span>
                     <div className="fj-greeting-preview__row">
                         <span className="fj-greeting-preview__avatar">
-                            <Art id={chosenPartner.id} shiny={partnerShiny} />
+                            <AnimatedSprite id={chosenPartner.id} alt={chosenPartner.name} className="fj-greeting-preview__gif" />
                         </span>
                         <span className="fj-greeting-preview__text">
                             <strong>{t('journey.partnerHello', { name: chosenPartner.name })}</strong>
@@ -995,23 +1007,41 @@ export function FirstJourney() {
             format: t(`onboarding.format.${format}`),
             level: t(`onboarding.levelShort.${level || 'casual'}`),
         });
+        const passSquadIds = [
+            ...new Set([
+                ...(useChosenPartner ? [partnerId] : []),
+                ...persona.interests.map((i) => INTEREST_ART[i]?.art).filter(Boolean),
+                persona.art,
+            ]),
+        ].slice(0, 4);
         stage = (
-            <div className="fj-blueprint-stage">
+            <div className="fj-blueprint-stage" style={{ '--spark-color': tone(persona.tone) }}>
+                <span className="fj-blueprint-aura" aria-hidden="true" />
                 <div className="fj-blueprint-mascot">
                     {slot('100%')}
                 </div>
                 <div className="fj-persona" ref={cardRef} style={{ '--tone': tone(persona.tone) }}>
-                    <div className="fj-persona__text">
-                        <span className="fj-persona__tags">
-                            {persona.interests.map((i) => t(`onboarding.interestShort.${i}`)).join(' · ')}
-                        </span>
-                        <p className="fj-persona__name">{personaName}</p>
-                        <p className="fj-persona__tag">{t(`onboarding.personas.${persona.id}.tagline`)}</p>
+                    <div className="fj-persona__main">
+                        <div className="fj-persona__text">
+                            <span className="fj-persona__tags">
+                                {persona.interests.map((i) => t(`onboarding.interestShort.${i}`)).join(' · ')}
+                            </span>
+                            <p className="fj-persona__name">{personaName}</p>
+                            <p className="fj-persona__tag">{t(`onboarding.personas.${persona.id}.tagline`)}</p>
+                        </div>
+                        <Art id={passArtId} shiny={passShiny} className="fj-persona__art" />
                     </div>
-                    <Art id={passArtId} shiny={passShiny} className="fj-persona__art" />
+                    <div className="fj-persona__squad fj__desk-only" aria-hidden="true">
+                        {passSquadIds.map((id) => (
+                            <span key={id} className="fj-persona__squad-mon">
+                                <AnimatedSprite id={id} className="fj-persona__squad-gif" />
+                            </span>
+                        ))}
+                    </div>
+                    <span className="fj-persona__foil" aria-hidden="true" />
                     <span className="fj-persona__shine" aria-hidden="true" />
                 </div>
-                <p className="fj-insight" data-s>{insightText}</p>
+                <p className="fj-insight" style={{ '--tone': tone(persona.tone) }} data-s>{insightText}</p>
             </div>
         );
         talk = (
@@ -1167,8 +1197,14 @@ export function FirstJourney() {
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
+            onPointerMove={handleCanvasPointerMove}
             style={{ '--fj-glow': glow, '--fj-electric': typeColors.electric }}
         >
+            <div className="fj__atmosphere" aria-hidden="true">
+                <span className="fj__orb-glow fj__orb-glow--a" />
+                <span className="fj__orb-glow fj__orb-glow--b" />
+                <span className="fj__ball-ring" />
+            </div>
             <div className="fj__col">
                 <div className={`fj__bar${chrome ? '' : ' is-quiet'}`}>
                     {chrome && history.current.length > 0 ? (
@@ -1203,7 +1239,7 @@ export function FirstJourney() {
                 </div>
                 <div className={`fj__screen fj__screen--${step}`} key={step} ref={screenRef}>
                     {stage && (
-                        <div className="fj__stage" ref={stageRef} onPointerMove={handleStagePointerMove}>
+                        <div className="fj__stage" ref={stageRef}>
                             {stage}
                         </div>
                     )}
