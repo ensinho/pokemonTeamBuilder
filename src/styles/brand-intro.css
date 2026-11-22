@@ -1,0 +1,200 @@
+/* The brand intro (2026-11-22) — components/brand/BrandIntro.jsx,
+   utils/brandIntro.js, docs/modules/brand_intro.md.
+
+   Layers, back to front: the plate (the night, a mascot silhouette scaled to
+   cover the frame), the scatter (corner ghosts and stickers), the hole (a
+   page-coloured silhouette that shrinks to let the night in), the word with
+   its orbit, the tagline. The entrance and the exit are Web Animations from
+   sampled keyframes; the loops below are CSS, `translate`/`rotate` only (they
+   compose with the animated `transform`), and stop with reduced motion. */
+
+.brand-intro {
+    --intro-page: var(--color-bg);
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-tooltip) + 1);
+    overflow: hidden;
+    background: var(--intro-page);
+    color: var(--intro-face);
+    font-family: var(--font-body);
+    pointer-events: none;
+}
+.brand-intro[data-leaving] { background: transparent; }
+
+.brand-intro--journey {
+    position: absolute;
+    z-index: 1;
+    background: none;
+}
+
+.bi-stage,
+.bi-scatter,
+.bi-centre {
+    position: absolute;
+    inset: 0;
+}
+
+.bi-plate,
+.bi-hole {
+    position: absolute;
+    will-change: transform;
+}
+.bi-plate svg,
+.bi-hole svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.bi-plate path { fill: var(--intro-ground); }
+.bi-hole path { fill: var(--intro-page); }
+
+/* ── Corner ghosts: the splash's two, cropped by the corners, with the
+      magenta rim offset toward the middle ─────────────────────────────── */
+.bi-corner {
+    position: absolute;
+    width: 21rem;
+    height: 21rem;
+}
+.bi-corner--a { top: -7.5rem; left: -8.5rem; rotate: 16deg; }
+.bi-corner--b { right: -7rem; bottom: -5rem; rotate: -18deg; }
+.bi-corner__in { display: block; width: 100%; height: 100%; will-change: transform; }
+.bi-ghost.mascot { display: block; width: 100%; height: 100%; }
+.bi-ghost .mascot__svg {
+    --m-fill: var(--intro-ghost);
+    --m-line: var(--intro-ghost);
+    --m-eye: var(--intro-face);
+    --m-mouth: var(--intro-face);
+    --m-blush: color-mix(in srgb, var(--mascot-heart) 55%, var(--intro-ghost));
+    --m-fang: var(--intro-ghost);
+    --m-fang-edge: transparent;
+}
+.bi-corner--a .bi-ghost { filter: drop-shadow(0.75rem 0.875rem 0 var(--intro-rim)); }
+.bi-corner--b .bi-ghost { filter: drop-shadow(-0.75rem -0.875rem 0 var(--intro-rim)); }
+
+/* ── Stickers ─────────────────────────────────────────────────────────── */
+.bi-decor {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--size);
+    height: var(--size);
+    translate: -50% -50%;
+}
+.bi-decor__pop,
+.bi-decor__float {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.bi-decor__pop { will-change: transform; }
+.bi-decor svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+.bi-decor svg path,
+.bi-decor svg rect,
+.bi-decor svg circle { fill: currentColor; }
+.bi-decor svg .bi-line { fill: none; stroke: currentColor; }
+.bi-tone--white { color: var(--intro-face); }
+.bi-tone--live { color: var(--brand-live); }
+.bi-tone--volt { color: var(--intro-volt); }
+.bi-decor svg .bi-ball__edge { fill: var(--brand-ink); }
+.bi-decor svg .bi-ball__top { fill: var(--brand-live); }
+.bi-decor svg .bi-ball__bottom { fill: var(--mascot-white); }
+
+/* ── The word, its orbit, the tagline ─────────────────────────────────── */
+.bi-centre {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-6);
+    padding: var(--space-6);
+}
+.bi-word {
+    position: relative;
+    width: min(34rem, 84vw);
+    transform-origin: 50% 50%;
+    will-change: transform;
+}
+.bi-word__land {
+    position: relative;
+    transform-origin: 50% 100%;
+    will-change: transform;
+}
+.bi-word__ink { will-change: clip-path; }
+.bi-wordmark {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.bi-orbit {
+    position: absolute;
+    left: -10%;
+    top: -80%;
+    width: 120%;
+    height: 260%;
+    overflow: visible;
+}
+.bi-orbit ellipse {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-dasharray: 0 200;
+    opacity: 0;
+}
+.bi-orbit__a { stroke: var(--intro-orbit); stroke-width: 0.5rem; }
+.bi-orbit__b { stroke: var(--intro-orbit-trail); stroke-width: 0.1875rem; }
+
+.bi-tag {
+    margin: 0;
+    padding: var(--space-1_5) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--intro-tag);
+    color: var(--intro-on-tag);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    will-change: transform, opacity;
+}
+
+/* The splash's wait, said once the scene has landed. */
+.bi-message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-8));
+    margin: 0;
+    padding-inline: var(--space-6);
+    color: var(--intro-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-align: center;
+    text-wrap: balance;
+    animation: bi-message-in var(--duration-slow) var(--ease-smooth) 1.5s both;
+}
+.brand-intro[data-leaving] .bi-message { opacity: 0; transition: opacity 120ms var(--ease-smooth); }
+@keyframes bi-message-in { from { opacity: 0; } }
+
+@media (min-width: 64rem) {
+    .bi-corner { width: 27rem; height: 27rem; }
+    .bi-corner--a { top: -9rem; left: -10rem; }
+    .bi-corner--b { right: -9rem; bottom: -7rem; }
+}
+
+/* ── Loops at rest: the ghosts bob, the stickers float ────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+    .bi-ghost { animation: bi-bob 3.4s var(--ease-smooth) infinite; }
+    .bi-corner--b .bi-ghost { animation-delay: -1.7s; }
+    .bi-decor__float { animation: bi-float calc(2.6s + var(--i) * 0.23s) var(--ease-smooth) infinite; animation-delay: calc(var(--i) * -0.4s); }
+    .brand-intro[data-leaving] .bi-ghost,
+    .brand-intro[data-leaving] .bi-decor__float { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bi-message { animation: none; }
+}
+@keyframes bi-bob { 50% { translate: 0 -0.5rem; rotate: 1.5deg; } }
+@keyframes bi-float { 50% { translate: 0 -0.375rem; rotate: 7deg; } }

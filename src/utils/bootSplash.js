@@ -22,17 +22,31 @@
  * it keeps the splash up for at least SPLASH_MIN_VISIBLE_MS so it can't blink.
  */
 
-/** The splash is invisible until this point (CSS animation delay). */
+import { INTRO_FULL_MS, INTRO_LEGIBLE_MS } from './brandIntro.js';
+
+/** The splash is invisible until this point (the brand intro's start delay). */
 export const SPLASH_REVEAL_MS = 300;
 
-/** Once revealed, the splash stays at least this long, so it never blinks. */
-export const SPLASH_MIN_VISIBLE_MS = 450;
+/**
+ * Once revealed, the splash stays at least this long, so it never blinks.
+ * Since the brand intro (2026-11-22) this is the moment its wordmark is
+ * legible: the app is never held for the show, only for a readable name.
+ */
+export const SPLASH_MIN_VISIBLE_MS = INTRO_LEGIBLE_MS;
+
+/** The device has seen the whole intro once (a DEVICE_KEYS entry: how the app opens here). */
+export const BRAND_INTRO_SEEN_KEY = 'ptb:brandIntroSeen';
+
+/**
+ * How long a revealed splash stays at least: the first intro on a device plays
+ * to its end (every piece landed), every later one only until the name reads.
+ */
+export function introMinVisibleMs(seenBefore) {
+    return seenBefore ? INTRO_LEGIBLE_MS : INTRO_FULL_MS;
+}
 
 /** Mobile ceiling: hard dismiss even if boot never settles. */
 export const SPLASH_MOBILE_MAX_MS = 6000;
-
-/** The earliest a splash that has been seen may leave, counted from boot. */
-const SEEN_FLOOR_MS = SPLASH_REVEAL_MS + SPLASH_MIN_VISIBLE_MS;
 
 /**
  * How much longer the splash should stay up, given that the boot gate for this
@@ -42,9 +56,10 @@ const SEEN_FLOOR_MS = SPLASH_REVEAL_MS + SPLASH_MIN_VISIBLE_MS;
  * @param {boolean} opts.isMobile     phone/tablet viewport
  * @param {number}  opts.elapsedMs    time since the app started booting
  * @param {boolean} opts.isBootSettled auth reconciled AND reference data loaded
+ * @param {number}  [opts.minVisibleMs] how long a revealed splash stays (introMinVisibleMs)
  * @returns {number} milliseconds to wait before dismissing the splash
  */
-export function splashHoldMs({ isMobile, elapsedMs, isBootSettled }) {
+export function splashHoldMs({ isMobile, elapsedMs, isBootSettled, minVisibleMs = SPLASH_MIN_VISIBLE_MS }) {
     const elapsed = Number.isFinite(elapsedMs) ? Math.max(0, elapsedMs) : 0;
 
     // Not settled yet: wait out the ceiling. The caller re-runs this when
@@ -54,18 +69,8 @@ export function splashHoldMs({ isMobile, elapsedMs, isBootSettled }) {
     // Ready before the splash faded in: leave without ever showing it.
     if (elapsed < SPLASH_REVEAL_MS) return 0;
 
-    return Math.max(0, SEEN_FLOOR_MS - elapsed);
-}
-
-/**
- * Progress-bar target for the splash, so the bar tracks the real wait instead
- * of racing to 100% and sitting there while the app is still loading.
- *
- * @returns {{ width: number, durationMs: number }}
- */
-export function splashProgress({ isMobile, isBootSettled }) {
-    if (isMobile && !isBootSettled) return { width: 90, durationMs: 1800 };
-    return { width: 100, durationMs: SPLASH_MIN_VISIBLE_MS };
+    // Seen: stay until the floor (counted from boot) so it never blinks.
+    return Math.max(0, SPLASH_REVEAL_MS + minVisibleMs - elapsed);
 }
 
 /**
@@ -85,4 +90,15 @@ export function splashProgress({ isMobile, isBootSettled }) {
  */
 export function skipsBootSplash({ appPath, isReturning }) {
     return appPath === '/' && !isReturning;
+}
+
+/**
+ * Progress-bar target for the current splash. Goes away when the brand intro
+ * replaces the splash in AppLayout (it has no bar: the orbit is the wait).
+ *
+ * @returns {{ width: number, durationMs: number }}
+ */
+export function splashProgress({ isMobile, isBootSettled }) {
+    if (isMobile && !isBootSettled) return { width: 90, durationMs: 1800 };
+    return { width: 100, durationMs: SPLASH_MIN_VISIBLE_MS };
 }
