@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T15:29:05.223Z",
+  "generatedAt": "2026-11-22T15:29:33.654Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -31,7 +31,7 @@
     "3": {
       "name": "Venusaur",
       "gen": "Champions VGC",
-      "overview": "Venusaur finds a niche on sun teams as a fast wallbreaker in NU. In sun, Venusaur can force progress against common defensive Pokemon such as Vaporeon, Wo-Chien, and Bellibolt, using them as setup fodder with Growth. Its Grass / Poison typing also gives it setup opportunities against Pokemon like Paldean Tauros-W and…",
+      "overview": "Venusaur is the premier offensive threat on RU sun teams. Nearly every serious sun team uses Venusaur because it is the best option for a Chlorophyll sweeper, and when other Chlorophyll Pokemon are used, they are almost always alongside Venusaur, not without it. Venusaur outspeeds the entire metagame in sun, including…",
       "sets": [
         {
           "name": "Chlorophyll Sweeper",
