@@ -197,6 +197,36 @@
 
 .journey.is-complete .journey__bar > i { background: var(--color-success); }
 
+/* Segmented progress track: crisp mission segments (Volt while open, Gold when complete). */
+.journey__bar--segmented {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--space-1_5);
+    height: 0.3125rem;
+    overflow: visible;
+    background: transparent;
+}
+
+.journey__bar--segmented > i {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-fg) 10%, transparent);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.journey__bar--segmented > i.is-filled {
+    background: var(--color-primary);
+    box-shadow: none;
+}
+
+.journey.is-complete .journey__bar--segmented > i.is-filled,
+.journey__bar--segmented.is-complete > i.is-filled {
+    background: var(--brand-gold);
+}
+
 .journey__missions {
     display: flex;
     flex-direction: column;
@@ -325,6 +355,24 @@ button.mission:active { background: var(--color-surface-active); }
 }
 
 /* ---- Home's journey card -------------------------------------------------- */
+
+.cozy-panel .mission,
+.journey .mission {
+    border: none;
+    background: var(--color-surface-raised);
+}
+
+.cozy-panel button.mission:hover,
+.journey button.mission:hover {
+    background: var(--color-surface-hover);
+}
+
+.journey-home .mascot-tip__bubble,
+.cozy-journey .mascot-tip__bubble {
+    border: none;
+    box-shadow: none;
+    background: var(--color-surface-raised);
+}
 
 .journey-home {
     display: flex;

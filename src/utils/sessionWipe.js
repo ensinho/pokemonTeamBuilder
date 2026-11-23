@@ -36,6 +36,8 @@ export const DEVICE_KEYS = new Set([
     'ptb:mascot',
     // the brand intro has played whole here once (utils/bootSplash.js): how the app opens on this device
     'ptb:brandIntroSeen',
+    // desktop Pokédex grid column density (4 / 6 / 8)
+    'ptb:pokedexCols',
 ]);
 
 // The PokéAPI cache (services/pokemonDataCache.js) is public data, not anyone's.

@@ -33,7 +33,6 @@ import {
     ThreadDetail,
     ForumHeader,
     ForumSidebar,
-    ForumExplorer,
     ForumDrawer,
     ForumRooms,
     ForumSupportCard,
@@ -272,6 +271,27 @@ export function FeedView({ showToast, navigate }) {
     const weeklyTeam = useMemo(() => teamOfTheWeek(topics, tournamentTeams), [topics, tournamentTeams]);
 
     const ownTopics = useMemo(() => topicsBy(topics, userId), [topics, userId]);
+
+    // Unique trainer names from active topics & messages for @mentions in TopicCreateModal.
+    const forumTrainerNames = useMemo(() => {
+        const seen = new Set();
+        const out = [];
+        for (const msg of messages) {
+            const name = String(msg?.creatorName || '').trim();
+            if (name && name !== 'Professor Oak' && !seen.has(name.toLowerCase())) {
+                seen.add(name.toLowerCase());
+                out.push(name);
+            }
+        }
+        for (const tp of topics) {
+            const name = String(tp?.creatorName || '').trim();
+            if (name && name !== 'Professor Oak' && !seen.has(name.toLowerCase())) {
+                seen.add(name.toLowerCase());
+                out.push(name);
+            }
+        }
+        return out;
+    }, [topics, messages]);
 
     // The team the rail offers to share: the one being built, else the newest saved.
     const featuredTeam = useMemo(() => {
@@ -637,11 +657,9 @@ export function FeedView({ showToast, navigate }) {
 
     return (
         <div className="forum-view">
-            {/* Desktop: explorer | the content | rail, like an editor. Phone:
-                the centre alone, the feed and a post as two screens. */}
+            {/* Desktop: clean 2-column editorial layout (content | rail). Phone:
+                the centre alone, with ☰ drawer for categories & rooms. */}
             <div className={`forum-workspace ${activeTopic ? 'is-thread' : 'is-feed'}`}>
-                <ForumExplorer {...explorerProps} />
-
                 <main className="forum-center">
                     {activeTopic ? (
                         <ThreadDetail
@@ -672,6 +690,10 @@ export function FeedView({ showToast, navigate }) {
                             <ForumHeader
                                 selectedCategory={selectedCategory}
                                 onSelectCategory={(id) => setFeedParam('cat', id)}
+                                categoryCounts={categoryCounts}
+                                latest={latest}
+                                hrefFor={hrefFor}
+                                onBeforeOpen={rowActions.beforeOpen}
                                 searchQuery={searchQuery}
                                 onSearchChange={(value) => setFeedParam('q', value)}
                                 sortBy={sortBy}
@@ -680,6 +702,7 @@ export function FeedView({ showToast, navigate }) {
                                 onOpenMenu={() => setIsMenuOpen(true)}
                                 isMenuOpen={isMenuOpen}
                                 stats={stats}
+                                language={language}
                                 t={t}
                             />
 
@@ -779,6 +802,7 @@ export function FeedView({ showToast, navigate }) {
                 teamName={teamName}
                 initialTeam={createPreset?.team || null}
                 initialCategory={createPreset?.category || null}
+                mentionCandidates={forumTrainerNames}
                 language={language}
                 t={t}
             />

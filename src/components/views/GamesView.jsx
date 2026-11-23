@@ -83,6 +83,24 @@ const useNow = () => {
 
 const displayName = (name = '') => name.split('-').filter(Boolean).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
 
+const MATRIX_PATTERNS = {
+    next: [1, 0, 0, 1, 1, 1, 1, 0, 0],
+    open: [1, 1, 1, 1, 0, 1, 1, 1, 1],
+    done: [1, 1, 1, 1, 1, 1, 1, 1, 1],
+};
+
+/** 3×3 pixel dot-matrix status glyph for each daily game card. */
+function StatusMatrix({ state }) {
+    const pattern = MATRIX_PATTERNS[state] || MATRIX_PATTERNS.open;
+    return (
+        <span className={`daygame__matrix daygame__matrix--${state}`} aria-hidden="true">
+            {pattern.map((lit, idx) => (
+                <i key={idx} className={lit ? 'is-on' : undefined} />
+            ))}
+        </span>
+    );
+}
+
 /** A pixel sprite standing on the card's platform; `unknown` draws it as a silhouette. */
 function StageSprite({ id, unknown = false }) {
     if (!id) return null;
@@ -284,6 +302,25 @@ export function GamesView() {
                                 : t('gamesHub.day.sub')}
                             <span className="games-day__reset">{t('gamesHub.day.resets', { time: clock })}</span>
                         </p>
+                        <div
+                            className="games-day__progress"
+                            role="progressbar"
+                            aria-valuenow={tally.played}
+                            aria-valuemin={0}
+                            aria-valuemax={tally.total}
+                            aria-label={t('markedUi.games.dayProgressAria', { played: tally.played, total: tally.total })}
+                        >
+                            {DAILY_GAMES.map((game) => {
+                                const segDone = Boolean(done[game]);
+                                const segNext = !segDone && next?.game === game;
+                                return (
+                                    <span
+                                        key={game}
+                                        className={`games-day__seg ${segDone ? 'is-done' : segNext ? 'is-next' : ''}`}
+                                    />
+                                );
+                            })}
+                        </div>
                         <button
                             type="button"
                             className={`btn btn-sm games-day__receipt ${tally.complete ? 'btn-primary' : tally.played > 0 ? 'btn-secondary' : 'btn-ghost'}`}
@@ -365,9 +402,20 @@ export function GamesView() {
                                     </div>
                                     <div className="daygame__body">
                                         <p className="daygame__kicker">
-                                            {isDone
-                                                ? <span className="daygame__state is-done">{t('nav.playedToday')}</span>
-                                                : <span className="daygame__state"><span className="live-dot" aria-hidden="true" />{t('nav.openToday')}</span>}
+                                            {(() => {
+                                                const stateKind = isDone ? 'done' : isNext ? 'next' : 'open';
+                                                const stateLabel = isDone
+                                                    ? t('markedUi.games.doneToday')
+                                                    : isNext
+                                                        ? t('markedUi.games.nextSuggested')
+                                                        : t('markedUi.games.availableToday');
+                                                return (
+                                                    <span className={`daygame__state is-${stateKind}`}>
+                                                        <StatusMatrix state={stateKind} />
+                                                        {stateLabel}
+                                                    </span>
+                                                );
+                                            })()}
                                             <span className="daygame__meta">{card.kicker}</span>
                                         </p>
                                         <h3 className="daygame__title"><Icon aria-hidden="true" />{card.title}</h3>

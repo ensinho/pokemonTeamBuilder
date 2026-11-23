@@ -72,6 +72,35 @@
     letter-spacing: -0.02em;
 }
 
+/* The day's 4-segment progress track: gold = done, live pink = next up, raised = open. */
+.games-day__progress {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1_5);
+    width: 100%;
+    max-width: 18rem;
+    margin-top: var(--space-2);
+}
+
+.games-day__seg {
+    display: block;
+    height: 0.3125rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-fg) 10%, transparent);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.games-day__seg.is-done {
+    background: var(--brand-gold);
+    box-shadow: none;
+}
+
+.games-day__seg.is-next {
+    background: var(--brand-live);
+    box-shadow: none;
+}
+
 /* The day's receipt (2026-11-17): its own size, under the line it belongs to. */
 .games-day__receipt {
     align-self: flex-start;
@@ -361,12 +390,55 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1_5);
+    color: var(--color-muted);
+    font-weight: var(--weight-medium);
+}
+
+.daygame__state.is-next {
     color: var(--brand-live-text);
     font-weight: var(--weight-semibold);
 }
 
+.daygame__state.is-open {
+    color: var(--color-muted);
+}
+
 .daygame__state.is-done {
-    color: var(--color-success);
+    color: var(--color-accent);
+    font-weight: var(--weight-semibold);
+}
+
+/* 3×3 pixel dot-matrix status glyph (9 tiny 3px dots). */
+.daygame__matrix {
+    display: inline-grid;
+    grid-template-columns: repeat(3, 0.1875rem);
+    grid-template-rows: repeat(3, 0.1875rem);
+    gap: var(--space-0_5);
+    flex: none;
+}
+
+.daygame__matrix > i {
+    display: block;
+    width: 0.1875rem;
+    height: 0.1875rem;
+    border-radius: 1px;
+    background: color-mix(in srgb, var(--color-muted) 20%, transparent);
+}
+
+.daygame__matrix--next > i {
+    background: color-mix(in srgb, var(--brand-live) 22%, transparent);
+}
+
+.daygame__matrix--next > i.is-on {
+    background: var(--brand-live);
+}
+
+.daygame__matrix--open > i.is-on {
+    background: color-mix(in srgb, var(--color-muted) 75%, transparent);
+}
+
+.daygame__matrix--done > i.is-on {
+    background: var(--brand-gold);
 }
 
 .daygame__meta {
@@ -580,6 +652,11 @@
 
     .games-day__clock {
         font-size: var(--text-xs);
+    }
+
+    .games-day__progress {
+        max-width: none;
+        margin-top: var(--space-1_5);
     }
 
     .games-day__receipt {

@@ -371,6 +371,7 @@ export const MobileTeamBuilderView = ({
     onOpenOnboarding,
 }) => {
     const { t, language } = useTranslation();
+    const megaStones = useMegaStones();
     const [pickerModalMode, setPickerModalMode] = React.useState(null); // null | 'games' | 'meta'
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
@@ -419,7 +420,7 @@ export const MobileTeamBuilderView = ({
         const observer = new ResizeObserver(sync);
         Array.from(fold.children).forEach((row) => observer.observe(row));
         return () => observer.disconnect();
-    }, []);
+    }, [currentTeam.length]);
     React.useEffect(() => {
         const scroller = document.querySelector('.app-shell__content') || window;
         const readY = () => (scroller === window ? window.scrollY : scroller.scrollTop);
@@ -598,10 +599,10 @@ export const MobileTeamBuilderView = ({
     const runAction = (fn) => () => { setActionsOpen(false); fn?.(); };
 
     return (
-        <div className="team-builder-mobile space-y-3">
+        <div className="team-builder-mobile space-y-2.5">
             <div ref={stickyRef} className={`team-builder-mobile__sticky ${isComposerCondensed ? 'is-condensed' : ''}`}>
-                <section className={`team-builder-panel team-builder-mobile__composer p-3.5 ${isComposerCondensed ? 'is-condensed' : ''}`}>
-                    {/* Row 1: team name (+ active state) and, condensed, a compact Save */}
+                <section className={`team-builder-panel team-builder-mobile__composer p-3 ${isComposerCondensed ? 'is-condensed' : ''}`}>
+                    {/* Row 1: team name (+ count + active state) and, condensed, a compact Save */}
                     <div className="team-builder-mobile__composer-top">
                         {/* A team name is a title, so it capitalises; "done"
                             dismisses the keyboard rather than offering a
@@ -627,6 +628,9 @@ export const MobileTeamBuilderView = ({
                             aria-invalid={nameError ? true : undefined}
                             aria-describedby={nameError ? 'team-builder-mobile-name-error' : undefined}
                         />
+                        <span className="tb-team__count" aria-hidden="true">
+                            {t('markedUi.builder.progressLabel', { count: teamSize, max: 6 })}
+                        </span>
                         {editingTeamId && (
                             editingTeamId === activeTeamId ? (
                                 <span className="badge badge--primary shrink-0">★ {t('common.active')}</span>
@@ -661,8 +665,32 @@ export const MobileTeamBuilderView = ({
                         </p>
                     )}
 
+                    {/* 6-segment canon-type progress track */}
+                    <div
+                        className="tb-progress-track tb-progress-track--mobile mt-2"
+                        role="progressbar"
+                        aria-valuenow={teamSize}
+                        aria-valuemin={0}
+                        aria-valuemax={6}
+                        aria-label={t('markedUi.builder.progressLabel', { count: teamSize, max: 6 })}
+                    >
+                        {Array.from({ length: 6 }, (_, idx) => {
+                            const member = currentTeam[idx];
+                            const mega = member ? megaFormFor(member, megaStones) : null;
+                            const firstType = mega?.types?.[0] || member?.types?.[0];
+                            const tone = firstType ? typeColors[firstType] : null;
+                            return (
+                                <span
+                                    key={member?.instanceId ?? `mobile-prog-${idx}`}
+                                    className={`tb-progress-seg ${member ? 'is-filled' : ''}`}
+                                    style={member ? { '--seg-tone': tone || 'var(--color-primary)' } : undefined}
+                                />
+                            );
+                        })}
+                    </div>
+
                     {/* Row 2: team slots */}
-                    <div className="team-builder-mobile__slots mt-2.5">
+                    <div className="team-builder-mobile__slots mt-2">
                         {Array.from({ length: 6 }).map((_, index) => (
                             <MobileTeamSlot
                                 key={currentTeam[index]?.instanceId ?? `mobile-slot-${index}`}
@@ -679,78 +707,83 @@ export const MobileTeamBuilderView = ({
                     {/* The fold: everything that tucks away when the band
                         condenses. One element, so its height is one number —
                         see the --composer-collapse comment above. `inert`
-                        while folded: invisible controls must not take focus.
-                        Its two rows are always rendered (the ResizeObserver
-                        watches them); what is inside them changes. */}
+                        while folded: invisible controls must not take focus. */}
                     <div ref={foldRef} className="team-builder-mobile__composer-fold" inert={isComposerCondensed}>
-                        {/* Row 3: Save · Export · more. Five icon-only buttons
-                            (one a Showdown glyph nobody could read) became the
-                            two things people came to do, labelled, and a sheet
-                            for the rest. */}
-                        <div className="team-builder-mobile__composer-actions mt-2.5">
-                            {/* Nothing to save, export or share before the first
-                                member (audit 2026-11-09): a random start is the
-                                one useful act on an empty team. */}
-                            {teamSize === 0 ? (
-                                <button
-                                    type="button"
-                                    onClick={() => handleRandomizeTeam?.(displayedPokemons)}
-                                    className="btn btn-secondary"
-                                    disabled={isRandomizing || displayedPokemons.length === 0}
-                                >
-                                    <Dices aria-hidden="true" />
-                                    <span>{t('builder.randomizeTeam')}</span>
-                                </button>
-                            ) : (
+                        {teamSize === 0 ? (
+                            <div className="mt-2">
+                                <BuilderCoach
+                                    teamSize={teamSize}
+                                    onOpenGuide={onOpenOnboarding}
+                                    onRandomize={() => handleRandomizeTeam?.(displayedPokemons)}
+                                    isRandomizing={isRandomizing}
+                                    canRandomize={displayedPokemons.length > 0}
+                                    compact
+                                    fallback={(
+                                        <div className="tb-empty-strip">
+                                            <p className="tb-empty-strip__text">{t('builder.emptyHint')}</p>
+                                            <div className="tb-coach-strip__actions">
+                                                <button
+                                                    type="button"
+                                                    className="tb-coach-strip__btn"
+                                                    onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                                                    disabled={isRandomizing || displayedPokemons.length === 0}
+                                                >
+                                                    <Dices aria-hidden="true" />
+                                                    <span>{t('markedUi.builder.coachRandom')}</span>
+                                                </button>
+                                                {onOpenOnboarding && (
+                                                    <button
+                                                        type="button"
+                                                        className="tb-coach-strip__icon-btn"
+                                                        onClick={onOpenOnboarding}
+                                                        aria-label={t('builder.howItWorks')}
+                                                        title={t('builder.howItWorks')}
+                                                    >
+                                                        <HelpCircle aria-hidden="true" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                        ) : (
                             <>
-                            <button
-                                type="button"
-                                onClick={handleSaveTeam}
-                                className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} team-builder-mobile__save touch-target`}
-                                aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
-                                aria-busy={isSaving || undefined}
-                            >
-                                {saveGlyph}
-                                <span>{saveLabel}</span>
-                                {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleExportToShowdown}
-                                className="btn btn-secondary team-builder-mobile__export touch-target"
-                                aria-label={t('builder.exportShowdown')}
-                            >
-                                <ShowdownIcon className="h-4 w-4" />
-                                <span>{t('builder.exportShort')}</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActionsOpen(true)}
-                                className="btn btn-secondary btn-icon shrink-0 touch-target"
-                                aria-haspopup="dialog"
-                                aria-label={t('builder.moreActions')}
-                            >
-                                <MoreHorizontal aria-hidden="true" />
-                            </button>
-                            </>
-                            )}
-                        </div>
-                        {teamSize > 0 && <TeamShareRow onImage={handleShareTeam} className="mt-2" />}
-                        <BuilderCoach teamSize={teamSize} onOpenGuide={onOpenOnboarding} className="mt-2" />
-
-                        <div className="team-builder-mobile__composer-analysis">
-                            {teamSize === 0 ? (
-                                // The onboarding, inline: what to do here, said once
-                                // where the team will be — instead of a modal that
-                                // opened itself on the first visit.
-                                <p className="tb-empty-hint">
-                                    {t('builder.emptyHint')}{' '}
-                                    <button type="button" className="btn-link tb-empty-hint__link" onClick={onOpenOnboarding}>
-                                        {t('builder.howItWorks')}
+                                <div className="team-builder-mobile__composer-actions mt-2.5">
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveTeam}
+                                        className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} team-builder-mobile__save touch-target`}
+                                        aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
+                                        aria-busy={isSaving || undefined}
+                                    >
+                                        {saveGlyph}
+                                        <span>{saveLabel}</span>
+                                        {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                                     </button>
-                                </p>
-                            ) : (
-                                <>
+                                    <button
+                                        type="button"
+                                        onClick={handleExportToShowdown}
+                                        className="btn btn-secondary team-builder-mobile__export touch-target"
+                                        aria-label={t('builder.exportShowdown')}
+                                    >
+                                        <ShowdownIcon className="h-4 w-4" />
+                                        <span>{t('builder.exportShort')}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActionsOpen(true)}
+                                        className="btn btn-secondary btn-icon shrink-0 touch-target"
+                                        aria-haspopup="dialog"
+                                        aria-label={t('builder.moreActions')}
+                                    >
+                                        <MoreHorizontal aria-hidden="true" />
+                                    </button>
+                                </div>
+                                <TeamShareRow onImage={handleShareTeam} className="mt-2" />
+                                <BuilderCoach teamSize={teamSize} onOpenGuide={onOpenOnboarding} compact className="mt-2" />
+
+                                <div className="team-builder-mobile__composer-analysis">
                                     <TacticalDecisionCard
                                         decision={tacticalDecision}
                                         currentTeam={currentTeam}
@@ -770,14 +803,14 @@ export const MobileTeamBuilderView = ({
                                         </span>
                                         <ChevronRight className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
                                     </button>
-                                </>
-                            )}
-                        </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </section>
             </div>
 
-            <section className="team-builder-panel p-3.5">
+            <section className="team-builder-panel p-3">
                 <div className="team-builder-mobile__filter-bar">
                     <div className="team-builder-mobile__search">
                         <Search className="team-builder-mobile__search-icon" aria-hidden="true" />

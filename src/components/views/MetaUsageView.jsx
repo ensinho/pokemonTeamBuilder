@@ -1,6 +1,6 @@
-import React, { Suspense, lazy, memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Layers, X, Users, ArrowUpRight, SlidersHorizontal } from 'lucide-react';
+import { Search, Layers, X, Users, ArrowUpRight, SlidersHorizontal, Info } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
@@ -13,6 +13,8 @@ import { MonSprite, SourceCredit } from './metaShared';
 import { useMascotStore } from '../../store/useMascotStore';
 import { pretty } from '../../utils/metaFormat';
 import { CutoffSelect, FormatPicker, TypeFilter } from './metaControls';
+import { AnchoredPopover } from '../AnchoredPopover';
+import { MetaRowPopover } from '../meta/MetaRowPopover';
 import '../../styles/meta-view.css';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -75,6 +77,8 @@ const UsageRow = memo(function UsageRow({
     usingSmogon,
     hasWinRates,
     pt,
+    onHoverEnter,
+    onHoverLeave,
 }) {
     const primaryType = types?.[0];
     const tone = primaryType ? typeColors[primaryType] : null;
@@ -91,6 +95,8 @@ const UsageRow = memo(function UsageRow({
                 state={linkState}
                 className={`meta-row ${secondaryCol ? 'has-wr' : ''}`}
                 style={tone ? { '--mon-tone': tone } : undefined}
+                onPointerEnter={(event) => onHoverEnter?.(mon, rank, event.currentTarget)}
+                onPointerLeave={() => onHoverLeave?.(mon.id)}
             >
                 <span className={`${rankClass(rank)} meta-row__rank`}>#{rank}</span>
                 <span
@@ -391,6 +397,90 @@ export function MetaUsageView() {
     // Paged on both phone and desktop so first paint stays well within the 60-item budget.
     const isMobile = useMediaQuery(maxWidthBelow('lg'));
     const [filtersOpen, setFiltersOpen] = useState(false);
+    const [sourcesOpen, setSourcesOpen] = useState(false);
+    const sourcesBtnRef = useRef(null);
+    const sourcesPopoverRef = useRef(null);
+
+    // Desktop hover telemetry preview for usage rows (180ms enter, 100ms leave grace).
+    const [hoveredRow, setHoveredRow] = useState(null);
+    const hoverEnterTimerRef = useRef(0);
+    const hoverLeaveTimerRef = useRef(0);
+
+    const clearHoverTimers = useCallback(() => {
+        if (hoverEnterTimerRef.current) {
+            window.clearTimeout(hoverEnterTimerRef.current);
+            hoverEnterTimerRef.current = 0;
+        }
+        if (hoverLeaveTimerRef.current) {
+            window.clearTimeout(hoverLeaveTimerRef.current);
+            hoverLeaveTimerRef.current = 0;
+        }
+    }, []);
+
+    const handleRowHoverEnter = useCallback((mon, rank, element) => {
+        if (typeof window === 'undefined' || !element) return;
+        if (!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches) return;
+        if (hoverLeaveTimerRef.current) {
+            window.clearTimeout(hoverLeaveTimerRef.current);
+            hoverLeaveTimerRef.current = 0;
+        }
+        if (hoverEnterTimerRef.current) window.clearTimeout(hoverEnterTimerRef.current);
+        hoverEnterTimerRef.current = window.setTimeout(() => {
+            hoverEnterTimerRef.current = 0;
+            if (!element.isConnected) return;
+            setHoveredRow({ mon, rank, rect: element.getBoundingClientRect() });
+        }, 180);
+    }, []);
+
+    const handleRowHoverLeave = useCallback(() => {
+        if (hoverEnterTimerRef.current) {
+            window.clearTimeout(hoverEnterTimerRef.current);
+            hoverEnterTimerRef.current = 0;
+        }
+        if (hoverLeaveTimerRef.current) window.clearTimeout(hoverLeaveTimerRef.current);
+        hoverLeaveTimerRef.current = window.setTimeout(() => {
+            hoverLeaveTimerRef.current = 0;
+            setHoveredRow(null);
+        }, 100);
+    }, []);
+
+    useEffect(() => clearHoverTimers, [clearHoverTimers]);
+
+    useEffect(() => {
+        if (!hoveredRow) return undefined;
+        const onScroll = () => {
+            clearHoverTimers();
+            setHoveredRow(null);
+        };
+        window.addEventListener('scroll', onScroll, { capture: true, passive: true });
+        return () => window.removeEventListener('scroll', onScroll, { capture: true });
+    }, [hoveredRow, clearHoverTimers]);
+
+    useEffect(() => {
+        clearHoverTimers();
+        setHoveredRow(null);
+    }, [fmtId, activeCutoff, tab, sortMode, deferredQuery, clearHoverTimers]);
+
+    // Dismiss Sources popover on outside click or Escape.
+    useEffect(() => {
+        if (!sourcesOpen) return undefined;
+        const onPointerDown = (event) => {
+            if (sourcesPopoverRef.current?.contains(event.target) || sourcesBtnRef.current?.contains(event.target)) return;
+            setSourcesOpen(false);
+        };
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setSourcesOpen(false);
+                sourcesBtnRef.current?.focus();
+            }
+        };
+        document.addEventListener('pointerdown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('pointerdown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [sourcesOpen]);
     const reveal = useProgressiveReveal(visible.length, {
         initial: isMobile ? 20 : 50,
         step: isMobile ? 30 : 50,
@@ -438,6 +528,13 @@ export function MetaUsageView() {
 
     const noData = !ranked.length;
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(locale) : '';
+    const compactBattles = totalBattles > 0
+        ? new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 2 }).format(totalBattles)
+        : '';
+    const sourcesShort = isTier ? 'Smogon' : 'Smogon / Limitless';
+    const sourcesChipText = compactBattles
+        ? t('markedUi.meta.sourcesChip', { battles: compactBattles, sources: sourcesShort })
+        : sourcesShort;
 
     const sortControl = (variant) => (
         <div className={`segmented segmented--quiet ${variant}`} role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
@@ -463,61 +560,87 @@ export function MetaUsageView() {
         ? (pt ? 'Vit.' : 'WR')
         : (!usingSmogon ? (pt ? 'Times' : 'Teams') : null);
 
+    const sourcesSummaryText = usingSmogon && format && activeCutoff === TOUR_BAND && tournament
+        ? `${format.label}: ${tournament.teamsAnalyzed.toLocaleString(locale)} ${pt ? 'times' : 'teams'} · ${tournament.tournaments} ${pt ? 'torneios Limitless' : 'Limitless events'}${tournament.from && tournament.to ? ` (${formatDay(tournament.from, pt)} – ${formatDay(tournament.to, pt)})` : ''}`
+        : usingSmogon && format
+            ? `${format.label}${battlesLabel ? ` · ${battlesLabel} ${pt ? 'partidas' : 'games'}` : ''}${month ? ` · ${month}` : ''}${cutoffs.length > 1 && activeCutoff > 0 ? ` · ${activeCutoff}+` : ''}`
+            : (pt
+                ? 'Pokémon mais usados nos times recentes de torneios.'
+                : 'Most-used Pokémon across recent tournament teams.');
+
+    const hoveredDetail = hoveredRow ? usageData?.byId?.[hoveredRow.mon.id] || null : null;
+
     return (
         <div className="meta-page">
-            <header className="meta-header">
-                <p className="meta-lead">
-                    {usingSmogon && format && activeCutoff === TOUR_BAND && tournament ? (
-                        <>
-                            {pt
-                                ? `${format.label} em torneios: ${tournament.teamsAnalyzed.toLocaleString('pt-BR')} times de ${tournament.tournaments} torneios do Limitless`
-                                : `${format.label} at tournaments: ${tournament.teamsAnalyzed.toLocaleString('en-US')} teams from ${tournament.tournaments} Limitless events`}
-                            {tournament.from && tournament.to && (
-                                <span className="whitespace-nowrap">{` (${formatDay(tournament.from, pt)} – ${formatDay(tournament.to, pt)})`}</span>
-                            )}
-                            {pt ? ', com taxa de vitória.' : ', with win rates.'}
-                        </>
-                    ) : usingSmogon && format ? (
-                        <>
-                            {pt
-                                ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''}`
-                                : `Real ${format.label} ladder usage${battlesLabel ? ` (${battlesLabel} games${month ? `, ${month}` : ''})` : ''}`}
-                            {cutoffs.length > 1 && activeCutoff > 0 && (
-                                <span className="whitespace-nowrap">{pt ? `, rating ${activeCutoff}+` : `, rated ${activeCutoff}+`}</span>
-                            )}
-                            <span className="sm:hidden">.</span>
-                            <span className="hidden sm:inline">
-                                {pt
-                                    ? ' — clique em um Pokémon para ver exatamente o que ele roda.'
-                                    : ' — click any Pokémon to see exactly what it runs (items, moves, spreads, Tera & partners).'}
-                            </span>
-                        </>
-                    ) : (pt
-                        ? 'Pokémon mais usados nos times recentes de torneios — clique para ver o que estão rodando.'
-                        : 'Most-used Pokémon across recent tournament teams — click any to see what they run.')}
-                </p>
-                <SourceCredit pt={pt} sources={['smogon', 'limitless', 'vgcpastes', 'pikalytics']} className="meta-credits" />
-            </header>
+            <div className="meta-top-bar">
+                {!isTier ? (
+                    <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="tabs meta-top-bar__tabs">
+                        {[
+                            { id: 'usage', label: 'Pokémon' },
+                            { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
+                        ].map((tb) => (
+                            <button
+                                key={tb.id}
+                                type="button"
+                                role="tab"
+                                aria-selected={tab === tb.id}
+                                onClick={() => setTab(tb.id)}
+                                className="tabs__item"
+                            >
+                                {tb.label}
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="meta-top-bar__tier-label">
+                        <span className="meta-top-bar__tier-name">{format?.label || 'Meta'}</span>
+                        {month && <span className="meta-top-bar__tier-month figure">{month}</span>}
+                    </div>
+                )}
 
-            {!isTier && (
-                <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="tabs mb-4">
-                    {[
-                        { id: 'usage', label: 'Pokémon' },
-                        { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
-                    ].map((tb) => (
+                <button
+                    ref={sourcesBtnRef}
+                    type="button"
+                    onClick={() => setSourcesOpen((prev) => !prev)}
+                    aria-expanded={sourcesOpen}
+                    aria-haspopup="dialog"
+                    className={`meta-sources-chip ${sourcesOpen ? 'is-active' : ''}`}
+                >
+                    <span className="meta-sources-chip__dot" aria-hidden="true" />
+                    <span className="meta-sources-chip__text">{sourcesChipText}</span>
+                    <Info className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden="true" />
+                </button>
+
+                <AnchoredPopover
+                    isOpen={sourcesOpen}
+                    anchorRef={sourcesBtnRef}
+                    popoverRef={sourcesPopoverRef}
+                    placement="bottom"
+                    offset={8}
+                    zIndex={90}
+                    role="dialog"
+                    ariaLabel={t('markedUi.meta.sourcesTitle')}
+                    className="meta-sources-popover"
+                >
+                    <div className="meta-sources-popover__head">
+                        <h3 className="meta-sources-popover__title">{t('markedUi.meta.sourcesTitle')}</h3>
                         <button
-                            key={tb.id}
                             type="button"
-                            role="tab"
-                            aria-selected={tab === tb.id}
-                            onClick={() => setTab(tb.id)}
-                            className="tabs__item"
+                            onClick={() => setSourcesOpen(false)}
+                            aria-label={t('common.close', { defaultValue: 'Close' })}
+                            className="meta-sources-popover__close"
                         >
-                            {tb.label}
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
                         </button>
-                    ))}
-                </div>
-            )}
+                    </div>
+                    <p className="meta-sources-popover__summary">{sourcesSummaryText}</p>
+                    <SourceCredit pt={pt} sources={['smogon', 'limitless', 'vgcpastes', 'pikalytics']} className="meta-sources-popover__credits" />
+                    <DataNotes
+                        className="meta-sources-popover__notes"
+                        paragraphs={metaNotes({ format: format?.label, battles: totalBattles, month, kind: format?.kind }, language)}
+                    />
+                </AnchoredPopover>
+            </div>
 
             {tab === 'usage' && (
                 <div className="meta-toolbar__context">
@@ -692,6 +815,8 @@ export function MetaUsageView() {
                                                 usingSmogon={usingSmogon}
                                                 hasWinRates={hasWinRates}
                                                 pt={pt}
+                                                onHoverEnter={handleRowHoverEnter}
+                                                onHoverLeave={handleRowHoverLeave}
                                             />
                                         );
                                     })}
@@ -759,10 +884,17 @@ export function MetaUsageView() {
                 </div>
             )}
 
-            <DataNotes
-                className="mt-6"
-                paragraphs={metaNotes({ format: format?.label, battles: totalBattles, month, kind: format?.kind }, language)}
-            />
+            {tab === 'usage' && hoveredRow && hoveredDetail && (
+                <MetaRowPopover
+                    mon={hoveredRow.mon}
+                    rank={hoveredRow.rank}
+                    detail={hoveredDetail}
+                    types={typesById.get(hoveredRow.mon.id)}
+                    anchorRect={hoveredRow.rect}
+                    usingSmogon={usingSmogon}
+                    t={t}
+                />
+            )}
 
             {inspectedSheet && (
                 <Suspense fallback={null}>
