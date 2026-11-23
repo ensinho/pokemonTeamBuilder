@@ -764,7 +764,9 @@ export function ChampionChallengeView() {
                     screen={(
                         <>
                             {room}
-                            {menu && <div className="bw-overlay is-menu">{menu}</div>}
+                            {/* The gate is a few lines: a box at the foot of the room, the
+                                champion still in view above it — not a full screen of void. */}
+                            {menu && <div className={`bw-overlay is-menu ${stage === 'gate' ? 'is-compact' : ''}`}>{menu}</div>}
                             {transition}
                         </>
                     )}

@@ -14,6 +14,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-11-23 — The Hall of Fame played under the battle's HUD `bug`
+- **Symptom:** after an official win the Hall of Fame showed the last turn's HP boxes (Garchomp / Chien-Pao) over the team, and the desktop HUD strip covered the bottom row and the plaque.
+- **Root cause:** the Champion moments (`.ds-hall`, `.ds-blackout`, `.ds-power-on/off`) are portalled into `.ds-screen` with `z-index: 9`, but inside the same stacking context the battle draws `.ds-hpbox` at 20, `.hud-mascot` at 55, `.bw-hud` at 60 and `.bw-overlay` at 70. The Hall's rows were also laid out for a screen with nothing over its foot (96px sprites, negative row gap). Separately, `DsHallOfFame` passed `getDsSprite(species)`, which returns `{url, w, h}`, straight to `src`: every sprite first requested `[object Object]` and only appeared through `handleBattleSpriteError`'s fallback.
+- **Fix:** `--ds-moment-z: 90` for every moment (`champion-moments.css`); the Hall re-laid to fit the 256 × 192 screen with its plaque (two rows of 72 from y 8, sprites 76); `src={getDsSprite(species).url}`.
+- **Correct pattern:** anything that takes over a DS screen must sit above the HUD's z-scale (above 70), not just above the field. `getDsSprite` returns an object, so read `.url`.
+- **Files:** `src/styles/champion-moments.css`, `src/components/views/challenge/ds/DsMoments.jsx`
+
 ### 2026-11-17 — The quiz and the tier list played in one browser read "Aberto hoje" in another `bug`
 - **Symptom:** Enzo played the quiz and the tier list of the day, signed in to another browser, and the Jogos page said 2 of 4 — the Champion and the PokéPuzzle "Feito hoje", the other two open (and the tier list's board empty).
 - **Root cause:** "played today" is `ptb:gamesToday`, a device-only record. The Champion and the PokéPuzzle were re-marked from server data wherever the Home reads them (`useChallengeSummary`, `useDailyPuzzle`); the quiz was only re-marked with its page open, and the tier list's boards (`ptb:tierList:v1`) never left the device at all.

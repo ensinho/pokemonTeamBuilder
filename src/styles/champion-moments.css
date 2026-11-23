@@ -12,6 +12,9 @@
     --ds-hall-floor: #22306c;
     --ds-hall-beam: rgb(255 255 255 / 0.07);
     --ds-gold: #f8c838;
+    /* Above everything the screen draws — the data boxes (20), the HUD strip
+       (60), the menus (70): a moment is the whole screen while it plays. */
+    --ds-moment-z: 90;
 }
 
 @property --ds-iris {
@@ -25,7 +28,7 @@
 .ds-power-on {
     position: absolute;
     inset: 0;
-    z-index: 9;
+    z-index: var(--ds-moment-z);
     background: var(--ds-off);
     -webkit-mask: radial-gradient(circle at var(--iris-x) var(--iris-y), transparent var(--ds-iris), #000 calc(var(--ds-iris) + 0.5%));
     mask: radial-gradient(circle at var(--iris-x) var(--iris-y), transparent var(--ds-iris), #000 calc(var(--ds-iris) + 0.5%));
@@ -47,7 +50,7 @@
 .ds-power-off {
     position: absolute;
     inset: 0;
-    z-index: 9;
+    z-index: var(--ds-moment-z);
     background: var(--ds-off);
 }
 .ds-power-off::after {
@@ -61,11 +64,13 @@
 @keyframes ds-crt-dot { from { scale: 1 0.012; } to { scale: 0.01 0.012; opacity: 0.5; } }
 
 /* ── Hall of Fame: a flash, the team walking in one by one (450 ms + 380 ms
-      each), the plaque at 2850 ms, the gold twinkles after ─────────────── */
+      each), the plaque at 2850 ms, the gold twinkles after ───────────────
+      Two rows of 72 from y 8 (to 152) and the plaque under them (≈157–184):
+      the six and the plaque fit the 256 × 192 screen, nothing clipped. */
 .ds-hall {
     position: absolute;
     inset: 0;
-    z-index: 9;
+    z-index: var(--ds-moment-z);
     overflow: hidden;
     background: var(--ds-hall);
     cursor: pointer;
@@ -86,10 +91,9 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(4 * var(--px));
+    top: calc(8 * var(--px));
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    row-gap: calc(-14 * var(--px));
     margin: 0;
     padding: 0;
     list-style: none;
@@ -98,21 +102,21 @@
     position: relative;
     display: grid;
     place-items: center;
-    height: calc(80 * var(--px));
+    height: calc(72 * var(--px));
 }
 .ds-hall__pad {
     position: absolute;
-    bottom: calc(10 * var(--px));
-    width: calc(56 * var(--px));
-    height: calc(12 * var(--px));
+    bottom: calc(8 * var(--px));
+    width: calc(48 * var(--px));
+    height: calc(10 * var(--px));
     border-radius: 50%;
     background: var(--ds-hall-floor);
 }
 .ds-hall__mon {
     position: relative;
-    width: calc(96 * var(--px));
-    height: calc(96 * var(--px));
-    margin-bottom: calc(14 * var(--px));
+    width: calc(76 * var(--px));
+    height: calc(76 * var(--px));
+    margin-bottom: calc(10 * var(--px));
     image-rendering: pixelated;
     opacity: 0;
     animation: ds-hall-walk 520ms cubic-bezier(0.22, 1, 0.36, 1) calc(450ms + var(--i) * 380ms) forwards;
@@ -170,7 +174,7 @@
 .ds-blackout {
     position: absolute;
     inset: 0;
-    z-index: 9;
+    z-index: var(--ds-moment-z);
     display: grid;
     place-items: center;
     background: var(--ds-off);

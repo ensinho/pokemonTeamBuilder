@@ -18,8 +18,8 @@ function HpBar({ pct }) {
 
 /**
  * Both teams: yours with its HP (`mine`: `{species, hpPct, fainted}`), hers as
- * the dossier (`championRoster` + `hpPct`) — a "?" and "???" until each one is
- * sent out. `active` marks who is on the field.
+ * the dossier (`championRoster` + `hpPct`) — a silhouette (a "?" for the
+ * wildcard) and "???" until each one is sent out, as on the phone's Pokétch. `active` marks who is on the field.
  */
 export function ChallengeTeamsRail({ title, mine = [], foe = [], championName, active = {}, foeTitle = null }) {
     const { t } = useTranslation();
@@ -51,7 +51,7 @@ export function ChallengeTeamsRail({ title, mine = [], foe = [], championName, a
                         // Her sending order is fixed for the day.
                         <li
                             key={index}
-                            className={`challenge-team__mon rounded-lg bg-surface-raised ${mon.revealed ? 'is-revealed' : ''} ${mon.fainted ? 'is-fainted' : ''} ${mon.revealed && active.foe === mon.species ? 'is-active' : ''}`}
+                            className={`challenge-team__mon rounded-lg bg-surface-raised ${mon.revealed ? 'is-revealed' : 'is-mystery'} ${mon.fainted ? 'is-fainted' : ''} ${mon.revealed && active.foe === mon.species ? 'is-active' : ''}`}
                         >
                             {icon?.url
                                 ? <img src={icon.url} alt={name} width={40} height={30} loading="lazy" decoding="async" draggable="false" onError={(e) => handleBattleSpriteError(e, mon.species)} />

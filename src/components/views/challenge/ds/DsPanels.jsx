@@ -5,7 +5,7 @@ import { promptSignIn } from '../../../../utils/navigation';
 export function DsSignInGate({ championName, onCancel }) {
     const { t } = useTranslation();
     return (
-        <div className="ds-panel">
+        <div className="ds-panel is-gate">
             <p className="ds-panel__title">{t('challenge.gate.title', { name: championName })}</p>
             <p className="ds-panel__body">{t('challenge.gate.body')}</p>
             <div className="ds-panel__actions">
