@@ -1083,6 +1083,16 @@ export default {
         tournamentsNoMatch: 'Nenhum time corresponde à busca'
     },
     moments: {
+        teamSaved: {
+            pc: 'PC do Bill',
+            title: 'Seu primeiro time está no PC!',
+            sub: '{{name}} fica guardado na sua caixa. Volte quando quiser editar.',
+        },
+        card: {
+            label: 'Cartão de treinador de {{name}}',
+            level: 'Nv {{n}}',
+            since: 'Treinando desde {{when}}',
+        },
         continue: 'Continuar',
         levelUp: {
             level: 'Nível {{n}}',
@@ -2832,6 +2842,9 @@ export default {
             challengeAgain: 'Desafiar de novo',
         },
         result: {
+            verdictWord: 'VITÓRIA',
+            verdictWin: 'Vitória sobre {{name}}!',
+            verdictLoss: '{{name}} venceu desta vez.',
             won: 'Vitória!',
             lost: 'Derrota',
             tie: 'Empate!',

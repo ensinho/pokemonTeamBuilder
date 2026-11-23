@@ -279,3 +279,253 @@
 @media (prefers-reduced-motion: reduce) {
     .moment { animation: none; }
 }
+
+/* ── Account created: the trainer card comes out printed ────────────────
+   Paper and ink in every theme, like the trainer card and the receipt: an
+   object handed over. The banner is the trainer's own pixels in their
+   persona's tone (--tcp-tone); one gold pixel signs "training since". */
+.tcp {
+    --tcp-tone: var(--color-primary);
+    display: grid;
+    justify-items: center;
+    width: min(100%, 21rem);
+}
+.tcp__slot {
+    display: block;
+    width: 100%;
+    height: var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--brand-black);
+    box-shadow: 0 0 0 var(--space-0_5) color-mix(in srgb, var(--mascot-white) 22%, transparent);
+}
+.tcp__window {
+    width: calc(100% - var(--space-4));
+    margin-top: calc(var(--space-1_5) * -1);
+    padding-bottom: var(--space-2);
+    overflow: hidden;
+}
+.tcp__card {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-2) var(--space-3);
+    padding-bottom: var(--space-3);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: var(--receipt-paper);
+    color: var(--receipt-ink);
+    box-shadow: var(--shadow-md);
+}
+.tcp__banner {
+    grid-column: 1 / -1;
+    height: 4.5rem;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--tcp-tone) 14%, var(--receipt-paper));
+}
+.tcp__banner svg { display: block; width: 100%; height: 100%; }
+.tcp__banner rect { fill: var(--tcp-tone); }
+.tcp__banner rect.is-accent { fill: var(--receipt-ink); }
+.tcp__avatar {
+    display: grid;
+    place-items: center;
+    width: 4.25rem;
+    height: 4.25rem;
+    margin: calc(var(--space-8) * -1) 0 0 var(--space-3);
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--tcp-tone) 22%, var(--receipt-paper));
+    box-shadow: 0 0 0 var(--space-1) var(--receipt-paper);
+}
+.tcp__avatar img { width: 92%; height: 92%; object-fit: contain; }
+.tcp__body { display: grid; gap: var(--space-0_5); align-content: start; padding-top: var(--space-1); min-width: 0; }
+.tcp__name {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    line-height: 1.15;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.tcp__facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--receipt-muted);
+}
+.tcp__level {
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--receipt-ink);
+    color: var(--receipt-paper);
+    font-family: var(--font-mono);
+}
+.tcp__since {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 var(--space-3);
+    padding-top: var(--space-2);
+    border-top: 1px dashed var(--receipt-rule);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--receipt-muted);
+}
+.tcp__gold {
+    width: 0.75rem;
+    height: 0.75rem;
+    background: var(--brand-gold);
+    box-shadow: 0 0 0 2px var(--receipt-ink);
+}
+
+/* ── Badge unlocked: the badge case (BadgeUnlockModal) ──────────────────
+   The badge comes down turning into its socket, seats, the socket lights
+   gold (earned), one ring goes out, one shine crosses it. The resting state
+   is the seated badge in its lit socket. */
+.bcm {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 7rem;
+    height: 7rem;
+    margin-block: var(--space-3);
+    perspective: 30rem;
+}
+.bcm__socket,
+.bcm__ring {
+    position: absolute;
+    inset: var(--space-2);
+    border-radius: var(--radius-full);
+}
+.bcm__socket {
+    background: radial-gradient(circle, color-mix(in srgb, var(--brand-gold) 34%, transparent) 0 58%, transparent 60%);
+    box-shadow: inset 0 0 0 var(--space-1) var(--brand-gold);
+}
+.bcm__ring {
+    box-shadow: 0 0 0 var(--space-0_5) var(--brand-gold);
+    opacity: 0;
+}
+.bcm__spin { transform-style: preserve-3d; }
+.bcm__seat { position: relative; transform-origin: 50% 85%; }
+.bcm__emblem { width: 5rem; height: 5rem; }
+.bcm__gloss {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    pointer-events: none;
+}
+.bcm__shine {
+    position: absolute;
+    top: -10%;
+    bottom: -10%;
+    left: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mascot-white) 70%, transparent), transparent);
+    transform: translateX(230%) skewX(-20deg);
+}
+
+/* ── The first team saved: into Bill's PC (TeamSavedScene) ──────────────
+   The resting state is the end: the party gone into the box, the lid shut,
+   the box counting one. Red light is the franchise's recall beam. */
+.tsv {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-6);
+    width: min(100%, 34rem);
+    text-align: center;
+}
+.tsv__pc { display: grid; justify-items: center; gap: var(--space-2); }
+.tsv__box {
+    position: relative;
+    width: 6.5rem;
+    height: 5rem;
+    border-radius: var(--radius-md);
+    background: var(--tsv-box);
+    box-shadow: inset 0 0 0 var(--space-1) var(--brand-ink);
+}
+.tsv__lid {
+    position: absolute;
+    left: calc(var(--space-1) * -1);
+    right: calc(var(--space-1) * -1);
+    top: calc(var(--space-3) * -1);
+    height: var(--space-4);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--tsv-box) 70%, var(--mascot-white));
+    box-shadow: inset 0 0 0 var(--space-1) var(--brand-ink);
+    transform-origin: 0 100%;
+}
+.tsv__grid {
+    position: absolute;
+    inset: var(--space-3) var(--space-3) var(--space-2);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-1);
+}
+.tsv__grid i { border-radius: var(--radius-sm); background: color-mix(in srgb, var(--brand-ink) 35%, var(--tsv-box)); }
+.tsv__count {
+    position: absolute;
+    right: calc(var(--space-3) * -1);
+    top: calc(var(--space-5) * -1);
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    background: var(--brand-live);
+    color: var(--brand-on-live);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+}
+.tsv__pc-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--intro-muted);
+}
+.tsv__party {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-2);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.tsv__slot { position: relative; display: grid; place-items: center; aspect-ratio: 1; }
+.tsv__sprite,
+.tsv__red {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    opacity: 0;
+}
+.tsv__red {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(97%) saturate(6000%) hue-rotate(350deg);
+}
+.tsv__ball {
+    grid-area: 1 / 1;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-full);
+    background: linear-gradient(var(--brand-live) 0 45%, var(--brand-ink) 45% 55%, var(--mascot-white) 55%);
+    box-shadow: 0 0 0 var(--space-0_5) var(--brand-ink);
+    opacity: 0;
+}
+.tsv__words { display: grid; gap: var(--space-2); }
+.tsv__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--text-2xl);
+    line-height: 1.1;
+}
+.tsv__sub { margin: 0; font-size: var(--text-sm); color: var(--intro-muted); }
