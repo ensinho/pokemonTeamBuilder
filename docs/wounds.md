@@ -1404,6 +1404,12 @@ don't copy them and so we can pay them down deliberately. Promote one to "Resolv
 - `PokedexView.jsx` (~2074 loc), `HomeView.jsx` (~1338), `PokePuzzleView.jsx` (~1630), `RandomGeneratorView.jsx` (~1263), `AppLayout.jsx` (~1149). Hard to review, easy to regress.
 - **Correct pattern:** when editing one of these, extract the section you touch into a child component or a hook rather than growing the file further. Don't attempt a big-bang refactor without Enzo's sign-off.
 
+### 2026-11-23 — Evolved Pokémon lost their line's egg moves (Aegislash without Destiny Bond)
+- **Symptom:** a user could not give Aegislash Destiny Bond in the team editor.
+- **Root cause:** PokéAPI lists egg moves (and some tutor moves) only on the **first stage** of a line. Destiny Bond is an egg move of Honedge in X/Y–Sword/Shield; on Aegislash it appears only as `champions:train`, so any detail source older than Champions has no such move at all. The Pokédex also lumped `egg` into "Other".
+- **Fix:** `resolvePokemonDetail` walks `evolves_from_species` and merges the pre-evolutions' moves (`utils/inheritedMoves.js`, marked `inheritedFrom`, shown as a "Pre-evo" badge); forms (id ≥ 10000) keep their own list. The Pokédex gets an Egg tab fed by the line's egg moves for the shown version.
+- **Dispattern:** treating a PokéAPI `/pokemon/{id}` learnset as complete. It is the species' own list, not what it can know.
+
 ---
 
 ## Improvement backlog (proposed, not started)

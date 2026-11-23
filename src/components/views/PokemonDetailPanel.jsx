@@ -45,7 +45,7 @@ const METHOD_ICON_MAP = {
 const DEFENSE_TIERS = [4, 2, 0.5, 0.25, 0];
 const MULTIPLIER_LABEL = { 4: '4×', 2: '2×', 0.5: '½×', 0.25: '¼×', 0: '0×' };
 
-const MOVE_METHODS = ['levelUp', 'machine', 'other'];
+const MOVE_METHODS = ['levelUp', 'machine', 'egg', 'other'];
 
 const cleanName = (name = '') => String(name).replace(/-/g, ' ');
 const padDex = (id) => `#${String(id).padStart(4, '0')}`;
@@ -510,6 +510,7 @@ export function PokemonDetailPanel({
         const counts = {
             levelUp: resolvedMoves.levelUp.length,
             machine: resolvedMoves.machine.length,
+            egg: (resolvedMoves.egg || []).length,
             other: (resolvedMoves.other || []).length,
         };
         const available = MOVE_METHODS.filter((key) => counts[key] > 0);
@@ -518,10 +519,10 @@ export function PokemonDetailPanel({
         }
         // A method with nothing in this game version falls to the first that has rows.
         const method = counts[moveMethod] > 0 ? moveMethod : available[0];
-        const labels = { levelUp: t('pokedex.movesLevelUp'), machine: t('pokedex.movesMachine'), other: t('pokedex.movesOther') };
-        const slotHeader = { levelUp: t('pokedex.movesHeaderLevel'), machine: t('pokedex.movesHeaderTm'), other: t('pokedex.locationsMethod') };
+        const labels = { levelUp: t('pokedex.movesLevelUp'), machine: t('pokedex.movesMachine'), egg: t('pokedex.movesEgg'), other: t('pokedex.movesOther') };
+        const slotHeader = { levelUp: t('pokedex.movesHeaderLevel'), machine: t('pokedex.movesHeaderTm'), egg: t('pokedex.locationsMethod'), other: t('pokedex.locationsMethod') };
         const query = moveQuery.trim().toLowerCase().replace(/\s+/g, '-');
-        const rows = (method === 'other' ? resolvedMoves.other || [] : resolvedMoves[method])
+        const rows = (resolvedMoves[method] || [])
             .filter((move) => !query || move.name.includes(query) || move.type?.includes(query));
 
         return (
