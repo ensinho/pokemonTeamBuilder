@@ -31,7 +31,7 @@ import { readLocal, writeLocal, removeLocal } from '../utils/safeStorage';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { storedFormFields, withUniqueInstanceIds } from '../utils/teamSerialization';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
-import { MascotIcon } from './Mascot';
+import { BrandIntro } from './brand/BrandIntro';
 import { Loader } from './Loader';
 import { loadMascotEngine, warmMascotBot } from './mascot/useMascotEngine';
 import { useMascotReactions } from '../hooks/useMascotReactions';
@@ -41,7 +41,10 @@ import { BREAKPOINTS } from '../constants/breakpoints';
 import { setNavigator, setPartnerPicker, setSignInPrompt } from '../utils/navigation';
 import { PAGE_MARKS } from '../utils/journeys';
 import { JourneyCoach } from './journeys/JourneyCoach';
-import { skipsBootSplash, splashHoldMs, splashProgress } from '../utils/bootSplash';
+import {
+    BRAND_INTRO_SEEN_KEY, SPLASH_REVEAL_MS, introMinVisibleMs, skipsBootSplash, splashHoldMs,
+} from '../utils/bootSplash';
+import { INTRO_FULL_MS } from '../utils/brandIntro';
 import { isReturningVisitor } from '../utils/landing';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -781,7 +784,10 @@ export default function AppLayout() {
         appPath: location.pathname,
         isReturning: isReturningVisitor(readLocalStorage()),
     }));
-    const [authSplashProgress, setAuthSplashProgress] = useState(0);
+    // The brand intro's exit plays over the app once the splash is dismissed
+    // (components/brand/BrandIntro.jsx); the first intro on a device plays whole.
+    const [splashLeaving, setSplashLeaving] = useState(false);
+    const [introSeenBefore] = useState(() => readLocal(BRAND_INTRO_SEEN_KEY) === '1');
     const [authSplashMessage, setAuthSplashMessage] = useState(() => t('splash.msg1'));
     const initialBootTimeRef = useRef(Date.now());
 
@@ -860,21 +866,17 @@ export default function AppLayout() {
             isMobile,
             elapsedMs: Date.now() - initialBootTimeRef.current,
             isBootSettled,
+            minVisibleMs: introMinVisibleMs(introSeenBefore),
         });
         const timer = setTimeout(() => {
+            if (Date.now() - initialBootTimeRef.current >= SPLASH_REVEAL_MS + INTRO_FULL_MS) {
+                writeLocal(BRAND_INTRO_SEEN_KEY, '1');
+            }
+            setSplashLeaving(true);
             setShowInitialAuthSplash(false);
         }, remainingMs);
         return () => clearTimeout(timer);
-    }, [canLeaveSplash, showInitialAuthSplash, isMobile, isBootSettled]);
-
-    // Keep the bar honest about the wait: on mobile it creeps to 90% over the
-    // floor and only closes the last 10% once boot has actually settled.
-    const splashBar = splashProgress({ isMobile, isBootSettled });
-    useEffect(() => {
-        if (!showInitialAuthSplash) return;
-        const timer = setTimeout(() => setAuthSplashProgress(splashBar.width), 30);
-        return () => clearTimeout(timer);
-    }, [showInitialAuthSplash, splashBar.width]);
+    }, [canLeaveSplash, showInitialAuthSplash, isMobile, isBootSettled, introSeenBefore]);
 
     useEffect(() => {
         if (!showInitialAuthSplash) return;
@@ -1522,39 +1524,29 @@ export default function AppLayout() {
         setEditingTeamMember(pokemon);
     }, [setEditingTeamMember]);
 
-    // Splash renderer
-    if (showInitialAuthSplash) {
-        return (
-            <div className="boot-screen" style={{ backgroundColor: colors.background }}>
-                {/* The brand moment (2026-11-09, the references' splash —
-                    .claude/skills/app-screens): the Volt ground, the icon's
-                    ghost huge and cropped at two corners, the wordmark between
-                    them. It all fades in after 300 ms with the splash, so a
-                    warm start that settles sooner never flashes it. */}
-                <div className="boot-screen__ground" aria-hidden="true">
-                    <MascotIcon className="boot-screen__ghost boot-screen__ghost--top" />
-                    <MascotIcon className="boot-screen__ghost boot-screen__ghost--bottom" />
-                </div>
-                <div className="boot-splash">
-                    <p className="boot-splash__tagline">{t('splash.tagline')}</p>
-                    <BrandWordmark className="boot-splash__wordmark" />
-                    <div className="boot-splash__track" aria-hidden="true">
-                        <span
-                            className="boot-splash__fill"
-                            style={{
-                                width: `${authSplashProgress}%`,
-                                transitionDuration: `${splashBar.durationMs}ms`,
-                            }}
-                        />
-                    </div>
-                    <p className="boot-splash__message">{authSplashMessage}</p>
-                </div>
-            </div>
-        );
-    }
+    // The splash is the brand intro (2026-11-22, docs/modules/brand_intro.md):
+    // it plays while boot settles, then leaves through the mascot's silhouette
+    // over the app, which mounts underneath. Both are keyed children of one
+    // fragment so the intro keeps running across that switch.
+    const introNode = (showInitialAuthSplash || splashLeaving) ? (
+        <BrandIntro
+            key="brand-intro"
+            variant="splash"
+            delay={SPLASH_REVEAL_MS}
+            leaving={!showInitialAuthSplash}
+            onLeft={() => setSplashLeaving(false)}
+            tagline={t('splash.intro')}
+            message={showInitialAuthSplash ? authSplashMessage : null}
+            page={colors.background}
+        />
+    ) : null;
+
+    if (showInitialAuthSplash) return <>{introNode}</>;
 
     return (
-        <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
+        <>
+        {introNode}
+        <div key="app" className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
             {/* Modal Components — most are lazy chunks, each behind its own
                 boundary so one loading never blanks another that is open. */}
             {editingTeamMember && (
@@ -2551,5 +2543,6 @@ export default function AppLayout() {
                 )}
             </div>
         </div>
+        </>
     );
 }

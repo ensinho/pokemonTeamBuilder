@@ -34,6 +34,8 @@ export const DEVICE_KEYS = new Set([
     'ptb:challenge:fast',
     // the mascot's colour and whether it reacts: how the app looks here, like the theme
     'ptb:mascot',
+    // the brand intro has played whole here once (utils/bootSplash.js): how the app opens on this device
+    'ptb:brandIntroSeen',
 ]);
 
 // The PokéAPI cache (services/pokemonDataCache.js) is public data, not anyone's.

@@ -92,13 +92,3 @@ export function skipsBootSplash({ appPath, isReturning }) {
     return appPath === '/' && !isReturning;
 }
 
-/**
- * Progress-bar target for the current splash. Goes away when the brand intro
- * replaces the splash in AppLayout (it has no bar: the orbit is the wait).
- *
- * @returns {{ width: number, durationMs: number }}
- */
-export function splashProgress({ isMobile, isBootSettled }) {
-    if (isMobile && !isBootSettled) return { width: 90, durationMs: 1800 };
-    return { width: 100, durationMs: SPLASH_MIN_VISIBLE_MS };
-}
