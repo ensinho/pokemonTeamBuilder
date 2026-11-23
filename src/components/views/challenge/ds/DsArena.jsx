@@ -189,6 +189,12 @@ export function DsArena({
     useEffect(() => { if (mode !== 'dialogue') setLine(0); }, [mode]);
 
     const tap = (event) => {
+        // In a dialogue the whole screen is the A button, as on the DS: a tap on
+        // the room (not only on the box — which advances itself) moves the text on.
+        if (modeRef.current === 'dialogue') {
+            if (!event.target.closest('.ds-textbox')) advanceRef.current?.();
+            return;
+        }
         if (modeRef.current !== 'walk' || arrivedRef.current) return;
         const rect = event.currentTarget.getBoundingClientRect();
         const px = rect.width / 256;

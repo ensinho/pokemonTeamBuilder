@@ -2716,6 +2716,32 @@
         0 0 0 calc(256 * var(--px)) color-mix(in srgb, var(--ds-room-wall) 55%, transparent);
 }
 
+/* A short menu (the sign-in gate): sized to its lines, at the foot of the
+   room like the dialogue it follows, so the champion stays in view. */
+.bw-overlay.is-menu.is-compact {
+    inset: auto calc(16 * var(--px)) calc(8 * var(--px));
+}
+
+.bw-overlay.is-compact .ds-panel {
+    position: relative;
+    inset: auto;
+    gap: calc(6 * var(--px));
+}
+
+/* The gate's lines and its two ways in, together and centred — on a phone's
+   tall bottom screen they used to sit at opposite ends of a void. */
+.ds-panel.is-gate {
+    justify-content: center;
+}
+
+.ds-panel.is-gate .ds-panel__actions {
+    margin-top: calc(2 * var(--px));
+}
+
+.ds-panel.is-gate .ds-panel__actions > * {
+    flex: 1;
+}
+
 /* ── A desktop's result: the chart above, the outcome in a strip below ── */
 
 .bw-result {
@@ -3905,6 +3931,14 @@
 .challenge-team__mon.is-active,
 .challenge-rank__row.is-me {
     box-shadow: var(--ring-primary);
+}
+
+/* Hers before they are sent out: a silhouette, as on the Pokétch — the name
+   was "???" while the icon gave the whole team away. Outlined in the muted
+   ink so it reads on dark and light themes alike (game-history's mystery). */
+.challenge-team__mon.is-mystery > img {
+    filter: brightness(0) drop-shadow(0 0 0.0625rem var(--color-muted));
+    opacity: 0.75;
 }
 
 .challenge-team__mon.is-fainted {
