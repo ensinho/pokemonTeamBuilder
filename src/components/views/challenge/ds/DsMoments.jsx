@@ -65,10 +65,10 @@ export function DsHallOfFame({ team, date, onDone }) {
                         <span className="ds-hall__pad" />
                         <img
                             className="ds-hall__mon"
-                            src={getDsSprite(species)}
+                            src={getDsSprite(species).url}
                             alt=""
-                            width={96}
-                            height={96}
+                            width={80}
+                            height={80}
                             draggable={false}
                             onError={(e) => handleBattleSpriteError(e, species)}
                         />
