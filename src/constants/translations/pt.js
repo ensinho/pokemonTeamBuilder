@@ -1082,6 +1082,20 @@ export default {
         searchTournaments: 'Buscar por Pokémon, título ou data…',
         tournamentsNoMatch: 'Nenhum time corresponde à busca'
     },
+    moments: {
+        continue: 'Continuar',
+        levelUp: {
+            level: 'Nível {{n}}',
+            title: 'Você subiu para o nível {{n}}!',
+            gained: '+{{xp}} XP no check-in de hoje',
+            reward: 'Nova recompensa: {{name}}',
+        },
+        fullDay: {
+            kicker: 'Jogos do dia',
+            title: 'Dia completo!',
+            sub: 'Os quatro jogos de hoje. O fantasminha vai carimbar o recibo.',
+        },
+    },
     splash: {
         intro: 'Monte · analise · jogue',
         tagline: 'Times sem pontos cegos',
@@ -2938,6 +2952,8 @@ export default {
         shareForumError: 'Erro ao compartilhar no fórum.',
     },
     challenge: {
+        hall: { title: 'HALL DA FAMA', label: 'Hall da Fama de {{date}}: seu time entra para a história' },
+        blackout: { line: '{{name}} venceu desta vez.' },
         strip: {
             chip: 'Tirinha',
             title: 'A tirinha da batalha',

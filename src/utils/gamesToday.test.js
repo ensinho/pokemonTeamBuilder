@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { dayKeyAt } from './challengeDay.js';
 import {
-    DAILY_GAMES, GAME_NAV_KEYS, dayTally, gameDayKey, gameNoteToday, gameOfNavKey, gameResetAt, gamesDoneToday,
+    DAILY_GAMES, GAME_NAV_KEYS, completesDay, dayTally, gameDayKey, gameNoteToday, gameOfNavKey, gameResetAt, gamesDoneToday,
     localDayNumber, mergeGameRecords, nextGameFor, nextGameResetAt, withGameDone,
 } from './gamesToday.js';
 
@@ -139,5 +139,28 @@ describe('mergeGameRecords (this device + the account)', () => {
         expect(gameNoteToday(merged, 'quiz', NOW)).toMatchObject({ found: 9 });
         expect(gamesDoneToday(merged, NOW)).toEqual({ ...NONE, quiz: true });
         expect(mergeGameRecords('nope', 7, NOW)).toEqual({});
+    });
+});
+
+describe('completesDay (the full-day moment)', () => {
+    const played = (games, ms = NOW) => games.reduce((rec, game) => withGameDone(rec, game, ms), {});
+
+    it('answers the game that completes the four', () => {
+        const before = played(['challenge', 'pokepuzzle', 'quiz']);
+        const after = withGameDone(before, 'tierList', NOW);
+        expect(completesDay(before, after, NOW)).toBe(true);
+    });
+
+    it('stays quiet for a day that was already full, or is still short', () => {
+        const full = played(DAILY_GAMES);
+        expect(completesDay(full, withGameDone(full, 'quiz', NOW), NOW)).toBe(false);
+        const two = played(['challenge', 'quiz']);
+        expect(completesDay(two, withGameDone(two, 'pokepuzzle', NOW), NOW)).toBe(false);
+    });
+
+    it('does not count the games of yesterday toward today', () => {
+        const yesterday = NOW - 24 * 3600 * 1000;
+        const before = played(['challenge', 'pokepuzzle', 'quiz'], yesterday);
+        expect(completesDay(before, withGameDone(before, 'tierList', NOW), NOW)).toBe(false);
     });
 });

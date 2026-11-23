@@ -507,46 +507,28 @@
 
 /* ---- Session hand-off (sign out, account deleted) ------------------------- */
 
-.session-transition {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-tooltip);
+.session-scene {
     display: grid;
-    place-items: center;
-    background: var(--color-bg);
-    animation: session-in var(--duration-slow) var(--ease-smooth) both;
+    justify-items: center;
+    gap: var(--space-3);
 }
 
-.session-transition__card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-6);
-    text-align: center;
-}
-
-.session-transition__title {
+.session-scene__title {
     margin: 0;
+    font-family: var(--font-heading);
     font-size: var(--text-xl);
-    color: var(--color-fg);
+    color: var(--mascot-white);
 }
 
-.session-transition__text {
+.session-scene__text {
     margin: 0;
     max-width: 20rem;
     font-size: var(--text-sm);
-    color: var(--color-muted);
-}
-
-@keyframes session-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    color: var(--intro-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .auth-dialog__emblem.is-done svg,
-    .session-transition {
+    .auth-dialog__emblem.is-done svg {
         animation: none;
     }
 }

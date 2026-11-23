@@ -118,6 +118,14 @@
     transform-origin: 50% 50%;
     will-change: transform;
 }
+.bi-word--session {
+    width: min(24rem, 86vw);
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+    pointer-events: auto;
+}
 .bi-word__land {
     position: relative;
     transform-origin: 50% 100%;

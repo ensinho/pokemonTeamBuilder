@@ -63,3 +63,13 @@ bot climbs into his slot (`climbFrames` on `.fj__bot-in`) and waves, and his
 speech bubble ("Oi! Eu sou o Fantasminha.") and "Começar a jornada" arrive.
 Starting goes to `play` without pushing `hello` to the history (going back
 would replay the intro), and the scene leaves through the ghost.
+
+## The session's goodbye and the arrival (2026-11-22)
+
+`SessionTransition` is `<BrandIntro variant="session">`: the night closes in
+around the mascot waving (then vanishing) and the goodbye line, while
+`leaveSession` does its work. The reload that follows starts AppLayout with
+`arrival` (read from `LEFT_SESSION_KEY` before `initAuth` removes it): the
+splash opens on the same night already at rest — no entrance — and leaves
+through the ghost as soon as boot allows (no legibility floor). See
+[living_moments.md](./living_moments.md).

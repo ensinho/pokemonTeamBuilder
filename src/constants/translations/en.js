@@ -1117,6 +1117,20 @@ export default {
         searchTournaments: 'Search by Pokémon, title or date…',
         tournamentsNoMatch: 'No teams match your search'
     },
+    moments: {
+        continue: 'Continue',
+        levelUp: {
+            level: 'Level {{n}}',
+            title: 'You reached level {{n}}!',
+            gained: "+{{xp}} XP from today's check-in",
+            reward: 'New reward: {{name}}',
+        },
+        fullDay: {
+            kicker: "Today's games",
+            title: 'Full day!',
+            sub: "All four of today's games. The little ghost is stamping the receipt.",
+        },
+    },
     splash: {
         intro: 'Build · analyze · play',
         tagline: 'Teams with no blind spots',
@@ -2974,6 +2988,8 @@ export default {
         shareForumError: 'Failed to share on the forum.',
     },
     challenge: {
+        hall: { title: 'HALL OF FAME', label: 'Hall of Fame, {{date}}: your team goes down in history' },
+        blackout: { line: '{{name}} won this time.' },
         strip: {
             chip: 'Comic',
             title: 'The battle as a comic',

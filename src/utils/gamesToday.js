@@ -62,6 +62,17 @@ export function gamesDoneToday(record, ms) {
     return Object.fromEntries(DAILY_GAMES.map((game) => [game, Boolean(record) && record[game] === gameDayKey(game, ms)]));
 }
 
+/**
+ * Whether going from `before` to `after` completed today's four games: the
+ * last one just played (the full-day moment answers that act, never a day
+ * that was already full or a record that arrived from another device).
+ */
+export function completesDay(before, after, ms) {
+    const was = gamesDoneToday(before, ms);
+    const now = gamesDoneToday(after, ms);
+    return DAILY_GAMES.every((game) => now[game]) && !DAILY_GAMES.every((game) => was[game]);
+}
+
 /** A note is a few short figures or ids — never text a trainer typed. */
 const cleanNote = (note) => {
     if (!note || typeof note !== 'object') return null;

@@ -1,4 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Clock, Crown, FastForward, Flame, GalleryHorizontal, Music, Swords, Trophy, Volume2, VolumeX,
 } from 'lucide-react';
@@ -24,6 +25,9 @@ import { track } from '../../../services/analytics';
 import { championArt } from '../../../utils/challengeArt';
 import { CHAMPION_IDS, CHAMPION_NAMES, difficultyLabel as championDifficulty, isChampion } from '../../../utils/challengeChampions';
 import { championRoster, railTeams, timeUntil } from '../../../utils/challengeView';
+import { CHAMPION_ROOM } from '../../../utils/arenaMap';
+import { CHAMPION_MOMENTS, finaleFor, hallDate, hallTeam, irisOrigin } from '../../../utils/championMoments';
+import { holdMoments } from '../../../store/useMomentStore';
 import { EmptyState } from '../../EmptyState';
 import { ChallengeLoader } from './ChallengeLoader';
 import { DsArena } from './ds/DsArena';
@@ -32,6 +36,7 @@ import { IslandChip } from '../../IslandChip';
 import { DsBattleStage } from './ds/DsBattleStage';
 import { DsConsole } from './ds/DsConsole';
 import { DsChampionHint, DsResult, DsSignInGate } from './ds/DsPanels';
+import { DsBlackout, DsHallOfFame, DsPowerOff, DsPowerOn } from './ds/DsMoments';
 import { NextGameCard } from '../../NextGameCard';
 import { DsPoketch } from './ds/DsPoketch';
 import { DsTeamPicker } from './ds/DsTeamPicker';
@@ -97,6 +102,16 @@ export function ChampionChallengeView() {
     // Sound, music and speed — the bar's switches, unlocked by the first press.
     const { muted, toggleMuted, musicOn, toggleMusic, fast, toggleFast } = useBattleSound();
     const [startedRunId, setStartedRunId] = useState(null);
+    const startedRunRef = useRef(null);
+    startedRunRef.current = startedRunId;
+    // The way in and the way out (utils/championMoments.js): the screen
+    // powering on, the Hall of Fame or the blackout after a battle played
+    // here, the screen powering off on the way back to the room. Drawn into
+    // the DS screen itself through a portal.
+    const [moment, setMoment] = useState(null);
+    const [screenEl, setScreenEl] = useState(null);
+    const [nextRises, setNextRises] = useState(false);
+    const poweredOn = useRef(false);
     // While a battle is on screen, ⌘K looks things up in a panel beside it
     // instead of leaving it (QuickLookPanel).
     useQuickLookMode(stage === 'battle' || stage === 'transition');
@@ -317,7 +332,7 @@ export function ChampionChallengeView() {
     // After the result has landed, so the coffee never covers the outcome. Held
     // in a ref: leaving the result (or the page) cancels it.
     const nudgeTimerRef = useRef(0);
-    const handleFinished = useCallback(() => {
+    const enterResult = useCallback(() => {
         setStage('result');
         window.clearTimeout(nudgeTimerRef.current);
         nudgeTimerRef.current = window.setTimeout(() => nudgeSupport('challenge'), 2500);
@@ -334,6 +349,43 @@ export function ChampionChallengeView() {
             }
         });
     }, []);
+    // A battle played here ends on its finale (the Hall of Fame for an official
+    // win, the blackout for a loss), and the result follows when it hands over.
+    // The day's other moments (a full day of games) wait their turn.
+    const handleFinished = useCallback(() => {
+        const finale = reducedMotion ? null : finaleFor(useChampionChallengeStore.getState().run, startedRunRef.current);
+        if (!finale) { enterResult(); return; }
+        holdMoments((finale === 'hall' ? CHAMPION_MOMENTS.hall : CHAMPION_MOMENTS.blackout) + 900);
+        setNextRises(true);
+        setMoment(finale);
+    }, [enterResult, reducedMotion]);
+    const finishFinale = useCallback(() => {
+        setMoment(null);
+        enterResult();
+    }, [enterResult]);
+
+    // Where the moments draw: the screen the console shows now (the room's, the
+    // battle's, the result's) — a new one whenever the view switches branch.
+    const hasDay = Boolean(challenge.day);
+    useLayoutEffect(() => {
+        setScreenEl(document.querySelector('.challenge-view .ds-screen.is-main, .challenge-view .ds-screen.is-top'));
+    }, [stage, layout, moment, challenge.status, hasDay]);
+    // The first screen of a visit powers on — only when it is the room.
+    useEffect(() => {
+        if (!screenEl || poweredOn.current) return;
+        poweredOn.current = true;
+        if (!reducedMotion && (stage === 'arena' || stage === 'dialogue')) setMoment('powerOn');
+    }, [screenEl, stage, reducedMotion]);
+    const backToRoom = useCallback(() => {
+        setStage('arena');
+        setMoment(reducedMotion ? null : 'powerOn');
+    }, [reducedMotion]);
+    let momentNode = null;
+    if (moment === 'powerOn') momentNode = <DsPowerOn origin={irisOrigin(CHAMPION_ROOM)} onDone={() => setMoment(null)} />;
+    else if (moment === 'powerOff') momentNode = <DsPowerOff onDone={backToRoom} />;
+    else if (moment === 'hall') momentNode = <DsHallOfFame team={hallTeam(challenge.run?.lines || [])} date={hallDate(challenge.dayKey)} onDone={finishFinale} />;
+    else if (moment === 'blackout') momentNode = <DsBlackout championName={championName} onDone={finishFinale} />;
+    const momentPortal = momentNode && screenEl ? createPortal(momentNode, screenEl) : null;
     useEffect(() => {
         if (stage === 'result') return undefined;
         window.clearTimeout(nudgeTimerRef.current);
@@ -546,7 +598,11 @@ export function ChampionChallengeView() {
                     onShare={challenge.run.practice ? undefined : share}
                     isSharing={isSharing}
                     // Back to the room — where another champion may be waiting.
-                    onBack={() => setStage('arena')}
+                    onBack={() => {
+                        setNextRises(false);
+                        if (reducedMotion) setStage('arena');
+                        else setMoment('powerOff');
+                    }}
                     // The comic strip and a friend's duel (social-heart C5) live in the result, not the bar.
                     extras={[
                         ...(challenge.run?.lines?.length > 0
@@ -561,6 +617,7 @@ export function ChampionChallengeView() {
             const teams = railsOn && railTeams(challenge.run.lines || [], challenge.day?.lineup || []);
             return (
                 <div className="challenge-view" ref={viewRef}>
+                    {momentPortal}
                     {layout === 'single' ? (
                         <DsConsole
                             layout="single"
@@ -588,7 +645,9 @@ export function ChampionChallengeView() {
                         />
                     )}
                     {/* The battle is over: the day's next game is one tap away (2026-11-15). */}
-                    <NextGameCard game="pokepuzzle" from="challenge" />
+                    <div className={nextRises ? 'challenge-next-rise' : undefined}>
+                        <NextGameCard game="pokepuzzle" from="challenge" />
+                    </div>
                     {rankingSheet}
                     {recapDialog}
                 </div>
@@ -596,6 +655,7 @@ export function ChampionChallengeView() {
         }
         return (
             <div className="challenge-view" ref={viewRef}>
+                    {momentPortal}
                 <DsBattleStage
                     key={challenge.run.runId}
                     run={challenge.run}
@@ -688,6 +748,7 @@ export function ChampionChallengeView() {
         const menu = ((stage === 'gate' || stage === 'pick' || stage === 'transition' || hint) && bottom);
         return (
             <div className="challenge-view" ref={viewRef}>
+                    {momentPortal}
                 <DsConsole
                     layout="single"
                     label={t('challenge.title')}
@@ -716,6 +777,7 @@ export function ChampionChallengeView() {
 
     return (
         <div className="challenge-view" ref={viewRef}>
+                    {momentPortal}
             <DsConsole
                 label={t('challenge.title')}
                 bar={bar}
