@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MascotCompanion } from '../MascotCompanion';
 import { RATINGS } from '../../utils/teamRating';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
-import { activeMention, insertMention, mentionSuggestions } from '../../utils/forumMentions';
 import { SendHorizontal } from 'lucide-react';
 import { CloseIcon, SwordsIcon, ClipIcon, StarIcon, ReplyIcon } from '../icons';
 import { AttachMenuPopover } from './AttachMenuPopover';
+import { ForumMentionPicker, useForumMentionPicker } from './ForumMentionPicker';
 import { PartyPips } from '../PartyPips';
 
 /**
  * The docked composer: one row — attach, the field, post — that grows only
  * while you type (it was two rows and ~230px on a phone before 2026-10-17).
- * Reply and attached-team banners sit above the row when present.
+ * Reply and attached-team banners sit above the row when present, and inline
+ * `#Pokémon` / `@Treinador` autocompletion floats cleanly above the field.
  */
 export const CommentComposer = React.forwardRef(function CommentComposer({
     replyText,
@@ -37,51 +38,47 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
     t,
 }, ref) {
     const [isAttachOpen, setIsAttachOpen] = useState(false);
-    // @mentions (2026-11-06): the partial before the caret, and who matches it.
-    const [mention, setMention] = useState(null);
-    const suggestions = mention ? mentionSuggestions(mentionCandidates, mention.query) : [];
-    const pickMention = (name) => {
-        const field = ref?.current;
-        if (!mention) return;
-        const next = insertMention(replyText, mention, name);
-        onReplyTextChange({ target: { value: next.text } });
-        setMention(null);
-        requestAnimationFrame(() => {
-            if (!field) return;
-            field.focus();
-            field.setSelectionRange(next.caret, next.caret);
-        });
-    };
+    const localFieldRef = useRef(null);
     const attachButtonRef = useRef(null);
-    const closeAttach = React.useCallback(() => setIsAttachOpen(false), []);
+    const closeAttach = useCallback(() => setIsAttachOpen(false), []);
+
+    const setMergedRef = useCallback((node) => {
+        localFieldRef.current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) ref.current = node;
+    }, [ref]);
+
+    const handleMentionReplace = useCallback((nextText) => {
+        onReplyTextChange({ target: { value: nextText } });
+    }, [onReplyTextChange]);
+
+    const mentionPicker = useForumMentionPicker({
+        value: replyText,
+        onChange: handleMentionReplace,
+        fieldRef: localFieldRef,
+        trainers: mentionCandidates,
+        enabled: !disabled,
+    });
 
     // Auto-grow the field up to ~7 lines, then it scrolls.
     const handleTextChange = (e) => {
         onReplyTextChange(e);
-        setMention(activeMention(e.target.value, e.target.selectionStart ?? e.target.value.length));
+        mentionPicker.syncFromTarget(e.target);
         e.target.style.height = 'auto';
         e.target.style.height = `${Math.min(e.target.scrollHeight, 168)}px`;
     };
 
     useEffect(() => {
-        if (!replyText && ref?.current) {
-            ref.current.style.height = '';
+        if (!replyText && localFieldRef.current) {
+            localFieldRef.current.style.height = '';
         }
-    }, [replyText, ref]);
+    }, [replyText]);
 
     // Enter sends only where there is a physical keyboard; on a phone the
     // Return key is the only way to start a new line, so it must not send
     // (the send button is right there). Ctrl/⌘+Enter sends everywhere.
     const handleKeyDown = (e) => {
-        if (suggestions.length && (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey))) {
-            e.preventDefault();
-            pickMention(suggestions[0]);
-            return;
-        }
-        if (e.key === 'Escape' && mention) {
-            setMention(null);
-            return;
-        }
+        if (mentionPicker.handleKeyDown(e)) return;
         if (e.key !== 'Enter' || e.nativeEvent?.isComposing) return;
         const finePointer = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches;
         if ((e.metaKey || e.ctrlKey) || (finePointer && !e.shiftKey)) {
@@ -231,28 +228,29 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                     )}
                 </AttachMenuPopover>
 
-                {suggestions.length > 0 && (
-                    <div className="mention-suggest" role="listbox" aria-label={t('forum.mentionLabel')}>
-                        {suggestions.map((name) => (
-                            <button
-                                key={name}
-                                type="button"
-                                role="option"
-                                aria-selected={false}
-                                className="mention-suggest__item"
-                                onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => pickMention(name)}
-                            >
-                                @{name}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <ForumMentionPicker
+                    isOpen={mentionPicker.isOpen}
+                    kind={mentionPicker.kind}
+                    items={mentionPicker.items}
+                    isLoading={mentionPicker.isLoading}
+                    activeIndex={mentionPicker.activeIndex}
+                    onSelect={mentionPicker.selectItem}
+                    onHoverIndex={mentionPicker.setActiveIndex}
+                    placement="top"
+                    t={t}
+                />
+
                 <textarea
-                    ref={ref}
+                    ref={setMergedRef}
                     rows={1}
                     value={replyText}
                     onChange={handleTextChange}
+                    onClick={(e) => mentionPicker.syncFromTarget(e.target)}
+                    onKeyUp={(e) => {
+                        if (!['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key)) {
+                            mentionPicker.syncFromTarget(e.target);
+                        }
+                    }}
                     onKeyDown={handleKeyDown}
                     disabled={disabled}
                     aria-label={t('forum.composerPlaceholder')}
@@ -272,6 +270,10 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                     <SendHorizontal className="w-4 h-4" aria-hidden="true" />
                     <span className="comment-composer__send-label">{t('forum.send')}</span>
                 </button>
+            </div>
+
+            <div className="comment-composer__foot">
+                <span className="comment-composer__hint">{t('markedUi.forum.mentionHint')}</span>
             </div>
         </form>
     );

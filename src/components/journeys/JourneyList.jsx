@@ -70,12 +70,29 @@ export function JourneyTile({ journey, isCurrent }) {
     );
 }
 
-/** The thin bar under a level's head: how much of it is done. */
-export const JourneyBar = ({ percent }) => (
-    <span className="journey__bar" aria-hidden="true">
-        <i style={{ inlineSize: `${percent}%` }} />
-    </span>
-);
+/** The thin segmented track under a level's head: how much of it is done. */
+export const JourneyBar = ({ percent = 0, total, done }) => {
+    const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+    if (total === 0) {
+        return (
+            <span className="journey__bar" aria-hidden="true">
+                <i style={{ inlineSize: `${pct}%` }} />
+            </span>
+        );
+    }
+    const count = typeof total === 'number' && total > 0 && total <= 12 ? total : 4;
+    const filled = typeof done === 'number'
+        ? Math.max(0, Math.min(count, done))
+        : Math.round((pct / 100) * count);
+    const complete = filled >= count || pct >= 100;
+    return (
+        <span className={`journey__bar journey__bar--segmented ${complete ? 'is-complete' : ''}`} aria-hidden="true">
+            {Array.from({ length: count }, (_, idx) => (
+                <i key={idx} className={idx < filled ? 'is-filled' : undefined} />
+            ))}
+        </span>
+    );
+};
 
 function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
     // A persona journey (2026-11-05) wears its profile, not a level number.
@@ -103,7 +120,7 @@ function JourneyCard({ journey, isCurrent, isRecommended, isOpen, onToggle }) {
 
             {isOpen && (
                 <div id={bodyId} className="journey__body">
-                    <JourneyBar percent={journey.percent} />
+                    <JourneyBar percent={journey.percent} total={journey.total} done={journey.doneCount} />
                     <ol className="journey__missions">
                         {journey.missions.map((mission) => <MissionRow key={mission.id} mission={mission} />)}
                     </ol>

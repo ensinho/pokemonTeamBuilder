@@ -12,6 +12,7 @@ import { FriendActivityList } from '../social/FriendActivityList';
 import '../../styles/friend-activity.css';
 
 const STACK = 4;
+const METER_BARS = 12;
 
 /**
  * "Hoje no Centro" (2026-11-09): the day as a place, on Home. Three doors with
@@ -45,6 +46,7 @@ export function CenterToday({ variant = 'full', myPuzzle = null, friends = true 
         { key: 'champions', to: '/challenge', Icon: Crown, n: counts.champions, label: t('social.center.champions'), tone: typeColors.dragon },
         { key: 'diary', to: `/feed?topic=${encodeURIComponent(diaryTopicId)}`, Icon: MessageCircle, n: diaryCount, label: t('social.center.diary'), tone: typeColors.water },
     ];
+    const maxCount = Math.max(1, ...doors.map((d) => Number(d.n) || 0));
 
     let friendsLine = null;
     if (!isGuest) {
@@ -92,12 +94,21 @@ export function CenterToday({ variant = 'full', myPuzzle = null, friends = true 
             <ul className="center-today__doors">
                 {doors.map((door) => {
                     const DoorIcon = door.Icon;
+                    const count = Number(door.n) || 0;
+                    const litBars = count > 0
+                        ? Math.max(1, Math.min(METER_BARS, Math.round((count / maxCount) * METER_BARS)))
+                        : 0;
                     return (
                         <li key={door.key}>
                             <Link to={door.to} className={`center-today__door center-today__door--${door.key}`} style={{ '--door-tone': door.tone }}>
                                 <span className="center-today__icon" aria-hidden="true"><DoorIcon /></span>
-                                <RollingNumber value={door.n} className="center-today__n" />
                                 <span className="center-today__label">{door.label}</span>
+                                <span className="center-today__meter" aria-hidden="true">
+                                    {Array.from({ length: METER_BARS }, (_, idx) => (
+                                        <i key={idx} className={idx < litBars ? 'is-on' : undefined} />
+                                    ))}
+                                </span>
+                                <RollingNumber value={count} className="center-today__n" />
                                 <ChevronRight className="center-today__go" aria-hidden="true" />
                             </Link>
                         </li>

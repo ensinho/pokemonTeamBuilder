@@ -24,8 +24,12 @@
  * where the island would).
  */
 
-/** The pages of the day's games, where the island shows the day. */
-export const GAME_PATHS = ['/games', '/quiz', '/pokepuzzle', '/tier-list'];
+/**
+ * The pages of the day's games where the island shows the day.
+ * `/games` is intentionally omitted: it already displays all 4 games and the
+ * day's belt, and on mobile the floating pill overlapped the Champion card.
+ */
+export const GAME_PATHS = ['/quiz', '/pokepuzzle', '/tier-list'];
 export const isGamesPath = (path = '') => GAME_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
 /** Where each of the day's games opens (the Jogos page's own doors). */

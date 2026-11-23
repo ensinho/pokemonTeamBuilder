@@ -14,6 +14,8 @@ import { Sprite } from '../Sprite';
 import { StarIcon } from '../icons';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { TypeMatchToggle } from '../TypeMatchToggle';
+import { PokedexFloatDock } from '../pokedex/PokedexFloatDock';
+import { PokedexSpotlightModal } from '../pokedex/PokedexSpotlightModal';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
@@ -44,6 +46,17 @@ import {
 // ---------------------------------------------------------------------------
 
 const DETAIL_STATE = { from: '/pokedex' };
+const COLS_STORAGE_KEY = 'ptb:pokedexCols';
+const COL_STEPS = [4, 6, 8];
+
+const readStoredCols = () => {
+    try {
+        const raw = Number(window.localStorage.getItem(COLS_STORAGE_KEY));
+        return COL_STEPS.includes(raw) ? raw : 6;
+    } catch {
+        return 6;
+    }
+};
 
 const isPlainClick = (event) => !event.defaultPrevented
     && event.button === 0
@@ -302,7 +315,16 @@ export function PokedexView({
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-    const desktopResultsRef = useRef(null);
+    const [desktopCols, setDesktopCols] = useState(readStoredCols);
+    const [spotlightPokemon, setSpotlightPokemon] = useState(null);
+
+    const cycleDesktopCols = useCallback(() => {
+        setDesktopCols((prev) => {
+            const next = COL_STEPS[(COL_STEPS.indexOf(prev) + 1) % COL_STEPS.length];
+            try { window.localStorage.setItem(COLS_STORAGE_KEY, String(next)); } catch { /* ignore */ }
+            return next;
+        });
+    }, []);
 
     const displayedPokemons = useMemo(() => {
         return showOnlyFavorites
@@ -316,11 +338,10 @@ export function PokedexView({
 
     // Opening a Pokémon leaves this page and comes back through a fresh render,
     // so the browser has nothing to restore — put the user back where they were
-    // instead of at the top of 1025 Pokémon. Mobile scrolls the app shell;
-    // desktop scrolls the results panel.
+    // instead of at the top of 1025 Pokémon. Both mobile and desktop now scroll
+    // the app shell cleanly.
     useScrollRestoration(listSignature, {
         ready: !isInitialLoading && gridPokemons.length > 0,
-        containerRef: isMobile ? undefined : desktopResultsRef,
     });
 
     // Count of active filters (excluding search + favorites, which stay inline) —
@@ -328,8 +349,6 @@ export function PokedexView({
     const activeFilterCount = selectedTypes.size
         + (selectedGeneration && selectedGeneration !== 'all' ? 1 : 0)
         + (selectedGame && selectedGame !== 'all' ? 1 : 0);
-
-    const selectedTypeCount = selectedTypes.size;
 
     // Detect mobile view size
     useEffect(() => {
@@ -339,6 +358,11 @@ export function PokedexView({
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Close desktop spotlight if the viewport transitions to mobile.
+    useEffect(() => {
+        if (isMobile) setSpotlightPokemon(null);
+    }, [isMobile]);
 
     // Backward-compat: old deep links used /pokedex?pokemon=<id|name> to open an
     // inline panel. Details now live on their own page — redirect those links there.
@@ -352,22 +376,25 @@ export function PokedexView({
     // also the site search box Google may show under the result for this site
     // (Home's WebSite/SearchAction JSON-LD, seoPages.js).
 
-    // Clicking a Pokémon opens its dedicated detail page (researchable, shareable
-    // URL). The *filtered* order goes with it: on a phone the detail screen is a
-    // carousel, and "next" has to mean the next card in the list the user is
-    // looking at — not the next national id. Only an unmodified primary click
-    // is taken over; Cmd/Ctrl/Shift/middle-click stay the browser's.
+    // Mobile: clicking a Pokémon navigates straight to its dedicated detail page
+    // with the sprite hero transition. Desktop: unmodified primary click opens the
+    // Split Quick-Peek Spotlight modal (Cmd/Ctrl/middle click still follows the
+    // real <Link> directly to /pokemon/:id).
     const handleOpenCard = useCallback((event, pokemon) => {
         if (!isPlainClick(event) || !pokemon?.id) return;
         event.preventDefault();
         setBrowseSequence(usePokedexStore.getState().filteredPokemons);
+        if (!isMobile) {
+            setSpotlightPokemon(pokemon);
+            return;
+        }
         // The card's sprite travels into the detail hero (utils/heroTransition.js).
         const source = document.querySelector(`[data-hero-source="${pokemon.id}"]`);
         // The origin carries the filters, so the detail page's back button
         // returns to this exact list.
         const from = `/pokedex${window.location.search}`;
         navigateWithHero(navigate, `/pokemon/${pokemon.id}`, { state: { from } }, source);
-    }, [navigate, setBrowseSequence]);
+    }, [isMobile, navigate, setBrowseSequence]);
 
     // AppLayout's toggle is not guaranteed stable; the memoised cards need one
     // that is, or every card re-renders whenever the shell does.
@@ -590,146 +617,159 @@ export function PokedexView({
     }
 
     // --- DESKTOP VIEW TEMPLATE (Width >= 1024px) ---
+    const selectedGameLabel = selectedGame && selectedGame !== 'all'
+        ? (games.find((g) => g.key === selectedGame)?.label || selectedGame)
+        : null;
+    const hasHeaderChips = selectedTypes.size > 0
+        || (selectedGeneration && selectedGeneration !== 'all')
+        || Boolean(selectedGameLabel)
+        || showOnlyFavorites;
+    const currentFromPath = searchParams.toString() ? `/pokedex?${searchParams.toString()}` : '/pokedex';
+
     return (
-        <main className="team-builder grid grid-cols-1 relative">
-            <div className="grid gap-5 grid-cols-1">
-                <section className="team-builder-panel team-builder-panel--picker p-4">
-                    <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
-                        <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
-                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('nav.pokedex')}</h2>
-                            <span className="team-builder-panel__meta team-builder-panel__meta--compact">{filteredTotal}</span>
-                            {/* A little mascot (2026-11-11): curious while the trainer
-                                searches, a loving nod for a new favourite. */}
-                            <MascotCompanion listen rest={searchInput ? 'curioso' : 'feliz'} size="sm" stage={false} className="pokedex-mascot" />
-                        </div>
+        <main className="pokedex-page">
+            <header className="pokedex-header">
+                <div className="pokedex-header__main">
+                    <div className="pokedex-header__lead">
+                        <h2 className="pokedex-header__title">{t('markedUi.pokedex.exploreTitle')}</h2>
+                        <span className="pokedex-header__count figure">
+                            {t('markedUi.pokedex.speciesCount', { count: filteredTotal })}
+                        </span>
+                        {/* A little mascot (2026-11-11): curious while the trainer
+                            searches, a loving nod for a new favourite. */}
+                        <MascotCompanion listen rest={searchInput ? 'curioso' : 'feliz'} size="sm" stage={false} className="pokedex-mascot" />
                     </div>
 
-                    <div className="team-builder-picker-toolbar team-builder-picker-toolbar--compact mt-3">
-                        <div className="team-builder-picker-focus" role="group" aria-label="Type focus">
-                            <div className="team-builder-type-grid team-builder-type-grid--compact">
-                                {Object.keys(typeColors).map((type) => (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => handleTypeSelection(type)}
-                                        className={`team-builder-type-button team-builder-type-button--compact ${selectedTypes.has(type) ? 'is-active' : ''}`}
-                                        title={type}
-                                        aria-pressed={selectedTypes.has(type)}
-                                    >
-                                        <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        {/* Progressive disclosure (signed-in pass, 2026-11-09): "any/all"
-                            only means something with two types picked, and the summary
-                            pill that read "Todos os tipos" looked like a button that did
-                            nothing — it is now the way to clear the pick. */}
-                        {selectedTypeCount >= 2 && <TypeMatchToggle value={typeMatchMode} onChange={setTypeMatchMode} />}
-                        {selectedTypeCount > 0 && (
-                            <button
-                                type="button"
-                                className="team-builder-picker-summary team-builder-picker-summary--clear"
-                                onClick={() => [...selectedTypes].forEach((type) => handleTypeSelection(type))}
-                            >
-                                <X className="w-3.5 h-3.5" aria-hidden="true" />
-                                {t('pokedex.clearTypes', { count: selectedTypeCount })}
-                            </button>
-                        )}
-                    </div>
+                    {hasHeaderChips && (
+                        <div className="pokedex-header__chips" aria-label={t('markedUi.pokedex.filters')}>
+                            {[...selectedTypes].map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => handleTypeSelection(type)}
+                                    className="pokedex-active-chip pokedex-active-chip--type"
+                                    style={{ '--type-chip': typeColors[type] }}
+                                    aria-label={`${t('common.clear')}: ${t(`types.${type}`, { defaultValue: type })}`}
+                                >
+                                    {typeIcons[type] && (
+                                        <img src={typeIcons[type]} alt="" aria-hidden="true" className="pokedex-active-chip__icon" />
+                                    )}
+                                    <span>{t(`types.${type}`, { defaultValue: type })}</span>
+                                    <X className="h-3 w-3 shrink-0" aria-hidden="true" />
+                                </button>
+                            ))}
 
-                    <div className="team-builder-unified-toolbar mt-3">
-                        <div className="team-builder-search-wrap">
-                            <span className="team-builder-search-icon" aria-hidden="true">
-                                <Search className="w-4 h-4" />
-                            </span>
-                            <input
-                                type="text"
-                                placeholder={t('pokedex.searchPlaceholder')}
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                className="team-builder-field team-builder-field--compact team-builder-search-input"
-                            />
-                            {searchInput && (
+                            {selectedGeneration && selectedGeneration !== 'all' && (
                                 <button
                                     type="button"
-                                    onClick={() => setSearchInput('')}
-                                    className="team-builder-search-clear"
-                                    aria-label={t('common.clear')}
+                                    onClick={() => setSelectedGeneration('all')}
+                                    className="pokedex-active-chip"
+                                    aria-label={`${t('common.clear')}: ${selectedGeneration}`}
                                 >
-                                    <X className="w-4 h-4" />
+                                    <span className="capitalize">{selectedGeneration.replace('-', ' ')}</span>
+                                    <X className="h-3 w-3 shrink-0" aria-hidden="true" />
+                                </button>
+                            )}
+
+                            {selectedGameLabel && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedGame('all')}
+                                    className="pokedex-active-chip"
+                                    aria-label={`${t('common.clear')}: ${selectedGameLabel}`}
+                                >
+                                    <span>{selectedGameLabel}</span>
+                                    <X className="h-3 w-3 shrink-0" aria-hidden="true" />
+                                </button>
+                            )}
+
+                            {showOnlyFavorites && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOnlyFavorites(false)}
+                                    className="pokedex-active-chip pokedex-active-chip--fav"
+                                    aria-label={`${t('common.clear')}: ${t('pokedex.favoritesOnly')}`}
+                                >
+                                    <Star className="h-3 w-3 fill-current shrink-0" aria-hidden="true" />
+                                    <span>{t('pokedex.favoritesOnly')}</span>
+                                    <X className="h-3 w-3 shrink-0" aria-hidden="true" />
                                 </button>
                             )}
                         </div>
+                    )}
+                </div>
 
-                        <div className="team-builder-select-wrap">
-                            <select
-                                value={selectedGeneration}
-                                onChange={(e) => setSelectedGeneration(e.target.value)}
-                                className="team-builder-field team-builder-field--compact team-builder-select"
-                                aria-label={t('pokedex.genFilterLabel')}
-                            >
-                                <option value="all">{t('pokedex.allGens')}</option>
-                                {generations.map((generation) => (
-                                    <option key={generation} value={generation} className="capitalize">
-                                        {generation.replace('-', ' ')}
-                                    </option>
-                                ))}
-                            </select>
+                <span className="pokedex-header__hint">{t('markedUi.pokedex.quickPeekHint')}</span>
+            </header>
+
+            <section className="pokedex-desktop-section">
+                {isInitialLoading ? (
+                    <div className="pokedex-desktop-loading">
+                        <Loader scene="pokedex" />
+                    </div>
+                ) : (
+                    <>
+                        <div
+                            className="pokedex-desktop-grid"
+                            style={{ '--pokedex-cols': desktopCols }}
+                        >
+                            <PokedexGrid
+                                pokemons={gridPokemons}
+                                favoritePokemons={favoritePokemons}
+                                onOpen={handleOpenCard}
+                                onToggleFavorite={handleToggleFavorite}
+                                lastRef={lastPokemonElementRef}
+                                t={t}
+                            />
                         </div>
 
-                        <GameFilterChip
-                            games={games}
-                            selectedGame={selectedGame}
-                            onOpen={() => setIsGamePickerOpen(true)}
-                        />
-
-                        <button
-                            type="button"
-                            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                            className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
-                            aria-pressed={showOnlyFavorites}
-                        >
-                            <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-current text-accent' : 'text-muted'}`} />
-                            {/* One label, on or off: "★ Todos" when off read as a second "all" filter. */}
-                            <span>{t('pokedex.favoritesOnly')}</span>
-                        </button>
-                    </div>
-
-                    <div className="team-builder-results mt-4">
-                        {isInitialLoading ? (
-                            <div className="team-builder-spinner-wrap h-full">
-                                <Loader scene="pokedex" />
-                            </div>
-                        ) : (
-                            <div ref={desktopResultsRef} className="team-builder-results__scroll custom-scrollbar">
-                                <div className="team-builder-results__grid grid gap-4 p-1 py-4 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
-                                    <PokedexGrid
-                                        pokemons={gridPokemons}
-                                        favoritePokemons={favoritePokemons}
-                                        onOpen={handleOpenCard}
-                                        onToggleFavorite={handleToggleFavorite}
-                                        lastRef={lastPokemonElementRef}
-                                        t={t}
-                                    />
-                                </div>
-
-                                {isFetchingMore && (
-                                    <div className="team-builder-spinner-wrap py-4">
-                                        <Loader size="sm" />
-                                    </div>
-                                )}
-
-                                {gridPokemons.length === 0 && !isInitialLoading && (
-                                    <div className="px-2 pb-4">
-                                        {emptyState}
-                                    </div>
-                                )}
+                        {isFetchingMore && (
+                            <div className="pokedex-desktop-more">
+                                <Loader size="sm" />
                             </div>
                         )}
-                    </div>
-                </section>
-            </div>
+
+                        {gridPokemons.length === 0 && !isInitialLoading && (
+                            <div className="pokedex-desktop-empty">
+                                {emptyState}
+                            </div>
+                        )}
+                    </>
+                )}
+            </section>
+
+            <PokedexFloatDock
+                searchInput={searchInput}
+                setSearchInput={setSearchInput}
+                selectedTypes={selectedTypes}
+                handleTypeSelection={handleTypeSelection}
+                typeMatchMode={typeMatchMode}
+                setTypeMatchMode={setTypeMatchMode}
+                selectedGeneration={selectedGeneration}
+                setSelectedGeneration={setSelectedGeneration}
+                generations={generations}
+                games={games}
+                selectedGame={selectedGame}
+                onOpenGamePicker={() => setIsGamePickerOpen(true)}
+                showOnlyFavorites={showOnlyFavorites}
+                setShowOnlyFavorites={setShowOnlyFavorites}
+                activeFilterCount={activeFilterCount}
+                onClearFilters={clearFilters}
+                cols={desktopCols}
+                onCycleCols={cycleDesktopCols}
+            />
+
+            {spotlightPokemon && (
+                <PokedexSpotlightModal
+                    pokemon={spotlightPokemon}
+                    list={gridPokemons}
+                    onSelectPokemon={setSpotlightPokemon}
+                    onClose={() => setSpotlightPokemon(null)}
+                    isFavorite={favoritePokemons.has(spotlightPokemon.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                    fromPath={currentFromPath}
+                />
+            )}
 
             <GamePickerModal
                 isOpen={isGamePickerOpen}

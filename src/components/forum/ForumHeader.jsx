@@ -1,23 +1,31 @@
-import React from 'react';
-import { SearchIcon, CloseIcon, PlusIcon, MenuIcon } from '../icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { SearchIcon, CloseIcon, PlusIcon, MenuIcon, ClockIcon, MessageIcon } from '../icons';
 import { FORUM_SORTS, FORUM_CATEGORIES } from './forumNav';
+import { formatForumTime } from '../../utils/forumTime';
 import { MascotCompanion } from '../MascotCompanion';
+import { AnchoredPopover } from '../AnchoredPopover';
+
+const CORE_DESKTOP_CATEGORIES = new Set(['diary', 'general', 'teams', 'strategy', 'feedback']);
+
+const categoryIconFor = (id) => FORUM_CATEGORIES.find((c) => c.id === id)?.icon || MessageIcon;
 
 /**
- * The top of the feed. On a phone it is the Reddit app's two lines
- * (2026-11-10, Enzo: "não fica claro o que fazer ou onde achar"):
- *   ☰ · the search field · Criar
- *   Recentes | Em alta | Top — every tab says its name
- * and, only while a category is chosen, one chip that names it and clears it.
- * The categories themselves live behind ☰ (`ForumDrawer`), with the pinned
- * rooms and the trainer's own topics; before, three unlabeled icons and a
- * sideways row of eight chips stood between the trainer and the first post.
- * On a desktop the explorer column carries all of that, so the header is the
- * name's figures, the search and Create.
+ * The top of the feed.
+ * - Desktop: single search + single primary `+ Criar post` in the top row,
+ *   followed by a unified navigation strip with quiet Sort pills, Category
+ *   filter pills (Todos + counts), and a lightweight `Atividade recente`
+ *   popover listing the 5 latest active topics.
+ * - Phone: ☰ drawer + search + Criar, followed by Recentes | Em alta | Top
+ *   tabs and a removable chosen-category chip when filtered.
  */
 export function ForumHeader({
     selectedCategory,
     onSelectCategory,
+    categoryCounts = {},
+    latest = [],
+    hrefFor,
+    onBeforeOpen,
     searchQuery,
     onSearchChange,
     sortBy,
@@ -26,12 +34,46 @@ export function ForumHeader({
     onOpenMenu,
     isMenuOpen = false,
     stats,
+    language = 'pt',
     t,
 }) {
+    const [isRecentOpen, setIsRecentOpen] = useState(false);
+    const recentBtnRef = useRef(null);
+    const recentPopoverRef = useRef(null);
+
+    useEffect(() => {
+        if (!isRecentOpen) return undefined;
+        const onPointerDown = (event) => {
+            if (recentBtnRef.current?.contains(event.target) || recentPopoverRef.current?.contains(event.target)) return;
+            setIsRecentOpen(false);
+        };
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsRecentOpen(false);
+                recentBtnRef.current?.focus();
+            }
+        };
+        document.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [isRecentOpen]);
+
     const category = selectedCategory !== 'all'
         ? FORUM_CATEGORIES.find((c) => c.id === selectedCategory)
         : null;
     const CategoryIcon = category?.icon;
+
+    const desktopCategories = FORUM_CATEGORIES.filter(({ id }) => {
+        if (id === 'all') return true;
+        return CORE_DESKTOP_CATEGORIES.has(id)
+            || selectedCategory === id
+            || (categoryCounts?.[id] || 0) > 0;
+    });
+
+    const recentTopics = (latest || []).slice(0, 5);
 
     return (
         <header className="forum-feed-head">
@@ -68,6 +110,58 @@ export function ForumHeader({
                     )}
                 </div>
 
+                {recentTopics.length > 0 && hrefFor && (
+                    <>
+                        <button
+                            ref={recentBtnRef}
+                            type="button"
+                            className={`btn btn-ghost btn-sm forum-recent-btn ${isRecentOpen ? 'is-open' : ''}`}
+                            aria-haspopup="dialog"
+                            aria-expanded={isRecentOpen}
+                            onClick={() => setIsRecentOpen((open) => !open)}
+                        >
+                            <ClockIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            <span>{t('markedUi.forum.recentActivity')}</span>
+                        </button>
+
+                        <AnchoredPopover
+                            isOpen={isRecentOpen}
+                            anchorRef={recentBtnRef}
+                            popoverRef={recentPopoverRef}
+                            placement="bottom"
+                            offset={8}
+                            role="dialog"
+                            ariaLabel={t('markedUi.forum.recentActivityTitle')}
+                            className="forum-recent-popover"
+                        >
+                            <p className="forum-recent-popover__head">{t('markedUi.forum.recentActivityTitle')}</p>
+                            <ul className="forum-recent-popover__list">
+                                {recentTopics.map((tp) => {
+                                    const Icon = categoryIconFor(tp.category);
+                                    return (
+                                        <li key={tp.id}>
+                                            <Link
+                                                to={hrefFor(tp.id)}
+                                                className="forum-recent-popover__item"
+                                                onClick={() => {
+                                                    setIsRecentOpen(false);
+                                                    onBeforeOpen?.(tp.id);
+                                                }}
+                                            >
+                                                <Icon className="forum-recent-popover__icon" aria-hidden="true" />
+                                                <span className="forum-recent-popover__title">{tp.title}</span>
+                                                <span className="forum-recent-popover__when">
+                                                    {formatForumTime(tp.lastActivityAt || tp.createdAt, language)}
+                                                </span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </AnchoredPopover>
+                    </>
+                )}
+
                 <label className="forum-search">
                     <SearchIcon className="forum-search__icon" />
                     <input
@@ -97,6 +191,47 @@ export function ForumHeader({
                     <span className="forum-feed-head__create-long">{t('forum.createPost')}</span>
                     <span className="forum-feed-head__create-short">{t('forum.createShort')}</span>
                 </button>
+            </div>
+
+            {/* Desktop unified navigation strip: Sort pills + Category filter pills + Recent activity popover. */}
+            <div className="forum-feed-head__bar">
+                <div className="segmented segmented--quiet segmented--sm forum-feed-head__sort" role="group" aria-label={t('forum.sortLabel')}>
+                    {FORUM_SORTS.map(({ id, key }) => (
+                        <button
+                            key={id}
+                            type="button"
+                            className="segmented__item"
+                            aria-pressed={sortBy === id}
+                            onClick={() => onSortChange(id)}
+                        >
+                            {t(key)}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="forum-feed-head__cats" role="group" aria-label={t('forum.categoriesLabel')}>
+                    {desktopCategories.map(({ id, key, icon }) => {
+                        const Icon = icon;
+                        const count = categoryCounts?.[id] ?? 0;
+                        const active = selectedCategory === id;
+                        const label = id === 'all' ? t('markedUi.forum.allCategories') : t(key);
+                        return (
+                            <button
+                                key={id}
+                                type="button"
+                                className="forum-chip"
+                                aria-pressed={active}
+                                onClick={() => onSelectCategory(id)}
+                            >
+                                <Icon className="forum-chip__icon" aria-hidden="true" />
+                                <span>{label}</span>
+                                {(id === 'all' || count > 0) && (
+                                    <span className="forum-chip__count">{count}</span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             <div className="tabs forum-feed-head__tabs" role="tablist" aria-label={t('forum.sortLabel')}>

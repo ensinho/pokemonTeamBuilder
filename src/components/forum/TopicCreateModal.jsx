@@ -4,6 +4,7 @@ import { getCategoryMeta } from '../../utils/forumTime';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { AttachMenuPopover } from './AttachMenuPopover';
+import { ForumMentionPicker, useForumMentionPicker } from './ForumMentionPicker';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
 const TITLE_MAX = 120;
@@ -24,6 +25,7 @@ export function TopicCreateModal({
     teamName = '',
     initialTeam = null,
     initialCategory = null,
+    mentionCandidates = [],
     language = 'pt',
     t,
 }) {
@@ -37,7 +39,27 @@ export function TopicCreateModal({
     const [submitError, setSubmitError] = useState(false);
     const attachButtonRef = useRef(null);
     const titleRef = useRef(null);
+    const bodyRef = useRef(null);
     const closeAttach = useCallback(() => setIsAttachOpen(false), []);
+
+    const mentionPicker = useForumMentionPicker({
+        value: text,
+        onChange: setText,
+        fieldRef: bodyRef,
+        trainers: mentionCandidates,
+        enabled: isOpen,
+    });
+
+    const mentionOpenRef = useRef(false);
+    mentionOpenRef.current = mentionPicker.isOpen;
+
+    const handleModalClose = useCallback(() => {
+        if (mentionOpenRef.current) {
+            mentionPicker.dismiss();
+            return;
+        }
+        onClose();
+    }, [mentionPicker, onClose]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -49,6 +71,7 @@ export function TopicCreateModal({
             setIsSubmitting(false);
             setTitleError(false);
             setSubmitError(false);
+            mentionPicker.dismiss();
         } else {
             if (initialTeam) setAttachedTeam(initialTeam);
             if (initialCategory) setCategory(initialCategory);
@@ -57,7 +80,7 @@ export function TopicCreateModal({
     }, [isOpen]);
 
     // Escape, focus, the phone sheet's drag-to-dismiss and the exit animation.
-    const panelRef = useModalA11y(onClose);
+    const panelRef = useModalA11y(handleModalClose);
 
     if (!isOpen) return null;
 
@@ -145,15 +168,42 @@ export function TopicCreateModal({
                     </div>
 
                     <div className="field">
-                        <label className="field-label" htmlFor="topic-create-body">{t('forum.createBodyLabel')}</label>
-                        <textarea
-                            id="topic-create-body"
-                            rows={5}
-                            placeholder={t('forum.createBodyPlaceholder')}
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            className="textarea-clean topic-create-textarea custom-scrollbar"
-                        />
+                        <div className="topic-create-label-row">
+                            <label className="field-label" htmlFor="topic-create-body">{t('forum.createBodyLabel')}</label>
+                            <span className="topic-create-hint">{t('markedUi.forum.mentionHint')}</span>
+                        </div>
+                        <div className="topic-create-body-wrap">
+                            <ForumMentionPicker
+                                isOpen={mentionPicker.isOpen}
+                                kind={mentionPicker.kind}
+                                items={mentionPicker.items}
+                                isLoading={mentionPicker.isLoading}
+                                activeIndex={mentionPicker.activeIndex}
+                                onSelect={mentionPicker.selectItem}
+                                onHoverIndex={mentionPicker.setActiveIndex}
+                                placement="top"
+                                t={t}
+                            />
+                            <textarea
+                                ref={bodyRef}
+                                id="topic-create-body"
+                                rows={5}
+                                placeholder={t('forum.createBodyPlaceholder')}
+                                value={text}
+                                onChange={(e) => {
+                                    setText(e.target.value);
+                                    mentionPicker.syncFromTarget(e.target);
+                                }}
+                                onClick={(e) => mentionPicker.syncFromTarget(e.target)}
+                                onKeyUp={(e) => {
+                                    if (!['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key)) {
+                                        mentionPicker.syncFromTarget(e.target);
+                                    }
+                                }}
+                                onKeyDown={(e) => { mentionPicker.handleKeyDown(e); }}
+                                className="textarea-clean topic-create-textarea custom-scrollbar"
+                            />
+                        </div>
                     </div>
 
                     {attachedTeam ? (
