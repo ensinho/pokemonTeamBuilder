@@ -166,16 +166,24 @@ const DURATION_MS = 2700;
 const REDUCED_MS = 1400;
 const LEAVE_MS = 320;
 const SLAM_AT_MS = 560;
+// The verdict (2026-11-22, the living moments): the same card at the end of a
+// friend battle — VERDICT_MS in utils/livingMoments.js; the word lands here.
+const VERDICT_MS = 3300;
+const WORD_AT_MS = 1450;
 
 /**
  * @param {object} props
  * @param {object} props.left        you
  * @param {object} props.right       your opponent
  * @param {'champion'|'rival'} [props.variant]
+ * @param {'win'|'loss'|null} [props.verdict] the card at the END of a battle
+ *   (utils/livingMoments.js `pvpVerdict`): the winner's band takes the
+ *   screen, the other loses its colour and its portrait falls; "VITÓRIA"
+ *   lands only on your own win
  * @param {boolean} [props.reducedMotion]
  * @param {() => void} props.onDone  the card has left (played out or skipped)
  */
-export function DsVersus({ left, right, variant = 'rival', reducedMotion = false, onDone }) {
+export function DsVersus({ left, right, variant = 'rival', verdict = null, reducedMotion = false, onDone }) {
     const { t } = useTranslation();
     const [leaving, setLeaving] = useState(false);
     const done = useRef(false);
@@ -196,8 +204,9 @@ export function DsVersus({ left, right, variant = 'rival', reducedMotion = false
 
     useEffect(() => {
         play('whoosh');
-        const slam = setTimeout(() => play('versus'), reducedMotion ? 0 : SLAM_AT_MS);
-        const out = setTimeout(leave, reducedMotion ? REDUCED_MS : DURATION_MS);
+        const slamAt = verdict ? WORD_AT_MS : SLAM_AT_MS;
+        const slam = setTimeout(() => { if (verdict !== 'loss') play('versus'); }, reducedMotion ? 0 : slamAt);
+        const out = setTimeout(leave, reducedMotion ? REDUCED_MS : (verdict ? VERDICT_MS : DURATION_MS));
         return () => {
             clearTimeout(slam);
             clearTimeout(out);
@@ -224,11 +233,15 @@ export function DsVersus({ left, right, variant = 'rival', reducedMotion = false
     // clipped inside the screen (wound 2026-11-04).
     return createPortal(
         <div
-            className={`ds-vs is-${variant} ${reducedMotion ? 'is-reduced' : ''} ${leaving ? 'is-leaving' : ''}`}
+            className={`ds-vs is-${variant} ${verdict ? `is-verdict is-${verdict}` : ''} ${reducedMotion ? 'is-reduced' : ''} ${leaving ? 'is-leaving' : ''}`}
             onPointerDown={leave}
             role="presentation"
         >
-            <p className="sr-only" aria-live="assertive">{t('battle.stage.versusLabel', { left: left.name, right: right.name })}</p>
+            <p className="sr-only" aria-live="assertive">
+                {verdict
+                    ? t(verdict === 'win' ? 'battle.result.verdictWin' : 'battle.result.verdictLoss', { name: right.name })
+                    : t('battle.stage.versusLabel', { left: left.name, right: right.name })}
+            </p>
             <div className="ds-vs__band" aria-hidden="true">
                 <div className="ds-vs__side is-left">
                     <span className="ds-vs__lines" />
@@ -240,15 +253,19 @@ export function DsVersus({ left, right, variant = 'rival', reducedMotion = false
                 </div>
             </div>
             {/* The anime flare blooms behind the VS as it lands. */}
-            <DsFlare
-                variant="win"
-                className="ds-vs__flare"
-                colorA="var(--vs-gold-2)"
-                colorB="var(--vs-right-3)"
-                delay={SLAM_AT_MS}
-                reducedMotion={reducedMotion}
-            />
-            <div className="ds-vs__glyph" aria-hidden="true"><VsGlyph /></div>
+            {verdict !== 'loss' && (
+                <DsFlare
+                    variant="win"
+                    className="ds-vs__flare"
+                    colorA="var(--vs-gold-2)"
+                    colorB={verdict ? 'var(--vs-blue-3)' : 'var(--vs-right-3)'}
+                    delay={verdict ? WORD_AT_MS : SLAM_AT_MS}
+                    reducedMotion={reducedMotion}
+                />
+            )}
+            {verdict
+                ? verdict === 'win' && <p className="ds-vs__word" aria-hidden="true">{t('battle.result.verdictWord')}</p>
+                : <div className="ds-vs__glyph" aria-hidden="true"><VsGlyph /></div>}
             <div className="ds-vs__plates" aria-hidden="true">
                 <NamePlate trainer={left} side="left" />
                 <NamePlate trainer={right} side="right" />
