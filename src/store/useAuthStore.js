@@ -29,6 +29,7 @@ import { deleteUserData } from '../services/accountDeletion';
 import { disablePush } from '../services/pushNotifications';
 import { applyCheckin, localDayKey as checkinDayKey, mergeCheckins, mergeStreaks, normalizeCheckin, normalizeStreak, settleCheckin } from '../utils/dailyCheckin';
 import { useRewardsStore } from './useRewardsStore';
+import { playMoment } from './useMomentStore';
 import { isCrawler } from '../utils/crawler';
 import { derivePersona, mergeTrainerProfiles, normalizeTrainerProfile } from '../utils/trainerProfile';
 import { mergeBadgeCases, normalizeBadgeCase } from '../utils/badgeCase';
@@ -938,6 +939,11 @@ export const useAuthStore = create((set, get) => {
             track('checkin', { streak: next.streak?.count || 0 });
             const reward = useRewardsStore.getState().addXp(next.result.xp, { checkins: next.checkin.count });
             get().commitCheckin();
+            // The trainer's own check-in crossed a level: the evolution screen
+            // (components/moments/LevelUpScene.jsx). Data that arrives never does.
+            if (reward && reward.level > reward.levelBefore) {
+                playMoment('levelUp', { level: reward.level, levelBefore: reward.levelBefore, gained: next.result.xp, earned: reward.earned || [] });
+            }
             return { ...next.result, ...reward };
         },
 

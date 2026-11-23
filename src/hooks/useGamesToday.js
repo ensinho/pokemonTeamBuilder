@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { DAILY_GAMES, gameNoteToday, gamesDoneToday, mergeGameRecords, withGameDone } from '../utils/gamesToday';
+import { DAILY_GAMES, completesDay, gameDayKey, gameNoteToday, gamesDoneToday, mergeGameRecords, withGameDone } from '../utils/gamesToday';
+import { FULL_DAY_SHOWN_KEY } from '../utils/livingMoments';
+import { readLocal, writeLocal } from '../utils/safeStorage';
+import { playMoment } from '../store/useMomentStore';
 
 /**
  * The day's games this trainer played (`utils/gamesToday.js` holds the rules).
@@ -49,9 +52,19 @@ export const accountGamesRecord = () => mergeGameRecords(readRecord(), null, Dat
  */
 export function markGameDone(game, note = null) {
     const before = readRecord();
-    const next = withGameDone(before, game, Date.now(), note);
+    const now = Date.now();
+    const next = withGameDone(before, game, now, note);
     if (before && JSON.stringify(before) === JSON.stringify(next)) return;
     writeRecord(next);
+    // This game completed the day's four: the fourth capture and the gold
+    // stamp (components/moments/FullDayScene.jsx), once a day on this device.
+    if (completesDay(before, next, now)) {
+        const day = gameDayKey('pokepuzzle', now);
+        if (readLocal(FULL_DAY_SHOWN_KEY) !== day) {
+            writeLocal(FULL_DAY_SHOWN_KEY, day);
+            playMoment('fullDay', { day });
+        }
+    }
     Promise.resolve(toAccount?.(accountGamesRecord())).catch(() => { /* offline: the next profile sync carries it */ });
 }
 
