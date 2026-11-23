@@ -1083,6 +1083,7 @@ export default {
         tournamentsNoMatch: 'Nenhum time corresponde à busca'
     },
     splash: {
+        intro: 'Monte · analise · jogue',
         tagline: 'Times sem pontos cegos',
         msg1: 'Verificando se você é quem diz ser',
         msg2: 'Validando credenciais de treinador',
@@ -4198,6 +4199,9 @@ export default {
     },
     // The Primeira Jornada (components/onboarding/FirstJourney.jsx, 2026-11-12).
     journey: {
+        introHi: 'Oi! Eu sou o Fantasminha.',
+        introAsk: 'Bora montar seu primeiro time?',
+        introCta: 'Começar a jornada',
         peekHint: 'Toque para acordar',
         helloEyebrow: 'Grátis, sem cadastro',
         helloTitle: 'Monte times Pokémon',

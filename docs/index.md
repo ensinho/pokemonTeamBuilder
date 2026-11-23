@@ -25,6 +25,7 @@
 | [SEO & landing](./modules/seo_and_landing.md) | Titles/descriptions, the `/pt` language prefix and `LocaleRouter`, hreflang, JSON-LD, the prerendered body, the sitemap, the type chart and the first-visit landing |
 | [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
 | [Forum](./modules/forum.md) | The /feed forum: three-pane workspace, Recentes/Em alta/Top feed cut by day, the explorer/drawer map, comment tree, topic likes, sharing and link previews |
+| [Brand intro](./modules/brand_intro.md) | The boot splash and the Primeira Jornada's hello (2026-11-22): the official wordmark painted on, the night closing in through the mascot's silhouette, the exit into the app; timeline in `utils/brandIntro.js`, never hold the app for the show |
 | [Mascot](./modules/mascot.md) | The live mascot (2026-11-06): the traced rig, moods and poses by name, motion as `pose(t)`, the lazy engine chunk, the interactive controller, where it appears, its rules (one per screen, celebrate only the trainer's own act, gold only when earned) and `npm run mascot:export` |
 | [Journeys](./modules/journeys.md) | Onboarding missions, journey badges, the mission guide, the Home's journey card |
 | [Trainer profile & onboarding](./modules/trainer_profile.md) | The first-visit questions (competitive / games / minigames, level, format), the personas, and what they arrange: rail order, dock tab, Home "Para você", journey tags, the builder's first regulation; the trainer card other trainers see |

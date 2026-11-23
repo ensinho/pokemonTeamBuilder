@@ -1118,6 +1118,7 @@ export default {
         tournamentsNoMatch: 'No teams match your search'
     },
     splash: {
+        intro: 'Build · analyze · play',
         tagline: 'Teams with no blind spots',
         msg1: 'Checking if you are who you say you are',
         msg2: 'Verifying trainer credentials',
@@ -4236,6 +4237,9 @@ export default {
     },
     // The Primeira Jornada (components/onboarding/FirstJourney.jsx, 2026-11-12).
     journey: {
+        introHi: "Hi! I'm the little ghost.",
+        introAsk: 'Shall we build your first team?',
+        introCta: 'Start the journey',
         peekHint: 'Tap to wake him',
         helloEyebrow: 'Free, no sign-up',
         helloTitle: 'Build Pokémon teams',

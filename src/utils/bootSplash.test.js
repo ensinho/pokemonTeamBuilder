@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
     splashHoldMs,
-    splashProgress,
+    introMinVisibleMs,
     skipsBootSplash,
     SPLASH_REVEAL_MS,
     SPLASH_MIN_VISIBLE_MS,
     SPLASH_MOBILE_MAX_MS,
 } from './bootSplash';
+import { INTRO_FULL_MS, INTRO_LEGIBLE_MS } from './brandIntro';
 
 const SEEN_FLOOR = SPLASH_REVEAL_MS + SPLASH_MIN_VISIBLE_MS;
 
@@ -75,25 +76,27 @@ describe('splashHoldMs', () => {
     });
 });
 
-describe('splashProgress', () => {
-    it('runs the desktop bar straight to full', () => {
-        expect(splashProgress({ isMobile: false, isBootSettled: false }).width).toBe(100);
+describe('the brand intro on the splash', () => {
+    it('plays the first intro on a device to its end, and later ones only until the name reads', () => {
+        expect(introMinVisibleMs(false)).toBe(INTRO_FULL_MS);
+        expect(introMinVisibleMs(true)).toBe(INTRO_LEGIBLE_MS);
+        expect(SPLASH_MIN_VISIBLE_MS).toBe(INTRO_LEGIBLE_MS);
     });
 
-    it('parks the mobile bar short of full while boot is pending', () => {
-        expect(splashProgress({ isMobile: true, isBootSettled: false }).width).toBeLessThan(100);
+    it('holds a seen splash for the whole first intro, counted from boot', () => {
+        const minVisibleMs = introMinVisibleMs(false);
+        expect(splashHoldMs({ isMobile: false, elapsedMs: 400, isBootSettled: true, minVisibleMs }))
+            .toBe(SPLASH_REVEAL_MS + INTRO_FULL_MS - 400);
+        expect(splashHoldMs({ isMobile: true, elapsedMs: 400, isBootSettled: true, minVisibleMs }))
+            .toBe(SPLASH_REVEAL_MS + INTRO_FULL_MS - 400);
     });
 
-    it('closes the mobile bar quickly once boot settles', () => {
-        const pending = splashProgress({ isMobile: true, isBootSettled: false });
-        const settled = splashProgress({ isMobile: true, isBootSettled: true });
-        expect(settled.width).toBe(100);
-        expect(settled.durationMs).toBeLessThan(pending.durationMs);
+    it('still never shows the intro to a boot that was ready before it started', () => {
+        expect(splashHoldMs({ isMobile: false, elapsedMs: 120, isBootSettled: true, minVisibleMs: INTRO_FULL_MS })).toBe(0);
     });
 
-    it('never moves the bar backwards when boot settles', () => {
-        expect(splashProgress({ isMobile: true, isBootSettled: true }).width)
-            .toBeGreaterThanOrEqual(splashProgress({ isMobile: true, isBootSettled: false }).width);
+    it('still lets the mobile ceiling win over a long first intro', () => {
+        expect(splashHoldMs({ isMobile: true, elapsedMs: SPLASH_MOBILE_MAX_MS, isBootSettled: false, minVisibleMs: INTRO_FULL_MS })).toBe(0);
     });
 });
 

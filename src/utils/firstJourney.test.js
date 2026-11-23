@@ -10,11 +10,11 @@ import { HATS } from './mascot/rig';
 import { XP_RULES } from './trainerLevel';
 
 describe('the journey\'s screens (Primeira Jornada 2.0)', () => {
-    it('keeps first-run onboarding to 4 focused steps, adapting Step 3 by interest', () => {
-        expect(journeySteps({ interests: ['competitive'] })).toEqual(['play', 'interests', 'level', 'blueprint']);
-        expect(journeySteps({ interests: ['franchise'] })).toEqual(['play', 'interests', 'partner', 'blueprint']);
-        expect(journeySteps({ interests: ['minigames'] })).toEqual(['play', 'interests', 'partner', 'blueprint']);
-        expect(journeySteps({ interests: [] })).toEqual(['play', 'interests', 'partner', 'blueprint']);
+    it('opens first-run onboarding with the hello, then 4 focused steps, adapting Step 3 by interest', () => {
+        expect(journeySteps({ interests: ['competitive'] })).toEqual(['hello', 'play', 'interests', 'level', 'blueprint']);
+        expect(journeySteps({ interests: ['franchise'] })).toEqual(['hello', 'play', 'interests', 'partner', 'blueprint']);
+        expect(journeySteps({ interests: ['minigames'] })).toEqual(['hello', 'play', 'interests', 'partner', 'blueprint']);
+        expect(journeySteps({ interests: [] })).toEqual(['hello', 'play', 'interests', 'partner', 'blueprint']);
     });
 
     it('never gates new visitors behind an account screen during welcome', () => {
@@ -40,6 +40,16 @@ describe('the journey\'s screens (Primeira Jornada 2.0)', () => {
         expect(journeyProgress(steps, 'blueprint')).toBe(1);
         expect(journeyHasChrome('play')).toBe(true);
         expect(journeyHasChrome('done')).toBe(false);
+        expect(nextJourneyStep(steps, 'hello')).toBe('play');
+    });
+
+    it('keeps the hello out of the count: four pips, none of them its own', () => {
+        const steps = journeySteps({ interests: ['minigames'] });
+        expect(steps[0]).toBe('hello');
+        expect(journeyHasChrome('hello')).toBe(false);
+        expect(journeyStepMeta(steps, 'hello')).toEqual({ index: 0, total: 4 });
+        expect(journeyProgress(steps, 'hello')).toBe(0);
+        expect(journeyStepMeta(steps, 'done').index).toBe(3);
     });
 
     it('needs an interest before leaving the interests screen', () => {
@@ -96,7 +106,7 @@ describe('personalized activation & mascot choreography', () => {
     });
 
     it('only names moods, poses and gestures the mascot has', () => {
-        expect(JOURNEY_STEPS.length).toBe(5);
+        expect(JOURNEY_STEPS.length).toBe(6);
         for (const look of Object.values(STEP_LOOK)) {
             expect(MOODS[look.mood], look.mood).toBeTruthy();
             if (look.pose) expect(POSES[look.pose], look.pose).toBeTruthy();

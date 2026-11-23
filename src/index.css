@@ -526,6 +526,23 @@
     --receipt-gold: color-mix(in srgb, var(--brand-gold) 42%, var(--brand-ink));
     --receipt-gold-wash: color-mix(in srgb, var(--brand-gold) 26%, transparent);
 
+    /* The brand intro's night (2026-11-22, components/brand/BrandIntro.jsx —
+       Enzo picked "cena noite"): the splash and the journey's hello screen.
+       The same in every theme, like the receipt: it is the brand's moment,
+       not a surface of the app. The hole it closes through is the page's own
+       colour (--intro-page, set where it is used). No gold: nothing here was
+       earned. */
+    --intro-ground: #160E28;
+    --intro-volt: #7C3AFF;
+    --intro-ghost: var(--intro-volt);
+    --intro-face: var(--mascot-white);
+    --intro-rim: var(--brand-live);
+    --intro-orbit: var(--brand-live);
+    --intro-orbit-trail: var(--intro-volt);
+    --intro-tag: var(--intro-volt);
+    --intro-on-tag: #FFFFFF;
+    --intro-muted: color-mix(in srgb, var(--mascot-white) 68%, var(--intro-ground));
+
     /* Defaults for the per-theme base tokens the brand layer leans on;
        `dark` and `light` set their own above. */
     --color-primary-text: var(--color-primary);

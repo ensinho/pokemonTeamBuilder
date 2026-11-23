@@ -17,11 +17,13 @@ import { PERSONA_COSTUME } from './mascot/assistant.js';
 import { XP_RULES, xpForLevel } from './trainerLevel.js';
 
 /** Canonical step universe (welcome flow uses 4 focused screens). */
-export const JOURNEY_STEPS = ['play', 'interests', 'level', 'partner', 'blueprint'];
+export const JOURNEY_STEPS = ['hello', 'play', 'interests', 'level', 'partner', 'blueprint'];
 
 /**
  * How the journey was entered:
- * - `welcome`: first run — live spark → interests → calibrate (level or partner) → blueprint;
+ * - `welcome`: first run — the hello (the brand intro: the name docks, the mascot
+ *   rises and says hi; outside the count) → live spark → interests → calibrate
+ *   (level or partner) → blueprint;
  * - `redo`: changing existing answers from Home / Profile — straight to questions → blueprint;
  * - `signIn`: "Já tem conta? Entrar" — account screen → done.
  */
@@ -36,18 +38,18 @@ export function journeySteps({ interests = [], entry = 'welcome' } = {}) {
     if (entry === 'signIn') return ['account', 'done'];
     const calibrate = asksCompetitiveLevel(interests) ? 'level' : 'partner';
     if (entry === 'redo') return ['interests', calibrate, 'blueprint'];
-    return ['play', 'interests', calibrate, 'blueprint'];
+    return ['hello', 'play', 'interests', calibrate, 'blueprint'];
 }
 
-/** Screens without progress chrome (sign-in outcome). */
-const OUTSIDE_PROGRESS = new Set(['done']);
+/** Screens without progress chrome: the hello before the steps, the sign-in outcome after. */
+const OUTSIDE_PROGRESS = new Set(['hello', 'done']);
 
 /** Step index + total for the segmented step trail. */
 export function journeyStepMeta(steps, step) {
     const counted = steps.filter((s) => !OUTSIDE_PROGRESS.has(s));
     const index = counted.indexOf(step);
     return {
-        index: index < 0 ? counted.length - 1 : index,
+        index: index >= 0 ? index : step === 'hello' ? 0 : counted.length - 1,
         total: Math.max(1, counted.length),
     };
 }
@@ -118,6 +120,7 @@ export const LEVEL_MOOD = { new: 'feliz', casual: 'animado', ranked: 'confiante'
 
 /** How the mascot looks on arriving at each screen. */
 export const STEP_LOOK = {
+    hello: { mood: 'feliz' }, // he waves once he has risen (FirstJourney)
     play: { mood: 'animado', play: 'wave' },
     interests: { mood: 'curioso' },
     level: { mood: 'determinado' },
