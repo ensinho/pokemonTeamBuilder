@@ -1,0 +1,213 @@
+/* The Champion Challenge's way in and way out (2026-11-22) —
+   components/views/challenge/ds/DsMoments.jsx, utils/championMoments.js.
+
+   Inside a .ds-screen, so the game's rules hold here (the /design-system
+   skill's DS exception): every size is calc(N * var(--px)), colours are the
+   --ds-* palette, the face is DotGothic16. The timings below are the ones
+   CHAMPION_MOMENTS hands over at — keep them equal. */
+
+.ds-screen {
+    --ds-off: #000;
+    --ds-hall: #101a48;
+    --ds-hall-floor: #22306c;
+    --ds-hall-beam: rgb(255 255 255 / 0.07);
+    --ds-gold: #f8c838;
+}
+
+@property --ds-iris {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 0%;
+}
+
+/* ── Power on: a white line opens to a white screen, then the room through an
+      iris on the trainer (0–320 ms the line, 380–1180 ms the iris) ─────── */
+.ds-power-on {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    background: var(--ds-off);
+    -webkit-mask: radial-gradient(circle at var(--iris-x) var(--iris-y), transparent var(--ds-iris), #000 calc(var(--ds-iris) + 0.5%));
+    mask: radial-gradient(circle at var(--iris-x) var(--iris-y), transparent var(--ds-iris), #000 calc(var(--ds-iris) + 0.5%));
+    animation: ds-iris-open 800ms cubic-bezier(0.65, 0, 0.35, 1) 380ms forwards;
+}
+.ds-power-on::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--ds-paper);
+    scale: 1 0.012;
+    animation: ds-crt-on 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards, ds-fade-out 160ms ease-out 300ms forwards;
+}
+@keyframes ds-iris-open { to { --ds-iris: 160%; } }
+@keyframes ds-crt-on { to { scale: 1 1; } }
+@keyframes ds-fade-out { to { opacity: 0; } }
+
+/* ── Power off: the picture folds to a line (260 ms), the line to a dot ─── */
+.ds-power-off {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    background: var(--ds-off);
+}
+.ds-power-off::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--ds-paper);
+    animation: ds-crt-fold 260ms cubic-bezier(0.55, 0, 1, 0.45) forwards, ds-crt-dot 160ms ease-in 260ms forwards;
+}
+@keyframes ds-crt-fold { from { scale: 1 1; opacity: 0.85; } to { scale: 1 0.012; opacity: 1; } }
+@keyframes ds-crt-dot { from { scale: 1 0.012; } to { scale: 0.01 0.012; opacity: 0.5; } }
+
+/* ── Hall of Fame: a flash, the team walking in one by one (450 ms + 380 ms
+      each), the plaque at 2850 ms, the gold twinkles after ─────────────── */
+.ds-hall {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    overflow: hidden;
+    background: var(--ds-hall);
+    cursor: pointer;
+}
+.ds-hall__beam {
+    position: absolute;
+    top: 0;
+    width: calc(90 * var(--px));
+    height: 100%;
+    background: var(--ds-hall-beam);
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+    transform-origin: 50% 0;
+}
+.ds-hall__beam.is-a { left: calc(10 * var(--px)); }
+.ds-hall__beam.is-b { left: calc(83 * var(--px)); }
+.ds-hall__beam.is-c { left: calc(156 * var(--px)); }
+.ds-hall__team {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(4 * var(--px));
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: calc(-14 * var(--px));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ds-hall__slot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: calc(80 * var(--px));
+}
+.ds-hall__pad {
+    position: absolute;
+    bottom: calc(10 * var(--px));
+    width: calc(56 * var(--px));
+    height: calc(12 * var(--px));
+    border-radius: 50%;
+    background: var(--ds-hall-floor);
+}
+.ds-hall__mon {
+    position: relative;
+    width: calc(96 * var(--px));
+    height: calc(96 * var(--px));
+    margin-bottom: calc(14 * var(--px));
+    image-rendering: pixelated;
+    opacity: 0;
+    animation: ds-hall-walk 520ms cubic-bezier(0.22, 1, 0.36, 1) calc(450ms + var(--i) * 380ms) forwards;
+}
+.ds-hall__pop {
+    position: absolute;
+    width: calc(24 * var(--px));
+    height: calc(24 * var(--px));
+    border-radius: 50%;
+    background: var(--ds-paper);
+    opacity: 0;
+    animation: ds-hall-pop 360ms ease-out calc(670ms + var(--i) * 380ms) forwards;
+}
+.ds-hall__star {
+    position: absolute;
+    left: calc(var(--sx) * var(--px));
+    top: calc(var(--sy) * var(--px));
+    width: calc(8 * var(--px));
+    height: calc(8 * var(--px));
+    background: var(--ds-gold);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    opacity: 0;
+    animation: ds-hall-twinkle 900ms ease-in-out calc(3000ms + var(--i) * 130ms) 2 both;
+}
+.ds-hall__plaque {
+    position: absolute;
+    left: calc(10 * var(--px));
+    right: calc(10 * var(--px));
+    bottom: calc(8 * var(--px));
+    margin: 0;
+    padding: calc(5 * var(--px)) calc(6 * var(--px));
+    border: calc(2 * var(--px)) solid var(--ds-gold);
+    border-radius: calc(3 * var(--px));
+    background: var(--ds-paper);
+    color: var(--ds-ink);
+    font-size: calc(11 * var(--px));
+    text-align: center;
+    animation: ds-hall-plaque 520ms cubic-bezier(0.34, 1.4, 0.64, 1) 2850ms both;
+}
+.ds-hall__flash {
+    position: absolute;
+    inset: 0;
+    background: var(--ds-paper);
+    pointer-events: none;
+    animation: ds-fade-out 400ms ease-out 120ms both;
+}
+@keyframes ds-hall-walk { from { opacity: 1; translate: calc(140 * var(--px)) 0; } to { opacity: 1; translate: 0 0; } }
+/* (forwards, not both: a Pokémon waiting its turn stays hidden — base opacity 0) */
+@keyframes ds-hall-pop { 0% { opacity: 0.9; scale: 0.4; } 100% { opacity: 0; scale: 3.2; } }
+@keyframes ds-hall-twinkle { 0%, 100% { opacity: 0; scale: 0.4; } 50% { opacity: 1; scale: 1; } }
+@keyframes ds-hall-plaque { from { translate: 0 calc(60 * var(--px)); } to { translate: 0 0; } }
+
+/* ── Blackout: the field closes to black around the trainer (250–1100 ms),
+      the line types itself (1200–1800 ms) ──────────────────────────────── */
+.ds-blackout {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    display: grid;
+    place-items: center;
+    background: var(--ds-off);
+    -webkit-mask: radial-gradient(circle at 30% 78%, transparent calc(160% - var(--ds-iris)), #000 calc(160.5% - var(--ds-iris)));
+    mask: radial-gradient(circle at 30% 78%, transparent calc(160% - var(--ds-iris)), #000 calc(160.5% - var(--ds-iris)));
+    animation: ds-iris-open 850ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
+    cursor: pointer;
+}
+.ds-blackout__line {
+    margin: 0;
+    padding-inline: calc(12 * var(--px));
+    color: var(--ds-paper);
+    font-size: calc(12 * var(--px));
+    white-space: nowrap;
+    clip-path: inset(0 100% 0 0);
+    animation: ds-type 600ms steps(var(--chars, 24), end) 1200ms forwards;
+}
+@keyframes ds-type { to { clip-path: inset(0 0 0 0); } }
+
+/* ── After a finale, the next game of the day rises into place ─────────── */
+.challenge-next-rise {
+    animation: challenge-next-rise 560ms var(--ease-glide, cubic-bezier(0.22, 1, 0.36, 1)) 260ms both;
+}
+@keyframes challenge-next-rise { from { opacity: 0; translate: 0 var(--space-8); } }
+
+/* The view never mounts these under reduced motion; this is the net. */
+@media (prefers-reduced-motion: reduce) {
+    .ds-power-on,
+    .ds-power-off,
+    .ds-hall__flash { display: none; }
+    .ds-hall__mon,
+    .ds-hall__pop,
+    .ds-hall__star,
+    .ds-hall__plaque,
+    .ds-blackout,
+    .ds-blackout__line,
+    .challenge-next-rise { animation: none; }
+    .ds-hall__mon { opacity: 1; }
+    .ds-blackout__line { clip-path: none; }
+}
