@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T15:29:33.654Z",
+  "generatedAt": "2026-11-23T19:22:59.089Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -15496,7 +15496,54 @@
           "source": "Battle Stadium"
         },
         {
-          "name": "Poison Heal",
+          "name": "Bulk Up",
+          "item": "toxic-orb",
+          "itemAlts": [],
+          "ability": "poison-heal",
+          "nature": "serious",
+          "tera": [
+            "steel",
+            "normal"
+          ],
+          "moves": [
+            [
+              "bulk-up"
+            ],
+            [
+              "facade",
+              "protect"
+            ],
+            [
+              "drain-punch",
+              "protect"
+            ],
+            [
+              "bullet-seed",
+              "seed-bomb"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 80,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 176
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Set Details\nBreloom becomes an excellent sweeper with Bulk Up especially late-game, using its Poison Heal ability and typing to set up in front of foes like Quagsire and Umbreon. Facade synergizes well with status, while Drain Punch gives Breloom its needed recovery without having to rely on the combination of Poison…",
+          "source": "RU"
+        },
+        {
+          "name": "Wallbreaker",
           "item": "toxic-orb",
           "itemAlts": [],
           "ability": "poison-heal",
@@ -15538,49 +15585,6 @@
           "level": null,
           "description": "Set Details\nBreloom's unique defensive profile makes it a great check to the tier's Dark-types like Krookodile, Umbreon, and Wo-Chien as well as Rhyperior, and it's a decent wallbreaker with good resilience. It's also able to switch into the many Scalds and Thunder Waves in the tier after it activates Poison Heal. In…",
           "source": "RU"
-        },
-        {
-          "name": "Focus Sash (Fighting)",
-          "item": "focus-sash",
-          "itemAlts": [],
-          "ability": "technician",
-          "nature": "adamant",
-          "tera": [],
-          "moves": [
-            [
-              "spore",
-              "bulldoze"
-            ],
-            [
-              "swords-dance",
-              "bulldoze"
-            ],
-            [
-              "bullet-seed"
-            ],
-            [
-              "mach-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Breloom fulfills a variety of roles for Fighting teams, with Spore immobilizing threats like Corviknight, Pelipper, and Toxapex and operates as a revenge killer with Mach Punch. Swords Dance further boosts its great Attack and lets Breloom take advantage of forcing foes out after they have been afflicted with Spore to…",
-          "source": "Monotype"
         }
       ]
     },
@@ -37519,7 +37523,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Mega Dragalge's unique defensive typing, incredible special bulk, ability Regenerator, and access to Flip Turn make it an excellent defensive pivot. Mega Dragalge uses these traits to check numerous special threats such as Mega Meganium, non-Psychic Volcarona, Mega Raichu Y, and Rotom-Wash and even physical threats…",
+          "description": "Mega Dragalge's unique defensive typing, incredible special bulk, ability Regenerator, and access to Flip Turn make it an excellent defensive pivot. Mega Dragalge uses these traits to check numerous special threats such as Mega Meganium, non-Psychic Volcarona, and Rotom-Wash and even physical threats such as…",
           "source": "Champions OU"
         },
         {
