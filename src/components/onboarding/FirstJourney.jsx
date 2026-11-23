@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Compass, LayoutGrid, LockKeyhole, Mail, Sparkles, Target, UserRound } from 'lucide-react';
 
 import { AnimatedSprite } from '../AnimatedSprite';
+import { BrandIntro } from '../brand/BrandIntro';
 import { Mascot } from '../Mascot';
 import { Loader } from '../Loader';
 import { PartyPips } from '../PartyPips';
@@ -20,6 +21,7 @@ import { typeColors, typeIcons } from '../../constants/types';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { analyzeTeam, rateTeam } from '../../utils/teamAnalysis';
 import { track } from '../../services/analytics';
+import { INTRO, climbFrames } from '../../utils/brandIntro';
 import { authErrorField, isAuthCancel, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
 import {
@@ -103,6 +105,9 @@ export function FirstJourney() {
 
     const steps = useMemo(() => journeySteps({ interests, entry }), [interests, entry]);
     const [step, setStep] = useState(() => steps[0]);
+    // The hello opens on the brand intro (components/brand/BrandIntro.jsx); it
+    // leaves through the mascot's silhouette when the trainer starts.
+    const [introOn, setIntroOn] = useState(() => steps[0] === 'hello');
     const stepRef = useRef(step);
     stepRef.current = step;
     const history = useRef([]);
@@ -146,6 +151,7 @@ export function FirstJourney() {
 
     const layerRef = useRef(null);
     const screenRef = useRef(null);
+    const dockRef = useRef(null);
     const stageRef = useRef(null);
     const botRef = useRef(null);
     const orbitRef = useRef(null);
@@ -361,6 +367,22 @@ export function FirstJourney() {
         }
         const heading = el?.querySelector('h2');
         if (heading) requestAnimationFrame(() => heading.focus({ preventScroll: true }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- once per screen
+    }, [step]);
+
+    // The hello: the name docks (BrandIntro), then the mascot climbs into his
+    // slot, waves, and his first line and the way in arrive.
+    useLayoutEffect(() => {
+        if (step !== 'hello' || reduced) return undefined;
+        const glide = cssVar('--ease-glide', 'ease-out');
+        screenRef.current?.querySelectorAll('[data-s]').forEach((n, i) => n.animate(
+            [{ opacity: 0, transform: 'translateY(0.75rem) scale(0.96)' }, { opacity: 1, transform: 'none' }],
+            { duration: 460, delay: INTRO.rise + 420 + i * 90, easing: glide, fill: 'backwards' },
+        ));
+        const climb = climbFrames(Math.round(window.innerHeight * 0.7));
+        const rise = botRef.current?.querySelector('.fj__bot-in')?.animate(climb.keyframes, { duration: climb.duration, delay: INTRO.rise, fill: 'backwards' });
+        const wave = setTimeout(() => react('wave'), INTRO.rise + 700);
+        return () => { clearTimeout(wave); rise?.cancel(); };
         // eslint-disable-next-line react-hooks/exhaustive-deps -- once per screen
     }, [step]);
 
@@ -643,7 +665,22 @@ export function FirstJourney() {
     let stage = null;
     let talk = null;
 
-    if (step === 'play') {
+    if (step === 'hello') {
+        stage = slot('44%');
+        talk = (
+            <>
+                <div className="fj-hello__bubble" data-s>
+                    <h2 id={titleId} className="fj-hello__hi" tabIndex={-1}>{t('journey.introHi')}</h2>
+                    <p className="fj-hello__ask">{t('journey.introAsk')}</p>
+                </div>
+                <span className="fj__grow" />
+                {cta(t('journey.introCta'), () => goTo('play', { push: false }), { icon: true })}
+                <button type="button" className="fj__link" data-s onClick={() => { setEntry('signIn'); setMode('signIn'); goTo('account', { push: false }); }}>
+                    {t('journey.haveAccount')} <b>{t('journey.signIn')}</b>
+                </button>
+            </>
+        );
+    } else if (step === 'play') {
         const sparkStatusKey = sparkWeaknesses.length === 0 && sparkTeam.length >= 3
             ? 'journey.play.verdictStrong'
             : sparkTouched
@@ -1229,6 +1266,8 @@ export function FirstJourney() {
                         ))}
                     </div>
 
+                    {step === 'hello' && <span className="fj__mark" ref={dockRef} aria-hidden="true" />}
+
                     {step !== 'blueprint' && step !== 'done' ? (
                         <button type="button" className="fj__skip" onClick={dismiss}>{t('onboarding.skip')}</button>
                     ) : (
@@ -1246,8 +1285,12 @@ export function FirstJourney() {
                     <div className="fj__talk">{talk}</div>
                 </div>
             </div>
+            {introOn && (
+                <BrandIntro variant="journey" dockRef={dockRef} leaving={step !== 'hello'} onLeft={() => setIntroOn(false)} />
+            )}
             <div className="fj__orbit" ref={orbitRef} aria-hidden="true" />
             <div className="fj__bot" ref={botRef} aria-hidden="true">
+                <div className="fj__bot-in">
                 <Mascot
                     bot
                     size="fill"
@@ -1263,6 +1306,7 @@ export function FirstJourney() {
                     interactive
                     stage
                 />
+                </div>
             </div>
         </div>
     );

@@ -834,6 +834,7 @@
     pointer-events: none;
 }
 .fj__bot .mascot { display: block; }
+.fj__bot-in { width: 100%; height: 100%; }
 
 @media (prefers-reduced-motion: no-preference) {
     .fj-orb { animation: fj-float 3.2s var(--ease-smooth) infinite; }
@@ -1188,4 +1189,79 @@
     .fj-plan__item { padding: var(--space-3) var(--space-4); gap: var(--space-3); grid-template-columns: 2.5rem minmax(0, 1fr); }
     .fj-plan__icon { width: 2.5rem; height: 2.5rem; }
     .fj-plan__icon svg { width: 1.125rem; height: 1.125rem; }
+}
+
+/* ── The hello (2026-11-22): the brand intro is the ground, the name docks
+      in the bar, the mascot climbs into his slot and says his first line in
+      a speech bubble — paper and ink in every theme, the tail toward him. ── */
+.fj__bar { position: relative; }
+.fj__mark {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(11rem, 46vw);
+    aspect-ratio: 2022 / 483;
+    translate: -50% -50%;
+    pointer-events: none;
+}
+.fj__screen--hello { justify-content: flex-end; }
+.fj__screen--hello .fj-hello__bubble { order: -1; }
+.fj-hello__bubble {
+    position: relative;
+    align-self: center;
+    display: grid;
+    gap: var(--space-1);
+    max-width: 22rem;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-xl);
+    background: var(--mascot-white);
+    color: var(--brand-ink);
+    text-align: center;
+}
+.fj-hello__bubble::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: calc(-1 * var(--space-3));
+    width: var(--space-6);
+    height: var(--space-3);
+    translate: -50% 0;
+    background: inherit;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.fj-hello__hi {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+.fj-hello__hi:focus,
+.fj-hello__hi:focus-visible { outline: none; box-shadow: none; }
+.fj-hello__ask {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: color-mix(in srgb, var(--brand-ink) 72%, var(--mascot-white));
+}
+
+@media (min-width: 64rem) {
+    .fj__mark { width: 15rem; }
+    .fj__screen--hello .fj__stage .fj__slot { flex: none; height: min(26rem, 54vh); max-height: none; }
+    .fj-hello__bubble {
+        align-self: flex-start;
+        padding: var(--space-5) var(--space-6);
+        text-align: left;
+    }
+    .fj-hello__bubble::after {
+        left: calc(-1 * var(--space-3));
+        top: 50%;
+        bottom: auto;
+        width: var(--space-3);
+        height: var(--space-6);
+        translate: 0 -50%;
+        clip-path: polygon(100% 0, 100% 100%, 0 50%);
+    }
+    .fj-hello__hi { font-size: var(--text-2xl); }
+    .fj-hello__ask { font-size: var(--text-base); }
 }
