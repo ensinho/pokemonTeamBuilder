@@ -4,7 +4,8 @@ import { useMomentStore } from '../../store/useMomentStore';
 
 const LevelUpScene = lazy(() => import('./LevelUpScene'));
 const FullDayScene = lazy(() => import('./FullDayScene'));
-const SCENES = { levelUp: LevelUpScene, fullDay: FullDayScene };
+const TeamSavedScene = lazy(() => import('./TeamSavedScene'));
+const SCENES = { levelUp: LevelUpScene, fullDay: FullDayScene, teamSaved: TeamSavedScene };
 
 /**
  * Plays the living moments one at a time (useMomentStore, utils/livingMoments.js).
