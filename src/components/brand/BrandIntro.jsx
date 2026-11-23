@@ -47,7 +47,7 @@ function Sticker({ kind }) {
  * busy main thread (the app's chunks parsing, the app mounting under the exit)
  * does not stutter it. With reduced motion the scene simply fades in, at rest.
  */
-export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onLeft, dockRef, tagline, message, page }) {
+export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onLeft, dockRef, tagline, message, page, arrival = false, children }) {
     const rootRef = useRef(null);
     const stageRef = useRef(null);
     const plateRef = useRef(null);
@@ -63,6 +63,9 @@ export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onL
     const onLeftRef = useRef(onLeft);
     onLeftRef.current = onLeft;
     const journey = variant === 'journey';
+    // The session's goodbye (SessionTransition): the night closes in around
+    // `children` (the mascot waving) instead of the wordmark.
+    const session = variant === 'session';
 
     /** Centres the plate and the hole on (cx, cy), at the scale that covers the frame. */
     const frameGhosts = (cx, cy) => {
@@ -102,10 +105,13 @@ export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onL
         const { cx, cy, rect } = wordCentre();
         frameGhosts(cx, cy);
 
-        if (reduced) {
+        // `arrival`: the page before this one ended on the night (a session
+        // leaving), so the scene starts at rest, already covering, and only
+        // its exit plays.
+        if (reduced || arrival) {
             holeRef.current.style.transform = 'scale(0)';
             if (journey) settleDock();
-            rootRef.current.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay, fill: 'backwards' });
+            if (!arrival) rootRef.current.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay, fill: 'backwards' });
             return undefined;
         }
 
@@ -115,6 +121,7 @@ export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onL
         play(holeRef.current, holeFrames(), INTRO.hole, { fill: 'both' });
         play(inkRef.current, wipeFrames(), INTRO.word, { fill: 'both' });
         play(landRef.current, landFrames(), INTRO.word);
+        if (session) play(wordRef.current, riseFrames(24), 520);
 
         const corners = [...scatterRef.current.querySelectorAll('[data-corner]')];
         corners.forEach((el, i) => {
@@ -165,7 +172,7 @@ export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onL
         scatterRef.current.animate([{ opacity: 1 }, { opacity: 0 }], fade);
         orbitRef.current?.animate([{ opacity: 1 }, { opacity: 0 }], fade);
         if (tagRef.current) tagRef.current.animate([{ opacity: getComputedStyle(tagRef.current).opacity }, { opacity: 0 }], fade);
-        const to = wrapScale({ wordWidth: rect.width, wordHeight: rect.height }) / cover;
+        const to = wrapScale({ wordWidth: rect.width || 192, wordHeight: rect.height || 96 }) / cover;
         const iris = irisFrames(to);
         plateRef.current.animate(iris.keyframes, { duration: iris.duration, easing: iris.easing, fill: 'forwards' });
         const shrink = shrinkFrames();
@@ -204,6 +211,9 @@ export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onL
                     <svg viewBox={GHOST_VIEW} preserveAspectRatio="none" focusable="false"><path d={GHOST_PATH} /></svg>
                 </div>
                 <div className="bi-centre">
+                    {session ? (
+                        <div className="bi-word bi-word--session" ref={wordRef}>{children}</div>
+                    ) : (
                     <div className="bi-word" ref={wordRef}>
                         <svg className="bi-orbit" ref={orbitRef} viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
                             <ellipse cx="50" cy="50" rx="47" ry="44" pathLength="100" transform="rotate(-8 50 50)" className="bi-orbit__a" />
@@ -213,6 +223,7 @@ export function BrandIntro({ variant = 'splash', delay = 0, leaving = false, onL
                             <div className="bi-word__ink" ref={inkRef}><BrandWordmark className="bi-wordmark" /></div>
                         </div>
                     </div>
+                    )}
                     {tagline && <p className="bi-tag" ref={tagRef}>{tagline}</p>}
                 </div>
             </div>

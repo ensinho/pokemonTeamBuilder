@@ -59,6 +59,8 @@ import { ariaKeyShortcuts, formatShortcut, matchesShortcut } from '../utils/sear
 // even though the lazy() loaders below are their only real users.
 import { ConfirmHost } from './modals/ConfirmHost';
 import { SessionTransition } from './SessionTransition';
+import { MomentLayer } from './moments/MomentLayer';
+import { LEFT_SESSION_KEY } from '../utils/sessionWipe';
 import { GuestAccountCard } from './GuestAccountCard';
 import { SyncPromptModal } from './modals/SyncPromptModal';
 import { VersionUpdateModal } from './modals/VersionUpdateModal';
@@ -780,7 +782,13 @@ export default function AppLayout() {
 
     // Auth Splash Loader
     // A first visit on Home goes straight to the landing (skipsBootSplash).
-    const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(() => !skipsBootSplash({
+    // A session just left (leaveSession reloaded into Home): the page before
+    // this one ended on the brand intro's night, so the splash starts on it, at
+    // rest, and leaves through the ghost as soon as the app is ready.
+    const [arrival] = useState(() => {
+        try { return Boolean(window.sessionStorage.getItem(LEFT_SESSION_KEY)); } catch { return false; }
+    });
+    const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(() => arrival || !skipsBootSplash({
         appPath: location.pathname,
         isReturning: isReturningVisitor(readLocalStorage()),
     }));
@@ -862,11 +870,13 @@ export default function AppLayout() {
     // mid-request and then visibly re-render into the reconciled user.
     useEffect(() => {
         if (!canLeaveSplash || !showInitialAuthSplash) return;
+        const elapsedMs = Date.now() - initialBootTimeRef.current;
         const remainingMs = splashHoldMs({
             isMobile,
-            elapsedMs: Date.now() - initialBootTimeRef.current,
+            // An arrival is on screen from the first paint, and its only job is to leave.
+            elapsedMs: arrival ? Math.max(elapsedMs, SPLASH_REVEAL_MS) : elapsedMs,
             isBootSettled,
-            minVisibleMs: introMinVisibleMs(introSeenBefore),
+            minVisibleMs: arrival ? 0 : introMinVisibleMs(introSeenBefore),
         });
         const timer = setTimeout(() => {
             if (Date.now() - initialBootTimeRef.current >= SPLASH_REVEAL_MS + INTRO_FULL_MS) {
@@ -876,7 +886,7 @@ export default function AppLayout() {
             setShowInitialAuthSplash(false);
         }, remainingMs);
         return () => clearTimeout(timer);
-    }, [canLeaveSplash, showInitialAuthSplash, isMobile, isBootSettled, introSeenBefore]);
+    }, [canLeaveSplash, showInitialAuthSplash, isMobile, isBootSettled, introSeenBefore, arrival]);
 
     useEffect(() => {
         if (!showInitialAuthSplash) return;
@@ -1532,7 +1542,8 @@ export default function AppLayout() {
         <BrandIntro
             key="brand-intro"
             variant="splash"
-            delay={SPLASH_REVEAL_MS}
+            delay={arrival ? 0 : SPLASH_REVEAL_MS}
+            arrival={arrival}
             leaving={!showInitialAuthSplash}
             onLeft={() => setSplashLeaving(false)}
             tagline={t('splash.intro')}
@@ -1701,6 +1712,8 @@ export default function AppLayout() {
             {/* Answers confirmAction() from anywhere in the app. */}
             <ConfirmHost />
             <SessionTransition />
+            {/* The living moments: a level up, a full day (components/moments/). */}
+            <MomentLayer />
 
             <ToastStack />
 
