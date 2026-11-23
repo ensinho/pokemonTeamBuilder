@@ -34,6 +34,7 @@ import { preloadVersus } from '../challenge/ds/versusChunk';
 import { PvpChat } from './PvpChat';
 import { PvpLobby } from './PvpLobby';
 import { PvpResult } from './PvpResult';
+import { pvpVerdict } from '../../../utils/livingMoments';
 import '../../../styles/champion-challenge-ds.css';
 import '../../../styles/battle-pvp.css';
 
@@ -178,6 +179,9 @@ export function BattleDetailView() {
     const [stage, setStage] = useState(null); // 'lobby' | 'versus' | 'battle' | 'result'
     const [playIntro, setPlayIntro] = useState(false);
     const [replayKey, setReplayKey] = useState(0);
+    // The verdict (utils/livingMoments.js): the VS card again at the end of a
+    // battle that just played here — not a replay, not a result opened later.
+    const [verdict, setVerdict] = useState(null);
     // The same console as the Champion Challenge: ⌘K looks things up beside it.
     useQuickLookMode(stage === 'battle' || stage === 'versus');
     useEffect(() => {
@@ -290,6 +294,8 @@ export function BattleDetailView() {
         if (!battle.winner) return 'tie';
         return battle.winner === userId ? 'won' : 'lost';
     }, [status, battle?.forfeitedBy, battle?.winner, userId]);
+    const outcomeRef = useRef(outcome);
+    outcomeRef.current = outcome;
 
     // ── Chat ──────────────────────────────────────────────────────────────
     const [chatOpen, setChatOpen] = useState(false);
@@ -461,7 +467,10 @@ export function BattleDetailView() {
                     overlay={overlay}
                     onChoose={handleChoice}
                     onForfeit={() => forfeitBattle(battleId)}
-                    onFinished={() => setStage('result')}
+                    onFinished={() => {
+                        if (!reducedMotion) setVerdict(pvpVerdict(outcomeRef.current, { playedHere: true, replay: replayKey > 0 }));
+                        setStage('result');
+                    }}
                 />
             </div>
         );
@@ -546,6 +555,9 @@ export function BattleDetailView() {
             )}
             {stage === 'versus' && (
                 <DsVersusLazy left={versusMe} right={versusThem} variant="rival" reducedMotion={reducedMotion} onDone={handleVersusDone} />
+            )}
+            {stage === 'result' && verdict && (
+                <DsVersusLazy left={versusMe} right={versusThem} variant="rival" verdict={verdict} reducedMotion={reducedMotion} onDone={() => setVerdict(null)} />
             )}
             {rematchModal}
         </div>

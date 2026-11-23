@@ -1118,6 +1118,16 @@ export default {
         tournamentsNoMatch: 'No teams match your search'
     },
     moments: {
+        teamSaved: {
+            pc: "Bill's PC",
+            title: 'Your first team is in the PC!',
+            sub: '{{name}} is kept in your box. Come back whenever you want to edit it.',
+        },
+        card: {
+            label: "{{name}}'s trainer card",
+            level: 'Lv {{n}}',
+            since: 'Training since {{when}}',
+        },
         continue: 'Continue',
         levelUp: {
             level: 'Level {{n}}',
@@ -2868,6 +2878,9 @@ export default {
             challengeAgain: 'Challenge again',
         },
         result: {
+            verdictWord: 'VICTORY',
+            verdictWin: 'Victory over {{name}}!',
+            verdictLoss: '{{name}} won this time.',
             won: 'Victory!',
             lost: 'Defeat',
             tie: 'A draw!',

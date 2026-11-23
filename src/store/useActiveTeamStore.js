@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { db } from '../services/firebase';
+import { playMoment } from './useMomentStore';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
@@ -640,6 +641,11 @@ export const useActiveTeamStore = create((set, get) => ({
                 actions: [{ label: t('toast.viewTeams'), onClick: () => navigateTo('/teams') }],
             });
             useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
+            // The account's first team: the party goes into Bill's PC
+            // (components/moments/TeamSavedScene.jsx). Every later save keeps the toast.
+            if (!editingTeamId && !(savedTeams?.length)) {
+                playMoment('teamSaved', { name: teamName, members: currentTeam.map((member) => member.id).filter(Number.isFinite).slice(0, 6) });
+            }
             // A guest's first save is when losing the anonymous account starts
             // to cost something — the moment to suggest one (once per device).
             useAuthStore.getState().nudgeSyncAfterSave?.();

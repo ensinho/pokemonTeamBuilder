@@ -376,6 +376,93 @@
     display: none;
 }
 
+/* ── The verdict (2026-11-22, the living moments) ─────────────────────
+   The same card at the end of a friend battle (DsVersus `verdict`): after the
+   band comes in, the loser's half loses its colour and its portrait falls,
+   the winner's half closes the seam over the whole band and its portrait
+   walks to the middle; on your own win "VITÓRIA" slams down. The polygons
+   keep the seam's 13 points, so the clip-path interpolates. */
+.ds-vs.is-win .ds-vs__side.is-left,
+.ds-vs.is-loss .ds-vs__side.is-right {
+    z-index: 1;
+}
+.ds-vs.is-win .ds-vs__side.is-left {
+    animation:
+        ds-vs-from-left 460ms var(--ease-out-expo) 80ms both,
+        ds-vs-take-left 520ms var(--ease-out-expo) 1050ms both;
+}
+.ds-vs.is-loss .ds-vs__side.is-right {
+    animation:
+        ds-vs-from-right 460ms var(--ease-out-expo) 80ms both,
+        ds-vs-take-right 520ms var(--ease-out-expo) 1050ms both;
+}
+.ds-vs.is-win .ds-vs__side.is-right {
+    animation:
+        ds-vs-from-right 460ms var(--ease-out-expo) 80ms both,
+        ds-vs-defeated 420ms var(--ease-smooth) 700ms both;
+}
+.ds-vs.is-loss .ds-vs__side.is-left {
+    animation:
+        ds-vs-from-left 460ms var(--ease-out-expo) 80ms both,
+        ds-vs-defeated 420ms var(--ease-smooth) 700ms both;
+}
+.ds-vs.is-win .ds-vs__portrait.is-right {
+    animation:
+        ds-vs-from-right 560ms var(--ease-out-expo) 160ms both,
+        ds-vs-fall 520ms cubic-bezier(0.55, 0, 1, 0.45) 850ms both;
+}
+.ds-vs.is-loss .ds-vs__portrait.is-left {
+    animation:
+        ds-vs-from-left 560ms var(--ease-out-expo) 160ms both,
+        ds-vs-fall 520ms cubic-bezier(0.55, 0, 1, 0.45) 850ms both;
+}
+.ds-vs.is-win .ds-vs__portrait.is-left {
+    animation:
+        ds-vs-from-left 560ms var(--ease-out-expo) 160ms both,
+        ds-vs-to-middle 600ms var(--ease-out-expo) 1100ms both;
+}
+.ds-vs.is-loss .ds-vs__portrait.is-right {
+    animation:
+        ds-vs-from-right 560ms var(--ease-out-expo) 160ms both,
+        ds-vs-to-middle 600ms var(--ease-out-expo) 1100ms both;
+}
+.ds-vs.is-win .ds-vs__plate.is-right,
+.ds-vs.is-loss .ds-vs__plate.is-left {
+    animation: ds-vs-dim 400ms var(--ease-smooth) 700ms both;
+}
+.ds-vs__word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 3;
+    margin: 0;
+    translate: -50% -150%;
+    color: var(--vs-gold-2);
+    font-size: clamp(2.5rem, 9vw, 5.5rem);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    -webkit-text-stroke: 0.12em var(--vs-ink);
+    paint-order: stroke fill;
+    text-shadow: 0.06em 0.06em 0 var(--vs-shadow);
+    rotate: -4deg;
+    animation: ds-vs-slam 440ms var(--ease-out-expo) 1450ms both;
+}
+/* Reduced motion: the still card, already decided. */
+.ds-vs.is-reduced.is-win .ds-vs__portrait.is-right,
+.ds-vs.is-reduced.is-loss .ds-vs__portrait.is-left { opacity: 0; }
+.ds-vs.is-reduced.is-win .ds-vs__side.is-right,
+.ds-vs.is-reduced.is-loss .ds-vs__side.is-left { filter: grayscale(1) brightness(0.62); }
+@keyframes ds-vs-take-left {
+    to { clip-path: polygon(0 0, 100% 0, 100% 11%, 100% 19%, 100% 32%, 100% 40%, 100% 53%, 100% 61%, 100% 74%, 100% 82%, 100% 95%, 100% 100%, 0 100%); }
+}
+@keyframes ds-vs-take-right {
+    to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 95%, 0 82%, 0 74%, 0 61%, 0 53%, 0 40%, 0 32%, 0 19%, 0 11%); }
+}
+@keyframes ds-vs-defeated { to { filter: grayscale(1) brightness(0.62); } }
+@keyframes ds-vs-fall { to { translate: 0 60%; rotate: 14deg; opacity: 0; } }
+@keyframes ds-vs-to-middle { to { left: 50%; } }
+@keyframes ds-vs-dim { to { opacity: 0.4; } }
+
 @keyframes ds-vs-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ds-vs-fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes ds-vs-band-open { from { scale: 1 0; } to { scale: 1 1; } }

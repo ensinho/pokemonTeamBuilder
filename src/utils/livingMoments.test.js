@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { FULL_DAY, LEVEL_UP, evolutionSwaps, landFrames, swapKeyframes, wobbleFrames } from './livingMoments';
+import {
+    BADGE_CASE, CARD_PRINT, FULL_DAY, LEVEL_UP, TEAM_SAVED, arcFrames, badgeSpinFrames, evolutionSwaps, landFrames, printDelays, pvpVerdict,
+    seatFrames, swapKeyframes, teamBallLands, wobbleFrames,
+} from './livingMoments';
 
 describe('the evolution screen (level up)', () => {
     it('swaps faster and faster, inside the evolution and before the flash', () => {
@@ -51,5 +54,69 @@ describe('the fourth capture (full day)', () => {
         expect(FULL_DAY.click).toBeGreaterThan(FULL_DAY.wobbles[2] + FULL_DAY.wobble);
         expect(FULL_DAY.gold + 3 * FULL_DAY.goldEach).toBeLessThan(FULL_DAY.words + 200);
         expect(FULL_DAY.handover).toBeGreaterThan(FULL_DAY.words);
+    });
+});
+
+describe('the friend battle verdict', () => {
+    it('crowns your win and greys your loss, forfeits included', () => {
+        expect(pvpVerdict('won', { playedHere: true })).toBe('win');
+        expect(pvpVerdict('forfeitWon', { playedHere: true })).toBe('win');
+        expect(pvpVerdict('lost', { playedHere: true })).toBe('loss');
+        expect(pvpVerdict('forfeitLost', { playedHere: true })).toBe('loss');
+    });
+
+    it('plays nothing for a tie, a replay, or a result opened later', () => {
+        expect(pvpVerdict('tie', { playedHere: true })).toBeNull();
+        expect(pvpVerdict('won', { playedHere: true, replay: true })).toBeNull();
+        expect(pvpVerdict('won')).toBeNull();
+        expect(pvpVerdict(null, { playedHere: true })).toBeNull();
+    });
+});
+
+describe('the trainer card printing', () => {
+    it('lights every cell once, inside the banner\'s run', () => {
+        const delays = printDelays(120, 'uid-abc');
+        expect(delays).toHaveLength(120);
+        expect(Math.min(...delays)).toBe(CARD_PRINT.pixels);
+        expect(Math.max(...delays)).toBe(CARD_PRINT.pixels + CARD_PRINT.pixelsRun);
+        expect(new Set(delays).size).toBeGreaterThan(100);
+    });
+
+    it('is the same for the same trainer and different for another', () => {
+        expect(printDelays(80, 'uid-abc')).toEqual(printDelays(80, 'uid-abc'));
+        expect(printDelays(80, 'uid-abc')).not.toEqual(printDelays(80, 'uid-xyz'));
+    });
+
+    it('lands the gold pixel last', () => {
+        expect(CARD_PRINT.gold).toBeGreaterThan(CARD_PRINT.pixels + CARD_PRINT.pixelsRun);
+        expect(CARD_PRINT.gold).toBeGreaterThan(CARD_PRINT.name + CARD_PRINT.nameRun);
+        expect(CARD_PRINT.done).toBeGreaterThan(CARD_PRINT.gold);
+    });
+});
+
+describe('the badge case', () => {
+    it('turns twice and comes to rest in its socket', () => {
+        const { keyframes } = badgeSpinFrames();
+        expect(keyframes[0].transform).toContain('rotateY(0deg)');
+        expect(keyframes.at(-1).transform).toBe('translateY(0rem) rotateY(720deg) scale(1)');
+        expect(seatFrames().keyframes.at(-1).transform).toBe('scale(1, 1)');
+        expect(seatFrames().keyframes[0].transform).toBe('scale(1.22, 0.8)');
+        expect(BADGE_CASE.light).toBeGreaterThanOrEqual(BADGE_CASE.land);
+    });
+});
+
+describe('the first team saved', () => {
+    it('lands every ball before the lid closes and the scene ends', () => {
+        expect(teamBallLands(5)).toBeLessThan(1200 + TEAM_SAVED.first);
+        expect(teamBallLands(5) + TEAM_SAVED.settle).toBeLessThan(TEAM_SAVED.done);
+    });
+
+    it('arcs from the Pokémon to the box, rising on the way', () => {
+        const { keyframes } = arcFrames(300, -150, 120);
+        expect(keyframes[0].transform).toBe('translate(0px, 0px) rotate(0deg) scale(1)');
+        expect(keyframes.at(-1).transform).toBe('translate(300px, -150px) rotate(540deg) scale(0.55)');
+        const mid = keyframes[Math.floor(keyframes.length / 2)].transform;
+        const y = Number(mid.match(/translate\([^,]+, (-?[\d.]+)px\)/)[1]);
+        expect(y).toBeLessThan(-150 / 2);
     });
 });

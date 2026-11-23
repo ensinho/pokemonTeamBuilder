@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, Compass, LayoutGrid, LockKeyhole, Mail, S
 
 import { AnimatedSprite } from '../AnimatedSprite';
 import { BrandIntro } from '../brand/BrandIntro';
+import { TrainerCardPrint } from '../moments/TrainerCardPrint';
 import { Mascot } from '../Mascot';
 import { Loader } from '../Loader';
 import { PartyPips } from '../PartyPips';
@@ -22,6 +23,8 @@ import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { analyzeTeam, rateTeam } from '../../utils/teamAnalysis';
 import { track } from '../../services/analytics';
 import { INTRO, climbFrames } from '../../utils/brandIntro';
+import { levelForXp } from '../../utils/trainerLevel';
+import { useRewardsStore } from '../../store/useRewardsStore';
 import { authErrorField, isAuthCancel, prettifyAuthError } from '../../utils/authErrors';
 import { MIN_PASSWORD_LENGTH } from '../../utils/passwordStrength';
 import {
@@ -74,7 +77,7 @@ const Art = ({ id, shiny = false, className = '', imgRef }) => (
 );
 
 export function FirstJourney() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const navigate = useNavigate();
     const titleId = useId();
     const source = useOnboardingStore((s) => s.source);
@@ -86,6 +89,8 @@ export function FirstJourney() {
     const savedPartnerShiny = useAuthStore((s) => s.greetingPokemonIsShiny);
     const setGreetingPokemon = useAuthStore((s) => s.setGreetingPokemon);
     const savedName = useAuthStore((s) => s.displayName);
+    const uid = useAuthStore((s) => s.userId);
+    const trainerXp = useRewardsStore((s) => s.xp);
 
     const [initialEntry] = useState(() => requestedEntry || (hasAnsweredProfile(saved) && source !== 'landing' ? 'redo' : 'welcome'));
     const [entry, setEntry] = useState(initialEntry);
@@ -1216,7 +1221,22 @@ export function FirstJourney() {
             </>
         );
     } else if (step === 'done') {
-        stage = slot('42%');
+        // The account is real now: the trainer card comes out printed
+        // (components/moments/TrainerCardPrint.jsx), the mascot beside it.
+        stage = (
+            <>
+                <TrainerCardPrint
+                    seed={uid || name || 'trainer'}
+                    name={name.trim() || savedName || t('journey.cardPlaceholder')}
+                    partnerId={partnerId}
+                    tone={persona ? tone(persona.tone) : 'var(--color-primary)'}
+                    persona={persona ? t(`onboarding.personas.${persona.id}.name`) : null}
+                    level={levelForXp(trainerXp).level}
+                    since={new Date().toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US', { month: 'short', year: 'numeric' })}
+                />
+                {slot('26%')}
+            </>
+        );
         talk = (
             <>
                 {heading(doneTitle)}
