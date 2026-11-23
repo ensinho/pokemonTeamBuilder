@@ -4689,3 +4689,20 @@
         scale: none;
     }
 }
+
+/* IVs — the set's suggestion and six compact fields (utils/ivAdvice.js). */
+#panel-stats > .editor-ivs {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-6);
+}
+.editor-ivs__grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+.editor-ivs__cell {
+    display: grid;
+    gap: var(--space-1);
+    justify-items: center;
+}

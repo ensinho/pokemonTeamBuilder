@@ -48,6 +48,9 @@ export const RELEASES = [
                 cta: 'patchNotes.mascotShiftCta',
                 path: '/games',
             },
+            // A community request (2026-11-23): egg moves an evolved Pokémon keeps
+            // from its line, and IVs with a "is a 6×31 worth breeding" verdict.
+            { key: 'egg-moves-ivs', icon: 'pokeball', title: 'patchNotes.eggIvsTitle', description: 'patchNotes.eggIvsDesc', cta: 'patchNotes.eggIvsCta', path: '/builder' },
             { key: 'meadow', icon: 'heart', title: 'patchNotes.meadowTitle', description: 'patchNotes.meadowDesc', cta: 'patchNotes.meadowCta', path: '/friends?tab=activity' },
             // Fixed rule (Enzo, 2026-11-11): every release asks for support. Here the
             // side's focus (Enzo, 2026-11-17): the cup and the purple button.

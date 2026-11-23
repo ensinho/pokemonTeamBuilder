@@ -14,6 +14,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 import { VERSION_GROUPS, formatLocationName } from '../constants/pokemonVersions';
 import { buildPokemonForms, formDisplayName } from '../utils/pokemonForms';
 import { sanitizeSpriteUrl } from '../utils/pokemonSprites';
+import { inheritedVersionMoves } from '../utils/inheritedMoves';
 
 // The Firestore mirror is the first stop, never the only one: offline (or a
 // rule/network failure) getDoc rejects, and that must fall through to the
@@ -56,6 +57,9 @@ export function usePokemonDetailData({
     const [selectedPokemonDetails, setSelectedPokemonDetails] = useState(null);
     const [fullApiData, setFullApiData] = useState(null);
     const [speciesData, setSpeciesData] = useState(null);
+    // The pre-evolutions' raw move lists: PokéAPI keeps egg moves on the first
+    // stage only, so Aegislash's Destiny Bond lives on Honedge.
+    const [prevoApiMoves, setPrevoApiMoves] = useState([]);
     const [encounters, setEncounters] = useState([]);
     const [isEncountersLoading, setIsEncountersLoading] = useState(false);
     const [locationsVersionFilter, setLocationsVersionFilter] = useState('all');
@@ -63,7 +67,7 @@ export function usePokemonDetailData({
     const [evolutionDetails, setEvolutionDetails] = useState([]);
     const [forms, setForms] = useState([]);
 
-    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [], other: [] });
+    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [], egg: [], other: [] });
     const [selectedMoveVersion, setSelectedMoveVersion] = useState('');
     const [isMovesLoading, setIsMovesLoading] = useState(false);
     const [customSelectedSprite, setCustomSelectedSprite] = useState(null);
@@ -221,7 +225,29 @@ export function usePokemonDetailData({
     }, [availableMoveVersions]);
 
     useEffect(() => {
-        if (!fullApiData || !selectedMoveVersion) { setResolvedMoves({ levelUp: [], machine: [], other: [] }); return undefined; }
+        let cancelled = false;
+        setPrevoApiMoves([]);
+        const firstUrl = speciesData?.evolves_from_species?.url;
+        if (!firstUrl) return undefined;
+        (async () => {
+            const lists = [];
+            let url = firstUrl;
+            for (let i = 0; i < 3 && url; i += 1) {
+                const prevoId = url.split('/').filter(Boolean).pop();
+                const [api, species] = await Promise.all([
+                    getPokemonApiData(prevoId).catch(() => null),
+                    getPokemonSpeciesData(prevoId).catch(() => null),
+                ]);
+                if (api?.moves) lists.push(...api.moves);
+                url = species?.evolves_from_species?.url;
+            }
+            if (!cancelled) setPrevoApiMoves(lists);
+        })();
+        return () => { cancelled = true; };
+    }, [speciesData]);
+
+    useEffect(() => {
+        if (!fullApiData || !selectedMoveVersion) { setResolvedMoves({ levelUp: [], machine: [], egg: [], other: [] }); return undefined; }
         let cancelled = false;
         (async () => {
             setIsMovesLoading(true);
@@ -231,6 +257,10 @@ export function usePokemonDetailData({
                     const d = m.version_group_details.find((vgd) => vgd.version_group.name === selectedMoveVersion);
                     if (d) filteredMoves.push({ name: m.move.name, url: m.move.url, learnMethod: d.move_learn_method.name, level: d.level_learned_at });
                 });
+                // Egg moves from the line's first stage count as this one's too.
+                inheritedVersionMoves(fullApiData.moves, prevoApiMoves, selectedMoveVersion)
+                    .filter((m) => m.learnMethod === 'egg')
+                    .forEach((m) => filteredMoves.push(m));
                 const promises = filteredMoves.map(async (fm) => {
                     const md = await getMoveDetails(fm.url, fm.name);
                     let tmName = '';
@@ -250,8 +280,9 @@ export function usePokemonDetailData({
                 // method the Champions/mega data uses). Without this, those moves were
                 // dropped — which is why mega forms with a train-only moveset showed
                 // "No Moves Found" despite the API returning a full list.
-                const other = resolved.filter((m) => m.learnMethod !== 'level-up' && m.learnMethod !== 'machine').sort((a, b) => a.name.localeCompare(b.name));
-                setResolvedMoves({ levelUp, machine, other });
+                const egg = resolved.filter((m) => m.learnMethod === 'egg').sort((a, b) => a.name.localeCompare(b.name));
+                const other = resolved.filter((m) => !['level-up', 'machine', 'egg'].includes(m.learnMethod)).sort((a, b) => a.name.localeCompare(b.name));
+                setResolvedMoves({ levelUp, machine, egg, other });
             } catch (err) {
                 console.error('Failed to resolve moves', err);
             } finally {
@@ -259,7 +290,7 @@ export function usePokemonDetailData({
             }
         })();
         return () => { cancelled = true; };
-    }, [fullApiData, selectedMoveVersion]);
+    }, [fullApiData, selectedMoveVersion, prevoApiMoves]);
 
     // ── Derived data ─────────────────────────────────────────────────────────
     const typeDefenses = useMemo(() => {

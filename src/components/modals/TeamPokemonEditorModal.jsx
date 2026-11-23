@@ -22,6 +22,7 @@ import { applyEvChange, evLimitsFor, maxEvFor, remainingEvs } from '../../utils/
 import { convertSpread, looksLikeStatPoints, statPointsToEvs } from '../../utils/statPoints';
 import { buildSignature } from '../../utils/teamDraft';
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
+import { IV_STATS, MAX_IV, clampIv, recommendIvs, sameIvs } from '../../utils/ivAdvice';
 import { UsageBar, RegulationSelect } from '../views/metaShared';
 import { pctOf, pretty } from '../../utils/metaFormat';
 import { SpriteSelect } from '../SpriteSelect';
@@ -253,11 +254,20 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
     // Stat Points feed the stat formula as the EVs they are worth.
     const calculateStat = (base, rawEv, statName) => {
         const ev = evScale === 'sp' ? statPointsToEvs(rawEv) : rawEv;
+        const iv = evScale === 'sp' ? MAX_IV : clampIv(customization.ivs?.[statName]);
         if (statName === 'hp') {
-            return Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 110;
+            return Math.floor(base * 2 + iv + Math.floor(ev / 4)) + 110;
         }
-        return Math.floor(Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 5);
+        return Math.floor(Math.floor(base * 2 + iv + Math.floor(ev / 4)) + 5);
     };
+
+    // IVs (not in Champions, where every stat is maxed): what the set wants,
+    // and so whether breeding a 6×31 is worth it — utils/ivAdvice.js decides.
+    const currentIvs = useMemo(() => Object.fromEntries(IV_STATS.map((s) => [s, clampIv(customization.ivs?.[s])])), [customization.ivs]);
+    const handleIvChange = (stat, value) => setCustomization((prev) => ({
+        ...prev,
+        ivs: { ...Object.fromEntries(IV_STATS.map((s) => [s, clampIv(prev.ivs?.[s])])), [stat]: clampIv(value) },
+    }));
 
     // Competitive usage (what tournament teams actually run). EVs in this dataset
     // are unreliable, so Tera falls back to the Smogon sets' Tera types.
@@ -285,8 +295,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
             pp: row?.[5] || null,
             desc: row?.[6] || '',
             pct: movePctBySlug.get(toSlug(move.name)) || 0,
+            inheritedFrom: move.inheritedFrom || null,
         };
     }), [pokemon.moves, dex, typeForMove, movePctBySlug]);
+
+    const ivAdvice = useMemo(() => {
+        const bySlug = new Map(moveRows.map((row) => [row.slug, row]));
+        return recommendIvs({ moves: customization.moves.map((name) => ({ name, category: bySlug.get(toSlug(name))?.category || null })) });
+    }, [moveRows, customization.moves]);
 
     // The types this Pokémon actually has moves of — its own types first (the
     // STAB ones are what gets picked), then the best-stocked.
@@ -747,6 +763,11 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
                                                     )}
                                                     <span className="editor-move__name">{prettyMove(move.name)}</span>
                                                     {move.pct > 0 && <span className="count-badge">{move.pct}%</span>}
+                                                    {move.inheritedFrom && (
+                                                        <span className="count-badge" title={t('builder.editor.inheritedFrom', { name: prettyMove(move.inheritedFrom) })}>
+                                                            {t('builder.editor.prevoBadge')}
+                                                        </span>
+                                                    )}
                                                     {move.category && (
                                                         <span className="editor-move__power figure" data-cat={move.category} title={t(`db.${move.category}`)}>
                                                             <span className="editor-cat-dot" data-cat={move.category} aria-hidden="true" />
@@ -853,6 +874,41 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, items, nature
                                     );
                                 })}
                             </div>
+                            {evScale !== 'sp' && (
+                                <section className="editor-ivs" aria-labelledby="editor-ivs-title">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <h3 id="editor-ivs-title" className="text-lg font-bold text-fg">{t('builder.editor.ivsTitle')}</h3>
+                                        {!sameIvs(currentIvs, ivAdvice.ivs) && (
+                                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCustomization((prev) => ({ ...prev, ivs: { ...ivAdvice.ivs } }))}>
+                                                {t('builder.editor.ivsApply')}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-muted">
+                                        {t(ivAdvice.verdict === 'six' ? 'builder.editor.ivsVerdictSix' : 'builder.editor.ivsVerdictFive')}
+                                        {ivAdvice.reasons.map((reason) => ` ${t(`builder.editor.ivsReason.${reason}`)}`).join('')}
+                                    </p>
+                                    <div className="editor-ivs__grid">
+                                        {IV_STATS.map((statName) => (
+                                            <label key={statName} className="editor-ivs__cell">
+                                                <span className="text-2xs font-bold text-muted">{STAT_ABBR[statName]}</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max={MAX_IV}
+                                                    step="1"
+                                                    inputMode="numeric"
+                                                    value={currentIvs[statName]}
+                                                    onChange={(event) => handleIvChange(statName, event.target.value)}
+                                                    onFocus={(event) => event.target.select()}
+                                                    className="w-full rounded-md border border-border bg-surface-raised px-1 py-1 text-center font-mono text-xs tabular-nums text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary"
+                                                    aria-label={`${statName.replace(/-/g, ' ')} IV`}
+                                                />
+                                            </label>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
                     )}
 

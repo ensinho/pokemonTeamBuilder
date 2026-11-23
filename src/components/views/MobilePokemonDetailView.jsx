@@ -459,6 +459,7 @@ export function MobilePokemonDetailView({
         const blocks = [
             { key: 'levelUp', title: t('pokedex.movesLevelUp'), rows: resolvedMoves.levelUp },
             { key: 'machine', title: t('pokedex.movesMachine'), rows: resolvedMoves.machine },
+            { key: 'egg', title: t('pokedex.movesEgg'), rows: resolvedMoves.egg || [] },
             { key: 'other', title: t('pokedex.movesOther'), rows: resolvedMoves.other || [] },
         ].filter((block) => block.rows.length > 0);
 

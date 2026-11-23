@@ -1,3 +1,4 @@
+import { mergeInheritedMoves } from '../utils/inheritedMoves';
 import { doc, getDoc } from 'firebase/firestore';
 import { POKEAPI_BASE_URL } from '../constants/firebase';
 import { db } from './firebase';
@@ -739,7 +740,7 @@ const findIndexEntryById = async (id) => {
     }
 };
 
-export const resolvePokemonDetail = async (pokemonId, { _inherited = false } = {}) => {
+const resolveOwnPokemonDetail = async (pokemonId, { _inherited = false } = {}) => {
     const id = Number.parseInt(pokemonId, 10);
     if (!Number.isInteger(id) || id <= 0) return null;
 
@@ -812,6 +813,40 @@ export const resolvePokemonDetail = async (pokemonId, { _inherited = false } = {
     }
 
     return detail;
+};
+
+// The species ids this one evolves from, nearest first (Aegislash → Doublade, Honedge).
+const getPreEvolutionIds = async (speciesId) => {
+    const ids = [];
+    let current = speciesId;
+    for (let i = 0; i < 3; i += 1) {
+        const species = await getPokemonSpeciesData(current).catch(() => null);
+        const prevoId = Number(getIdFromResource(species?.evolves_from_species?.url));
+        if (!Number.isInteger(prevoId) || prevoId <= 0) break;
+        ids.push(prevoId);
+        current = prevoId;
+    }
+    return ids;
+};
+
+// Own detail + the moves its pre-evolutions know (egg moves live only on the
+// first stage on PokéAPI — utils/inheritedMoves.js). Forms keep their own list:
+// a regional form's line is not the base species' line.
+export const resolvePokemonDetail = async (pokemonId, options = {}) => {
+    const detail = await resolveOwnPokemonDetail(pokemonId, options);
+    const id = Number(detail?.id ?? pokemonId);
+    if (!detail || !hasUsableMoves(detail) || !Number.isInteger(id) || id >= 10000) return detail;
+    try {
+        const prevoIds = await getPreEvolutionIds(id);
+        if (!prevoIds.length) return detail;
+        const prevos = await Promise.all(prevoIds.map(async (prevoId) => {
+            const prevo = await resolveOwnPokemonDetail(prevoId, { _inherited: true }).catch(() => null);
+            return { from: prevo?.name || String(prevoId), moves: hasUsableMoves(prevo) ? prevo.moves : [] };
+        }));
+        return { ...detail, moves: mergeInheritedMoves(detail.moves, prevos) };
+    } catch (_) {
+        return detail;
+    }
 };
 
 /**
