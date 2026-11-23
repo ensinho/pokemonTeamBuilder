@@ -153,6 +153,14 @@ the six as tabs (icon + HP), then one in full — types, level, gender, HP, stat
 - **Sound** (`utils/challengeSfx.js`): WebAudio recipes from the spec §3.12, no files; nothing before the first gesture on the route; mute on the bar, remembered (`ptb:challenge:muted`). Battle moments map through `soundFor(event)` — the hit sounds on the damage, "super effective" adds a second impact, because the log puts it after the damage. `versus` and `whoosh` belong to the VS card.
 - **Music** (`utils/battleMusic.js`, 2026-10-20): an original chiptune loop per opponent (`champion` here, `rival` for friend battles), synthesized on the effects' context and master gain — one mute silences both — with its own switch on the bar (`ptb:battle:music`). Faster while your active Pokémon is at ≤ 25% HP; stops at the `end` moment so the result's jingle plays alone; nothing scheduled while the tab is hidden. The bar's three switches are `useBattleSound`.
 
+### The way in and the way out (2026-11-22, the living moments)
+
+- **Power on:** the first screen of a visit, when it is the room, lights like a CRT (a white line that opens) and the room appears through an iris centred on the spawn tile (`irisOrigin(CHAMPION_ROOM)` → 46.9% 87.5%). **Power off:** "Voltar" from the result folds the picture to a line and a dot, then the room powers on again.
+- **Finale:** a battle played on this screen (`finaleFor(run, startedRunId)`) ends on the **Hall of Fame** for every official win of the day (Enzo: "toda vitória do dia") — the trainer's six walk in one by one, each with a flash, then the plaque with the date — or the **blackout** for a loss or forfeit (the field closes to black around the trainer, one line). Practice runs and results opened later go straight to the figures. The result (and any badge it earned) follows when the finale hands over; the day's other moments wait (`holdMoments`).
+- The moments draw **inside the DS screen** through a portal (`ds/DsMoments.jsx`, `styles/champion-moments.css`), so the field the battle ended on is what closes to black; DS rules hold there (`--px`, `--ds-*`, DotGothic16). Timings: `CHAMPION_MOMENTS` in `utils/championMoments.js` (tested), equal to the CSS.
+- After a finale the next game's card rises into place (`.challenge-next-rise`).
+- A tap or any key skips each one; none mounts under reduced motion.
+
 ### Move effects by type (2026-10-15)
 
 `MoveFx` in `DsBattleScene.jsx`: eight particles at the target, a **pattern** (how they move: rise, fall, ring, slash, quake, swarm, burst; status moves sparkle) and a **shape** (flame, bubble, wisp, leaf, rock, shard, bolt, ring, sparkle, line, dot, star) per type (`FX_BY_TYPE`); a special move's particles wait for its orb. Heavy physical hits (ground, rock, fighting) shake the field (`is-shake`, the world layers only). Transform/opacity; none under reduced motion.
