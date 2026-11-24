@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T19:22:59.089Z",
+  "generatedAt": "2026-11-24T18:59:19.029Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -302,30 +302,32 @@
               "heat-wave"
             ],
             [
-              "weather-ball"
+              "solar-beam",
+              "hurricane",
+              "ancient-power"
             ],
             [
-              "solar-beam"
+              "weather-ball"
             ],
             [
               "protect"
             ]
           ],
           "evs": {
-            "hp": 124,
+            "hp": 156,
             "attack": 0,
-            "defense": 196,
+            "defense": 156,
             "special-attack": 90,
             "special-defense": 0,
-            "speed": 100
+            "speed": 108
           },
           "sp": {
-            "hp": 16,
+            "hp": 20,
             "attack": 0,
-            "defense": 25,
+            "defense": 20,
             "special-attack": 12,
             "special-defense": 0,
-            "speed": 13
+            "speed": 14
           },
           "ivs": {
             "hp": 31,
@@ -336,7 +338,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Mega Charizard Y is a ruthless sweeper dealing immense damage with its Fire-type attacks. It threatens OHKOs and 2HKOs on the majority of the metagame such as Mega Floette, Kingambit, Sinistcha, and Mega Metagross. Mega Charizard Y opts to run bulk rather than maximizing its offense and Speed to help it survive longer…",
+          "description": "Mega Charizard Y is an incredibly potent specially offensive threat; it's flexible and able to be used on many teams, most prominently balance teams with Whimsicott, Garchomp, and Sneasler and dual weather teams with Venusaur, Archaludon, and Pelipper. It takes advantage of both sun and rain primarily because the…",
           "source": "Champions VGC"
         },
         {
@@ -1686,7 +1688,7 @@
           "name": "Mega Utility",
           "item": "clefablite",
           "itemAlts": [],
-          "ability": "magic-bounce",
+          "ability": "magic-guard",
           "nature": "modest",
           "tera": [],
           "moves": [
@@ -53492,9 +53494,59 @@
     },
     "923": {
       "name": "Pawmot",
-      "gen": "Champions OU",
-      "overview": "This analysis is for the Regulation C format of Battle Stadium Singles, which lasts until June 30th, 2023. For more information on this format and its current events, check out the format page!\nIf you feel this analysis is missing anything important or needs an update, feel free to suggest any changes here.",
+      "gen": "Champions VGC",
+      "overview": "Pawmot functions primarily as a fast and frail attacker, and its Electric / Fighting STAB combination provides strong metagame coverage. Close Combat hits Incineroar and Archaludon, and Double Shock OHKOes Mega Charizard Y and the format's Flying- and Water-types, such as Mega Staraptor, Basculegion-M, and Milotic.…",
       "sets": [
+        {
+          "name": "Offensive Support",
+          "item": "focus-sash",
+          "itemAlts": [],
+          "ability": "iron-fist",
+          "nature": "jolly",
+          "tera": [],
+          "moves": [
+            [
+              "double-shock"
+            ],
+            [
+              "close-combat"
+            ],
+            [
+              "fake-out"
+            ],
+            [
+              "revival-blessing",
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 6,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "sp": {
+            "hp": 2,
+            "attack": 32,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 32
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Pawmot is fast and deals high damage with its STAB moves. Additionally, Pawmot can support its partners with Fake Out, allowing them to set up or reposition.\nPawmot often runs the move Revival Blessing, which is unique to itself in the format. Importantly, this allows it to keep up your team's offensive presence by…",
+          "source": "Champions VGC"
+        },
         {
           "name": "Offensive",
           "item": "life-orb",
@@ -53644,52 +53696,6 @@
           "level": null,
           "description": "Pawmot's good offensive stats and unique support movepool give it a good niche in the metagame.\nDouble Shock and Close Combat are its most important attacks, but note that it can only use Double Shock once without Terastallizing. Once Terastillized, Pawmot you can use Double Shock continuously for big damage, even on…",
           "source": "Battle Stadium"
-        },
-        {
-          "name": "All-out Attacker (Pawmot)",
-          "item": "life-orb",
-          "itemAlts": [
-            "heavy-duty-boots"
-          ],
-          "ability": "iron-fist",
-          "nature": "jolly",
-          "tera": [
-            "electric"
-          ],
-          "moves": [
-            [
-              "double-shock"
-            ],
-            [
-              "close-combat"
-            ],
-            [
-              "knock-off",
-              "ice-punch"
-            ],
-            [
-              "mach-punch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 4,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nPawmot is a devastating wallbreaker, utilizing its unique STAB combination to destroy common defensive Pokemon such as Slowbro and Registeel. Knock Off can remove items from switch-ins including Chesnaught and Reuniclus, while Ice Punch can hit Dragon- and Grass-types such as Noivern and Amoonguss. Mach…",
-          "source": "RU"
         }
       ]
     },
