@@ -1,36 +1,36 @@
 {
-  "generatedAt": "2026-11-24T19:00:16.038Z",
+  "generatedAt": "2026-11-25T18:04:54.481Z",
   "source": "limitless tournament standings",
   "species": 144,
-  "totalTeams": 8760,
+  "totalTeams": 8763,
   "byId": {
     "3": {
       "name": "Venusaur",
       "n": 641,
       "teams": 641,
       "usage": 7.3,
-      "winRate": 49,
+      "winRate": 49.1,
       "weighted": 899,
       "topCut": 59,
       "items": [
         {
           "name": "Focus Sash",
-          "count": 424,
+          "count": 425,
           "slug": "focus-sash"
         },
         {
           "name": "Life Orb",
-          "count": 123,
+          "count": 121,
           "slug": "life-orb"
         },
         {
           "name": "Venusaurite",
-          "count": 50,
+          "count": 52,
           "slug": "venusaurite"
         },
         {
           "name": "Wide Lens",
-          "count": 28,
+          "count": 27,
           "slug": "wide-lens"
         },
         {
@@ -93,19 +93,19 @@
         },
         {
           "name": "Sleep Powder",
-          "count": 486
+          "count": 488
         },
         {
           "name": "Leaf Storm",
-          "count": 442
+          "count": 441
         },
         {
           "name": "Earth Power",
-          "count": 238
+          "count": 237
         },
         {
           "name": "Giga Drain",
-          "count": 63
+          "count": 64
         },
         {
           "name": "Energy Ball",
@@ -121,7 +121,7 @@
         },
         {
           "name": "Weather Ball",
-          "count": 8
+          "count": 7
         },
         {
           "name": "Growth",
@@ -202,42 +202,42 @@
         {
           "id": 6,
           "name": "Charizard",
-          "count": 570
+          "count": 568
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 426
+          "count": 424
         },
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 327
+          "count": 328
         },
         {
           "id": 861,
           "name": "Grimmsnarl",
-          "count": 291
+          "count": 292
         },
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 278
+          "count": 277
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 185
+          "count": 183
         },
         {
           "id": 700,
           "name": "Sylveon",
-          "count": 165
+          "count": 163
         },
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 139
+          "count": 141
         },
         {
           "id": 26,
@@ -247,22 +247,22 @@
         {
           "id": 748,
           "name": "Toxapex",
-          "count": 59
+          "count": 57
         }
       ]
     },
     "6": {
       "name": "Charizard",
-      "n": 1539,
-      "teams": 1539,
-      "usage": 17.6,
+      "n": 1532,
+      "teams": 1532,
+      "usage": 17.5,
       "winRate": 49.9,
-      "weighted": 2174,
+      "weighted": 2165,
       "topCut": 133,
       "items": [
         {
           "name": "Charizardite Y",
-          "count": 1500,
+          "count": 1493,
           "slug": "charizardite-y"
         },
         {
@@ -294,11 +294,11 @@
       "abilities": [
         {
           "name": "Blaze",
-          "count": 1323
+          "count": 1315
         },
         {
           "name": "Solar Power",
-          "count": 138
+          "count": 139
         },
         {
           "name": "Drought",
@@ -312,7 +312,7 @@
       "tera": [
         {
           "name": "Fire",
-          "count": 29
+          "count": 28
         },
         {
           "name": "None",
@@ -322,23 +322,23 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 1529
+          "count": 1522
         },
         {
           "name": "Heat Wave",
-          "count": 1498
+          "count": 1491
         },
         {
           "name": "Weather Ball",
-          "count": 1449
+          "count": 1441
         },
         {
           "name": "Solar Beam",
-          "count": 658
+          "count": 655
         },
         {
           "name": "Ancient Power",
-          "count": 510
+          "count": 507
         },
         {
           "name": "Hurricane",
@@ -440,36 +440,36 @@
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 991
+          "count": 982
         },
         {
           "id": 3,
           "name": "Venusaur",
-          "count": 570
+          "count": 568
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 536
+          "count": 532
         },
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 463
+          "count": 459
         },
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 456
+          "count": 457
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 427
+          "count": 423
         },
         {
-          "id": 700,
-          "name": "Sylveon",
+          "id": 861,
+          "name": "Grimmsnarl",
           "count": 371
         },
         {
@@ -478,14 +478,14 @@
           "count": 371
         },
         {
-          "id": 861,
-          "name": "Grimmsnarl",
+          "id": 700,
+          "name": "Sylveon",
           "count": 370
         },
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 366
+          "count": 365
         }
       ]
     },
@@ -999,18 +999,18 @@
       "n": 2287,
       "teams": 2287,
       "usage": 26.1,
-      "winRate": 48.6,
-      "weighted": 3143,
-      "topCut": 174,
+      "winRate": 48.5,
+      "weighted": 3135,
+      "topCut": 172,
       "items": [
         {
           "name": "Raichunite Y",
-          "count": 1874,
+          "count": 1880,
           "slug": "raichunite-y"
         },
         {
           "name": "Raichunite X",
-          "count": 389,
+          "count": 383,
           "slug": "raichunite-x"
         },
         {
@@ -1047,7 +1047,7 @@
       "abilities": [
         {
           "name": "Lightning Rod",
-          "count": 2204
+          "count": 2206
         },
         {
           "name": "No Guard",
@@ -1055,17 +1055,17 @@
         },
         {
           "name": "Static",
-          "count": 27
+          "count": 26
         },
         {
           "name": "Lighting Rod",
-          "count": 9
+          "count": 8
         }
       ],
       "tera": [
         {
           "name": "Electric",
-          "count": 34
+          "count": 32
         },
         {
           "name": "None",
@@ -1075,7 +1075,7 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 1971
+          "count": 1974
         },
         {
           "name": "Fake Out",
@@ -1083,31 +1083,31 @@
         },
         {
           "name": "Zap Cannon",
-          "count": 1867
+          "count": 1873
         },
         {
           "name": "Focus Blast",
-          "count": 1854
+          "count": 1860
         },
         {
           "name": "Volt Switch",
-          "count": 366
+          "count": 362
         },
         {
           "name": "Volt Tackle",
-          "count": 355
+          "count": 351
         },
         {
           "name": "Encore",
-          "count": 321
+          "count": 319
         },
         {
           "name": "Feint",
-          "count": 262
+          "count": 257
         },
         {
           "name": "Rising Voltage",
-          "count": 34
+          "count": 33
         },
         {
           "name": "Light Screen",
@@ -1119,7 +1119,7 @@
         },
         {
           "name": "Charm",
-          "count": 16
+          "count": 17
         },
         {
           "name": "Drain Punch",
@@ -1190,62 +1190,62 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 1607
+          "count": 1609
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 1009
+          "count": 1011
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 833
+          "count": 834
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 710
+          "count": 708
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 611
-        },
-        {
-          "id": 445,
-          "name": "Garchomp",
-          "count": 516
+          "count": 615
         },
         {
           "id": 637,
           "name": "Volcarona",
+          "count": 517
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
           "count": 513
         },
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 479
+          "count": 481
         },
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 372
+          "count": 366
         },
         {
           "id": 730,
           "name": "Primarina",
-          "count": 355
+          "count": 350
         }
       ]
     },
     "36": {
       "name": "Clefable",
-      "n": 76,
-      "teams": 76,
+      "n": 77,
+      "teams": 77,
       "usage": 0.9,
-      "winRate": 46.3,
-      "weighted": 98,
+      "winRate": 46.5,
+      "weighted": 100,
       "topCut": 3,
       "items": [
         {
@@ -1255,7 +1255,7 @@
         },
         {
           "name": "Clefablite",
-          "count": 12,
+          "count": 13,
           "slug": "clefablite"
         },
         {
@@ -1296,22 +1296,22 @@
         },
         {
           "name": "Magic Guard",
-          "count": 9
+          "count": 10
         }
       ],
       "tera": [],
       "moves": [
         {
           "name": "Follow Me",
-          "count": 71
+          "count": 72
         },
         {
           "name": "Moonblast",
-          "count": 70
+          "count": 71
         },
         {
           "name": "Protect",
-          "count": 53
+          "count": 54
         },
         {
           "name": "Helping Hand",
@@ -1319,7 +1319,7 @@
         },
         {
           "name": "Life Dew",
-          "count": 22
+          "count": 23
         },
         {
           "name": "Icy Wind",
@@ -1431,6 +1431,11 @@
           "count": 23
         },
         {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 19
+        },
+        {
           "id": 655,
           "name": "Delphox",
           "count": 18
@@ -1438,11 +1443,6 @@
         {
           "id": 26,
           "name": "Raichu",
-          "count": 18
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
           "count": 18
         },
         {
@@ -1456,13 +1456,13 @@
           "count": 15
         },
         {
-          "id": 637,
-          "name": "Volcarona",
-          "count": 13
-        },
-        {
           "id": 373,
           "name": "Salamence",
+          "count": 14
+        },
+        {
+          "id": 637,
+          "name": "Volcarona",
           "count": 13
         }
       ]
@@ -1992,16 +1992,16 @@
     },
     "59": {
       "name": "Hisuian Arcanine",
-      "n": 896,
-      "teams": 896,
-      "usage": 10.2,
+      "n": 900,
+      "teams": 900,
+      "usage": 10.3,
       "winRate": 50.6,
-      "weighted": 1234,
+      "weighted": 1237,
       "topCut": 65,
       "items": [
         {
           "name": "Focus Sash",
-          "count": 874,
+          "count": 878,
           "slug": "focus-sash"
         },
         {
@@ -2043,11 +2043,11 @@
       "abilities": [
         {
           "name": "Rock Head",
-          "count": 870
+          "count": 873
         },
         {
           "name": "Intimidate",
-          "count": 25
+          "count": 26
         },
         {
           "name": "rock head",
@@ -2071,19 +2071,19 @@
       "moves": [
         {
           "name": "Flare Blitz",
-          "count": 893
+          "count": 897
         },
         {
           "name": "Protect",
-          "count": 886
+          "count": 890
         },
         {
           "name": "Head Smash",
-          "count": 864
+          "count": 868
         },
         {
           "name": "Extreme Speed",
-          "count": 802
+          "count": 806
         },
         {
           "name": "Rock Slide",
@@ -2190,22 +2190,22 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 746
+          "count": 748
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 611
+          "count": 615
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 514
+          "count": 517
         },
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 365
+          "count": 368
         },
         {
           "id": 903,
@@ -2215,42 +2215,42 @@
         {
           "id": 373,
           "name": "Salamence",
-          "count": 254
+          "count": 255
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 217
+          "count": 218
         },
         {
           "id": 700,
           "name": "Sylveon",
-          "count": 208
+          "count": 209
         },
         {
           "id": 730,
           "name": "Primarina",
-          "count": 180
+          "count": 178
         },
         {
           "id": 350,
           "name": "Milotic",
-          "count": 122
+          "count": 127
         }
       ]
     },
     "65": {
       "name": "Alakazam",
-      "n": 32,
-      "teams": 32,
+      "n": 31,
+      "teams": 31,
       "usage": 0.4,
-      "winRate": 49.2,
-      "weighted": 47,
+      "winRate": 49.4,
+      "weighted": 46,
       "topCut": 3,
       "items": [
         {
           "name": "Alakazite",
-          "count": 30,
+          "count": 29,
           "slug": "alakazite"
         },
         {
@@ -2267,7 +2267,7 @@
       "abilities": [
         {
           "name": "Inner Focus",
-          "count": 24
+          "count": 23
         },
         {
           "name": "Magic Guard",
@@ -2286,15 +2286,15 @@
       "moves": [
         {
           "name": "Expanding Force",
-          "count": 30
-        },
-        {
-          "name": "Protect",
           "count": 29
         },
         {
+          "name": "Protect",
+          "count": 28
+        },
+        {
           "name": "Focus Blast",
-          "count": 17
+          "count": 16
         },
         {
           "name": "Speed Swap",
@@ -2313,11 +2313,11 @@
           "count": 5
         },
         {
-          "name": "Encore",
-          "count": 4
+          "name": "Psychic",
+          "count": 3
         },
         {
-          "name": "Psychic",
+          "name": "Encore",
           "count": 3
         },
         {
@@ -2403,22 +2403,22 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 26
+          "count": 25
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 13
+          "count": 12
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 9
+          "count": 8
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 8
+          "count": 7
         },
         {
           "id": 445,
@@ -2441,14 +2441,14 @@
           "count": 4
         },
         {
-          "id": 350,
-          "name": "Milotic",
-          "count": 4
-        },
-        {
           "id": 784,
           "name": "Kommo-o",
           "count": 4
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
         }
       ]
     },
@@ -2655,16 +2655,16 @@
     },
     "94": {
       "name": "Gengar",
-      "n": 534,
-      "teams": 534,
+      "n": 536,
+      "teams": 536,
       "usage": 6.1,
       "winRate": 47.4,
-      "weighted": 729,
+      "weighted": 731,
       "topCut": 43,
       "items": [
         {
           "name": "Gengarite",
-          "count": 528,
+          "count": 530,
           "slug": "gengarite"
         },
         {
@@ -2691,11 +2691,11 @@
       "abilities": [
         {
           "name": "Cursed Body",
-          "count": 506
+          "count": 509
         },
         {
           "name": "Shadow Tag",
-          "count": 25
+          "count": 24
         },
         {
           "name": "Cursed body",
@@ -2715,19 +2715,19 @@
       "moves": [
         {
           "name": "Shadow Ball",
-          "count": 529
+          "count": 531
         },
         {
           "name": "Protect",
-          "count": 528
+          "count": 530
         },
         {
           "name": "Sludge Bomb",
-          "count": 466
+          "count": 468
         },
         {
           "name": "Perish Song",
-          "count": 377
+          "count": 380
         },
         {
           "name": "Substitute",
@@ -2735,7 +2735,7 @@
         },
         {
           "name": "Disable",
-          "count": 48
+          "count": 47
         },
         {
           "name": "Icy Wind",
@@ -2833,27 +2833,27 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 416
+          "count": 418
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 409
+          "count": 411
         },
         {
           "id": 186,
           "name": "Politoed",
-          "count": 195
+          "count": 196
         },
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 160
+          "count": 162
         },
         {
           "id": 784,
           "name": "Kommo-o",
-          "count": 127
+          "count": 126
         },
         {
           "id": 666,
@@ -2863,12 +2863,12 @@
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 115
+          "count": 116
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 95
+          "count": 94
         },
         {
           "id": 445,
@@ -3873,17 +3873,17 @@
       "teams": 254,
       "usage": 2.9,
       "winRate": 47.9,
-      "weighted": 338,
+      "weighted": 336,
       "topCut": 17,
       "items": [
         {
           "name": "Aerodactylite",
-          "count": 157,
+          "count": 158,
           "slug": "aerodactylite"
         },
         {
           "name": "Focus Sash",
-          "count": 88,
+          "count": 87,
           "slug": "focus-sash"
         },
         {
@@ -3920,7 +3920,7 @@
       "abilities": [
         {
           "name": "Unnerve",
-          "count": 239
+          "count": 240
         },
         {
           "name": "Rock Head",
@@ -3928,7 +3928,7 @@
         },
         {
           "name": "Pressure",
-          "count": 4
+          "count": 3
         },
         {
           "name": "Tough Claws",
@@ -3956,7 +3956,7 @@
         },
         {
           "name": "Protect",
-          "count": 139
+          "count": 138
         },
         {
           "name": "Wide Guard",
@@ -3964,7 +3964,7 @@
         },
         {
           "name": "Ice Fang",
-          "count": 30
+          "count": 31
         },
         {
           "name": "Taunt",
@@ -4089,7 +4089,7 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 49
+          "count": 50
         },
         {
           "id": 727,
@@ -4319,21 +4319,21 @@
     },
     "149": {
       "name": "Dragonite",
-      "n": 463,
-      "teams": 463,
+      "n": 465,
+      "teams": 465,
       "usage": 5.3,
-      "winRate": 50.7,
-      "weighted": 654,
-      "topCut": 46,
+      "winRate": 50.8,
+      "weighted": 658,
+      "topCut": 47,
       "items": [
         {
           "name": "Dragoninite",
-          "count": 396,
+          "count": 397,
           "slug": "dragoninite"
         },
         {
           "name": "Life Orb",
-          "count": 40,
+          "count": 41,
           "slug": "life-orb"
         },
         {
@@ -4370,11 +4370,11 @@
       "abilities": [
         {
           "name": "Inner Focus",
-          "count": 302
+          "count": 303
         },
         {
           "name": "Multiscale",
-          "count": 159
+          "count": 160
         },
         {
           "name": "Multiescale",
@@ -4402,19 +4402,19 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 442
+          "count": 444
         },
         {
           "name": "Dragon Pulse",
-          "count": 386
+          "count": 387
         },
         {
           "name": "Tailwind",
-          "count": 343
+          "count": 344
         },
         {
           "name": "Heat Wave",
-          "count": 323
+          "count": 324
         },
         {
           "name": "Extreme Speed",
@@ -4426,7 +4426,7 @@
         },
         {
           "name": "Dragon Claw",
-          "count": 41
+          "count": 42
         },
         {
           "name": "Hurricane",
@@ -4454,7 +4454,7 @@
         },
         {
           "name": "Dragon Dance",
-          "count": 10
+          "count": 11
         }
       ],
       "spreads": [
@@ -4519,22 +4519,22 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 314
+          "count": 316
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 300
+          "count": 301
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 214
+          "count": 217
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 186
+          "count": 187
         },
         {
           "id": 1000,
@@ -4544,7 +4544,7 @@
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 140
+          "count": 142
         },
         {
           "id": 670,
@@ -4554,12 +4554,12 @@
         {
           "id": 26,
           "name": "Raichu",
-          "count": 99
+          "count": 100
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 78
+          "count": 77
         },
         {
           "id": 655,
@@ -5226,26 +5226,26 @@
     },
     "186": {
       "name": "Politoed",
-      "n": 420,
-      "teams": 420,
+      "n": 421,
+      "teams": 421,
       "usage": 4.8,
-      "winRate": 45.4,
-      "weighted": 581,
-      "topCut": 32,
+      "winRate": 45.1,
+      "weighted": 580,
+      "topCut": 31,
       "items": [
         {
           "name": "Sitrus Berry",
-          "count": 226,
+          "count": 227,
           "slug": "sitrus-berry"
         },
         {
           "name": "Mystic Water",
-          "count": 118,
+          "count": 119,
           "slug": "mystic-water"
         },
         {
           "name": "Life Orb",
-          "count": 28,
+          "count": 27,
           "slug": "life-orb"
         },
         {
@@ -5277,7 +5277,7 @@
       "abilities": [
         {
           "name": "Drizzle",
-          "count": 418
+          "count": 419
         },
         {
           "name": "Water Absorb",
@@ -5293,23 +5293,23 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 409
+          "count": 410
         },
         {
           "name": "Weather Ball",
-          "count": 368
+          "count": 370
         },
         {
           "name": "Ice Beam",
-          "count": 218
+          "count": 217
         },
         {
           "name": "Perish Song",
-          "count": 207
+          "count": 208
         },
         {
           "name": "Muddy Water",
-          "count": 197
+          "count": 196
         },
         {
           "name": "Encore",
@@ -5320,12 +5320,12 @@
           "count": 29
         },
         {
-          "name": "Helping Hand",
-          "count": 25
+          "name": "Hypnosis",
+          "count": 26
         },
         {
-          "name": "Hypnosis",
-          "count": 24
+          "name": "Helping Hand",
+          "count": 25
         },
         {
           "name": "Psych Up",
@@ -5410,42 +5410,42 @@
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 324
+          "count": 325
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 212
+          "count": 213
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 200
+          "count": 201
         },
         {
           "id": 94,
           "name": "Gengar",
-          "count": 195
+          "count": 196
         },
         {
           "id": 768,
           "name": "Golisopod",
-          "count": 145
+          "count": 144
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 106
+          "count": 107
         },
         {
           "id": 861,
           "name": "Grimmsnarl",
-          "count": 91
+          "count": 92
         },
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 86
+          "count": 85
         },
         {
           "id": 26,
@@ -6014,23 +6014,23 @@
     },
     "214": {
       "name": "Heracross",
-      "n": 16,
-      "teams": 16,
+      "n": 15,
+      "teams": 15,
       "usage": 0.2,
-      "winRate": 38.4,
-      "weighted": 22,
+      "winRate": 38.3,
+      "weighted": 21,
       "topCut": 0,
       "items": [
         {
           "name": "Heracronite",
-          "count": 16,
+          "count": 15,
           "slug": "heracronite"
         }
       ],
       "abilities": [
         {
           "name": "Moxie",
-          "count": 13
+          "count": 12
         },
         {
           "name": "Swarm",
@@ -6049,27 +6049,23 @@
       "moves": [
         {
           "name": "Close Combat",
-          "count": 15
+          "count": 14
         },
         {
           "name": "Rock Blast",
-          "count": 14
+          "count": 13
         },
         {
           "name": "Pin Missile",
           "count": 13
         },
         {
-          "name": "Detect",
-          "count": 8
-        },
-        {
           "name": "Protect",
           "count": 7
         },
         {
-          "name": "Bullet Seed",
-          "count": 2
+          "name": "Detect",
+          "count": 7
         },
         {
           "name": "Skitter Smack",
@@ -6089,6 +6085,10 @@
         },
         {
           "name": "Throat Chop",
+          "count": 1
+        },
+        {
+          "name": "Bullet Seed",
           "count": 1
         }
       ],
@@ -6120,18 +6120,8 @@
           "count": 5
         },
         {
-          "id": 547,
-          "name": "Whimsicott",
-          "count": 4
-        },
-        {
           "id": 730,
           "name": "Primarina",
-          "count": 4
-        },
-        {
-          "id": 981,
-          "name": "Farigiraf",
           "count": 4
         },
         {
@@ -6140,8 +6130,18 @@
           "count": 3
         },
         {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 3
+        },
+        {
           "id": 478,
           "name": "Froslass",
+          "count": 3
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
           "count": 3
         }
       ]
@@ -6502,21 +6502,21 @@
     },
     "248": {
       "name": "Tyranitar",
-      "n": 802,
-      "teams": 802,
+      "n": 805,
+      "teams": 805,
       "usage": 9.2,
-      "winRate": 48.4,
-      "weighted": 1113,
+      "winRate": 48.3,
+      "weighted": 1116,
       "topCut": 62,
       "items": [
         {
           "name": "Tyranitarite",
-          "count": 708,
+          "count": 710,
           "slug": "tyranitarite"
         },
         {
           "name": "Chople Berry",
-          "count": 40,
+          "count": 41,
           "slug": "chople-berry"
         },
         {
@@ -6553,7 +6553,7 @@
       "abilities": [
         {
           "name": "Sand Stream",
-          "count": 798
+          "count": 801
         },
         {
           "name": "Unnerve",
@@ -6577,23 +6577,23 @@
       "moves": [
         {
           "name": "Rock Slide",
-          "count": 791
+          "count": 794
         },
         {
           "name": "Knock Off",
-          "count": 780
+          "count": 783
         },
         {
           "name": "Protect",
-          "count": 777
+          "count": 780
         },
         {
           "name": "Low Kick",
-          "count": 423
+          "count": 424
         },
         {
           "name": "Dragon Dance",
-          "count": 278
+          "count": 281
         },
         {
           "name": "Ice Punch",
@@ -6601,7 +6601,7 @@
         },
         {
           "name": "High Horsepower",
-          "count": 34
+          "count": 33
         },
         {
           "name": "Fire Punch",
@@ -6692,22 +6692,22 @@
         {
           "id": 530,
           "name": "Excadrill",
-          "count": 559
+          "count": 564
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 331
+          "count": 334
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 301
+          "count": 303
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 270
+          "count": 272
         },
         {
           "id": 350,
@@ -6717,12 +6717,12 @@
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 218
+          "count": 219
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 185
+          "count": 186
         },
         {
           "id": 876,
@@ -6732,7 +6732,7 @@
         {
           "id": 823,
           "name": "Corviknight",
-          "count": 165
+          "count": 164
         },
         {
           "id": 398,
@@ -6970,12 +6970,12 @@
       "items": [
         {
           "name": "Blazikenite",
-          "count": 120,
+          "count": 119,
           "slug": "blazikenite"
         },
         {
           "name": "Focus Sash",
-          "count": 21,
+          "count": 22,
           "slug": "focus-sash"
         },
         {
@@ -7023,35 +7023,35 @@
       "moves": [
         {
           "name": "Close Combat",
-          "count": 129
+          "count": 128
         },
         {
           "name": "Flare Blitz",
-          "count": 126
+          "count": 125
         },
         {
           "name": "Rock Slide",
-          "count": 119
+          "count": 118
         },
         {
           "name": "Detect",
-          "count": 114
+          "count": 113
         },
         {
           "name": "Protect",
-          "count": 45
+          "count": 46
         },
         {
           "name": "Heat Wave",
-          "count": 27
+          "count": 28
         },
         {
           "name": "Aura Sphere",
-          "count": 26
+          "count": 27
         },
         {
           "name": "Coaching",
-          "count": 19
+          "count": 20
         },
         {
           "name": "Blaze Kick",
@@ -7152,6 +7152,11 @@
           "count": 39
         },
         {
+          "id": 373,
+          "name": "Salamence",
+          "count": 34
+        },
+        {
           "id": 876,
           "name": "Indeedee ♀",
           "count": 34
@@ -7162,14 +7167,9 @@
           "count": 33
         },
         {
-          "id": 373,
-          "name": "Salamence",
-          "count": 32
-        },
-        {
           "id": 981,
           "name": "Farigiraf",
-          "count": 30
+          "count": 28
         },
         {
           "id": 730,
@@ -7190,16 +7190,16 @@
     },
     "260": {
       "name": "Swampert",
-      "n": 333,
-      "teams": 333,
+      "n": 335,
+      "teams": 335,
       "usage": 3.8,
-      "winRate": 44.5,
-      "weighted": 431,
-      "topCut": 16,
+      "winRate": 44.6,
+      "weighted": 434,
+      "topCut": 17,
       "items": [
         {
           "name": "Swampertite",
-          "count": 312,
+          "count": 314,
           "slug": "swampertite"
         },
         {
@@ -7231,7 +7231,7 @@
       "abilities": [
         {
           "name": "Torrent",
-          "count": 215
+          "count": 217
         },
         {
           "name": "Damp",
@@ -7255,15 +7255,15 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 319
+          "count": 321
         },
         {
           "name": "Wave Crash",
-          "count": 310
+          "count": 312
         },
         {
           "name": "Ice Punch",
-          "count": 279
+          "count": 281
         },
         {
           "name": "Earthquake",
@@ -7271,7 +7271,7 @@
         },
         {
           "name": "High Horsepower",
-          "count": 155
+          "count": 158
         },
         {
           "name": "Flip Turn",
@@ -7307,7 +7307,7 @@
         },
         {
           "name": "Stomping Tantrum",
-          "count": 5
+          "count": 4
         }
       ],
       "spreads": [
@@ -7369,14 +7369,14 @@
       ],
       "teammates": [
         {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 274
+        },
+        {
           "id": 279,
           "name": "Pelipper",
           "count": 273
-        },
-        {
-          "id": 1018,
-          "name": "Archaludon",
-          "count": 272
         },
         {
           "id": 861,
@@ -7391,17 +7391,17 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 75
+          "count": 78
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 75
+          "count": 74
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 57
+          "count": 60
         },
         {
           "id": 6,
@@ -7411,7 +7411,7 @@
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 49
+          "count": 48
         },
         {
           "id": 981,
@@ -7422,26 +7422,26 @@
     },
     "279": {
       "name": "Pelipper",
-      "n": 1228,
-      "teams": 1228,
-      "usage": 14,
+      "n": 1222,
+      "teams": 1222,
+      "usage": 13.9,
       "winRate": 46.7,
-      "weighted": 1635,
-      "topCut": 74,
+      "weighted": 1624,
+      "topCut": 75,
       "items": [
         {
           "name": "Sitrus Berry",
-          "count": 502,
+          "count": 498,
           "slug": "sitrus-berry"
         },
         {
           "name": "Focus Sash",
-          "count": 356,
+          "count": 359,
           "slug": "focus-sash"
         },
         {
           "name": "Damp Rock",
-          "count": 258,
+          "count": 253,
           "slug": "damp-rock"
         },
         {
@@ -7473,7 +7473,7 @@
       "abilities": [
         {
           "name": "Drizzle",
-          "count": 1215
+          "count": 1209
         },
         {
           "name": "Keen Eye",
@@ -7509,27 +7509,27 @@
       "moves": [
         {
           "name": "Hurricane",
-          "count": 1216
+          "count": 1210
         },
         {
           "name": "Weather Ball",
-          "count": 1168
+          "count": 1162
         },
         {
           "name": "Wide Guard",
-          "count": 902
+          "count": 898
         },
         {
           "name": "Tailwind",
-          "count": 863
+          "count": 861
         },
         {
           "name": "Protect",
-          "count": 348
+          "count": 347
         },
         {
           "name": "Helping Hand",
-          "count": 260
+          "count": 255
         },
         {
           "name": "Muddy Water",
@@ -7625,42 +7625,42 @@
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 1075
+          "count": 1069
         },
         {
           "id": 768,
           "name": "Golisopod",
-          "count": 538
+          "count": 532
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 450
+          "count": 442
         },
         {
           "id": 861,
           "name": "Grimmsnarl",
-          "count": 402
+          "count": 401
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 366
+          "count": 365
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 341
+          "count": 337
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 314
+          "count": 308
         },
         {
           "id": 3,
           "name": "Venusaur",
-          "count": 278
+          "count": 277
         },
         {
           "id": 260,
@@ -7670,22 +7670,22 @@
         {
           "id": 902,
           "name": "Basculegion ♀",
-          "count": 248
+          "count": 242
         }
       ]
     },
     "282": {
       "name": "Gardevoir",
-      "n": 432,
-      "teams": 432,
+      "n": 433,
+      "teams": 433,
       "usage": 4.9,
-      "winRate": 43.6,
-      "weighted": 568,
-      "topCut": 22,
+      "winRate": 43.8,
+      "weighted": 571,
+      "topCut": 23,
       "items": [
         {
           "name": "Gardevoirite",
-          "count": 427,
+          "count": 428,
           "slug": "gardevoirite"
         },
         {
@@ -7716,7 +7716,7 @@
         },
         {
           "name": "Synchronize",
-          "count": 98
+          "count": 99
         },
         {
           "name": "Telepathy",
@@ -7748,11 +7748,11 @@
         },
         {
           "name": "Expanding Force",
-          "count": 408
+          "count": 409
         },
         {
           "name": "Trick Room",
-          "count": 133
+          "count": 131
         },
         {
           "name": "Calm Mind",
@@ -7764,11 +7764,11 @@
         },
         {
           "name": "Mystical Fire",
-          "count": 60
+          "count": 61
         },
         {
           "name": "Moonblast",
-          "count": 32
+          "count": 33
         },
         {
           "name": "Aura Sphere",
@@ -7776,19 +7776,19 @@
         },
         {
           "name": "Psychic",
-          "count": 13
+          "count": 12
         },
         {
           "name": "Shadow Ball",
-          "count": 9
+          "count": 10
         },
         {
           "name": "Dazzling Gleam",
-          "count": 9
+          "count": 10
         },
         {
           "name": "Imprison",
-          "count": 8
+          "count": 9
         },
         {
           "name": "Hyper Beam",
@@ -7856,17 +7856,17 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 380
+          "count": 381
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 236
+          "count": 235
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 94
+          "count": 95
         },
         {
           "id": 936,
@@ -7876,7 +7876,7 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 77
+          "count": 78
         },
         {
           "id": 983,
@@ -7886,7 +7886,7 @@
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 62
+          "count": 63
         },
         {
           "id": 547,
@@ -7907,16 +7907,16 @@
     },
     "302": {
       "name": "Sableye",
-      "n": 132,
-      "teams": 132,
+      "n": 130,
+      "teams": 130,
       "usage": 1.5,
-      "winRate": 35.1,
-      "weighted": 157,
-      "topCut": 2,
+      "winRate": 34.2,
+      "weighted": 152,
+      "topCut": 1,
       "items": [
         {
           "name": "Light Clay",
-          "count": 56,
+          "count": 55,
           "slug": "light-clay"
         },
         {
@@ -7926,7 +7926,7 @@
         },
         {
           "name": "Focus Sash",
-          "count": 12,
+          "count": 11,
           "slug": "focus-sash"
         },
         {
@@ -7958,7 +7958,7 @@
       "abilities": [
         {
           "name": "Prankster",
-          "count": 127
+          "count": 125
         },
         {
           "name": "Keen Eye",
@@ -7974,19 +7974,19 @@
       "moves": [
         {
           "name": "Light Screen",
-          "count": 87
+          "count": 86
         },
         {
           "name": "Reflect",
-          "count": 64
+          "count": 63
         },
         {
           "name": "Rain Dance",
-          "count": 62
+          "count": 61
         },
         {
           "name": "Encore",
-          "count": 60
+          "count": 59
         },
         {
           "name": "Foul Play",
@@ -7994,7 +7994,7 @@
         },
         {
           "name": "Fake Out",
-          "count": 38
+          "count": 37
         },
         {
           "name": "Will-O-Wisp",
@@ -8005,12 +8005,12 @@
           "count": 27
         },
         {
-          "name": "Disable",
-          "count": 25
-        },
-        {
           "name": "Sunny Day",
           "count": 24
+        },
+        {
+          "name": "Disable",
+          "count": 23
         },
         {
           "name": "Gravity",
@@ -8089,7 +8089,7 @@
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 40
+          "count": 38
         },
         {
           "id": 768,
@@ -8099,22 +8099,22 @@
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 31
+          "count": 30
         },
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 25
+          "count": 24
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 22
+          "count": 21
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 20
+          "count": 19
         },
         {
           "id": 903,
@@ -8122,13 +8122,13 @@
           "count": 17
         },
         {
-          "id": 260,
-          "name": "Swampert",
-          "count": 16
-        },
-        {
           "id": 248,
           "name": "Tyranitar",
+          "count": 15
+        },
+        {
+          "id": 260,
+          "name": "Swampert",
           "count": 15
         },
         {
@@ -8452,16 +8452,16 @@
     },
     "323": {
       "name": "Camerupt",
-      "n": 265,
-      "teams": 265,
+      "n": 260,
+      "teams": 260,
       "usage": 3,
       "winRate": 47,
-      "weighted": 354,
-      "topCut": 20,
+      "weighted": 348,
+      "topCut": 19,
       "items": [
         {
           "name": "Cameruptite",
-          "count": 263,
+          "count": 258,
           "slug": "cameruptite"
         },
         {
@@ -8478,7 +8478,7 @@
       "abilities": [
         {
           "name": "Solid Rock",
-          "count": 242
+          "count": 237
         },
         {
           "name": "Magma Armor",
@@ -8496,7 +8496,7 @@
       "tera": [
         {
           "name": "Fire",
-          "count": 12
+          "count": 10
         },
         {
           "name": "Ground",
@@ -8506,19 +8506,19 @@
       "moves": [
         {
           "name": "Earth Power",
-          "count": 264
+          "count": 259
         },
         {
           "name": "Protect",
-          "count": 255
+          "count": 250
         },
         {
           "name": "Ancient Power",
-          "count": 238
+          "count": 235
         },
         {
           "name": "Heat Wave",
-          "count": 234
+          "count": 229
         },
         {
           "name": "Eruption",
@@ -8526,7 +8526,7 @@
         },
         {
           "name": "Flamethrower",
-          "count": 14
+          "count": 13
         },
         {
           "name": "Substitute",
@@ -8534,7 +8534,7 @@
         },
         {
           "name": "Flash Cannon",
-          "count": 5
+          "count": 4
         },
         {
           "name": "Overheat",
@@ -8623,32 +8623,32 @@
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 196
+          "count": 191
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 140
+          "count": 136
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 131
+          "count": 128
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 99
+          "count": 96
         },
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 95
+          "count": 94
         },
         {
           "id": 700,
           "name": "Sylveon",
-          "count": 87
+          "count": 84
         },
         {
           "id": 983,
@@ -8658,7 +8658,7 @@
         {
           "id": 858,
           "name": "Hatterene",
-          "count": 48
+          "count": 47
         },
         {
           "id": 730,
@@ -8674,8 +8674,8 @@
     },
     "324": {
       "name": "Torkoal",
-      "n": 349,
-      "teams": 349,
+      "n": 350,
+      "teams": 350,
       "usage": 4,
       "winRate": 45.7,
       "weighted": 471,
@@ -8683,7 +8683,7 @@
       "items": [
         {
           "name": "Charcoal",
-          "count": 320,
+          "count": 321,
           "slug": "charcoal"
         },
         {
@@ -8725,7 +8725,7 @@
       "abilities": [
         {
           "name": "Drought",
-          "count": 343
+          "count": 344
         },
         {
           "name": "White Smoke",
@@ -8745,11 +8745,11 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 330
+          "count": 331
         },
         {
           "name": "Eruption",
-          "count": 325
+          "count": 326
         },
         {
           "name": "Weather Ball",
@@ -8757,11 +8757,11 @@
         },
         {
           "name": "Earth Power",
-          "count": 182
+          "count": 180
         },
         {
           "name": "Heat Wave",
-          "count": 117
+          "count": 120
         },
         {
           "name": "Helping Hand",
@@ -8769,7 +8769,7 @@
         },
         {
           "name": "Solar Beam",
-          "count": 50
+          "count": 51
         },
         {
           "name": "Ancient Power",
@@ -8867,12 +8867,12 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 131
+          "count": 132
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 111
+          "count": 110
         },
         {
           "id": 727,
@@ -8882,16 +8882,16 @@
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 92
-        },
-        {
-          "id": 700,
-          "name": "Sylveon",
-          "count": 81
+          "count": 93
         },
         {
           "id": 445,
           "name": "Garchomp",
+          "count": 81
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
           "count": 80
         },
         {
@@ -8902,12 +8902,12 @@
         {
           "id": 282,
           "name": "Gardevoir",
-          "count": 50
+          "count": 51
         },
         {
           "id": 3,
           "name": "Venusaur",
-          "count": 47
+          "count": 49
         }
       ]
     },
@@ -9143,21 +9143,21 @@
     },
     "350": {
       "name": "Milotic",
-      "n": 806,
-      "teams": 806,
-      "usage": 9.2,
-      "winRate": 49.1,
-      "weighted": 1139,
+      "n": 813,
+      "teams": 813,
+      "usage": 9.3,
+      "winRate": 48.9,
+      "weighted": 1146,
       "topCut": 72,
       "items": [
         {
           "name": "Leftovers",
-          "count": 371,
+          "count": 376,
           "slug": "leftovers"
         },
         {
           "name": "Sitrus Berry",
-          "count": 305,
+          "count": 307,
           "slug": "sitrus-berry"
         },
         {
@@ -9167,12 +9167,12 @@
         },
         {
           "name": "Grassy Seed",
-          "count": 27,
+          "count": 26,
           "slug": "grassy-seed"
         },
         {
           "name": "Rindo Berry",
-          "count": 10,
+          "count": 11,
           "slug": "rindo-berry"
         },
         {
@@ -9194,11 +9194,11 @@
       "abilities": [
         {
           "name": "Competitive",
-          "count": 792
+          "count": 800
         },
         {
           "name": "Marvel Scale",
-          "count": 10
+          "count": 9
         },
         {
           "name": "Competative",
@@ -9226,39 +9226,39 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 603
+          "count": 610
         },
         {
           "name": "Scald",
-          "count": 498
+          "count": 501
         },
         {
           "name": "Ice Beam",
-          "count": 481
+          "count": 482
         },
         {
           "name": "Icy Wind",
-          "count": 374
+          "count": 378
         },
         {
           "name": "Muddy Water",
-          "count": 306
+          "count": 310
         },
         {
           "name": "Coil",
-          "count": 299
+          "count": 303
         },
         {
           "name": "Hypnosis",
-          "count": 289
+          "count": 293
         },
         {
           "name": "Recover",
-          "count": 177
+          "count": 178
         },
         {
           "name": "Life Dew",
-          "count": 64
+          "count": 63
         },
         {
           "name": "Haze",
@@ -9266,11 +9266,11 @@
         },
         {
           "name": "Helping Hand",
-          "count": 28
+          "count": 30
         },
         {
           "name": "Dragon Tail",
-          "count": 21
+          "count": 20
         },
         {
           "name": "Hydro Pump",
@@ -9345,12 +9345,12 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 399
+          "count": 406
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 368
+          "count": 376
         },
         {
           "id": 248,
@@ -9360,12 +9360,17 @@
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 257
+          "count": 262
         },
         {
           "id": 530,
           "name": "Excadrill",
-          "count": 240
+          "count": 242
+        },
+        {
+          "id": 373,
+          "name": "Salamence",
+          "count": 218
         },
         {
           "id": 903,
@@ -9373,39 +9378,34 @@
           "count": 216
         },
         {
-          "id": 373,
-          "name": "Salamence",
-          "count": 215
-        },
-        {
           "id": 26,
           "name": "Raichu",
-          "count": 196
+          "count": 201
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 150
+          "count": 151
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 141
+          "count": 142
         }
       ]
     },
     "359": {
       "name": "Absol",
-      "n": 133,
-      "teams": 133,
+      "n": 132,
+      "teams": 132,
       "usage": 1.5,
-      "winRate": 41.8,
-      "weighted": 162,
+      "winRate": 41.7,
+      "weighted": 160,
       "topCut": 2,
       "items": [
         {
           "name": "Absolite Z",
-          "count": 126,
+          "count": 125,
           "slug": "absolite-z"
         },
         {
@@ -9440,7 +9440,7 @@
         },
         {
           "name": "Pressure",
-          "count": 23
+          "count": 22
         },
         {
           "name": "justified",
@@ -9456,19 +9456,19 @@
       "moves": [
         {
           "name": "Night Slash",
-          "count": 117
+          "count": 116
         },
         {
           "name": "Shadow Claw",
-          "count": 85
+          "count": 84
         },
         {
           "name": "Close Combat",
-          "count": 76
+          "count": 77
         },
         {
           "name": "Detect",
-          "count": 67
+          "count": 66
         },
         {
           "name": "Protect",
@@ -9479,15 +9479,15 @@
           "count": 30
         },
         {
+          "name": "Focus Energy",
+          "count": 13
+        },
+        {
           "name": "Icy Wind",
-          "count": 14
+          "count": 13
         },
         {
           "name": "Sucker Punch",
-          "count": 14
-        },
-        {
-          "name": "Focus Energy",
           "count": 13
         },
         {
@@ -9573,22 +9573,17 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 59
-        },
-        {
-          "id": 876,
-          "name": "Indeedee ♀",
-          "count": 42
+          "count": 60
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 41
+          "count": 42
         },
         {
-          "id": 445,
-          "name": "Garchomp",
-          "count": 22
+          "id": 876,
+          "name": "Indeedee ♀",
+          "count": 41
         },
         {
           "id": 727,
@@ -9596,18 +9591,23 @@
           "count": 22
         },
         {
-          "id": 936,
-          "name": "Armarouge",
+          "id": 445,
+          "name": "Garchomp",
           "count": 21
         },
         {
-          "id": 784,
-          "name": "Kommo-o",
-          "count": 16
+          "id": 936,
+          "name": "Armarouge",
+          "count": 20
         },
         {
           "id": 637,
           "name": "Volcarona",
+          "count": 15
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
           "count": 15
         },
         {
@@ -9624,16 +9624,16 @@
     },
     "373": {
       "name": "Salamence",
-      "n": 1368,
-      "teams": 1368,
-      "usage": 15.6,
+      "n": 1373,
+      "teams": 1373,
+      "usage": 15.7,
       "winRate": 47.9,
-      "weighted": 1862,
+      "weighted": 1866,
       "topCut": 96,
       "items": [
         {
           "name": "Salamencite",
-          "count": 1345,
+          "count": 1350,
           "slug": "salamencite"
         },
         {
@@ -9675,25 +9675,25 @@
       "abilities": [
         {
           "name": "Intimidate",
-          "count": 1312
+          "count": 1317
         },
         {
           "name": "Aerilate",
-          "count": 36
-        },
-        {
-          "name": "intimidate",
-          "count": 8
+          "count": 35
         },
         {
           "name": "Moxie",
+          "count": 9
+        },
+        {
+          "name": "intimidate",
           "count": 8
         }
       ],
       "tera": [
         {
           "name": "Dragon",
-          "count": 10
+          "count": 9
         },
         {
           "name": "Flying",
@@ -9711,27 +9711,27 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 1339
+          "count": 1344
         },
         {
           "name": "Hyper Voice",
-          "count": 1287
+          "count": 1290
         },
         {
           "name": "Draco Meteor",
-          "count": 970
+          "count": 972
         },
         {
           "name": "Tailwind",
-          "count": 947
+          "count": 953
         },
         {
           "name": "Flamethrower",
-          "count": 462
+          "count": 459
         },
         {
           "name": "Double-Edge",
-          "count": 158
+          "count": 160
         },
         {
           "name": "Dragon Pulse",
@@ -9743,15 +9743,15 @@
         },
         {
           "name": "Dragon Claw",
-          "count": 24
+          "count": 26
         },
         {
           "name": "Dragon Dance",
-          "count": 17
+          "count": 18
         },
         {
           "name": "Fire Blast",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Roost",
@@ -9830,67 +9830,67 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 826
+          "count": 832
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 817
+          "count": 814
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 436
+          "count": 439
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 434
+          "count": 437
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 365
+          "count": 362
         },
         {
           "id": 248,
           "name": "Tyranitar",
-          "count": 331
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "count": 306
+          "count": 334
         },
         {
           "id": 530,
           "name": "Excadrill",
-          "count": 306
+          "count": 309
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 304
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 254
+          "count": 255
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 230
+          "count": 232
         }
       ]
     },
     "376": {
       "name": "Metagross",
-      "n": 264,
-      "teams": 264,
+      "n": 263,
+      "teams": 263,
       "usage": 3,
       "winRate": 47.8,
-      "weighted": 351,
+      "weighted": 350,
       "topCut": 24,
       "items": [
         {
           "name": "Metagrossite",
-          "count": 256,
+          "count": 255,
           "slug": "metagrossite"
         },
         {
@@ -9917,7 +9917,7 @@
       "abilities": [
         {
           "name": "Clear Body",
-          "count": 249
+          "count": 248
         },
         {
           "name": "Tough Claws",
@@ -9941,7 +9941,7 @@
       "moves": [
         {
           "name": "Psychic Fangs",
-          "count": 255
+          "count": 254
         },
         {
           "name": "Protect",
@@ -9949,7 +9949,7 @@
         },
         {
           "name": "Iron Head",
-          "count": 131
+          "count": 130
         },
         {
           "name": "Stomping Tantrum",
@@ -9957,7 +9957,7 @@
         },
         {
           "name": "Steel Roller",
-          "count": 99
+          "count": 98
         },
         {
           "name": "Body Press",
@@ -9985,7 +9985,7 @@
         },
         {
           "name": "Brick Break",
-          "count": 6
+          "count": 5
         },
         {
           "name": "Shadow Claw",
@@ -10081,7 +10081,7 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 65
+          "count": 64
         },
         {
           "id": 350,
@@ -10112,16 +10112,16 @@
     },
     "392": {
       "name": "Infernape",
-      "n": 14,
-      "teams": 14,
+      "n": 15,
+      "teams": 15,
       "usage": 0.2,
-      "winRate": 38.5,
-      "weighted": 18,
+      "winRate": 39.3,
+      "weighted": 19,
       "topCut": 0,
       "items": [
         {
           "name": "Focus Sash",
-          "count": 13,
+          "count": 14,
           "slug": "focus-sash"
         },
         {
@@ -10133,7 +10133,7 @@
       "abilities": [
         {
           "name": "Blaze",
-          "count": 13
+          "count": 14
         },
         {
           "name": "Iron Fist",
@@ -10144,7 +10144,7 @@
       "moves": [
         {
           "name": "Fake Out",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Protect",
@@ -10159,15 +10159,15 @@
           "count": 12
         },
         {
+          "name": "Aura Sphere",
+          "count": 2
+        },
+        {
           "name": "Drain Punch",
           "count": 1
         },
         {
           "name": "Fire Punch",
-          "count": 1
-        },
-        {
-          "name": "Aura Sphere",
           "count": 1
         },
         {
@@ -10177,6 +10177,14 @@
         {
           "name": "Rock Slide",
           "count": 1
+        },
+        {
+          "name": "Flamethrower",
+          "count": 1
+        },
+        {
+          "name": "Encore",
+          "count": 1
         }
       ],
       "spreads": [],
@@ -10184,12 +10192,12 @@
         {
           "id": 373,
           "name": "Salamence",
-          "count": 13
+          "count": 14
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 12
+          "count": 13
         },
         {
           "id": 1000,
@@ -10207,6 +10215,16 @@
           "count": 11
         },
         {
+          "id": 478,
+          "name": "Froslass",
+          "count": 2
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "count": 2
+        },
+        {
           "id": 350,
           "name": "Milotic",
           "count": 1
@@ -10219,16 +10237,6 @@
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 1
-        },
-        {
-          "id": 547,
-          "name": "Whimsicott",
-          "count": 1
-        },
-        {
-          "id": 900,
-          "name": "Kleavor",
           "count": 1
         }
       ]
@@ -10468,16 +10476,16 @@
     },
     "398": {
       "name": "Staraptor",
-      "n": 978,
-      "teams": 978,
+      "n": 983,
+      "teams": 983,
       "usage": 11.2,
-      "winRate": 49,
-      "weighted": 1370,
-      "topCut": 84,
+      "winRate": 48.9,
+      "weighted": 1371,
+      "topCut": 83,
       "items": [
         {
           "name": "Staraptite",
-          "count": 941,
+          "count": 946,
           "slug": "staraptite"
         },
         {
@@ -10504,7 +10512,7 @@
       "abilities": [
         {
           "name": "Intimidate",
-          "count": 928
+          "count": 933
         },
         {
           "name": "Reckless",
@@ -10526,7 +10534,7 @@
         },
         {
           "name": "Flying",
-          "count": 3
+          "count": 4
         },
         {
           "name": "None",
@@ -10536,23 +10544,23 @@
       "moves": [
         {
           "name": "Close Combat",
-          "count": 972
+          "count": 977
         },
         {
           "name": "Protect",
-          "count": 947
+          "count": 952
         },
         {
           "name": "Brave Bird",
-          "count": 933
+          "count": 938
         },
         {
           "name": "Tailwind",
-          "count": 695
+          "count": 699
         },
         {
           "name": "Roost",
-          "count": 261
+          "count": 262
         },
         {
           "name": "Dual Wingbeat",
@@ -10654,32 +10662,32 @@
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 595
+          "count": 597
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 493
+          "count": 494
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 479
+          "count": 481
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 365
+          "count": 368
         },
         {
           "id": 350,
           "name": "Milotic",
-          "count": 257
+          "count": 262
         },
         {
           "id": 730,
           "name": "Primarina",
-          "count": 192
+          "count": 190
         },
         {
           "id": 700,
@@ -10689,16 +10697,16 @@
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 161
+          "count": 162
         },
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 156
+          "count": 157
         },
         {
-          "id": 248,
-          "name": "Tyranitar",
+          "id": 983,
+          "name": "Kingambit",
           "count": 154
         }
       ]
@@ -10912,12 +10920,12 @@
     },
     "445": {
       "name": "Garchomp",
-      "n": 2508,
-      "teams": 2508,
+      "n": 2503,
+      "teams": 2503,
       "usage": 28.6,
-      "winRate": 47.5,
-      "weighted": 3407,
-      "topCut": 188,
+      "winRate": 47.6,
+      "weighted": 3403,
+      "topCut": 189,
       "items": [
         {
           "name": "Garchompite Z",
@@ -10926,12 +10934,12 @@
         },
         {
           "name": "Choice Scarf",
-          "count": 637,
+          "count": 635,
           "slug": "choice-scarf"
         },
         {
           "name": "Life Orb",
-          "count": 448,
+          "count": 445,
           "slug": "life-orb"
         },
         {
@@ -10963,11 +10971,11 @@
       "abilities": [
         {
           "name": "Rough Skin",
-          "count": 2426
+          "count": 2419
         },
         {
           "name": "Sand Veil",
-          "count": 48
+          "count": 49
         },
         {
           "name": "Levitate",
@@ -10999,31 +11007,31 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 1844
+          "count": 1841
         },
         {
           "name": "Power Gem",
-          "count": 1176
+          "count": 1175
         },
         {
           "name": "Rock Slide",
-          "count": 1138
+          "count": 1131
         },
         {
           "name": "Dragon Claw",
-          "count": 1129
+          "count": 1124
         },
         {
           "name": "Earth Power",
-          "count": 1066
+          "count": 1065
         },
         {
           "name": "Stomping Tantrum",
-          "count": 927
+          "count": 925
         },
         {
           "name": "Earthquake",
-          "count": 906
+          "count": 901
         },
         {
           "name": "Dragon Pulse",
@@ -11031,7 +11039,7 @@
         },
         {
           "name": "Draco Meteor",
-          "count": 538
+          "count": 537
         },
         {
           "name": "Flamethrower",
@@ -11039,7 +11047,7 @@
         },
         {
           "name": "Rock Tomb",
-          "count": 64
+          "count": 65
         },
         {
           "name": "Poison Jab",
@@ -11047,7 +11055,7 @@
         },
         {
           "name": "Scale Shot",
-          "count": 40
+          "count": 39
         },
         {
           "name": "Substitute",
@@ -11115,22 +11123,22 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 1094
+          "count": 1092
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 1038
+          "count": 1039
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 991
+          "count": 982
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 774
+          "count": 769
         },
         {
           "id": 983,
@@ -11138,44 +11146,44 @@
           "count": 724
         },
         {
-          "id": 26,
-          "name": "Raichu",
-          "count": 516
-        },
-        {
           "id": 1000,
           "name": "Gholdengo",
           "count": 514
         },
         {
+          "id": 26,
+          "name": "Raichu",
+          "count": 513
+        },
+        {
           "id": 637,
           "name": "Volcarona",
-          "count": 493
+          "count": 496
         },
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 452
+          "count": 454
         },
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 435
+          "count": 431
         }
       ]
     },
     "448": {
       "name": "Lucario",
-      "n": 183,
-      "teams": 183,
+      "n": 184,
+      "teams": 184,
       "usage": 2.1,
-      "winRate": 44.4,
-      "weighted": 247,
+      "winRate": 44.2,
+      "weighted": 248,
       "topCut": 15,
       "items": [
         {
           "name": "Lucarionite Z",
-          "count": 168,
+          "count": 169,
           "slug": "lucarionite-z"
         },
         {
@@ -11197,7 +11205,7 @@
       "abilities": [
         {
           "name": "Inner Focus",
-          "count": 160
+          "count": 161
         },
         {
           "name": "Aura Guard",
@@ -11225,15 +11233,15 @@
       "moves": [
         {
           "name": "Aura Sphere",
-          "count": 168
+          "count": 169
         },
         {
           "name": "Flash Cannon",
-          "count": 152
+          "count": 153
         },
         {
           "name": "Protect",
-          "count": 91
+          "count": 92
         },
         {
           "name": "Detect",
@@ -11342,7 +11350,7 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 102
+          "count": 103
         },
         {
           "id": 727,
@@ -11393,16 +11401,16 @@
     },
     "450": {
       "name": "Hippowdon",
-      "n": 60,
-      "teams": 60,
+      "n": 59,
+      "teams": 59,
       "usage": 0.7,
-      "winRate": 45.8,
-      "weighted": 80,
+      "winRate": 46.2,
+      "weighted": 79,
       "topCut": 4,
       "items": [
         {
           "name": "Leftovers",
-          "count": 52,
+          "count": 51,
           "slug": "leftovers"
         },
         {
@@ -11424,7 +11432,7 @@
       "abilities": [
         {
           "name": "Sand Stream",
-          "count": 60
+          "count": 59
         }
       ],
       "tera": [
@@ -11436,19 +11444,19 @@
       "moves": [
         {
           "name": "High Horsepower",
-          "count": 58
+          "count": 57
         },
         {
           "name": "Protect",
-          "count": 58
+          "count": 57
         },
         {
           "name": "Yawn",
-          "count": 52
+          "count": 51
         },
         {
           "name": "Stone Edge",
-          "count": 50
+          "count": 49
         },
         {
           "name": "Ice Fang",
@@ -11553,17 +11561,17 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 47
+          "count": 46
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 42
+          "count": 41
         },
         {
           "id": 94,
           "name": "Gengar",
-          "count": 42
+          "count": 41
         },
         {
           "id": 983,
@@ -11573,16 +11581,16 @@
         {
           "id": 784,
           "name": "Kommo-o",
-          "count": 12
-        },
-        {
-          "id": 903,
-          "name": "Sneasler",
-          "count": 12
+          "count": 11
         },
         {
           "id": 970,
           "name": "Glimmora",
+          "count": 11
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
           "count": 11
         },
         {
@@ -12418,11 +12426,11 @@
     },
     "475": {
       "name": "Gallade",
-      "n": 67,
-      "teams": 67,
+      "n": 66,
+      "teams": 66,
       "usage": 0.8,
-      "winRate": 46.3,
-      "weighted": 89,
+      "winRate": 46.6,
+      "weighted": 88,
       "topCut": 4,
       "items": [
         {
@@ -12437,7 +12445,7 @@
         },
         {
           "name": "White Herb",
-          "count": 10,
+          "count": 9,
           "slug": "white-herb"
         },
         {
@@ -12469,7 +12477,7 @@
       "abilities": [
         {
           "name": "Sharpness",
-          "count": 64
+          "count": 63
         },
         {
           "name": "Inner Focus",
@@ -12488,11 +12496,11 @@
       "moves": [
         {
           "name": "Sacred Sword",
-          "count": 65
+          "count": 64
         },
         {
           "name": "Psycho Cut",
-          "count": 63
+          "count": 62
         },
         {
           "name": "Wide Guard",
@@ -12500,7 +12508,7 @@
         },
         {
           "name": "Trick Room",
-          "count": 28
+          "count": 27
         },
         {
           "name": "Protect",
@@ -12508,7 +12516,7 @@
         },
         {
           "name": "Leaf Blade",
-          "count": 13
+          "count": 12
         },
         {
           "name": "Night Slash",
@@ -12602,7 +12610,7 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 29
+          "count": 28
         },
         {
           "id": 983,
@@ -12620,19 +12628,19 @@
           "count": 19
         },
         {
-          "id": 323,
-          "name": "Camerupt",
-          "count": 17
-        },
-        {
           "id": 727,
           "name": "Incineroar",
           "count": 17
         },
         {
+          "id": 323,
+          "name": "Camerupt",
+          "count": 16
+        },
+        {
           "id": 858,
           "name": "Hatterene",
-          "count": 15
+          "count": 14
         },
         {
           "id": 445,
@@ -12645,24 +12653,24 @@
           "count": 12
         },
         {
-          "id": 981,
-          "name": "Farigiraf",
+          "id": 670,
+          "name": "Eternal Flower Floette",
           "count": 12
         }
       ]
     },
     "478": {
       "name": "Froslass",
-      "n": 526,
-      "teams": 526,
-      "usage": 6,
-      "winRate": 49.5,
-      "weighted": 733,
-      "topCut": 35,
+      "n": 534,
+      "teams": 534,
+      "usage": 6.1,
+      "winRate": 49.4,
+      "weighted": 740,
+      "topCut": 34,
       "items": [
         {
           "name": "Froslassite",
-          "count": 519,
+          "count": 527,
           "slug": "froslassite"
         },
         {
@@ -12679,7 +12687,7 @@
       "abilities": [
         {
           "name": "Cursed Body",
-          "count": 457
+          "count": 464
         },
         {
           "name": "Snow Cloak",
@@ -12687,7 +12695,7 @@
         },
         {
           "name": "Snow Warning",
-          "count": 13
+          "count": 14
         },
         {
           "name": "Cursed body",
@@ -12707,19 +12715,19 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 521
+          "count": 529
         },
         {
           "name": "Blizzard",
-          "count": 520
+          "count": 528
         },
         {
           "name": "Shadow Ball",
-          "count": 481
+          "count": 489
         },
         {
           "name": "Aurora Veil",
-          "count": 456
+          "count": 459
         },
         {
           "name": "Rain Dance",
@@ -12727,7 +12735,7 @@
         },
         {
           "name": "Nasty Plot",
-          "count": 13
+          "count": 15
         },
         {
           "name": "Taunt",
@@ -12827,17 +12835,17 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 335
+          "count": 340
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 312
+          "count": 317
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 283
+          "count": 286
         },
         {
           "id": 445,
@@ -12847,17 +12855,17 @@
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 128
+          "count": 133
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 118
+          "count": 120
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 112
+          "count": 115
         },
         {
           "id": 59,
@@ -12867,12 +12875,12 @@
         {
           "id": 637,
           "name": "Volcarona",
-          "count": 96
+          "count": 97
         },
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 67
+          "count": 68
         }
       ]
     },
@@ -13319,16 +13327,16 @@
     },
     "530": {
       "name": "Excadrill",
-      "n": 579,
-      "teams": 579,
-      "usage": 6.6,
-      "winRate": 49.1,
-      "weighted": 821,
+      "n": 584,
+      "teams": 584,
+      "usage": 6.7,
+      "winRate": 49,
+      "weighted": 827,
       "topCut": 46,
       "items": [
         {
           "name": "Focus Sash",
-          "count": 550,
+          "count": 555,
           "slug": "focus-sash"
         },
         {
@@ -13370,7 +13378,7 @@
       "abilities": [
         {
           "name": "Sand Rush",
-          "count": 568
+          "count": 573
         },
         {
           "name": "Mold Breaker",
@@ -13398,23 +13406,23 @@
       "moves": [
         {
           "name": "Iron Head",
-          "count": 573
+          "count": 578
         },
         {
           "name": "Protect",
-          "count": 571
+          "count": 576
         },
         {
           "name": "High Horsepower",
-          "count": 559
+          "count": 563
         },
         {
           "name": "Rock Slide",
-          "count": 503
+          "count": 506
         },
         {
           "name": "Earthquake",
-          "count": 57
+          "count": 59
         },
         {
           "name": "Rock Tomb",
@@ -13426,7 +13434,7 @@
         },
         {
           "name": "Stomping Tantrum",
-          "count": 4
+          "count": 5
         },
         {
           "name": "Drill Run",
@@ -13514,27 +13522,27 @@
         {
           "id": 248,
           "name": "Tyranitar",
-          "count": 559
+          "count": 564
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 306
+          "count": 309
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 266
+          "count": 268
         },
         {
           "id": 350,
           "name": "Milotic",
-          "count": 240
+          "count": 242
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 232
+          "count": 234
         },
         {
           "id": 876,
@@ -13544,12 +13552,12 @@
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 152
+          "count": 153
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 149
+          "count": 152
         },
         {
           "id": 398,
@@ -13940,26 +13948,26 @@
     },
     "547": {
       "name": "Whimsicott",
-      "n": 834,
-      "teams": 834,
+      "n": 831,
+      "teams": 831,
       "usage": 9.5,
-      "winRate": 47.2,
-      "weighted": 1138,
-      "topCut": 59,
+      "winRate": 47.1,
+      "weighted": 1131,
+      "topCut": 58,
       "items": [
         {
           "name": "Focus Sash",
-          "count": 668,
+          "count": 665,
           "slug": "focus-sash"
         },
         {
           "name": "Occa Berry",
-          "count": 64,
+          "count": 62,
           "slug": "occa-berry"
         },
         {
           "name": "Fairy Feather",
-          "count": 43,
+          "count": 45,
           "slug": "fairy-feather"
         },
         {
@@ -13991,7 +13999,7 @@
       "abilities": [
         {
           "name": "Prankster",
-          "count": 826
+          "count": 823
         },
         {
           "name": "Chlorophyll",
@@ -14009,7 +14017,7 @@
       "tera": [
         {
           "name": "Grass",
-          "count": 6
+          "count": 5
         },
         {
           "name": "Fairy",
@@ -14019,23 +14027,23 @@
       "moves": [
         {
           "name": "Tailwind",
-          "count": 828
+          "count": 825
         },
         {
           "name": "Moonblast",
-          "count": 808
+          "count": 804
         },
         {
           "name": "Encore",
-          "count": 655
+          "count": 650
         },
         {
           "name": "Protect",
-          "count": 621
+          "count": 618
         },
         {
           "name": "Charm",
-          "count": 147
+          "count": 148
         },
         {
           "name": "Sunny Day",
@@ -14043,11 +14051,11 @@
         },
         {
           "name": "Fake Tears",
-          "count": 31
+          "count": 32
         },
         {
           "name": "Helping Hand",
-          "count": 20
+          "count": 21
         },
         {
           "name": "Light Screen",
@@ -14135,52 +14143,52 @@
         {
           "id": 6,
           "name": "Charizard",
-          "count": 463
+          "count": 459
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 435
+          "count": 431
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 415
+          "count": 414
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 356
+          "count": 354
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 310
+          "count": 306
         },
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 161
+          "count": 162
         },
         {
           "id": 670,
           "name": "Eternal Flower Floette",
-          "count": 139
+          "count": 138
         },
         {
           "id": 970,
           "name": "Glimmora",
-          "count": 133
+          "count": 135
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 125
+          "count": 124
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 110
+          "count": 108
         }
       ]
     },
@@ -14648,11 +14656,11 @@
     },
     "571": {
       "name": "Hisuian Zoroark",
-      "n": 51,
-      "teams": 51,
+      "n": 52,
+      "teams": 52,
       "usage": 0.6,
-      "winRate": 41.6,
-      "weighted": 59,
+      "winRate": 41.3,
+      "weighted": 60,
       "topCut": 1,
       "items": [
         {
@@ -14679,23 +14687,28 @@
           "name": "Silk Scarf",
           "count": 1,
           "slug": "silk-scarf"
+        },
+        {
+          "name": "Spell Tag",
+          "count": 1,
+          "slug": "spell-tag"
         }
       ],
       "abilities": [
         {
           "name": "Illusion",
-          "count": 51
+          "count": 52
         }
       ],
       "tera": [],
       "moves": [
         {
-          "name": "Hyper Voice",
+          "name": "Icy Wind",
           "count": 29
         },
         {
-          "name": "Icy Wind",
-          "count": 28
+          "name": "Hyper Voice",
+          "count": 29
         },
         {
           "name": "Bitter Malice",
@@ -14707,7 +14720,7 @@
         },
         {
           "name": "Shadow Ball",
-          "count": 22
+          "count": 23
         },
         {
           "name": "Hyper Beam",
@@ -14722,12 +14735,12 @@
           "count": 11
         },
         {
-          "name": "Nasty Plot",
+          "name": "Psychic",
           "count": 9
         },
         {
-          "name": "Psychic",
-          "count": 8
+          "name": "Nasty Plot",
+          "count": 9
         },
         {
           "name": "Snarl",
@@ -14815,6 +14828,11 @@
           "count": 10
         },
         {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 10
+        },
+        {
           "id": 768,
           "name": "Golisopod",
           "count": 9
@@ -14825,14 +14843,9 @@
           "count": 9
         },
         {
-          "id": 547,
-          "name": "Whimsicott",
-          "count": 9
-        },
-        {
           "id": 26,
           "name": "Raichu",
-          "count": 8
+          "count": 9
         },
         {
           "id": 282,
@@ -14845,13 +14858,13 @@
           "count": 7
         },
         {
-          "id": 637,
-          "name": "Volcarona",
-          "count": 6
+          "id": 983,
+          "name": "Kingambit",
+          "count": 7
         },
         {
-          "id": 861,
-          "name": "Grimmsnarl",
+          "id": 637,
+          "name": "Volcarona",
           "count": 6
         }
       ]
@@ -15584,16 +15597,16 @@
     },
     "635": {
       "name": "Hydreigon",
-      "n": 123,
-      "teams": 123,
+      "n": 125,
+      "teams": 125,
       "usage": 1.4,
-      "winRate": 45.3,
-      "weighted": 149,
+      "winRate": 45.1,
+      "weighted": 150,
       "topCut": 5,
       "items": [
         {
           "name": "Choice Scarf",
-          "count": 88,
+          "count": 90,
           "slug": "choice-scarf"
         },
         {
@@ -15635,7 +15648,7 @@
       "abilities": [
         {
           "name": "Levitate",
-          "count": 122
+          "count": 124
         },
         {
           "name": "levitate",
@@ -15646,23 +15659,23 @@
       "moves": [
         {
           "name": "Dark Pulse",
-          "count": 115
+          "count": 117
         },
         {
           "name": "Draco Meteor",
-          "count": 105
+          "count": 107
         },
         {
           "name": "Snarl",
-          "count": 78
+          "count": 79
         },
         {
           "name": "Earth Power",
-          "count": 64
+          "count": 65
         },
         {
           "name": "Flamethrower",
-          "count": 40
+          "count": 41
         },
         {
           "name": "Protect",
@@ -15682,7 +15695,7 @@
         },
         {
           "name": "Tailwind",
-          "count": 8
+          "count": 9
         },
         {
           "name": "U-turn",
@@ -15772,7 +15785,7 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 23
+          "count": 25
         },
         {
           "id": 479,
@@ -15782,7 +15795,7 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 18
+          "count": 19
         },
         {
           "id": 876,
@@ -15797,7 +15810,7 @@
         {
           "id": 637,
           "name": "Volcarona",
-          "count": 16
+          "count": 15
         },
         {
           "id": 823,
@@ -15805,29 +15818,29 @@
           "count": 15
         },
         {
-          "id": 142,
-          "name": "Aerodactyl",
+          "id": 1013,
+          "name": "Sinistcha",
           "count": 15
         }
       ]
     },
     "637": {
       "name": "Volcarona",
-      "n": 989,
-      "teams": 989,
-      "usage": 11.3,
-      "winRate": 46.6,
-      "weighted": 1327,
+      "n": 996,
+      "teams": 996,
+      "usage": 11.4,
+      "winRate": 46.5,
+      "weighted": 1334,
       "topCut": 70,
       "items": [
         {
           "name": "Rocky Helmet",
-          "count": 397,
+          "count": 396,
           "slug": "rocky-helmet"
         },
         {
           "name": "Grassy Seed",
-          "count": 342,
+          "count": 343,
           "slug": "grassy-seed"
         },
         {
@@ -15837,17 +15850,17 @@
         },
         {
           "name": "Leftovers",
-          "count": 65,
+          "count": 68,
           "slug": "leftovers"
         },
         {
           "name": "Charti Berry",
-          "count": 53,
+          "count": 56,
           "slug": "charti-berry"
         },
         {
           "name": "Focus Sash",
-          "count": 17,
+          "count": 18,
           "slug": "focus-sash"
         },
         {
@@ -15864,7 +15877,7 @@
       "abilities": [
         {
           "name": "Flame Body",
-          "count": 987
+          "count": 994
         },
         {
           "name": "Swarm",
@@ -15892,35 +15905,35 @@
       "moves": [
         {
           "name": "Struggle Bug",
-          "count": 581
+          "count": 588
         },
         {
           "name": "Protect",
-          "count": 573
+          "count": 578
         },
         {
           "name": "Rage Powder",
-          "count": 554
+          "count": 558
         },
         {
           "name": "Overheat",
-          "count": 467
+          "count": 472
         },
         {
           "name": "Tailwind",
-          "count": 451
+          "count": 453
         },
         {
           "name": "Quiver Dance",
-          "count": 443
+          "count": 446
         },
         {
           "name": "Heat Wave",
-          "count": 333
+          "count": 335
         },
         {
           "name": "Giga Drain",
-          "count": 238
+          "count": 237
         },
         {
           "name": "Fiery Dance",
@@ -15928,7 +15941,7 @@
         },
         {
           "name": "Bug Buzz",
-          "count": 110
+          "count": 111
         },
         {
           "name": "Flamethrower",
@@ -16010,22 +16023,22 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 790
+          "count": 797
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 535
+          "count": 540
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 513
+          "count": 517
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 493
+          "count": 496
         },
         {
           "id": 1000,
@@ -16035,42 +16048,42 @@
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 240
+          "count": 244
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 174
+          "count": 175
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 152
+          "count": 155
         },
         {
           "id": 670,
           "name": "Eternal Flower Floette",
-          "count": 148
+          "count": 152
         },
         {
           "id": 970,
           "name": "Glimmora",
-          "count": 119
+          "count": 122
         }
       ]
     },
     "652": {
       "name": "Chesnaught",
-      "n": 29,
-      "teams": 29,
+      "n": 30,
+      "teams": 30,
       "usage": 0.3,
-      "winRate": 45.8,
-      "weighted": 37,
+      "winRate": 46,
+      "weighted": 38,
       "topCut": 1,
       "items": [
         {
           "name": "Chesnaughtite",
-          "count": 24,
+          "count": 25,
           "slug": "chesnaughtite"
         },
         {
@@ -16087,26 +16100,26 @@
       "abilities": [
         {
           "name": "Bulletproof",
-          "count": 29
+          "count": 30
         }
       ],
       "tera": [],
       "moves": [
         {
           "name": "Spiky Shield",
-          "count": 24
+          "count": 25
         },
         {
           "name": "Body Press",
-          "count": 19
+          "count": 20
         },
         {
           "name": "Grassy Glide",
-          "count": 15
+          "count": 16
         },
         {
           "name": "Iron Defense",
-          "count": 13
+          "count": 14
         },
         {
           "name": "Drain Punch",
@@ -16209,17 +16222,22 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 16
+          "count": 17
         },
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 12
+          "count": 13
         },
         {
           "id": 970,
           "name": "Glimmora",
-          "count": 11
+          "count": 12
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 9
         },
         {
           "id": 981,
@@ -16227,14 +16245,9 @@
           "count": 9
         },
         {
-          "id": 983,
-          "name": "Kingambit",
-          "count": 8
-        },
-        {
           "id": 902,
           "name": "Basculegion",
-          "count": 7
+          "count": 8
         },
         {
           "id": 655,
@@ -16260,16 +16273,16 @@
     },
     "655": {
       "name": "Delphox",
-      "n": 554,
-      "teams": 554,
-      "usage": 6.3,
-      "winRate": 49.8,
-      "weighted": 782,
-      "topCut": 52,
+      "n": 557,
+      "teams": 557,
+      "usage": 6.4,
+      "winRate": 49.9,
+      "weighted": 787,
+      "topCut": 53,
       "items": [
         {
           "name": "Delphoxite",
-          "count": 549,
+          "count": 552,
           "slug": "delphoxite"
         },
         {
@@ -16286,7 +16299,7 @@
       "abilities": [
         {
           "name": "Blaze",
-          "count": 505
+          "count": 507
         },
         {
           "name": "Magician",
@@ -16294,7 +16307,7 @@
         },
         {
           "name": "Levitate",
-          "count": 17
+          "count": 18
         },
         {
           "name": "blaze",
@@ -16310,27 +16323,27 @@
       "moves": [
         {
           "name": "Heat Wave",
-          "count": 548
+          "count": 551
         },
         {
           "name": "Protect",
-          "count": 544
+          "count": 547
         },
         {
           "name": "Nasty Plot",
-          "count": 448
+          "count": 452
         },
         {
           "name": "Psychic",
-          "count": 412
+          "count": 414
         },
         {
           "name": "Psyshock",
-          "count": 113
+          "count": 114
         },
         {
           "name": "Encore",
-          "count": 46
+          "count": 45
         },
         {
           "name": "Expanding Force",
@@ -16428,12 +16441,12 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 343
+          "count": 344
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 307
+          "count": 309
         },
         {
           "id": 727,
@@ -16443,7 +16456,7 @@
         {
           "id": 1013,
           "name": "Sinistcha",
-          "count": 258
+          "count": 257
         },
         {
           "id": 670,
@@ -16453,17 +16466,17 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 142
+          "count": 144
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 125
+          "count": 126
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 83
+          "count": 84
         },
         {
           "id": 149,
@@ -17336,16 +17349,16 @@
     },
     "670": {
       "name": "Eternal Flower Floette",
-      "n": 1040,
-      "teams": 1040,
+      "n": 1042,
+      "teams": 1042,
       "usage": 11.9,
       "winRate": 51.1,
-      "weighted": 1471,
-      "topCut": 94,
+      "weighted": 1476,
+      "topCut": 95,
       "items": [
         {
           "name": "Floettite",
-          "count": 1037,
+          "count": 1039,
           "slug": "floettite"
         },
         {
@@ -17367,11 +17380,11 @@
       "abilities": [
         {
           "name": "Flower Veil",
-          "count": 1012
+          "count": 1015
         },
         {
           "name": "Fairy Aura",
-          "count": 16
+          "count": 15
         },
         {
           "name": "Symbiosis",
@@ -17391,11 +17404,11 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 1036
+          "count": 1038
         },
         {
           "name": "Dazzling Gleam",
-          "count": 964
+          "count": 966
         },
         {
           "name": "Calm Mind",
@@ -17403,11 +17416,11 @@
         },
         {
           "name": "Moonblast",
-          "count": 705
+          "count": 708
         },
         {
           "name": "Draining Kiss",
-          "count": 390
+          "count": 389
         },
         {
           "name": "Light of Ruin",
@@ -17419,7 +17432,7 @@
         },
         {
           "name": "Giga Drain",
-          "count": 2
+          "count": 3
         },
         {
           "name": "Pollen Puff",
@@ -17435,6 +17448,10 @@
         },
         {
           "name": "Light Screen",
+          "count": 1
+        },
+        {
+          "name": "Calm mind",
           "count": 1
         }
       ],
@@ -17501,17 +17518,17 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 725
+          "count": 728
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 662
+          "count": 664
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 628
+          "count": 622
         },
         {
           "id": 983,
@@ -17521,22 +17538,22 @@
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 352
+          "count": 350
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 326
+          "count": 328
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 229
+          "count": 230
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 214
+          "count": 210
         },
         {
           "id": 1013,
@@ -17546,7 +17563,7 @@
         {
           "id": 637,
           "name": "Volcarona",
-          "count": 148
+          "count": 152
         }
       ]
     },
@@ -18518,21 +18535,21 @@
     },
     "700": {
       "name": "Sylveon",
-      "n": 943,
-      "teams": 943,
-      "usage": 10.8,
+      "n": 939,
+      "teams": 939,
+      "usage": 10.7,
       "winRate": 46.8,
-      "weighted": 1258,
-      "topCut": 70,
+      "weighted": 1251,
+      "topCut": 69,
       "items": [
         {
           "name": "Fairy Feather",
-          "count": 893,
+          "count": 890,
           "slug": "fairy-feather"
         },
         {
           "name": "Life Orb",
-          "count": 33,
+          "count": 32,
           "slug": "life-orb"
         },
         {
@@ -18569,7 +18586,7 @@
       "abilities": [
         {
           "name": "Pixilate",
-          "count": 932
+          "count": 928
         },
         {
           "name": "Cute Charm",
@@ -18597,35 +18614,35 @@
       "moves": [
         {
           "name": "Hyper Voice",
-          "count": 938
+          "count": 934
         },
         {
           "name": "Detect",
-          "count": 659
+          "count": 654
         },
         {
           "name": "Hyper Beam",
-          "count": 626
+          "count": 628
         },
         {
           "name": "Quick Attack",
-          "count": 592
+          "count": 593
         },
         {
           "name": "Yawn",
-          "count": 286
+          "count": 283
         },
         {
           "name": "Protect",
-          "count": 275
+          "count": 276
         },
         {
           "name": "Moonblast",
-          "count": 197
+          "count": 192
         },
         {
           "name": "Calm Mind",
-          "count": 119
+          "count": 116
         },
         {
           "name": "Mystical Fire",
@@ -18716,47 +18733,47 @@
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 446
+          "count": 443
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 434
+          "count": 431
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 422
+          "count": 419
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 400
+          "count": 394
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 371
+          "count": 370
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 325
+          "count": 323
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 261
+          "count": 262
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 208
+          "count": 209
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 203
+          "count": 202
         },
         {
           "id": 398,
@@ -19757,33 +19774,33 @@
       "teams": 2944,
       "usage": 33.6,
       "winRate": 47.2,
-      "weighted": 3981,
-      "topCut": 222,
+      "weighted": 3976,
+      "topCut": 220,
       "items": [
         {
           "name": "Sitrus Berry",
-          "count": 1996,
+          "count": 1997,
           "slug": "sitrus-berry"
         },
         {
           "name": "Chople Berry",
-          "count": 346,
+          "count": 349,
           "slug": "chople-berry"
         },
         {
           "name": "Passho Berry",
-          "count": 177,
+          "count": 178,
           "slug": "passho-berry"
-        },
-        {
-          "name": "White Herb",
-          "count": 114,
-          "slug": "white-herb"
         },
         {
           "name": "Rocky Helmet",
           "count": 111,
           "slug": "rocky-helmet"
+        },
+        {
+          "name": "White Herb",
+          "count": 111,
+          "slug": "white-herb"
         },
         {
           "name": "Leftovers",
@@ -19797,7 +19814,7 @@
         },
         {
           "name": "Life Orb",
-          "count": 32,
+          "count": 31,
           "slug": "life-orb"
         }
       ],
@@ -19822,7 +19839,7 @@
       "tera": [
         {
           "name": "Fire",
-          "count": 34
+          "count": 32
         },
         {
           "name": "Dark",
@@ -19840,11 +19857,11 @@
       "moves": [
         {
           "name": "Fake Out",
-          "count": 2928
+          "count": 2927
         },
         {
           "name": "Parting Shot",
-          "count": 2832
+          "count": 2833
         },
         {
           "name": "Flare Blitz",
@@ -19852,15 +19869,15 @@
         },
         {
           "name": "Darkest Lariat",
-          "count": 1137
+          "count": 1135
         },
         {
           "name": "Throat Chop",
-          "count": 1028
+          "count": 1030
         },
         {
           "name": "Protect",
-          "count": 398
+          "count": 400
         },
         {
           "name": "Snarl",
@@ -19868,7 +19885,7 @@
         },
         {
           "name": "Helping Hand",
-          "count": 209
+          "count": 206
         },
         {
           "name": "Taunt",
@@ -19876,7 +19893,7 @@
         },
         {
           "name": "Close Combat",
-          "count": 74
+          "count": 72
         },
         {
           "name": "Will-O-Wisp",
@@ -19963,22 +19980,22 @@
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 1094
+          "count": 1092
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 1033
+          "count": 1034
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 833
+          "count": 834
         },
         {
           "id": 670,
           "name": "Eternal Flower Floette",
-          "count": 725
+          "count": 728
         },
         {
           "id": 1000,
@@ -19988,37 +20005,37 @@
         {
           "id": 637,
           "name": "Volcarona",
-          "count": 535
+          "count": 540
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 522
+          "count": 525
         },
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 482
+          "count": 477
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 418
+          "count": 421
         }
       ]
     },
     "730": {
       "name": "Primarina",
-      "n": 566,
-      "teams": 566,
-      "usage": 6.5,
-      "winRate": 49.4,
-      "weighted": 788,
-      "topCut": 39,
+      "n": 562,
+      "teams": 562,
+      "usage": 6.4,
+      "winRate": 49.3,
+      "weighted": 778,
+      "topCut": 38,
       "items": [
         {
           "name": "Leftovers",
-          "count": 347,
+          "count": 343,
           "slug": "leftovers"
         },
         {
@@ -20033,12 +20050,12 @@
         },
         {
           "name": "Sitrus Berry",
-          "count": 37,
+          "count": 36,
           "slug": "sitrus-berry"
         },
         {
           "name": "Mystic Water",
-          "count": 24,
+          "count": 25,
           "slug": "mystic-water"
         },
         {
@@ -20060,7 +20077,7 @@
       "abilities": [
         {
           "name": "Liquid Voice",
-          "count": 562
+          "count": 558
         },
         {
           "name": "Torrent",
@@ -20080,19 +20097,19 @@
       "moves": [
         {
           "name": "Hyper Voice",
-          "count": 563
+          "count": 559
         },
         {
           "name": "Protect",
-          "count": 561
+          "count": 557
         },
         {
           "name": "Moonblast",
-          "count": 552
+          "count": 548
         },
         {
           "name": "Calm Mind",
-          "count": 415
+          "count": 411
         },
         {
           "name": "Dazzling Gleam",
@@ -20197,37 +20214,37 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 450
+          "count": 447
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 355
+          "count": 350
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 237
+          "count": 234
         },
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 192
+          "count": 190
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 185
+          "count": 183
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 180
+          "count": 178
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 114
+          "count": 112
         },
         {
           "id": 983,
@@ -20237,7 +20254,7 @@
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 91
+          "count": 88
         },
         {
           "id": 903,
@@ -20604,16 +20621,16 @@
     },
     "748": {
       "name": "Toxapex",
-      "n": 133,
-      "teams": 133,
+      "n": 131,
+      "teams": 131,
       "usage": 1.5,
-      "winRate": 43.5,
-      "weighted": 176,
+      "winRate": 43.7,
+      "weighted": 175,
       "topCut": 11,
       "items": [
         {
           "name": "Leftovers",
-          "count": 127,
+          "count": 124,
           "slug": "leftovers"
         },
         {
@@ -20635,12 +20652,17 @@
           "name": "Eject Button",
           "count": 1,
           "slug": "eject-button"
+        },
+        {
+          "name": "leftovers",
+          "count": 1,
+          "slug": "leftovers"
         }
       ],
       "abilities": [
         {
           "name": "Regenerator",
-          "count": 130
+          "count": 128
         },
         {
           "name": "Merciless",
@@ -20656,23 +20678,23 @@
       "moves": [
         {
           "name": "Infestation",
-          "count": 130
-        },
-        {
-          "name": "Toxic",
-          "count": 130
-        },
-        {
-          "name": "Baneful Bunker",
           "count": 128
         },
         {
+          "name": "Toxic",
+          "count": 128
+        },
+        {
+          "name": "Baneful Bunker",
+          "count": 126
+        },
+        {
           "name": "Wide Guard",
-          "count": 113
+          "count": 110
         },
         {
           "name": "Recover",
-          "count": 19
+          "count": 20
         },
         {
           "name": "Stockpile",
@@ -20771,32 +20793,32 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 76
+          "count": 74
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 74
+          "count": 72
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 70
+          "count": 67
         },
         {
           "id": 3,
           "name": "Venusaur",
-          "count": 59
+          "count": 57
         },
         {
           "id": 700,
           "name": "Sylveon",
-          "count": 57
+          "count": 55
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 24
+          "count": 23
         },
         {
           "id": 861,
@@ -20809,13 +20831,13 @@
           "count": 15
         },
         {
-          "id": 26,
-          "name": "Raichu",
-          "count": 12
-        },
-        {
           "id": 248,
           "name": "Tyranitar",
+          "count": 11
+        },
+        {
+          "id": 26,
+          "name": "Raichu",
           "count": 11
         }
       ]
@@ -21032,16 +21054,16 @@
     },
     "752": {
       "name": "Araquanid",
-      "n": 32,
-      "teams": 32,
+      "n": 33,
+      "teams": 33,
       "usage": 0.4,
-      "winRate": 51.2,
-      "weighted": 45,
+      "winRate": 51.4,
+      "weighted": 47,
       "topCut": 3,
       "items": [
         {
           "name": "Mystic Water",
-          "count": 21,
+          "count": 22,
           "slug": "mystic-water"
         },
         {
@@ -21073,7 +21095,7 @@
       "abilities": [
         {
           "name": "Water Bubble",
-          "count": 31
+          "count": 32
         },
         {
           "name": "Water Absorb",
@@ -21084,19 +21106,19 @@
       "moves": [
         {
           "name": "Liquidation",
-          "count": 31
+          "count": 32
         },
         {
           "name": "Wide Guard",
-          "count": 30
+          "count": 31
         },
         {
           "name": "Protect",
-          "count": 27
+          "count": 28
         },
         {
           "name": "Leech Life",
-          "count": 17
+          "count": 18
         },
         {
           "name": "Entrainment",
@@ -21243,8 +21265,8 @@
           "count": 5
         },
         {
-          "id": 861,
-          "name": "Grimmsnarl",
+          "id": 248,
+          "name": "Tyranitar",
           "count": 4
         }
       ]
@@ -21856,16 +21878,16 @@
     },
     "768": {
       "name": "Golisopod",
-      "n": 929,
-      "teams": 929,
-      "usage": 10.6,
-      "winRate": 45,
-      "weighted": 1213,
+      "n": 921,
+      "teams": 921,
+      "usage": 10.5,
+      "winRate": 44.8,
+      "weighted": 1198,
       "topCut": 48,
       "items": [
         {
           "name": "Golisopite",
-          "count": 925,
+          "count": 917,
           "slug": "golisopite"
         },
         {
@@ -21887,7 +21909,7 @@
       "abilities": [
         {
           "name": "Emergency Exit",
-          "count": 878
+          "count": 870
         },
         {
           "name": "Tough Claws",
@@ -21915,27 +21937,27 @@
       "moves": [
         {
           "name": "Leech Life",
-          "count": 916
+          "count": 908
         },
         {
           "name": "Protect",
-          "count": 832
+          "count": 825
         },
         {
           "name": "Iron Head",
-          "count": 804
+          "count": 797
         },
         {
           "name": "Sucker Punch",
-          "count": 459
+          "count": 452
         },
         {
           "name": "Swords Dance",
-          "count": 265
+          "count": 263
         },
         {
           "name": "Drill Run",
-          "count": 194
+          "count": 193
         },
         {
           "name": "Liquidation",
@@ -22032,37 +22054,37 @@
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 594
+          "count": 587
         },
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 538
+          "count": 532
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 391
+          "count": 383
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 255
+          "count": 251
         },
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 248
+          "count": 246
         },
         {
           "id": 902,
           "name": "Basculegion ♀",
-          "count": 228
+          "count": 223
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 166
+          "count": 165
         },
         {
           "id": 876,
@@ -22072,22 +22094,22 @@
         {
           "id": 186,
           "name": "Politoed",
-          "count": 145
+          "count": 144
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 143
+          "count": 142
         }
       ]
     },
     "778": {
       "name": "Mimikyu",
-      "n": 57,
-      "teams": 57,
+      "n": 58,
+      "teams": 58,
       "usage": 0.7,
-      "winRate": 42.8,
-      "weighted": 68,
+      "winRate": 42.6,
+      "weighted": 69,
       "topCut": 2,
       "items": [
         {
@@ -22106,6 +22128,11 @@
           "slug": "sitrus-berry"
         },
         {
+          "name": "Rocky Helmet",
+          "count": 3,
+          "slug": "rocky-helmet"
+        },
+        {
           "name": "Fairy Feather",
           "count": 2,
           "slug": "fairy-feather"
@@ -22114,11 +22141,6 @@
           "name": "Spell Tag",
           "count": 2,
           "slug": "spell-tag"
-        },
-        {
-          "name": "Rocky Helmet",
-          "count": 2,
-          "slug": "rocky-helmet"
         },
         {
           "name": "White Herb",
@@ -22134,14 +22156,14 @@
       "abilities": [
         {
           "name": "Disguise",
-          "count": 57
+          "count": 58
         }
       ],
       "tera": [],
       "moves": [
         {
           "name": "Play Rough",
-          "count": 53
+          "count": 54
         },
         {
           "name": "Shadow Sneak",
@@ -22153,11 +22175,11 @@
         },
         {
           "name": "Protect",
-          "count": 27
+          "count": 28
         },
         {
           "name": "Trick Room",
-          "count": 26
+          "count": 27
         },
         {
           "name": "Swords Dance",
@@ -22165,7 +22187,7 @@
         },
         {
           "name": "Will-O-Wisp",
-          "count": 11
+          "count": 12
         },
         {
           "name": "Wood Hammer",
@@ -22285,14 +22307,14 @@
           "count": 9
         },
         {
-          "id": 812,
-          "name": "Rillaboom",
+          "id": 768,
+          "name": "Golisopod",
           "count": 8
         },
         {
-          "id": 768,
-          "name": "Golisopod",
-          "count": 7
+          "id": 812,
+          "name": "Rillaboom",
+          "count": 8
         },
         {
           "id": 952,
@@ -22308,11 +22330,11 @@
     },
     "780": {
       "name": "Drampa",
-      "n": 68,
-      "teams": 68,
-      "usage": 0.8,
-      "winRate": 49.9,
-      "weighted": 98,
+      "n": 65,
+      "teams": 65,
+      "usage": 0.7,
+      "winRate": 49.8,
+      "weighted": 94,
       "topCut": 8,
       "items": [
         {
@@ -22322,17 +22344,17 @@
         },
         {
           "name": "Life Orb",
-          "count": 15,
+          "count": 14,
           "slug": "life-orb"
         },
         {
           "name": "Expert Belt",
-          "count": 9,
+          "count": 8,
           "slug": "expert-belt"
         },
         {
           "name": "Sitrus Berry",
-          "count": 4,
+          "count": 3,
           "slug": "sitrus-berry"
         },
         {
@@ -22359,7 +22381,7 @@
       "abilities": [
         {
           "name": "Cloud Nine",
-          "count": 61
+          "count": 58
         },
         {
           "name": "Berserk",
@@ -22374,7 +22396,7 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 53
+          "count": 50
         },
         {
           "name": "Hyper Voice",
@@ -22382,31 +22404,27 @@
         },
         {
           "name": "Dragon Pulse",
-          "count": 34
-        },
-        {
-          "name": "Flamethrower",
-          "count": 33
-        },
-        {
-          "name": "Earth Power",
-          "count": 31
+          "count": 32
         },
         {
           "name": "Thunderbolt",
           "count": 31
         },
         {
+          "name": "Flamethrower",
+          "count": 31
+        },
+        {
+          "name": "Earth Power",
+          "count": 28
+        },
+        {
           "name": "Draco Meteor",
-          "count": 15
+          "count": 14
         },
         {
           "name": "Energy Ball",
           "count": 7
-        },
-        {
-          "name": "Heat Wave",
-          "count": 6
         },
         {
           "name": "Ice Beam",
@@ -22415,6 +22433,10 @@
         {
           "name": "Calm Mind",
           "count": 6
+        },
+        {
+          "name": "Heat Wave",
+          "count": 5
         },
         {
           "name": "Roost",
@@ -22492,17 +22514,12 @@
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 30
+          "count": 28
         },
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 24
-        },
-        {
-          "id": 936,
-          "name": "Armarouge",
-          "count": 15
+          "count": 23
         },
         {
           "id": 903,
@@ -22510,24 +22527,29 @@
           "count": 15
         },
         {
+          "id": 936,
+          "name": "Armarouge",
+          "count": 14
+        },
+        {
           "id": 812,
           "name": "Rillaboom",
-          "count": 14
+          "count": 13
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 14
-        },
-        {
-          "id": 727,
-          "name": "Incineroar",
-          "count": 12
+          "count": 13
         },
         {
           "id": 323,
           "name": "Camerupt",
           "count": 12
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 11
         },
         {
           "id": 1013,
@@ -22626,15 +22648,15 @@
         },
         {
           "name": "Clangorous Soul",
-          "count": 259
+          "count": 258
         },
         {
           "name": "Flamethrower",
-          "count": 69
+          "count": 71
         },
         {
           "name": "Vacuum Wave",
-          "count": 23
+          "count": 22
         },
         {
           "name": "Flash Cannon",
@@ -22744,7 +22766,7 @@
         {
           "id": 94,
           "name": "Gengar",
-          "count": 127
+          "count": 126
         },
         {
           "id": 983,
@@ -22759,17 +22781,17 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 69
+          "count": 68
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 67
+          "count": 68
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 53
+          "count": 54
         },
         {
           "id": 655,
@@ -22779,42 +22801,42 @@
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 47
+          "count": 48
         }
       ]
     },
     "812": {
       "name": "Rillaboom",
-      "n": 3926,
-      "teams": 3926,
-      "usage": 44.8,
+      "n": 3935,
+      "teams": 3935,
+      "usage": 44.9,
       "winRate": 47.8,
-      "weighted": 5307,
-      "topCut": 275,
+      "weighted": 5315,
+      "topCut": 276,
       "items": [
         {
           "name": "Miracle Seed",
-          "count": 2826,
+          "count": 2837,
           "slug": "miracle-seed"
         },
         {
           "name": "Life Orb",
-          "count": 415,
+          "count": 409,
           "slug": "life-orb"
         },
         {
           "name": "Eject Button",
-          "count": 238,
+          "count": 237,
           "slug": "eject-button"
         },
         {
           "name": "Sitrus Berry",
-          "count": 167,
+          "count": 168,
           "slug": "sitrus-berry"
         },
         {
           "name": "Occa Berry",
-          "count": 123,
+          "count": 127,
           "slug": "occa-berry"
         },
         {
@@ -22829,14 +22851,14 @@
         },
         {
           "name": "Expert Belt",
-          "count": 25,
+          "count": 24,
           "slug": "expert-belt"
         }
       ],
       "abilities": [
         {
           "name": "Grassy Surge",
-          "count": 3896
+          "count": 3905
         },
         {
           "name": "Overgrow",
@@ -22854,7 +22876,7 @@
       "tera": [
         {
           "name": "Grass",
-          "count": 54
+          "count": 52
         },
         {
           "name": "None",
@@ -22876,27 +22898,27 @@
       "moves": [
         {
           "name": "Fake Out",
-          "count": 3886
+          "count": 3895
         },
         {
           "name": "Grassy Glide",
-          "count": 3870
+          "count": 3879
         },
         {
           "name": "Wood Hammer",
-          "count": 3494
+          "count": 3499
         },
         {
           "name": "High Horsepower",
-          "count": 2155
+          "count": 2160
         },
         {
           "name": "U-turn",
-          "count": 1587
+          "count": 1589
         },
         {
           "name": "Protect",
-          "count": 421
+          "count": 423
         },
         {
           "name": "Drum Beating",
@@ -22904,7 +22926,7 @@
         },
         {
           "name": "Superpower",
-          "count": 50
+          "count": 53
         },
         {
           "name": "Knock Off",
@@ -22928,7 +22950,7 @@
         },
         {
           "name": "Drain Punch",
-          "count": 10
+          "count": 11
         }
       ],
       "spreads": [
@@ -22998,57 +23020,57 @@
         {
           "id": 26,
           "name": "Raichu",
-          "count": 1607
+          "count": 1609
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 1442
+          "count": 1446
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 1393
+          "count": 1394
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 1038
+          "count": 1039
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 846
+          "count": 849
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 826
+          "count": 832
         },
         {
           "id": 637,
           "name": "Volcarona",
-          "count": 790
+          "count": 797
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 746
+          "count": 748
         },
         {
           "id": 670,
           "name": "Eternal Flower Floette",
-          "count": 662
+          "count": 664
         }
       ]
     },
     "815": {
       "name": "Cinderace",
-      "n": 22,
-      "teams": 22,
+      "n": 23,
+      "teams": 23,
       "usage": 0.3,
-      "winRate": 29.8,
-      "weighted": 25,
+      "winRate": 28.7,
+      "weighted": 26,
       "topCut": 0,
       "items": [
         {
@@ -23058,7 +23080,7 @@
         },
         {
           "name": "Life Orb",
-          "count": 4,
+          "count": 5,
           "slug": "life-orb"
         },
         {
@@ -23095,7 +23117,7 @@
       "abilities": [
         {
           "name": "Libero",
-          "count": 18
+          "count": 19
         },
         {
           "name": "Blaze",
@@ -23111,15 +23133,15 @@
       "moves": [
         {
           "name": "Pyro Ball",
-          "count": 22
+          "count": 23
         },
         {
           "name": "Protect",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Sucker Punch",
-          "count": 12
+          "count": 13
         },
         {
           "name": "High Jump Kick",
@@ -23171,7 +23193,7 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 10
+          "count": 11
         },
         {
           "id": 670,
@@ -23222,11 +23244,11 @@
     },
     "818": {
       "name": "Inteleon",
-      "n": 29,
-      "teams": 29,
+      "n": 30,
+      "teams": 30,
       "usage": 0.3,
       "winRate": 27.4,
-      "weighted": 31,
+      "weighted": 33,
       "topCut": 0,
       "items": [
         {
@@ -23235,14 +23257,14 @@
           "slug": "scope-lens"
         },
         {
+          "name": "Focus Sash",
+          "count": 3,
+          "slug": "focus-sash"
+        },
+        {
           "name": "Choice Scarf",
           "count": 2,
           "slug": "choice-scarf"
-        },
-        {
-          "name": "Focus Sash",
-          "count": 2,
-          "slug": "focus-sash"
         },
         {
           "name": "Life Orb",
@@ -23258,7 +23280,7 @@
       "abilities": [
         {
           "name": "Sniper",
-          "count": 28
+          "count": 29
         },
         {
           "name": "Torrent",
@@ -23269,11 +23291,11 @@
       "moves": [
         {
           "name": "Snipe Shot",
-          "count": 29
+          "count": 30
         },
         {
           "name": "Ice Beam",
-          "count": 25
+          "count": 26
         },
         {
           "name": "Protect",
@@ -23372,19 +23394,19 @@
           "count": 4
         },
         {
-          "id": 254,
-          "name": "Sceptile",
+          "id": 282,
+          "name": "Gardevoir",
           "count": 4
         }
       ]
     },
     "823": {
       "name": "Corviknight",
-      "n": 234,
-      "teams": 234,
-      "usage": 2.7,
+      "n": 232,
+      "teams": 232,
+      "usage": 2.6,
       "winRate": 49.6,
-      "weighted": 320,
+      "weighted": 317,
       "topCut": 16,
       "items": [
         {
@@ -23394,7 +23416,7 @@
         },
         {
           "name": "Leftovers",
-          "count": 91,
+          "count": 90,
           "slug": "leftovers"
         },
         {
@@ -23413,14 +23435,14 @@
           "slug": "occa-berry"
         },
         {
-          "name": "Grassy Seed",
-          "count": 3,
-          "slug": "grassy-seed"
-        },
-        {
           "name": "Sharp Beak",
           "count": 2,
           "slug": "sharp-beak"
+        },
+        {
+          "name": "Grassy Seed",
+          "count": 2,
+          "slug": "grassy-seed"
         },
         {
           "name": "Wacan Berry",
@@ -23431,7 +23453,7 @@
       "abilities": [
         {
           "name": "Mirror Armor",
-          "count": 228
+          "count": 226
         },
         {
           "name": "Pressure",
@@ -23450,15 +23472,15 @@
       "moves": [
         {
           "name": "Brave Bird",
-          "count": 205
+          "count": 203
         },
         {
           "name": "Roost",
-          "count": 187
+          "count": 185
         },
         {
           "name": "Bulk Up",
-          "count": 173
+          "count": 172
         },
         {
           "name": "Power Trip",
@@ -23466,15 +23488,15 @@
         },
         {
           "name": "Tailwind",
-          "count": 83
+          "count": 82
         },
         {
           "name": "Iron Head",
-          "count": 60
+          "count": 59
         },
         {
           "name": "Body Press",
-          "count": 58
+          "count": 57
         },
         {
           "name": "Protect",
@@ -23570,7 +23592,7 @@
         {
           "id": 248,
           "name": "Tyranitar",
-          "count": 165
+          "count": 164
         },
         {
           "id": 903,
@@ -23595,7 +23617,7 @@
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 35
+          "count": 34
         },
         {
           "id": 1013,
@@ -23838,16 +23860,16 @@
     },
     "853": {
       "name": "Grapploct",
-      "n": 39,
-      "teams": 39,
+      "n": 38,
+      "teams": 38,
       "usage": 0.4,
-      "winRate": 43,
-      "weighted": 49,
+      "winRate": 43.7,
+      "weighted": 48,
       "topCut": 3,
       "items": [
         {
           "name": "Black Belt",
-          "count": 15,
+          "count": 14,
           "slug": "black-belt"
         },
         {
@@ -23884,18 +23906,18 @@
       "abilities": [
         {
           "name": "Technician",
-          "count": 39
+          "count": 38
         }
       ],
       "tera": [],
       "moves": [
         {
           "name": "Storm Throw",
-          "count": 38
+          "count": 37
         },
         {
           "name": "Detect",
-          "count": 27
+          "count": 26
         },
         {
           "name": "Payback",
@@ -23907,7 +23929,7 @@
         },
         {
           "name": "Mach Punch",
-          "count": 14
+          "count": 13
         },
         {
           "name": "Octolock",
@@ -23931,7 +23953,7 @@
         },
         {
           "name": "Soak",
-          "count": 3
+          "count": 2
         },
         {
           "name": "Coaching",
@@ -24027,7 +24049,7 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 10
+          "count": 9
         },
         {
           "id": 448,
@@ -24040,11 +24062,6 @@
           "count": 6
         },
         {
-          "id": 282,
-          "name": "Gardevoir",
-          "count": 6
-        },
-        {
           "id": 248,
           "name": "Tyranitar",
           "count": 6
@@ -24053,21 +24070,26 @@
           "id": 279,
           "name": "Pelipper",
           "count": 5
+        },
+        {
+          "id": 282,
+          "name": "Gardevoir",
+          "count": 5
         }
       ]
     },
     "858": {
       "name": "Hatterene",
-      "n": 151,
-      "teams": 151,
+      "n": 150,
+      "teams": 150,
       "usage": 1.7,
-      "winRate": 43.9,
-      "weighted": 187,
+      "winRate": 44,
+      "weighted": 186,
       "topCut": 7,
       "items": [
         {
           "name": "Life Orb",
-          "count": 124,
+          "count": 123,
           "slug": "life-orb"
         },
         {
@@ -24109,7 +24131,7 @@
       "abilities": [
         {
           "name": "Magic Bounce",
-          "count": 148
+          "count": 147
         },
         {
           "name": "Healer",
@@ -24125,19 +24147,19 @@
       "moves": [
         {
           "name": "Trick Room",
-          "count": 145
+          "count": 144
         },
         {
           "name": "Dazzling Gleam",
-          "count": 140
+          "count": 139
         },
         {
           "name": "Protect",
-          "count": 121
+          "count": 120
         },
         {
           "name": "Expanding Force",
-          "count": 115
+          "count": 114
         },
         {
           "name": "Psychic",
@@ -24240,7 +24262,7 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 110
+          "count": 109
         },
         {
           "id": 324,
@@ -24250,12 +24272,12 @@
         {
           "id": 323,
           "name": "Camerupt",
-          "count": 48
+          "count": 47
         },
         {
           "id": 981,
           "name": "Farigiraf",
-          "count": 46
+          "count": 45
         },
         {
           "id": 727,
@@ -24294,8 +24316,8 @@
       "n": 641,
       "teams": 641,
       "usage": 7.3,
-      "winRate": 47.1,
-      "weighted": 865,
+      "winRate": 47.2,
+      "weighted": 866,
       "topCut": 50,
       "items": [
         {
@@ -24486,22 +24508,22 @@
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 402
+          "count": 401
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 370
+          "count": 371
         },
         {
           "id": 3,
           "name": "Venusaur",
-          "count": 291
+          "count": 292
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 255
+          "count": 253
         },
         {
           "id": 768,
@@ -24516,12 +24538,12 @@
         {
           "id": 186,
           "name": "Politoed",
-          "count": 91
+          "count": 92
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 83
+          "count": 82
         },
         {
           "id": 981,
@@ -25141,26 +25163,26 @@
     },
     "876": {
       "name": "Indeedee ♀",
-      "n": 1076,
-      "teams": 1076,
+      "n": 1074,
+      "teams": 1074,
       "usage": 12.3,
-      "winRate": 44.1,
+      "winRate": 44.2,
       "weighted": 1402,
-      "topCut": 62,
+      "topCut": 63,
       "items": [
         {
           "name": "Rocky Helmet",
-          "count": 473,
+          "count": 472,
           "slug": "rocky-helmet"
         },
         {
           "name": "Colbur Berry",
-          "count": 275,
+          "count": 276,
           "slug": "colbur-berry"
         },
         {
           "name": "Psychic Seed",
-          "count": 174,
+          "count": 172,
           "slug": "psychic-seed"
         },
         {
@@ -25192,7 +25214,7 @@
       "abilities": [
         {
           "name": "Psychic Surge",
-          "count": 1067
+          "count": 1065
         },
         {
           "name": "Own Tempo",
@@ -25220,23 +25242,23 @@
       "moves": [
         {
           "name": "Follow Me",
-          "count": 1069
+          "count": 1067
         },
         {
           "name": "Helping Hand",
-          "count": 934
+          "count": 932
         },
         {
           "name": "Psychic",
-          "count": 857
+          "count": 856
         },
         {
           "name": "Trick Room",
-          "count": 850
+          "count": 847
         },
         {
           "name": "Protect",
-          "count": 225
+          "count": 226
         },
         {
           "name": "Terrain Pulse",
@@ -25337,27 +25359,27 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 453
+          "count": 452
         },
         {
           "id": 282,
           "name": "Gardevoir",
-          "count": 380
+          "count": 381
         },
         {
           "id": 936,
           "name": "Armarouge",
-          "count": 302
+          "count": 301
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 214
+          "count": 213
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 156
+          "count": 157
         },
         {
           "id": 768,
@@ -25367,7 +25389,7 @@
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 144
+          "count": 145
         },
         {
           "id": 445,
@@ -25377,27 +25399,27 @@
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 132
+          "count": 133
         },
         {
           "id": 324,
           "name": "Torkoal",
-          "count": 131
+          "count": 132
         }
       ]
     },
     "887": {
       "name": "Dragapult",
-      "n": 175,
-      "teams": 175,
+      "n": 176,
+      "teams": 176,
       "usage": 2,
-      "winRate": 45.3,
-      "weighted": 241,
+      "winRate": 45.2,
+      "weighted": 242,
       "topCut": 11,
       "items": [
         {
           "name": "Life Orb",
-          "count": 143,
+          "count": 144,
           "slug": "life-orb"
         },
         {
@@ -25447,7 +25469,7 @@
         },
         {
           "name": "Cursed Body",
-          "count": 10
+          "count": 11
         }
       ],
       "tera": [
@@ -25459,19 +25481,19 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 146
+          "count": 147
         },
         {
           "name": "Draco Meteor",
-          "count": 136
+          "count": 137
         },
         {
           "name": "Shadow Ball",
-          "count": 133
+          "count": 134
         },
         {
           "name": "Will-O-Wisp",
-          "count": 111
+          "count": 112
         },
         {
           "name": "Dragon Darts",
@@ -25575,7 +25597,7 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 61
+          "count": 62
         },
         {
           "id": 876,
@@ -25585,12 +25607,12 @@
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 45
+          "count": 46
         },
         {
           "id": 350,
           "name": "Milotic",
-          "count": 41
+          "count": 42
         },
         {
           "id": 903,
@@ -25840,36 +25862,36 @@
     },
     "902": {
       "name": "Basculegion",
-      "n": 1415,
-      "teams": 1415,
+      "n": 1419,
+      "teams": 1419,
       "usage": 16.2,
-      "winRate": 49.2,
-      "weighted": 1990,
+      "winRate": 49,
+      "weighted": 1992,
       "topCut": 120,
       "items": [
         {
           "name": "Choice Scarf",
-          "count": 536,
+          "count": 541,
           "slug": "choice-scarf"
         },
         {
           "name": "Life Orb",
-          "count": 367,
+          "count": 371,
           "slug": "life-orb"
         },
         {
           "name": "Mystic Water",
-          "count": 215,
+          "count": 214,
           "slug": "mystic-water"
         },
         {
           "name": "Focus Sash",
-          "count": 207,
+          "count": 204,
           "slug": "focus-sash"
         },
         {
           "name": "Colbur Berry",
-          "count": 39,
+          "count": 38,
           "slug": "colbur-berry"
         },
         {
@@ -25891,11 +25913,11 @@
       "abilities": [
         {
           "name": "Adaptability",
-          "count": 1347
+          "count": 1350
         },
         {
           "name": "Swift Swim",
-          "count": 68
+          "count": 69
         }
       ],
       "tera": [
@@ -25915,35 +25937,35 @@
       "moves": [
         {
           "name": "Last Respects",
-          "count": 1393
+          "count": 1397
         },
         {
           "name": "Aqua Jet",
-          "count": 1276
+          "count": 1281
         },
         {
           "name": "Wave Crash",
-          "count": 1206
+          "count": 1213
         },
         {
           "name": "Protect",
-          "count": 873
+          "count": 872
         },
         {
           "name": "Flip Turn",
-          "count": 541
+          "count": 545
         },
         {
           "name": "Liquidation",
-          "count": 193
+          "count": 190
         },
         {
           "name": "Soak",
-          "count": 62
+          "count": 61
         },
         {
           "name": "Psychic Fangs",
-          "count": 26
+          "count": 27
         },
         {
           "name": "Muddy Water",
@@ -26030,22 +26052,22 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 707
+          "count": 705
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 661
+          "count": 663
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 609
+          "count": 611
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 418
+          "count": 421
         },
         {
           "id": 445,
@@ -26055,67 +26077,67 @@
         {
           "id": 373,
           "name": "Salamence",
-          "count": 365
+          "count": 362
         },
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 356
+          "count": 354
         },
         {
           "id": 670,
           "name": "Eternal Flower Floette",
-          "count": 352
+          "count": 350
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 337
+          "count": 335
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 254
+          "count": 260
         }
       ]
     },
     "903": {
       "name": "Sneasler",
-      "n": 3246,
-      "teams": 3246,
-      "usage": 37.1,
+      "n": 3235,
+      "teams": 3235,
+      "usage": 36.9,
       "winRate": 48.5,
-      "weighted": 4479,
+      "weighted": 4460,
       "topCut": 249,
       "items": [
         {
           "name": "White Herb",
-          "count": 1288,
+          "count": 1287,
           "slug": "white-herb"
         },
         {
           "name": "Grassy Seed",
-          "count": 596,
+          "count": 599,
           "slug": "grassy-seed"
         },
         {
           "name": "Focus Sash",
-          "count": 562,
+          "count": 559,
           "slug": "focus-sash"
         },
         {
           "name": "Psychic Seed",
-          "count": 500,
+          "count": 499,
           "slug": "psychic-seed"
         },
         {
           "name": "Electric Seed",
-          "count": 234,
+          "count": 226,
           "slug": "electric-seed"
         },
         {
           "name": "Life Orb",
-          "count": 25,
+          "count": 24,
           "slug": "life-orb"
         },
         {
@@ -26132,15 +26154,15 @@
       "abilities": [
         {
           "name": "Unburden",
-          "count": 2770
+          "count": 2762
         },
         {
           "name": "Poison Touch",
-          "count": 460
+          "count": 456
         },
         {
           "name": "Pressure",
-          "count": 12
+          "count": 13
         },
         {
           "name": "unburden",
@@ -26150,7 +26172,7 @@
       "tera": [
         {
           "name": "Fighting",
-          "count": 14
+          "count": 13
         },
         {
           "name": "None",
@@ -26168,59 +26190,59 @@
       "moves": [
         {
           "name": "Close Combat",
-          "count": 3238
+          "count": 3227
         },
         {
           "name": "Dire Claw",
-          "count": 2553
+          "count": 2544
         },
         {
           "name": "Protect",
-          "count": 2486
+          "count": 2475
         },
         {
           "name": "Fake Out",
-          "count": 1515
+          "count": 1517
         },
         {
           "name": "Rock Slide",
-          "count": 795
+          "count": 790
         },
         {
           "name": "Rock Tomb",
-          "count": 382
-        },
-        {
-          "name": "Poison Jab",
-          "count": 358
+          "count": 378
         },
         {
           "name": "Coaching",
           "count": 355
         },
         {
+          "name": "Poison Jab",
+          "count": 355
+        },
+        {
           "name": "Gunk Shot",
-          "count": 286
+          "count": 287
         },
         {
           "name": "Throat Chop",
-          "count": 266
+          "count": 264
         },
         {
           "name": "Swords Dance",
-          "count": 259
+          "count": 254
         },
         {
           "name": "Quick Guard",
-          "count": 238
+          "count": 239
         },
         {
           "name": "Feint",
-          "count": 80
+          "count": 81
         },
         {
           "name": "Acrobatics",
-          "count": 78
+          "count": 79
         }
       ],
       "spreads": [
@@ -26284,52 +26306,52 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 1393
+          "count": 1394
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 1194
+          "count": 1191
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 1033
+          "count": 1034
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 817
+          "count": 814
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 774
+          "count": 769
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 710
+          "count": 708
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 707
+          "count": 705
         },
         {
           "id": 670,
           "name": "Eternal Flower Floette",
-          "count": 628
+          "count": 622
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 516
+          "count": 517
         },
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 453
+          "count": 452
         }
       ]
     },
@@ -27027,21 +27049,21 @@
     },
     "925": {
       "name": "Maushold",
-      "n": 116,
-      "teams": 116,
+      "n": 114,
+      "teams": 114,
       "usage": 1.3,
-      "winRate": 43.3,
-      "weighted": 151,
+      "winRate": 43.4,
+      "weighted": 148,
       "topCut": 7,
       "items": [
         {
           "name": "Chople Berry",
-          "count": 47,
+          "count": 46,
           "slug": "chople-berry"
         },
         {
           "name": "Wide Lens",
-          "count": 46,
+          "count": 45,
           "slug": "wide-lens"
         },
         {
@@ -27063,11 +27085,11 @@
       "abilities": [
         {
           "name": "Friend Guard",
-          "count": 72
+          "count": 71
         },
         {
           "name": "Technician",
-          "count": 44
+          "count": 43
         }
       ],
       "tera": [
@@ -27083,35 +27105,35 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 105
+          "count": 103
         },
         {
           "name": "Follow Me",
-          "count": 99
+          "count": 97
         },
         {
           "name": "Super Fang",
-          "count": 55
+          "count": 54
         },
         {
           "name": "Population Bomb",
-          "count": 54
+          "count": 53
         },
         {
           "name": "Feint",
           "count": 35
         },
         {
-          "name": "Taunt",
-          "count": 21
-        },
-        {
           "name": "Bite",
           "count": 21
         },
         {
-          "name": "Helping Hand",
+          "name": "Taunt",
           "count": 20
+        },
+        {
+          "name": "Helping Hand",
+          "count": 19
         },
         {
           "name": "Encore",
@@ -27198,7 +27220,7 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 43
+          "count": 42
         },
         {
           "id": 727,
@@ -27228,7 +27250,7 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 22
+          "count": 21
         },
         {
           "id": 547,
@@ -27249,11 +27271,11 @@
     },
     "936": {
       "name": "Armarouge",
-      "n": 361,
-      "teams": 361,
+      "n": 362,
+      "teams": 362,
       "usage": 4.1,
       "winRate": 47.1,
-      "weighted": 487,
+      "weighted": 488,
       "topCut": 29,
       "items": [
         {
@@ -27263,18 +27285,18 @@
         },
         {
           "name": "Focus Sash",
-          "count": 122,
+          "count": 121,
           "slug": "focus-sash"
+        },
+        {
+          "name": "Sitrus Berry",
+          "count": 21,
+          "slug": "sitrus-berry"
         },
         {
           "name": "Twisted Spoon",
           "count": 21,
           "slug": "twisted-spoon"
-        },
-        {
-          "name": "Sitrus Berry",
-          "count": 19,
-          "slug": "sitrus-berry"
         },
         {
           "name": "Psychic Seed",
@@ -27300,11 +27322,11 @@
       "abilities": [
         {
           "name": "Flash Fire",
-          "count": 315
+          "count": 317
         },
         {
           "name": "Weak Armor",
-          "count": 46
+          "count": 45
         }
       ],
       "tera": [
@@ -27320,23 +27342,23 @@
       "moves": [
         {
           "name": "Expanding Force",
-          "count": 325
+          "count": 324
         },
         {
           "name": "Armor Cannon",
-          "count": 319
+          "count": 320
         },
         {
           "name": "Protect",
-          "count": 241
+          "count": 240
         },
         {
           "name": "Wide Guard",
-          "count": 213
+          "count": 215
         },
         {
           "name": "Trick Room",
-          "count": 176
+          "count": 178
         },
         {
           "name": "Heat Wave",
@@ -27344,14 +27366,14 @@
         },
         {
           "name": "Aura Sphere",
-          "count": 38
-        },
-        {
-          "name": "Psychic",
-          "count": 17
+          "count": 37
         },
         {
           "name": "Psyshock",
+          "count": 19
+        },
+        {
+          "name": "Psychic",
           "count": 17
         },
         {
@@ -27436,7 +27458,7 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 302
+          "count": 301
         },
         {
           "id": 903,
@@ -27446,7 +27468,7 @@
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 94
+          "count": 96
         },
         {
           "id": 282,
@@ -27461,7 +27483,7 @@
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 50
+          "count": 52
         },
         {
           "id": 350,
@@ -27487,16 +27509,16 @@
     },
     "937": {
       "name": "Ceruledge",
-      "n": 135,
-      "teams": 135,
+      "n": 133,
+      "teams": 133,
       "usage": 1.5,
-      "winRate": 46.1,
-      "weighted": 183,
+      "winRate": 46.3,
+      "weighted": 180,
       "topCut": 7,
       "items": [
         {
           "name": "Grassy Seed",
-          "count": 70,
+          "count": 68,
           "slug": "grassy-seed"
         },
         {
@@ -27538,7 +27560,7 @@
       "abilities": [
         {
           "name": "Flash Fire",
-          "count": 132
+          "count": 130
         },
         {
           "name": "Weak Armor",
@@ -27558,19 +27580,19 @@
       "moves": [
         {
           "name": "Bitter Blade",
-          "count": 134
+          "count": 132
         },
         {
           "name": "Protect",
-          "count": 115
+          "count": 113
         },
         {
           "name": "Shadow Sneak",
-          "count": 114
+          "count": 112
         },
         {
           "name": "Swords Dance",
-          "count": 76
+          "count": 74
         },
         {
           "name": "Bulk Up",
@@ -27677,7 +27699,7 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 91
+          "count": 89
         },
         {
           "id": 26,
@@ -27702,7 +27724,7 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 19
+          "count": 18
         },
         {
           "id": 445,
@@ -27722,22 +27744,22 @@
         {
           "id": 876,
           "name": "Indeedee ♀",
-          "count": 14
+          "count": 13
         }
       ]
     },
     "952": {
       "name": "Scovillain",
-      "n": 132,
-      "teams": 132,
+      "n": 133,
+      "teams": 133,
       "usage": 1.5,
-      "winRate": 50.5,
-      "weighted": 190,
+      "winRate": 50.6,
+      "weighted": 192,
       "topCut": 12,
       "items": [
         {
           "name": "Scovillainite",
-          "count": 124,
+          "count": 125,
           "slug": "scovillainite"
         },
         {
@@ -27764,7 +27786,7 @@
       "abilities": [
         {
           "name": "Moody",
-          "count": 99
+          "count": 100
         },
         {
           "name": "Chlorophyll",
@@ -27788,19 +27810,19 @@
       "moves": [
         {
           "name": "Rage Powder",
-          "count": 128
+          "count": 129
         },
         {
           "name": "Protect",
-          "count": 116
+          "count": 117
         },
         {
           "name": "Overheat",
-          "count": 102
+          "count": 103
         },
         {
           "name": "Giga Drain",
-          "count": 66
+          "count": 67
         },
         {
           "name": "Leech Seed",
@@ -27905,22 +27927,22 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 52
+          "count": 53
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 48
+          "count": 49
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 48
+          "count": 49
         },
         {
           "id": 478,
           "name": "Froslass",
-          "count": 42
+          "count": 43
         },
         {
           "id": 745,
@@ -27943,13 +27965,13 @@
           "count": 24
         },
         {
-          "id": 861,
-          "name": "Grimmsnarl",
-          "count": 21
-        },
-        {
           "id": 26,
           "name": "Raichu",
+          "count": 22
+        },
+        {
+          "id": 861,
+          "name": "Grimmsnarl",
           "count": 21
         }
       ]
@@ -28618,26 +28640,26 @@
     },
     "970": {
       "name": "Glimmora",
-      "n": 392,
-      "teams": 392,
-      "usage": 4.5,
-      "winRate": 49.3,
-      "weighted": 544,
-      "topCut": 27,
+      "n": 399,
+      "teams": 399,
+      "usage": 4.6,
+      "winRate": 49.2,
+      "weighted": 553,
+      "topCut": 28,
       "items": [
         {
           "name": "Glimmoranite",
-          "count": 201,
+          "count": 208,
           "slug": "glimmoranite"
         },
         {
           "name": "Focus Sash",
-          "count": 119,
+          "count": 120,
           "slug": "focus-sash"
         },
         {
           "name": "Life Orb",
-          "count": 69,
+          "count": 68,
           "slug": "life-orb"
         },
         {
@@ -28659,7 +28681,7 @@
       "abilities": [
         {
           "name": "Toxic Debris",
-          "count": 384
+          "count": 391
         },
         {
           "name": "Adaptability",
@@ -28687,23 +28709,23 @@
       "moves": [
         {
           "name": "Power Gem",
-          "count": 390
+          "count": 397
         },
         {
           "name": "Sludge Bomb",
-          "count": 384
+          "count": 391
         },
         {
           "name": "Earth Power",
-          "count": 383
+          "count": 390
         },
         {
           "name": "Spiky Shield",
-          "count": 377
+          "count": 383
         },
         {
           "name": "Protect",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Sludge Wave",
@@ -28802,37 +28824,37 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 183
+          "count": 188
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 166
+          "count": 172
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 135
+          "count": 137
         },
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 133
+          "count": 135
         },
         {
           "id": 637,
           "name": "Volcarona",
-          "count": 119
+          "count": 122
         },
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 91
+          "count": 94
         },
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 87
+          "count": 89
         },
         {
           "id": 6,
@@ -28847,7 +28869,7 @@
         {
           "id": 373,
           "name": "Salamence",
-          "count": 64
+          "count": 67
         }
       ]
     },
@@ -29077,16 +29099,16 @@
     },
     "979": {
       "name": "Annihilape",
-      "n": 276,
-      "teams": 276,
+      "n": 278,
+      "teams": 278,
       "usage": 3.2,
-      "winRate": 53.7,
-      "weighted": 398,
-      "topCut": 26,
+      "winRate": 54,
+      "weighted": 402,
+      "topCut": 27,
       "items": [
         {
           "name": "Choice Scarf",
-          "count": 166,
+          "count": 168,
           "slug": "choice-scarf"
         },
         {
@@ -29128,7 +29150,7 @@
       "abilities": [
         {
           "name": "Defiant",
-          "count": 272
+          "count": 274
         },
         {
           "name": "Inner Focus",
@@ -29156,15 +29178,15 @@
       "moves": [
         {
           "name": "Close Combat",
-          "count": 197
+          "count": 199
         },
         {
           "name": "Ice Punch",
-          "count": 129
+          "count": 131
         },
         {
           "name": "Shadow Claw",
-          "count": 123
+          "count": 124
         },
         {
           "name": "Protect",
@@ -29176,7 +29198,7 @@
         },
         {
           "name": "Phantom Force",
-          "count": 79
+          "count": 80
         },
         {
           "name": "Drain Punch",
@@ -29187,12 +29209,12 @@
           "count": 60
         },
         {
-          "name": "Rock Slide",
+          "name": "Rock Tomb",
           "count": 58
         },
         {
-          "name": "Rock Tomb",
-          "count": 57
+          "name": "Rock Slide",
+          "count": 58
         },
         {
           "name": "U-turn",
@@ -29204,7 +29226,7 @@
         },
         {
           "name": "Bulldoze",
-          "count": 13
+          "count": 14
         },
         {
           "name": "Taunt",
@@ -29292,17 +29314,17 @@
         {
           "id": 6,
           "name": "Charizard",
-          "count": 46
+          "count": 47
         },
         {
           "id": 1018,
           "name": "Archaludon",
-          "count": 42
+          "count": 44
         },
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 41
+          "count": 43
         },
         {
           "id": 727,
@@ -29310,34 +29332,34 @@
           "count": 41
         },
         {
-          "id": 149,
-          "name": "Dragonite",
-          "count": 39
-        },
-        {
           "id": 3,
           "name": "Venusaur",
+          "count": 40
+        },
+        {
+          "id": 149,
+          "name": "Dragonite",
           "count": 39
         }
       ]
     },
     "981": {
       "name": "Farigiraf",
-      "n": 1198,
-      "teams": 1198,
-      "usage": 13.7,
-      "winRate": 47.5,
-      "weighted": 1617,
+      "n": 1193,
+      "teams": 1193,
+      "usage": 13.6,
+      "winRate": 47.6,
+      "weighted": 1609,
       "topCut": 90,
       "items": [
         {
           "name": "Sitrus Berry",
-          "count": 921,
+          "count": 916,
           "slug": "sitrus-berry"
         },
         {
           "name": "Colbur Berry",
-          "count": 136,
+          "count": 135,
           "slug": "colbur-berry"
         },
         {
@@ -29374,7 +29396,7 @@
       "abilities": [
         {
           "name": "Armor Tail",
-          "count": 1185
+          "count": 1180
         },
         {
           "name": "Sap Sipper",
@@ -29392,7 +29414,7 @@
       "tera": [
         {
           "name": "Normal",
-          "count": 16
+          "count": 14
         },
         {
           "name": "Fairy",
@@ -29406,31 +29428,31 @@
       "moves": [
         {
           "name": "Trick Room",
-          "count": 1176
+          "count": 1170
         },
         {
           "name": "Psychic",
-          "count": 819
-        },
-        {
-          "name": "Helping Hand",
-          "count": 769
+          "count": 814
         },
         {
           "name": "Protect",
-          "count": 769
+          "count": 767
+        },
+        {
+          "name": "Helping Hand",
+          "count": 763
         },
         {
           "name": "Thunderbolt",
-          "count": 429
+          "count": 427
         },
         {
           "name": "Expanding Force",
-          "count": 191
+          "count": 189
         },
         {
           "name": "Twin Beam",
-          "count": 116
+          "count": 117
         },
         {
           "name": "Imprison",
@@ -29442,7 +29464,7 @@
         },
         {
           "name": "Roar",
-          "count": 42
+          "count": 41
         },
         {
           "name": "Rain Dance",
@@ -29521,22 +29543,22 @@
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 482
+          "count": 477
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 452
+          "count": 454
         },
         {
           "id": 700,
           "name": "Sylveon",
-          "count": 446
+          "count": 443
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 380
+          "count": 375
         },
         {
           "id": 6,
@@ -29546,62 +29568,62 @@
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 303
+          "count": 304
         },
         {
           "id": 768,
           "name": "Golisopod",
-          "count": 248
+          "count": 246
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 219
+          "count": 217
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 209
+          "count": 205
         },
         {
-          "id": 1018,
-          "name": "Archaludon",
-          "count": 198
+          "id": 324,
+          "name": "Torkoal",
+          "count": 196
         }
       ]
     },
     "983": {
       "name": "Kingambit",
-      "n": 2133,
-      "teams": 2133,
-      "usage": 24.3,
+      "n": 2140,
+      "teams": 2140,
+      "usage": 24.4,
       "winRate": 50.6,
-      "weighted": 3010,
-      "topCut": 175,
+      "weighted": 3021,
+      "topCut": 177,
       "items": [
         {
           "name": "Chople Berry",
-          "count": 721,
+          "count": 715,
           "slug": "chople-berry"
         },
         {
           "name": "Life Orb",
-          "count": 688,
+          "count": 701,
           "slug": "life-orb"
         },
         {
           "name": "Black Glasses",
-          "count": 323,
+          "count": 325,
           "slug": "black-glasses"
         },
         {
           "name": "Focus Sash",
-          "count": 281,
+          "count": 280,
           "slug": "focus-sash"
         },
         {
           "name": "Occa Berry",
-          "count": 84,
+          "count": 83,
           "slug": "occa-berry"
         },
         {
@@ -29623,7 +29645,7 @@
       "abilities": [
         {
           "name": "Defiant",
-          "count": 2119
+          "count": 2126
         },
         {
           "name": "Supreme Overlord",
@@ -29659,27 +29681,27 @@
       "moves": [
         {
           "name": "Kowtow Cleave",
-          "count": 2118
+          "count": 2125
         },
         {
           "name": "Sucker Punch",
-          "count": 2112
+          "count": 2119
         },
         {
           "name": "Protect",
-          "count": 1397
+          "count": 1407
         },
         {
           "name": "Iron Head",
-          "count": 1356
+          "count": 1354
         },
         {
           "name": "Low Kick",
-          "count": 841
+          "count": 839
         },
         {
           "name": "Swords Dance",
-          "count": 652
+          "count": 660
         },
         {
           "name": "Brick Break",
@@ -29776,12 +29798,12 @@
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 1194
+          "count": 1191
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 846
+          "count": 849
         },
         {
           "id": 445,
@@ -29791,27 +29813,27 @@
         {
           "id": 902,
           "name": "Basculegion",
-          "count": 661
+          "count": 663
         },
         {
           "id": 6,
           "name": "Charizard",
-          "count": 536
+          "count": 532
         },
         {
           "id": 727,
           "name": "Incineroar",
-          "count": 522
+          "count": 525
         },
         {
           "id": 373,
           "name": "Salamence",
-          "count": 434
+          "count": 437
         },
         {
           "id": 547,
           "name": "Whimsicott",
-          "count": 415
+          "count": 414
         },
         {
           "id": 670,
@@ -29821,7 +29843,7 @@
         {
           "id": 26,
           "name": "Raichu",
-          "count": 346
+          "count": 348
         }
       ]
     },
@@ -30052,16 +30074,16 @@
     },
     "1000": {
       "name": "Gholdengo",
-      "n": 1867,
-      "teams": 1867,
-      "usage": 21.3,
-      "winRate": 48.1,
-      "weighted": 2535,
-      "topCut": 144,
+      "n": 1873,
+      "teams": 1873,
+      "usage": 21.4,
+      "winRate": 48,
+      "weighted": 2537,
+      "topCut": 143,
       "items": [
         {
           "name": "Life Orb",
-          "count": 1691,
+          "count": 1697,
           "slug": "life-orb"
         },
         {
@@ -30103,7 +30125,7 @@
       "abilities": [
         {
           "name": "Good as Gold",
-          "count": 1857
+          "count": 1863
         },
         {
           "name": "Good As Gold",
@@ -30135,19 +30157,19 @@
       "moves": [
         {
           "name": "Shadow Ball",
-          "count": 1862
+          "count": 1868
         },
         {
           "name": "Make It Rain",
-          "count": 1856
+          "count": 1863
         },
         {
           "name": "Protect",
-          "count": 1827
+          "count": 1833
         },
         {
           "name": "Nasty Plot",
-          "count": 1750
+          "count": 1756
         },
         {
           "name": "Power Gem",
@@ -30170,12 +30192,12 @@
           "count": 8
         },
         {
-          "name": "Make it Rain",
+          "name": "Focus Blast",
           "count": 7
         },
         {
-          "name": "Focus Blast",
-          "count": 7
+          "name": "Make it Rain",
+          "count": 6
         },
         {
           "name": "Thunder",
@@ -30251,12 +30273,12 @@
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 1442
+          "count": 1446
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 1009
+          "count": 1011
         },
         {
           "id": 727,
@@ -30266,17 +30288,17 @@
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 595
+          "count": 597
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 516
+          "count": 517
         },
         {
           "id": 59,
           "name": "Hisuian Arcanine",
-          "count": 514
+          "count": 517
         },
         {
           "id": 445,
@@ -30286,12 +30308,12 @@
         {
           "id": 373,
           "name": "Salamence",
-          "count": 436
+          "count": 439
         },
         {
           "id": 350,
           "name": "Milotic",
-          "count": 368
+          "count": 376
         },
         {
           "id": 637,
@@ -30302,31 +30324,31 @@
     },
     "1013": {
       "name": "Sinistcha",
-      "n": 740,
-      "teams": 740,
+      "n": 738,
+      "teams": 738,
       "usage": 8.4,
       "winRate": 49.6,
-      "weighted": 1045,
+      "weighted": 1042,
       "topCut": 69,
       "items": [
         {
           "name": "Colbur Berry",
-          "count": 206,
+          "count": 204,
           "slug": "colbur-berry"
         },
         {
           "name": "Sitrus Berry",
-          "count": 135,
+          "count": 134,
           "slug": "sitrus-berry"
         },
         {
           "name": "Rocky Helmet",
-          "count": 110,
+          "count": 113,
           "slug": "rocky-helmet"
         },
         {
           "name": "Kasib Berry",
-          "count": 104,
+          "count": 103,
           "slug": "kasib-berry"
         },
         {
@@ -30353,7 +30375,7 @@
       "abilities": [
         {
           "name": "Hospitality",
-          "count": 732
+          "count": 730
         },
         {
           "name": "Heatproof",
@@ -30377,11 +30399,11 @@
       "moves": [
         {
           "name": "Matcha Gotcha",
-          "count": 728
+          "count": 726
         },
         {
           "name": "Rage Powder",
-          "count": 728
+          "count": 726
         },
         {
           "name": "Protect",
@@ -30389,19 +30411,19 @@
         },
         {
           "name": "Trick Room",
-          "count": 468
+          "count": 465
         },
         {
           "name": "Life Dew",
-          "count": 220
+          "count": 219
         },
         {
           "name": "Strength Sap",
-          "count": 141
+          "count": 142
         },
         {
           "name": "Shadow Ball",
-          "count": 94
+          "count": 93
         },
         {
           "name": "Imprison",
@@ -30498,32 +30520,32 @@
         {
           "id": 655,
           "name": "Delphox",
-          "count": 258
+          "count": 257
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 246
+          "count": 245
         },
         {
           "id": 983,
           "name": "Kingambit",
-          "count": 232
+          "count": 231
         },
         {
           "id": 248,
           "name": "Tyranitar",
-          "count": 218
+          "count": 219
         },
         {
           "id": 1000,
           "name": "Gholdengo",
-          "count": 159
+          "count": 160
         },
         {
           "id": 398,
           "name": "Staraptor",
-          "count": 156
+          "count": 157
         },
         {
           "id": 670,
@@ -30533,27 +30555,27 @@
         {
           "id": 530,
           "name": "Excadrill",
-          "count": 152
+          "count": 153
         },
         {
           "id": 350,
           "name": "Milotic",
-          "count": 126
+          "count": 127
         }
       ]
     },
     "1018": {
       "name": "Archaludon",
-      "n": 1444,
-      "teams": 1444,
-      "usage": 16.5,
-      "winRate": 47.2,
-      "weighted": 1960,
+      "n": 1439,
+      "teams": 1439,
+      "usage": 16.4,
+      "winRate": 47.1,
+      "weighted": 1949,
       "topCut": 99,
       "items": [
         {
           "name": "Leftovers",
-          "count": 1373,
+          "count": 1368,
           "slug": "leftovers"
         },
         {
@@ -30595,7 +30617,7 @@
       "abilities": [
         {
           "name": "Stamina",
-          "count": 1415
+          "count": 1410
         },
         {
           "name": "Sturdy",
@@ -30631,31 +30653,31 @@
       "moves": [
         {
           "name": "Protect",
-          "count": 1428
+          "count": 1423
         },
         {
           "name": "Electro Shot",
-          "count": 1425
+          "count": 1420
         },
         {
           "name": "Dragon Pulse",
-          "count": 1300
+          "count": 1294
         },
         {
           "name": "Flash Cannon",
-          "count": 738
+          "count": 739
         },
         {
           "name": "Snarl",
-          "count": 545
+          "count": 539
         },
         {
           "name": "Aura Sphere",
-          "count": 205
+          "count": 204
         },
         {
           "name": "Draco Meteor",
-          "count": 100
+          "count": 102
         },
         {
           "name": "Thunderbolt",
@@ -30751,12 +30773,12 @@
         {
           "id": 279,
           "name": "Pelipper",
-          "count": 1075
+          "count": 1069
         },
         {
           "id": 768,
           "name": "Golisopod",
-          "count": 594
+          "count": 587
         },
         {
           "id": 861,
@@ -30766,37 +30788,37 @@
         {
           "id": 6,
           "name": "Charizard",
-          "count": 456
+          "count": 457
         },
         {
           "id": 903,
           "name": "Sneasler",
-          "count": 434
+          "count": 425
         },
         {
           "id": 445,
           "name": "Garchomp",
-          "count": 372
+          "count": 369
         },
         {
           "id": 26,
           "name": "Raichu",
-          "count": 372
+          "count": 366
         },
         {
           "id": 3,
           "name": "Venusaur",
-          "count": 327
+          "count": 328
         },
         {
           "id": 186,
           "name": "Politoed",
-          "count": 324
+          "count": 325
         },
         {
           "id": 812,
           "name": "Rillaboom",
-          "count": 293
+          "count": 296
         }
       ]
     }
