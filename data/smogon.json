@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T18:04:14.433Z",
+  "generatedAt": "2026-11-26T17:49:28.183Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "Champions VGC",
@@ -3119,9 +3119,11 @@
       "overview": "",
       "sets": [
         {
-          "name": "Focus Sash",
+          "name": "Attacker",
           "item": "focus-sash",
-          "itemAlts": [],
+          "itemAlts": [
+            "life-orb"
+          ],
           "ability": "magic-guard",
           "nature": "timid",
           "tera": [],
@@ -3130,14 +3132,13 @@
               "psyshock"
             ],
             [
-              "focus-blast"
-            ],
-            [
               "shadow-ball"
             ],
             [
-              "nasty-plot",
-              "thunder-wave"
+              "focus-blast"
+            ],
+            [
+              "nasty-plot"
             ]
           ],
           "evs": {
@@ -3165,7 +3166,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Alakazam has a niche due to its good Speed tier, access to Nasty Plot, and passive damage-ignoring properties with Magic Guard. Shadow Ball targets Pokemon such as Aegislash and Hatterene, while Focus Blast enables it to OHKO Hisuian Samurott and Kingambit as well as Hydreigon after Stealth Rock chip damage. Focus…",
           "source": "Champions OU"
         },
         {
@@ -41391,45 +41392,45 @@
           "source": "Champions VGC"
         },
         {
-          "name": "Regenerator Wall",
-          "item": "sitrus-berry",
+          "name": "The Pex",
+          "item": "eject-button",
           "itemAlts": [
-            "leftovers",
-            "no-item"
+            "rocky-helmet",
+            "red-card"
           ],
           "ability": "regenerator",
-          "nature": "careful",
+          "nature": "relaxed",
           "tera": [],
           "moves": [
             [
-              "liquidation"
-            ],
-            [
-              "toxic",
               "poison-jab",
-              "toxic-spikes"
+              "infestation"
             ],
             [
-              "haze"
+              "surf",
+              "infestation"
             ],
             [
               "recover"
+            ],
+            [
+              "haze"
             ]
           ],
           "evs": {
             "hp": 252,
             "attack": 0,
-            "defense": 6,
+            "defense": 94,
             "special-attack": 0,
-            "special-defense": 252,
+            "special-defense": 164,
             "speed": 0
           },
           "sp": {
             "hp": 32,
             "attack": 0,
-            "defense": 2,
+            "defense": 13,
             "special-attack": 0,
-            "special-defense": 32,
+            "special-defense": 21,
             "speed": 0
           },
           "ivs": {
@@ -41441,7 +41442,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Toxapex carves itself a niche as a fallback and pivot on offense teams thanks to Eject Button and on defensive teams with its ever reliable resilience. Poison Jab is chosen to directly threaten Fairy-types such as Mega Meganium, Mega Floette, and Mega Clefable. Surf allows Toxapex to hit Poison-resistant and -immune…",
           "source": "Champions OU"
         },
         {
